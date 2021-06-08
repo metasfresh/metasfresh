@@ -1295,7 +1295,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void setTaxAmt(final I_C_InvoiceLine invoiceLine)
 	{
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 		final int taxId = invoiceLine.getC_Tax_ID();
@@ -1315,7 +1314,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
 		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
-		final BigDecimal TaxAmt = taxBL.calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
+		final BigDecimal TaxAmt = tax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt());
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);

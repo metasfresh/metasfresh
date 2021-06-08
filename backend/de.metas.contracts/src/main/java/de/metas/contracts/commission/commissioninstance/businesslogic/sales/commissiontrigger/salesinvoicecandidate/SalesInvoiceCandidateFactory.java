@@ -188,8 +188,7 @@ public class SalesInvoiceCandidateFactory
 
 		final CurrencyPrecision precision = invoiceCandBL.extractPricePrecision(icRecord);
 
-		final BigDecimal taxAdjustedAmount = taxBL.calculateBaseAmt(
-				taxRecord,
+		final BigDecimal taxAdjustedAmount = taxRecord.calculateBaseAmt(
 				commissionPoints.toBigDecimal(),
 				icRecord.isTaxIncluded(),
 				precision.toInt());
@@ -212,6 +211,6 @@ public class SalesInvoiceCandidateFactory
 	{
 		return (icRecord.getBase_Commission_Points_Per_Price_UOM().signum() == 0)
 				|| (icRecord.getPriceEntered_Override().signum() > 0
-						&& !icRecord.getPriceEntered_Override().equals(icRecord.getPriceEntered()));
+				&& !icRecord.getPriceEntered_Override().equals(icRecord.getPriceEntered()));
 	}
 }

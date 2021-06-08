@@ -27,7 +27,6 @@ import de.metas.acct.tax.ITaxAccountable;
 import de.metas.acct.tax.ITaxAcctBL;
 import de.metas.acct.tax.TaxAcctType;
 import de.metas.currency.CurrencyPrecision;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
@@ -85,8 +84,7 @@ import java.math.BigDecimal;
 		final BigDecimal taxBaseAmt = taxAccountable.getTaxBaseAmt();
 		final boolean taxIncluded = false;
 		final CurrencyPrecision precision = taxAccountable.getPrecision();
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
-		final BigDecimal taxAmt = taxBL.calculateTax(tax, taxBaseAmt, taxIncluded, precision.toInt());
+		final BigDecimal taxAmt = tax.calculateTax(taxBaseAmt, taxIncluded, precision.toInt());
 
 		final BigDecimal totalAmt = taxBaseAmt.add(taxAmt);
 
@@ -130,8 +128,7 @@ import java.math.BigDecimal;
 		final BigDecimal taxTotalAmt = taxAccountable.getTaxTotalAmt();
 		final boolean taxIncluded = true;
 		final CurrencyPrecision precision = taxAccountable.getPrecision();
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
-		final BigDecimal taxAmt = taxBL.calculateTax(tax, taxTotalAmt, taxIncluded, precision.toInt());
+		final BigDecimal taxAmt = tax.calculateTax(taxTotalAmt, taxIncluded, precision.toInt());
 
 		final BigDecimal taxBaseAmt = taxTotalAmt.subtract(taxAmt);
 

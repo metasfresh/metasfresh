@@ -117,7 +117,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMConversionBL;
@@ -350,7 +349,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			isAllCandidatesInGroupDeliveredCache = threadInheritedTrx
 					.getProperty("InvoicecandBL#isAllCandidatesInGroupDeliveredCache",
-								 () -> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED.build());
+							() -> CACHE_BUILDER_IS_ALL_CANDIDATES_IN_GROUP_DELIVERED.build());
 		}
 		return isAllCandidatesInGroupDeliveredCache.getOrLoad(ic.getHeaderAggregationKey(), () -> isAllCandidatesInGroupDelivered0(ic));
 	}
@@ -442,8 +441,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final ITranslatableString currSymbol = targetCurrency.getSymbol();
 
 				final String msg = msgBL.getMsg(ctx,
-												MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P,
-												new Object[] { dateToday, actualAmt, currSymbol, invoiceSched.getAmt(), currSymbol });
+						MSG_INVOICE_CAND_BL_BELOW_INVOICE_MIN_AMT_5P,
+						new Object[] { dateToday, actualAmt, currSymbol, invoiceSched.getAmt(), currSymbol });
 				ic.setInvoiceScheduleAmtStatus(msg);
 				return;
 			}
@@ -650,13 +649,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 				amendSchedulerResult(ic,
-									 msgBL.getMsg(ctx,
-												  MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
-												  new Object[] {
-														  adReferenceDAO.retrieveListNameTrl(
-																  DocStatus.AD_REFERENCE_ID,
-																  ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
-												  }));
+						msgBL.getMsg(ctx,
+								MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
+								new Object[] {
+										adReferenceDAO.retrieveListNameTrl(
+												DocStatus.AD_REFERENCE_ID,
+												ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
+								}));
 
 				ic.setDiscount(ZERO);
 			}
@@ -672,7 +671,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final InvoiceRule invoiceRule = getInvoiceRule(ic);
 		Check.assume(InvoiceRule.CustomerScheduleAfterDelivery.equals(invoiceRule),
-					 "Method is only called if invoice rule is " + InvoiceRule.CustomerScheduleAfterDelivery);
+				"Method is only called if invoice rule is " + InvoiceRule.CustomerScheduleAfterDelivery);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
@@ -743,17 +742,12 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public void setPriceActualNet(final I_C_Invoice_Candidate ic)
 	{
-		//
-		// Services
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
-
 		final Tax tax = getTaxEffective(ic);
 		final ProductPrice priceActual = getPriceActual(ic);
 		final boolean taxIncluded = isTaxIncluded(ic);
 		final CurrencyPrecision precision = getPrecisionFromCurrency(ic);
 
-		final BigDecimal priceActualNet = taxBL.calculateBaseAmt(
-				tax,
+		final BigDecimal priceActualNet = tax.calculateBaseAmt(
 				priceActual.toMoney().toBigDecimal(),
 				taxIncluded,
 				precision.toInt());
@@ -944,7 +938,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_TO_CLEAR,
-											new Object[] { ic.getC_Invoice_Candidate_ID() });
+					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
@@ -953,7 +947,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			// don't log (per Mark request) because those could be a lot and because user has no opportunity to react
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_IS_IN_DISPUTE,
-											new Object[] { ic.getC_Invoice_Candidate_ID() });
+					new Object[] { ic.getC_Invoice_Candidate_ID() });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
@@ -961,7 +955,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		if (ic.isSimulation())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog(" #isSkipCandidateFromInvoicing: Skipping IC: {},"
-																	 + " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
+					+ " as it's a simulation and it shouldn't be invoiced!", ic.getC_Invoice_Candidate_ID());
 			return true;
 		}
 
@@ -972,7 +966,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				&& (dateToInvoice == null || dateToInvoice.isAfter(getToday())))
 		{
 			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_DATE_TO_INVOICE,
-											new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoice), TimeUtil.asTimestamp(getToday()) });
+					new Object[] { ic.getC_Invoice_Candidate_ID(), TimeUtil.asTimestamp(dateToInvoice), TimeUtil.asTimestamp(getToday()) });
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
@@ -1071,7 +1065,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							date,
 							soTrx);
 			logger.debug("C_Invoice_Candidate has M_PricingSystem_ID={}, effective C_BPartner_Location_ID={}, DateOrdered={} and SOTrx={}; -> return M_PriceList={}",
-						 icRecord.getM_PricingSystem_ID(), partnerLocation.getC_BPartner_Location_ID(), date, icRecord.isSOTrx(), result);
+					icRecord.getM_PricingSystem_ID(), partnerLocation.getC_BPartner_Location_ID(), date, icRecord.isSOTrx(), result);
 			return result;
 		}
 
@@ -1794,9 +1788,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final InconsistentUpdateException iue = (InconsistentUpdateException)e;
 			final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 			note = new MNote(ctx,
-							 iue.getAdMessageHeadLine().toAD_Message(),
-							 iue.getAdUserToNotifyId(),
-							 ITrx.TRXNAME_None // save it out-of-trx
+					iue.getAdMessageHeadLine().toAD_Message(),
+					iue.getAdUserToNotifyId(),
+					ITrx.TRXNAME_None // save it out-of-trx
 			);
 			note.setTextMsg(e.getMessage());
 			note.setAD_Table_ID(Services.get(IADTableDAO.class).retrieveTableId(I_C_Invoice_Candidate.Table_Name));
@@ -2049,11 +2043,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final ProductAndCategoryAndManufacturerId product = productsRepo.retrieveProductAndCategoryAndManufacturerByProductId(productId);
 
 			final PricingConditionsBreak appliedBreak = pricingConditions.pickApplyingBreak(PricingConditionsBreakQuery.builder()
-																									.attributes(attributes)
-																									.product(product)
-																									.qty(qty)
-																									.price(priceActual)
-																									.build());
+					.attributes(attributes)
+					.product(product)
+					.qty(qty)
+					.price(priceActual)
+					.build());
 
 			qualityDiscountPercentage = appliedBreak != null ? appliedBreak.getQualityDiscountPercentage() : null;
 		}
@@ -2137,13 +2131,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
 						{
 							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",
-										 ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
+									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
 							closeInvoiceCandidate(candidate);
 						}
 						else
 						{
 							logger.debug("invoiceLine.qtyInvoiced={} is >= invoiceCandidate.qtyOrdered={}; -> not closing invoice candidate",
-										 ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
+									ilRecord.getQtyInvoiced(), candidate.getQtyOrdered());
 						}
 					}
 				}
@@ -2249,7 +2243,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			final I_C_Invoice_Candidate firstInvoiceableCandRecord = invoiceCandDAO.getById(invoiceableInvoiceCandIdResult.getFirstInvoiceableInvoiceCandId());
 
 			logger.debug("C_Order_ID={} of this freight-cost invoice candidate has other invoicable C_Invoice_Candidate_ID={}; -> set DeliveryDate its DeliveryDate={}",
-						 orderId.getRepoId(), firstInvoiceableCandRecord.getC_Invoice_Candidate_ID(), firstInvoiceableCandRecord.getDeliveryDate());
+					orderId.getRepoId(), firstInvoiceableCandRecord.getC_Invoice_Candidate_ID(), firstInvoiceableCandRecord.getDeliveryDate());
 			icRecord.setDeliveryDate(firstInvoiceableCandRecord.getDeliveryDate());
 		}
 		else if (hasICsToWaitFor)
@@ -2317,8 +2311,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		for (final ExternalHeaderIdWithExternalLineIds headerWithLineIds : headerAndLineIds)
 		{
 			multiQuery.query(InvoiceCandidateQuery.builder()
-									 .externalIds(headerWithLineIds)
-									 .build());
+					.externalIds(headerWithLineIds)
+					.build());
 		}
 
 		return invoiceCandDAO.createSelectionByQuery(multiQuery.build(), pInstanceId);
@@ -2395,8 +2389,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final IInvoiceGenerateResult result = invoiceCandBL.generateInvoices()
 				.setContext(ctx, trxName)
 				.setInvoicingParams(new PlainInvoicingParams()
-											.setStoreInvoicesInResult(true)
-											.setAssumeOneInvoice(true))
+						.setStoreInvoicesInResult(true)
+						.setAssumeOneInvoice(true))
 				.generateInvoices(invoiceCands.iterator());
 
 		final I_C_Invoice newInvoice;

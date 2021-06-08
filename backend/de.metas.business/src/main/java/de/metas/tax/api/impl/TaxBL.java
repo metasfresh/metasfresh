@@ -9,7 +9,6 @@ import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
@@ -43,9 +42,7 @@ import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.X_C_Tax;
 import org.compiere.model.X_C_TaxCategory;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -469,72 +466,16 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 
 	public BigDecimal calculateTax(final I_C_Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
-		return calculateTax(TaxUtils.from(tax), amount, taxIncluded, scale);
+		return TaxUtils.from(tax).calculateTax(amount, taxIncluded, scale);
 	}
-
-	@Override
-	public BigDecimal calculateTax(final Tax tax, final BigDecimal amount, final boolean taxIncluded, final int scale)
-	{
-		// Null Tax
-		if (tax.getRate().signum() == 0)
-		{
-			return BigDecimal.ZERO;
-		}
-
-		BigDecimal multiplier = tax.getRate().divide(Env.ONEHUNDRED, 12, BigDecimal.ROUND_HALF_UP);
-
-		final BigDecimal taxAmt;
-		if (tax.isWholeTax())
-		{
-			Check.assume(taxIncluded, "TaxIncluded shall be set when IsWholeTax is set");
-			taxAmt = amount;
-		}
-		else if (!taxIncluded)    // $100 * 6 / 100 == $6 == $100 * 0.06
-		{
-			taxAmt = amount.multiply(multiplier);
-		}
-		else
-		// $106 - ($106 / (100+6)/100) == $6 == $106 - ($106/1.06)
-		{
-			multiplier = multiplier.add(BigDecimal.ONE);
-			final BigDecimal base = amount.divide(multiplier, 12, BigDecimal.ROUND_HALF_UP);
-			taxAmt = amount.subtract(base);
-		}
-
-		final BigDecimal taxAmtFinal = taxAmt.setScale(scale, BigDecimal.ROUND_HALF_UP);
-
-		log.debug("calculateTax: amount={} (incl={}, mult={}, scale={}) = {} [{}]", amount, taxIncluded, multiplier, scale, taxAmtFinal, taxAmt);
-
-		return taxAmtFinal;
-	}    // calculateTax
 
 	@Override
 	public BigDecimal calculateBaseAmt(@NonNull final I_C_Tax tax, @NonNull final BigDecimal amount, final boolean taxIncluded, final int scale)
 	{
-		return calculateBaseAmt(TaxUtils.from(tax), amount, taxIncluded, scale);
+
+		return TaxUtils.from(tax).calculateBaseAmt( amount, taxIncluded, scale);
 	}
 
-	@Override
-	public BigDecimal calculateBaseAmt(@NonNull final Tax tax, @NonNull final BigDecimal amount, final boolean taxIncluded, final int scale)
-	{
-		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_Tax.Table_Name, tax.getTaxId()))
-		{
-			if (tax.isWholeTax())
-			{
-				log.debug("C_Tax has isWholeTax=true; -> return ZERO");
-				return BigDecimal.ZERO;
-			}
-			if (!taxIncluded)
-			{
-				// the given amount is without tax => don't subtract the tax that is no included
-				log.debug("Parameter taxIncluded=false; -> return given param amount={}", amount);
-				return amount;
-			}
-			final BigDecimal taxAmt = calculateTax(tax, amount, taxIncluded, scale);
-			final BigDecimal baseAmt = amount.subtract(taxAmt);
-			return baseAmt;
-		}
-	}
 
 	@Override
 	public void setupIfIsWholeTax(final I_C_Tax tax)
