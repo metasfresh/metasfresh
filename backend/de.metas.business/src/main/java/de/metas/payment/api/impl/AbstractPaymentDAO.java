@@ -35,6 +35,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.banking.BankAccountId;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -271,6 +272,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 	@Override
 	public Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(
 			@NonNull final OrgId orgId,
+			@NonNull final BankAccountId bankAccountId,
 			@NonNull final Instant startDate,
 			@NonNull final Instant endDate)
 	{
@@ -283,6 +285,7 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_AD_Org_ID, orgId)
 				.addInArrayFilter(I_C_Payment.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false)
+				.addEqualsFilter(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID, bankAccountId)
 				.addBetweenFilter(I_C_Payment.COLUMNNAME_DateTrx, startDate, endDate)
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsReceipt, true)
 				.addInSubQueryFilter(I_C_Payment.COLUMNNAME_C_BPartner_ID,
