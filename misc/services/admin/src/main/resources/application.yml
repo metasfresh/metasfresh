@@ -15,12 +15,11 @@ spring:
       client:
         simple:
           instances:
-            test:
-              # app
-              - uri: http://localhost:8282
+            app:
+              - uri: http://localhost:8181
                 metadata:
                   management.context-path: /actuator
-              # webapi
+            webapi:      
               - uri: http://localhost:8080
                 metadata:
                   management.context-path: /actuator
