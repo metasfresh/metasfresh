@@ -24,7 +24,9 @@ package de.metas.camel.ebay;
 
 import static de.metas.camel.ebay.EbayConstants.EXTERNAL_ID_PREFIX;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 import lombok.NonNull;
@@ -32,7 +34,8 @@ import lombok.NonNull;
 public class EbayUtils {
 
 	public static LocalDate toLocalDate(@NonNull final String in) {
-        LocalDate localDate = LocalDate.parse(in);
+		Instant instant = Instant.parse(in);
+		LocalDate localDate = LocalDate.ofInstant(instant,ZoneOffset.UTC);
         return localDate;
 	}
 

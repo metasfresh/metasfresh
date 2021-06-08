@@ -2,25 +2,25 @@
   "responseItems": [
     {
       "responseBPartnerItem": {
-        "identifier": "ext-Shopware6-customerId",
+        "identifier": "ext-ebay-nfc21-consumer-01",
         "metasfreshId": 1,
         "syncOutcome": "UPDATED"
       },
       "responseLocationItems": [
         {
-          "identifier": "ext-Shopware6-customerId-billTo",
+          "identifier": "ext-ebay-nfc21-consumer-01-billTo",
           "metasfreshId": 2,
           "syncOutcome": "UPDATED"
         },
         {
-          "identifier": "ext-Shopware6-customerId-shipTo",
+          "identifier": "ext-ebay-nfc21-consumer-01-shipTo",
           "metasfreshId": 3,
           "syncOutcome": "UPDATED"
         }
       ],
       "responseContactItems": [
         {
-          "identifier": "ext-Shopware6-customerId",
+          "identifier": "ext-ebay-nfc21-consumer-01-contact",
           "metasfreshId": 4,
           "syncOutcome": "UPDATED"
         }

@@ -13,7 +13,7 @@
         "orderPaymentStatus": "PAID",
         "sellerId": "nfctagshop",
         "buyer": {
-          "username": "nfc21-consumer",
+          "username": "nfc21-consumer-01",
           "taxAddress": {
             "postalCode": "45481",
             "countryCode": "DE"

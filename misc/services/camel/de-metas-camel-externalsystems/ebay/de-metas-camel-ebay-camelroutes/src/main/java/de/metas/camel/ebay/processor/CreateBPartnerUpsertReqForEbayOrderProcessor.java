@@ -54,8 +54,6 @@ import de.metas.common.rest_api.v2.SyncAdvise;
  * Processor to create an UpsertRequest to create a new BPartner for an ebay
  * order.
  * 
- * TODO: refactor to use builders?
- * 
  * @author Werner Gaulke
  *
  */
@@ -69,13 +67,22 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor {
 		final EbayImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, EbayImportOrdersRouteContext.class);
 		log.debug("Create BPartner for ebay order {}", importOrdersRouteContext.getOrder().getOrderId());
 		
+		
+		//prepare identifiers
 		final Order order = importOrdersRouteContext.getOrder();
 		final String orgCode = importOrdersRouteContext.getOrgCode();
 
+		final String bPartnerIdentifier = EbayUtils.bPartnerIdentifier(order);
+		final String bPartnerShipToLocationIdentifier = bPartnerIdentifier + "-shipTo";
+		final String bParnterBillLocationIdentifier = bPartnerIdentifier + "-billTo";
+		final String bPartnerContactIdentifier = bPartnerIdentifier + "-contact";
+		
+		//add identifiers to contect for reuse.
+		importOrdersRouteContext.setBillingBPLocationExternalId(bParnterBillLocationIdentifier);
+		importOrdersRouteContext.setShippingBPLocationExternalId(bPartnerShipToLocationIdentifier);
+		
 		
 		// First, create bPartner, contact and location and map ebay values
-		final String bPartnerIdentifier = EbayUtils.bPartnerIdentifier(order);
-
 		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
 		final JsonRequestContact bpartnerContact = new JsonRequestContact();
 		final JsonRequestLocation bpartnerLocation = new JsonRequestLocation();
@@ -115,18 +122,18 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor {
 		//Second, create upsert request for json items.
 		List<JsonRequestLocationUpsertItem> locationUpsertItems = new ArrayList<>();
 		locationUpsertItems.add(JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(bPartnerIdentifier + "-location")
+				.locationIdentifier(bPartnerShipToLocationIdentifier)
 				.location(bpartnerLocation)
 				.build());
 		
 		locationUpsertItems.add(JsonRequestLocationUpsertItem.builder()
-				.locationIdentifier(bPartnerIdentifier + "-billlocation")
+				.locationIdentifier(bParnterBillLocationIdentifier)
 				.location(billBPartnerLocation)
 				.build());
 
 		JsonRequestContactUpsertItem contactUpsertItem = JsonRequestContactUpsertItem.builder()
 				.contact(bpartnerContact)
-				.contactIdentifier(bPartnerIdentifier + "-contact")
+				.contactIdentifier(bPartnerContactIdentifier)
 				.build();
 
 		
