@@ -25,7 +25,7 @@ package de.metas.rest_api.v2.order;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.IOrderDAO;

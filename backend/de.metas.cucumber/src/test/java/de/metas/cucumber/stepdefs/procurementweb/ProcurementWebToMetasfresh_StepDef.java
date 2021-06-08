@@ -110,7 +110,7 @@ public class ProcurementWebToMetasfresh_StepDef
 		for (final Map<String, String> tableRow : dataTable.<String, String>asMaps(String.class, String.class))
 		{
 			final String name = tableRow.get("Name");
-			assertThat(name2bpartner).as("Missing syncBPartner with name=%s", name).containsKey(name);
+			assertThat(name2bpartner).as("Missing syncBPartner with name=%s in %s", name, name2bpartner).containsKey(name);
 			final SyncBPartner syncBPartner = name2bpartner.get(name);
 
 			final boolean deleted = DataTableUtil.extractBooleanForColumnName(tableRow, "Deleted");

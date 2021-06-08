@@ -7,21 +7,16 @@ import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import Moment from 'moment-timezone';
 
+import { openFilterBox, closeFilterBox } from '../../actions/WindowActions';
+
+import { convertDateToReadable } from '../../utils/dateHelpers';
 import keymap from '../../shortcuts/keymap';
+import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import { DATE_FIELD_FORMATS } from '../../constants/Constants';
 
-import {
-  openFilterBox,
-  closeFilterBox,
-  allowShortcut,
-  disableShortcut,
-} from '../../actions/WindowActions';
-
 import OverlayField from '../app/OverlayField';
-import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
-import RawWidget from '../widget/RawWidget';
-import { convertDateToReadable } from '../../utils/dateHelpers';
+import WidgetWrapper from '../../containers/WidgetWrapper';
 
 /**
  * @file Class based component.
@@ -266,26 +261,7 @@ class FiltersItem extends PureComponent {
     const parametersArray = [];
 
     newActiveFilter.parameters.forEach((param) => {
-      if (updatedParameters[param.parameterName]) {
-        const { value, activeValue, activeValueTo } = paramsMap[
-          param.parameterName
-        ];
-
-        // if there's no value but param exists in the updated parameters,
-        // remove the parameter from active filter.
-        // Otherwise just update it's value
-        if (value !== null && value !== '') {
-          parametersArray.push({
-            ...param,
-            value: convertDateToReadable(param.widgetType, activeValue),
-            valueTo: convertDateToReadable(param.widgetType, activeValueTo),
-            defaultValue: null,
-            defaultValueTo: null,
-          });
-        }
-
-        delete updatedParameters[param.parameterName];
-      } else {
+      if (!updatedParameters[param.parameterName]) {
         // copy params that were not updated
         parametersArray.push({
           ...param,
@@ -357,12 +333,52 @@ class FiltersItem extends PureComponent {
   };
 
   /**
+   * @method checkFilterTypeByName
+   * @summary Gets the corresponding widgetType from the filters data
+   * @param {*} filterItem - the active one that does not contain the widgetType
+   * @returns {string} widgetType
+   */
+  checkFilterTypeByName = (filterItem) => {
+    const {
+      filter: { parameters },
+    } = this.state;
+
+    const targetFilter = parameters.filter(
+      (item) => item.field === filterItem.parameterName
+    );
+    return targetFilter[0] ? targetFilter[0].widgetType : '';
+  };
+
+  /**
+   * updates the items for the case when there is no active filters, does this update within the existing default values
+   * @param {array} toChange
+   */
+  updateItems = (toChange) => {
+    const { filter } = this.state;
+    if (filter.parameters) {
+      filter.parameters.map((filterItem) => {
+        if (filterItem.parameterName === toChange.widgetField) {
+          filterItem.defaultValue = toChange.value;
+          filterItem.value = toChange.value;
+        }
+        return filterItem;
+      });
+    }
+    this.setState({ filter });
+  };
+
+  /**
    * @method handleApply
    * @summary ToDo: Describe the method
    * @todo Write the documentation
    */
   handleApply = () => {
-    const { applyFilters, closeFilterMenu, returnBackToDropdown } = this.props;
+    const {
+      applyFilters,
+      closeFilterMenu,
+      returnBackToDropdown,
+      isActive,
+    } = this.props;
     const { filter, activeFilter } = this.state;
 
     if (
@@ -388,16 +404,18 @@ class FiltersItem extends PureComponent {
       );
     } else {
       // update the active filter with the defaultValue if value from active filter is empty
-      const activeFilterClone = _.cloneDeep(activeFilter);
-      activeFilterClone.parameters.map((afcItem, index) => {
-        // YesNo filters (checkboxes) can be either null, true or false
-        afcItem.value =
-          !afcItem.value && afcItem.value !== false
-            ? filter.parameters[index].defaultValue
-            : afcItem.value;
-        return afcItem;
-      });
-
+      let activeFilterClone = _.cloneDeep(activeFilter);
+      if (!isActive) {
+        activeFilterClone = filter;
+        activeFilterClone.parameters.map((afcItem) => {
+          let filterType = this.checkFilterTypeByName(afcItem);
+          if (filterType === 'YesNo') {
+            // YesNo filters (checkboxes) can be either null, true or false
+            afcItem.value = afcItem.defaultValue;
+          }
+          return afcItem;
+        });
+      }
       applyFilters(activeFilterClone, () => {
         closeFilterMenu();
         returnBackToDropdown && returnBackToDropdown();
@@ -452,10 +470,6 @@ class FiltersItem extends PureComponent {
       closeFilterMenu,
       captionValue,
       openedFilter,
-      modalVisible,
-      timeZone,
-      allowShortcut,
-      disableShortcut,
     } = this.props;
     const { filter, isTooltipShow, maxWidth, maxHeight } = this.state;
     const style = {};
@@ -515,7 +529,8 @@ class FiltersItem extends PureComponent {
                     item.field = item.parameterName;
 
                     return (
-                      <RawWidget
+                      <WidgetWrapper
+                        dataSource="filter-item"
                         entity="documentView"
                         subentity="filter"
                         subentityId={filter.filterId}
@@ -560,10 +575,8 @@ class FiltersItem extends PureComponent {
                           windowType,
                           onShow,
                           onHide,
-                          allowShortcut,
-                          disableShortcut,
-                          timeZone,
-                          modalVisible,
+                          isFilterActive: isActive,
+                          updateItems: this.updateItems,
                         }}
                       />
                     );
@@ -624,15 +637,6 @@ class FiltersItem extends PureComponent {
   }
 }
 
-const mapStateToProps = (state) => {
-  const { appHandler, windowHandler } = state;
-
-  return {
-    modalVisible: windowHandler.modal.visible,
-    timeZone: appHandler.me.timeZone,
-  };
-};
-
 /**
  * @typedef {object} Props Component props
  * @prop {func} applyFilters
@@ -653,10 +657,6 @@ const mapStateToProps = (state) => {
  * @prop {*} captionValue
  * @prop {*} openedFilter
  * @prop {*} returnBackToDropdown
- * @prop {bool} modalVisible
- * @prop {string} timeZone
- * @prop {func} allowShortcut
- * @prop {func} disableShortcut
  * @prop {func} openFilterBox
  * @prop {func} closeFilterBox
  */
@@ -679,19 +679,13 @@ FiltersItem.propTypes = {
   captionValue: PropTypes.any,
   openedFilter: PropTypes.any,
   returnBackToDropdown: PropTypes.any,
-  modalVisible: PropTypes.bool.isRequired,
-  timeZone: PropTypes.string.isRequired,
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
   openFilterBox: PropTypes.func.isRequired,
   closeFilterBox: PropTypes.func.isRequired,
 };
 
 export default connect(
-  mapStateToProps,
+  null,
   {
-    allowShortcut,
-    disableShortcut,
     openFilterBox,
     closeFilterBox,
   }

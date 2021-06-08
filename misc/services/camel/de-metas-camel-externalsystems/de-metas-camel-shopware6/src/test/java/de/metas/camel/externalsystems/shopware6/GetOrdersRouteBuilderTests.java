@@ -24,15 +24,30 @@ package de.metas.camel.externalsystems.shopware6;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderDeliveries;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrders;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
+import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
+import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder;
+import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonExternalSystemName;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -42,38 +57,64 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
-import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
-import static de.metas.camel.externalsystems.shopware6.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_ORG_CODE;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_ID;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID;
-import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_SHOPWARE_CLIENT;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_ID_JSON_PATH;
-import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_LOCATION_ID_JSON_PATH;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CURRENCY_ID;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_EUR_CODE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
-import static org.assertj.core.api.Assertions.assertThat;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.OLCAND_REQ_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.PROCESS_ORDER_ROUTE_ID;
+import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.nullable;
 
 public class GetOrdersRouteBuilderTests extends CamelTestSupport
 {
-	private static final String MOCK_SHOPWARE_TO_MF_RESULT = "mock:ShopwareToMFResult";
+	private static final String MOCK_BPARTNER_UPSERT = "mock:bPartnerUpsert";
+	private static final String MOCK_OL_CAND_CREATE = "mock:olCandCreate";
+	private static final String MOCK_OL_CAND_CLEAR = "mock:olCandClear";
+	private static final String MOCK_CREATE_PAYMENT = "mock:createPayment";
+	private static final String MOCK_UPSERT_RUNTIME_PARAMETERS = "mock:upsertRuntimeParams";
 
-	private static final String JSON_ORDERS_RESOURCE_PATH = "/de/metas/camel/externalsystems/shopware6/JsonOrders.json";
-	private static final String JSON_ORDER_DELIVERIES_PATH = "/de/metas/camel/externalsystems/shopware6/JsonOrderDeliveries.json";
-	private static final String JSON_ORDER_BILLING_ADDRESS_PATH = "/de/metas/camel/externalsystems/shopware6/JsonOrderAddressCustomId.json";
-	private static final String JSON_COUNTRY_INFO_PATH = "/de/metas/camel/externalsystems/shopware6/JsonCountry.json";
+	private static final String SALES_REP_IDENTIFIER = "mockSalesRepIdentifier";
+	private static final String JSON_SHOPWARE_MAPPINGS = "01_JsonExternalSystemShopware6ConfigMappings.json";
+	private static final String JSON_ORDERS_RESOURCE_PATH = "10_JsonOrders.json";
+	private static final String JSON_ORDER_TRANSACTIONS_PATH = "12_JsonOrderTransactions.json";
+	private static final String JSON_ORDER_PAYMENT_METHOD_PATH = "14_JsonPaymentMethod.json";
+	private static final String JSON_ORDER_GROUPS_PATH = "16_JsonCustomerGroups.json";
+	private static final String JSON_ORDER_DELIVERIES_PATH = "20_JsonOrderDeliveries.json";
+	private static final String JSON_ORDER_BILLING_ADDRESS_PATH = "30_Billing_JsonOrderAddressCustomId.json";
+	private static final String JSON_ORDER_LINES = "40_JsonOrderLines.json";
+	private static final String JSON_COUNTRY_INFO_PATH = "JsonCountry.json";
 
-	private static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/shopware6/CamelUpsertBPartnerCompositeRequest.json";
+	private static final String JSON_UPSERT_BPARTNER_REQUEST = "50_CamelUpsertBPartnerCompositeRequest.json";
+	private static final String JSON_UPSERT_BPARTNER_RESPONSE = "50_CamelUpsertBPartnerCompositeResponse.json";
+
+	private static final String JSON_OL_CAND_CREATE_REQUEST = "60_JsonOLCandCreateBulkRequest.json";
+	private static final String JSON_ORDER_PAYMENT_CREATE_REQUEST = "63_JsonOrderPaymentCreateRequest.json";
+
+	private static final String JSON_UPSERT_RUNTIME_PARAMS_REQUEST = "65_JsonESRuntimeParameterUpsertRequest.json";
+
+	private static final String JSON_OL_CAND_CLEAR_REQUEST = "70_JsonOLCandClearRequest.json";
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
@@ -105,48 +146,122 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 	@Test
 	void happyFlow() throws Exception
 	{
-		final MockSuccessfullyCreatedBPartnerProcessor createdBPartnerProcessor = new MockSuccessfullyCreatedBPartnerProcessor();
+		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor();
+		final MockSuccessfullyCreatedOLCandProcessor successfullyCreatedOLCandProcessor = new MockSuccessfullyCreatedOLCandProcessor();
+		final MockSuccessfullyClearOrdersProcessor successfullyClearOrdersProcessor = new MockSuccessfullyClearOrdersProcessor();
+		final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor = new MockSuccessfullyCreatePaymentProcessor();
+		final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor = new MockSuccessfullyUpsertRuntimeParamsProcessor();
 
-		prepareRouteForTesting(createdBPartnerProcessor);
+		prepareRouteForTesting(createdBPartnerProcessor,
+							   successfullyCreatedOLCandProcessor,
+							   successfullyClearOrdersProcessor,
+							   runtimeParamsProcessor,
+							   createPaymentProcessor);
 
 		context.start();
 
 		final ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.registerModule(new JavaTimeModule());
 
-		//validate the final outcome
+		// validate BPUpsertCamelRequest
 		final InputStream expectedUpsertBPartnerRequestIS = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 
-		final MockEndpoint upsertBPValidationMockEndpoint = getMockEndpoint(MOCK_SHOPWARE_TO_MF_RESULT);
-		upsertBPValidationMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedUpsertBPartnerRequestIS, BPUpsertCamelRequest.class));
+		final MockEndpoint bPartnerMockEndpoint = getMockEndpoint(MOCK_BPARTNER_UPSERT);
+		bPartnerMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedUpsertBPartnerRequestIS, BPUpsertCamelRequest.class));
 
-		//fire the route
-		template.sendBody("direct:" + GET_ORDERS_ROUTE_ID, "Empty body");
+		//validate JsonOLCandCreateBulkRequest
+		final InputStream olCandCreateRequestIS = this.getClass().getResourceAsStream(JSON_OL_CAND_CREATE_REQUEST);
+
+		final MockEndpoint olCandMockEndpoint = getMockEndpoint(MOCK_OL_CAND_CREATE);
+		olCandMockEndpoint.expectedBodiesReceived(objectMapper.readValue(olCandCreateRequestIS, JsonOLCandCreateBulkRequest.class));
+
+		//validate JsonOLCandClearRequest
+		final InputStream jsonOLCandClearRequest = this.getClass().getResourceAsStream(JSON_OL_CAND_CLEAR_REQUEST);
+
+		final MockEndpoint olCandClearEndpoint = getMockEndpoint(MOCK_OL_CAND_CLEAR);
+		olCandClearEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonOLCandClearRequest, JsonOLCandClearRequest.class));
+
+		//validate create payment request
+		final InputStream jsonCreatePaymentRequest = this.getClass().getResourceAsStream(JSON_ORDER_PAYMENT_CREATE_REQUEST);
+
+		final MockEndpoint createPaymentEndpoint = getMockEndpoint(MOCK_CREATE_PAYMENT);
+		createPaymentEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonCreatePaymentRequest, JsonOrderPaymentCreateRequest.class));
+
+		//validate upsert runtime parameters request
+		final InputStream jsonUpsertRuntimeParamsRequest = this.getClass().getResourceAsStream(JSON_UPSERT_RUNTIME_PARAMS_REQUEST);
+
+		final MockEndpoint upsertRuntimeParametersEndpoint = getMockEndpoint(MOCK_UPSERT_RUNTIME_PARAMETERS);
+		upsertRuntimeParametersEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonUpsertRuntimeParamsRequest, JsonESRuntimeParameterUpsertRequest.class));
+
+		template.sendBody("direct:" + GET_ORDERS_ROUTE_ID, "Not relevant!");
 
 		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
+		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
+		assertThat(successfullyClearOrdersProcessor.called).isEqualTo(1);
+		assertThat(runtimeParamsProcessor.called).isEqualTo(1);
+		assertThat(createPaymentProcessor.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 	}
 
-	private void prepareRouteForTesting(final MockSuccessfullyCreatedBPartnerProcessor successfullyCreatedBPartnerProcessor) throws Exception
+	private void prepareRouteForTesting(
+			final MockUpsertBPartnerProcessor upsertBPartnerProcessor,
+			final MockSuccessfullyCreatedOLCandProcessor olCandProcessor,
+			final MockSuccessfullyClearOrdersProcessor olCandClearProcessor,
+			final MockSuccessfullyUpsertRuntimeParamsProcessor runtimeParamsProcessor,
+			final MockSuccessfullyCreatePaymentProcessor createPaymentProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
-										  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
-												  .replace()
-												  .process(new MockGetOrdersProcessor()));
+							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
+									  .replace()
+									  .process(new MockGetOrdersProcessor()));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
-										  advice -> {
-											  // validate the upsert request and send a response
-											  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
-													  .after()
-													  .to(MOCK_SHOPWARE_TO_MF_RESULT);
-											  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-													  .skipSendToOriginalEndpoint()
-													  .process(successfullyCreatedBPartnerProcessor);
-										  });
+							  advice -> {
+								  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_BPARTNER_UPSERT);
+
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(upsertBPartnerProcessor);
+
+								  advice.weaveById(OLCAND_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_OL_CAND_CREATE);
+
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .process(olCandProcessor);
+
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_CREATE_PAYMENT)
+										  .process(createPaymentProcessor);
+							  });
+
+		AdviceWith.adviceWith(context, CLEAR_ORDERS_ROUTE_ID,
+							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_OL_CAND_CLEAR)
+									  .process(olCandClearProcessor));
+
+		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
+							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_UPSERT_RUNTIME_PARAMETERS)
+									  .process(runtimeParamsProcessor));
 	}
 
-	private static class MockSuccessfullyCreatedBPartnerProcessor implements Processor
+	private static String loadAsString(@NonNull final String name)
+	{
+		final InputStream inputStream = GetOrdersRouteBuilderTests.class.getResourceAsStream(name);
+		return new BufferedReader(
+				new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+				.lines()
+				.collect(Collectors.joining("\n"));
+	}
+
+	private static class MockSuccessfullyCreatedOLCandProcessor implements Processor
 	{
 		private int called = 0;
 
@@ -164,60 +279,160 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		{
 			// mock getOrders
 			final ObjectMapper mapper = new ObjectMapper();
+			mapper.registerModule(new JavaTimeModule());
+
 			final InputStream ordersIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
 			final JsonOrders jsonOrders = mapper.readValue(ordersIS, JsonOrders.class);
 
-			final List<JsonOrderAndCustomId> jsonOrderAndCustomIds = jsonOrders
+			final List<OrderCandidate> orderCandidates = jsonOrders
 					.getData()
 					.stream()
-					.map(order -> JsonOrderAndCustomId.builder().jsonOrder(order).build())
+					.map(order -> OrderCandidate.builder().jsonOrder(order).salesRepId(SALES_REP_IDENTIFIER).build())
 					.collect(Collectors.toList());
 
 			// mock shopware client
 			final ShopwareClient shopwareClient = prepareShopwareClientMock(mapper);
 
 			//set up the exchange
-			exchange.getIn().setBody(jsonOrderAndCustomIds);
-			exchange.setProperty(ROUTE_PROPERTY_ORG_CODE, MOCK_ORG_CODE);
-			exchange.setProperty(ROUTE_PROPERTY_SHOPWARE_CLIENT, shopwareClient);
-			exchange.setProperty(ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_ID, MOCK_BPARTNER_ID_JSON_PATH);
-			exchange.setProperty(ROUTE_PROPERTY_PATH_CONSTANT_BPARTNER_LOCATION_ID, MOCK_BPARTNER_LOCATION_ID_JSON_PATH);
+			final CurrencyInfoProvider currencyInfoProvider = CurrencyInfoProvider.builder()
+					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
+					.build();
+
+			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
+					.builder()
+					.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
+					.externalSystemConfigId(JsonMetasfreshId.of(1))
+					.orgCode(MOCK_ORG_CODE)
+					.command("command")
+					.build();
+
+			final InputStream shopwareMappingsIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
+			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
+
+			final ImportOrdersRouteContext ordersContext = ImportOrdersRouteContext.builder()
+					.orgCode(MOCK_ORG_CODE)
+					.externalSystemRequest(externalSystemRequest)
+					.shopwareClient(shopwareClient)
+					.currencyInfoProvider(currencyInfoProvider)
+					.shopware6ConfigMappings(shopware6ConfigMappings)
+					.build();
+
+			exchange.getIn().setBody(orderCandidates);
+			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 		}
 
 		@NonNull
 		private ShopwareClient prepareShopwareClientMock(final ObjectMapper mapper) throws IOException
 		{
-			final ShopwareClient shopwareClient = Mockito.mock(ShopwareClient.class);
+			final ShopwareClient dumbShopwareClient = ShopwareClient.of("does", "not", "https://www.matter.com");
+			final ShopwareClient shopwareClientSpy = Mockito.spy(dumbShopwareClient);
+
+			Mockito.doNothing().when(shopwareClientSpy).refreshTokenIfExpired();
 
 			//1. mock getDeliveries
-			final InputStream deliveriesIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_DELIVERIES_PATH);
-			final List<JsonOrderAddressAndCustomId> deliveryAddresses = mapper.readValue(deliveriesIS, JsonOrderDeliveries.class)
-					.getData()
-					.stream()
-					.map(jsonOrderDelivery -> JsonOrderAddressAndCustomId.builder().jsonOrderAddress(jsonOrderDelivery.getShippingOrderAddress()).build())
-					.collect(Collectors.toList());
+			final String deliveriesString = loadAsString(JSON_ORDER_DELIVERIES_PATH);
 
-			Mockito.when(shopwareClient.getDeliveryAddresses(any(String.class), any(String.class)))
-					.thenReturn(deliveryAddresses);
+			Mockito.doReturn(ResponseEntity.ok(deliveriesString))
+					.when(shopwareClientSpy)
+					.performWithRetry(any(), eq(HttpMethod.GET), eq(String.class), any());
 
 			//2. mock getOrderAddressDetails
 			final InputStream billingAddressIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_BILLING_ADDRESS_PATH);
 			final JsonOrderAddress billingAddress = mapper.readValue(billingAddressIS, JsonOrderAddress.class);
 
-			Mockito.when(shopwareClient.getOrderAddressDetails(any(String.class), any(String.class)))
-					.thenReturn(Optional.of(JsonOrderAddressAndCustomId.builder()
-													.jsonOrderAddress(billingAddress)
-													.customId(billingAddress.getId() + "_custom")
-													.build()));
+			Mockito.doReturn(Optional.of(JsonOrderAddressAndCustomId.builder()
+												 .jsonOrderAddress(billingAddress)
+												 .build()))
+					.when(shopwareClientSpy)
+					.getOrderAddressDetails(nullable(String.class), nullable(String.class));
 
 			//3. mock getCountryDetails
 			final InputStream countryIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_COUNTRY_INFO_PATH);
 			final JsonCountry jsonCountry = mapper.readValue(countryIS, JsonCountry.class);
 
-			Mockito.when(shopwareClient.getCountryDetails(any(String.class)))
-					.thenReturn(Optional.of(jsonCountry));
+			Mockito.doReturn(Optional.of(jsonCountry))
+					.when(shopwareClientSpy)
+					.getCountryDetails(any(String.class));
 
-			return shopwareClient;
+			//4. mock orderLines
+			final InputStream orderLinesIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_LINES);
+			final JsonOrderLines orderLines = mapper.readValue(orderLinesIS, JsonOrderLines.class);
+
+			Mockito.doReturn(ResponseEntity.ok(orderLines))
+					.when(shopwareClientSpy)
+					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonOrderLines.class), any());
+
+			//5. mock order transactions
+			final InputStream orderTrxIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_TRANSACTIONS_PATH);
+			final JsonOrderTransactions orderTransactions = mapper.readValue(orderTrxIS, JsonOrderTransactions.class);
+
+			Mockito.doReturn(ResponseEntity.ok(orderTransactions))
+					.when(shopwareClientSpy)
+					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonOrderTransactions.class), any());
+
+			//6. mock payment method
+			final InputStream paymentMethodIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_PAYMENT_METHOD_PATH);
+			final JsonPaymentMethod paymentMethod = mapper.readValue(paymentMethodIS, JsonPaymentMethod.class);
+
+			Mockito.doReturn(Optional.of(paymentMethod))
+					.when(shopwareClientSpy)
+					.getPaymentMethod(any());
+
+			//7. mock order customer group
+			final InputStream orderCustomerGroup = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_GROUPS_PATH);
+			final JsonCustomerGroups customerGroups = mapper.readValue(orderCustomerGroup, JsonCustomerGroups.class);
+
+			Mockito.doReturn(ResponseEntity.ok(customerGroups))
+					.when(shopwareClientSpy)
+					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonCustomerGroups.class), any());
+
+			return shopwareClientSpy;
+		}
+	}
+
+	private static class MockUpsertBPartnerProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+			final InputStream upsertBPartnerResponse = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_UPSERT_BPARTNER_RESPONSE);
+			exchange.getIn().setBody(upsertBPartnerResponse);
+		}
+	}
+
+	private static class MockSuccessfullyClearOrdersProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockSuccessfullyUpsertRuntimeParamsProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockSuccessfullyCreatePaymentProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
 		}
 	}
 }

@@ -24,14 +24,13 @@ package de.metas.rest_api.v1.bpartner;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import de.metas.rest_api.v1.bpartner.JsonRequestConsolidateService;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v1.request.JsonRequestComposite;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 
 class JsonRequestConsolidateServiceTest
 {

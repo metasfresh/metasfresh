@@ -23,6 +23,7 @@
 package de.metas.common.ordercandidates.v2.request.alberta;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
@@ -50,10 +51,12 @@ public class JsonAlbertaOrderInfo
 
 	@JsonProperty("startDate")
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate startDate;
 
 	@JsonProperty("endDate")
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate endDate;
 
 	@JsonProperty("dayOfDelivery")
@@ -62,6 +65,7 @@ public class JsonAlbertaOrderInfo
 
 	@JsonProperty("nextDelivery")
 	@Nullable
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate nextDelivery;
 
 	@JsonProperty("doctorBPartnerIdentifier")

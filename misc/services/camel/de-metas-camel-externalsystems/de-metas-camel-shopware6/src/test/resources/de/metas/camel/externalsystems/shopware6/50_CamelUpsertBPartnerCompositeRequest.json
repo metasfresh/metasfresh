@@ -1,0 +1,69 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestBPartnerUpsert": {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-Shopware6-customerId",
+        "bpartnerComposite": {
+          "orgCode": "orgCode",
+          "bpartner": {
+            "code": "ext-Shopware6-customerNumber",
+            "name": "firstName lastName",
+            "companyName": "company",
+            "customer": true
+          },
+          "locations": {
+            "requestItems": [
+              {
+                "locationIdentifier": "ext-Shopware6-customerId-billTo",
+                "location": {
+                  "address1": "billingAddressStreet",
+                  "address2": "additionalAddressLine1",
+                  "address3": "additionalAddressLine2",
+                  "postal": "0000123",
+                  "city": "Billing City",
+                  "countryCode": "DE",
+                  "shipTo": false,
+                  "billTo": true
+                }
+              },
+              {
+                "locationIdentifier": "ext-Shopware6-customerId-shipTo",
+                "location": {
+                  "address1": "ShippingAddressStreet",
+                  "address2": "additionalAddressLine1",
+                  "address3": "additionalAddressLine2",
+                  "postal": "0000123",
+                  "city": "Test City",
+                  "countryCode": "DE",
+                  "shipTo": true,
+                  "billTo": false
+                }
+              }
+            ]
+          },
+          "contacts": {
+            "requestItems": [
+              {
+                "contactIdentifier": "ext-Shopware6-customerId",
+                "contact": {
+                  "firstName": "firstName",
+                  "lastName": "lastName",
+                  "email": "someEamil@web.de"
+                }
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

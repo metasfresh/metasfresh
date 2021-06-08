@@ -1,0 +1,5 @@
+-- 2021-05-28T07:25:38.377Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Val_Rule_ID=202,Updated=TO_TIMESTAMP('2021-05-28 09:25:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=540956
+;
+
