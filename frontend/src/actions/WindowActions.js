@@ -620,6 +620,9 @@ export function createWindow({
 
       if (documentId === 'NEW') {
         dispatch(updateModal(null, docId));
+        const { includedTabsInfo } = responseDocuments[0];
+        includedTabsInfo &&
+          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
       }
 
       // TODO: Is `elem` ever different than 0 ?
