@@ -18,9 +18,22 @@
 
     <properties>
         <spring-boot.version>2.4.3</spring-boot.version>
+        <spring-cloud.version>2020.0.3</spring-cloud.version>
         <start-class>de.metas.admin.SpringBootAdminApplication</start-class>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -34,8 +47,13 @@
         </dependency>
         <dependency> <!-- with this we can statically specify the instances of interest in application.yml -->
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-commons</artifactId>
+            <artifactId>spring-cloud-starter</artifactId>
         </dependency>
+<!--<dependency>-->
+<!--            <groupId>org.springframework.cloud</groupId>-->
+<!--            <artifactId>spring-cloud-commons</artifactId>-->
+<!--            <version>3.0.3</version>-->
+<!--        </dependency>-->
     </dependencies>
 
     <build>
@@ -49,7 +67,7 @@
                     <target>14</target>
                 </configuration>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
