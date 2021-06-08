@@ -4532,3 +4532,1958 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 -- URL zum Konzept
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,574082,541106,540595,0,TO_TIMESTAMP('2021-05-25 09:58:55','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2021-05-25 09:58:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+-- Add Trl for yes/no fields
+-- 2021-06-08T06:38:52.551Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Zugeordnete Steuer', PrintName='Zugeordnete Steuer',Updated=TO_TIMESTAMP('2021-06-08 08:38:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579246 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T06:38:52.571Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579246,'de_CH')
+;
+
+-- 2021-06-08T06:38:59.038Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Zugeordnete Steuer', PrintName='Zugeordnete Steuer',Updated=TO_TIMESTAMP('2021-06-08 08:38:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579246 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T06:38:59.040Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579246,'de_DE')
+;
+
+-- 2021-06-08T06:38:59.058Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579246,'de_DE')
+;
+
+-- 2021-06-08T06:38:59.065Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='Run_Tax_ID', Name='Zugeordnete Steuer', Description=NULL, Help=NULL WHERE AD_Element_ID=579246
+;
+
+-- 2021-06-08T06:38:59.067Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='Run_Tax_ID', Name='Zugeordnete Steuer', Description=NULL, Help=NULL, AD_Element_ID=579246 WHERE UPPER(ColumnName)='RUN_TAX_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T06:38:59.072Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='Run_Tax_ID', Name='Zugeordnete Steuer', Description=NULL, Help=NULL WHERE AD_Element_ID=579246 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T06:38:59.073Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Zugeordnete Steuer', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579246) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579246)
+;
+
+-- 2021-06-08T06:38:59.106Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Zugeordnete Steuer', Name='Zugeordnete Steuer' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579246)
+;
+
+-- 2021-06-08T06:38:59.107Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Zugeordnete Steuer', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579246
+;
+
+-- 2021-06-08T06:38:59.109Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Zugeordnete Steuer', Description=NULL, Help=NULL WHERE AD_Element_ID = 579246
+;
+
+-- 2021-06-08T06:38:59.109Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Zugeordnete Steuer', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579246
+;
+
+-- 2021-06-08T06:40:01.935Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Tax that was assigned to the invoice line during the verifiycation run.', IsTranslated='Y', Name='Assigned tax', PrintName='Assigned tax',Updated=TO_TIMESTAMP('2021-06-08 08:40:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579246 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T06:40:01.935Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579246,'en_US')
+;
+
+-- 2021-06-08T06:40:09.578Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Zugeordnete Steuer', PrintName='Zugeordnete Steuer',Updated=TO_TIMESTAMP('2021-06-08 08:40:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579246 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T06:40:09.580Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579246,'nl_NL')
+;
+
+-- 2021-06-08T06:40:27.484Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.',Updated=TO_TIMESTAMP('2021-06-08 08:40:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579246 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T06:40:27.485Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579246,'nl_NL')
+;
+
+-- 2021-06-08T06:40:34.081Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.',Updated=TO_TIMESTAMP('2021-06-08 08:40:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579246 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T06:40:34.086Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579246,'de_DE')
+;
+
+-- 2021-06-08T06:40:34.106Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579246,'de_DE')
+;
+
+-- 2021-06-08T06:40:34.107Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='Run_Tax_ID', Name='Zugeordnete Steuer', Description='Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.', Help=NULL WHERE AD_Element_ID=579246
+;
+
+-- 2021-06-08T06:40:34.108Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='Run_Tax_ID', Name='Zugeordnete Steuer', Description='Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.', Help=NULL, AD_Element_ID=579246 WHERE UPPER(ColumnName)='RUN_TAX_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T06:40:34.109Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='Run_Tax_ID', Name='Zugeordnete Steuer', Description='Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.', Help=NULL WHERE AD_Element_ID=579246 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T06:40:34.110Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Zugeordnete Steuer', Description='Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579246) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579246)
+;
+
+-- 2021-06-08T06:40:34.130Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Zugeordnete Steuer', Description='Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579246
+;
+
+-- 2021-06-08T06:40:34.132Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Zugeordnete Steuer', Description='Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.', Help=NULL WHERE AD_Element_ID = 579246
+;
+
+-- 2021-06-08T06:40:34.133Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Zugeordnete Steuer', Description = 'Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579246
+;
+
+-- 2021-06-08T06:40:40.085Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.',Updated=TO_TIMESTAMP('2021-06-08 08:40:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579246 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T06:40:40.086Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579246,'de_CH')
+;
+
+-- 2021-06-08T06:43:52.371Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Steuer OK', PrintName='Steuer OK',Updated=TO_TIMESTAMP('2021-06-08 08:43:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579247 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T06:43:52.372Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579247,'de_CH')
+;
+
+-- 2021-06-08T06:44:00.556Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Steuer OK', PrintName='Steuer OK',Updated=TO_TIMESTAMP('2021-06-08 08:44:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579247 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T06:44:00.557Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579247,'de_DE')
+;
+
+-- 2021-06-08T06:44:00.570Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579247,'de_DE')
+;
+
+-- 2021-06-08T06:44:00.573Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='IsTaxIdMatch', Name='Steuer OK', Description=NULL, Help=NULL WHERE AD_Element_ID=579247
+;
+
+-- 2021-06-08T06:44:00.574Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxIdMatch', Name='Steuer OK', Description=NULL, Help=NULL, AD_Element_ID=579247 WHERE UPPER(ColumnName)='ISTAXIDMATCH' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T06:44:00.576Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxIdMatch', Name='Steuer OK', Description=NULL, Help=NULL WHERE AD_Element_ID=579247 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T06:44:00.576Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Steuer OK', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579247) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579247)
+;
+
+-- 2021-06-08T06:44:00.600Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Steuer OK', Name='Steuer OK' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579247)
+;
+
+-- 2021-06-08T06:44:00.601Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Steuer OK', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579247
+;
+
+-- 2021-06-08T06:44:00.603Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Steuer OK', Description=NULL, Help=NULL WHERE AD_Element_ID = 579247
+;
+
+-- 2021-06-08T06:44:00.604Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Steuer OK', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579247
+;
+
+-- 2021-06-08T06:44:35.536Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Steuer OK', PrintName='Steuer OK',Updated=TO_TIMESTAMP('2021-06-08 08:44:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579247 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T06:44:35.538Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579247,'nl_NL')
+;
+
+-- 2021-06-08T06:45:33.701Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Indicates if the tax assigned during the run is the same that the invoice line has.', IsTranslated='Y', Name='Tax OK', PrintName='Tax OK',Updated=TO_TIMESTAMP('2021-06-08 08:45:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579247 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T06:45:33.704Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579247,'en_US')
+;
+
+-- 2021-06-08T06:46:52.346Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat',Updated=TO_TIMESTAMP('2021-06-08 08:46:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579247 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T06:46:52.347Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579247,'de_DE')
+;
+
+-- 2021-06-08T06:46:52.361Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579247,'de_DE')
+;
+
+-- 2021-06-08T06:46:52.363Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='IsTaxIdMatch', Name='Steuer OK', Description='Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat.', Help=NULL WHERE AD_Element_ID=579247
+;
+
+-- 2021-06-08T06:46:52.364Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxIdMatch', Name='Steuer OK', Description='Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat.', Help=NULL, AD_Element_ID=579247 WHERE UPPER(ColumnName)='ISTAXIDMATCH' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T06:46:52.365Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxIdMatch', Name='Steuer OK', Description='Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat.', Help=NULL WHERE AD_Element_ID=579247 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T06:46:52.366Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Steuer OK', Description='Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579247) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579247)
+;
+
+-- 2021-06-08T06:46:52.387Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Steuer OK', Description='Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat.', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579247
+;
+
+-- 2021-06-08T06:46:52.389Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Steuer OK', Description='Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat.', Help=NULL WHERE AD_Element_ID = 579247
+;
+
+-- 2021-06-08T06:46:52.389Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Steuer OK', Description = 'Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579247
+;
+
+-- 2021-06-08T06:46:59.352Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat.',Updated=TO_TIMESTAMP('2021-06-08 08:46:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579247 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T06:46:59.355Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579247,'de_CH')
+;
+
+-- 2021-06-08T06:47:04.164Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Sagt aus, ob beim Überprüfungs-Lauf die selbe Steuer zugeordnet wurde, die die Reichnungszeile hat.',Updated=TO_TIMESTAMP('2021-06-08 08:47:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579247 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T06:47:04.167Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579247,'nl_NL')
+;
+
+-- 2021-06-08T06:55:20.158Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Indicates if the rate of the tax assigned during the run is the rate same that the invoice line''s tax has.', IsTranslated='Y', Name='Tax rate OK', PrintName='Tax rate OK',Updated=TO_TIMESTAMP('2021-06-08 08:55:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579248 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T06:55:20.159Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579248,'en_US')
+;
+
+-- 2021-06-08T06:56:39.361Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', IsTranslated='Y', Name='Steuersatz OK', PrintName='Steuersatz OK',Updated=TO_TIMESTAMP('2021-06-08 08:56:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579248 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T06:56:39.362Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579248,'nl_NL')
+;
+
+-- 2021-06-08T06:56:45.636Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat',Updated=TO_TIMESTAMP('2021-06-08 08:56:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579248 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T06:56:45.637Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579248,'de_DE')
+;
+
+-- 2021-06-08T06:56:45.654Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579248,'de_DE')
+;
+
+-- 2021-06-08T06:56:45.655Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='IsTaxRateMatch', Name='Is Tax Rate Match', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE AD_Element_ID=579248
+;
+
+-- 2021-06-08T06:56:45.656Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxRateMatch', Name='Is Tax Rate Match', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL, AD_Element_ID=579248 WHERE UPPER(ColumnName)='ISTAXRATEMATCH' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T06:56:45.658Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxRateMatch', Name='Is Tax Rate Match', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE AD_Element_ID=579248 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T06:56:45.658Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Is Tax Rate Match', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579248) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579248)
+;
+
+-- 2021-06-08T06:56:45.681Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Is Tax Rate Match', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579248
+;
+
+-- 2021-06-08T06:56:45.683Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Is Tax Rate Match', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE AD_Element_ID = 579248
+;
+
+-- 2021-06-08T06:56:45.684Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Is Tax Rate Match', Description = 'Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579248
+;
+
+-- 2021-06-08T06:56:56.741Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Steuersatz OK', PrintName='Steuersatz OK',Updated=TO_TIMESTAMP('2021-06-08 08:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579248 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T06:56:56.742Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579248,'de_DE')
+;
+
+-- 2021-06-08T06:56:56.747Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579248,'de_DE')
+;
+
+-- 2021-06-08T06:56:56.748Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='IsTaxRateMatch', Name='Steuersatz OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE AD_Element_ID=579248
+;
+
+-- 2021-06-08T06:56:56.748Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxRateMatch', Name='Steuersatz OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL, AD_Element_ID=579248 WHERE UPPER(ColumnName)='ISTAXRATEMATCH' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T06:56:56.749Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxRateMatch', Name='Steuersatz OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE AD_Element_ID=579248 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T06:56:56.749Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Steuersatz OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579248) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579248)
+;
+
+-- 2021-06-08T06:56:56.760Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Steuersatz OK', Name='Steuersatz OK' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579248)
+;
+
+-- 2021-06-08T06:56:56.761Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Steuersatz OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579248
+;
+
+-- 2021-06-08T06:56:56.762Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Steuersatz OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE AD_Element_ID = 579248
+;
+
+-- 2021-06-08T06:56:56.762Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Steuersatz OK', Description = 'Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579248
+;
+
+-- 2021-06-08T06:57:02.308Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Steuersatz OK', PrintName='Steuersatz OK',Updated=TO_TIMESTAMP('2021-06-08 08:57:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579248 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T06:57:02.309Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579248,'de_CH')
+;
+
+-- 2021-06-08T06:57:11.298Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben %-Steuersatz zugeordnet wurde, den die Reichnungszeile hat',Updated=TO_TIMESTAMP('2021-06-08 08:57:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579248 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T06:57:11.298Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579248,'de_CH')
+;
+
+-- 2021-06-08T07:13:19.349Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', IsTranslated='Y', Name='Textbaustein OK', PrintName='Textbaustein OK',Updated=TO_TIMESTAMP('2021-06-08 09:13:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579249 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T07:13:19.350Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579249,'de_CH')
+;
+
+-- 2021-06-08T07:13:40.136Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', IsTranslated='Y', Name='Textbaustein OK', PrintName='Textbaustein OK',Updated=TO_TIMESTAMP('2021-06-08 09:13:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579249 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T07:13:40.137Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579249,'de_DE')
+;
+
+-- 2021-06-08T07:13:40.143Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579249,'de_DE')
+;
+
+-- 2021-06-08T07:13:40.144Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='IsTaxBoilerPlateMatch', Name='Textbaustein OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE AD_Element_ID=579249
+;
+
+-- 2021-06-08T07:13:40.145Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxBoilerPlateMatch', Name='Textbaustein OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', Help=NULL, AD_Element_ID=579249 WHERE UPPER(ColumnName)='ISTAXBOILERPLATEMATCH' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T07:13:40.148Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='IsTaxBoilerPlateMatch', Name='Textbaustein OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE AD_Element_ID=579249 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T07:13:40.148Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Textbaustein OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579249) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579249)
+;
+
+-- 2021-06-08T07:13:40.166Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Textbaustein OK', Name='Textbaustein OK' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579249)
+;
+
+-- 2021-06-08T07:13:40.167Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Textbaustein OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579249
+;
+
+-- 2021-06-08T07:13:40.169Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Textbaustein OK', Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', Help=NULL WHERE AD_Element_ID = 579249
+;
+
+-- 2021-06-08T07:13:40.170Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Textbaustein OK', Description = 'Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579249
+;
+
+-- 2021-06-08T07:14:00.340Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Sagt aus, ob beim Überprüfungs-Lauf ein Steuer-Datensatz mit dem selben Textbaustein zugeordnet wurde, den die Reichnungszeile hat', IsTranslated='Y', Name='Textbaustein OK', PrintName='Textbaustein OK',Updated=TO_TIMESTAMP('2021-06-08 09:14:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579249 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T07:14:00.341Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579249,'nl_NL')
+;
+
+-- 2021-06-08T07:17:12.542Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Indicates if the text snippet of the tax assigned during the run is the rate same that the invoice line''s tax has.', IsTranslated='Y', Name='Text snippet OK', PrintName='Text snippet OK',Updated=TO_TIMESTAMP('2021-06-08 09:17:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579249 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T07:17:12.543Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579249,'en_US')
+;
+
+-- 2021-06-08T07:22:23.629Z
+-- URL zum Konzept
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579305,0,'Run_Tax_Lookup_Log',TO_TIMESTAMP('2021-06-08 09:22:23','YYYY-MM-DD HH24:MI:SS'),100,'Log-Messages written by metasfresh during the assignment of the tax.','D','Y','Tax log','Tax log',TO_TIMESTAMP('2021-06-08 09:22:23','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T07:22:23.652Z
+-- URL zum Konzept
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=579305 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-06-08T07:22:34.485Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-08 09:22:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579305 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T07:22:34.486Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579305,'en_US')
+;
+
+-- 2021-06-08T07:23:58.023Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', IsTranslated='Y', Name='Steuer-Log', PrintName='Steuer-Log',Updated=TO_TIMESTAMP('2021-06-08 09:23:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579305 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T07:23:58.026Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579305,'de_CH')
+;
+
+-- 2021-06-08T07:24:06.148Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-08 09:24:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579305 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T07:24:06.150Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579305,'de_DE')
+;
+
+-- 2021-06-08T07:24:06.174Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579305,'de_DE')
+;
+
+-- 2021-06-08T07:24:06.175Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='Run_Tax_Lookup_Log', Name='Tax log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL WHERE AD_Element_ID=579305
+;
+
+-- 2021-06-08T07:24:06.176Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='Run_Tax_Lookup_Log', Name='Tax log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL, AD_Element_ID=579305 WHERE UPPER(ColumnName)='RUN_TAX_LOOKUP_LOG' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T07:24:06.178Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='Run_Tax_Lookup_Log', Name='Tax log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL WHERE AD_Element_ID=579305 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T07:24:06.178Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Tax log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579305) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579305)
+;
+
+-- 2021-06-08T07:24:06.194Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Tax log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579305
+;
+
+-- 2021-06-08T07:24:06.196Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Tax log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL WHERE AD_Element_ID = 579305
+;
+
+-- 2021-06-08T07:24:06.197Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Tax log', Description = 'Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579305
+;
+
+-- 2021-06-08T07:24:15.403Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-08 09:24:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579305 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T07:24:15.405Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579305,'nl_NL')
+;
+
+-- 2021-06-08T07:24:30.874Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Name='Steuer-Log', PrintName='Steuer-Log',Updated=TO_TIMESTAMP('2021-06-08 09:24:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579305 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T07:24:30.875Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579305,'de_DE')
+;
+
+-- 2021-06-08T07:24:30.882Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579305,'de_DE')
+;
+
+-- 2021-06-08T07:24:30.885Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='Run_Tax_Lookup_Log', Name='Steuer-Log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL WHERE AD_Element_ID=579305
+;
+
+-- 2021-06-08T07:24:30.885Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='Run_Tax_Lookup_Log', Name='Steuer-Log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL, AD_Element_ID=579305 WHERE UPPER(ColumnName)='RUN_TAX_LOOKUP_LOG' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T07:24:30.886Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='Run_Tax_Lookup_Log', Name='Steuer-Log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL WHERE AD_Element_ID=579305 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T07:24:30.886Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Steuer-Log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579305) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579305)
+;
+
+-- 2021-06-08T07:24:30.892Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Steuer-Log', Name='Steuer-Log' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579305)
+;
+
+-- 2021-06-08T07:24:30.892Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Steuer-Log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579305
+;
+
+-- 2021-06-08T07:24:30.893Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Steuer-Log', Description='Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', Help=NULL WHERE AD_Element_ID = 579305
+;
+
+-- 2021-06-08T07:24:30.894Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Steuer-Log', Description = 'Log-Meldungen, sie von metasfresh beim zuordnen des Steuer-Datensatzres ausgegeben wurden.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579305
+;
+
+-- 2021-06-08T07:24:36.410Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Name='Steuer-Log', PrintName='Steuer-Log',Updated=TO_TIMESTAMP('2021-06-08 09:24:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579305 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T07:24:36.412Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579305,'nl_NL')
+;
+
+-- 2021-06-08T07:53:02.750Z
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,574244,579305,0,36,541665,'Run_Tax_Lookup_Log',TO_TIMESTAMP('2021-06-08 09:53:02','YYYY-MM-DD HH24:MI:SS'),100,'N','Log-Meldungen, sie von metasfresh beim zuorden des Steuer-Datensatzers ausgegeben wuren.','D',0,1000,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Steuer-Log',0,0,TO_TIMESTAMP('2021-06-08 09:53:02','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-06-08T07:53:02.785Z
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=574244 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-06-08T07:53:02.790Z
+-- URL zum Konzept
+/* DDL */  select update_Column_Translation_From_AD_Element(579305)
+;
+
+-- 2021-06-08T08:20:46.991Z
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,FilterOperator,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,574245,1008,0,19,541665,'C_Invoice_ID','(select C_Invoice_ID from C_Invoice_Verification_SetLine ivsl where ivsl.C_Invoice_Verification_SetLine_ID = C_Invoice_Verification_SetLine.C_Invoice_Verification_SetLine_ID)',TO_TIMESTAMP('2021-06-08 10:20:46','YYYY-MM-DD HH24:MI:SS'),100,'N','Invoice Identifier','D',0,10,'E','The Invoice Document.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','Y','N','N','N','N','N','N','N',0,'Rechnung',0,0,TO_TIMESTAMP('2021-06-08 10:20:46','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-06-08T08:20:47.002Z
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=574245 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-06-08T08:20:47.004Z
+-- URL zum Konzept
+/* DDL */  select update_Column_Translation_From_AD_Element(1008)
+;
+
+-- 2021-06-08T08:21:51.787Z
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,574246,1076,0,19,541665,'C_InvoiceLine_ID','(select C_InvoiceLine_ID from C_Invoice_Verification_SetLine ivsl where ivsl.C_Invoice_Verification_SetLine_ID = C_Invoice_Verification_SetLine.C_Invoice_Verification_SetLine_ID)',TO_TIMESTAMP('2021-06-08 10:21:51','YYYY-MM-DD HH24:MI:SS'),100,'N','Rechnungszeile','D',0,10,'Eine "Rechnungszeile" bezeichnet eine einzelne Position auf der Rechnung.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N',0,'Rechnungsposition',0,0,TO_TIMESTAMP('2021-06-08 10:21:51','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-06-08T08:21:51.826Z
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=574246 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-06-08T08:21:51.833Z
+-- URL zum Konzept
+/* DDL */  select update_Column_Translation_From_AD_Element(1076)
+;
+
+-- 2021-06-08T08:23:04.053Z
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,FilterOperator,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,574247,579238,0,19,541665,'C_InvoiceLine_Tax_ID','(select C_InvoiceLine_Tax_ID from C_Invoice_Verification_SetLine ivsl where ivsl.C_Invoice_Verification_SetLine_ID = C_Invoice_Verification_SetLine.C_Invoice_Verification_SetLine_ID)',TO_TIMESTAMP('2021-06-08 10:23:03','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'E','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','Y','N','N','N','N','N','N','N',0,'Steuer',0,0,TO_TIMESTAMP('2021-06-08 10:23:03','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-06-08T08:23:04.060Z
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=574247 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-06-08T08:23:04.060Z
+-- URL zum Konzept
+/* DDL */  select update_Column_Translation_From_AD_Element(579238)
+;
+
+
+-- 2021-06-08T08:25:31.171Z
+-- URL zum Konzept
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=574247
+;
+
+-- 2021-06-08T08:25:31.178Z
+-- URL zum Konzept
+DELETE FROM AD_Column WHERE AD_Column_ID=574247
+;
+
+-- 2021-06-08T08:26:17.949Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-06-08 10:26:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574082
+;
+
+
+-- 2021-06-08T08:28:08.890Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=158, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2021-06-08 10:28:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574085
+;
+
+
+-- 2021-06-08T08:30:16.121Z
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,FilterOperator,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,574248,579238,0,19,541665,'C_InvoiceLine_Tax_ID','(select C_InvoiceLine_Tax_ID from C_Invoice_Verification_SetLine ivsl where ivsl.C_Invoice_Verification_SetLine_ID = C_Invoice_Verification_SetLine.C_Invoice_Verification_SetLine_ID)',TO_TIMESTAMP('2021-06-08 10:30:16','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'E','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','Y','N','N','N','N','N','N','N',0,'Steuer',0,0,TO_TIMESTAMP('2021-06-08 10:30:16','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-06-08T08:30:16.127Z
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=574248 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-06-08T08:30:16.128Z
+-- URL zum Konzept
+/* DDL */  select update_Column_Translation_From_AD_Element(579238)
+;
+
+-- 2021-06-08T08:31:05.977Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=158, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2021-06-08 10:31:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574248
+;
+
+-- 2021-06-08T09:01:38.502Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=19, AD_Reference_Value_ID=NULL, IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-06-08 11:01:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574248
+;
+
+-- 2021-06-08T09:03:26.275Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=10, FieldLength=40, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2021-06-08 11:03:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574248
+;
+
+-- 2021-06-08T09:08:18.022Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('c_invoice_verification_setline','C_InvoiceLine_Tax_ID','NUMERIC(10)',null,null)
+;
+
+-- Create Indexes for Table C_Invoice_Verification_RunLine
+
+-- 2021-06-08T09:10:01.541Z
+-- URL zum Konzept
+CREATE INDEX C_Invoice_Verification_Run_ID_Index ON C_Invoice_Verification_RunLine (C_Invoice_Verification_Run_ID)
+;
+
+-- 2021-06-08T09:10:08.480Z
+-- URL zum Konzept
+CREATE INDEX C_Invoice_Verification_RunLine_Set_ID_Index ON C_Invoice_Verification_RunLine (C_Invoice_Verification_SetLine_ID)
+;
+
+-- 2021-06-08T09:10:14.533Z
+-- URL zum Konzept
+CREATE INDEX C_Invoice_VerificationRunLine_SetLine_ID ON C_Invoice_Verification_RunLine (C_Invoice_Verification_SetLine_ID)
+;
+
+--Create Window C_Invoice_Verification_RunLine
+-- 2021-06-08T09:17:30.606Z
+-- URL zum Konzept
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579309,0,TO_TIMESTAMP('2021-06-08 11:17:30','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Rechnung-Überprüfungszeile','Rechnung-Überprüfungszeile',TO_TIMESTAMP('2021-06-08 11:17:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:17:30.625Z
+-- URL zum Konzept
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=579309 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-06-08T09:17:38.681Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-08 11:17:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579309 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T09:17:38.681Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579309,'de_CH')
+;
+
+-- 2021-06-08T09:17:42.320Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-08 11:17:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579309 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T09:17:42.321Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579309,'de_DE')
+;
+
+-- 2021-06-08T09:17:42.331Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579309,'de_DE')
+;
+
+-- 2021-06-08T09:18:05.027Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Invoice Verification Run Line', PrintName='Invoice Verification Run Line',Updated=TO_TIMESTAMP('2021-06-08 11:18:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579309 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T09:18:05.029Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579309,'en_US')
+;
+
+-- 2021-06-08T09:18:09.220Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-08 11:18:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579309 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T09:18:09.222Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579309,'nl_NL')
+;
+
+-- 2021-06-08T09:22:40.888Z
+-- URL zum Konzept
+DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=579309
+;
+
+-- 2021-06-08T09:22:40.898Z
+-- URL zum Konzept
+DELETE FROM AD_Element WHERE AD_Element_ID=579309
+;
+
+-- 2021-06-08T09:36:00.762Z
+-- URL zum Konzept
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES (0,579310,0,TO_TIMESTAMP('2021-06-08 11:36:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Invoice Verification Run Line','Invoice Verification Run Line',TO_TIMESTAMP('2021-06-08 11:36:00','YYYY-MM-DD HH24:MI:SS'),100,'Invoice Verification Run Line')
+;
+
+-- 2021-06-08T09:36:00.767Z
+-- URL zum Konzept
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=579310 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-06-08T09:36:09.937Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-08 11:36:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579310 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T09:36:09.938Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579310,'en_US')
+;
+
+-- 2021-06-08T09:36:48.042Z
+-- URL zum Konzept
+INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority) VALUES (0,579310,0,541156,TO_TIMESTAMP('2021-06-08 11:36:47','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','N','N','Y','Invoice Verification Run Line','N',TO_TIMESTAMP('2021-06-08 11:36:47','YYYY-MM-DD HH24:MI:SS'),100,'M',0,0,100)
+;
+
+-- 2021-06-08T09:36:48.045Z
+-- URL zum Konzept
+INSERT INTO AD_Window_Trl (AD_Language,AD_Window_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Window_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Window t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Window_ID=541156 AND NOT EXISTS (SELECT 1 FROM AD_Window_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Window_ID=t.AD_Window_ID)
+;
+
+-- 2021-06-08T09:36:48.047Z
+-- URL zum Konzept
+/* DDL */  select update_window_translation_from_ad_element(579310)
+;
+
+-- 2021-06-08T09:36:48.051Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Window_ID=541156
+;
+
+-- 2021-06-08T09:36:48.052Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Window(541156)
+;
+
+-- 2021-06-08T09:39:30.885Z
+-- URL zum Konzept
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,InternalName,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,579245,0,544004,541665,541156,'Y',TO_TIMESTAMP('2021-06-08 11:39:30','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','C_Invoice_Verification_RunLine','Y','N','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Invoice Verification RunLine','N',10,0,TO_TIMESTAMP('2021-06-08 11:39:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:30.898Z
+-- URL zum Konzept
+INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Tab_ID=544004 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
+;
+
+-- 2021-06-08T09:39:30.902Z
+-- URL zum Konzept
+/* DDL */  select update_tab_translation_from_ad_element(579245)
+;
+
+-- 2021-06-08T09:39:30.909Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(544004)
+;
+
+-- 2021-06-08T09:39:36.940Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574074,647452,0,544004,TO_TIMESTAMP('2021-06-08 11:39:36','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.',10,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','N','N','N','Y','N','Mandant',TO_TIMESTAMP('2021-06-08 11:39:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:36.943Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647452 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:36.944Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
+;
+
+-- 2021-06-08T09:39:37.244Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647452
+;
+
+-- 2021-06-08T09:39:37.244Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647452)
+;
+
+-- 2021-06-08T09:39:37.304Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574075,647453,0,544004,TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten',10,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','N','N','N','Organisation',TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:37.306Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647453 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:37.307Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
+;
+
+-- 2021-06-08T09:39:37.432Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647453
+;
+
+-- 2021-06-08T09:39:37.432Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647453)
+;
+
+-- 2021-06-08T09:39:37.503Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574078,647454,0,544004,TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:37.506Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647454 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:37.508Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
+;
+
+-- 2021-06-08T09:39:37.657Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647454
+;
+
+-- 2021-06-08T09:39:37.657Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647454)
+;
+
+-- 2021-06-08T09:39:37.734Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574081,647455,0,544004,TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Invoice Verification RunLine',TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:37.736Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647455 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:37.737Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579245)
+;
+
+-- 2021-06-08T09:39:37.739Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647455
+;
+
+-- 2021-06-08T09:39:37.739Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647455)
+;
+
+-- 2021-06-08T09:39:37.796Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574082,647456,0,544004,TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Rechnung-Überprüfungslauf',TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:37.798Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647456 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:37.798Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579241)
+;
+
+-- 2021-06-08T09:39:37.800Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647456
+;
+
+-- 2021-06-08T09:39:37.800Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647456)
+;
+
+-- 2021-06-08T09:39:37.847Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574083,647457,0,544004,TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Rechnung-Überprüfungssatz',TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:37.849Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647457 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:37.849Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579233)
+;
+
+-- 2021-06-08T09:39:37.851Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647457
+;
+
+-- 2021-06-08T09:39:37.851Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647457)
+;
+
+-- 2021-06-08T09:39:37.895Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574084,647458,0,544004,TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Invoice Verification Element',TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:37.896Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647458 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:37.897Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579236)
+;
+
+-- 2021-06-08T09:39:37.898Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647458
+;
+
+-- 2021-06-08T09:39:37.898Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647458)
+;
+
+-- 2021-06-08T09:39:37.941Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574085,647459,0,544004,TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100,'Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.',10,'D','Y','N','N','N','N','N','N','N','Zugeordnete Steuer',TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:37.950Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647459 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:37.953Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579246)
+;
+
+-- 2021-06-08T09:39:37.954Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647459
+;
+
+-- 2021-06-08T09:39:37.955Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647459)
+;
+
+-- 2021-06-08T09:39:38.037Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574086,647460,0,544004,TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100,'Sagt aus, ob beim Uberpunfungs-Lauf die selbe Steur zugerdnet wurde, die die Reichnungzeile hat.',1,'D','Y','N','N','N','N','N','N','N','Steuer OK',TO_TIMESTAMP('2021-06-08 11:39:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:38.062Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647460 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:38.069Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579247)
+;
+
+-- 2021-06-08T09:39:38.075Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647460
+;
+
+-- 2021-06-08T09:39:38.081Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647460)
+;
+
+-- 2021-06-08T09:39:38.154Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574087,647461,0,544004,TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100,'Sag aus, ob baim Uber..',1,'D','Y','N','N','N','N','N','N','N','Steuersatz OK',TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:38.156Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647461 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:38.156Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579248)
+;
+
+-- 2021-06-08T09:39:38.157Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647461
+;
+
+-- 2021-06-08T09:39:38.157Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647461)
+;
+
+-- 2021-06-08T09:39:38.200Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574088,647462,0,544004,TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100,'Sagt aus, ob beim ...',1,'D','Y','N','N','N','N','N','N','N','Textbaustein OK',TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:38.202Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647462 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:38.203Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579249)
+;
+
+-- 2021-06-08T09:39:38.204Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647462
+;
+
+-- 2021-06-08T09:39:38.204Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647462)
+;
+
+-- 2021-06-08T09:39:38.245Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574244,647463,0,544004,TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100,'Log-Meldungen, sie von metasfresh beim zuorden des Steuer-Datensatzers ausgegeben wuren.',1000,'D','Y','N','N','N','N','N','N','N','Steuer-Log',TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:38.248Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647463 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:38.249Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579305)
+;
+
+-- 2021-06-08T09:39:38.250Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647463
+;
+
+-- 2021-06-08T09:39:38.250Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647463)
+;
+
+-- 2021-06-08T09:39:38.299Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574245,647464,0,544004,TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100,'Invoice Identifier',10,'D','The Invoice Document.','Y','N','N','N','N','N','N','N','Rechnung',TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:38.304Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647464 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:38.306Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1008)
+;
+
+-- 2021-06-08T09:39:38.353Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647464
+;
+
+-- 2021-06-08T09:39:38.353Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647464)
+;
+
+-- 2021-06-08T09:39:38.415Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574246,647465,0,544004,TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100,'Rechnungszeile',10,'D','Eine "Rechnungszeile" bezeichnet eine einzelne Position auf der Rechnung.','Y','N','N','N','N','N','N','N','Rechnungsposition',TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:38.424Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647465 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:38.426Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1076)
+;
+
+-- 2021-06-08T09:39:38.434Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647465
+;
+
+-- 2021-06-08T09:39:38.435Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647465)
+;
+
+-- 2021-06-08T09:39:38.498Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,574248,647466,0,544004,TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100,40,'D','Y','N','N','N','N','N','N','N','Steuer',TO_TIMESTAMP('2021-06-08 11:39:38','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:39:38.504Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647466 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T09:39:38.506Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579238)
+;
+
+-- 2021-06-08T09:39:38.507Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647466
+;
+
+-- 2021-06-08T09:39:38.507Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647466)
+;
+
+-- 2021-06-08T09:42:44.811Z
+-- URL zum Konzept
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy,WEBUI_NameBrowse) VALUES ('W',0,579310,541723,0,541156,TO_TIMESTAMP('2021-06-08 11:42:44','YYYY-MM-DD HH24:MI:SS'),100,'D','_InvoiceVerificationRunLine','Y','N','N','N','N','Invoice Verification Run Line',TO_TIMESTAMP('2021-06-08 11:42:44','YYYY-MM-DD HH24:MI:SS'),100,'Invoice Verification Run Line')
+;
+
+-- 2021-06-08T09:42:44.813Z
+-- URL zum Konzept
+INSERT INTO AD_Menu_Trl (AD_Language,AD_Menu_ID, Description,Name,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Menu_ID, t.Description,t.Name,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Menu t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Menu_ID=541723 AND NOT EXISTS (SELECT 1 FROM AD_Menu_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Menu_ID=t.AD_Menu_ID)
+;
+
+-- 2021-06-08T09:42:44.814Z
+-- URL zum Konzept
+INSERT  INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, AD_Tree_ID, Node_ID, Parent_ID, SeqNo) SELECT t.AD_Client_ID,0, 'Y', now(), 100, now(), 100,t.AD_Tree_ID, 541723, 0, 999 FROM AD_Tree t WHERE t.AD_Client_ID=0 AND t.IsActive='Y' AND t.IsAllNodes='Y' AND t.AD_Table_ID=116 AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=541723)
+;
+
+-- 2021-06-08T09:42:44.818Z
+-- URL zum Konzept
+/* DDL */  select update_menu_translation_from_ad_element(579310)
+;
+
+-- 2021-06-08T09:42:52.856Z
+-- URL zum Konzept
+UPDATE AD_TreeNodeMM SET Parent_ID=541712, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541713 AND AD_Tree_ID=10
+;
+
+-- 2021-06-08T09:42:52.857Z
+-- URL zum Konzept
+UPDATE AD_TreeNodeMM SET Parent_ID=541712, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541714 AND AD_Tree_ID=10
+;
+
+-- 2021-06-08T09:42:52.857Z
+-- URL zum Konzept
+UPDATE AD_TreeNodeMM SET Parent_ID=541712, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541715 AND AD_Tree_ID=10
+;
+
+-- 2021-06-08T09:42:52.857Z
+-- URL zum Konzept
+UPDATE AD_TreeNodeMM SET Parent_ID=541712, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541723 AND AD_Tree_ID=10
+;
+
+-- 2021-06-08T09:44:50.792Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,544004,543153,TO_TIMESTAMP('2021-06-08 11:44:50','YYYY-MM-DD HH24:MI:SS'),100,'Y','main',10,TO_TIMESTAMP('2021-06-08 11:44:50','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2021-06-08T09:44:50.795Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_UI_Section_ID=543153 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2021-06-08T09:44:56.058Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,543962,543153,TO_TIMESTAMP('2021-06-08 11:44:56','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2021-06-08 11:44:56','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:45:28.557Z
+-- URL zum Konzept
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,543962,545973,TO_TIMESTAMP('2021-06-08 11:45:28','YYYY-MM-DD HH24:MI:SS'),100,'Y','default',10,'primary',TO_TIMESTAMP('2021-06-08 11:45:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:46:05.653Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647456,0,544004,545973,585676,'F',TO_TIMESTAMP('2021-06-08 11:46:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Rechnung-Überprüfungslauf',10,0,0,TO_TIMESTAMP('2021-06-08 11:46:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:46:21.600Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647457,0,544004,545973,585677,'F',TO_TIMESTAMP('2021-06-08 11:46:21','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Rechnung-Überprüfungssatz',20,0,0,TO_TIMESTAMP('2021-06-08 11:46:21','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:46:39.647Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647458,0,544004,545973,585678,'F',TO_TIMESTAMP('2021-06-08 11:46:39','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Invoice Verification Element',30,0,0,TO_TIMESTAMP('2021-06-08 11:46:39','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:47:25.301Z
+-- URL zum Konzept
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,543962,545974,TO_TIMESTAMP('2021-06-08 11:47:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','invoice',20,TO_TIMESTAMP('2021-06-08 11:47:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:47:48.014Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647464,0,544004,545974,585679,'F',TO_TIMESTAMP('2021-06-08 11:47:47','YYYY-MM-DD HH24:MI:SS'),100,'Invoice Identifier','The Invoice Document.','Y','N','N','Y','N','N','N',0,'Rechnung',10,0,0,TO_TIMESTAMP('2021-06-08 11:47:47','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:48:05.037Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647465,0,544004,545974,585680,'F',TO_TIMESTAMP('2021-06-08 11:48:04','YYYY-MM-DD HH24:MI:SS'),100,'Rechnungszeile','Eine "Rechnungszeile" bezeichnet eine einzelne Position auf der Rechnung.','Y','N','N','Y','N','N','N',0,'Rechnungsposition',20,0,0,TO_TIMESTAMP('2021-06-08 11:48:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:48:37.052Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647466,0,544004,545974,585681,'F',TO_TIMESTAMP('2021-06-08 11:48:36','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Steuer',30,0,0,TO_TIMESTAMP('2021-06-08 11:48:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:49:04.524Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647459,0,544004,545974,585682,'F',TO_TIMESTAMP('2021-06-08 11:49:04','YYYY-MM-DD HH24:MI:SS'),100,'Steuer-Datensatz, der der Rechnungszeile beim Überprüfungs-Lauf zugeordnet wurde.','Y','N','N','Y','N','N','N',0,'Zugeordnete Steuer',40,0,0,TO_TIMESTAMP('2021-06-08 11:49:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:49:20.530Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647463,0,544004,545974,585683,'F',TO_TIMESTAMP('2021-06-08 11:49:20','YYYY-MM-DD HH24:MI:SS'),100,'Log-Meldungen, sie von metasfresh beim zuorden des Steuer-Datensatzers ausgegeben wuren.','Y','N','N','Y','N','N','N',0,'Steuer-Log',50,0,0,TO_TIMESTAMP('2021-06-08 11:49:20','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:49:33.717Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,543963,543153,TO_TIMESTAMP('2021-06-08 11:49:33','YYYY-MM-DD HH24:MI:SS'),100,'Y',20,TO_TIMESTAMP('2021-06-08 11:49:33','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:49:42.072Z
+-- URL zum Konzept
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,543963,545975,TO_TIMESTAMP('2021-06-08 11:49:42','YYYY-MM-DD HH24:MI:SS'),100,'Y','flags',10,TO_TIMESTAMP('2021-06-08 11:49:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:50:06.190Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647460,0,544004,545975,585684,'F',TO_TIMESTAMP('2021-06-08 11:50:06','YYYY-MM-DD HH24:MI:SS'),100,'Sagt aus, ob beim Uberpunfungs-Lauf die selbe Steur zugerdnet wurde, die die Reichnungzeile hat.','Y','N','N','Y','N','N','N',0,'Steuer OK',10,0,0,TO_TIMESTAMP('2021-06-08 11:50:06','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:50:33.508Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647461,0,544004,545975,585685,'F',TO_TIMESTAMP('2021-06-08 11:50:33','YYYY-MM-DD HH24:MI:SS'),100,'Sag aus, ob baim Uber..','Y','N','N','Y','N','N','N',0,'Steuersatz OK',20,0,0,TO_TIMESTAMP('2021-06-08 11:50:33','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:50:45.153Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647462,0,544004,545975,585686,'F',TO_TIMESTAMP('2021-06-08 11:50:45','YYYY-MM-DD HH24:MI:SS'),100,'Sagt aus, ob beim ...','Y','N','N','Y','N','N','N',0,'Textbaustein OK',30,0,0,TO_TIMESTAMP('2021-06-08 11:50:45','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:51:07.262Z
+-- URL zum Konzept
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,543963,545976,TO_TIMESTAMP('2021-06-08 11:51:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','org',20,TO_TIMESTAMP('2021-06-08 11:51:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:51:16.335Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647453,0,544004,545976,585687,'F',TO_TIMESTAMP('2021-06-08 11:51:16','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','Y','N','N','N',0,'Organisation',10,0,0,TO_TIMESTAMP('2021-06-08 11:51:16','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:51:22.805Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647452,0,544004,545976,585688,'F',TO_TIMESTAMP('2021-06-08 11:51:22','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','Y','N','N','N',0,'Mandant',20,0,0,TO_TIMESTAMP('2021-06-08 11:51:22','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T09:53:31.840Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585676
+;
+
+-- 2021-06-08T09:53:31.849Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585677
+;
+
+-- 2021-06-08T09:53:31.857Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585678
+;
+
+-- 2021-06-08T09:53:31.866Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585679
+;
+
+-- 2021-06-08T09:53:31.874Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585680
+;
+
+-- 2021-06-08T09:53:31.882Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585681
+;
+
+-- 2021-06-08T09:53:31.890Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585682
+;
+
+-- 2021-06-08T09:53:31.898Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585684
+;
+
+-- 2021-06-08T09:53:31.905Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585685
+;
+
+-- 2021-06-08T09:53:31.910Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2021-06-08 11:53:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585686
+;
+
+-- 2021-06-08T09:53:58.950Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585684
+;
+
+-- 2021-06-08T09:53:58.955Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585685
+;
+
+-- 2021-06-08T09:53:58.961Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585686
+;
+
+-- 2021-06-08T09:53:58.966Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585676
+;
+
+-- 2021-06-08T09:53:58.971Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585677
+;
+
+-- 2021-06-08T09:53:58.978Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585678
+;
+
+-- 2021-06-08T09:53:58.983Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585679
+;
+
+-- 2021-06-08T09:53:58.988Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585680
+;
+
+-- 2021-06-08T09:53:58.993Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585681
+;
+
+-- 2021-06-08T09:53:58.999Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2021-06-08 11:53:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585682
+;
+
+-- 2021-06-08T09:53:59.004Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2021-06-08 11:53:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585687
+;
+
+-- 2021-06-08T09:55:43.838Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Name='Rechnung-Überprüfungselement', PrintName='Rechnung-Überprüfungselement',Updated=TO_TIMESTAMP('2021-06-08 11:55:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579239 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T09:55:43.841Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579239,'de_CH')
+;
+
+-- 2021-06-08T09:55:54.988Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET WEBUI_NameBrowse='Rechnung-Überprüfungselement',Updated=TO_TIMESTAMP('2021-06-08 11:55:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579239 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T09:55:54.989Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579239,'de_CH')
+;
+
+-- 2021-06-08T09:56:25.936Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Name='Rechnung-Überprüfungselement', PrintName='Rechnung-Überprüfungselement', WEBUI_NameBrowse='Rechnung-Überprüfungselement',Updated=TO_TIMESTAMP('2021-06-08 11:56:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579239 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T09:56:25.938Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579239,'de_DE')
+;
+
+-- 2021-06-08T09:56:25.963Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579239,'de_DE')
+;
+
+-- 2021-06-08T09:56:25.966Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName=NULL, Name='Rechnung-Überprüfungselement', Description=NULL, Help=NULL WHERE AD_Element_ID=579239
+;
+
+-- 2021-06-08T09:56:25.968Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Rechnung-Überprüfungselement', Description=NULL, Help=NULL WHERE AD_Element_ID=579239 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T09:56:25.969Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Rechnung-Überprüfungselement', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579239) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579239)
+;
+
+-- 2021-06-08T09:56:25.988Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Rechnung-Überprüfungselement', Name='Rechnung-Überprüfungselement' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579239)
+;
+
+-- 2021-06-08T09:56:25.990Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Rechnung-Überprüfungselement', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579239
+;
+
+-- 2021-06-08T09:56:25.992Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Rechnung-Überprüfungselement', Description=NULL, Help=NULL WHERE AD_Element_ID = 579239
+;
+
+-- 2021-06-08T09:56:25.993Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Rechnung-Überprüfungselement', Description = NULL, WEBUI_NameBrowse = 'Rechnung-Überprüfungselement', WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579239
+;
+
+-- 2021-06-08T09:57:02.440Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Name='Invoice Verification Element', PrintName='Invoice Verification Element', WEBUI_NameBrowse='Invoice Verification Element',Updated=TO_TIMESTAMP('2021-06-08 11:57:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579239 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T09:57:02.441Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579239,'en_US')
+;
+
+-- 2021-06-08T09:57:26.555Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Name='Rechnung-Überprüfungselement', PrintName='Rechnung-Überprüfungselement', WEBUI_NameBrowse='Rechnung-Überprüfungselement',Updated=TO_TIMESTAMP('2021-06-08 11:57:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579239 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T09:57:26.557Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579239,'nl_NL')
+;
+
+-- 2021-06-08T09:58:14.050Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Rechnung-Überprüfungszeile', PrintName='Rechnung-Überprüfungszeile',Updated=TO_TIMESTAMP('2021-06-08 11:58:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579310 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T09:58:14.050Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579310,'de_CH')
+;
+
+-- 2021-06-08T09:58:20.545Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Rechnung-Überprüfungszeile', PrintName='Rechnung-Überprüfungszeile',Updated=TO_TIMESTAMP('2021-06-08 11:58:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579310 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T09:58:20.547Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579310,'de_DE')
+;
+
+-- 2021-06-08T09:58:20.580Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579310,'de_DE')
+;
+
+-- 2021-06-08T09:58:20.581Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName=NULL, Name='Rechnung-Überprüfungszeile', Description=NULL, Help=NULL WHERE AD_Element_ID=579310
+;
+
+-- 2021-06-08T09:58:20.582Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Rechnung-Überprüfungszeile', Description=NULL, Help=NULL WHERE AD_Element_ID=579310 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T09:58:20.583Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Rechnung-Überprüfungszeile', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579310) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579310)
+;
+
+-- 2021-06-08T09:58:20.593Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Rechnung-Überprüfungszeile', Name='Rechnung-Überprüfungszeile' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579310)
+;
+
+-- 2021-06-08T09:58:20.594Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Rechnung-Überprüfungszeile', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579310
+;
+
+-- 2021-06-08T09:58:20.596Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Rechnung-Überprüfungszeile', Description=NULL, Help=NULL WHERE AD_Element_ID = 579310
+;
+
+-- 2021-06-08T09:58:20.597Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Rechnung-Überprüfungszeile', Description = NULL, WEBUI_NameBrowse = 'Invoice Verification Run Line', WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579310
+;
+
+-- 2021-06-08T09:58:32.487Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Rechnung-Überprüfungszeile', PrintName='Rechnung-Überprüfungszeile',Updated=TO_TIMESTAMP('2021-06-08 11:58:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579310 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T09:58:32.489Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579310,'nl_NL')
+;
+
+-- 2021-06-08T09:58:38.735Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET WEBUI_NameBrowse='Rechnung-Überprüfungszeile',Updated=TO_TIMESTAMP('2021-06-08 11:58:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579310 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T09:58:38.737Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579310,'nl_NL')
+;
+
+-- 2021-06-08T09:58:44.551Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET WEBUI_NameBrowse='Rechnung-Überprüfungszeile',Updated=TO_TIMESTAMP('2021-06-08 11:58:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579310 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T09:58:44.551Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579310,'de_DE')
+;
+
+-- 2021-06-08T09:58:44.555Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579310,'de_DE')
+;
+
+-- 2021-06-08T09:58:44.555Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Rechnung-Überprüfungszeile', Description = NULL, WEBUI_NameBrowse = 'Rechnung-Überprüfungszeile', WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579310
+;
+
+-- 2021-06-08T09:58:49.072Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET WEBUI_NameBrowse='Rechnung-Überprüfungszeile',Updated=TO_TIMESTAMP('2021-06-08 11:58:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579310 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T09:58:49.074Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579310,'de_CH')
+;
+
+-- 2021-06-08T10:02:25.040Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnSQL='(select C_Invoice_ID from C_Invoice_Verification_SetLine ivsl where ivsl.C_Invoice_Verification_SetLine_ID = C_Invoice_Verification_RunLine.C_Invoice_Verification_SetLine_ID)',Updated=TO_TIMESTAMP('2021-06-08 12:02:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574245
+;
+
+-- 2021-06-08T10:04:11.423Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnSQL='(select C_InvoiceLine_ID from C_Invoice_Verification_SetLine ivsl where ivsl.C_Invoice_Verification_SetLine_ID = C_Invoice_Verification_RunLine.C_Invoice_Verification_SetLine_ID)',Updated=TO_TIMESTAMP('2021-06-08 12:04:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574246
+;
+
+-- 2021-06-08T10:04:31.369Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnSQL='(select C_InvoiceLine_Tax_ID from C_Invoice_Verification_SetLine ivsl where ivsl.C_Invoice_Verification_SetLine_ID = C_Invoice_Verification_RunLine.C_Invoice_Verification_SetLine_ID)',Updated=TO_TIMESTAMP('2021-06-08 12:04:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574248
+;
+
+-- 2021-06-08T10:26:51.172Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2021-06-08 12:26:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585684
+;
+
+-- 2021-06-08T10:27:01.188Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2021-06-08 12:27:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585685
+;
+
+-- 2021-06-08T10:27:10.890Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2021-06-08 12:27:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585686
+;
+
+-- 2021-06-08T10:29:10.219Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2021-06-08 12:29:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585681
+;
+
+-- 2021-06-08T10:29:17.798Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2021-06-08 12:29:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585682
+;
+
+-- Fix Zoom
+-- 2021-06-08T10:35:13.443Z
+-- URL zum Konzept
+UPDATE AD_Table SET AD_Window_ID=541156,Updated=TO_TIMESTAMP('2021-06-08 12:35:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541665
+;
+
+-- 2021-06-08T10:35:50.234Z
+-- URL zum Konzept
+UPDATE AD_Table SET AD_Window_ID=541147,Updated=TO_TIMESTAMP('2021-06-08 12:35:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541664
+;
+
+-- 2021-06-08T10:36:32.713Z
+-- URL zum Konzept
+UPDATE AD_Table SET AD_Window_ID=541146,Updated=TO_TIMESTAMP('2021-06-08 12:36:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541663
+;
+
+-- 2021-06-08T10:45:57.191Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=19, FieldLength=10, IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2021-06-08 12:45:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574248
+;
+
+-- 2021-06-08T10:49:06.725Z
+-- URL zum Konzept
+UPDATE AD_Tab SET TabLevel=0,Updated=TO_TIMESTAMP('2021-06-08 12:49:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=543958
+;
+
+-- 2021-06-08T10:49:21.125Z
+-- URL zum Konzept
+UPDATE AD_Tab SET TabLevel=0,Updated=TO_TIMESTAMP('2021-06-08 12:49:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=543956
+;
+
+-- 2021-06-08T10:49:34.291Z
+-- URL zum Konzept
+UPDATE AD_Tab SET TabLevel=0,Updated=TO_TIMESTAMP('2021-06-08 12:49:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=543957
+;
+
+-- 2021-06-08T11:08:48.267Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647453
+;
+
+-- 2021-06-08T11:08:49.003Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647454
+;
+
+-- 2021-06-08T11:08:50.107Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647455
+;
+
+-- 2021-06-08T11:08:50.850Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647456
+;
+
+-- 2021-06-08T11:08:51.497Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647457
+;
+
+-- 2021-06-08T11:08:52.180Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647458
+;
+
+-- 2021-06-08T11:08:52.763Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647459
+;
+
+-- 2021-06-08T11:08:53.474Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647460
+;
+
+-- 2021-06-08T11:08:54.090Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647461
+;
+
+-- 2021-06-08T11:08:54.964Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647463
+;
+
+-- 2021-06-08T11:08:55.684Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647462
+;
+
+-- 2021-06-08T11:08:56.246Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647464
+;
+
+-- 2021-06-08T11:08:56.774Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647465
+;
+
+-- 2021-06-08T11:08:58.070Z
+-- URL zum Konzept
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-06-08 13:08:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=647466
+;
+
+-- 2021-06-08T11:09:44.851Z
+-- URL zum Konzept
+UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2021-06-08 13:09:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=544004
+;
+
+-- 2021-06-08T11:16:40.914Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=18, AD_Reference_Value_ID=158, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2021-06-08 13:16:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574248
+;
+
+
+-- 2021-06-08T11:19:04.330Z
+-- URL zum Konzept
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2021-06-08 13:19:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574084
+;
+
+
+-- 2021-06-08T11:20:10.831Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsSelectionColumn='N',Updated=TO_TIMESTAMP('2021-06-08 13:20:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574084
+;
