@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.audit.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
@@ -36,9 +37,11 @@ import de.metas.process.PInstanceId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.workflow.execution.DocWorkflowManager;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
@@ -63,6 +66,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
@@ -76,7 +80,6 @@ import org.compiere.util.SecureEngine;
 import org.compiere.util.Trace;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.ValueNamePair;
-import de.metas.workflow.execution.DocWorkflowManager;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -3129,6 +3132,10 @@ public abstract class PO
 			}
 		}
 
+		final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
+
+		Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), state, get_TrxName());
+
 		// Return "success"
 		return success;
 	}	// saveFinish
@@ -4016,6 +4023,8 @@ public abstract class PO
 			success = false;
 			log.warn("Error while deleting " + this, e);
 		}
+
+		Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), StateType.DELETED.getCode(), get_TrxName());
 
 		return success;
 	}	// delete
@@ -4992,7 +5001,7 @@ public abstract class PO
 		final Object oo = get_Value(index);
 		return StringUtils.toBoolean(oo);
 	}
-	
+
 	public final BigDecimal get_ValueAsBigDecimal(final String columnName)
 	{
 		final Object valueObj = get_Value(columnName);

@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ITableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -54,4 +55,13 @@ public class ApiRequestAuditLog
 
 	@Nullable
 	String message;
+
+	@Nullable
+	ITableRecordReference recordReference;
+
+	@Nullable
+	StateType type;
+
+	@Nullable
+	String trxName;
 }

@@ -25,6 +25,7 @@ package de.metas.audit;
 import de.metas.audit.request.ApiRequestAuditId;
 import de.metas.audit.request.log.ApiAuditRequestLogDAO;
 import de.metas.audit.request.log.ApiRequestAuditLog;
+import de.metas.audit.request.log.StateType;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.LoggableWithThrowableUtil;
 import de.metas.logging.LogManager;
@@ -35,6 +36,7 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -77,17 +79,17 @@ public class ApiAuditLoggable implements ILoggable
 	{
 		final ApiRequestAuditLog logEntry = createLogEntry(msg, msgParameters);
 
-		List<ApiRequestAuditLog> buffer = this.buffer;
-		if (buffer == null)
-		{
-			buffer = this.buffer = new ArrayList<>(bufferSize);
-		}
-		buffer.add(logEntry);
+		addToBuffer(logEntry);
 
-		if (buffer.size() >= bufferSize)
-		{
-			flush();
-		}
+		return this;
+	}
+
+	@Override
+	public ILoggable addTableRecordReferenceLog(final @NonNull ITableRecordReference recordRef, final @NonNull String type, final @NonNull String trxName)
+	{
+		final ApiRequestAuditLog logEntry = createLogEntry(recordRef, type, trxName);
+
+		addToBuffer(logEntry);
 
 		return this;
 	}
@@ -126,5 +128,33 @@ public class ApiAuditLoggable implements ILoggable
 				.adClientId(clientId)
 				.userId(userId)
 				.build();
+	}
+
+	private ApiRequestAuditLog createLogEntry(final @NonNull ITableRecordReference recordRef, final @NonNull String type, final @NonNull String trxName)
+	{
+		return ApiRequestAuditLog.builder()
+				.timestamp(SystemTime.asInstant())
+				.apiRequestAuditId(apiRequestAuditId)
+				.adClientId(clientId)
+				.userId(userId)
+				.recordReference(recordRef)
+				.type(StateType.ofCode(type))
+				.trxName(trxName)
+				.build();
+	}
+
+	private void addToBuffer(final ApiRequestAuditLog logEntry)
+	{
+		List<ApiRequestAuditLog> buffer = this.buffer;
+		if (buffer == null)
+		{
+			buffer = this.buffer = new ArrayList<>(bufferSize);
+		}
+		buffer.add(logEntry);
+
+		if (buffer.size() >= bufferSize)
+		{
+			flush();
+		}
 	}
 }
