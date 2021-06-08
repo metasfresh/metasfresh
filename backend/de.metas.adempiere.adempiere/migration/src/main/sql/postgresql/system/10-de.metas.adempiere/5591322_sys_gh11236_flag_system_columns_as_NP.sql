@@ -186,7 +186,9 @@ SET personaldatacategory='NP'
 WHERE ad_table_id IN (SELECT ad_table_id FROM ad_table WHERE tablename IN ('C_UOM', 'C_UOM_Conversion', 'C_UOM_Trl'))
 ;
 
-
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE ad_table_id IN (SELECT ad_table_id FROM ad_table WHERE tablename IN ('C_PaymentTerm'));
 
 UPDATE ad_column
 SET personaldatacategory='NP'
