@@ -6487,3 +6487,90 @@ UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMEST
 -- URL zum Konzept
 UPDATE AD_Column SET IsSelectionColumn='N',Updated=TO_TIMESTAMP('2021-06-08 13:20:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574084
 ;
+
+-- Add missing TRL
+-- 2021-06-08T11:34:31.420Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Rechnung-ÃœberprÃ¼fungselement', PrintName='Rechnung-ÃœberprÃ¼fungselement',Updated=TO_TIMESTAMP('2021-06-08 13:34:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579236 AND AD_Language='de_CH'
+;
+
+-- 2021-06-08T11:34:31.420Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579236,'de_CH')
+;
+
+-- 2021-06-08T11:34:37.076Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Rechnung-ÃœberprÃ¼fungselement', PrintName='Rechnung-ÃœberprÃ¼fungselement',Updated=TO_TIMESTAMP('2021-06-08 13:34:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579236 AND AD_Language='de_DE'
+;
+
+-- 2021-06-08T11:34:37.076Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579236,'de_DE')
+;
+
+-- 2021-06-08T11:34:37.082Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579236,'de_DE')
+;
+
+-- 2021-06-08T11:34:37.083Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName='C_Invoice_Verification_SetLine_ID', Name='Rechnung-ÃœberprÃ¼fungselement', Description=NULL, Help=NULL WHERE AD_Element_ID=579236
+;
+
+-- 2021-06-08T11:34:37.083Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='C_Invoice_Verification_SetLine_ID', Name='Rechnung-ÃœberprÃ¼fungselement', Description=NULL, Help=NULL, AD_Element_ID=579236 WHERE UPPER(ColumnName)='C_INVOICE_VERIFICATION_SETLINE_ID' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-06-08T11:34:37.086Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName='C_Invoice_Verification_SetLine_ID', Name='Rechnung-ÃœberprÃ¼fungselement', Description=NULL, Help=NULL WHERE AD_Element_ID=579236 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-08T11:34:37.086Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Rechnung-ÃœberprÃ¼fungselement', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579236) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579236)
+;
+
+-- 2021-06-08T11:34:37.113Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem pi SET PrintName='Rechnung-ÃœberprÃ¼fungselement', Name='Rechnung-ÃœberprÃ¼fungselement' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579236)
+;
+
+-- 2021-06-08T11:34:37.114Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Rechnung-ÃœberprÃ¼fungselement', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579236
+;
+
+-- 2021-06-08T11:34:37.115Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Rechnung-ÃœberprÃ¼fungselement', Description=NULL, Help=NULL WHERE AD_Element_ID = 579236
+;
+
+-- 2021-06-08T11:34:37.116Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Rechnung-ÃœberprÃ¼fungselement', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579236
+;
+
+-- 2021-06-08T11:34:48.751Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-08 13:34:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579236 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T11:34:48.751Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579236,'en_US')
+;
+
+-- 2021-06-08T11:34:55.404Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Rechnung-ÃœberprÃ¼fungselement', PrintName='Rechnung-ÃœberprÃ¼fungselement',Updated=TO_TIMESTAMP('2021-06-08 13:34:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579236 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-08T11:34:55.404Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579236,'nl_NL')
+;
+
