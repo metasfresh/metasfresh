@@ -110,16 +110,16 @@ import java.util.Set;
 	}
 
 	private DocumentEntityDescriptor createEntityDescriptor(
-			final DocumentType documentType,
-			final DocumentId documentTypeId,
-			final DetailId detailId,
+			final DocumentType rootDocumentType,
+			final DocumentId rootDocumentTypeId,
+			final DetailId tabId,
 			@NonNull final Optional<SOTrx> soTrx)
 	{
 		return DocumentEntityDescriptor.builder()
-				.setDocumentType(DocumentType.QuickInput, documentTypeId)
+				.setDocumentType(DocumentType.QuickInput, rootDocumentTypeId)
 				.setIsSOTrx(soTrx)
 				.disableDefaultTableCallouts()
-				.setDetailId(detailId)
+				.setDetailId(tabId)
 				.setTableName(I_C_OrderLine.Table_Name) // TODO: figure out if it's needed
 				//
 				.addField(createProductFieldBuilder(soTrx))
