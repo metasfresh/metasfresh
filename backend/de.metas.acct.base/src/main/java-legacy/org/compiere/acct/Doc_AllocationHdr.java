@@ -436,11 +436,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	/**
 	 * Creates facts related to {@link DocLine_Allocation#getPaymentWriteOffAmt()}.
 	 *
-	 * @param fact
-	 * @param line
 	 * @see "Task #09441 for more informations"
 	 */
-	private final void createPaymentWriteOffAmtFacts(final Fact fact, final DocLine_Allocation line)
+	private void createPaymentWriteOffAmtFacts(final Fact fact, final DocLine_Allocation line)
 	{
 		if (line.getPaymentWriteOffAmt().signum() == 0)
 		{
@@ -462,7 +460,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// DiscountExpense CR
 		if (payment.isReceipt())
 		{
-			final MAccount discountAcct = getAccount(AccountType.DiscountExp, as);
+			final MAccount discountAcct = line.getPaymentWriteOffAccount(as.getId())
+					.orElseGet(() -> getAccount(AccountType.DiscountExp, as));
 			final BigDecimal paymentWriteOffAmt = line.getPaymentWriteOffAmt();
 
 			fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), paymentWriteOffAmt, null);
@@ -475,7 +474,8 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		// DiscountRevenue DR
 		else
 		{
-			final MAccount discountAcct = getAccount(AccountType.DiscountRev, as);
+			final MAccount discountAcct = line.getPaymentWriteOffAccount(as.getId())
+					.orElseGet(() -> getAccount(AccountType.DiscountRev, as));
 			final BigDecimal paymentWriteOffAmt = line.getPaymentWriteOffAmt().negate();
 
 			fl_Payment = fact.createLine(line, paymentAcct, getCurrencyId(), null, paymentWriteOffAmt);
@@ -1149,9 +1149,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 * Allocation Tax Adjustment
 	 */
 	public Doc_AllocationTax(final Doc_AllocationHdr doc,
-							 final MAccount DiscountAccount, final BigDecimal DiscountAmt,
-							 final MAccount WriteOffAccount, final BigDecimal WriteOffAmt,
-							 final boolean isDiscountExpense)
+			final MAccount DiscountAccount, final BigDecimal DiscountAmt,
+			final MAccount WriteOffAccount, final BigDecimal WriteOffAmt,
+			final boolean isDiscountExpense)
 	{
 		super();
 		this.doc = doc;

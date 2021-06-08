@@ -38,7 +38,7 @@ import java.util.Properties;
 
 public interface ITaxBL extends ISingletonService
 {
-	I_C_Tax getTaxById(TaxId taxId);
+	Tax getTaxById(TaxId taxId);
 
 	/**
 	 * Try to retrieve tax by {@link #retrieveTaxIdForCategory(Properties, CountryId, OrgId, I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} (Properties, int, int, org.compiere.model.I_C_BPartner_Location, Timestamp, TaxCategoryId, boolean, boolean)} first.<br>
@@ -61,7 +61,7 @@ public interface ITaxBL extends ISingletonService
 	 * Retrieve <code>taxId<code> from the given <code>taxCategoryId</code>
 	 *
 	 * @param throwEx if <code>true</code>, and no <code>C_Tax</code> record can be found, then throw an exception that contains the failed query. <br>
-	 * 			Otherwise, just log and return <code>-1</code>.
+	 *                Otherwise, just log and return <code>-1</code>.
 	 * @return taxId
 	 */
 	TaxId retrieveTaxIdForCategory(Properties ctx,
@@ -100,9 +100,9 @@ public interface ITaxBL extends ISingletonService
 	 *  if IsSOTrx is false, bill and ship are reversed
 	 * </pre>
 	 *
-	 * @param billDate invoice date
-	 * @param shipDate ship date (ignored)
-	 * @param M_Warehouse_ID warehouse (ignored)
+	 * @param billDate                   invoice date
+	 * @param shipDate                   ship date (ignored)
+	 * @param M_Warehouse_ID             warehouse (ignored)
 	 * @param billC_BPartner_Location_ID invoice location
 	 * @param shipC_BPartner_Location_ID ship location (ignored)
 	 * @return C_Tax_ID

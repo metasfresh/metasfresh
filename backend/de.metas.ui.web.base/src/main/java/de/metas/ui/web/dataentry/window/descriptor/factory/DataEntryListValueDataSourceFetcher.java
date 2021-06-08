@@ -1,28 +1,26 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
-
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.layout.DataEntryListValue;
 import de.metas.dataentry.model.I_DataEntry_ListValue;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -109,9 +107,12 @@ public class DataEntryListValueDataSourceFetcher implements LookupDataSourceFetc
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(@NonNull final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(@NonNull final LookupDataSourceContext evalCtx)
 	{
-		return LookupValuesList.fromCollection(id2LookupValue.values());
+		return LookupValuesList.fromCollection(id2LookupValue.values())
+				.pageByOffsetAndLimit(
+						evalCtx.getOffset(0),
+						evalCtx.getLimit(Integer.MAX_VALUE));
 	}
 
 	private IntegerLookupValue createLookupValue(@NonNull final DataEntryListValue dataEntryListValue)
@@ -146,7 +147,9 @@ public class DataEntryListValueDataSourceFetcher implements LookupDataSourceFetc
 		return Optional.empty();
 	}
 
-	/** Does nothing; this class doesn't use a cache; it is disposed as one. */
+	/**
+	 * Does nothing; this class doesn't use a cache; it is disposed as one.
+	 */
 	@Override
 	public void cacheInvalidate()
 	{

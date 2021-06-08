@@ -1,15 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import org.compiere.model.I_C_Tax;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
@@ -26,10 +16,19 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -185,12 +184,11 @@ public class SalesInvoiceCandidateFactory
 			return commissionPoints;
 		}
 
-		final I_C_Tax taxRecord = taxDAO.getTaxById(effectiveTaxRepoId);
+		final Tax taxRecord = taxDAO.getTaxById(effectiveTaxRepoId);
 
 		final CurrencyPrecision precision = invoiceCandBL.extractPricePrecision(icRecord);
 
-		final BigDecimal taxAdjustedAmount = taxBL.calculateBaseAmt(
-				taxRecord,
+		final BigDecimal taxAdjustedAmount = taxRecord.calculateBaseAmt(
 				commissionPoints.toBigDecimal(),
 				icRecord.isTaxIncluded(),
 				precision.toInt());
@@ -213,6 +211,6 @@ public class SalesInvoiceCandidateFactory
 	{
 		return (icRecord.getBase_Commission_Points_Per_Price_UOM().signum() == 0)
 				|| (icRecord.getPriceEntered_Override().signum() > 0
-						&& !icRecord.getPriceEntered_Override().equals(icRecord.getPriceEntered()));
+				&& !icRecord.getPriceEntered_Override().equals(icRecord.getPriceEntered()));
 	}
 }

@@ -31,6 +31,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,7 @@ import java.util.List;
  * API for editing a view row.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task https://github.com/metasfresh/metasfresh-webui-api/issues/577
+ * Task https://github.com/metasfresh/metasfresh-webui-api/issues/577
  */
 @RestController
 @RequestMapping(ViewRowEditRestController.ENDPOINT)
@@ -77,7 +78,7 @@ public class ViewRowEditRestController
 		return JSONOptions.of(userSession);
 	}
 
-	private final IEditableView getEditableView(final ViewId viewId)
+	private IEditableView getEditableView(final ViewId viewId)
 	{
 		final IView view = viewsRepo.getView(viewId);
 		return IEditableView.asEditableView(view);
@@ -117,7 +118,7 @@ public class ViewRowEditRestController
 	}
 
 	@GetMapping("/{fieldName}/typeahead")
-	public JSONLookupValuesList getFieldTypeahead(
+	public JSONLookupValuesPage getFieldTypeahead(
 			@PathVariable(PARAM_WindowId) final String windowIdStr,
 			@PathVariable(PARAM_ViewId) final String viewIdStr,
 			@PathVariable(PARAM_RowId) final String rowIdStr,
@@ -132,7 +133,7 @@ public class ViewRowEditRestController
 		final IEditableView view = getEditableView(viewId);
 		final RowEditingContext editingCtx = createRowEditingContext(rowId);
 		return view.getFieldTypeahead(editingCtx, fieldName, query)
-				.transform(this::toJSONLookupValuesList);
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)

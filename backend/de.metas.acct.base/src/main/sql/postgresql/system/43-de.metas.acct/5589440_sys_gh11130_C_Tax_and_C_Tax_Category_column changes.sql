@@ -593,3 +593,577 @@ UPDATE C_Tax
 SET TypeOfDestCountry='WITHIN_COUNTRY_AREA'
 WHERE isToEuLocation = 'Y'
 ;
+
+UPDATE C_Tax
+SET TypeOfDestCountry='DOMESTIC'
+WHERE C_Country_ID = To_Country_ID
+;
+
+UPDATE C_Tax
+SET TypeOfDestCountry='OUTSIDE_COUNTRY_AREA'
+WHERE C_Country_ID <> To_Country_ID
+  AND isToEuLocation <> 'Y'
+;
+
+-- 2021-05-21T15:16:16.860Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List
+SET Name='Domestic', Updated=TO_TIMESTAMP('2021-05-21 18:16:16', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID = 542610
+;
+
+-- 2021-05-21T15:16:39.469Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List
+SET Name='EU-foreign', Updated=TO_TIMESTAMP('2021-05-21 18:16:39', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID = 542611
+;
+
+-- 2021-05-21T15:22:08.613Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List
+SET Name='Non-EU country', Updated=TO_TIMESTAMP('2021-05-21 18:22:08', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID = 542612
+;
+
+-- 2021-05-25T10:05:44.497Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, Description, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
+VALUES (0, 573974, 646823, 0, 174, 0, TO_TIMESTAMP('2021-05-25 13:05:44', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Matcht nur, wenn die betreffende Organisation im Bestimmungsland eine Fiskalvertretung hat.', 0, 'D', 0, 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'Fiskalvertretung', 280, 210, 0, 1, 1, TO_TIMESTAMP('2021-05-25 13:05:44', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T10:05:44.506Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
+SELECT l.AD_Language,
+       t.AD_Field_ID,
+       t.Description,
+       t.Help,
+       t.Name,
+       'N',
+       t.AD_Client_ID,
+       t.AD_Org_ID,
+       t.Created,
+       t.Createdby,
+       t.Updated,
+       t.UpdatedBy
+FROM AD_Language l,
+     AD_Field t
+WHERE l.IsActive = 'Y'
+  AND (l.IsSystemLanguage = 'Y')
+  AND t.AD_Field_ID = 646823
+  AND NOT EXISTS(SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID)
+;
+
+-- 2021-05-25T10:05:44.529Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */
+
+SELECT update_FieldTranslation_From_AD_Name_Element(579209)
+;
+
+-- 2021-05-25T10:05:44.539Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_Element_Link
+WHERE AD_Field_ID = 646823
+;
+
+-- 2021-05-25T10:05:44.541Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */
+
+SELECT AD_Element_Link_Create_Missing_Field(646823)
+;
+
+-- 2021-05-25T10:05:57.095Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, Description, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
+VALUES (0, 573975, 646824, 0, 174, 0, TO_TIMESTAMP('2021-05-25 13:05:56', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Matcht nur, wenn der betreffende Geschäftspartner einer Kleinunternehmer-Steuerbefreiung unterliegt', 0, 'D', 0, 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'Kleinunernehmen', 290, 220, 0, 1, 1, TO_TIMESTAMP('2021-05-25 13:05:56', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T10:05:57.096Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
+SELECT l.AD_Language,
+       t.AD_Field_ID,
+       t.Description,
+       t.Help,
+       t.Name,
+       'N',
+       t.AD_Client_ID,
+       t.AD_Org_ID,
+       t.Created,
+       t.Createdby,
+       t.Updated,
+       t.UpdatedBy
+FROM AD_Language l,
+     AD_Field t
+WHERE l.IsActive = 'Y'
+  AND (l.IsSystemLanguage = 'Y')
+  AND t.AD_Field_ID = 646824
+  AND NOT EXISTS(SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID)
+;
+
+-- 2021-05-25T10:05:57.098Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */
+
+SELECT update_FieldTranslation_From_AD_Name_Element(579210)
+;
+
+-- 2021-05-25T10:05:57.101Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_Element_Link
+WHERE AD_Field_ID = 646824
+;
+
+-- 2021-05-25T10:05:57.102Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */
+
+SELECT AD_Element_Link_Create_Missing_Field(646824)
+;
+
+-- 2021-05-25T10:07:28.013Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, Description, IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 646823, 0, 174, 540524, 585272, 'F', TO_TIMESTAMP('2021-05-25 13:07:27', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Matcht nur, wenn die betreffende Organisation im Bestimmungsland eine Fiskalvertretung hat.', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 0, 'Fiskalvertretung', 10, 0, 0, TO_TIMESTAMP('2021-05-25 13:07:27', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T10:07:54.986Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, Description, IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 646824, 0, 174, 540524, 585273, 'F', TO_TIMESTAMP('2021-05-25 13:07:54', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Matcht nur, wenn der betreffende Geschäftspartner einer Kleinunternehmer-Steuerbefreiung unterliegt', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 0, 'Kleinunernehmen', 20, 0, 0, TO_TIMESTAMP('2021-05-25 13:07:54', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T10:08:00.700Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET SeqNo=30, Updated=TO_TIMESTAMP('2021-05-25 13:08:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 544934
+;
+
+-- 2021-05-25T10:08:21.911Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET SeqNo=50, Updated=TO_TIMESTAMP('2021-05-25 13:08:21', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 544936
+;
+
+-- 2021-05-25T10:08:47.283Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET SeqNo=30, Updated=TO_TIMESTAMP('2021-05-25 13:08:47', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 544935
+;
+
+-- 2021-05-25T10:09:08.596Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET SeqNo=30, Updated=TO_TIMESTAMP('2021-05-25 13:09:08', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 544936
+;
+
+-- 2021-05-25T10:09:13.608Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_UI_Element
+WHERE AD_UI_Element_ID = 585273
+;
+
+-- 2021-05-25T10:09:17.205Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_UI_Element
+WHERE AD_UI_Element_ID = 585272
+;
+
+-- 2021-05-25T10:09:21.891Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET SeqNo=10, Updated=TO_TIMESTAMP('2021-05-25 13:09:21', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 544934
+;
+
+-- 2021-05-25T10:09:26.512Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET SeqNo=20, Updated=TO_TIMESTAMP('2021-05-25 13:09:26', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 544935
+;
+
+-- 2021-05-25T10:10:00.853Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, Description, IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 646823, 0, 174, 540521, 585274, 'F', TO_TIMESTAMP('2021-05-25 13:10:00', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Matcht nur, wenn die betreffende Organisation im Bestimmungsland eine Fiskalvertretung hat.', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 0, 'Fiskalvertretung', 20, 0, 0, TO_TIMESTAMP('2021-05-25 13:10:00', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T10:10:13.373Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, Description, IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 646824, 0, 174, 540521, 585275, 'F', TO_TIMESTAMP('2021-05-25 13:10:13', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Matcht nur, wenn der betreffende Geschäftspartner einer Kleinunternehmer-Steuerbefreiung unterliegt', 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 0, 'Kleinunernehmen', 30, 0, 0, TO_TIMESTAMP('2021-05-25 13:10:13', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T10:10:56.082Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET IsDisplayedGrid='Y', SeqNoGrid=120, Updated=TO_TIMESTAMP('2021-05-25 13:10:56', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 585274
+;
+
+-- 2021-05-25T10:10:56.086Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET IsDisplayedGrid='Y', SeqNoGrid=130, Updated=TO_TIMESTAMP('2021-05-25 13:10:56', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 585275
+;
+
+-- 2021-05-25T10:10:56.089Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET IsDisplayedGrid='Y', SeqNoGrid=140, Updated=TO_TIMESTAMP('2021-05-25 13:10:56', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 544924
+;
+
+-- 2021-05-25T10:10:56.092Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element
+SET IsDisplayedGrid='Y', SeqNoGrid=150, Updated=TO_TIMESTAMP('2021-05-25 13:10:56', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 544930
+;
+
+-- 2021-05-25T10:13:22.422Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_UI_Element
+WHERE AD_UI_Element_ID = 584677
+;
+
+-- 2021-05-25T10:13:22.423Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_Element_Link
+WHERE AD_Field_ID = 56447
+;
+
+-- 2021-05-25T10:13:22.431Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_Field_Trl
+WHERE AD_Field_ID = 56447
+;
+
+-- 2021-05-25T10:13:22.436Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_Field
+WHERE AD_Field_ID = 56447
+;
+
+-- 2021-05-25T10:13:45.667Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
+VALUES (0, 573976, 646825, 0, 174, 0, TO_TIMESTAMP('2021-05-25 13:13:45', 'YYYY-MM-DD HH24:MI:SS'), 100, 0, 'D', 0, 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N', 'Typ Bestimmungsland', 300, 230, 0, 1, 1, TO_TIMESTAMP('2021-05-25 13:13:45', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T10:13:45.668Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
+SELECT l.AD_Language,
+       t.AD_Field_ID,
+       t.Description,
+       t.Help,
+       t.Name,
+       'N',
+       t.AD_Client_ID,
+       t.AD_Org_ID,
+       t.Created,
+       t.Createdby,
+       t.Updated,
+       t.UpdatedBy
+FROM AD_Language l,
+     AD_Field t
+WHERE l.IsActive = 'Y'
+  AND (l.IsSystemLanguage = 'Y')
+  AND t.AD_Field_ID = 646825
+  AND NOT EXISTS(SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = t.AD_Field_ID)
+;
+
+-- 2021-05-25T10:13:45.669Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */
+
+SELECT update_FieldTranslation_From_AD_Name_Element(579211)
+;
+
+-- 2021-05-25T10:13:45.672Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_Element_Link
+WHERE AD_Field_ID = 646825
+;
+
+-- 2021-05-25T10:13:45.672Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */
+
+SELECT AD_Element_Link_Create_Missing_Field(646825)
+;
+
+-- 2021-05-25T10:14:56.009Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 646825, 0, 174, 540520, 585276, 'F', TO_TIMESTAMP('2021-05-25 13:14:55', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 0, 'Typ Bestimmungsland', 50, 0, 0, TO_TIMESTAMP('2021-05-25 13:14:55', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T13:01:15.860Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE
+FROM AD_UI_Element
+WHERE AD_UI_Element_ID = 585276
+;
+
+-- 2021-05-25T13:01:40.754Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 646825, 0, 174, 540519, 585278, 'F', TO_TIMESTAMP('2021-05-25 16:01:40', 'YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'N', 'Y', 'N', 'N', 'N', 0, 'Typ Bestimmungsland', 100, 0, 0, TO_TIMESTAMP('2021-05-25 16:01:40', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T13:11:26.784Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID, AD_Column_ID, AD_Element_ID, AD_Org_ID, AD_Reference_ID, AD_Reference_Value_ID, AD_Table_ID, ColumnName, Created, CreatedBy, DDL_NoForeignKey, DefaultValue, Description, EntityType, FacetFilterSeqNo, FieldLength, Help, IsActive, IsAdvancedText, IsAllowLogging, IsAlwaysUpdateable, IsAutoApplyValidationRule, IsAutocomplete, IsCalculated, IsDimension,
+                       IsDLMPartitionBoundary, IsEncrypted, IsExcludeFromZoomTargets, IsFacetFilter, IsForceIncludeInGeneratedModel, IsGenericZoomKeyColumn, IsGenericZoomOrigin, IsIdentifier, IsKey, IsLazyLoading, IsMandatory, IsParent, IsSelectionColumn, IsShowFilterIncrementButtons, IsShowFilterInline, IsStaleable, IsSyncDatabase, IsTranslated, IsUpdateable, IsUseDocSequence, MaxFacetsToFetch,
+                       Name, SelectionColumnSeqNo, SeqNo, Updated, UpdatedBy, Version)
+VALUES (0, 574112, 1899, 0, 17, 270, 252, 'ProductType', TO_TIMESTAMP('2021-05-25 16:11:26', 'YYYY-MM-DD HH24:MI:SS'), 100, 'N', 'I', 'Art von Produkt', 'D', 0, 1, 'Aus der Produktart ergeben auch sich Vorgaben für die Buchhaltung.', 'Y', 'N', 'Y', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'N', 'Y', 'N', 0, 'Produktart', 0, 0,
+        TO_TIMESTAMP('2021-05-25 16:11:26', 'YYYY-MM-DD HH24:MI:SS'), 100, 0)
+;
+
+-- 2021-05-25T13:11:26.785Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language, AD_Column_ID, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
+SELECT l.AD_Language,
+       t.AD_Column_ID,
+       t.Name,
+       'N',
+       t.AD_Client_ID,
+       t.AD_Org_ID,
+       t.Created,
+       t.Createdby,
+       t.Updated,
+       t.UpdatedBy
+FROM AD_Language l,
+     AD_Column t
+WHERE l.IsActive = 'Y'
+  AND (l.IsSystemLanguage = 'Y')
+  AND t.AD_Column_ID = 574112
+  AND NOT EXISTS(SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Column_ID = t.AD_Column_ID)
+;
+
+-- 2021-05-25T13:11:26.789Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */
+
+SELECT update_Column_Translation_From_AD_Element(1899)
+;
+
+-- 2021-05-25T13:11:32.964Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */
+
+SELECT public.db_alter_table('C_TaxCategory', 'ALTER TABLE public.C_TaxCategory ADD COLUMN ProductType CHAR(1) DEFAULT ''I'' NULL')
+;
+
+-- 2021-05-25T13:15:04.568Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Val_Rule (AD_Client_ID, AD_Org_ID, AD_Val_Rule_ID, Created, CreatedBy, EntityType, IsActive, Name, Type, Updated, UpdatedBy)
+VALUES (0, 0, 540542, TO_TIMESTAMP('2021-05-25 16:15:04', 'YYYY-MM-DD HH24:MI:SS'), 100, 'D', 'Y', 'C_TaxCategory ProductType', 'S', TO_TIMESTAMP('2021-05-25 16:15:04', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+
+-- 2021-05-25T13:19:52.057Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule
+SET Code='EXISTS (SELECT * from C_TaxCategory c where @ProductType@=c.ProductType AND @C_TaxCategory_Id@ = c.c_taxcategory_id and c.isactive=''Y'')', Updated=TO_TIMESTAMP('2021-05-25 16:19:52', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Val_Rule_ID = 540542
+;
+
+-- 2021-06-02T11:29:57.522Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List
+SET ValueName='Domestic', Updated=TO_TIMESTAMP('2021-06-02 14:29:57', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID = 542610
+;
+
+-- 2021-06-02T11:30:15.918Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List
+SET ValueName='Non-EU country', Updated=TO_TIMESTAMP('2021-06-02 14:30:15', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID = 542612
+;
+
+-- 2021-06-02T11:30:25.974Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List
+SET ValueName='EU-foreign', Updated=TO_TIMESTAMP('2021-06-02 14:30:25', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Ref_List_ID = 542611
+;
+
+-- 2021-06-08T08:00:10.833Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2021-06-08 11:00:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585274
+;
+
+-- 2021-06-08T08:00:22.012Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2021-06-08 11:00:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585275
+;
+
+-- 2021-06-08T08:13:19.993Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579306,0,TO_TIMESTAMP('2021-06-08 11:13:19','YYYY-MM-DD HH24:MI:SS'),100,'Land des Geschäftspartners. In der Regel ist dies das Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, oder in das die Ware geliefert wird.','D','Y','Typ Bestimmungsland','Typ Bestimmungsland',TO_TIMESTAMP('2021-06-08 11:13:19','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T08:13:19.997Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=579306 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-06-08T08:13:46.366Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='The business partner''s country. Usually this is the country in which the service is provided or to which the goods are delivered.', IsTranslated='Y', Name='Type dest. country', PrintName='Type dest. country',Updated=TO_TIMESTAMP('2021-06-08 11:13:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579306 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T08:13:46.390Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579306,'en_US')
+;
+
+-- 2021-06-08T08:14:43.318Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=579306
+;
+
+-- 2021-06-08T08:14:43.321Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element WHERE AD_Element_ID=579306
+;
+
+-- 2021-06-08T08:15:07.470Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579307,0,TO_TIMESTAMP('2021-06-08 11:15:07','YYYY-MM-DD HH24:MI:SS'),100,'Land des Geschäftspartners. In der Regel ist dies das Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, oder in das die Ware geliefert wird.','U','Land des Geschäftspartners. In der Regel ist dies das Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, oder in das die Ware geliefert wird.','Y','Bestimmungsland','Bestimmungsland',TO_TIMESTAMP('2021-06-08 11:15:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T08:15:07.472Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=579307 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-06-08T08:15:14.870Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2021-06-08 11:15:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579307
+;
+
+-- 2021-06-08T08:15:56.133Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='The business partner''s country. Usually this is the country in which the service is provided or to which the goods are delivered.', Help='The business partner''s country. Usually this is the country in which the service is provided or to which the goods are delivered.', IsTranslated='Y', Name='Destination country', PrintName='Destination country',Updated=TO_TIMESTAMP('2021-06-08 11:15:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579307 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T08:15:56.134Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579307,'en_US')
+;
+
+-- 2021-06-08T08:17:01.299Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Name_ID=579307, Description='Land des Geschäftspartners. In der Regel ist dies das Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, oder in das die Ware geliefert wird.', Help='Land des Geschäftspartners. In der Regel ist dies das Bestimmungs-/Leistungsland, d.h. das Land, in dem die Leistung erbracht, oder in das die Ware geliefert wird.', Name='Bestimmungsland',Updated=TO_TIMESTAMP('2021-06-08 11:17:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=976
+;
+
+-- 2021-06-08T08:17:01.300Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579307)
+;
+
+-- 2021-06-08T08:17:01.308Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=976
+;
+
+-- 2021-06-08T08:17:01.309Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(976)
+;
+
+-- 2021-06-08T08:22:43.581Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,574112,647451,0,176,0,TO_TIMESTAMP('2021-06-08 11:22:43','YYYY-MM-DD HH24:MI:SS'),100,'Art von Produkt',0,'D','Aus der Produktart ergeben auch sich Vorgaben für die Buchhaltung.',0,'Y','Y','Y','N','N','N','N','N','Produktart',100,90,0,1,1,TO_TIMESTAMP('2021-06-08 11:22:43','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T08:22:43.582Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=647451 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-08T08:22:43.584Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1899)
+;
+
+-- 2021-06-08T08:22:43.593Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=647451
+;
+
+-- 2021-06-08T08:22:43.593Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(647451)
+;
+
+-- 2021-06-08T08:24:02.735Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579308,0,TO_TIMESTAMP('2021-06-08 11:24:02','YYYY-MM-DD HH24:MI:SS'),100,'Wenn gesetzt, dann kann diese Kategorie nur in Produktpreisen benutzt werden, deren Produkt die selbe Artikelart hat.','D','Wenn gesetzt, dann kann diese Kategorie nur in Produktpreisen benutzt werden, deren Produkt die selbe Artikelart hat.','Y','Produktart','Produktart',TO_TIMESTAMP('2021-06-08 11:24:02','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T08:24:02.736Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=579308 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2021-06-08T08:24:19.838Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='If set, then this tax category may only be used of product price records whose product has a matching type.', Help='If set, then this tax category may only be used of product price records whose product has a matching type.', IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-08 11:24:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579308 AND AD_Language='en_US'
+;
+
+-- 2021-06-08T08:24:19.839Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579308,'en_US')
+;
+
+-- 2021-06-08T08:25:09.764Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540312,545972,TO_TIMESTAMP('2021-06-08 11:25:09','YYYY-MM-DD HH24:MI:SS'),100,'Y','others',15,TO_TIMESTAMP('2021-06-08 11:25:09','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T08:25:23.368Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,647451,0,176,545972,585675,'F',TO_TIMESTAMP('2021-06-08 11:25:23','YYYY-MM-DD HH24:MI:SS'),100,'Art von Produkt','Aus der Produktart ergeben auch sich Vorgaben für die Buchhaltung.','Y','N','N','Y','N','N','N',0,'Produktart',10,0,0,TO_TIMESTAMP('2021-06-08 11:25:23','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T10:10:36.443Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540543,'c_taxcategory_id in (select cat.c_taxcategory_id from c_taxcategory cat join m_product p on cat.producttype = p.producttype WHERE p.m_product_id=@M_Product_ID@ AND)',TO_TIMESTAMP('2021-06-08 13:10:36','YYYY-MM-DD HH24:MI:SS'),100,'Product type in TaxCategory matches product category','D','Y','Product Type in TaxCategory','S',TO_TIMESTAMP('2021-06-08 13:10:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-08T10:17:06.905Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Val_Rule SET Code='C_TaxCategory.C_TaxCategory_ID IN (SELECT cat.C_TaxCategory_ID
+                           FROM C_TaxCategory cat
+                                    JOIN M_Product p ON cat.ProductType = p.ProductType OR cat.ProductType is null
+                           WHERE p.M_Product_ID =@M_Product_ID@)',Updated=TO_TIMESTAMP('2021-06-08 13:15:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540543
+;
+
+-- 2021-06-08T10:17:22.303Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Val_Rule_ID=540543,Updated=TO_TIMESTAMP('2021-06-08 13:17:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=505149
+;
+

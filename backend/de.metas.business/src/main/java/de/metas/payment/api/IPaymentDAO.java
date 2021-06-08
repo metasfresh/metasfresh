@@ -2,12 +2,15 @@ package de.metas.payment.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.banking.BankAccountId;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_PaySelection;
@@ -108,4 +111,6 @@ public interface IPaymentDAO extends ISingletonService
 	ImmutableSet<PaymentId> retrievePaymentIds(PaymentQuery query);
 
 	void save(@NonNull final I_C_Payment payment);
+
+	Iterator<I_C_Payment> retrieveEmployeePaymentsForTimeframe(OrgId orgId, BankAccountId bankAccountId, Instant startDate, Instant endDate);
 }

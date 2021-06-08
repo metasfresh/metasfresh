@@ -15,20 +15,29 @@ import java.util.Properties;
 public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compiere.model.I_Persistent
 {
 
+	/**
+	 * SOPOType AD_Reference_ID=287
+	 * Reference name: C_Tax SPPOType
+	 */
+	public static final int SOPOTYPE_AD_Reference_ID = 287;
 	/** Both  = B */
 	public static final String SOPOTYPE_Both = "B";
+	/** Sales Tax = S */
+	public static final String SOPOTYPE_SalesTax = "S";
+	/** Purchase Tax = P */
+	public static final String SOPOTYPE_PurchaseTax = "P";
 	/**
 	 * TypeOfDestCountry AD_Reference_ID=541323
 	 * Reference name: TypeDestCountry
 	 */
 	public static final int TYPEOFDESTCOUNTRY_AD_Reference_ID = 541323;
-	/** Inland = DOMESTIC */
-	public static final String TYPEOFDESTCOUNTRY_Inland = "DOMESTIC";
-	/** EU-Ausland = WITHIN_COUNTRY_AREA */
-	public static final String TYPEOFDESTCOUNTRY_EU_Ausland = "WITHIN_COUNTRY_AREA";
-	/** Nicht-EU-Ausland = OUTSIDE_COUNTRY_AREA */
-	public static final String TYPEOFDESTCOUNTRY_Nicht_EU_Ausland = "OUTSIDE_COUNTRY_AREA";
-	private static final long serialVersionUID = -1151858783L;
+	/** Domestic = DOMESTIC */
+	public static final String TYPEOFDESTCOUNTRY_Domestic = "DOMESTIC";
+	/** EU-foreign = WITHIN_COUNTRY_AREA */
+	public static final String TYPEOFDESTCOUNTRY_EU_Foreign = "WITHIN_COUNTRY_AREA";
+	/** Non-EU country = OUTSIDE_COUNTRY_AREA */
+	public static final String TYPEOFDESTCOUNTRY_Non_EUCountry = "OUTSIDE_COUNTRY_AREA";
+	private static final long serialVersionUID = -16743585L;
 
 	/** Standard Constructor */
 	public X_C_Tax(final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
@@ -313,12 +322,6 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 		return get_ValueAsInt(COLUMNNAME_Parent_Tax_ID);
 	}
 
-	/**
-	 * SOPOType AD_Reference_ID=287
-	 * Reference name: C_Tax SPPOType
-	 */
-	public static final int SOPOTYPE_AD_Reference_ID = 287;
-
 	@Override
 	public void setParent_Tax_ID(final int Parent_Tax_ID)
 	{
@@ -327,15 +330,6 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 		else
 			set_Value(COLUMNNAME_Parent_Tax_ID, Parent_Tax_ID);
 	}
-
-	/**
-	 * Sales Tax = S
-	 */
-	public static final String SOPOTYPE_SalesTax = "S";
-	/**
-	 * Purchase Tax = P
-	 */
-	public static final String SOPOTYPE_PurchaseTax = "P";
 
 	@Override
 	public BigDecimal getRate()

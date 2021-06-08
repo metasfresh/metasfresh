@@ -123,6 +123,29 @@ public interface I_C_TaxCategory
 	void setC_TaxCategory_ID(int C_TaxCategory_ID);
 
 	/**
+	 * Set Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxCategory_ID();
+
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_C_TaxCategory_ID = new ModelColumn<>(I_C_TaxCategory.class, "C_TaxCategory_ID", null);
+	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: String
@@ -209,6 +232,29 @@ public interface I_C_TaxCategory
 
 	ModelColumn<I_C_TaxCategory, Object> COLUMN_Name = new ModelColumn<>(I_C_TaxCategory.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Product Type.
+	 * Type of product
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProductType (java.lang.String ProductType);
+
+	/**
+	 * Get Product Type.
+	 * Type of product
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getProductType();
+
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_ProductType = new ModelColumn<>(I_C_TaxCategory.class, "ProductType", null);
+	String COLUMNNAME_ProductType = "ProductType";
 
 	/**
 	 * Get Updated.

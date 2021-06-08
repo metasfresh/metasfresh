@@ -35,6 +35,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
@@ -222,9 +223,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				logger.info("Changing C_Tax_ID to " + taxId + " for " + il);
 				il.setC_Tax_ID(taxId.getRepoId());
 
-				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(taxId.getRepoId());
+				final Tax tax = taxDAO.getTaxByIdOrNull(taxId.getRepoId());
 
-				il.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+				il.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 			}
 			return taxChange;
 		}

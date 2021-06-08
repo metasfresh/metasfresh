@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.procurement.base.IWebuiPush;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -32,7 +31,6 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 

@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import com.google.common.collect.ImmutableList;
@@ -111,7 +112,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 	}
 
 	@Override
-	public LookupValuesList getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
+	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
 	{
 		return getById(ctx.getRowId()).getFieldTypeahead(fieldName, query);
 	}
