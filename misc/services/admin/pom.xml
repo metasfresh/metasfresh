@@ -32,7 +32,10 @@
             <artifactId>spring-boot-admin-starter-server</artifactId>
             <version>${spring-boot-admin.version}</version>
         </dependency>
-
+        <dependency> <!-- with this we can statically specify the instances of interest in application.yml -->
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-commons</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
