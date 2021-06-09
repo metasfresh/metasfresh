@@ -124,13 +124,15 @@ class Modal extends Component {
     const msgBody = JSON.parse(websocketMsg.body);
     const { stale } = msgBody;
     if (stale) {
-      const { dispatch, windowId, docId } = this.props;
+      const { dispatch, windowId, docId, tabId, rowId } = this.props;
 
       dispatch(
         fireUpdateData({
           windowId,
           documentId: docId,
           isModal: true,
+          tabId,
+          rowId,
         })
       );
     }
