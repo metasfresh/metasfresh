@@ -1,15 +1,13 @@
 package de.metas.order.compensationGroup;
 
-import java.math.BigDecimal;
-
-import javax.annotation.Nullable;
-
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -34,26 +32,26 @@ import lombok.Value;
  */
 
 @Value
-public class GroupTemplateLine
+public class GroupTemplateCompensationLine
 {
-	public static GroupTemplateLine ofProductId(final ProductId productId)
+	public static GroupTemplateCompensationLine ofProductId(@NonNull final ProductId productId)
 	{
 		return builder()
 				.productId(productId)
 				.build();
 	}
 
-	GroupTemplateLineId id;
-	ProductId productId;
-	private Percent percentage;
-	private GroupMatcher groupMatcher;
+	@Nullable GroupTemplateLineId id;
+	@NonNull ProductId productId;
+	@Nullable Percent percentage;
+	@NonNull GroupMatcher groupMatcher;
 
 	@Builder
-	private GroupTemplateLine(
+	private GroupTemplateCompensationLine(
 			@Nullable final GroupTemplateLineId id,
 			@NonNull final ProductId productId,
 			@Nullable final BigDecimal percentage,
-			@Nullable GroupMatcher groupMatcher)
+			@Nullable final GroupMatcher groupMatcher)
 	{
 		this.id = id;
 		this.productId = productId;
@@ -61,4 +59,8 @@ public class GroupTemplateLine
 		this.groupMatcher = groupMatcher != null ? groupMatcher : GroupMatchers.ALWAYS;
 	}
 
+	public boolean isMatching(@NonNull final Group group)
+	{
+		return getGroupMatcher().isMatching(group);
+	}
 }
