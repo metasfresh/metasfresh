@@ -1,25 +1,8 @@
-package de.metas.monitoring.adapter.apm;
-
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringServiceUtil;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Timer;
-import lombok.NonNull;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.concurrent.Callable;
-
 /*
  * #%L
  * de.metas.monitoring
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,6 +20,23 @@ import java.util.concurrent.Callable;
  * #L%
  */
 
+package de.metas.monitoring.adapter;
+
+import de.metas.common.util.EmptyUtil;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
+import lombok.NonNull;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.concurrent.Callable;
+
 @Service
 @Primary
 public class MicrometerPerformanceMonitoringService implements PerformanceMonitoringService
@@ -45,7 +45,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService;
 
 	public MicrometerPerformanceMonitoringService(
-			@NonNull Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService,
+			@NonNull final Optional<APMPerformanceMonitoringService> apmPerformanceMonitoringService,
 			@NonNull final MeterRegistry meterRegistry)
 	{
 		this.apmPerformanceMonitoringService = apmPerformanceMonitoringService;
@@ -58,7 +58,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final TransactionMetadata metadata)
 	{
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
-		tags.add(Tag.of("Name", metadata.getName()));
+		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
 
 		final Callable<V> callableToUse;
 		if (apmPerformanceMonitoringService.isPresent())
@@ -72,14 +72,47 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		return recordCallable(callableToUse, tags, "mf." + metadata.getType().getCode());
 	}
 
-	private ArrayList<Tag> createTagsFromLabels(final Map<String, String> labels)
+	@Override
+	public <V> V monitorSpan(
+			@NonNull final Callable<V> callable,
+			@NonNull final SpanMetadata metadata)
+	{
+		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
+
+		mkTagIfNotNull("Name", metadata.getName()).ifPresent(tags::add);
+		mkTagIfNotNull("SubType", metadata.getSubType()).ifPresent(tags::add);
+		mkTagIfNotNull("Action", metadata.getAction()).ifPresent(tags::add);
+
+		final Callable<V> callableToUse;
+		if (apmPerformanceMonitoringService.isPresent())
+		{
+			callableToUse = () -> apmPerformanceMonitoringService.get().monitorSpan(callable, metadata);
+		}
+		else
+		{
+			callableToUse = callable;
+		}
+
+		return recordCallable(callableToUse, tags, "mf." + metadata.getType());
+	}
+
+	private ArrayList<Tag> createTagsFromLabels(@NonNull final Map<String, String> labels)
 	{
 		final ArrayList<Tag> tags = new ArrayList<>();
 		for (final Entry<String, String> entry : labels.entrySet())
 		{
-			tags.add(Tag.of(entry.getKey(), entry.getValue()));
+			mkTagIfNotNull(entry.getKey(), entry.getValue()).ifPresent(tags::add);
 		}
 		return tags;
+	}
+	
+	private Optional<Tag> mkTagIfNotNull(@Nullable final String name, @Nullable final String value)
+	{
+		if (EmptyUtil.isBlank(name) || EmptyUtil.isBlank(value))
+		{
+			return Optional.empty();
+		}
+		return Optional.of(Tag.of(name, value));
 	}
 
 	private <V> V recordCallable(final Callable<V> callable, final ArrayList<Tag> tags, final String name)
@@ -93,28 +126,5 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			throw PerformanceMonitoringServiceUtil.asRTE(e);
 		}
-	}
-
-	@Override
-	public <V> V monitorSpan(
-			@NonNull final Callable<V> callable,
-			@NonNull final SpanMetadata metadata)
-	{
-		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
-		tags.add(Tag.of("Name", metadata.getName()));
-		tags.add(Tag.of("SubType", metadata.getSubType()));
-		tags.add(Tag.of("Action", metadata.getAction()));
-
-		final Callable<V> callableToUse;
-		if (apmPerformanceMonitoringService.isPresent())
-		{
-			callableToUse = () -> apmPerformanceMonitoringService.get().monitorSpan(callable, metadata);
-		}
-		else
-		{
-			callableToUse = callable;
-		}
-		
-		return recordCallable(callableToUse, tags, "mf." + metadata.getType());
 	}
 }
