@@ -1,4 +1,4 @@
----DROP FUNCTION IF EXISTS report.cu_product_label(IN M_HU_ID numeric);
+DROP FUNCTION IF EXISTS report.cu_product_label(IN M_HU_ID numeric);
 
 CREATE FUNCTION report.cu_product_label(IN M_HU_ID numeric)
   RETURNS TABLE
