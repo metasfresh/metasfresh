@@ -98,7 +98,7 @@ public class SalesInvoiceCandidateFactory
 		if (invoiceDocTypeId != null)
 		{
 			final I_C_DocType invoiceDocType = docTypeBL.getById(invoiceDocTypeId);
-			if (invoiceDocType.isExcludeFromCommission())
+			if (invoiceDocType.isExcludeFromCommision())
 			{
 				logger.debug("C_Invoice_Candidate has C_DocTypeInvoice_ID={} which has sExcludeFromCommission=true; -> return empty", invoiceDocType);
 				return Optional.empty();

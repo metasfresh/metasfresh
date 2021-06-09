@@ -17,7 +17,7 @@ public interface I_C_DocType
 
 
 	/**
-	 * Set Emailtext.
+	 * Set Boiler Plate.
 	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
@@ -27,7 +27,7 @@ public interface I_C_DocType
 	void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
 
 	/**
-	 * Get Emailtext.
+	 * Get Boiler Plate.
 	 * Standardtext bei Email-Versand
 	 *
 	 * <br>Type: TableDir
@@ -74,7 +74,7 @@ public interface I_C_DocType
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Druck - Format.
+	 * Set Print Format.
 	 * Data Print Format
 	 *
 	 * <br>Type: TableDir
@@ -84,7 +84,7 @@ public interface I_C_DocType
 	void setAD_PrintFormat_ID (int AD_PrintFormat_ID);
 
 	/**
-	 * Get Druck - Format.
+	 * Get Print Format.
 	 * Data Print Format
 	 *
 	 * <br>Type: TableDir
@@ -99,28 +99,6 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, org.compiere.model.I_AD_PrintFormat> COLUMN_AD_PrintFormat_ID = new ModelColumn<>(I_C_DocType.class, "AD_PrintFormat_ID", org.compiere.model.I_AD_PrintFormat.class);
 	String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
-
-	/**
-	 * Set Difference Document.
-	 * Document type for generating in dispute Shipments
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
-
-	/**
-	 * Get Difference Document.
-	 * Document type for generating in dispute Shipments
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_DocTypeDifference_ID();
-
-	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
 
 	/**
 	 * Set Document Type.
@@ -146,7 +124,29 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Rechnungs-Belegart.
+	 * Set Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DocTypeDifference_ID (int C_DocTypeDifference_ID);
+
+	/**
+	 * Get Difference Document.
+	 * Document type for generating in dispute Shipments
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DocTypeDifference_ID();
+
+	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
+
+	/**
+	 * Set DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
 	 * <br>Type: Table
@@ -156,7 +156,7 @@ public interface I_C_DocType
 	void setC_DocTypeInvoice_ID (int C_DocTypeInvoice_ID);
 
 	/**
-	 * Get Rechnungs-Belegart.
+	 * Get DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
 	 * <br>Type: Table
@@ -636,6 +636,27 @@ public interface I_C_DocType
 	String COLUMNNAME_IsDocNoControlled = "IsDocNoControlled";
 
 	/**
+	 * Set Exclude From Commission.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsExcludeFromCommision (boolean IsExcludeFromCommision);
+
+	/**
+	 * Get Exclude From Commission.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromCommision();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_IsExcludeFromCommision = new ModelColumn<>(I_C_DocType.class, "IsExcludeFromCommision", null);
+	String COLUMNNAME_IsExcludeFromCommision = "IsExcludeFromCommision";
+
+	/**
 	 * Set Indexed.
 	 * Index the document for the internal search engine
 	 *
@@ -912,7 +933,4 @@ public interface I_C_DocType
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	default void setIsExcludeFromCommission(final boolean flag) {}
-	default boolean isExcludeFromCommission() { return false; }
 }
