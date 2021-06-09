@@ -111,7 +111,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
-		final boolean readonlyEffective = readonly || extractIsReadonly(attributesStorage);
+		final boolean editableInHU = !readonly && !extractIsReadonly(attributesStorage);
 
 		final ImmutableSet.Builder<AttributeCode> readonlyAttributeNames = ImmutableSet.builder();
 		final ImmutableSet.Builder<AttributeCode> hiddenAttributeNames = ImmutableSet.builder();
@@ -121,9 +121,16 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		for (final I_M_Attribute attribute : attributes)
 		{
 			final AttributeCode attributeCode = HUEditorRowAttributesHelper.extractAttributeCode(attribute);
-			final boolean alwaysUpdatable = attribute.isAlwaysUpdateable();
 
-			if ((!alwaysUpdatable && readonlyEffective) || attributesStorage.isReadonlyUI(calloutCtx, attribute))
+			final boolean editableInUI = !attributesStorage.isReadonlyUI(calloutCtx, attribute);
+
+			final boolean editableInHuOverride = attribute.isAlwaysUpdateable()
+					&& !isExceptionFromAlwaysUpdatable(attribute);
+
+			final boolean editableEffective = editableInUI &&
+					(editableInHuOverride || editableInHU);
+
+			if (!editableEffective)
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
@@ -144,6 +151,37 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		// Bind attribute storage:
 		// each change on attribute storage shall be forwarded to current execution
 		AttributeStorage2ExecutionEventsForwarder.bind(attributesStorage, documentPath);
+	}
+
+	/*
+	Introduced in #gh11244
+	To be taken out when we have an implementation for updating the stocks and/or receipt lines when we change
+	this attribute in an active HU.
+	 */
+	private boolean isExceptionFromAlwaysUpdatable(@NonNull final I_M_Attribute attribute)
+	{
+		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
+
+		if (isWeightAttribute(attributeCode))
+		{
+			return true;
+		}
+
+		if (HUAttributeConstants.ATTR_QualityDiscountPercent_Value.equals(attributeCode))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean isWeightAttribute(@NonNull AttributeCode attributeCode)
+	{
+		return Weightables.ATTR_WeightGross.equals(attributeCode)
+				|| Weightables.ATTR_WeightNet.equals(attributeCode)
+				|| Weightables.ATTR_WeightTare.equals(attributeCode)
+				|| Weightables.ATTR_WeightTareAdjust.equals(attributeCode);
+
 	}
 
 	private static boolean extractIsReadonly(final IAttributeStorage attributesStorage)
@@ -414,7 +452,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			final DocumentFieldWidgetType widgetType = HUEditorRowAttributesHelper.extractWidgetType(attributeValue);
 
 			changesCollector.collectEvent(MutableDocumentFieldChangedEvent.of(documentPath, attributeCode.getCode(), widgetType)
-					.setValue(jsonValue));
+												  .setValue(jsonValue));
 		}
 
 		@Override
