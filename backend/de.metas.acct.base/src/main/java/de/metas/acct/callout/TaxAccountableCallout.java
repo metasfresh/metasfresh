@@ -47,6 +47,7 @@ import java.math.BigDecimal;
  */
 /* package */class TaxAccountableCallout
 {
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	// NOTE: no status fields are allowed because it's assume this is stateless
 
 	/**
@@ -72,7 +73,6 @@ import java.math.BigDecimal;
 	 */
 	public void onTaxBaseAmt(final ITaxAccountable taxAccountable)
 	{
-		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final Tax tax = taxDAO.getTaxById(taxAccountable.getC_Tax_ID());
 		if (tax == null)
 		{
@@ -116,7 +116,6 @@ import java.math.BigDecimal;
 	 */
 	public void onTaxTotalAmt(final ITaxAccountable taxAccountable)
 	{
-		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final Tax tax = taxDAO.getTaxById(taxAccountable.getC_Tax_ID());
 		if (tax == null)
 		{

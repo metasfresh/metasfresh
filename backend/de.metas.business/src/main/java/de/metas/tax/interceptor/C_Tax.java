@@ -98,7 +98,7 @@ public class C_Tax
 				final boolean isEULocation = countryAreaBL.isMemberOf(Env.getCtx(),
 						ICountryAreaBL.COUNTRYAREAKEY_EU,
 						countryCode,
-						tax.getUpdated());
+						Env.getDate());
 				if ((isEULocation && !WITHIN_COUNTRY_AREA.equals(typeOfDestCountry)) || (!isEULocation && OUTSIDE_COUNTRY_AREA.equals(typeOfDestCountry)))
 				{
 					tax.setTo_Country_ID(0);
