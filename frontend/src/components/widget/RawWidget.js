@@ -210,22 +210,25 @@ export class RawWidget extends PureComponent {
       listenOnKeysTrue,
       enableOnClickOutside,
     } = this.props;
+    const { isFocused } = this.state;
 
-    this.setState(
-      {
-        isFocused: false,
-      },
-      () => {
-        enableOnClickOutside && enableOnClickOutside();
-        allowShortcut();
-        handleBlur && handleBlur();
-        listenOnKeysTrue && listenOnKeysTrue();
+    if (isFocused) {
+      this.setState(
+        {
+          isFocused: false,
+        },
+        () => {
+          enableOnClickOutside && enableOnClickOutside();
+          allowShortcut();
+          handleBlur && handleBlur();
+          listenOnKeysTrue && listenOnKeysTrue();
 
-        if (widgetField) {
-          this.handlePatch(widgetField, value, id);
+          if (widgetField) {
+            this.handlePatch(widgetField, value, id);
+          }
         }
-      }
-    );
+      );
+    }
   };
 
   /**
