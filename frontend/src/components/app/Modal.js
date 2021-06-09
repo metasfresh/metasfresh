@@ -16,6 +16,7 @@ import {
   callAPI,
   patch,
   resetPrintingOptions,
+  fireUpdateData,
 } from '../../actions/WindowActions';
 import { openFile } from '../../actions/GenericActions';
 
@@ -119,7 +120,19 @@ class Modal extends Component {
    * @param {string} websocketMsg
    */
   onWebsocketMessage = (websocketMsg) => {
-    console.log(websocketMsg);
+    const msgBody = JSON.parse(websocketMsg.body);
+    const { stale } = msgBody;
+    if (stale) {
+      const { dispatch, windowId, docId } = this.props;
+
+      dispatch(
+        fireUpdateData({
+          windowId,
+          documentId: docId,
+          isModal: true,
+        })
+      );
+    }
   };
 
   componentDidUpdate(prevProps) {
@@ -871,6 +884,8 @@ Modal.propTypes = {
   printingOptions: PropTypes.object,
   title: PropTypes.string,
   websocket: PropTypes.string,
+  windowsType: PropTypes.string,
+  docId: PropTypes.string,
 };
 
 const mapStateToProps = (state, props) => {
