@@ -19,6 +19,7 @@ import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
@@ -466,7 +467,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	private void setC_DocType(final I_C_Invoice invoice, @NonNull final IInvoiceHeader invoiceHeader)
 	{
-		final String invoiceHeaderDocBaseType = invoiceHeader.getDocBaseType();
+		final InvoiceDocBaseType invoiceHeaderDocBaseType = invoiceHeader.getDocBaseType();
 
 		if (invoice.getC_DocTypeTarget_ID() <= 0)
 		{
@@ -490,11 +491,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		// and the invoice document type is fetched from order's document type
 		// and that document type is not a credit memo.
 		{
-			final boolean invoiceHeader_IsCreditMemo = invoiceBL.isCreditMemo(invoiceHeaderDocBaseType);
+			final boolean invoiceHeader_IsCreditMemo = invoiceHeaderDocBaseType != null && invoiceHeaderDocBaseType.isCreditMemo();
 			final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
 			Check.assumeNotNull(invoiceDocType, "invoiceDocType not null"); // shall not happen
-			final String invoiceDocBaseType = invoiceDocType.getDocBaseType();
-			final boolean invoice_IsCreditMemo = invoiceBL.isCreditMemo(invoiceDocBaseType);
+			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
+			final boolean invoice_IsCreditMemo = invoiceDocBaseType.isCreditMemo();
 			if (invoiceHeader_IsCreditMemo && !invoice_IsCreditMemo)
 			{
 				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);

@@ -1,6 +1,6 @@
 CREATE OR REPLACE FUNCTION public.scramble_string(
     p_string            character varying,
-    p_delimiter_pattern character varying = '[,\s]' /*by default, use comma and white-spaces as the delimiter */)
+    p_delimiter_pattern character varying = '[@,{}\s]' /*by default, use comma and white-spaces as the delimiter */)
     RETURNS text
     LANGUAGE 'plpgsql'
     COST 100
@@ -103,7 +103,7 @@ BEGIN
                 THEN
                     v_scramble_update_stmt = v_scramble_update_stmt || ', ';
                 END IF;
-                v_scramble_update_stmt = v_scramble_update_stmt || v_columnName || ' = ' || 'public.scramble_string(' || v_columnName || ')';
+                v_scramble_update_stmt = v_scramble_update_stmt || v_columnName || ' = ' || 'public.scramble_string(p_string := ' || v_columnName || ')';
                 v_columnsToScrambleCnt = v_columnsToScrambleCnt + 1;
             END IF;
         END LOOP;
@@ -114,6 +114,7 @@ BEGIN
             RAISE NOTICE 'DRY-RUN - scramble UPDATE statement = %', v_scramble_update_stmt;
         ELSE
             v_updateStartTime = clock_timestamp();
+            RAISE NOTICE 'Executing scramble UPDATE statement = %', v_scramble_update_stmt;
             EXECUTE v_scramble_update_stmt;
             GET DIAGNOSTICS v_lastTableRowCount = ROW_COUNT;
             RAISE NOTICE '% TableName = % - updated % rows in %', clock_timestamp()
