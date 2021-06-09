@@ -126,7 +126,7 @@ class Modal extends Component {
     const { windowId, viewId, indicator, websocket } = this.props;
 
     // initializes the WS connection for the modal if there isn't already an existing one
-    websocket && this.initModalWsConnection();
+    websocket && this.initModalWsConnection(websocket);
 
     const { waitingFetch } = this.state;
 
