@@ -519,4 +519,79 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=647478
 
 
 
+-- 2021-06-09T16:13:56.663Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='If this setting is activated, the attribute value can be changed even if the respective handling unit is no longer in "Planned" status. If the attribute was not updatable for the panning HU, it will not be updatable for the active HU either.',Updated=TO_TIMESTAMP('2021-06-09 19:13:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579314 AND AD_Language='en_US'
+;
+
+-- 2021-06-09T16:13:56.823Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579314,'en_US') 
+;
+
+-- 2021-06-09T18:04:58.528Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. ', Help='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. Wenn das Merkmal bei einer HU im Status "Geplant" editierbar war und diese Einstellung aktiv ist, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.',Updated=TO_TIMESTAMP('2021-06-09 21:04:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579314 AND AD_Language='de_DE'
+;
+
+-- 2021-06-09T18:04:58.573Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579314,'de_DE') 
+;
+
+-- 2021-06-09T18:04:58.689Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579314,'de_DE') 
+;
+
+-- 2021-06-09T18:04:58.737Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName=NULL, Name='Merkmal immer aktualisierbar', Description='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. ', Help='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. Wenn das Merkmal bei einer HU im Status "Geplant" editierbar war und diese Einstellung aktiv ist, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.' WHERE AD_Element_ID=579314
+;
+
+-- 2021-06-09T18:04:58.769Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Merkmal immer aktualisierbar', Description='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. ', Help='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. Wenn das Merkmal bei einer HU im Status "Geplant" editierbar war und diese Einstellung aktiv ist, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.' WHERE AD_Element_ID=579314 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-09T18:04:58.806Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Merkmal immer aktualisierbar', Description='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. ', Help='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. Wenn das Merkmal bei einer HU im Status "Geplant" editierbar war und diese Einstellung aktiv ist, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579314) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579314)
+;
+
+-- 2021-06-09T18:04:58.860Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Merkmal immer aktualisierbar', Description='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. ', Help='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. Wenn das Merkmal bei einer HU im Status "Geplant" editierbar war und diese Einstellung aktiv ist, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.', CommitWarning = NULL WHERE AD_Element_ID = 579314
+;
+
+-- 2021-06-09T18:04:58.893Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Merkmal immer aktualisierbar', Description='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. ', Help='Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. Wenn das Merkmal bei einer HU im Status "Geplant" editierbar war und diese Einstellung aktiv ist, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.' WHERE AD_Element_ID = 579314
+;
+
+-- 2021-06-09T18:04:58.924Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Merkmal immer aktualisierbar', Description = 'Bei Aktivierung dieser Einstellung kann der Merkmalswert auch dann geändert werden, wenn sich die jeweilige Handling Unit nicht mehr im Status "Geplant" befindet. ', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579314
+;
+
+-- 2021-06-09T18:05:59.836Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Help='If this setting is activated, the attribute value can be changed even if the respective handling unit is no longer in "Planned" status. If the attribute was not updatable for the panning HU, it will not be updatable for the active HU either.',Updated=TO_TIMESTAMP('2021-06-09 21:05:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579314 AND AD_Language='en_US'
+;
+
+-- 2021-06-09T18:05:59.873Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579314,'en_US') 
+;
+
+-- 2021-06-09T18:06:06.999Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='If this setting is activated, the attribute value can be changed even if the respective handling unit is no longer in "Planned" status. If the attribute was not updatable for the panning HU, it will not be updatable for the active HU either.', Help='If this setting is activated, the attribute value can be changed even if the respective handling unit is no longer in "Planned" status. If the attribute was not updatable for the panning HU, it will not be updatable for the active HU either..',Updated=TO_TIMESTAMP('2021-06-09 21:06:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579314 AND AD_Language='en_GB'
+;
+
+-- 2021-06-09T18:06:07.031Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579314,'en_GB') 
+;
+
 
