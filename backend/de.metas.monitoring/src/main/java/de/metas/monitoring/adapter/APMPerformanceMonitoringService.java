@@ -48,6 +48,7 @@ public class APMPerformanceMonitoringService implements PerformanceMonitoringSer
 		final Map<String, String> distrHeaders = metadata.getDistributedTransactionHeaders();
 		if (distrHeaders.isEmpty())
 		{
+			
 			transaction = ElasticApm.startTransaction();
 		}
 		else
@@ -61,8 +62,7 @@ public class APMPerformanceMonitoringService implements PerformanceMonitoringSer
 			transaction.setType(metadata.getType().getCode());
 			metadata.getLabels().forEach(transaction::addLabel);
 
-			final V result = callable.call();
-			return result;
+			return callable.call();
 		}
 		catch (final Exception e)
 		{
