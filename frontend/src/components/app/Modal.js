@@ -63,6 +63,7 @@ class Modal extends Component {
     // we do not use global WS connector as we don't want to mess with the logic around it and have undesired side effects
     // WS connectivity for `Modal` has to reside in this class as it is easier to reason about and follow
     // note that we do not initialize here the connection as the websocket is not present in the props now
+    // example side effect that was fixed with a hotfix: https://github.com/metasfresh/metasfresh/commit/f680d4c7ee28e924d98bf8581081e426836c33ce
     this.modalWsClient = null;
   }
 
