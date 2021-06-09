@@ -37,6 +37,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -50,6 +51,7 @@ import org.compiere.util.DB;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -59,6 +61,7 @@ public class ApiAuditFilter_StepDef
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final TestContext testContext;
 
 	public ApiAuditFilter_StepDef(final TestContext testContext)
@@ -157,6 +160,7 @@ public class ApiAuditFilter_StepDef
 				final String adIssueSummary = DataTableUtil.extractStringOrNullForColumnName(row, "AD_Issue.Summary");
 
 				final I_API_Request_Audit_Log auditLogRecord = auditLogRecords.stream()
+						.filter(log -> log.getLogmessage() != null)
 						.filter(log -> log.getLogmessage().contains(logmessage))
 						.findFirst().orElse(null);
 
@@ -191,11 +195,7 @@ public class ApiAuditFilter_StepDef
 		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
 		assertThat(requestId).isNotNull();
 
-		final List<I_API_Response_Audit> responseAuditRecords =
-				queryBL.createQueryBuilder(I_API_Response_Audit.class)
-						.addEqualsFilter(I_API_Response_Audit.COLUMN_API_Request_Audit_ID, requestId.getValue())
-						.create()
-						.list();
+		final List<I_API_Response_Audit> responseAuditRecords = getApiResponseRecordsByRequestAuditId(ApiRequestAuditId.ofRepoId(requestId.getValue()));
 
 		final List<Map<String, String>> dataTable = table.asMaps();
 		if (dataTable.size() > 0)
@@ -209,7 +209,7 @@ public class ApiAuditFilter_StepDef
 
 				final I_API_Response_Audit record = responseAuditRecords
 						.stream()
-						.filter(responseAudit -> responseAudit.getHttpCode().equals(httpCode) && responseAudit.getBody().equals(body))
+						.filter(responseAudit -> Objects.equals(responseAudit.getHttpCode(), httpCode) && Objects.equals(responseAudit.getBody(), body))
 						.findFirst().orElse(null);
 
 				assertThat(record).isNotNull();
@@ -257,5 +257,49 @@ public class ApiAuditFilter_StepDef
 		final ImmutableList<ApiRequestAudit> responseAuditRecords = ImmutableList.of(apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue())));
 
 		apiRequestReplayService.replayApiRequests(responseAuditRecords);
+	}
+
+	@When("^there is added one record referencing log in API_Request_Audit_Log for (API_Request_Audit|API_Response_Audit) table$")
+	public void API_Request_Audit_Log_Request_Audit_validation(@NonNull final String tableName, @NonNull final DataTable table)
+	{
+		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+		assertThat(requestId).isNotNull();
+
+		final ApiRequestAuditId apiRequestAuditId = ApiRequestAuditId.ofRepoId(requestId.getValue());
+
+		final int apiTableId = tableName.equals(I_API_Request_Audit.Table_Name)
+				? tableDAO.retrieveTableId(I_API_Request_Audit.Table_Name)
+				: tableDAO.retrieveTableId(I_API_Response_Audit.Table_Name);
+
+		final int recordId = tableName.equals(I_API_Request_Audit.Table_Name)
+				? requestId.getValue()
+				: getApiResponseRecordsByRequestAuditId(apiRequestAuditId).get(0).getAPI_Response_Audit_ID();
+
+		final Map<String, String> row = table.asMaps().get(0);
+		final String type = DataTableUtil.extractStringForColumnName(row, "Type");
+
+		final List<I_API_Request_Audit_Log> auditLogRecords =
+				queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
+						.addEqualsFilter(I_API_Request_Audit_Log.COLUMN_API_Request_Audit_ID, requestId.getValue())
+						.create()
+						.list();
+
+		final I_API_Request_Audit_Log auditLogRecord = auditLogRecords
+				.stream()
+				.filter(log -> log.getAD_Table_ID() == apiTableId)
+				.filter(log -> Objects.equals(log.getType(), type))
+				.filter(log -> log.getRecord_ID() == recordId)
+				.findFirst().orElse(null);
+
+		assertThat(auditLogRecord).isNotNull();
+	}
+
+	@NonNull
+	private List<I_API_Response_Audit> getApiResponseRecordsByRequestAuditId(@NonNull final ApiRequestAuditId apiRequestAuditId)
+	{
+		return queryBL.createQueryBuilder(I_API_Response_Audit.class)
+				.addEqualsFilter(I_API_Response_Audit.COLUMN_API_Request_Audit_ID, apiRequestAuditId.getRepoId())
+				.create()
+				.list();
 	}
 }
