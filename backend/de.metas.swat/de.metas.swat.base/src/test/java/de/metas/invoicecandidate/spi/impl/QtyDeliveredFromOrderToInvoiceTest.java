@@ -220,6 +220,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		docType = InterfaceWrapperHelper.create(ctx, I_C_DocType.class, trxName);
 		docType.setAD_Org_ID(orgId.getRepoId());
 		docType.setC_DocType_ID(1000016);
+		InterfaceWrapperHelper.save(docType);
 	}
 
 	private void initC_Order()
