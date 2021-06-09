@@ -121,8 +121,9 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		for (final I_M_Attribute attribute : attributes)
 		{
 			final AttributeCode attributeCode = HUEditorRowAttributesHelper.extractAttributeCode(attribute);
+			final boolean alwaysUpdatable = attribute.isAlwaysUpdateable();
 
-			if (readonlyEffective || attributesStorage.isReadonlyUI(calloutCtx, attribute))
+			if (!alwaysUpdatable && (readonlyEffective || attributesStorage.isReadonlyUI(calloutCtx, attribute)))
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
