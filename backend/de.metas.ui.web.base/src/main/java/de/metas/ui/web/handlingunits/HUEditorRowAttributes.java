@@ -167,7 +167,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			return true;
 		}
 
-		if (HUAttributeConstants.ATTR_QualityDiscountPercent_Value.equals(attributeCode.getCode()))
+		if (AttributeCode.ofString(HUAttributeConstants.ATTR_QualityDiscountPercent_Value).equals(attributeCode.getCode()))
 		{
 			return true;
 		}
