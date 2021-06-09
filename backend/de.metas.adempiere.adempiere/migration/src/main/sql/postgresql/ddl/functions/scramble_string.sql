@@ -1,7 +1,6 @@
-
 CREATE OR REPLACE FUNCTION public.scramble_string(
     p_string            character varying,
-    p_delimiter_pattern character varying = '[,\s]' /*by default, use comma and white-spaces as the delimiter */)
+    p_delimiter_pattern character varying = '[@,{}\s]' /*by default, use comma and white-spaces as the delimiter */)
     RETURNS text
     LANGUAGE 'plpgsql'
     COST 100

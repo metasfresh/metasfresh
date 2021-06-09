@@ -38,7 +38,14 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 	VendorInvoice(X_C_DocType.DOCBASETYPE_APInvoice, SOTrx.PURCHASE, false),//
 	VendorCreditMemo(X_C_DocType.DOCBASETYPE_APCreditMemo, SOTrx.PURCHASE, true),//
 	CustomerInvoice(X_C_DocType.DOCBASETYPE_ARInvoice, SOTrx.SALES, false),//
-	CustomerCreditMemo(X_C_DocType.DOCBASETYPE_ARCreditMemo, SOTrx.SALES, true) //
+	CustomerCreditMemo(X_C_DocType.DOCBASETYPE_ARCreditMemo, SOTrx.SALES, true), //
+	//
+	/** Legacy commission/salary invoice */
+	@Deprecated
+	AEInvoice("AEI", SOTrx.PURCHASE, false),
+	/** Legacy invoice for recurrent payment */
+	@Deprecated
+	AVInvoice("AVI", SOTrx.PURCHASE, false),
 	;
 
 	@Getter
