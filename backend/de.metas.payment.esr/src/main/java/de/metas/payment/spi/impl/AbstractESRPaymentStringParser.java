@@ -72,6 +72,24 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 		return amount;
 	}
 
+	
+	protected final BigDecimal extractAmountFromString(final Properties ctx, final String amountStringWithPosibleSpaces, final List<String> collectedErrors)
+	{
+		final String amountString = Util.replaceNonDigitCharsWithZero(amountStringWithPosibleSpaces); // 04551
+
+		BigDecimal amount = BigDecimal.ZERO;
+		try
+		{
+			amount = new BigDecimal(amountString);
+		}
+		catch (final NumberFormatException e)
+		{
+			final String wrongNumberFormatAmount = Services.get(IMsgBL.class).getMsg(ctx, ERR_WRONG_NUMBER_FORMAT_AMOUNT, new Object[] { amountString });
+			collectedErrors.add(wrongNumberFormatAmount);
+		}
+		return amount;
+	}
+	
 	/**
 	 *
 	 * @param dateStr date string in format yyMMdd

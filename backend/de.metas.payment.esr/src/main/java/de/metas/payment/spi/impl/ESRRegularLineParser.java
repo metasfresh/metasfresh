@@ -29,7 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.impl.PaymentString;
 import de.metas.payment.api.impl.ESRPaymentStringDataProvider;
@@ -50,7 +49,7 @@ public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 	}
 
 	@Override
-	public IPaymentString parse(final Properties ctx, final String paymentText) throws IndexOutOfBoundsException
+	public PaymentString parse(final Properties ctx, final String paymentText) throws IndexOutOfBoundsException
 	{
 		Check.assumeNotNull(paymentText, "paymentText not null");
 
@@ -78,15 +77,17 @@ public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 		final String esrReferenceNoComplete = paymentText.substring(12, 39);
 		final InvoiceReferenceNo invoiceReferenceNo = InvoiceReferenceNos.parse(esrReferenceNoComplete);
 
-		final IPaymentString paymentString = new PaymentString(collectedErrors,
-				paymentText, // FRESH-318
-				postAccountNo,
-				invoiceReferenceNo.getBankAccount(),
-				amount,
-				esrReferenceNoComplete,
-				paymentDate,
-				accountDate,
-				invoiceReferenceNo.getOrg());
+		final PaymentString paymentString = PaymentString.builder()
+				.collectedErrors(collectedErrors)
+				.rawPaymentString(paymentText)
+				.postAccountNo(postAccountNo)
+				.innerAccountNo(invoiceReferenceNo.getBankAccount())
+				.amount(amount)
+				.referenceNoComplete(esrReferenceNoComplete)
+				.paymentDate(paymentDate)
+				.accountDate(accountDate)
+				.orgValue(invoiceReferenceNo.getOrg())
+				.build();
 
 		final IPaymentStringDataProvider dataProvider = new ESRPaymentStringDataProvider(paymentString);
 		paymentString.setDataProvider(dataProvider);

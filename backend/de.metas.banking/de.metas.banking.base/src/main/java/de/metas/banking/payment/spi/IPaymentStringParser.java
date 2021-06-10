@@ -25,7 +25,7 @@ package de.metas.banking.payment.spi;
 
 import java.util.Properties;
 
-import de.metas.banking.payment.IPaymentString;
+import de.metas.banking.payment.impl.PaymentString;
 
 public interface IPaymentStringParser
 {
@@ -36,5 +36,5 @@ public interface IPaymentStringParser
 	 *
 	 * @throws IndexOutOfBoundsException if the paymentText has invalid length
 	 */
-	IPaymentString parse(Properties ctx, String paymentText) throws IndexOutOfBoundsException;
+	PaymentString parse(Properties ctx, String paymentText) throws IndexOutOfBoundsException;
 }

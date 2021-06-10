@@ -27,110 +27,50 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.util.lang.ObjectUtils;
 
-import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringDataProvider;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NonNull;
 
-public class PaymentString implements IPaymentString
+@Builder
+@Data
+public class PaymentString 
 {
+	@Nullable 
 	private final List<String> collectedErrors;
 
+	@NonNull
 	private final String rawPaymentString;
+	@Nullable
 	private final String postAccountNo;
+	@Nullable
 	private final String innerAccountNo;
+	@NonNull
 	private final BigDecimal amount;
+	@NonNull
 	private final String referenceNoComplete;
 	private final Timestamp paymentDate;
 	private final Timestamp accountDate;
 	private final String orgValue;
+	
+	@Nullable 
+	private final String IBAN;
 
-	private IPaymentStringDataProvider dataProvider = null;
+	private IPaymentStringDataProvider dataProvider;
 
-	public PaymentString(
-			final List<String> collectedErrors,
-			final String rawPaymentString,
-			final String postAccountNo,
-			final String innerAccountNo,
-			final BigDecimal amount,
-			final String referenceNoComplete,
-			final Timestamp paymentDate,
-			final Timestamp accountDate,
-			final String orgValue)
-	{
-		this.collectedErrors = collectedErrors;
 
-		this.rawPaymentString = rawPaymentString;
-		this.postAccountNo = postAccountNo;
-		this.innerAccountNo = innerAccountNo;
-		this.amount = amount;
-		this.referenceNoComplete = referenceNoComplete;
-		this.paymentDate = paymentDate;
-		this.accountDate = accountDate;
-		this.orgValue = orgValue;
-	}
-
-	@Override
 	public void setDataProvider(final IPaymentStringDataProvider dataProvider)
 	{
 		this.dataProvider = dataProvider;
 	}
 
-	@Override
 	public IPaymentStringDataProvider getDataProvider()
 	{
 		return dataProvider;
-	}
-
-	@Override
-	public List<String> getCollectedErrors()
-	{
-		return collectedErrors;
-	}
-
-	@Override
-	public String getPostAccountNo()
-	{
-		return postAccountNo;
-	}
-
-	@Override
-	public String getInnerAccountNo()
-	{
-		return innerAccountNo;
-	}
-
-	@Override
-	public BigDecimal getAmount()
-	{
-		return amount;
-	}
-
-	@Override
-	public String getReferenceNoComplete()
-	{
-		return referenceNoComplete;
-	}
-
-	@Override
-	public Timestamp getPaymentDate()
-	{
-		return paymentDate;
-	}
-
-	@Override
-	public Timestamp getAccountDate()
-	{
-		return accountDate;
-	}
-
-	/**
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-318
-	 */
-	@Override
-	public String getRawPaymentString()
-	{
-		return rawPaymentString;
 	}
 
 	@Override

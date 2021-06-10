@@ -39,12 +39,10 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
-/**
- * @author al
- */
-public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvider
+
+public class QRPaymentStringDataProvider extends AbstractPaymentStringDataProvider
 {
-	public ESRPaymentStringDataProvider(final PaymentString paymentString)
+	public QRPaymentStringDataProvider(final PaymentString paymentString)
 	{
 		super(paymentString);
 	}
@@ -54,8 +52,7 @@ public class ESRPaymentStringDataProvider extends AbstractPaymentStringDataProvi
 	{
 		final PaymentString paymentString = getPaymentString();
 
-		final String postAccountNo = paymentString.getPostAccountNo();
-		final String innerAccountNo = paymentString.getInnerAccountNo();
+		final String IBAN = paymentString.getIBAN();
 
 		final IESRBPBankAccountDAO esrbpBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
 
