@@ -179,11 +179,11 @@ Feature: API Audit POST http method
 
     And there is added one record referencing log in API_Request_Audit_Log for API_Request_Audit table
       | Type    |
-      | Created |
+      | Updated |
 
     And there is added one record referencing log in API_Request_Audit_Log for API_Response_Audit table
       | Type    |
-      | Updated |
+      | Created |
 
   Scenario: Testcase 200, reset to initial default data
     And all the data is reset to default
