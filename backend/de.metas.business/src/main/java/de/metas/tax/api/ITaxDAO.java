@@ -70,13 +70,6 @@ public interface ITaxDAO extends ISingletonService
 
 	Tax getBy(final TaxQuery taxQuery);
 
-	/**
-	 * Same as {@link ITaxDAO#getBy(TaxQuery)} but useful when needing to retrieve tax calculation logs
-	 * @param taxQueryWrapper contains the {@link TaxQuery} wrapper
-	 * @return the calculated tax
-	 */
-	Tax getBy(final TaxQueryWrapper taxQueryWrapper);
-
 	@Builder
 	@Value
 	class TaxCategoryQuery

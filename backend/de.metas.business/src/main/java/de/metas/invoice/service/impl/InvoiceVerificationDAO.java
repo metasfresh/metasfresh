@@ -41,13 +41,15 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxQuery;
-import de.metas.tax.api.TaxQueryWrapper;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Invoice_Verification_Run;
@@ -123,10 +125,10 @@ public class InvoiceVerificationDAO implements IInvoiceVerificationDAO
 	private I_C_Invoice_Verification_Run getVerificationRunFor(final InvoiceVerificationRunId invoiceVerificationRunId)
 	{
 		return Check.assumeNotNull(queryBL.createQueryBuilder(I_C_Invoice_Verification_Run.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Verification_Run.COLUMN_C_Invoice_Verification_Run_ID, invoiceVerificationRunId)
-				.create()
-				.first(), "No C_Invoice_Verification_Run for ID: {}", invoiceVerificationRunId);
+										   .addOnlyActiveRecordsFilter()
+										   .addEqualsFilter(I_C_Invoice_Verification_Run.COLUMN_C_Invoice_Verification_Run_ID, invoiceVerificationRunId)
+										   .create()
+										   .first(), "No C_Invoice_Verification_Run for ID: {}", invoiceVerificationRunId);
 	}
 
 	private InvoiceVerificationRunResult getVerificationRunResultForSetLine(final I_C_Invoice_Verification_SetLine setLine, @Nullable final Timestamp dateOfInterestOverride)
@@ -147,19 +149,20 @@ public class InvoiceVerificationDAO implements IInvoiceVerificationDAO
 				.isSoTrx(invoice.isSOTrx())
 				.dateOfInterest(CoalesceUtil.coalesce(dateOfInterestOverride, setLine.getRelevantDate()))
 				.build();
-		final StringBuilder log = new StringBuilder();
-		final Tax resultingTax = taxDAO.getBy(TaxQueryWrapper.builder()
-				.taxQuery(query)
-				.taxQueryLogger(log)
-				.build());
-		final Tax invoiceTax = taxDAO.getTaxById(line.getC_Tax_ID());
-		return InvoiceVerificationRunResult.builder()
-				.setLineId(InvoiceVerificationSetLineId.ofRepoId(setLine.getC_Invoice_Verification_SetLine_ID()))
-				.invoiceTax(invoiceTax)
-				.resultingTax(resultingTax)
-				.orgId(orgId)
-				.log(log.toString())
-				.build();
+
+		final PlainStringLoggable loggable = Loggables.newPlainStringLoggable();
+		try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(loggable))
+		{
+			final Tax resultingTax = taxDAO.getBy(query);
+			final Tax invoiceTax = taxDAO.getTaxById(line.getC_Tax_ID());
+			return InvoiceVerificationRunResult.builder()
+					.setLineId(InvoiceVerificationSetLineId.ofRepoId(setLine.getC_Invoice_Verification_SetLine_ID()))
+					.invoiceTax(invoiceTax)
+					.resultingTax(resultingTax)
+					.orgId(orgId)
+					.log(loggable.getConcatenatedMessages())
+					.build();
+		}
 	}
 
 	private void createVerificationSetLine(final InvoiceVerificationSetId verificationSetId, final InvoiceId id)
@@ -179,16 +182,15 @@ public class InvoiceVerificationDAO implements IInvoiceVerificationDAO
 		line.setC_DocType_ID(invoiceLine.getC_Invoice().getC_DocType_ID());
 		line.setRelevantDate(invoiceLine.getC_Invoice().getDateAcct());
 		save(line);
-
 	}
 
 	private Collection<InvoiceId> getInvoiceIdsForVerificationSet(final InvoiceVerificationSetId verificationSetId)
 	{
 		return new ArrayList<>(queryBL.createQueryBuilder(I_C_Invoice_Verification_SetLine.class)
-				.addEqualsFilter(I_C_Invoice_Verification_SetLine.COLUMNNAME_C_Invoice_Verification_Set_ID, verificationSetId)
-				.andCollect(I_C_Invoice_Verification_SetLine.COLUMN_C_Invoice_ID)
-				.create()
-				.listIds(InvoiceId::ofRepoId));
+									   .addEqualsFilter(I_C_Invoice_Verification_SetLine.COLUMNNAME_C_Invoice_Verification_Set_ID, verificationSetId)
+									   .andCollect(I_C_Invoice_Verification_SetLine.COLUMN_C_Invoice_ID)
+									   .create()
+									   .listIds(InvoiceId::ofRepoId));
 	}
 
 	public InvoiceVerificationRunStatus getStatusFor(final InvoiceVerificationRunId runId)
