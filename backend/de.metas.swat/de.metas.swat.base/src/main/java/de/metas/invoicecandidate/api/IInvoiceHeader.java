@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api;
 import java.time.LocalDate;
 import java.util.List;
 
+import de.metas.invoice.InvoiceDocBaseType;
 import org.compiere.model.I_C_DocType;
 
 import de.metas.bpartner.BPartnerId;
@@ -10,22 +11,16 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 
-/**
- * Invoice predecessor returned by {@link IAggregationBL#aggregate()}.
- *
- * @author tsa
- *
- */
 public interface IInvoiceHeader
 {
-	String getDocBaseType();
+	InvoiceDocBaseType getDocBaseType();
 
 	String getPOReference();
 
 	LocalDate getDateInvoiced();
 
 	/**
-	 * @task 08437
+	 * Task 08437
 	 */
 	LocalDate getDateAcct();
 
@@ -51,8 +46,6 @@ public interface IInvoiceHeader
 
 	/**
 	 * Returns a mapping from invoice candidates to the invoice line predecessor(s) into which the respective invoice candidate has been aggregated.
-	 *
-	 * @return
 	 */
 	List<IInvoiceCandAggregate> getLines();
 
