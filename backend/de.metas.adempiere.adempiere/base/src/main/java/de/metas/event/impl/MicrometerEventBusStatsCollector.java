@@ -22,12 +22,13 @@
 
 package de.metas.event.impl;
 
+import de.metas.event.EventBusStats;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
 import lombok.Builder;
 import lombok.Value;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Value
 @Builder
@@ -35,19 +36,32 @@ public class MicrometerEventBusStatsCollector
 {
 	Counter eventsEnqueued;
 	Counter eventsDequeued;
-	AtomicInteger queueLength;
+	AtomicLong queueLength;
 
 	Timer eventProcessingTimer;
 
 	public void incrementEventsEnqueued()
 	{
 		eventsEnqueued.increment();
-		queueLength.incrementAndGet();
+		updateQueueLength();
 	}
 
 	public void incrementEventsDequeued()
 	{
 		eventsDequeued.increment();
-		queueLength.decrementAndGet();
+		updateQueueLength();
+	}
+
+	private void updateQueueLength()
+	{ // not sure why but when i did just queueLength.getAndIncrement() / getAndDecrement(), the length wasn't correct
+		queueLength.set(Math.round(eventsEnqueued.count() - Math.round(eventsDequeued.count())));
+	}
+	
+	public EventBusStats snapshot()
+	{
+		return EventBusStats.builder()
+				.eventsEnqueued(Math.round(eventsEnqueued.count()))
+				.eventsDequeued(Math.round(eventsDequeued.count()))
+				.build();
 	}
 }

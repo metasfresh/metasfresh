@@ -1,26 +1,5 @@
 package de.metas.event.impl;
 
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Nullable;
-
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Timer;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.adempiere.util.jmx.JMXRegistry;
-import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -29,7 +8,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.SetMultimap;
-
+import com.google.common.util.concurrent.AtomicDouble;
 import de.metas.event.EventBusConfig;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -39,7 +18,26 @@ import de.metas.event.Type;
 import de.metas.event.jmx.JMXEventBusManager;
 import de.metas.event.remote.IEventBusRemoteEndpoint;
 import de.metas.logging.LogManager;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.adempiere.util.jmx.JMXRegistry;
+import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Service
 public class EventBusFactory implements IEventBusFactory
@@ -181,14 +179,13 @@ public class EventBusFactory implements IEventBusFactory
 			@NonNull final MeterRegistry meterRegistry)
 	{
 		final ImmutableList<Tag> tags = ImmutableList.of(
-				Tag.of("topic", topic.getName()),
 				Tag.of("type", topic.getType().toString()));
-		
+
 		final Timer eventProcessing = meterRegistry.timer("mf.eventBus.processor", tags);
-		
-		final AtomicInteger queueLength = meterRegistry.gauge("mf.eventBus.queueSize", tags, new AtomicInteger(0));
-		final Counter enqueued = meterRegistry.counter("mf.eventBus.enqueued", tags);
-		final Counter dequeued = meterRegistry.counter("mf.eventBus.dequeued", tags);
+
+		final AtomicLong queueLength = meterRegistry.gauge("mf.eventBus." + topic.getFullName() + ".queueSize", tags, new AtomicLong(0));
+		final Counter enqueued = meterRegistry.counter("mf.eventBus." + topic.getFullName() + ".enqueued", tags);
+		final Counter dequeued = meterRegistry.counter("mf.eventBus." + topic.getFullName() + ".dequeued", tags);
 
 		return MicrometerEventBusStatsCollector.builder()
 				.eventsEnqueued(enqueued)
