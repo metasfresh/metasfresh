@@ -117,6 +117,10 @@ public class HandlingUnitsRestController
 		try
 		{
 			final I_M_HU hu = handlingUnitsBL.getById(HuId.ofRepoId(huRepoId));
+			if (hu == null)
+			{
+				throw new AdempiereException("No HU found for ID=" + huRepoId);
+			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
 					.result(toJson(hu))
