@@ -212,12 +212,6 @@ public final class ProductBL implements IProductBL
 	@Override
 	public AttributeSetId getAttributeSetId(final I_M_Product product)
 	{
-		int attributeSetId = product.getM_AttributeSet_ID();
-		if (attributeSetId > 0)
-		{
-			return AttributeSetId.ofRepoId(attributeSetId);
-		}
-
 		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoIdOrNull(product.getM_Product_Category_ID());
 		if (productCategoryId == null) // guard against NPE which might happen in unit tests
 		{
@@ -225,7 +219,7 @@ public final class ProductBL implements IProductBL
 		}
 
 		final I_M_Product_Category productCategoryRecord = productsRepo.getProductCategoryById(productCategoryId);
-		attributeSetId = productCategoryRecord.getM_AttributeSet_ID();
+		final int attributeSetId = productCategoryRecord.getM_AttributeSet_ID();
 		return attributeSetId > 0 ? AttributeSetId.ofRepoId(attributeSetId) : AttributeSetId.NONE;
 	}
 

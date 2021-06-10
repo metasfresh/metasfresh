@@ -77,7 +77,9 @@ public interface IProductBL extends ISingletonService
 	boolean isDiverse(ProductId productId);
 
 	/**
-	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
+	 * Take the Attribute Set Id from the product category of the product.
+	 * !! Do **not** take the from the product itself !!
+	 * The product's Attribute Set Id is there for the product's dedicated ASI and is not to be used anywhere else.
 	 *
 	 * @return {@link AttributeSetId}; never returns null
 	 */

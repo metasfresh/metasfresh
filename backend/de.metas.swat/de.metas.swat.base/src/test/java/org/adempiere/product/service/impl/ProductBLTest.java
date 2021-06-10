@@ -28,6 +28,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_AttributeSet;
@@ -60,6 +61,10 @@ public class ProductBLTest
 		POJOWrapper.setDefaultStrictValues(false);
 	}
 
+	/**
+	 * Verifies that we do not return the product's attribute set.
+	 * The product's attribute set is there just for the product's ASI.
+	 */
 	@Test
 	public void testGetAttributeSet_Product()
 	{
@@ -73,7 +78,7 @@ public class ProductBLTest
 
 		final int productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1).getRepoId();
 
-		assertThat(productAS_ID).isEqualTo(as1.getM_AttributeSet_ID());
+		assertThat(productAS_ID).isEqualTo(AttributeSetId.NONE);
 	}
 
 	@Test
@@ -95,10 +100,13 @@ public class ProductBLTest
 		assertThat(productAS_ID).isEqualTo(category1.getM_AttributeSet_ID());
 	}
 
+	/** 
+	 * Verifies that we do not fall back to the product's attribute set.
+	 * The product's attribute set is there just for the product's ASI.
+	 */
 	@Test
 	public void testGetAttributeSet_ProductCategory_And_Product()
 	{
-
 		as1 = InterfaceWrapperHelper.create(ctx, I_M_AttributeSet.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(as1);
 
@@ -116,7 +124,7 @@ public class ProductBLTest
 
 		final int productAS_ID = Services.get(IProductBL.class).getAttributeSetId(product1).getRepoId();
 
-		assertThat(productAS_ID).isEqualTo(product1.getM_AttributeSet_ID());
+		assertThat(productAS_ID).isEqualTo(category1.getM_AttributeSet_ID());
 	}
 
 }
