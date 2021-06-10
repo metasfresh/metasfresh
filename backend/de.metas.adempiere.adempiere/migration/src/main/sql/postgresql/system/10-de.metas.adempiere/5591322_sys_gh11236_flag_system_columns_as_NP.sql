@@ -226,6 +226,25 @@ WHERE columnname = 'DocumentNo';
 
 UPDATE ad_column
 SET personaldatacategory='NP'
+WHERE columnname in ('ClassName','JavaClass');
+
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE ad_table_id = get_table_id('EXP_Processor_Type')
+;
+UPDATE ad_column
+SET personaldatacategory='NP'
+WHERE ad_table_id = get_table_id('IMP_Processor_Type')
+;
+
+UPDATE ad_column SET personaldatacategory='NP' WHERE columnname='PayProcessorClass' and ad_table_id = get_table_id('C_PaymentProcessor');
+UPDATE ad_column SET personaldatacategory='NP' WHERE columnname='SourceClassName' and ad_table_id = get_table_id('AD_Issue');
+UPDATE ad_column SET personaldatacategory='NP' WHERE columnname='SourceClassName' and ad_table_id = get_table_id('R_IssueKnown');
+UPDATE ad_column SET personaldatacategory='NP' WHERE columnname='StmtLoaderClass' and ad_table_id = get_table_id('C_BankStatementLoader');
+UPDATE ad_column SET personaldatacategory='NP' WHERE columnname='' and ad_table_id = get_table_id('IMP_Processor_Type');
+
+UPDATE ad_column
+SET personaldatacategory='NP'
 WHERE ad_table_id IN (SELECT ad_table_id
                       FROM ad_table
                       WHERE tablename IN (

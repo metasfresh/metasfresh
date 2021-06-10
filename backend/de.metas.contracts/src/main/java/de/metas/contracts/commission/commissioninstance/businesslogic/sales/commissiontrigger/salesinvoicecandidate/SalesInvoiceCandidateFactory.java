@@ -4,6 +4,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -21,6 +23,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.model.I_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -57,6 +60,8 @@ public class SalesInvoiceCandidateFactory
 {
 	private static final Logger logger = LogManager.getLogger(SalesInvoiceCandidateFactory.class);
 
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 	private final MoneyService moneyService;
 	private final CommissionProductService commissionProductService;
 
@@ -75,6 +80,7 @@ public class SalesInvoiceCandidateFactory
 			logger.debug("C_Invoice_Candidate has C_BPartner_SalesRep_ID={}; -> return empty", icRecord.getC_BPartner_SalesRep_ID());
 			return Optional.empty();
 		}
+
 		final ProductId productId = ProductId.ofRepoIdOrNull(icRecord.getM_Product_ID());
 		if (productId == null)
 		{
@@ -88,20 +94,31 @@ public class SalesInvoiceCandidateFactory
 			return Optional.empty();
 		}
 
+		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(icRecord.getC_DocTypeInvoice_ID());
+		if (invoiceDocTypeId != null)
+		{
+			final I_C_DocType invoiceDocType = docTypeBL.getById(invoiceDocTypeId);
+			if (invoiceDocType.isExcludeFromCommision())
+			{
+				logger.debug("C_Invoice_Candidate has C_DocTypeInvoice_ID={} which has sExcludeFromCommission=true; -> return empty", invoiceDocType);
+				return Optional.empty();
+			}
+		}
+
 		return Optional.of(SalesInvoiceCandidate
-				.builder()
-				.orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
-				.id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
-				.salesRepBPartnerId(BPartnerId.ofRepoIdOrNull(icRecord.getC_BPartner_SalesRep_ID()))
-				.customerBPartnerId(BPartnerId.ofRepoIdOrNull(icRecord.getBill_BPartner_ID()))
-				.productId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
-				.commissionDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
-				.updated(TimeUtil.asInstant(icRecord.getUpdated()))
-				.forecastCommissionPoints(extractForecastCommissionPoints(icRecord))
-				.commissionPointsToInvoice(extractCommissionPointsToInvoice(icRecord))
-				.invoicedCommissionPoints(extractInvoicedCommissionPoints(icRecord))
-				.tradedCommissionPercent(extractTradedCommissionPercent(icRecord))
-				.build());
+								   .builder()
+								   .orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
+								   .id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
+								   .salesRepBPartnerId(BPartnerId.ofRepoIdOrNull(icRecord.getC_BPartner_SalesRep_ID()))
+								   .customerBPartnerId(BPartnerId.ofRepoIdOrNull(icRecord.getBill_BPartner_ID()))
+								   .productId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
+								   .commissionDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+								   .updated(TimeUtil.asInstant(icRecord.getUpdated()))
+								   .forecastCommissionPoints(extractForecastCommissionPoints(icRecord))
+								   .commissionPointsToInvoice(extractCommissionPointsToInvoice(icRecord))
+								   .invoicedCommissionPoints(extractInvoicedCommissionPoints(icRecord))
+								   .tradedCommissionPercent(extractTradedCommissionPercent(icRecord))
+								   .build());
 	}
 
 	private CommissionPoints extractForecastCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)

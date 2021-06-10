@@ -11,6 +11,7 @@ import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -203,11 +204,9 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Sets Target Document Type and IsSOTrx.
 	 *
-	 * @param invoice
-	 * @param docBaseType
 	 * @return true if document type found and set
 	 */
-	boolean setDocTypeTargetId(I_C_Invoice invoice, String docBaseType);
+	boolean setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice

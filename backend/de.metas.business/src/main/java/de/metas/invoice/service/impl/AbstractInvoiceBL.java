@@ -755,13 +755,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean setDocTypeTargetId(final org.compiere.model.I_C_Invoice invoice, final String docBaseType)
+	public final boolean setDocTypeTargetId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final InvoiceDocBaseType docBaseType)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(docBaseType)
+				.docBaseType(docBaseType.getDocBaseType())
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(invoice.getAD_Client_ID())
 				.adOrgId(invoice.getAD_Org_ID())
@@ -775,7 +775,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		else
 		{
 			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
-			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType);
+			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType.getDocBaseType());
 			invoice.setIsSOTrx(isSOTrx);
 			return true;
 		}
@@ -789,7 +789,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final String docBaseType = invoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARInvoice : X_C_DocType.DOCBASETYPE_APInvoice;
+		final InvoiceDocBaseType docBaseType = invoice.isSOTrx() ? InvoiceDocBaseType.CustomerInvoice : InvoiceDocBaseType.VendorInvoice;
 		setDocTypeTargetId(invoice, docBaseType);
 	}
 
