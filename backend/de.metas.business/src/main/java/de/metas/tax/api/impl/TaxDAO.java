@@ -264,7 +264,7 @@ public class TaxDAO implements ITaxDAO
 		}
 		else if (taxes.size() == 1)
 		{
-			taxQueryWrapper.addLog("Exact match found: ", taxes.get(0).getTaxId().getRepoId());
+			taxQueryWrapper.addLog("Exact match found: {}", taxes.get(0).getTaxId().getRepoId());
 		}
 		return taxes.isEmpty() ? null : taxes.get(0);
 	}
