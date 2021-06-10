@@ -60,7 +60,7 @@ public class RestResponseEntityExceptionHandler
 	}
 
 	@ExceptionHandler(PageNotFoundException.class)
-	public ResponseEntity<JsonError> handlePageNotFoundExceptionn(@NonNull final PageNotFoundException e)
+	public ResponseEntity<JsonError> handlePageNotFoundException(@NonNull final PageNotFoundException e)
 	{
 		return logAndCreateError(e, HttpStatus.NOT_FOUND);
 	}
@@ -132,7 +132,7 @@ public class RestResponseEntityExceptionHandler
 	{
 		final String logMessage = coalesceSuppliers(
 				() -> detail,
-				() -> e.getMessage(),
+				e::getMessage,
 				() -> e.getClass().getSimpleName());
 		Loggables.withLogger(logger, Level.ERROR).addLog(logMessage, e);
 
