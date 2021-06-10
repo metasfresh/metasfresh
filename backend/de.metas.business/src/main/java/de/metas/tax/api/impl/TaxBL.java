@@ -1,13 +1,12 @@
 package de.metas.tax.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryAreaBL;
 import de.metas.location.ICountryDAO;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -16,30 +15,25 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.TaxUtils;
-import de.metas.tax.api.TypeOfDestCountry;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.MBPartnerLocation;
-import org.compiere.model.X_C_Tax;
 import org.compiere.model.X_C_TaxCategory;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -50,7 +44,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -109,19 +102,20 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			}
 
 			final I_C_BPartner_Location bpLocTo = loadOutOfTrx(shipC_BPartner_Location_ID, I_C_BPartner_Location.class);
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpLocTo.getC_BPartner_ID(), bpLocTo.getC_BPartner_Location_ID());
 
-			final TaxId taxIdForCategory = retrieveTaxIdForCategory(ctx,
-					countryFromId,
-					orgId,
-					bpLocTo,
-					shipDate,
-					taxCategoryId,
-					isSOTrx,
-					false // throwEx
-			);
-			if (taxIdForCategory != null)
+			final Tax tax = taxDAO.getBy(TaxQuery.builder()
+					.fromCountryId(countryFromId)
+					.orgId(orgId)
+					.bPartnerLocationId(bPartnerLocationId)
+					.dateOfInterest(shipDate)
+					.taxCategoryId(taxCategoryId)
+					.isSoTrx(isSOTrx)
+					.build());
+
+			if (tax != null)
 			{
-				return taxIdForCategory;
+				return tax.getTaxId();
 			}
 		}
 
@@ -143,111 +137,6 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		// If we got here, it means that no tax was found to satisfy the conditions
 		// In this case, the Tax_Not_Found placeholder will be returned
 		return TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND);
-	}
-
-	/**
-	 * Important: This implementation makes two assumptions:
-	 * <ul>
-	 * <li>You are inside the EU</li>
-	 * </ul>
-	 */
-	@Override
-	@Nullable
-	public TaxId retrieveTaxIdForCategory(final Properties ctx,
-			final CountryId countryFromId,
-			final OrgId orgId,
-			@NonNull final I_C_BPartner_Location bpLocTo,
-			@NonNull final Timestamp date,
-			final TaxCategoryId taxCategoryId,
-			final boolean isSOTrx,
-			final boolean throwEx)
-	{
-		final I_C_BPartner bPartner = Services.get(IBPartnerDAO.class).getById(bpLocTo.getC_BPartner_ID());
-
-		final boolean hasTaxCertificate = !Check.isEmpty(bPartner.getVATaxID());
-
-		final I_C_Location locationTo = Services.get(ILocationDAO.class).getById(LocationId.ofRepoId(bpLocTo.getC_Location_ID()));
-		final CountryId countryToId = CountryId.ofRepoId(locationTo.getC_Country_ID());
-		final I_C_Country countryTo = Services.get(ICountryDAO.class).getById(countryToId);
-		final boolean toEULocation = Services.get(ICountryAreaBL.class).isMemberOf(ctx,
-				ICountryAreaBL.COUNTRYAREAKEY_EU,
-				countryTo.getCountryCode(),
-				date);
-
-		final boolean toSameCountry = Objects.equals(countryToId, countryFromId);
-
-		final IQueryBuilder<I_C_Tax> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Tax.class, ctx, ITrx.TRXNAME_None)
-				.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date)
-				.addOnlyActiveRecordsFilter();
-
-		if (countryFromId != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Country_ID, countryFromId);
-		}
-		else
-		{
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Country_ID, null);
-		}
-
-		queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategoryId);
-
-		if (toSameCountry)
-		{
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId);
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, TypeOfDestCountry.DOMESTIC);
-		}
-		else if (toEULocation)
-		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId, null);
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, TypeOfDestCountry.WITHIN_COUNTRY_AREA);
-
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, hasTaxCertificate);
-		}
-		else
-		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, countryToId, null);
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, TypeOfDestCountry.OUTSIDE_COUNTRY_AREA);
-		}
-
-		if (isSOTrx)
-		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_SalesTax);
-		}
-		else
-		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
-		}
-
-		if (orgId != null)
-		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
-		}
-
-		final IQuery<I_C_Tax> query = queryBuilder
-				.orderBy()
-				.addColumnDescending(I_C_Tax.COLUMNNAME_AD_Org_ID)
-				.addColumn(I_C_Tax.COLUMNNAME_To_Country_ID)
-				.addColumnDescending(I_C_Tax.COLUMNNAME_ValidFrom)
-				.endOrderBy()
-				.create();
-		final int taxId = query.firstId();
-		if (taxId <= 0)
-		{
-			TaxNotFoundException.builder()
-					.orgId(orgId)
-					.taxCategoryId(taxCategoryId)
-					.isSOTrx(isSOTrx)
-					.billDate(date)
-					.shipFromCountryId(countryFromId)
-					.billToC_Location_ID(locationTo.getC_Location_ID())
-					.build()
-					.setParameter("query", query.toString())
-					.throwOrLogWarning(throwEx, log);
-			return null;
-		}
-
-		return TaxId.ofRepoId(taxId);
 	}
 
 	private int getGermanTax(final Properties ctx,

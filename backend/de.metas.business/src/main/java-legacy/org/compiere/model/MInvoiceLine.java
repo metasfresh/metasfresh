@@ -34,12 +34,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -680,29 +679,27 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
 
-		final TaxId taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
-				getCtx(),
-				fromCountryId, // countryFromId,
-				fromOrgId,
-				toBPLocation, // should be bill to
-				taxDate,
-				taxCategoryId,
-				isSOTrx,
-				true); // throwEx
+		final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
+				.fromCountryId(fromCountryId)
+				.orgId(fromOrgId)
+				.bPartnerLocationId(taxBPartnerLocationId)
+				.dateOfInterest(taxDate)
+				.taxCategoryId(taxCategoryId)
+				.isSoTrx(isSOTrx)
+				.build());
 
-		if (taxId == null)
+		if (tax == null)
 		{
-			final TaxNotFoundException ex = TaxNotFoundException.builder()
+			TaxNotFoundException.builder()
 					.taxCategoryId(taxCategoryId)
 					.isSOTrx(isSOTrx)
 					.billDate(taxDate)
 					.billFromCountryId(fromCountryId)
 					.billToC_Location_ID(toBPLocation.getC_Location_ID())
-					.build();
-			log.error("No Tax found", ex);
-			return false;
+					.build()
+					.throwOrLogWarning(true, log);
 		}
-		setC_Tax_ID(taxId.getRepoId());
+		setC_Tax_ID(tax.getTaxId().getRepoId());
 
 		return true;
 	}    // setTax

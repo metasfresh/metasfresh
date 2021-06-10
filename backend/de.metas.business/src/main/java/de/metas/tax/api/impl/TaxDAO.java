@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
@@ -38,12 +39,13 @@ import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.X_C_Tax;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -64,11 +66,12 @@ public class TaxDAO implements ITaxDAO
 	private final static transient Logger logger = LogManager.getLogger(TaxDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final ICountryAreaBL countryAreaBL = Services.get(ICountryAreaBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	@Override
 	public Tax getTaxById(final int taxRepoId)
@@ -238,7 +241,6 @@ public class TaxDAO implements ITaxDAO
 		return Percent.of(tax.getRate());
 	}
 
-
 	@Override
 	@Nullable
 	public Tax getBy(@NonNull final TaxQuery taxQuery)
@@ -270,7 +272,6 @@ public class TaxDAO implements ITaxDAO
 	{
 		final IQueryBuilder<I_C_Tax> queryBuilder = getTaxQueryBuilder(taxQuery);
 		return queryBuilder.create()
-				.list()
 				.stream()
 				.map(TaxUtils::from)
 				.collect(Collectors.toList());
@@ -290,43 +291,66 @@ public class TaxDAO implements ITaxDAO
 	private IQueryBuilder<I_C_Tax> getTaxQueryBuilder(@NonNull final TaxQuery taxQuery)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
-		
+
 		loggable.addLog("Using query {}", taxQuery);
 		final IQueryBuilder<I_C_Tax> queryBuilder = queryBL.createQueryBuilder(I_C_Tax.class);
 
 		final OrgId orgId = taxQuery.getOrgId();
-		CountryId countryId = null;
-		if (orgId != null)
+		CountryId countryId = taxQuery.getFromCountryId();
+		if (countryId != null)
 		{
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
-			countryId = getCountryIdFromOrgId(orgId);
-			loggable.addLog("Country ID based on organization: {}", countryId);
-		}
-
-		final WarehouseId warehouseId = taxQuery.getWarehouseId();
-		if (warehouseId != null)
-		{
-			final LocationId locationId = LocationId.ofRepoIdOrNull(warehouseDAO.getById(warehouseId).getC_Location_ID());
-			loggable.addLog("Location ID based on warehouse: {}", locationId);
-			if (locationId != null)
-			{
-				countryId = CoalesceUtil.coalesce(locationDAO.getCountryIdByLocationId(locationId), countryId);
-				loggable.addLog("Country ID for warehouse: {}", countryId);
-			}
-		}
-		if (countryId == null)
-		{
-			throw new AdempiereException("No country could be identified for the given orgId: " + orgId + " and warehouse: " + warehouseId);
+			loggable.addLog("Country ID provided in query: {}", countryId);
 		}
 		else
 		{
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMN_C_Country_ID, countryId);
+			if (orgId != null)
+			{
+				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
+				countryId = bPartnerOrgBL.getOrgCountryId(orgId);
+				loggable.addLog("Country ID based on organization: {}", countryId);
+			}
+
+			final WarehouseId warehouseId = taxQuery.getWarehouseId();
+			if (warehouseId != null)
+			{
+				final CountryId warehouseCountryId = warehouseBL.getCountryId(warehouseId);
+				loggable.addLog("Country ID based on warehouse: {}", warehouseCountryId);
+				if (warehouseCountryId != null)
+				{
+					countryId = CoalesceUtil.coalesce(warehouseCountryId, countryId);
+				}
+			}
+			if (countryId == null)
+			{
+				throw new AdempiereException("No country could be identified for the given orgId: " + orgId + " and warehouse: " + warehouseId);
+			}
 		}
+
+		queryBuilder.addEqualsFilter(I_C_Tax.COLUMN_C_Country_ID, countryId);
 		final TaxCategoryId taxCategoryId = taxQuery.getTaxCategoryId();
 		if (taxCategoryId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategoryId);
 			loggable.addLog("Tax Category ID: {}", taxCategoryId.getRepoId());
+		}
+		final Timestamp dateOfInterest = taxQuery.getDateOfInterest();
+		if (dateOfInterest != null)
+		{
+			queryBuilder.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, dateOfInterest);
+			loggable.addLog("Date of Interest<= {}", dateOfInterest);
+		}
+		if (taxQuery.getIsSoTrx() != null)
+		{
+			if (taxQuery.getIsSoTrx())
+			{
+				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_SalesTax);
+				loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_SalesTax);
+			}
+			else
+			{
+				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
+				loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
+			}
 		}
 
 		final BPartnerLocationId bPartnerLocationId = taxQuery.getBPartnerLocationId();
@@ -351,18 +375,6 @@ public class TaxDAO implements ITaxDAO
 			}
 		}
 		return queryBuilder;
-	}
-
-	@Nullable
-	private CountryId getCountryIdFromOrgId(final OrgId orgId)
-	{
-		final I_C_BPartner orgBPartner = bPartnerDAO.retrieveOrgBPartner(Env.getCtx(), orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
-		final BPartnerLocationId billToLocationId = bPartnerDAO.retrieveCurrentBillLocationOrNull(BPartnerId.ofRepoId(orgBPartner.getC_BPartner_ID()));
-		if (billToLocationId == null)
-		{
-			return null;
-		}
-		return bPartnerDAO.retrieveBPartnerLocationCountryId(billToLocationId);
 	}
 
 	@Nullable
@@ -394,7 +406,7 @@ public class TaxDAO implements ITaxDAO
 		final I_C_BPartner_Location bpartnerLocation = bPartnerDAO.getBPartnerLocationByIdEvenInactive(bPartnerLocationId);
 		if (bpartnerLocation == null)
 		{
-			throw new AdempiereException("No location found for bpartnerLocationdId: " + bPartnerLocationId);
+			throw new AdempiereException("No location found for bpartnerLocationId: " + bPartnerLocationId);
 		}
 		return locationDAO.getCountryIdByLocationId(LocationId.ofRepoId(bpartnerLocation.getC_Location_ID()));
 	}

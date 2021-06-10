@@ -24,6 +24,7 @@ package de.metas.tax.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Value;
@@ -43,6 +44,9 @@ public class TaxQuery
 	WarehouseId warehouseId;
 
 	@Nullable
+	CountryId fromCountryId;
+
+	@Nullable
 	Timestamp dateOfInterest;
 
 	@Nullable
@@ -60,6 +64,7 @@ public class TaxQuery
 	@Builder
 	public TaxQuery(@Nullable final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
+			@Nullable final CountryId fromCountryId,
 			@Nullable final Timestamp dateOfInterest,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bPartnerLocationId,
@@ -68,6 +73,7 @@ public class TaxQuery
 	{
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;
+		this.fromCountryId = fromCountryId;
 		this.dateOfInterest = dateOfInterest;
 		this.bPartnerLocationId = bPartnerLocationId;
 		if (bpartnerId == null && bPartnerLocationId != null)
