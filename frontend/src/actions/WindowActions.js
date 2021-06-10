@@ -858,7 +858,10 @@ export function patch(
           ? response.data.documents
           : response.data;
       const dataItem = data[0];
-      const { includedTabsInfo } = dataItem;
+      const includedTabsInfo =
+        dataItem && dataItem.includedTabsInfo
+          ? dataItem.includedTabsInfo
+          : undefined;
 
       // prevent recursion in merge
       data.documents &&

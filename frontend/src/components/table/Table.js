@@ -430,8 +430,10 @@ export default class Table extends PureComponent {
 
   updateHeight = (heightNew) => {
     heightNew = heightNew ? heightNew : 0;
-    this.tableContainer.style.paddingBottom = `${this.initialPaddingBottom +
-      heightNew}px`;
+    if (this.tableContainer) {
+      this.tableContainer.style.paddingBottom = `${this.initialPaddingBottom +
+        heightNew}px`;
+    }
   };
 
   render() {
