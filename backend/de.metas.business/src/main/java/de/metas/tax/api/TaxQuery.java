@@ -80,7 +80,6 @@ public class TaxQuery
 		}
 		this.isSoTrx = isSoTrx;
 		this.taxCategoryId = taxCategoryId;
-
 		validate();
 	}
 

@@ -22,6 +22,7 @@
 
 package de.metas.tax.api;
 
+import de.metas.letter.BoilerPlateId;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -62,6 +63,8 @@ public class Tax
 	boolean isWholeTax;
 	boolean isDocumentLevel;
 	BigDecimal rate;
+	BoilerPlateId boilerPlateId;
+
 
 	@Builder
 	public Tax(final @NonNull TaxId taxId,
@@ -78,7 +81,8 @@ public class Tax
 			final boolean isSmallBusiness,
 			final boolean isWholeTax,
 			final boolean isDocumentLevel,
-			final BigDecimal rate)
+			final BigDecimal rate,
+			final BoilerPlateId boilerPlateId)
 	{
 		this.taxId = taxId;
 		this.orgId = orgId;
@@ -96,6 +100,7 @@ public class Tax
 		this.isWholeTax = isWholeTax;
 		this.isDocumentLevel = isDocumentLevel;
 		this.rate = rate;
+		this.boilerPlateId = boilerPlateId;
 	}
 
 	public boolean isTaxNotFound()

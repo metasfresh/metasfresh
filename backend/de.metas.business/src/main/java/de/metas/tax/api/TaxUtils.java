@@ -22,6 +22,7 @@
 
 package de.metas.tax.api;
 
+import de.metas.letter.BoilerPlateId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
@@ -49,6 +50,7 @@ public class TaxUtils
 				.isWholeTax(from.isWholeTax())
 				.isDocumentLevel(from.isDocumentLevel())
 				.rate(from.getRate())
+				.boilerPlateId(BoilerPlateId.ofRepoIdOrNull(from.getAD_BoilerPlate_ID()))
 				.build();
 	}
 }
