@@ -197,8 +197,6 @@ import de.metas.util.Services;
 
 	/**
 	 * Calculate WeightGross = WeightNet + WeightTare + WeightTareAdjust
-	 *
-	 * @param attributeSet
 	 */
 	protected final void recalculateWeightGross(final IAttributeSet attributeSet)
 	{

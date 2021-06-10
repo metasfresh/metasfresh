@@ -56,10 +56,10 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 	private final ConcurrentHashMap<ViewRowAttributesKey, HUEditorRowAttributes> rowAttributesByKey = new ConcurrentHashMap<>();
 
 	@Value
-	private static final class ViewRowAttributesKey
+	private static class ViewRowAttributesKey
 	{
-		private DocumentId huEditorRowId;
-		private DocumentId huId;
+		DocumentId huEditorRowId;
+		DocumentId huId;
 	}
 
 	@Builder

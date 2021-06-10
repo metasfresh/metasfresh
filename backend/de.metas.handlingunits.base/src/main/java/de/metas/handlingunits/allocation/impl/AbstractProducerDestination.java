@@ -122,8 +122,6 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	/**
 	 * Allocate the given <code>request</code> to the given <code>hu</code>.
 	 *
-	 * @param hu
-	 * @param request
 	 * @return allocation result
 	 */
 	protected abstract IAllocationResult loadHU(final I_M_HU hu, final IAllocationRequest request);
@@ -134,10 +132,9 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	 * <li>If there is no current HU and we are allowed to create a new one, a new one will be created and returned.
 	 * <li>If we are not allowed to create a new one then <code>null</code> will be returned
 	 *
-	 * @param currentHUCursor
 	 * @return current HU cursor having the current positioned or <code>null</code> if no more HU are allowed to be created/used
 	 */
-	private final HUListCursor getCreateCurrentHU(final IAllocationRequest request)
+	private HUListCursor getCreateCurrentHU(final IAllocationRequest request)
 	{
 		final HUListCursor currentHUCursor = getCurrentHUCursor(request);
 
@@ -178,7 +175,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return currentHUCursor;
 	}
 
-	private final HUListCursor getCurrentHUCursor(final IAllocationRequest request)
+	private HUListCursor getCurrentHUCursor(final IAllocationRequest request)
 	{
 		final ArrayKey currentHUKey = extractCurrentHUKey(request);
 		return currentHUs.computeIfAbsent(currentHUKey, k -> new HUListCursor());
@@ -189,7 +186,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		return ArrayKey.of(request.getProductId());
 	}
 
-	private final void prepareToLoad(final IHUContext huContext, final I_M_HU hu)
+	private void prepareToLoad(final IHUContext huContext, final I_M_HU hu)
 	{
 		// TODO: why not setting TrxName inherited?
 		final String currentHUTrxName = InterfaceWrapperHelper.getTrxName(hu);

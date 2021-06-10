@@ -51,8 +51,6 @@ public interface HUEditorViewCustomizer
 	 * Called before the {@link HUEditorView} is created.
 	 *
 	 * The method is called only if the view is matching our criteria (i.e. {@link #getReferencingTableNameToMatch()}).
-	 *
-	 * @param viewBuilder
 	 */
 	void beforeCreate(HUEditorViewBuilder viewBuilder);
 
