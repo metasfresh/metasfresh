@@ -595,3 +595,98 @@ UPDATE AD_Element_Trl SET Description='If this setting is activated, the attribu
 ;
 
 
+
+
+
+
+
+
+
+
+
+
+
+-- 2021-06-10T11:03:03.220Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='If setting is activated and the attribute was editable for an HU in the status "Planned", then the attribute will remain editable even if the HU is no longer "Planned".', Help='If setting is activated and the attribute was editable for an HU in the status "Planned", then the attribute will remain editable even if the HU is no longer "Planned".',Updated=TO_TIMESTAMP('2021-06-10 14:03:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579314 AND AD_Language='en_US'
+;
+
+-- 2021-06-10T11:03:03.461Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579314,'en_US') 
+;
+
+-- 2021-06-10T11:03:14.497Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='If setting is activated and the attribute was editable for an HU in the status "Planned", then the attribute will remain editable even if the HU is no longer "Planned".', Help='If setting is activated and the attribute was editable for an HU in the status "Planned", then the attribute will remain editable even if the HU is no longer "Planned".',Updated=TO_TIMESTAMP('2021-06-10 14:03:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579314 AND AD_Language='en_GB'
+;
+
+-- 2021-06-10T11:03:14.535Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579314,'en_GB') 
+;
+
+-- 2021-06-10T11:03:49.051Z
+-- URL zum Konzept
+UPDATE AD_Element_Trl SET Description='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.', Help='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.',Updated=TO_TIMESTAMP('2021-06-10 14:03:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579314 AND AD_Language='de_DE'
+;
+
+-- 2021-06-10T11:03:49.089Z
+-- URL zum Konzept
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579314,'de_DE') 
+;
+
+-- 2021-06-10T11:03:49.221Z
+-- URL zum Konzept
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579314,'de_DE') 
+;
+
+-- 2021-06-10T11:03:49.252Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnName=NULL, Name='Merkmal immer aktualisierbar', Description='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.', Help='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.' WHERE AD_Element_ID=579314
+;
+
+-- 2021-06-10T11:03:49.290Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Merkmal immer aktualisierbar', Description='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.', Help='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.' WHERE AD_Element_ID=579314 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-06-10T11:03:49.337Z
+-- URL zum Konzept
+UPDATE AD_Field SET Name='Merkmal immer aktualisierbar', Description='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.', Help='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579314) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579314)
+;
+
+-- 2021-06-10T11:03:49.406Z
+-- URL zum Konzept
+UPDATE AD_Tab SET Name='Merkmal immer aktualisierbar', Description='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.', Help='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.', CommitWarning = NULL WHERE AD_Element_ID = 579314
+;
+
+-- 2021-06-10T11:03:49.453Z
+-- URL zum Konzept
+UPDATE AD_WINDOW SET Name='Merkmal immer aktualisierbar', Description='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.', Help='Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.' WHERE AD_Element_ID = 579314
+;
+
+-- 2021-06-10T11:03:49.475Z
+-- URL zum Konzept
+UPDATE AD_Menu SET   Name = 'Merkmal immer aktualisierbar', Description = 'Wenn die Einstellung aktiviert ist und das Merkmal für eine HU im Status "Geplant" editierbar war, dann bleibt das Merkmal editierbar, auch wenn die HU nicht mehr "Geplant" ist.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579314
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
