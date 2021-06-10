@@ -66,6 +66,7 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.DisplayType;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -714,7 +715,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return this;
 		}
 
-		public Builder setCtxTableName(final String tableName)
+		public Builder setCtxTableName(@Nullable final String tableName)
 		{
 			this.ctxTableName = tableName;
 			return this;

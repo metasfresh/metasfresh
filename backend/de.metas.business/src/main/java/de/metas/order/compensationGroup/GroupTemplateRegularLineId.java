@@ -1,17 +1,8 @@
-package de.metas.contracts;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
-
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.business
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,25 +20,41 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.order.compensationGroup;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 @Value
-public class ConditionsId implements RepoIdAware
+public class GroupTemplateRegularLineId implements RepoIdAware
 {
 	int repoId;
 
 	@JsonCreator
-	public static ConditionsId ofRepoId(final int repoId)
+	public static GroupTemplateRegularLineId ofRepoId(final int repoId)
 	{
-		return new ConditionsId(repoId);
+		return new GroupTemplateRegularLineId(repoId);
 	}
 
-	public static ConditionsId ofRepoIdOrNull(final int repoId)
+	@Nullable
+	public static GroupTemplateRegularLineId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	private ConditionsId(final int repoId)
+	public static int toRepoId(@Nullable final GroupTemplateLineId id)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	private GroupTemplateRegularLineId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_CompensationGroup_Schema_TemplateLine_ID");
 	}
 
 	@Override

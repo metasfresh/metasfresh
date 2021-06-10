@@ -861,28 +861,36 @@ public class SubscriptionBL implements ISubscriptionBL
 		cal.setTime(date);
 		Check.assume(calTermEnd.after(cal), "'calTermEnd'=" + calTermEnd + " is after 'cal'=" + cal);
 
+		final int deliveryInterval = trans.getDeliveryInterval();
+		if (deliveryInterval <= 0)
+		{
+			throw new AdempiereException("Invalid deliveryInterval=" + deliveryInterval + " for " + trans);
+		}
+
+		final String deliveryIntervalUnit = trans.getDeliveryIntervalUnit();
+
 		int numberOfRuns = 0;
 		while (cal.before(calTermEnd))
 		{
-			if (X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_JahrE.equals(trans.getDeliveryIntervalUnit()))
+			if (X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_JahrE.equals(deliveryIntervalUnit))
 			{
-				cal.add(Calendar.YEAR, trans.getDeliveryInterval());
+				cal.add(Calendar.YEAR, deliveryInterval);
 			}
-			else if (X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_MonatE.equals(trans.getDeliveryIntervalUnit()))
+			else if (X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_MonatE.equals(deliveryIntervalUnit))
 			{
-				cal.add(Calendar.MONTH, trans.getDeliveryInterval());
+				cal.add(Calendar.MONTH, deliveryInterval);
 			}
-			else if (X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_WocheN.equals(trans.getDeliveryIntervalUnit()))
+			else if (X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_WocheN.equals(deliveryIntervalUnit))
 			{
-				cal.add(Calendar.WEEK_OF_YEAR, trans.getDeliveryInterval());
+				cal.add(Calendar.WEEK_OF_YEAR, deliveryInterval);
 			}
-			else if (X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_TagE.equals(trans.getDeliveryIntervalUnit()))
+			else if (X_C_Flatrate_Transition.DELIVERYINTERVALUNIT_TagE.equals(deliveryIntervalUnit))
 			{
-				cal.add(Calendar.DAY_OF_YEAR, trans.getDeliveryInterval());
+				cal.add(Calendar.DAY_OF_YEAR, deliveryInterval);
 			}
 			else
 			{
-				Check.assume(false, trans + " has unsupported FrequencyType=" + trans.getDeliveryIntervalUnit());
+				Check.assume(false, trans + " has unsupported FrequencyType=" + deliveryIntervalUnit);
 			}
 
 			numberOfRuns++;
