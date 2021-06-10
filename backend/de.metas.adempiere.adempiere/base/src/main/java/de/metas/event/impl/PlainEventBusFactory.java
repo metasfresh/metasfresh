@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.compiere.Adempiere;
 
 import com.google.common.collect.ImmutableList;
@@ -69,8 +70,10 @@ public class PlainEventBusFactory implements IEventBusFactory
 
 	private EventBus createEventBus(final Topic topic)
 	{
+		final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector = EventBusFactory.createMicrometerEventBusStatsCollector(topic, new SimpleMeterRegistry());
+
 		final ExecutorService executor = null;
-		return new EventBus(topic.getName(), executor);
+		return new EventBus(topic.getName(), executor, micrometerEventBusStatsCollector);
 	}
 
 	@Override
