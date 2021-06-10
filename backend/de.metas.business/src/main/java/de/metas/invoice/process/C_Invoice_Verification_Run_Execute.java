@@ -23,7 +23,7 @@
 package de.metas.invoice.process;
 
 import de.metas.invoice.InvoiceVerificationRunId;
-import de.metas.invoice.service.IInvoiceVerificationDAO;
+import de.metas.invoice.service.IInvoiceVerificationBL;
 import de.metas.invoice.service.InvoiceVerificationRunStatus;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -40,7 +40,7 @@ import org.compiere.util.Env;
 public class C_Invoice_Verification_Run_Execute extends JavaProcess implements IProcessPrecondition
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInvoiceVerificationDAO invoiceVerificationDAO = Services.get(IInvoiceVerificationDAO.class);
+	private final IInvoiceVerificationBL invoiceVerificationDAO = Services.get(IInvoiceVerificationBL.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)

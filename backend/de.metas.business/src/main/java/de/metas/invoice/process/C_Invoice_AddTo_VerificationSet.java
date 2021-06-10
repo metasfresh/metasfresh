@@ -25,7 +25,7 @@ package de.metas.invoice.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceVerificationSetId;
-import de.metas.invoice.service.IInvoiceVerificationDAO;
+import de.metas.invoice.service.IInvoiceVerificationBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -42,7 +42,7 @@ import java.util.List;
 
 public class C_Invoice_AddTo_VerificationSet extends JavaProcess implements IProcessPrecondition
 {
-	private final IInvoiceVerificationDAO invoiceVerificationDAO = Services.get(IInvoiceVerificationDAO.class);
+	private final IInvoiceVerificationBL invoiceVerificationDAO = Services.get(IInvoiceVerificationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Param(parameterName = I_C_Invoice_Verification_Set.COLUMNNAME_C_Invoice_Verification_Set_ID, mandatory = true)

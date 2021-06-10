@@ -29,7 +29,7 @@ import de.metas.util.ISingletonService;
 
 import java.util.Collection;
 
-public interface IInvoiceVerificationDAO extends ISingletonService
+public interface IInvoiceVerificationBL extends ISingletonService
 {
 	void createVerificationSetLines(final InvoiceVerificationSetId verificationSetId, final Collection<InvoiceId> invoiceIds);
 

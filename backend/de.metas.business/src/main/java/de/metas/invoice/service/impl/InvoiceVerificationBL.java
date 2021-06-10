@@ -33,7 +33,7 @@ import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.invoice.InvoiceVerificationSetId;
 import de.metas.invoice.InvoiceVerificationSetLineId;
 import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IInvoiceVerificationDAO;
+import de.metas.invoice.service.IInvoiceVerificationBL;
 import de.metas.invoice.service.InvoiceVerificationRunStatus;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxDAO;
@@ -65,14 +65,14 @@ import java.util.Objects;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
-public class InvoiceVerificationDAO implements IInvoiceVerificationDAO
+public class InvoiceVerificationBL implements IInvoiceVerificationBL
 {
-	IQueryBL queryBL = Services.get(IQueryBL.class);
-	IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@Override
-	public void createVerificationSetLines(final InvoiceVerificationSetId verificationSetId, final Collection<InvoiceId> invoiceIds)
+	public void createVerificationSetLines(@NonNull final InvoiceVerificationSetId verificationSetId, @NonNull final Collection<InvoiceId> invoiceIds)
 	{
 		final Collection<InvoiceId> existingInvoiceIdsForSet = getInvoiceIdsForVerificationSet(verificationSetId);
 		invoiceIds.stream()
@@ -81,7 +81,7 @@ public class InvoiceVerificationDAO implements IInvoiceVerificationDAO
 	}
 
 	@Override
-	public void createVerificationRunLines(final InvoiceVerificationRunId runId)
+	public void createVerificationRunLines(@NonNull final InvoiceVerificationRunId runId)
 	{
 		final ImmutableList<InvoiceVerificationRunResult> results = queryBL.createQueryBuilder(I_C_Invoice_Verification_SetLine.class)
 				.addOnlyActiveRecordsFilter()
@@ -93,14 +93,14 @@ public class InvoiceVerificationDAO implements IInvoiceVerificationDAO
 		results.forEach(result -> createVerificationRunLine(runId, result));
 	}
 
-	private InvoiceVerificationRunResult verifySetLine(final InvoiceVerificationRunId runId, final I_C_Invoice_Verification_SetLine setLine)
+	private InvoiceVerificationRunResult verifySetLine(@NonNull final InvoiceVerificationRunId runId, @NonNull final I_C_Invoice_Verification_SetLine setLine)
 	{
 		final I_C_Invoice_Verification_Run run = getVerificationRunFor(runId);
 		return getVerificationRunResultForSetLine(setLine, run.getMovementDate_Override());
 
 	}
 
-	private void createVerificationRunLine(final InvoiceVerificationRunId runId, final InvoiceVerificationRunResult runResult)
+	private void createVerificationRunLine(@NonNull final InvoiceVerificationRunId runId, @NonNull final InvoiceVerificationRunResult runResult)
 	{
 		final Tax invoiceTax = runResult.getInvoiceTax();
 		final Tax resultingTax = runResult.getResultingTax();
@@ -122,16 +122,16 @@ public class InvoiceVerificationDAO implements IInvoiceVerificationDAO
 		save(runLine);
 	}
 
-	private I_C_Invoice_Verification_Run getVerificationRunFor(final InvoiceVerificationRunId invoiceVerificationRunId)
+	private I_C_Invoice_Verification_Run getVerificationRunFor(@NonNull final InvoiceVerificationRunId invoiceVerificationRunId)
 	{
 		return Check.assumeNotNull(queryBL.createQueryBuilder(I_C_Invoice_Verification_Run.class)
-										   .addOnlyActiveRecordsFilter()
-										   .addEqualsFilter(I_C_Invoice_Verification_Run.COLUMN_C_Invoice_Verification_Run_ID, invoiceVerificationRunId)
-										   .create()
-										   .first(), "No C_Invoice_Verification_Run for ID: {}", invoiceVerificationRunId);
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Verification_Run.COLUMN_C_Invoice_Verification_Run_ID, invoiceVerificationRunId)
+				.create()
+				.first(), "No C_Invoice_Verification_Run for ID: {}", invoiceVerificationRunId);
 	}
 
-	private InvoiceVerificationRunResult getVerificationRunResultForSetLine(final I_C_Invoice_Verification_SetLine setLine, @Nullable final Timestamp dateOfInterestOverride)
+	private InvoiceVerificationRunResult getVerificationRunResultForSetLine(@NonNull final I_C_Invoice_Verification_SetLine setLine, @Nullable final Timestamp dateOfInterestOverride)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(setLine.getC_Invoice_ID());
 		final I_C_InvoiceLine line = invoiceDAO.retrieveLineById(InvoiceLineId.ofRepoId(invoiceId, setLine.getC_InvoiceLine_ID()));
@@ -165,13 +165,13 @@ public class InvoiceVerificationDAO implements IInvoiceVerificationDAO
 		}
 	}
 
-	private void createVerificationSetLine(final InvoiceVerificationSetId verificationSetId, final InvoiceId id)
+	private void createVerificationSetLine(@NonNull final InvoiceVerificationSetId verificationSetId, @NonNull final InvoiceId id)
 	{
 		final Collection<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(id);
 		lines.forEach(line -> createVerificationSetLine(verificationSetId, line));
 	}
 
-	private void createVerificationSetLine(final InvoiceVerificationSetId verificationSetId, final I_C_InvoiceLine invoiceLine)
+	private void createVerificationSetLine(@NonNull final InvoiceVerificationSetId verificationSetId, @NonNull final I_C_InvoiceLine invoiceLine)
 	{
 		final I_C_Invoice_Verification_SetLine line = newInstance(I_C_Invoice_Verification_SetLine.class);
 		line.setC_Invoice_Verification_Set_ID(verificationSetId.getRepoId());
@@ -184,16 +184,16 @@ public class InvoiceVerificationDAO implements IInvoiceVerificationDAO
 		save(line);
 	}
 
-	private Collection<InvoiceId> getInvoiceIdsForVerificationSet(final InvoiceVerificationSetId verificationSetId)
+	private Collection<InvoiceId> getInvoiceIdsForVerificationSet(@NonNull final InvoiceVerificationSetId verificationSetId)
 	{
 		return new ArrayList<>(queryBL.createQueryBuilder(I_C_Invoice_Verification_SetLine.class)
-									   .addEqualsFilter(I_C_Invoice_Verification_SetLine.COLUMNNAME_C_Invoice_Verification_Set_ID, verificationSetId)
-									   .andCollect(I_C_Invoice_Verification_SetLine.COLUMN_C_Invoice_ID)
-									   .create()
-									   .listIds(InvoiceId::ofRepoId));
+				.addEqualsFilter(I_C_Invoice_Verification_SetLine.COLUMNNAME_C_Invoice_Verification_Set_ID, verificationSetId)
+				.andCollect(I_C_Invoice_Verification_SetLine.COLUMN_C_Invoice_ID)
+				.create()
+				.listIds(InvoiceId::ofRepoId));
 	}
 
-	public InvoiceVerificationRunStatus getStatusFor(final InvoiceVerificationRunId runId)
+	public InvoiceVerificationRunStatus getStatusFor(@NonNull final InvoiceVerificationRunId runId)
 	{
 		final I_C_Invoice_Verification_Run run = queryBL.createQueryBuilder(I_C_Invoice_Verification_Run.class)
 				.addOnlyActiveRecordsFilter()
