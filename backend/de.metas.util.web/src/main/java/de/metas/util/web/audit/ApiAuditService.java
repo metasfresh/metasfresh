@@ -203,7 +203,7 @@ public class ApiAuditService
 		}
 		catch (final Exception e)
 		{
-			apiAuditLoggable.addLog(e.getMessage(), e);
+			apiAuditLoggable.addLog("Caught {} with message={}", e.getClass().getName(), e.getMessage(), e);
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 		finally

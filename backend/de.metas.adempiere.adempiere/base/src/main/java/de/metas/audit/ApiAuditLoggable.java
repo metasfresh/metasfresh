@@ -75,6 +75,11 @@ public class ApiAuditLoggable implements ILoggable
 	@Override
 	public ILoggable addLog(final String msg, final Object... msgParameters)
 	{
+		if (msg == null)
+		{
+			logger.warn("Called with msg=null; msgParameters={}; -> ignoring;", msgParameters);			
+			return this;
+		}
 		final ApiRequestAuditLog logEntry = createLogEntry(msg, msgParameters);
 
 		List<ApiRequestAuditLog> buffer = this.buffer;
