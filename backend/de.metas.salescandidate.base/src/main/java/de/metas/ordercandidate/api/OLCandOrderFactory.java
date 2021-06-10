@@ -307,7 +307,7 @@ class OLCandOrderFactory
 			}
 			catch (final AdempiereException ex)
 			{
-				logger.warn("Caught exception while validating compensation groups for OLCands: {}", ex);
+				logger.warn("Caught exception while validating compensation groups for OLCands", ex);
 				onCompensationGroupFailure(ex);
 				return;
 			}
@@ -376,7 +376,7 @@ class OLCandOrderFactory
 		mainOrderLineInGroup.setGroupCompensationAmtType(getGroupCompensationAmtType(productForMainLine));
 		orderDAO.save(mainOrderLineInGroup);
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-				.orderLineIds(new HashSet<>(orderLineIds))
+				.orderLineIds(orderLineIds)
 				.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
 				.build());
 	}

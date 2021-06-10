@@ -73,6 +73,31 @@ public interface I_M_Product
 	String COLUMNNAME_Additional_produktinfos = "Additional_produktinfos";
 
 	/**
+	 * Set Compensation Group Schema.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_Schema_ID (int C_CompensationGroup_Schema_ID);
+
+	/**
+	 * Get Compensation Group Schema.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_Schema_ID();
+
+	@Nullable de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema();
+
+	void setC_CompensationGroup_Schema(@Nullable de.metas.order.model.I_C_CompensationGroup_Schema C_CompensationGroup_Schema);
+
+	ModelColumn<I_M_Product, de.metas.order.model.I_C_CompensationGroup_Schema> COLUMN_C_CompensationGroup_Schema_ID = new ModelColumn<>(I_M_Product.class, "C_CompensationGroup_Schema_ID", de.metas.order.model.I_C_CompensationGroup_Schema.class);
+	String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
+
+	/**
 	 * Set Umsatzrealisierung.
 	 * Method for recording revenue
 	 *

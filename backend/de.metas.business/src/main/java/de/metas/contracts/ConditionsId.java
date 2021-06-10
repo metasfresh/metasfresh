@@ -1,21 +1,18 @@
-package de.metas.order;
+package de.metas.contracts;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
- * de.metas.business
+ * de.metas.contracts
  * %%
  * Copyright (C) 2018 metas GmbH
  * %%
@@ -36,45 +33,30 @@ import java.util.Set;
  */
 
 @Value
-public class OrderLineId implements RepoIdAware
+public class ConditionsId implements RepoIdAware
 {
+	int repoId;
+
 	@JsonCreator
-	public static OrderLineId ofRepoId(final int repoId)
+	public static ConditionsId ofRepoId(final int repoId)
 	{
-		return new OrderLineId(repoId);
+		return new ConditionsId(repoId);
 	}
 
 	@Nullable
-	public static OrderLineId ofRepoIdOrNull(final int repoId)
+	public static ConditionsId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new OrderLineId(repoId) : null;
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static Optional<OrderLineId> optionalOfRepoId(final int repoId)
+	public static Optional<ConditionsId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static OrderLineId cast(@NonNull final RepoIdAware id)
+	private ConditionsId(final int repoId)
 	{
-		return (OrderLineId)id;
-	}
-
-	public static int toRepoId(@Nullable final OrderLineId orderLineId)
-	{
-		return orderLineId != null ? orderLineId.getRepoId() : -1;
-	}
-
-	public static Set<Integer> toIntSet(final Collection<OrderLineId> orderLineIds)
-	{
-		return orderLineIds.stream().map(OrderLineId::getRepoId).collect(ImmutableSet.toImmutableSet());
-	}
-
-	int repoId;
-
-	private OrderLineId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Flatrate_Conditions_ID");
 	}
 
 	@Override
@@ -83,4 +65,11 @@ public class OrderLineId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static boolean equals(@Nullable final ConditionsId id1, @Nullable final ConditionsId id2)
+	{
+		return Objects.equals(id1, id2);
+	}
+
+	public static int toRepoId(@Nullable final ConditionsId id) { return id != null ? id.getRepoId() : -1; }
 }

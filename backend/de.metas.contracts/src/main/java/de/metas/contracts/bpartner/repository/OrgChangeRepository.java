@@ -228,8 +228,8 @@ public class OrgChangeRepository
 	private IQuery<I_M_Product_Category> getMembershipProductCategoryQuery()
 	{
 		return queryBL.createQueryBuilder(I_M_Product_Category.class)
-				.addInArrayFilter(I_M_Product_Category.COLUMNNAME_Value, "Membership")
-				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_AD_Org_ID, 0)
+				.addInArrayFilter(I_M_Product_Category.COLUMNNAME_Value, "Membership") // FIXME hardcoded
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_AD_Org_ID, OrgId.ANY)
 				.create();
 
 	}
