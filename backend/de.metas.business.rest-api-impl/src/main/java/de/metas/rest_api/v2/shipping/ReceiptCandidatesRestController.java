@@ -24,7 +24,11 @@ package de.metas.rest_api.v2.shipping;
 
 import javax.annotation.Nullable;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import org.adempiere.ad.dao.QueryLimit;
+import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -47,6 +51,8 @@ import lombok.NonNull;
 @Profile(Profiles.PROFILE_App)
 public class ReceiptCandidatesRestController
 {
+	private final static transient Logger logger = LogManager.getLogger(ReceiptCandidatesRestController.class);
+
 	private final ReceiptCandidateAPIService receiptCandidateAPIService;
 
 	public ReceiptCandidatesRestController(@NonNull final ReceiptCandidateAPIService receiptCandidateAPIService)
@@ -63,6 +69,7 @@ public class ReceiptCandidatesRestController
 		final QueryLimit limitEff = QueryLimit.ofNullableOrNoLimit(limit).ifNoLimitUse(500);
 
 		final JsonResponseReceiptCandidates result = receiptCandidateAPIService.exportReceiptCandidates(limitEff);
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Number of exported receiptCandidates: {}" + result.getItems().size());
 		return ResponseEntity.ok(result);
 	}
 
@@ -72,7 +79,9 @@ public class ReceiptCandidatesRestController
 		try (final MDC.MDCCloseable ignore = MDC.putCloseable("TransactionIdAPI", status.getTransactionKey()))
 		{
 			receiptCandidateAPIService.updateStatus(status);
-			return ResponseEntity.accepted().body("Receipt candidates updated");
+			Loggables.withLogger(logger, Level.DEBUG).addLog("ReceiptCandidates status updated");
+			
+			return ResponseEntity.accepted().body("ReceiptCandidates updated");
 		}
 	}
 }
