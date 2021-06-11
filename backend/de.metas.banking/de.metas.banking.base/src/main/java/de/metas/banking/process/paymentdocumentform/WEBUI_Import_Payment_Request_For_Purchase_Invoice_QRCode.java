@@ -36,8 +36,6 @@ import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.IProcessParametersCallout;
@@ -159,8 +157,7 @@ public final class WEBUI_Import_Payment_Request_For_Purchase_Invoice_QRCode exte
 			 * */
 			if (bPartnerParam == null)
 			{
-				final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_CouldNotFindOrCreateBPBankAccount, paymentString.getPostAccountNo());
-				throw new AdempiereException(msg);
+				throw new AdempiereException(MSG_CouldNotFindOrCreateBPBankAccount, paymentString.getPostAccountNo());
 			}
 			else
 			{
