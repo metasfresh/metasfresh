@@ -42,6 +42,7 @@ import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+  import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.user.api.IUserBL;
@@ -257,6 +258,7 @@ public class BPartnerQuickInputService
 						.shipTo(true)
 						.shipToDefault(true)
 						.build())
+				.name(".")
 				.existingLocationId(existingLocationId)
 				.build();
 
@@ -296,6 +298,7 @@ public class BPartnerQuickInputService
 		}
 
 		return BPartnerComposite.builder()
+				.orgId(OrgId.ofRepoId(template.getAD_Org_ID()))
 				.bpartner(bpartner)
 				.location(bpLocation)
 				.contacts(contacts)
