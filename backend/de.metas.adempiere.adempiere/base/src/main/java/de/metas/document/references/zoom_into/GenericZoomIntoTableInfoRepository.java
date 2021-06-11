@@ -26,5 +26,5 @@ import lombok.NonNull;
 
 public interface GenericZoomIntoTableInfoRepository
 {
-	GenericZoomIntoTableInfo retrieveTableInfo(@NonNull String tableName);
+	GenericZoomIntoTableInfo retrieveTableInfo(@NonNull String tableName, boolean ignoreExcludeFromZoomTargetsFlag);
 }
