@@ -38,6 +38,7 @@ class Prompt extends Component {
       <span
         className="btn btn-meta-primary btn-sm btn-submit"
         onClick={this.submitClick}
+        autoFocus
       >
         {buttons.submit}
       </span>
