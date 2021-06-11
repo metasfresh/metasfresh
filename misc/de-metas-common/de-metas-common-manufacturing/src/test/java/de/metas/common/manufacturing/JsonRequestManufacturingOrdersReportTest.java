@@ -1,18 +1,14 @@
 package de.metas.common.manufacturing;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.common.JsonTestHelper;
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import java.io.IOException;
 
-import lombok.NonNull;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -43,11 +39,7 @@ public class JsonRequestManufacturingOrdersReportTest
 	@BeforeEach
 	public void beforeEach()
 	{
-		jsonObjectMapper = new ObjectMapper()
-				.findAndRegisterModules()
-				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				.enable(MapperFeature.USE_ANNOTATIONS);
+		jsonObjectMapper = JsonTestHelper.newJsonObjectMapper();
 	}
 
 	@Test
