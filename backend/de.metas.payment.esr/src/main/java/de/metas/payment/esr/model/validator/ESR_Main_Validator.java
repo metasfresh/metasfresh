@@ -21,6 +21,7 @@ import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.payment.esr.spi.impl.DefaultESRLineHandler;
 import de.metas.payment.spi.impl.ESRCreaLogixStringParser;
 import de.metas.payment.spi.impl.ESRRegularLineParser;
+import de.metas.payment.spi.impl.QRCodeStringParser;
 import de.metas.util.Services;
 
 public class ESR_Main_Validator extends AbstractModuleInterceptor
@@ -57,6 +58,7 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		final IPaymentStringParserFactory paymentStringParserFactory = Services.get(IPaymentStringParserFactory.class);
 		paymentStringParserFactory.registerParser(PaymentParserType.ESRRegular.getType(), ESRRegularLineParser.instance);
 		paymentStringParserFactory.registerParser(PaymentParserType.ESRCreaLogix.getType(), ESRCreaLogixStringParser.instance);
+		paymentStringParserFactory.registerParser(PaymentParserType.QRCode.getType(), new QRCodeStringParser());
 
 		//
 		// Payment batch provider for Bank Statement matching

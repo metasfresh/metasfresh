@@ -52,13 +52,13 @@ class QRCodeStringParserTest
 	{
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/payment/spi/impl/QRR_PurchaseInvoice.txt");
 		assertThat(inputStream).isNotNull();
-		
+
 		String qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
-		
+
 		final PaymentString paymentString = new QRCodeStringParser().parse(qrCode);
-		
+
 		assertThat(paymentString.getAmount()).isEqualTo(expectedAMT);
-		
+
 		assertThat(paymentString.getIBAN()).isEqualTo(expectedIBAN);
 	}
 }
