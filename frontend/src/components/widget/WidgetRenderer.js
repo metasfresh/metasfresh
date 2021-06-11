@@ -158,6 +158,7 @@ class WidgetRenderer extends PureComponent {
       ref: forwardedRef,
       isFilterActive: filterActiveState,
       updateItems,
+      disconnected,
     };
     const dateProps = {
       field: widgetField,
@@ -173,6 +174,7 @@ class WidgetRenderer extends PureComponent {
       updateItems,
       defaultValue: widgetData[0].defaultValue,
       onChange: this.handleDateChange,
+      disconnected,
     };
     const dateRangeProps = {
       mandatory: widgetData[0].mandatory,
@@ -187,6 +189,7 @@ class WidgetRenderer extends PureComponent {
       defaultValueTo: widgetData[0].defaultValueTo,
       updateItems,
       field: widgetData[0].field,
+      disconnected,
     };
 
     const attributesProps = {

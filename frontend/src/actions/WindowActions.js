@@ -620,6 +620,9 @@ export function createWindow({
 
       if (documentId === 'NEW') {
         dispatch(updateModal(null, docId));
+        const { includedTabsInfo } = responseDocuments[0];
+        includedTabsInfo &&
+          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
       }
 
       // TODO: Is `elem` ever different than 0 ?
@@ -855,7 +858,10 @@ export function patch(
           ? response.data.documents
           : response.data;
       const dataItem = data[0];
-      const { includedTabsInfo } = dataItem;
+      const includedTabsInfo =
+        dataItem && dataItem.includedTabsInfo
+          ? dataItem.includedTabsInfo
+          : undefined;
 
       // prevent recursion in merge
       data.documents &&
@@ -873,6 +879,10 @@ export function patch(
           disconnected,
         })
       );
+
+      // update the inlineTabsInfo if such information is present
+      includedTabsInfo &&
+        dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
 
       if (
         dataItem &&
@@ -895,10 +905,6 @@ export function patch(
           )
         );
       } else {
-        // update the inlineTabsInfo if such information is present
-        includedTabsInfo &&
-          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
-
         await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
@@ -926,6 +932,7 @@ export function patch(
           id,
           windowType,
           isAdvanced,
+          disconnected,
         })
       );
     }
