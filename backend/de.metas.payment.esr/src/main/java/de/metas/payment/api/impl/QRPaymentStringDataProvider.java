@@ -94,6 +94,6 @@ public class QRPaymentStringDataProvider extends AbstractPaymentStringDataProvid
 	@Override
 	public String toString()
 	{
-		return String.format("ESRPaymentStringDataProvider [getPaymentString()=%s]", getPaymentString());
+		return String.format("QRPaymentStringDataProvider [getPaymentString()=%s]", getPaymentString());
 	}
 }

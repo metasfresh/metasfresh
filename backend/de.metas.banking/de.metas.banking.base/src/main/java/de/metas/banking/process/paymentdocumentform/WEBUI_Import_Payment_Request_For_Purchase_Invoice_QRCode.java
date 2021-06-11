@@ -40,11 +40,13 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.process.BarcodeScannerType;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ParamBarcodeScannerType;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -56,7 +58,7 @@ public final class WEBUI_Import_Payment_Request_For_Purchase_Invoice_QRCode exte
 {
 
 	protected static final String PARAM_fullPaymentString = "FullPaymentString";
-	@Param(parameterName = PARAM_fullPaymentString)
+	@Param(parameterName = PARAM_fullPaymentString, barcodeScannerType = ParamBarcodeScannerType.QRCode)
 	private String fullPaymentStringParam;
 
 	protected static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
