@@ -567,9 +567,9 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-						.setJoinOr()
-						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+								.setJoinOr()
+								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
@@ -581,5 +581,16 @@ public class ProductDAO implements IProductDAO
 	{
 		final I_M_Product product = getById(productId);
 		return GroupTemplateId.optionalOfRepoId(product.getC_CompensationGroup_Schema_ID());
+	}
+
+	@Override
+	public void clearIndividualMasterDataFromProduct(final ProductId productId)
+	{
+		queryBL.createQueryBuilder(I_M_Product.class)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_M_Product.COLUMNNAME_M_AttributeSetInstance_ID, 0)
+				.execute();
 	}
 }

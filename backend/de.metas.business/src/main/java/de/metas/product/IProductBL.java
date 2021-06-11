@@ -196,4 +196,5 @@ public interface IProductBL extends ISingletonService
 
 	boolean isHaddexProduct(ProductId productId);
 
+	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
 }

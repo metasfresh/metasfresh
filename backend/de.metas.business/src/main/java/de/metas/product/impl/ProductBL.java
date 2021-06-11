@@ -487,6 +487,21 @@ public final class ProductBL implements IProductBL
 		return product.isHaddexCheck();
 	}
 
+	@Nullable
+	@Override
+	public I_M_AttributeSet getProductMasterDataSchemaOrNull(final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
 
+		final int attributeSetRepoId = product.getM_AttributeSet_ID();
+
+		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
+		if (attributeSetId.isNone())
+		{
+			return null;
+		}
+
+		return attributesRepo.getAttributeSetById(attributeSetId);
+	}
 
 }
