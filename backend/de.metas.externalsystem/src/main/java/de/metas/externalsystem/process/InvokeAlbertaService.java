@@ -1,0 +1,168 @@
+/*
+ * #%L
+ * de.metas.externalsystem
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.externalsystem.process;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonExternalSystemName;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.externalreference.AlbertaExternalSystem;
+import de.metas.externalreference.ExternalReference;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
+import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
+import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
+import de.metas.util.Services;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerReference;
+import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRole;
+import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleRepository;
+import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleType;
+import lombok.NonNull;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.springframework.stereotype.Service;
+
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
+@Service
+public class InvokeAlbertaService
+{
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	private final AlbertaRoleRepository albertaRoleRepository;
+	private final ExternalReferenceRepository externalReferenceRepository;
+	private final ExternalSystemConfigRepo externalSystemConfigDAO;
+
+	private static final String EXTERNAL_SYSTEM_COMMAND = "syncBPartnerById";
+
+	public InvokeAlbertaService(final AlbertaRoleRepository albertaRoleRepository, final ExternalReferenceRepository externalReferenceRepository, final ExternalSystemConfigRepo externalSystemConfigDAO)
+	{
+		this.albertaRoleRepository = albertaRoleRepository;
+		this.externalReferenceRepository = externalReferenceRepository;
+		this.externalSystemConfigDAO = externalSystemConfigDAO;
+	}
+
+	@NonNull
+	public ImmutableList<AlbertaRole> getAlbertaRoleForBPartner(final @NonNull BPartnerId bPartnerId)
+	{
+		return albertaRoleRepository.getByPartnerId(bPartnerId)
+				.stream()
+				.filter(albertaRole -> !(albertaRole.getRole().equals(AlbertaRoleType.Patient)
+						|| albertaRole.getRole().equals(AlbertaRoleType.PreferredPharmacy)
+						|| albertaRole.getRole().equals(AlbertaRoleType.Caregiver)
+						|| albertaRole.getRole().equals(AlbertaRoleType.CareTaker)
+						|| albertaRole.getRole().equals(AlbertaRoleType.GeneralPractitioner)
+						|| albertaRole.getRole().equals(AlbertaRoleType.HealthInsurance)
+						|| albertaRole.getRole().equals(AlbertaRoleType.MainProducer)))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Optional<AlbertaBPartnerReference> toOptionalAlbertaBPartnerReference(final @NonNull AlbertaRole albertaRole)
+	{
+		final AlbertaBPartnerReference.AlbertaBPartnerReferenceBuilder builder = AlbertaBPartnerReference.builder();
+		builder.albertaRoleType(albertaRole.getRole());
+
+		final GetExternalReferenceByRecordIdReq getExternalRefRequest = GetExternalReferenceByRecordIdReq.builder()
+				.externalReferenceType(BPartnerExternalReferenceType.BPARTNER)
+				.externalSystem(AlbertaExternalSystem.ALBERTA)
+				.recordId(albertaRole.getBPartnerId().getRepoId())
+				.build();
+
+		return externalReferenceRepository.getExternalReferenceByMFReference(getExternalRefRequest)
+				.map(ExternalReference::getExternalReference)
+				.map(externalRef -> builder.externalReference(externalRef).build());
+	}
+
+	@NonNull
+	public JsonExternalSystemRequest toJsonExternalSystemRequest(
+			@NonNull final OrgId orgId,
+			final int externalSystemConfigAlbertaId,
+			@NonNull final PInstanceId pInstanceId,
+			@NonNull final AlbertaBPartnerReference albertaBPartnerReference)
+	{
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(ExternalSystemAlbertaConfigId.ofRepoId(externalSystemConfigAlbertaId));
+
+		return JsonExternalSystemRequest.builder()
+				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
+				.externalSystemName(JsonExternalSystemName.of(ExternalSystemType.Alberta.getName()))
+				.parameters(extractParameters(config, albertaBPartnerReference))
+				.orgCode(orgDAO.getById(orgId).getValue())
+				.command(EXTERNAL_SYSTEM_COMMAND)
+				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(pInstanceId)))
+				.build();
+	}
+
+	@NonNull
+	private Map<String, String> extractParameters(
+			@NonNull final ExternalSystemParentConfig externalSystemParentConfig,
+			@NonNull final AlbertaBPartnerReference albertaBPartnerReference)
+	{
+		final ExternalSystemAlbertaConfig albertaConfig = ExternalSystemAlbertaConfig.cast(externalSystemParentConfig.getChildConfig());
+
+		final Map<String, String> parameters = new HashMap<>();
+
+		parameters.put(ExternalSystemConstants.PARAM_API_KEY, albertaConfig.getApiKey());
+		parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, albertaConfig.getBaseUrl());
+		parameters.put(ExternalSystemConstants.PARAM_TENANT, albertaConfig.getTenant());
+		parameters.put(ExternalSystemConstants.PARAM_ALBERTA_ID, albertaBPartnerReference.getExternalReference());
+		parameters.put(ExternalSystemConstants.PARAM_ALBERTA_ROLE, albertaBPartnerReference.getAlbertaRoleType().name());
+
+		return parameters;
+	}
+
+	@NonNull
+	public HttpPut toHttpPutRequest(
+			@NonNull final JsonExternalSystemRequest jsonExternalSystemRequest,
+			final int externalSystemConfigAlbertaId) throws UnsupportedEncodingException, JsonProcessingException
+	{
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(ExternalSystemAlbertaConfigId.ofRepoId(externalSystemConfigAlbertaId));
+
+		final HttpPut request = new HttpPut(config.getCamelUrl());
+
+		// attempt to encode the request body as UTF-8. Oftherwise camel might fail to deserialize the JSON
+		// by default http-client encodes the content as ISO-8859-1, https://hc.apache.org/httpclient-legacy/charencodings.html
+		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
+
+		final String jsonExternalSystemRequestString = new ObjectMapper().writeValueAsString(jsonExternalSystemRequest);
+
+		request.setEntity(new StringEntity(jsonExternalSystemRequestString));
+
+		return request;
+	}
+}

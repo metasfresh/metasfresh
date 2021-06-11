@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.alberta.patient;
 
+import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
