@@ -72,7 +72,7 @@ public class Inventory
 			@Nullable final String description,
 			@Nullable final ActivityId activityId,
 			@NonNull final DocStatus docStatus,
-			@NonNull final String documentNo,
+			final String documentNo,
 			@NonNull final List<InventoryLine> lines)
 	{
 		this.id = id;
