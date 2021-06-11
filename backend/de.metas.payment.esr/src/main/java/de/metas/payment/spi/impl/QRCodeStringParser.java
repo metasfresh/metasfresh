@@ -44,11 +44,6 @@ public final class QRCodeStringParser extends AbstractESRPaymentStringParser
 
 	public static final transient QRCodeStringParser instance = new QRCodeStringParser();
 
-	private QRCodeStringParser()
-	{
-		super();
-	}
-
 	@Override
 	public PaymentString parse(final Properties ctx, @NonNull final String qrCode)
 	{
