@@ -24,6 +24,7 @@ package de.metas.payment.spi.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.base.Splitter;
@@ -48,19 +49,22 @@ public final class QRCodeStringParser extends AbstractESRPaymentStringParser
 		Check.assumeEquals(lines.get(2), "1"); // Coding
 		
 		final String iban = lines.get(3); 
-		Check.assumeNotNull(lines.get(19), "invoice total not null");
-		Check.assumeNotNull(lines.get(28), "code type not null");
-		Check.assumeNotNull(lines.get(29), "reference not null");
+		Check.assumeNotNull(lines.get(18), "invoice total not null");
+		Check.assumeNotNull(lines.get(27), "code type not null");
+		Check.assumeNotNull(lines.get(28), "reference not null");
 		
-		final String amountString=  lines.get(19);
-		final String reference = lines.get(29);
+		final String amountString =  lines.get(18);
+		final String reference = lines.get(28);
 		
 		final Timestamp paymentDate = null;
 		final Timestamp accountDate = null;
 		
-		final BigDecimal amount = extractAmountFromString(amountString);
+		final List<String> collectedErrors = new ArrayList<>();
+		
+		final BigDecimal amount = extractAmountFromString(amountString, collectedErrors);
 
 		final PaymentString paymentString = PaymentString.builder()
+				.collectedErrors(collectedErrors)
 				.rawPaymentString(qrCode)
 				.IBAN(iban)
 				.amount(amount)

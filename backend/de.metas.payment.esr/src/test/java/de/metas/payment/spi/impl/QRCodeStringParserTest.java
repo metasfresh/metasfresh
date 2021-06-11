@@ -26,20 +26,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
 import org.adempiere.test.AdempiereTestHelper;
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.ibm.icu.math.BigDecimal;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import de.metas.banking.payment.PaymentString;
 
 class QRCodeStringParserTest
 {
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -63,7 +62,7 @@ class QRCodeStringParserTest
 		
 		final PaymentString paymentString = new QRCodeStringParser().parse(qrCode);
 		
-		assertThat(paymentString.getAmount()).isEqualTo(new BigDecimal("100,80"));
+		assertThat(paymentString.getAmount()).isEqualTo(new BigDecimal("100.80"));
 		
 		assertThat(paymentString.getIBAN()).isEqualTo("CH1589144626811245431");
 	}
