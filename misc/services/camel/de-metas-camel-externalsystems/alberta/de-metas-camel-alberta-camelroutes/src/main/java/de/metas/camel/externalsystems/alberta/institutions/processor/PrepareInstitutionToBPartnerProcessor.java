@@ -27,8 +27,11 @@ import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.common.DataMapper;
 import de.metas.camel.externalsystems.alberta.institutions.GetInstitutionsRouteConstants;
 import de.metas.camel.externalsystems.alberta.institutions.GetInstitutionsRouteContext;
+import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v2.request.alberta.JsonBPartnerRole;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.EmptyUtil;
 import io.swagger.client.model.Doctor;
 import io.swagger.client.model.Hospital;
@@ -94,7 +97,17 @@ public class PrepareInstitutionToBPartnerProcessor implements Processor
 			default -> throw new RuntimeCamelException("No bpartner role matched for " + role);
 		}
 
-		exchange.getIn().setBody(upsertItem);
+		final JsonRequestBPartnerUpsert bPartnerUpsert = JsonRequestBPartnerUpsert.builder()
+				.requestItem(upsertItem)
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.build();
+
+		final BPUpsertCamelRequest bpUpsertCamelRequest = BPUpsertCamelRequest.builder()
+				.jsonRequestBPartnerUpsert(bPartnerUpsert)
+				.orgCode(routeContext.getOrgCode())
+				.build();
+
+		exchange.getIn().setBody(bpUpsertCamelRequest);
 	}
 
 	private void validateResourceExists(@Nullable final Object resource, final String resourceIdentifier, final String resourceType)

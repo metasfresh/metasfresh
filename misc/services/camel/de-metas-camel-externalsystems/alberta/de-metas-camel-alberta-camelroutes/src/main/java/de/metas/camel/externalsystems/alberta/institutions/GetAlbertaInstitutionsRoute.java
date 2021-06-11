@@ -22,17 +22,12 @@
 
 package de.metas.camel.externalsystems.alberta.institutions;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.institutions.processor.PrepareInstitutionToBPartnerProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
-import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v2.request.alberta.JsonBPartnerRole;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.client.ApiClient;
 import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.HospitalApi;
@@ -43,7 +38,6 @@ import io.swagger.client.api.PharmacyApi;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -55,6 +49,7 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 public class GetAlbertaInstitutionsRoute extends RouteBuilder
 {
 	public static final String EXTERNAL_SYSTEM_REQUEST = "Alberta-syncBPartnerById";
+	public static final String PREPARE_ALBERTA_INSTITUTIONS_CONTEXT_PROCESSOR_ID = "AlbertaBPartners-PrepareAlbertaInstitutionContextProcessor";
 	public static final String PREPARE_ALBERTA_BPARTNER_PROCESSOR_ID = "AlbertaBPartners-PrepareInstitutionToBPartnerProcessor";
 
 	@Override
@@ -70,37 +65,14 @@ public class GetAlbertaInstitutionsRoute extends RouteBuilder
 		from(direct(EXTERNAL_SYSTEM_REQUEST))
 				.routeId(EXTERNAL_SYSTEM_REQUEST)
 				.log("Route invoked!")
-				.process(this::prepareContext)
+				.process(this::prepareContext).id(PREPARE_ALBERTA_INSTITUTIONS_CONTEXT_PROCESSOR_ID)
+
 				.process(new PrepareInstitutionToBPartnerProcessor()).id(PREPARE_ALBERTA_BPARTNER_PROCESSOR_ID)
-				.process(this::importBPartner)
+
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartner: ${body}")
+
 				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}");
 		//@formatter:on
-	}
-
-	private void importBPartner(@NonNull final Exchange exchange)
-	{
-		final JsonRequestBPartnerUpsertItem upsertItem = exchange.getIn().getBody(JsonRequestBPartnerUpsertItem.class);
-
-		if (upsertItem == null)
-		{
-			throw new RuntimeCamelException("Missing exchange body! No JsonRequestBPartnerUpsertItem found!");
-		}
-
-		final GetInstitutionsRouteContext routeContext = ProcessorHelper
-				.getPropertyOrThrowError(exchange, GetInstitutionsRouteConstants.ROUTE_PROPERTY_GET_INSTITUTIONS_CONTEXT, GetInstitutionsRouteContext.class);
-
-		final JsonRequestBPartnerUpsert bPartnerUpsert = JsonRequestBPartnerUpsert.builder()
-				.requestItem(upsertItem)
-				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-				.build();
-
-		final BPUpsertCamelRequest bpUpsertCamelRequest = BPUpsertCamelRequest.builder()
-				.jsonRequestBPartnerUpsert(bPartnerUpsert)
-				.orgCode(routeContext.getOrgCode())
-				.build();
-
-		exchange.getIn().setBody(bpUpsertCamelRequest);
 	}
 
 	private void prepareContext(@NonNull final Exchange exchange)
