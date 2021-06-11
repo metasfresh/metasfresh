@@ -1,23 +1,21 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -47,23 +45,22 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
-import de.metas.cache.CCache;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.i18n.ITranslatableString;
-import de.metas.lang.SOTrx;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AttributeDAO implements IAttributeDAO
 {
@@ -225,6 +222,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@NonNull
 	public AttributeId retrieveAttributeIdByValue(final AttributeCode attributeCode)
 	{
 		return getAttributesMap().getAttributeIdByCode(attributeCode);
@@ -928,6 +926,7 @@ public class AttributeDAO implements IAttributeDAO
 			return getAttributeIdByCodeOrNull(AttributeCode.ofString(attributeCode));
 		}
 
+		@NonNull
 		public AttributeId getAttributeIdByCode(@NonNull final AttributeCode attributeCode)
 		{
 			final AttributeId attributeId = getAttributeIdByCodeOrNull(attributeCode);

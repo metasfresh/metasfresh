@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de-metas-common-rest_api
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,41 +20,29 @@
  * #L%
  */
 
-package de.metas.handlingunits.inventory;
+package de.metas.common.rest_api.v2.warehouse;
 
-import de.metas.document.DocTypeId;
-import de.metas.organization.OrgId;
-import de.metas.product.acct.api.ActivityId;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseId;
 
-import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
+import java.util.List;
 
 @Value
 @Builder
-public class InventoryHeaderCreateRequest
+@JsonDeserialize(builder = JsonOutOfStockResponseItem.JsonOutOfStockResponseItemBuilder.class)
+public class JsonOutOfStockResponseItem
 {
+	@JsonProperty("warehouseId")
 	@NonNull
-	OrgId orgId;
+	JsonMetasfreshId warehouseId;
 
-	@NonNull
-	ZonedDateTime movementDate;
+	@JsonProperty("inventoryDocNo")
+	String inventoryDocNo;
 
-	@NonNull
-	WarehouseId warehouseId;
-
-	@Nullable
-	DocTypeId docTypeId;
-
-	@Nullable
-	ActivityId activityId;
-
-	@Nullable
-	String description;
-
-	@Nullable
-	String poReference;
+	@JsonProperty("closedShipmentSchedules")
+	List<JsonMetasfreshId> closedShipmentSchedules;
 }

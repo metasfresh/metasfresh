@@ -26,7 +26,11 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockNoticeRequest;
+import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponse;
+import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponseItem;
 import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,6 +68,40 @@ public class SerializeDeserializeTest
 				.build();
 
 		testSerializeDeserialize(apiResponse, JsonApiResponse.class);
+	}
+
+	@Test
+	public void jsonOutOfStockNoticeRequest() throws Exception
+	{
+		final JsonOutOfStockNoticeRequest jsonOutOfStockNoticeRequest = JsonOutOfStockNoticeRequest.builder()
+				.orgCode("orgCode")
+				.productIdentifier("productIdentifier")
+				.closePendingShipmentSchedules(true)
+				.createInventory(true)
+				.attributeSetInstance(JsonAttributeSetInstance.builder()
+											  .attributeInstance(JsonAttributeInstance.builder()
+																		 .attributeCode("attributeCode")
+																		 .valueStr("valueStr")
+																		 .attributeName("attributeName")
+																		 .build())
+											  .build())
+				.build();
+
+		testSerializeDeserialize(jsonOutOfStockNoticeRequest, JsonOutOfStockNoticeRequest.class);
+	}
+
+	@Test
+	public void jsonOutOfStockNoticeResponse() throws Exception
+	{
+		final JsonOutOfStockResponse jsonOutOfStockResponse = JsonOutOfStockResponse.builder()
+				.affectedWarehouse(JsonOutOfStockResponseItem.builder()
+										   .warehouseId(JsonMetasfreshId.of(1))
+										   .closedShipmentSchedules(ImmutableList.of(JsonMetasfreshId.of(2)))
+										   .inventoryDocNo("inventoryDocNo")
+										   .build())
+				.build();
+
+		testSerializeDeserialize(jsonOutOfStockResponse, JsonOutOfStockResponse.class);
 	}
 
 	private <T> void testSerializeDeserialize(@NonNull final T json, final Class<T> clazz) throws IOException

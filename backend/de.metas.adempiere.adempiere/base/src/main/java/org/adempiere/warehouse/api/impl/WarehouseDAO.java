@@ -28,7 +28,6 @@ import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.compiere.model.I_M_Warehouse_Type;
@@ -403,7 +402,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		return getByIds(warehouseIds);
 	}
 
-	private Set<WarehouseId> getAllWarehouseIds()
+	public Set<WarehouseId> getAllWarehouseIds()
 	{
 		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
