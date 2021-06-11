@@ -22,7 +22,6 @@
 
 package de.metas.product.process;
 
-import de.metas.cache.CacheMgt;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -69,15 +68,5 @@ public class M_Product_Clear_AttributeSetInstance extends JavaProcess implements
 		productDAO.clearIndividualMasterDataFromProduct(productId);
 
 		return MSG_OK;
-	}
-
-	@Override
-	protected void postProcess(final boolean success)
-	{
-		if (success)
-		{
-			final CacheMgt cacheMgt = CacheMgt.get();
-			cacheMgt.reset(I_M_Product.Table_Name);
-		}
 	}
 }

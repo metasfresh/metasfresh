@@ -586,11 +586,10 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public void clearIndividualMasterDataFromProduct(final ProductId productId)
 	{
-		queryBL.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, productId)
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_M_Product.COLUMNNAME_M_AttributeSetInstance_ID, 0)
-				.execute();
+		final I_M_Product product = getById(productId);
+
+		product.setM_AttributeSetInstance_ID(-1);
+
+		saveRecord(product);
 	}
 }
