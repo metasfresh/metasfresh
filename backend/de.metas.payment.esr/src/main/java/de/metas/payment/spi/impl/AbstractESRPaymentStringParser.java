@@ -31,7 +31,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang3.math.NumberUtils;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -40,10 +39,12 @@ import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 
 public abstract class AbstractESRPaymentStringParser implements IPaymentStringParser
 {
+	private static final IMsgBL msgBL = Services.get(IMsgBL.class);
 	protected static final AdMessageKey ERR_WRONG_PAYMENT_DATE = AdMessageKey.of("ESR_Wrong_Payment_Date");
 	protected static final AdMessageKey ERR_WRONG_ACCOUNT_DATE = AdMessageKey.of("ESR_Wrong_Account_Date");
 
@@ -66,7 +67,7 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 		}
 		catch (final NumberFormatException e)
 		{
-			final String wrongNumberFormatAmount = Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_NUMBER_FORMAT_AMOUNT, new Object[] { amountString });
+			final String wrongNumberFormatAmount = msgBL.getMsg(Env.getCtx(), ERR_WRONG_NUMBER_FORMAT_AMOUNT, new Object[] { amountString });
 			collectedErrors.add(wrongNumberFormatAmount);
 		}
 		return amount;
@@ -80,11 +81,11 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 		BigDecimal amount = BigDecimal.ZERO;
 		try
 		{
-			amount = NumberUtils.createBigDecimal(amountString);
+			amount = NumberUtils.asBigDecimal(amountString);
 		}
 		catch (final NumberFormatException e)
 		{
-			final String wrongNumberFormatAmount = Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_NUMBER_FORMAT_AMOUNT, new Object[] { amountString });
+			final String wrongNumberFormatAmount = msgBL.getMsg(Env.getCtx(), ERR_WRONG_NUMBER_FORMAT_AMOUNT, new Object[] { amountString });
 			collectedErrors.add(wrongNumberFormatAmount);
 		}
 		return amount;
@@ -107,7 +108,7 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 		}
 		catch (final ParseException e)
 		{
-			final String wrongDate = Services.get(IMsgBL.class).getMsg(Env.getCtx(), failMessage, new Object[] { dateStr });
+			final String wrongDate = msgBL.getMsg(Env.getCtx(), failMessage, new Object[] { dateStr });
 			collectedErrors.add(wrongDate);
 		}
 		return null;

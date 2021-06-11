@@ -83,10 +83,10 @@ public class PaymentStringProcessService
 		return dataProvider;
 	}
 	
-	public IPaymentStringDataProvider parseQRPaymentString(@NonNull final String currentPaymentString)
+	public IPaymentStringDataProvider parseQRPaymentString(@NonNull final String qrCode )
 	{
-		log.debug("parsePaymentString: {}", currentPaymentString);
-		return paymentStringBL.getQRDataProvider(currentPaymentString);
+		log.debug("parsePaymentString: {}", qrCode );
+		return paymentStringBL.getQRDataProvider(qrCode );
 	}
 
 

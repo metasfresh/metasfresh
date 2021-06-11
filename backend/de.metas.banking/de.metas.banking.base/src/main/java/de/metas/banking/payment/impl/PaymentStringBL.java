@@ -91,16 +91,16 @@ public class PaymentStringBL implements IPaymentStringBL
 	}
 	
 	@Override
-	public IPaymentStringDataProvider getQRDataProvider(@NonNull final String paymentStringText) throws PaymentStringParseException
+	public IPaymentStringDataProvider getQRDataProvider(@NonNull final String qrCode) throws PaymentStringParseException
 	{
-		Check.assumeNotEmpty(paymentStringText, "paymentStringText not empty");
+		Check.assumeNotEmpty(qrCode, "paymentStringText not empty");
 
 		final IPaymentStringParser paymentStringParser = paymentStringParserFactory.getParser(PaymentParserType.QRCode.getType());
 		
 		final PaymentString paymentString;
 		try
 		{
-			paymentString = paymentStringParser.parse(paymentStringText);
+			paymentString = paymentStringParser.parse(qrCode);
 		}
 		catch (final IndexOutOfBoundsException ex)
 		{

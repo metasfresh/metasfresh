@@ -55,39 +55,39 @@ import de.metas.util.Services;
 public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProcess implements IProcessParametersCallout, IProcessPrecondition
 {
 
-	protected static final String PARAM_fullPaymentString = "FullPaymentString";
+	private static final String PARAM_fullPaymentString = "FullPaymentString";
 	@Param(parameterName = PARAM_fullPaymentString)
 	private String fullPaymentStringParam;
 
-	protected static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
+	private static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
 	@Param(parameterName = PARAM_C_BPartner_ID)
 	private I_C_BPartner bPartnerParam;
 
-	protected static final String PARAM_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+	private static final String PARAM_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 	@Param(parameterName = PARAM_C_BP_BankAccount_ID)
 	private I_C_BP_BankAccount bankAccountParam;
 
-	protected static final String PARAM_Amount = "Amount";
+	private static final String PARAM_Amount = "Amount";
 	@Param(parameterName = PARAM_Amount)
 	private BigDecimal amountParam;
 
-	protected static final String PARAM_Will_Create_a_new_Bank_Account = "Will_Create_a_new_Bank_Account";
+	private static final String PARAM_Will_Create_a_new_Bank_Account = "Will_Create_a_new_Bank_Account";
 	@Param(parameterName = PARAM_Will_Create_a_new_Bank_Account)
 	private boolean willCreateANewBandAccountParam;
 
-	protected static final String PARAM_BankAccountNo = "BankAccountNo";
+	private static final String PARAM_BankAccountNo = "BankAccountNo";
 	@Param(parameterName = PARAM_BankAccountNo)
 	private String bankAccountNumberParam;
 
 	
 	// services
-	protected final transient PaymentStringProcessService paymentStringProcessService = SpringContextHolder.instance
+	private final transient PaymentStringProcessService paymentStringProcessService = SpringContextHolder.instance
 			.getBean(PaymentStringProcessService.class);
-	protected final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	protected final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	// trl
-	protected static final AdMessageKey MSG_CouldNotFindOrCreateBPBankAccount = AdMessageKey
+	private static final AdMessageKey MSG_CouldNotFindOrCreateBPBankAccount = AdMessageKey
 			.of("de.metas.payment.CouldNotFindOrCreateBPBankAccount");
 	
 	@Override

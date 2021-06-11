@@ -48,20 +48,12 @@ class QRCodeStringParserTest
 	}
 
 	@Test
-	public void testWithSampleFile()
+	public void testWithSampleFile() throws IOException
 	{
-		final InputStream inputStream = getClass().getResourceAsStream("/QRR_PurchaseInvoice.txt");
+		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/payment/spi/impl/QRR_PurchaseInvoice.txt");
 		assertThat(inputStream).isNotNull();
 		
-		String qrCode = "";
-		try
-		{
-			qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
+		String qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
 		
 		final PaymentString paymentString = new QRCodeStringParser().parse(qrCode);
 		

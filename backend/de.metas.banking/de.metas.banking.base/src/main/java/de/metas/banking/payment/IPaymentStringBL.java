@@ -57,5 +57,5 @@ public interface IPaymentStringBL extends ISingletonService
 	IPaymentStringDataProvider getDataProvider(Properties ctx, IPaymentStringParser paymentStringParser, String paymentStringText) throws PaymentStringParseException;
 	
 	
-	IPaymentStringDataProvider getQRDataProvider(@NonNull final String paymentStringText) throws PaymentStringParseException;
+	IPaymentStringDataProvider getQRDataProvider(@NonNull final String qrCode) throws PaymentStringParseException;
 }
