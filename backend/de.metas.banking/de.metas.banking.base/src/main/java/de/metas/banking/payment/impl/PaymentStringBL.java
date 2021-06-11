@@ -90,12 +90,12 @@ public class PaymentStringBL implements IPaymentStringBL
 		return dataProvider;
 	}
 	
-	
+	@Override
 	public IPaymentStringDataProvider getQRDataProvider(@NonNull final String paymentStringText) throws PaymentStringParseException
 	{
 		Check.assumeNotEmpty(paymentStringText, "paymentStringText not empty");
 
-		final IPaymentStringParser paymentStringParser = paymentStringParserFactory.getParser(PaymentParserType.QRCode.getTypeOrNull());
+		final IPaymentStringParser paymentStringParser = paymentStringParserFactory.getParser(PaymentParserType.QRCode.getType());
 		
 		final PaymentString paymentString;
 		try

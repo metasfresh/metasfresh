@@ -55,8 +55,8 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		//
 		// Register ESR Payment Parsers
 		final IPaymentStringParserFactory paymentStringParserFactory = Services.get(IPaymentStringParserFactory.class);
-		paymentStringParserFactory.registerParser(PaymentParserType.ESRRegular.getTypeOrNull(), ESRRegularLineParser.instance);
-		paymentStringParserFactory.registerParser(PaymentParserType.ESRCreaLogix.getTypeOrNull(), ESRCreaLogixStringParser.instance);
+		paymentStringParserFactory.registerParser(PaymentParserType.ESRRegular.getType(), ESRRegularLineParser.instance);
+		paymentStringParserFactory.registerParser(PaymentParserType.ESRCreaLogix.getType(), ESRCreaLogixStringParser.instance);
 
 		//
 		// Payment batch provider for Bank Statement matching

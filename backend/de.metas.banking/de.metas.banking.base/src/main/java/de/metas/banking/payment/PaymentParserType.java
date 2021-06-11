@@ -23,8 +23,6 @@ package de.metas.banking.payment;
  */
 public enum PaymentParserType
 {
-	NotDefined(null),
-
 	QRCode("QRCodeStringParser"),
 
 	ESRRegular("ESRRegularLineParser"),
@@ -38,7 +36,7 @@ public enum PaymentParserType
 		this.type = type;
 	}
 
-	public String getTypeOrNull()
+	public String getType()
 	{
 		return type;
 	}

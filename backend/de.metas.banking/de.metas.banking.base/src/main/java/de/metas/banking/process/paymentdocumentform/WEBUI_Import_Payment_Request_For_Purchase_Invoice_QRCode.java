@@ -176,7 +176,7 @@ public final class WEBUI_Import_Payment_Request_For_Purchase_Invoice_QRCode exte
 
 	private IPaymentStringDataProvider getDataProvider()
 	{
-		return paymentStringProcessService.parsePaymentString(getCtx(), fullPaymentStringParam);
+		return paymentStringProcessService.parseQRPaymentString(fullPaymentStringParam);
 	}
 	
 	private I_C_Invoice getActualInvoice()
