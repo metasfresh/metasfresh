@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import cx from 'classnames';
 import { connect } from 'react-redux';
-
+import onClickOutside from 'react-onclickoutside';
 import { completeRequest } from '../../api';
 import {
   fetchQuickInputData,
@@ -14,11 +14,13 @@ import {
 
 import WidgetWrapper from '../../containers/WidgetWrapper';
 
-class TableQuickInput extends Component {
+class TableQuickInput extends PureComponent {
   // promise with patching for queuing form submission after patch is done
   patchPromise;
   // widgets refs
   rawWidgets = [];
+  // local state
+  state = { hasFocus: true };
 
   componentDidMount() {
     this.initQuickInput();
@@ -44,9 +46,11 @@ class TableQuickInput extends Component {
    * @summary function to manually focus a widget
    */
   focusWidgetField = () => {
+    const { hasFocus } = this.state;
     let curWidget = this.rawWidgets[0];
 
     if (
+      hasFocus &&
       curWidget &&
       curWidget.rawWidget &&
       curWidget.rawWidget.current &&
@@ -267,12 +271,27 @@ class TableQuickInput extends Component {
     }
   };
 
+  /**
+   * @method handleClickOutside
+   * @summary Whenever we click outside of the Quick Input form we set the flag `hasFocus`
+   *          This is needed as by default the logic introduced in https://github.com/metasfresh/metasfresh/pull/11163/files
+   *          is setting by default the focus when the component receives new props (after the item was introduced its focusing on the first field)
+   */
+  handleClickOutside = () => this.setState({ hasFocus: false });
+
+  /**
+   * @method handleOnClick
+   * @summary When click is executed in the form we set the internal `hasFocus` flag indicating that we got the focus
+   */
+  handleOnClick = () => this.setState({ hasFocus: true });
+
   render() {
     return (
       <form
         onSubmit={this.onSubmit}
         className="row quick-input-container"
         ref={this.setRef}
+        onClick={this.handleOnClick}
       >
         {this.renderFields()}
         <div className="col-sm-12 col-md-3 col-lg-2 hint">
@@ -330,6 +349,6 @@ TableQuickInput.propTypes = {
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(TableQuickInput);
+)(onClickOutside(TableQuickInput));
 
 export { TableQuickInput };

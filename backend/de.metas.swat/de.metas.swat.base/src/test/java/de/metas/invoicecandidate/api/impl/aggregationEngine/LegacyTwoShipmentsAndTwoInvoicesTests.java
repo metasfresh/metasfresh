@@ -31,6 +31,7 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
 
+import de.metas.invoice.InvoiceDocBaseType;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.X_C_DocType;
@@ -128,7 +129,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		// Assume first invoice is OK
 		{
 			final IInvoiceHeader invoice1 = removeInvoiceHeaderForInOutId(invoices, inOut1.getM_InOut_ID());
-			Assert.assertEquals("Invalid DocBaseType", X_C_DocType.DOCBASETYPE_APInvoice, invoice1.getDocBaseType());
+			Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.VendorInvoice, invoice1.getDocBaseType());
 			Assert.assertEquals("Invalid M_InOut_ID", inOut1.getM_InOut_ID(), invoice1.getM_InOut_ID());
 			validateInvoiceHeader("Invoice", invoice1, ic);
 
@@ -147,7 +148,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 		// Assume second invoice is OK
 		{
 			final IInvoiceHeader invoice2 = removeInvoiceHeaderForInOutId(invoices, inOut2.getM_InOut_ID());
-			Assert.assertEquals("Invalid DocBaseType", X_C_DocType.DOCBASETYPE_APInvoice, invoice2.getDocBaseType());
+			Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.VendorInvoice, invoice2.getDocBaseType());
 			Assert.assertEquals("Invalid M_InOut_ID", inOut2.getM_InOut_ID(), invoice2.getM_InOut_ID());
 			validateInvoiceHeader("Invoice", invoice2, ic);
 
@@ -219,7 +220,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			Assert.assertEquals("We are expecting only one invoice: " + invoices, 1, invoices.size());
 
 			final IInvoiceHeader invoice = invoices.get(0);
-			Assert.assertEquals("Invalid DocBaseType", X_C_DocType.DOCBASETYPE_APInvoice, invoice.getDocBaseType());
+			Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.VendorInvoice, invoice.getDocBaseType());
 			Assert.assertEquals("Invalid M_InOut_ID", inOut1.getM_InOut_ID(), invoice.getM_InOut_ID());
 			validateInvoiceHeader("Invoice", invoice, ic);
 
@@ -287,7 +288,7 @@ public class LegacyTwoShipmentsAndTwoInvoicesTests extends AbstractAggregationEn
 			Assert.assertEquals("We are expecting only one invoice: " + invoices, 1, invoices.size());
 
 			final IInvoiceHeader invoice = invoices.get(0);
-			Assert.assertEquals("Invalid DocBaseType", X_C_DocType.DOCBASETYPE_APInvoice, invoice.getDocBaseType());
+			Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.VendorInvoice, invoice.getDocBaseType());
 			// Assert.assertEquals("Invalid M_InOut_ID", inOut2.getM_InOut_ID(), invoice.getM_InOut_ID());
 			validateInvoiceHeader("Invoice", invoice, ic);
 
