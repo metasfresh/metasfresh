@@ -22,49 +22,49 @@
 
 package de.metas.payment.spi.impl;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+
+import org.adempiere.test.AdempiereTestHelper;
+import org.apache.commons.io.IOUtils;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.ibm.icu.math.BigDecimal;
+
+import de.metas.banking.payment.PaymentString;
 
 class QRCodeStringParserTest
 {
-	@Test
-	public void test()
+	@Before
+	public void init()
 	{
-		final String qrCode = ""
-				/* line 00 */ + "SPC" + "\n"
-				/* line 01 */ + "0200" + "\n"
-				/* line 02 */ + "1" + "\n"
-				/* line 03 */ + "CH8989144256754461336" + "\n"
-				/* line 04 */ + "K" + "\n"
-				/* line 05 */ + "intensive care AG" + "\n"
-				/* line 06 */ + "intensive care street 22" + "\n"
-				/* line 07 */ + "6215 City" + "\n"
-				/* line 08 */ + "" + "\n"
-				/* line 09 */ + "" + "\n"
-				/* line 10 */ + "CH" + "\n"
-				/* line 11 */ + "" + "\n"
-				/* line 12 */ + "" + "\n"
-				/* line 13 */ + "" + "\n"
-				/* line 14 */ + "" + "\n"
-				/* line 15 */ + "" + "\n"
-				/* line 16 */ + "" + "\n"
-				/* line 17 */ + "" + "\n"
-				/* line 18 */ + "1571.04" + "\n"
-				/* line 19 */ + "CHF" + "\n"
-				/* line 20 */ + "K" + "\n"
-				/* line 21 */ + "Customer" + "\n"
-				/* line 22 */ + "Customer Street 2550" + "\n"
-				/* line 23 */ + "4002 City" + "\n"
-				/* line 24 */ + "" + "\n"
-				/* line 25 */ + "" + "\n"
-				/* line 26 */ + "CH" + "\n"
-				/* line 27 */ + "QRR" + "\n"
-				/* line 28 */ + "048290000002156574010493652" + "\n"
-				/* line 29 */ + "" + "\n"
-				/* line 30 */ + "EPD" + "\n"
-				/* line 31 */ + "" + "\n"
-				/* line 32 */ + "" + "\n"
-				/* line 33 */ + "";
+		AdempiereTestHelper.get().init();
+	}
 
-		new QRCodeStringParser().parse(qrCode);
+	@Test
+	public void testWithSampleFile()
+	{
+		final InputStream inputStream = getClass().getResourceAsStream("/QRR_PurchaseInvoice.txt");
+		assertThat(inputStream).isNotNull();
+		
+		String qrCode = "";
+		try
+		{
+			qrCode = IOUtils.toString(inputStream, StandardCharsets.UTF_8.name());
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		
+		final PaymentString paymentString = new QRCodeStringParser().parse(qrCode);
+		
+		assertThat(paymentString.getAmount()).isEqualTo(new BigDecimal("100,80"));
+		
+		assertThat(paymentString.getIBAN()).isEqualTo("CH1589144626811245431");
 	}
 }
