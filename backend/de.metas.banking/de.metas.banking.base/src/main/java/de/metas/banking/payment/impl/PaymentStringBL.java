@@ -29,10 +29,10 @@ import java.util.Properties;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
-import de.metas.banking.payment.IPaymentString;
 import de.metas.banking.payment.IPaymentStringBL;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.IPaymentStringParserFactory;
+import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
 import de.metas.util.Check;
@@ -59,7 +59,7 @@ public class PaymentStringBL implements IPaymentStringBL
 		Check.assumeNotNull(paymentStringParser, "paymentStringParser not null");
 		Check.assumeNotEmpty(paymentStringText, "paymentStringText not empty");
 
-		final IPaymentString paymentString;
+		final PaymentString paymentString;
 		try
 		{
 			paymentString = paymentStringParser.parse(ctx, paymentStringText);
