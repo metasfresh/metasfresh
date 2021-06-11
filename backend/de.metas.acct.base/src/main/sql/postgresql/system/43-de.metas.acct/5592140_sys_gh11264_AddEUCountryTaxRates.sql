@@ -2621,3 +2621,1768 @@ UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 09:20:42','Y
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE C_Tax SET To_Country_ID=103, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 09:20:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540066
 ;
+
+-- 2021-06-11T09:12:11.917Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Reduzierte MWSt 10% (AT)',Updated=TO_TIMESTAMP('2021-06-11 12:12:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540049
+;
+
+-- 2021-06-11T09:12:11.925Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Reduzierte MWSt 10% (AT)', TaxIndicator=NULL  WHERE C_Tax_ID=540049 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:12:15.826Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=10,Updated=TO_TIMESTAMP('2021-06-11 12:12:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540049
+;
+
+-- 2021-06-11T09:13:05.365Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-11 12:13:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_Tax_ID=540049
+;
+
+-- 2021-06-11T09:13:07.925Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-11 12:13:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND C_Tax_ID=540049
+;
+
+-- 2021-06-11T09:13:10.345Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-11 12:13:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_Tax_ID=540049
+;
+
+-- 2021-06-11T09:13:36.311Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Reduced VAT 10% (AT)',Updated=TO_TIMESTAMP('2021-06-11 12:13:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540049
+;
+
+-- 2021-06-11T09:13:38.125Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-11 12:13:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540049
+;
+
+-- 2021-06-11T09:15:21.860Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:15:21','YYYY-MM-DD HH24:MI:SS'),100,540007,540067,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 13% (AT)',13,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:15:21','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:15:21.862Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540067 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:15:21.889Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540067, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540067)
+;
+
+-- 2021-06-11T09:15:28.339Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:15:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540067
+;
+
+-- 2021-06-11T09:15:38.047Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=108, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:15:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540067
+;
+
+-- 2021-06-11T09:20:13.410Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:20:13','YYYY-MM-DD HH24:MI:SS'),100,540007,540068,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 12% (BE)',12,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:20:13','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:20:13.422Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540068 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:20:13.428Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540068, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540068)
+;
+
+-- 2021-06-11T09:20:15.712Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:20:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540068
+;
+
+-- 2021-06-11T09:20:21.979Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=103, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:20:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540068
+;
+
+-- 2021-06-11T09:22:00.626Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Reduzierte MWSt 9% (BG)',Updated=TO_TIMESTAMP('2021-06-11 12:22:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540065
+;
+
+-- 2021-06-11T09:22:00.628Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Reduzierte MWSt 9% (BG)', TaxIndicator=NULL  WHERE C_Tax_ID=540065 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:22:08.162Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=9,Updated=TO_TIMESTAMP('2021-06-11 12:22:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540065
+;
+
+-- 2021-06-11T09:23:59.395Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:23:59','YYYY-MM-DD HH24:MI:SS'),100,540007,540069,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 13% (HR)',13,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:23:59','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:23:59.398Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540069 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:23:59.401Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540069, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540069)
+;
+
+-- 2021-06-11T09:24:01.225Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:24:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540069
+;
+
+-- 2021-06-11T09:24:05.185Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=163, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:24:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540069
+;
+
+-- 2021-06-11T09:26:22.955Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:26:22','YYYY-MM-DD HH24:MI:SS'),100,540007,540070,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 9% (CY)',9,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:26:22','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:26:22.970Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540070 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:26:22.978Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540070, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540070)
+;
+
+-- 2021-06-11T09:26:24.632Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:26:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540070
+;
+
+-- 2021-06-11T09:26:29.111Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=165, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:26:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540070
+;
+
+-- 2021-06-11T09:27:47.192Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:27:47','YYYY-MM-DD HH24:MI:SS'),100,540007,540071,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 15% (CZ)',15,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:27:47','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:27:47.195Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540071 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:27:47.199Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540071, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540071)
+;
+
+-- 2021-06-11T09:27:48.715Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:27:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540071
+;
+
+-- 2021-06-11T09:28:03.216Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=166, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:28:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540071
+;
+
+-- 2021-06-11T09:29:53.974Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:29:53','YYYY-MM-DD HH24:MI:SS'),100,540007,540072,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 14% (FI)',14,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:29:53','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:29:53.978Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540072 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:29:53.984Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540072, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540072)
+;
+
+-- 2021-06-11T09:29:56.006Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:29:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540072
+;
+
+-- 2021-06-11T09:29:59.648Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=181, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:29:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540072
+;
+
+-- 2021-06-11T09:32:34.600Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:32:34','YYYY-MM-DD HH24:MI:SS'),100,540007,540073,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 10% (FR)',10,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:32:34','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:32:34.602Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540073 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:32:34.605Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540073, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540073)
+;
+
+-- 2021-06-11T09:32:36.883Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:32:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540073
+;
+
+-- 2021-06-11T09:32:40.695Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=102, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:32:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540073
+;
+
+-- 2021-06-11T09:33:20.447Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Stark ermäßigte MwSt 2.1% (FR)',Updated=TO_TIMESTAMP('2021-06-11 12:33:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540073
+;
+
+-- 2021-06-11T09:33:20.450Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Stark ermäßigte MwSt 2.1% (FR)', TaxIndicator=NULL  WHERE C_Tax_ID=540073 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:33:24.843Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=2.1,Updated=TO_TIMESTAMP('2021-06-11 12:33:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540073
+;
+
+-- 2021-06-11T09:33:38.502Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_TaxCategory_ID=540006,Updated=TO_TIMESTAMP('2021-06-11 12:33:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540073
+;
+
+-- 2021-06-11T09:35:12.183Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:35:12','YYYY-MM-DD HH24:MI:SS'),100,540007,540074,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 10% (FR)',10,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:35:12','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:35:12.185Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540074 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:35:12.188Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540074, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540074)
+;
+
+-- 2021-06-11T09:35:13.966Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:35:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540074
+;
+
+-- 2021-06-11T09:35:17.537Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=102, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:35:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540074
+;
+
+-- 2021-06-11T09:35:52.005Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Parken MwSt 13% (AT)',Updated=TO_TIMESTAMP('2021-06-11 12:35:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540067
+;
+
+-- 2021-06-11T09:35:52.008Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Parken MwSt 13% (AT)', TaxIndicator=NULL  WHERE C_Tax_ID=540067 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:36:24.163Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 13% (AT)',Updated=TO_TIMESTAMP('2021-06-11 12:36:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540067
+;
+
+-- 2021-06-11T09:36:52.324Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Parken MwSt 12% (BE)',Updated=TO_TIMESTAMP('2021-06-11 12:36:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540068
+;
+
+-- 2021-06-11T09:36:52.328Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Parken MwSt 12% (BE)', TaxIndicator=NULL  WHERE C_Tax_ID=540068 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:37:14.916Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 12% (BE)',Updated=TO_TIMESTAMP('2021-06-11 12:37:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540068
+;
+
+-- 2021-06-11T09:37:34.792Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Parken MwSt 13% (HR)',Updated=TO_TIMESTAMP('2021-06-11 12:37:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540069
+;
+
+-- 2021-06-11T09:37:34.795Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Parken MwSt 13% (HR)', TaxIndicator=NULL  WHERE C_Tax_ID=540069 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:37:51.810Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 13% (HR)',Updated=TO_TIMESTAMP('2021-06-11 12:37:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540069
+;
+
+-- 2021-06-11T09:38:06.744Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Parken MwSt 9% (CY)',Updated=TO_TIMESTAMP('2021-06-11 12:38:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540070
+;
+
+-- 2021-06-11T09:38:06.747Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Parken MwSt 9% (CY)', TaxIndicator=NULL  WHERE C_Tax_ID=540070 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:38:21.963Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parken MwSt9% (CY)',Updated=TO_TIMESTAMP('2021-06-11 12:38:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND C_Tax_ID=540070
+;
+
+-- 2021-06-11T09:38:34.644Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 9% (CY)',Updated=TO_TIMESTAMP('2021-06-11 12:38:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540070
+;
+
+-- 2021-06-11T09:39:05.409Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Parken MwSt 15% (CZ)',Updated=TO_TIMESTAMP('2021-06-11 12:39:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540071
+;
+
+-- 2021-06-11T09:39:05.412Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Parken MwSt 15% (CZ)', TaxIndicator=NULL  WHERE C_Tax_ID=540071 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:39:16.326Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parken MwSt15% (CZ)',Updated=TO_TIMESTAMP('2021-06-11 12:39:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_Tax_ID=540071
+;
+
+-- 2021-06-11T09:39:28.942Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 15% (CZ)',Updated=TO_TIMESTAMP('2021-06-11 12:39:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540071
+;
+
+-- 2021-06-11T09:39:54.521Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Parken MwSt 14% (FI)',Updated=TO_TIMESTAMP('2021-06-11 12:39:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540072
+;
+
+-- 2021-06-11T09:39:54.525Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Parken MwSt 14% (FI)', TaxIndicator=NULL  WHERE C_Tax_ID=540072 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:40:18.452Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 14% (FI)',Updated=TO_TIMESTAMP('2021-06-11 12:40:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540072
+;
+
+-- 2021-06-11T09:47:29.675Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:47:29','YYYY-MM-DD HH24:MI:SS'),100,540007,540075,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 10% (GR)',10,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:47:29','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:47:29.677Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540075 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:47:29.681Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540075, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540075)
+;
+
+-- 2021-06-11T09:47:32.361Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:47:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540075
+;
+
+-- 2021-06-11T09:47:35.953Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=192, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:47:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540075
+;
+
+-- 2021-06-11T09:48:24.632Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:48:24','YYYY-MM-DD HH24:MI:SS'),100,540007,540076,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 18% (HU)',18,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:48:24','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:48:24.634Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540076 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:48:24.637Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540076, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540076)
+;
+
+-- 2021-06-11T09:48:26.596Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:48:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540076
+;
+
+-- 2021-06-11T09:48:29.893Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=206, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:48:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540076
+;
+
+-- 2021-06-11T09:51:31.062Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Reduzierte MWSt 9% (IE)',Updated=TO_TIMESTAMP('2021-06-11 12:51:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540057
+;
+
+-- 2021-06-11T09:51:31.075Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Reduzierte MWSt 9% (IE)', TaxIndicator=NULL  WHERE C_Tax_ID=540057 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:51:35.500Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=9,Updated=TO_TIMESTAMP('2021-06-11 12:51:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540057
+;
+
+-- 2021-06-11T09:52:11.320Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Reduced VAT 9% (IE)',Updated=TO_TIMESTAMP('2021-06-11 12:52:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540057
+;
+
+-- 2021-06-11T09:52:45.702Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory SET Name='.',Updated=TO_TIMESTAMP('2021-06-11 12:52:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_TaxCategory_ID=540007
+;
+
+-- 2021-06-11T09:52:45.706Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory_Trl trl SET Description=NULL, Name='.'  WHERE C_TaxCategory_ID=540007 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:53:22.494Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:53:22','YYYY-MM-DD HH24:MI:SS'),100,540007,540077,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 13.5% (IE)',13.5,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:53:22','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:53:22.496Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540077 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:53:22.505Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540077, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540077)
+;
+
+-- 2021-06-11T09:53:24.512Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:53:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540077
+;
+
+-- 2021-06-11T09:53:42.118Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=212, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:53:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540077
+;
+
+-- 2021-06-11T09:54:31.093Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 12:54:31','YYYY-MM-DD HH24:MI:SS'),100,540006,540078,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 4.8% (IE)',4.8,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 12:54:31','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T09:54:31.095Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540078 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T09:54:31.098Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540078, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540078)
+;
+
+-- 2021-06-11T09:54:34.004Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 12:54:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540078
+;
+
+-- 2021-06-11T09:54:38.041Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=212, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 12:54:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540078
+;
+
+-- 2021-06-11T09:55:16.824Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Stark ermäßigte MwSt 4% (IT)',Updated=TO_TIMESTAMP('2021-06-11 12:55:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540056
+;
+
+-- 2021-06-11T09:55:16.826Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Stark ermäßigte MwSt 4% (IT)', TaxIndicator=NULL  WHERE C_Tax_ID=540056 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:55:19.331Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_TaxCategory_ID=100,Updated=TO_TIMESTAMP('2021-06-11 12:55:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540056
+;
+
+-- 2021-06-11T09:55:22.344Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_TaxCategory_ID=540006,Updated=TO_TIMESTAMP('2021-06-11 12:55:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540056
+;
+
+-- 2021-06-11T09:56:03.941Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Super-reduced VAT 4% (IT)',Updated=TO_TIMESTAMP('2021-06-11 12:56:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540056
+;
+
+-- 2021-06-11T09:58:50.907Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory SET Name='Parken MwSt',Updated=TO_TIMESTAMP('2021-06-11 12:58:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_TaxCategory_ID=540007
+;
+
+-- 2021-06-11T09:58:50.911Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory_Trl trl SET Description=NULL, Name='Parken MwSt'  WHERE C_TaxCategory_ID=540007 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T09:59:05.788Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-11 12:59:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_TaxCategory_ID=540007
+;
+
+-- 2021-06-11T09:59:07.300Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-11 12:59:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_TaxCategory_ID=540007
+;
+
+-- 2021-06-11T09:59:08.981Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-11 12:59:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND C_TaxCategory_ID=540007
+;
+
+-- 2021-06-11T10:02:03.217Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:02:03','YYYY-MM-DD HH24:MI:SS'),100,1000010,540079,'Y','N','Y','N','N','N','N','N','N','Reduzierte MWSt 5% (IT)',5,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:02:03','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:02:03.232Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540079 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:02:03.241Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540079, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540079)
+;
+
+-- 2021-06-11T10:02:04.867Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:02:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540079
+;
+
+-- 2021-06-11T10:02:13.062Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=214, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:02:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540079
+;
+
+-- 2021-06-11T10:03:17.766Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:03:17','YYYY-MM-DD HH24:MI:SS'),100,540007,540080,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 10% (IT)',10,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:03:17','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:03:17.769Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540080 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:03:17.772Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540080, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540080)
+;
+
+-- 2021-06-11T10:03:19.619Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:03:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540080
+;
+
+-- 2021-06-11T10:03:23.793Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=214, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:03:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540080
+;
+
+-- 2021-06-11T10:04:30.148Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Reduzierte MWSt 5% (LV)',Updated=TO_TIMESTAMP('2021-06-11 13:04:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540054
+;
+
+-- 2021-06-11T10:04:30.151Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Reduzierte MWSt 5% (LV)', TaxIndicator=NULL  WHERE C_Tax_ID=540054 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T10:04:33.352Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=5,Updated=TO_TIMESTAMP('2021-06-11 13:04:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540054
+;
+
+-- 2021-06-11T10:05:42.572Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:05:42','YYYY-MM-DD HH24:MI:SS'),100,540007,540081,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 12% (LV)',12,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:05:42','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:05:42.574Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540081 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:05:42.577Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540081, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540081)
+;
+
+-- 2021-06-11T10:05:44.278Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:05:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540081
+;
+
+-- 2021-06-11T10:05:50.549Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=226, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:05:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540081
+;
+
+-- 2021-06-11T10:06:51.506Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Reduzierte MWSt 5% (LT)',Updated=TO_TIMESTAMP('2021-06-11 13:06:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540053
+;
+
+-- 2021-06-11T10:06:51.510Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Reduzierte MWSt 5% (LT)', TaxIndicator=NULL  WHERE C_Tax_ID=540053 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T10:06:56.255Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=5,Updated=TO_TIMESTAMP('2021-06-11 13:06:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540053
+;
+
+-- 2021-06-11T10:07:57.351Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:07:57','YYYY-MM-DD HH24:MI:SS'),100,540007,540082,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 9% (LT)',9,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:07:57','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:07:57.354Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540082 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:07:57.357Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540082, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540082)
+;
+
+-- 2021-06-11T10:07:58.737Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:07:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540082
+;
+
+-- 2021-06-11T10:08:03.383Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=232, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:08:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540082
+;
+
+-- 2021-06-11T10:09:19.341Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Reduzierte MWSt 8% (LU)',Updated=TO_TIMESTAMP('2021-06-11 13:09:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540052
+;
+
+-- 2021-06-11T10:09:19.344Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Reduzierte MWSt 8% (LU)', TaxIndicator=NULL  WHERE C_Tax_ID=540052 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T10:09:21.988Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=8,Updated=TO_TIMESTAMP('2021-06-11 13:09:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540052
+;
+
+-- 2021-06-11T10:10:17.252Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,Updated,UpdatedBy,ValidFrom) VALUES (1000000,1000000,101,TO_TIMESTAMP('2021-06-11 13:10:17','YYYY-MM-DD HH24:MI:SS'),100,540007,540083,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 14% (LU)',0,'N','B',TO_TIMESTAMP('2021-06-11 13:10:17','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:10:17.257Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540083 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:10:17.261Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540083, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540083)
+;
+
+-- 2021-06-11T10:10:19.002Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:10:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540083
+;
+
+-- 2021-06-11T10:10:23.463Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=233, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:10:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540083
+;
+
+-- 2021-06-11T10:10:29.661Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2021-06-11 13:10:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540083
+;
+
+-- 2021-06-11T10:10:37.667Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=14,Updated=TO_TIMESTAMP('2021-06-11 13:10:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540083
+;
+
+-- 2021-06-11T10:11:21.179Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:11:21','YYYY-MM-DD HH24:MI:SS'),100,540006,540084,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 3% (LU)',3,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:11:21','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:11:21.181Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540084 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:11:21.183Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540084, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540084)
+;
+
+-- 2021-06-11T10:11:23.306Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:11:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540084
+;
+
+-- 2021-06-11T10:11:26.906Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=233, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:11:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540084
+;
+
+-- 2021-06-11T10:13:20.477Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:13:20','YYYY-MM-DD HH24:MI:SS'),100,540007,540085,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 7% (MT)',7,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:13:20','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:13:20.479Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540085 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:13:20.481Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540085, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540085)
+;
+
+-- 2021-06-11T10:13:22.249Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:13:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540085
+;
+
+-- 2021-06-11T10:13:27.978Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=241, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:13:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540085
+;
+
+-- 2021-06-11T10:15:02.317Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:15:02','YYYY-MM-DD HH24:MI:SS'),100,540007,540086,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 8% (PL)',8,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:15:02','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:15:02.320Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540086 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:15:02.324Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540086, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540086)
+;
+
+-- 2021-06-11T10:15:03.752Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:15:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540086
+;
+
+-- 2021-06-11T10:15:06.806Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=280, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:15:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540086
+;
+
+-- 2021-06-11T10:16:26.155Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:16:26','YYYY-MM-DD HH24:MI:SS'),100,540007,540087,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 13% (PT)',13,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:16:26','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:16:26.158Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540087 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:16:26.162Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540087, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540087)
+;
+
+-- 2021-06-11T10:16:28.446Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:16:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540087
+;
+
+-- 2021-06-11T10:16:32.438Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=281, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:16:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540087
+;
+
+-- 2021-06-11T10:17:39.083Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:17:39','YYYY-MM-DD HH24:MI:SS'),100,540007,540088,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 9% (RO)',9,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:17:39','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:17:39.085Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540088 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:17:39.088Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540088, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540088)
+;
+
+-- 2021-06-11T10:17:40.816Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:17:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540088
+;
+
+-- 2021-06-11T10:17:49.771Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=285, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:17:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540088
+;
+
+-- 2021-06-11T10:20:12.029Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Parken MwSt 9.5% (SI)',Updated=TO_TIMESTAMP('2021-06-11 13:20:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540043
+;
+
+-- 2021-06-11T10:20:12.031Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Parken MwSt 9.5% (SI)', TaxIndicator=NULL  WHERE C_Tax_ID=540043 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T10:20:13.760Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_TaxCategory_ID=540007,Updated=TO_TIMESTAMP('2021-06-11 13:20:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540043
+;
+
+-- 2021-06-11T10:21:38.296Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,TO_TIMESTAMP('2021-06-11 13:21:38','YYYY-MM-DD HH24:MI:SS'),100,1000010,540089,'Y','N','Y','N','N','N','N','N','N','Reduzierte MWSt 5% (SI)',5,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:21:38','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:21:38.298Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540089 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:21:38.301Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540089, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540089)
+;
+
+-- 2021-06-11T10:21:43.535Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=302, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:21:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540089
+;
+
+-- 2021-06-11T10:22:50.303Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Reduzierte MWSt 10% (ES)',Updated=TO_TIMESTAMP('2021-06-11 13:22:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540042
+;
+
+-- 2021-06-11T10:22:50.306Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Reduzierte MWSt 10% (ES)', TaxIndicator=NULL  WHERE C_Tax_ID=540042 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T10:22:54.375Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=10,Updated=TO_TIMESTAMP('2021-06-11 13:22:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540042
+;
+
+-- 2021-06-11T10:23:44.392Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,Updated,UpdatedBy,ValidFrom) VALUES (1000000,1000000,101,TO_TIMESTAMP('2021-06-11 13:23:44','YYYY-MM-DD HH24:MI:SS'),100,540006,540090,'Y','N','Y','N','N','N','N','N','N','Stark ermäßigte MwSt 4% (ES)',0,'N','B',TO_TIMESTAMP('2021-06-11 13:23:44','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:23:44.394Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540090 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:23:44.397Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540090, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540090)
+;
+
+-- 2021-06-11T10:23:46.900Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:23:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540090
+;
+
+-- 2021-06-11T10:23:51.702Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=106, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:23:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540090
+;
+
+-- 2021-06-11T10:23:56.408Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=4,Updated=TO_TIMESTAMP('2021-06-11 13:23:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540090
+;
+
+-- 2021-06-11T10:24:03.363Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2021-06-11 13:24:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540090
+;
+
+-- 2021-06-11T10:25:28.043Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax (AD_Client_ID,AD_Org_ID,C_Country_ID,Created,CreatedBy,C_TaxCategory_ID,C_Tax_ID,IsActive,IsDefault,IsDocumentLevel,IsFiscalRepresentation,IsSalesTax,IsSmallbusiness,IsSummary,IsTaxExempt,IsWholeTax,Name,Rate,RequiresTaxCertificate,SOPOType,TypeOfDestCountry,Updated,UpdatedBy,ValidFrom) VALUES (1000000,0,101,TO_TIMESTAMP('2021-06-11 13:25:28','YYYY-MM-DD HH24:MI:SS'),100,540007,540091,'Y','N','Y','N','N','N','N','N','N','Parken MwSt 12% (SE)',12,'N','B','WITHIN_COUNTRY_AREA',TO_TIMESTAMP('2021-06-11 13:25:28','YYYY-MM-DD HH24:MI:SS'),100,TO_TIMESTAMP('2021-01-01','YYYY-MM-DD'))
+;
+
+-- 2021-06-11T10:25:28.046Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Trl (AD_Language,C_Tax_ID, Description,Name,TaxIndicator, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_Tax_ID, t.Description,t.Name,t.TaxIndicator, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_Tax t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_Tax_ID=540091 AND NOT EXISTS (SELECT 1 FROM C_Tax_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_Tax_ID=t.C_Tax_ID)
+;
+
+-- 2021-06-11T10:25:28.048Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Tax_Acct (C_Tax_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy
+                       , T_Credit_Acct
+                       , T_Due_Acct
+                       , T_Expense_Acct
+                       , T_Liability_Acct
+                       , T_PayDiscount_Exp_Acct
+                       , T_PayDiscount_Rev_Acct
+                       , T_Receivables_Acct
+                       , T_Revenue_Acct
+) SELECT 540091, p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),100,now(),100
+       , p.T_Credit_Acct
+       , p.T_Due_Acct
+       , p.T_Expense_Acct
+       , p.T_Liability_Acct
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Exp_Acct */
+       , NULL /* missing C_AcctSchema_Default.T_PayDiscount_Rev_Acct */
+       , p.T_Receivables_Acct
+       , NULL /* missing C_AcctSchema_Default.T_Revenue_Acct */
+FROM C_AcctSchema_Default p WHERE p.AD_Client_ID=1000000
+                              AND NOT EXISTS (SELECT 1 FROM C_Tax_Acct e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.C_Tax_ID=540091)
+;
+
+-- 2021-06-11T10:25:29.621Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET C_Country_ID=NULL,Updated=TO_TIMESTAMP('2021-06-11 13:25:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540091
+;
+
+-- 2021-06-11T10:25:34.229Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET To_Country_ID=313, TypeOfDestCountry='WITHIN_COUNTRY_AREA',Updated=TO_TIMESTAMP('2021-06-11 13:25:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540091
+;
+
+-- 2021-06-11T10:26:03.919Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Reduzierte MWSt 5% (GB)',Updated=TO_TIMESTAMP('2021-06-11 13:26:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540058
+;
+
+-- 2021-06-11T10:26:03.921Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Reduzierte MWSt 5% (GB)', TaxIndicator=NULL  WHERE C_Tax_ID=540058 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T10:26:07.357Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Rate=5,Updated=TO_TIMESTAMP('2021-06-11 13:26:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540058
+;
+
+-- 2021-06-11T11:02:13.811Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory SET Name='Vorläufige MwSt',Updated=TO_TIMESTAMP('2021-06-11 14:02:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_TaxCategory_ID=540007
+;
+
+-- 2021-06-11T11:02:13.814Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory_Trl trl SET Description=NULL, Name='Vorläufige MwSt'  WHERE C_TaxCategory_ID=540007 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:02:39.754Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory_Trl SET Name='Vorläufige MwSt',Updated=TO_TIMESTAMP('2021-06-11 14:02:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_TaxCategory_ID=540007
+;
+
+-- 2021-06-11T11:02:45.414Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_TaxCategory_Trl SET Name='Vorläufige MwSt',Updated=TO_TIMESTAMP('2021-06-11 14:02:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND C_TaxCategory_ID=540007
+;
+
+-- 2021-06-11T11:04:42.923Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 10% (IT)',Updated=TO_TIMESTAMP('2021-06-11 14:04:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540080
+;
+
+-- 2021-06-11T11:04:42.926Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 10% (IT)', TaxIndicator=NULL  WHERE C_Tax_ID=540080 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:05:21.057Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 10% (IT)',Updated=TO_TIMESTAMP('2021-06-11 14:05:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540080
+;
+
+-- 2021-06-11T11:05:43.727Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 15% (CZ)',Updated=TO_TIMESTAMP('2021-06-11 14:05:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540071
+;
+
+-- 2021-06-11T11:05:43.729Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 15% (CZ)', TaxIndicator=NULL  WHERE C_Tax_ID=540071 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:06:22.903Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 9% (LT)',Updated=TO_TIMESTAMP('2021-06-11 14:06:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540082
+;
+
+-- 2021-06-11T11:06:22.905Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 9% (LT)', TaxIndicator=NULL  WHERE C_Tax_ID=540082 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:06:38.761Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 9% (LT)',Updated=TO_TIMESTAMP('2021-06-11 14:06:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540082
+;
+
+-- 2021-06-11T11:06:57.917Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 7% (MT)',Updated=TO_TIMESTAMP('2021-06-11 14:06:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540085
+;
+
+-- 2021-06-11T11:06:57.919Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 7% (MT)', TaxIndicator=NULL  WHERE C_Tax_ID=540085 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:07:13.523Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 7% (MT)',Updated=TO_TIMESTAMP('2021-06-11 14:07:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540085
+;
+
+-- 2021-06-11T11:07:38.384Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 10% (GR)',Updated=TO_TIMESTAMP('2021-06-11 14:07:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540075
+;
+
+-- 2021-06-11T11:07:38.387Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 10% (GR)', TaxIndicator=NULL  WHERE C_Tax_ID=540075 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:07:53.163Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 10% (GR)',Updated=TO_TIMESTAMP('2021-06-11 14:07:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540075
+;
+
+-- 2021-06-11T11:08:17.223Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 8% (PL)',Updated=TO_TIMESTAMP('2021-06-11 14:08:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540086
+;
+
+-- 2021-06-11T11:08:17.226Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 8% (PL)', TaxIndicator=NULL  WHERE C_Tax_ID=540086 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:08:31.954Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 8% (PL)',Updated=TO_TIMESTAMP('2021-06-11 14:08:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540086
+;
+
+-- 2021-06-11T11:09:27.746Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 13.5% (IE)',Updated=TO_TIMESTAMP('2021-06-11 14:09:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540077
+;
+
+-- 2021-06-11T11:09:27.748Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 13.5% (IE)', TaxIndicator=NULL  WHERE C_Tax_ID=540077 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:09:47.779Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 13.5% (IE)',Updated=TO_TIMESTAMP('2021-06-11 14:09:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540077
+;
+
+-- 2021-06-11T11:10:15.880Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 13% (AT)',Updated=TO_TIMESTAMP('2021-06-11 14:10:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540067
+;
+
+-- 2021-06-11T11:10:15.883Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 13% (AT)', TaxIndicator=NULL  WHERE C_Tax_ID=540067 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:10:50.841Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 12% (LV)',Updated=TO_TIMESTAMP('2021-06-11 14:10:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540081
+;
+
+-- 2021-06-11T11:10:50.842Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 12% (LV)', TaxIndicator=NULL  WHERE C_Tax_ID=540081 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:11:07.095Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 12% (LV)',Updated=TO_TIMESTAMP('2021-06-11 14:11:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540081
+;
+
+-- 2021-06-11T11:11:28.908Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 13% (HR)',Updated=TO_TIMESTAMP('2021-06-11 14:11:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540069
+;
+
+-- 2021-06-11T11:11:28.911Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 13% (HR)', TaxIndicator=NULL  WHERE C_Tax_ID=540069 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:11:51.734Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 18% (HU)',Updated=TO_TIMESTAMP('2021-06-11 14:11:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540076
+;
+
+-- 2021-06-11T11:11:51.737Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 18% (HU)', TaxIndicator=NULL  WHERE C_Tax_ID=540076 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:12:11.897Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT18% (HU)',Updated=TO_TIMESTAMP('2021-06-11 14:12:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540076
+;
+
+-- 2021-06-11T11:12:29.926Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 13% (PT)',Updated=TO_TIMESTAMP('2021-06-11 14:12:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540087
+;
+
+-- 2021-06-11T11:12:29.929Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 13% (PT)', TaxIndicator=NULL  WHERE C_Tax_ID=540087 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:12:44.651Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 13% (PT)',Updated=TO_TIMESTAMP('2021-06-11 14:12:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540087
+;
+
+-- 2021-06-11T11:13:04.967Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt  9% (RO)',Updated=TO_TIMESTAMP('2021-06-11 14:13:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540088
+;
+
+-- 2021-06-11T11:13:04.970Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt  9% (RO)', TaxIndicator=NULL  WHERE C_Tax_ID=540088 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:13:21.649Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 9% (RO)',Updated=TO_TIMESTAMP('2021-06-11 14:13:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540088
+;
+
+-- 2021-06-11T11:13:40.216Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 12% (BE)',Updated=TO_TIMESTAMP('2021-06-11 14:13:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540068
+;
+
+-- 2021-06-11T11:13:40.219Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 12% (BE)', TaxIndicator=NULL  WHERE C_Tax_ID=540068 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:13:49.498Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-11 14:13:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540068
+;
+
+-- 2021-06-11T11:14:07.012Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 10% (FR)',Updated=TO_TIMESTAMP('2021-06-11 14:14:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540074
+;
+
+-- 2021-06-11T11:14:07.014Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 10% (FR)', TaxIndicator=NULL  WHERE C_Tax_ID=540074 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:14:23.067Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 10% (FR)',Updated=TO_TIMESTAMP('2021-06-11 14:14:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540074
+;
+
+-- 2021-06-11T11:14:58.697Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwStt 14% (LU)',Updated=TO_TIMESTAMP('2021-06-11 14:14:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540083
+;
+
+-- 2021-06-11T11:14:58.700Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwStt 14% (LU)', TaxIndicator=NULL  WHERE C_Tax_ID=540083 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:15:14.090Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 14% (LU)',Updated=TO_TIMESTAMP('2021-06-11 14:15:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540083
+;
+
+-- 2021-06-11T11:15:28.015Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 14% (LU)',Updated=TO_TIMESTAMP('2021-06-11 14:15:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540083
+;
+
+-- 2021-06-11T11:15:28.019Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 14% (LU)', TaxIndicator=NULL  WHERE C_Tax_ID=540083 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:15:51.692Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 9.5% (SI)',Updated=TO_TIMESTAMP('2021-06-11 14:15:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540043
+;
+
+-- 2021-06-11T11:15:51.694Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 9.5% (SI)', TaxIndicator=NULL  WHERE C_Tax_ID=540043 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:16:05.473Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 9.5% (SI)',Updated=TO_TIMESTAMP('2021-06-11 14:16:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540043
+;
+
+-- 2021-06-11T11:16:21.260Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 14% (FI)',Updated=TO_TIMESTAMP('2021-06-11 14:16:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540072
+;
+
+-- 2021-06-11T11:16:21.263Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 14% (FI)', TaxIndicator=NULL  WHERE C_Tax_ID=540072 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:17:08.555Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 9% (CY)',Updated=TO_TIMESTAMP('2021-06-11 14:17:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540070
+;
+
+-- 2021-06-11T11:17:08.556Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 9% (CY)', TaxIndicator=NULL  WHERE C_Tax_ID=540070 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:17:42.532Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET Name='Vorläufige MwSt 12% (SE)',Updated=TO_TIMESTAMP('2021-06-11 14:17:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_Tax_ID=540091
+;
+
+-- 2021-06-11T11:17:42.534Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl trl SET Description=NULL, Name='Vorläufige MwSt 12% (SE)', TaxIndicator=NULL  WHERE C_Tax_ID=540091 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-06-11T11:18:00.038Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax_Trl SET Name='Parking VAT 12% (SE)',Updated=TO_TIMESTAMP('2021-06-11 14:18:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_Tax_ID=540091
+;
