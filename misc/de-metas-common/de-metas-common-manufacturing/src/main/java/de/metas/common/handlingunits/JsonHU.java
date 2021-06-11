@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -49,6 +50,7 @@ public class JsonHU
 	@Nullable String locatorValue;
 
 	@NonNull
+	@Singular
 	List<JsonHUProduct> products;
 
 	@NonNull

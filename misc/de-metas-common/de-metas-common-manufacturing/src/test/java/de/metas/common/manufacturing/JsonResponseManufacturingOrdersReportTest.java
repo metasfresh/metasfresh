@@ -1,21 +1,17 @@
 package de.metas.common.manufacturing;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.common.JsonTestHelper;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import lombok.Getter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import java.io.IOException;
 
-import de.metas.common.rest_api.v1.JsonError;
-import de.metas.common.rest_api.v1.JsonErrorItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import lombok.Getter;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -46,16 +42,7 @@ public class JsonResponseManufacturingOrdersReportTest
 	@BeforeEach
 	public void beforeEach()
 	{
-		objectMapper = newJsonObjectMapper();
-	}
-
-	private static ObjectMapper newJsonObjectMapper()
-	{
-		return new ObjectMapper()
-				.findAndRegisterModules()
-				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				.enable(MapperFeature.USE_ANNOTATIONS);
+		objectMapper = JsonTestHelper.newJsonObjectMapper();
 	}
 
 	@Test
@@ -89,7 +76,6 @@ public class JsonResponseManufacturingOrdersReportTest
 		assertThat(objDeserialized).isEqualTo(obj);
 	}
 
-	@SuppressWarnings("serial")
 	private static class CustomException extends RuntimeException
 	{
 		@Getter
