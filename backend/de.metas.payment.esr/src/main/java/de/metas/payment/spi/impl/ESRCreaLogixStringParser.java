@@ -31,7 +31,7 @@ import java.util.Properties;
 import org.apache.commons.lang.StringUtils;
 
 import de.metas.banking.payment.IPaymentStringDataProvider;
-import de.metas.banking.payment.impl.PaymentString;
+import de.metas.banking.payment.PaymentString;
 import de.metas.payment.api.impl.ESRPaymentStringDataProvider;
 import de.metas.payment.esr.api.impl.ESRBPBankAccountDAO;
 import de.metas.util.Check;

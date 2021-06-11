@@ -25,45 +25,71 @@ package de.metas.banking.process.paymentdocumentform;
 import java.math.BigDecimal;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentStringDataProvider;
-import de.metas.banking.payment.impl.PaymentString;
+import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.process.IProcessParametersCallout;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
  * IProcessParametersCallout is used to update frontend data from backend inside "onParameterChanged. Nice!
  */
-public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends Import_Payment_Request_For_Purchase_Invoice
+public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProcess implements IProcessParametersCallout, IProcessPrecondition
 {
 
+	protected static final String PARAM_fullPaymentString = "FullPaymentString";
 	@Param(parameterName = PARAM_fullPaymentString)
 	private String fullPaymentStringParam;
 
+	protected static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
 	@Param(parameterName = PARAM_C_BPartner_ID)
 	private I_C_BPartner bPartnerParam;
 
+	protected static final String PARAM_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 	@Param(parameterName = PARAM_C_BP_BankAccount_ID)
 	private I_C_BP_BankAccount bankAccountParam;
 
+	protected static final String PARAM_Amount = "Amount";
 	@Param(parameterName = PARAM_Amount)
 	private BigDecimal amountParam;
 
+	protected static final String PARAM_Will_Create_a_new_Bank_Account = "Will_Create_a_new_Bank_Account";
 	@Param(parameterName = PARAM_Will_Create_a_new_Bank_Account)
 	private boolean willCreateANewBandAccountParam;
 
+	protected static final String PARAM_BankAccountNo = "BankAccountNo";
 	@Param(parameterName = PARAM_BankAccountNo)
 	private String bankAccountNumberParam;
 
+	
+	// services
+	protected final transient PaymentStringProcessService paymentStringProcessService = SpringContextHolder.instance
+			.getBean(PaymentStringProcessService.class);
+	protected final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	protected final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
+	// trl
+	protected static final AdMessageKey MSG_CouldNotFindOrCreateBPBankAccount = AdMessageKey
+			.of("de.metas.payment.CouldNotFindOrCreateBPBankAccount");
+	
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -148,5 +174,16 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends Import_Pa
 	private IPaymentStringDataProvider getDataProvider()
 	{
 		return paymentStringProcessService.parsePaymentString(getCtx(), fullPaymentStringParam);
+	}
+	
+	private I_C_Invoice getActualInvoice()
+	{
+		return invoiceDAO.getByIdInTrx(InvoiceId.ofRepoId(getRecord_ID()));
+	}
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		return paymentStringProcessService.checkPreconditionsApplicable(context);
 	}
 }

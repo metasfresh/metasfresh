@@ -188,7 +188,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 	}
 	
 	@Override
-	public final I_C_BP_BankAccount retrieveQRBPBankAccount(@NonNull final String IBAN)
+	public final List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(@NonNull final String IBAN)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -208,7 +208,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
 				.create()
-				.first(I_C_BP_BankAccount.class);
+				.list();
 	}
 	
 }

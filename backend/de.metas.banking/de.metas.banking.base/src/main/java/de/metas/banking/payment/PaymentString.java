@@ -1,4 +1,4 @@
-package de.metas.banking.payment.impl;
+package de.metas.banking.payment;
 
 /*
  * #%L
@@ -31,7 +31,6 @@ import javax.annotation.Nullable;
 
 import org.adempiere.util.lang.ObjectUtils;
 
-import de.metas.banking.payment.IPaymentStringDataProvider;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;

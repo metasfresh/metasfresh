@@ -27,8 +27,8 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 
+import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.impl.AbstractPaymentStringDataProvider;
-import de.metas.banking.payment.impl.PaymentString;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.Currency;
@@ -39,9 +39,12 @@ import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
-
 public class QRPaymentStringDataProvider extends AbstractPaymentStringDataProvider
 {
+	private static final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private static final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private static final IESRBPBankAccountDAO esrbpBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
+
 	public QRPaymentStringDataProvider(final PaymentString paymentString)
 	{
 		super(paymentString);
@@ -54,11 +57,8 @@ public class QRPaymentStringDataProvider extends AbstractPaymentStringDataProvid
 
 		final String IBAN = paymentString.getIBAN();
 
-		final IESRBPBankAccountDAO esrbpBankAccountDAO = Services.get(IESRBPBankAccountDAO.class);
-
 		final List<org.compiere.model.I_C_BP_BankAccount> bankAccounts = InterfaceWrapperHelper.createList(
-				esrbpBankAccountDAO.retrieveESRBPBankAccounts(postAccountNo, innerAccountNo),
-				org.compiere.model.I_C_BP_BankAccount.class);
+				esrbpBankAccountDAO.retrieveQRBPBankAccounts(IBAN), org.compiere.model.I_C_BP_BankAccount.class);
 
 		return bankAccounts;
 	}
@@ -68,18 +68,18 @@ public class QRPaymentStringDataProvider extends AbstractPaymentStringDataProvid
 	{
 		final PaymentString paymentString = getPaymentString();
 
-		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class, contextProvider);
+		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class,
+				contextProvider);
 
 		Check.assume(bpartnerId > 0, "We assume the bPartnerId to be greater than 0. This={}", this);
 		bpBankAccount.setC_BPartner_ID(bpartnerId);
 
-		// bpBankAccount.setC_Bank_ID(C_Bank_ID); // introduce a standard ESR-Dummy-Bank, or leave it empty
+		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.CHF); // CHF, because it's ESR
 
-		final Currency currency = Services.get(ICurrencyDAO.class).getByCurrencyCode(CurrencyCode.CHF); // CHF, because it's ESR
 		bpBankAccount.setC_Currency_ID(currency.getId().getRepoId());
-		bpBankAccount.setIsEsrAccount(true); // ..because we are creating this from an ESR string
+		bpBankAccount.setIsEsrAccount(true); // ..because we are creating this from an ESR/QRR string
 		bpBankAccount.setIsACH(true);
-		final String bPartnerName = Services.get(IBPartnerDAO.class).getBPartnerNameById(BPartnerId.ofRepoId(bpartnerId));
+		final String bPartnerName = bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(bpartnerId));
 		bpBankAccount.setA_Name(bPartnerName);
 		bpBankAccount.setName(bPartnerName);
 

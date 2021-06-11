@@ -31,7 +31,6 @@ import de.metas.banking.BankAccountId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 public interface IESRBPBankAccountDAO extends ISingletonService
 {
@@ -61,5 +60,5 @@ public interface IESRBPBankAccountDAO extends ISingletonService
 	 */
 	public List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(BankAccountId bankAcctId);
 
-	public I_C_BP_BankAccount retrieveQRBPBankAccount(@NonNull final String IBAN);
+	public List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(String IBAN);
 }

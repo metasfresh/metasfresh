@@ -31,7 +31,7 @@ import java.util.Properties;
 import com.google.common.base.Splitter;
 
 import de.metas.banking.payment.IPaymentStringDataProvider;
-import de.metas.banking.payment.impl.PaymentString;
+import de.metas.banking.payment.PaymentString;
 import de.metas.payment.api.impl.QRPaymentStringDataProvider;
 import de.metas.util.Check;
 import lombok.NonNull;

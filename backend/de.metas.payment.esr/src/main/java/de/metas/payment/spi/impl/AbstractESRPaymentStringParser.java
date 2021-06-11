@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.lang3.math.NumberUtils;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util;
@@ -77,17 +78,7 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 	{
 		final String amountString = Util.replaceNonDigitCharsWithZero(amountStringWithPosibleSpaces); // 04551
 
-		BigDecimal amount = BigDecimal.ZERO;
-		try
-		{
-			amount = new BigDecimal(amountString);
-		}
-		catch (final NumberFormatException e)
-		{
-			final String wrongNumberFormatAmount = Services.get(IMsgBL.class).getMsg(ctx, ERR_WRONG_NUMBER_FORMAT_AMOUNT, new Object[] { amountString });
-			collectedErrors.add(wrongNumberFormatAmount);
-		}
-		return amount;
+		return NumberUtils.createBigDecimal(amountString);
 	}
 	
 	/**

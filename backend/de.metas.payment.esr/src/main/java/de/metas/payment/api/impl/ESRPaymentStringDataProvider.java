@@ -27,8 +27,8 @@ import java.util.List;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 
+import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.impl.AbstractPaymentStringDataProvider;
-import de.metas.banking.payment.impl.PaymentString;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.Currency;

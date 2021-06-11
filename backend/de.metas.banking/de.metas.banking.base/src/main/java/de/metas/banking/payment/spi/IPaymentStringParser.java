@@ -25,7 +25,7 @@ package de.metas.banking.payment.spi;
 
 import java.util.Properties;
 
-import de.metas.banking.payment.impl.PaymentString;
+import de.metas.banking.payment.PaymentString;
 
 public interface IPaymentStringParser
 {
