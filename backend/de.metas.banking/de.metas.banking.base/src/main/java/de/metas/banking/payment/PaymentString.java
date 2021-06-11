@@ -48,7 +48,7 @@ public class PaymentString
 	private final String postAccountNo;
 	@Nullable
 	private final String innerAccountNo;
-	@NonNull
+	@Nullable
 	private final BigDecimal amount;
 	@NonNull
 	private final String referenceNoComplete;
