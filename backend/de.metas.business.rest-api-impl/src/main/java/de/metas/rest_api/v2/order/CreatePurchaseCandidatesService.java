@@ -93,7 +93,8 @@ public class CreatePurchaseCandidatesService
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
 			@NonNull final BPartnerQueryService bPartnerQueryService,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
-			@NonNull final CurrencyRepository currencyRepository, final WarehouseService warehouseService)
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final WarehouseService warehouseService)
 	{
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
 		this.bPartnerQueryService = bPartnerQueryService;
