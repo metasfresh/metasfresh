@@ -26,7 +26,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -34,7 +33,7 @@ import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.PaymentString;
 import de.metas.payment.api.impl.ESRPaymentStringDataProvider;
 import de.metas.payment.esr.api.impl.ESRBPBankAccountDAO;
-import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * Using this name for lack of better inspiration to differentiate from the {@link ESRRegularLineParser}.<br>
@@ -45,8 +44,6 @@ import de.metas.util.Check;
 public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringParser
 {
 	public static final transient ESRCreaLogixStringParser instance = new ESRCreaLogixStringParser();
-
-	public static final String TYPE = "ESRCreaLogixStringParser";
 
 	private ESRCreaLogixStringParser()
 	{
@@ -71,10 +68,8 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 	 * Note to developer, should be kept in sync with {@link ESRBPBankAccountDAO#createMatchingESRAccountNumbers(java.lang.String)}
 	 */
 	@Override
-	public PaymentString parse(final Properties ctx, final String paymentTextOriginal) throws IndexOutOfBoundsException
+	public PaymentString parse(@NonNull final String paymentTextOriginal) throws IndexOutOfBoundsException
 	{
-		Check.assumeNotNull(paymentTextOriginal, "paymentText not null");
-
 		String paymentText = paymentTextOriginal.replace(" ", ""); // replace all spaces with nothing
 
 		// Validating String
@@ -150,7 +145,7 @@ public final class ESRCreaLogixStringParser extends AbstractESRPaymentStringPars
 					.append(paymentText.substring(5, 13)) // natural amount
 					.append(paymentText.substring(13, 15)) // decimal amount
 					.toString();
-			amount = extractAmountFromString(ctx, trxType, amountString, collectedErrors);
+			amount = extractAmountFromString(trxType, amountString, collectedErrors);
 		}
 		else
 		{

@@ -27,7 +27,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.PaymentString;
@@ -36,12 +35,11 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.InvoiceReferenceNo;
 import de.metas.payment.esr.api.InvoiceReferenceNos;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 {
 	public static final transient ESRRegularLineParser instance = new ESRRegularLineParser();
-
-	public static final String TYPE = "ESRRegularLineParser";
 
 	private ESRRegularLineParser()
 	{
@@ -49,10 +47,8 @@ public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 	}
 
 	@Override
-	public PaymentString parse(final Properties ctx, final String paymentText) throws IndexOutOfBoundsException
+	public PaymentString parse(@NonNull final String paymentText) throws IndexOutOfBoundsException
 	{
-		Check.assumeNotNull(paymentText, "paymentText not null");
-
 		final List<String> collectedErrors = new ArrayList<>();
 		//
 		// First 3 digits: transaction type
@@ -61,7 +57,7 @@ public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 		final String postAccountNo = paymentText.substring(3, 12);
 
 		final String amountStringWithPosibleSpaces = paymentText.substring(39, 49);
-		final BigDecimal amount = extractAmountFromString(ctx, trxType, amountStringWithPosibleSpaces, collectedErrors);
+		final BigDecimal amount = extractAmountFromString(trxType, amountStringWithPosibleSpaces, collectedErrors);
 		if (!trxType.endsWith(ESRConstants.ESRTRXTYPE_REVERSE_LAST_DIGIT))
 		{
 			Check.assume(trxType.endsWith(ESRConstants.ESRTRXTYPE_CREDIT_MEMO_LAST_DIGIT) || trxType.endsWith(ESRConstants.ESRTRXTYPE_CORRECTION_LAST_DIGIT),
@@ -69,10 +65,10 @@ public final class ESRRegularLineParser extends AbstractESRPaymentStringParser
 		}
 
 		final String paymentDateStr = paymentText.substring(59, 65);
-		final Timestamp paymentDate = extractTimestampFromString(ctx, paymentDateStr, ERR_WRONG_PAYMENT_DATE, collectedErrors);
+		final Timestamp paymentDate = extractTimestampFromString(paymentDateStr, ERR_WRONG_PAYMENT_DATE, collectedErrors);
 
 		final String accountDateStr = paymentText.substring(65, 71);
-		final Timestamp accountDate = extractTimestampFromString(ctx, accountDateStr, ERR_WRONG_ACCOUNT_DATE, collectedErrors);
+		final Timestamp accountDate = extractTimestampFromString(accountDateStr, ERR_WRONG_ACCOUNT_DATE, collectedErrors);
 
 		final String esrReferenceNoComplete = paymentText.substring(12, 39);
 		final InvoiceReferenceNo invoiceReferenceNo = InvoiceReferenceNos.parse(esrReferenceNoComplete);

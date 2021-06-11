@@ -30,7 +30,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.compiere.util.Env;
@@ -50,7 +49,7 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 
 	private static final AdMessageKey ERR_WRONG_NUMBER_FORMAT_AMOUNT = AdMessageKey.of("ESR_Wrong_Number_Format_Amount");
 
-	protected final BigDecimal extractAmountFromString(final Properties ctx, final String trxType, final String amountStringWithPosibleSpaces, final List<String> collectedErrors)
+	protected final BigDecimal extractAmountFromString(final String trxType, final String amountStringWithPosibleSpaces, final List<String> collectedErrors)
 	{
 		final String amountString = Util.replaceNonDigitCharsWithZero(amountStringWithPosibleSpaces); // 04551
 
@@ -67,14 +66,14 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 		}
 		catch (final NumberFormatException e)
 		{
-			final String wrongNumberFormatAmount = Services.get(IMsgBL.class).getMsg(ctx, ERR_WRONG_NUMBER_FORMAT_AMOUNT, new Object[] { amountString });
+			final String wrongNumberFormatAmount = Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_NUMBER_FORMAT_AMOUNT, new Object[] { amountString });
 			collectedErrors.add(wrongNumberFormatAmount);
 		}
 		return amount;
 	}
 
 	
-	protected final BigDecimal extractAmountFromString(final Properties ctx, final String amountStringWithPosibleSpaces, final List<String> collectedErrors)
+	protected final BigDecimal extractAmountFromString(final String amountStringWithPosibleSpaces)
 	{
 		final String amountString = Util.replaceNonDigitCharsWithZero(amountStringWithPosibleSpaces); // 04551
 
@@ -87,7 +86,7 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 	 * @param collectedErrors
 	 * @return
 	 */
-	protected final Timestamp extractTimestampFromString(final Properties ctx, final String dateStr, final AdMessageKey failMessage, final List<String> collectedErrors)
+	protected final Timestamp extractTimestampFromString(final String dateStr, final AdMessageKey failMessage, final List<String> collectedErrors)
 	{
 		final DateFormat df = new SimpleDateFormat("yyMMdd");
 		final Date date;
@@ -98,7 +97,7 @@ public abstract class AbstractESRPaymentStringParser implements IPaymentStringPa
 		}
 		catch (final ParseException e)
 		{
-			final String wrongDate = Services.get(IMsgBL.class).getMsg(ctx, failMessage, new Object[] { dateStr });
+			final String wrongDate = Services.get(IMsgBL.class).getMsg(Env.getCtx(), failMessage, new Object[] { dateStr });
 			collectedErrors.add(wrongDate);
 		}
 		return null;

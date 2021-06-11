@@ -24,9 +24,7 @@ package de.metas.payment.spi.impl;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import com.google.common.base.Splitter;
 
@@ -38,18 +36,12 @@ import lombok.NonNull;
 
 public final class QRCodeStringParser extends AbstractESRPaymentStringParser
 {
-	public static final String TYPE = "QRCodeStringParser";
-
 	private static final Splitter SPLITTER = Splitter.on("\n");
 
-	public static final transient QRCodeStringParser instance = new QRCodeStringParser();
-
 	@Override
-	public PaymentString parse(final Properties ctx, @NonNull final String qrCode)
+	public PaymentString parse(@NonNull final String qrCode)
 	{
 		final List<String> lines = SPLITTER.splitToList(qrCode);
-		
-		Check.assumeNotNull(qrCode, "paymentText not null");
 		
 		Check.assumeEquals(lines.get(0), "SPC"); // QR Type
 		Check.assumeEquals(lines.get(1), "0200"); // Version
@@ -66,9 +58,7 @@ public final class QRCodeStringParser extends AbstractESRPaymentStringParser
 		final Timestamp paymentDate = null;
 		final Timestamp accountDate = null;
 		
-		final List<String> collectedErrors = new ArrayList<>();
-		
-		final BigDecimal amount = extractAmountFromString(ctx, amountString, collectedErrors);
+		final BigDecimal amount = extractAmountFromString(amountString);
 
 		final PaymentString paymentString = PaymentString.builder()
 				.rawPaymentString(qrCode)
