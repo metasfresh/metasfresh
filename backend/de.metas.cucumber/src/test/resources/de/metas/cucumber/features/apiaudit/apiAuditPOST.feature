@@ -2,7 +2,7 @@ Feature: API Audit POST http method
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And all the data is reset to default
+    And all the API audit data is reset
 
   Scenario: Testcase 100, normal POST and caller waits for result
     And the following API_Audit_Config record is set
@@ -46,7 +46,7 @@ Feature: API Audit POST http method
     And there are no records in API_Response_Audit
       | HttpCode | Body |
 
-    And we wait for '2000' ms
+    And we wait for 2000 ms
 
     And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status      |
@@ -102,7 +102,7 @@ Feature: API Audit POST http method
     And there are no records in API_Response_Audit
       | HttpCode | Body |
 
-    And we wait for '2000' ms
+    And we wait for 2000 ms
 
     And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status |
@@ -152,41 +152,8 @@ Feature: API Audit POST http method
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
-  Scenario: Testcase 150, normal POST, caller waits for result and record referencing logs are created
-    And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | POST       | api/v2/test    | Y                       |
-
-    When invoke 'POST' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '200'
-
-    And the actual response body is
-    """
-   {
-	"messageBody": "\"test-endpoint was called\""
-  }
-  """
-    And there are added records in API_Request_Audit
-      | Method | Path                                                                          | AD_User.Name | Status      |
-      | POST   | /api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200 | metasfresh   | Verarbeitet |
-
-    And there are added records in API_Request_Audit_Log
-      | Logmessage                                | AD_Issue.Summary |
-      | Endpoint invoked; returning httpCode: 200 | null             |
-
-    And there are added records in API_Response_Audit
-      | HttpCode | Body                                           |
-      | 200      | {"messageBody":"\"test-endpoint was called\""} |
-
-    And there is added one record referencing log in API_Request_Audit_Log for API_Request_Audit table
-      | Type    |
-      | Updated |
-
-    And there is added one record referencing log in API_Request_Audit_Log for API_Response_Audit table
-      | Type    |
-      | Created |
-
   Scenario: Testcase 200, reset to initial default data
-    And all the data is reset to default
+    And all the API audit data is reset
     And the following API_Audit_Config record is set
       | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
       | 100                 | 9980  | null       | null           | Y                       |

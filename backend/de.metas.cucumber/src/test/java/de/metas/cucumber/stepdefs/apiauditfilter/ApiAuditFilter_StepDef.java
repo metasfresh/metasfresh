@@ -69,7 +69,7 @@ public class ApiAuditFilter_StepDef
 		this.testContext = testContext;
 	}
 
-	@And("all the data is reset to default")
+	@And("all the API audit data is reset")
 	public void reset_data()
 	{
 		DB.executeUpdateEx("TRUNCATE TABLE API_Response_Audit cascade", ITrx.TRXNAME_None);
@@ -257,41 +257,6 @@ public class ApiAuditFilter_StepDef
 		final ImmutableList<ApiRequestAudit> responseAuditRecords = ImmutableList.of(apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue())));
 
 		apiRequestReplayService.replayApiRequests(responseAuditRecords);
-	}
-
-	@When("^there is added one record referencing log in API_Request_Audit_Log for (API_Request_Audit|API_Response_Audit) table$")
-	public void API_Request_Audit_Log_Request_Audit_validation(@NonNull final String tableName, @NonNull final DataTable table)
-	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
-		assertThat(requestId).isNotNull();
-
-		final ApiRequestAuditId apiRequestAuditId = ApiRequestAuditId.ofRepoId(requestId.getValue());
-
-		final int apiTableId = tableName.equals(I_API_Request_Audit.Table_Name)
-				? tableDAO.retrieveTableId(I_API_Request_Audit.Table_Name)
-				: tableDAO.retrieveTableId(I_API_Response_Audit.Table_Name);
-
-		final int recordId = tableName.equals(I_API_Request_Audit.Table_Name)
-				? requestId.getValue()
-				: getApiResponseRecordsByRequestAuditId(apiRequestAuditId).get(0).getAPI_Response_Audit_ID();
-
-		final Map<String, String> row = table.asMaps().get(0);
-		final String type = DataTableUtil.extractStringForColumnName(row, "Type");
-
-		final List<I_API_Request_Audit_Log> auditLogRecords =
-				queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
-						.addEqualsFilter(I_API_Request_Audit_Log.COLUMN_API_Request_Audit_ID, requestId.getValue())
-						.create()
-						.list();
-
-		final I_API_Request_Audit_Log auditLogRecord = auditLogRecords
-				.stream()
-				.filter(log -> log.getAD_Table_ID() == apiTableId)
-				.filter(log -> Objects.equals(log.getType(), type))
-				.filter(log -> log.getRecord_ID() == recordId)
-				.findFirst().orElse(null);
-
-		assertThat(auditLogRecord).isNotNull();
 	}
 
 	@NonNull

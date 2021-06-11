@@ -22,6 +22,7 @@
 
 package de.metas.audit;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.audit.request.ApiRequestAuditId;
 import de.metas.audit.request.log.ApiAuditRequestLogDAO;
 import de.metas.audit.request.log.ApiRequestAuditLog;
@@ -37,15 +38,22 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.I_API_Request_Audit;
+import org.compiere.model.I_API_Request_Audit_Log;
+import org.compiere.model.I_API_Response_Audit;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @EqualsAndHashCode
 public class ApiAuditLoggable implements ILoggable
 {
+	private static final ImmutableSet<String> SKIP_LOGGING_FOR_TABLES = ImmutableSet
+			.of(I_API_Response_Audit.Table_Name, I_API_Request_Audit.Table_Name, I_API_Request_Audit_Log.Table_Name);
+
 	private static final Logger logger = LogManager.getLogger(ApiAuditLoggable.class);
 
 	private final ApiAuditRequestLogDAO apiAuditRequestLogDAO;
@@ -87,6 +95,11 @@ public class ApiAuditLoggable implements ILoggable
 	@Override
 	public ILoggable addTableRecordReferenceLog(final @NonNull ITableRecordReference recordRef, final @NonNull String type, final @NonNull String trxName)
 	{
+		if (SKIP_LOGGING_FOR_TABLES.contains(recordRef.getTableName()))
+		{
+			return this;
+		}
+
 		final ApiRequestAuditLog logEntry = createLogEntry(recordRef, type, trxName);
 
 		addToBuffer(logEntry);

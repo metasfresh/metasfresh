@@ -2,7 +2,7 @@ Feature: API Audit GET http method
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And all the data is reset to default
+    And all the API audit data is reset
 
   Scenario: Testcase 100, normal GET and caller waits for result
     And the following API_Audit_Config record is set
@@ -46,7 +46,7 @@ Feature: API Audit GET http method
     And there are no records in API_Response_Audit
       | HttpCode | Body |
 
-    And we wait for '2000' ms
+    And we wait for 2000 ms
 
     And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status      |
@@ -102,7 +102,7 @@ Feature: API Audit GET http method
     And there are no records in API_Response_Audit
       | HttpCode | Body |
 
-    And we wait for '2000' ms
+    And we wait for 2000 ms
 
     And there are added records in API_Request_Audit
       | Method | Path                                                                                           | AD_User.Name | Status |
@@ -153,7 +153,7 @@ Feature: API Audit GET http method
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
   Scenario: Testcase 200, reset to initial default data
-    And all the data is reset to default
+    And all the API audit data is reset
     And the following API_Audit_Config record is set
       | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
       | 100                 | 9980  | null       | null           | Y                       |

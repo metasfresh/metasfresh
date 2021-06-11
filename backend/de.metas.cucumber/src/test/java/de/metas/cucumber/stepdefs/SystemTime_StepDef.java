@@ -34,9 +34,9 @@ public class SystemTime_StepDef
 		SystemTime.setFixedTimeSource(zonedDateTime);
 	}
 
-	@And("we wait for {string} ms")
-	public void thread_sleep(final String sleepTime) throws InterruptedException
+	@And("we wait for {int} ms")
+	public void thread_sleep(final int sleepTime) throws InterruptedException
 	{
-		Thread.sleep(Integer.parseInt(sleepTime));
+		Thread.sleep(sleepTime);
 	}
 }
