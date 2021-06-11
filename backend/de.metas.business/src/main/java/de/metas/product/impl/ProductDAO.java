@@ -47,6 +47,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
@@ -567,5 +568,22 @@ public class ProductDAO implements IProductDAO
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return GroupTemplateId.optionalOfRepoId(product.getC_CompensationGroup_Schema_ID());
+	}
+
+	@Override
+	public void clearIndividualMasterDataFromProduct(final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+
+		product.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
+
+		saveRecord(product);
 	}
 }
