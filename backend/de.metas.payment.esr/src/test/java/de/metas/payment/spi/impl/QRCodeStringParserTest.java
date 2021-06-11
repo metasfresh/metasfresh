@@ -38,6 +38,9 @@ import de.metas.banking.payment.PaymentString;
 
 class QRCodeStringParserTest
 {
+	private static final String expectedIBAN = "CH1589144626811245431";
+	private static final BigDecimal expectedAMT = new BigDecimal("100.80");
+
 	@BeforeEach
 	public void init()
 	{
@@ -62,8 +65,8 @@ class QRCodeStringParserTest
 		
 		final PaymentString paymentString = new QRCodeStringParser().parse(qrCode);
 		
-		assertThat(paymentString.getAmount()).isEqualTo(new BigDecimal("100.80"));
+		assertThat(paymentString.getAmount()).isEqualTo(expectedAMT);
 		
-		assertThat(paymentString.getIBAN()).isEqualTo("CH1589144626811245431");
+		assertThat(paymentString.getIBAN()).isEqualTo(expectedIBAN);
 	}
 }
