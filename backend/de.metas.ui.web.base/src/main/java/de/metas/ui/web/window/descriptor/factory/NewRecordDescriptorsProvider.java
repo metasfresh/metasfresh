@@ -7,6 +7,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.NewRecordDescriptor;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -59,23 +60,31 @@ public class NewRecordDescriptorsProvider
 	{
 		this.documentDescriptors = documentDescriptors;
 
-		// FIXME: hardcoded NewRecordDescriptor for C_BPartner_QuickInput
-		addNewRecordDescriptor(NewRecordDescriptor.of(
-				I_C_BPartner.Table_Name,
-				WindowId.of(540327),
-				document -> {
-					final I_C_BPartner_QuickInput template = InterfaceWrapperHelper.getPO(document);
-					final BPartnerId bpartnerId = bpartnerQuickInputService.createBPartnerFromTemplate(template);
-					return bpartnerId.getRepoId();
-				}));
+		final AdWindowId bpartnerQuickInputAdWindowId = bpartnerQuickInputService.getNewBPartnerWindowId().orElse(null);
+		if (bpartnerQuickInputAdWindowId != null)
+		{
+			addNewRecordDescriptor(NewRecordDescriptor.of(
+					I_C_BPartner.Table_Name,
+					WindowId.of(bpartnerQuickInputAdWindowId),
+					document -> {
+						final I_C_BPartner_QuickInput template = InterfaceWrapperHelper.getPO(document);
+						final BPartnerId bpartnerId = bpartnerQuickInputService.createBPartnerFromTemplate(template);
+						return bpartnerId.getRepoId();
+					}));
+		}
+		else
+		{
+			logger.warn("No window found for " + I_C_BPartner_QuickInput.Table_Name);
+		}
 	}
 
-	public void addNewRecordDescriptor(final NewRecordDescriptor newRecordDescriptor)
+	public void addNewRecordDescriptor(@NonNull final NewRecordDescriptor newRecordDescriptor)
 	{
 		newRecordDescriptorsByTableName.put(newRecordDescriptor.getTableName(), newRecordDescriptor);
+		logger.info("Registered {}", newRecordDescriptor);
 	}
 
-	public NewRecordDescriptor getNewRecordDescriptorOrNull(final String tableName)
+	public NewRecordDescriptor getNewRecordDescriptorOrNull(@NonNull final String tableName)
 	{
 		return newRecordDescriptorsByTableName.get(tableName);
 	}
@@ -96,7 +105,7 @@ public class NewRecordDescriptorsProvider
 	}
 
 	@Nullable
-	public DocumentEntityDescriptor getNewRecordEntityDescriptorIfAvailable(final String tableName)
+	public DocumentEntityDescriptor getNewRecordEntityDescriptorIfAvailable(@NonNull final String tableName)
 	{
 		final NewRecordDescriptor newRecordDescriptor = getNewRecordDescriptorOrNull(tableName);
 		if (newRecordDescriptor == null)

@@ -1,13 +1,9 @@
 package de.metas.ui.web.window.descriptor;
 
-import javax.annotation.concurrent.Immutable;
-
-import com.google.common.base.MoreObjects;
-
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
+import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.element.api.AdWindowId;
 
 /*
  * #%L
@@ -33,7 +29,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 
 /**
  * Describes which window to be used to capture the fields for quickly creating a record for a given BPartner.
- *
+ * <p>
  * task https://github.com/metasfresh/metasfresh/issues/1090
  */
 @Value(staticConstructor = "of")
@@ -44,7 +40,7 @@ public class NewRecordDescriptor
 		int processNewRecordDocument(Document document);
 	}
 
-	String tableName;
-	WindowId newRecordWindowId;
-	NewRecordProcessor processor;
+	@NonNull String tableName;
+	@NonNull WindowId newRecordWindowId;
+	@NonNull NewRecordProcessor processor;
 }

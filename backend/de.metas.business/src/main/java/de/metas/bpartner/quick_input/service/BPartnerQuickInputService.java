@@ -37,12 +37,13 @@ import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
-  import de.metas.organization.OrgId;
+import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.user.api.IUserBL;
@@ -50,6 +51,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.FillMandatoryException;
@@ -61,6 +63,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BPartnerQuickInputService
@@ -84,6 +87,13 @@ public class BPartnerQuickInputService
 		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
 		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
+	}
+
+	public Optional<AdWindowId> getNewBPartnerWindowId()
+	{
+		return RecordWindowFinder.newInstance(I_C_BPartner_QuickInput.Table_Name)
+				.ignoreExcludeFromZoomTargetsFlag()
+				.findAdWindowId();
 	}
 
 	public void updateNameAndGreeting(@NonNull final BPartnerQuickInputId bpartnerQuickInputId)
