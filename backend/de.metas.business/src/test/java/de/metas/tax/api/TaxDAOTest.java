@@ -22,8 +22,10 @@
 
 package de.metas.tax.api;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.ICountryAreaBL;
+import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -31,6 +33,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -39,6 +42,7 @@ import org.compiere.model.I_C_CountryArea_Assign;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_AD_OrgInfo;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -67,6 +71,10 @@ class TaxDAOTest
 	private static final Timestamp VALID_TO = TimeUtil.addDays(new Date(), 1);
 
 	private static final OrgId ORG_ID = OrgId.ofRepoId(10);
+	private static final LocationId locationId = LocationId.ofRepoId(11);
+	private static final BPartnerId bPartnerId = BPartnerId.ofRepoId(12);
+	private static final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId,13);
+
 	private static final int ORG_COUNTRY_ID = 1000;
 	private static final String ORG_COUNTRY_CODE = "AA";
 
@@ -227,12 +235,13 @@ class TaxDAOTest
 
 	private void createWarehouseData()
 	{
-		final I_C_Location location = createLocation(WAREHOUSE_COUNTRY_ID, WAREHOUSE_COUNTRY_CODE, true);
+		final BPartnerLocationId bPartnerLocationId = createBPartnerData(WAREHOUSE_COUNTRY_ID, WAREHOUSE_COUNTRY_CODE, true);
 
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 		warehouse.setAD_Org_ID(ORG_ID.getRepoId());
 		warehouse.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
-		warehouse.setC_Location_ID(location.getC_Location_ID());
+		warehouse.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
+		warehouse.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
 		save(warehouse);
 
 		typeOfDestCountryTaxIdByWarehouseIdMap.put(DOMESTIC, createTaxData(DOMESTIC, WAREHOUSE_COUNTRY_ID, WAREHOUSE_COUNTRY_ID));
@@ -298,22 +307,31 @@ class TaxDAOTest
 		org.setAD_Org_ID(ORG_ID.getRepoId());
 		save(org);
 
-		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
-		bpartner.setAD_Org_ID(ORG_ID.getRepoId());
-		bpartner.setAD_OrgBP_ID(ORG_ID.getRepoId());
-		save(bpartner);
-
 		final I_C_Location location = newInstance(I_C_Location.class);
+		location.setC_Location_ID(locationId.getRepoId());
 		location.setAD_Org_ID(ORG_ID.getRepoId());
 		location.setC_Country_ID(ORG_COUNTRY_ID);
 		save(location);
 
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setC_BPartner_ID(bPartnerId.getRepoId());
+		bpartner.setAD_Org_ID(ORG_ID.getRepoId());
+		bpartner.setAD_OrgBP_ID(ORG_ID.getRepoId());
+		save(bpartner);
+
 		final I_C_BPartner_Location bPartnerLocation = newInstance(I_C_BPartner_Location.class);
 		bPartnerLocation.setAD_Org_ID(ORG_ID.getRepoId());
-		bPartnerLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		bPartnerLocation.setC_Location_ID(location.getC_Location_ID());
+		bPartnerLocation.setC_BPartner_ID(bPartnerId.getRepoId());
+		bPartnerLocation.setC_Location_ID(locationId.getRepoId());
 		bPartnerLocation.setIsBillTo(true);
 		save(bPartnerLocation);
+
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(ORG_ID.getRepoId());
+		orgInfo.setOrgBP_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+		orgInfo.setOrg_BPartner_ID(bPartnerId.getRepoId());
+		orgInfo.setStoreCreditCardData(X_AD_OrgInfo.STORECREDITCARDDATA_Letzte4Stellen);
+		save(orgInfo);
 	}
 
 	private TaxId createTaxData(final TypeOfDestCountry typeOfDestCountry, final int countryId, final int toCountryId)
