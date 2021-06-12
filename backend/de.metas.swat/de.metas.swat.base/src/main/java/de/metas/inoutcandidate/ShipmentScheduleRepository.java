@@ -303,17 +303,17 @@ public class ShipmentScheduleRepository
 		final IQueryBuilder<I_M_ShipmentSchedule> shipmentScheduleIQueryBuilder = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter();
 
-		if (!Check.isEmpty(shipmentScheduleSegment.getBpartnerIds()) || shipmentScheduleSegment.isAnyBPartner())
+		if (!Check.isEmpty(shipmentScheduleSegment.getBpartnerIds()) && !shipmentScheduleSegment.isAnyBPartner())
 		{
 			shipmentScheduleIQueryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID, shipmentScheduleSegment.getBpartnerIds());
 		}
 
-		if (!Check.isEmpty(shipmentScheduleSegment.getBillBPartnerIds()) || !shipmentScheduleSegment.isAnyBillBPartner())
+		if (!Check.isEmpty(shipmentScheduleSegment.getBillBPartnerIds()) && !shipmentScheduleSegment.isAnyBillBPartner())
 		{
 			shipmentScheduleIQueryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID, shipmentScheduleSegment.getBillBPartnerIds());
 		}
 
-		if (!Check.isEmpty(shipmentScheduleSegment.getLocatorIds()) || !shipmentScheduleSegment.isAnyLocator())
+		if (!Check.isEmpty(shipmentScheduleSegment.getLocatorIds()) && !shipmentScheduleSegment.isAnyLocator())
 		{
 			final Set<WarehouseId> warehouseIds = queryBL.createQueryBuilder(I_M_Locator.class)
 					.addInArrayFilter(I_M_Locator.COLUMNNAME_M_Locator_ID, shipmentScheduleSegment.getLocatorIds())
@@ -326,7 +326,7 @@ public class ShipmentScheduleRepository
 			shipmentScheduleIQueryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseIds);
 		}
 
-		if (!Check.isEmpty(shipmentScheduleSegment.getProductIds()) || !shipmentScheduleSegment.isAnyProduct())
+		if (!Check.isEmpty(shipmentScheduleSegment.getProductIds()) && !shipmentScheduleSegment.isAnyProduct())
 		{
 			shipmentScheduleIQueryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, shipmentScheduleSegment.getProductIds());
 		}
@@ -335,7 +335,7 @@ public class ShipmentScheduleRepository
 				.stream()
 				.map(this::ofRecord);
 
-		if (shipmentScheduleSegment.getAttributes() != null)
+		if (!Check.isEmpty(shipmentScheduleSegment.getAttributes()))
 		{
 			final ImmutableSet<AttributeSetInstanceId> targetAsiIds = shipmentScheduleSegment.getAttributes()
 					.stream()
