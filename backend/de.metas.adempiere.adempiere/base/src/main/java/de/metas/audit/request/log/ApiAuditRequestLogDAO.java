@@ -56,7 +56,11 @@ public class ApiAuditRequestLogDAO
 				+ I_API_Request_Audit_Log.COLUMNNAME_Logmessage + "," // 8
 				+ I_API_Request_Audit_Log.COLUMNNAME_Updated + "," // 9
 				+ I_API_Request_Audit_Log.COLUMNNAME_UpdatedBy + ","  // 10
-				+ I_API_Request_Audit_Log.COLUMNNAME_AD_Issue_ID  // 11
+				+ I_API_Request_Audit_Log.COLUMNNAME_AD_Issue_ID + ","  // 11
+				+ I_API_Request_Audit_Log.COLUMNNAME_AD_Table_ID + "," // 12
+				+ I_API_Request_Audit_Log.COLUMNNAME_Record_ID + "," // 13
+				+ I_API_Request_Audit_Log.COLUMNNAME_Type + "," // 14
+				+ I_API_Request_Audit_Log.COLUMNNAME_TrxName // 15
 				+ ")"
 				+ " VALUES ("
 				+ "?," // 1 - AD_Client_ID
@@ -69,7 +73,11 @@ public class ApiAuditRequestLogDAO
 				+ "?," // 8 - LogMessage
 				+ "?," // 9 - Updated
 				+ "?," // 10 - UpdatedBy
-				+ "?" // 11 - AD_Issue_ID
+				+ "?," // 11 - AD_Issue_ID
+				+ "?," // 12 - AD_Table_ID
+				+ "?," // 13 - Record_ID
+				+ "?," // 14 - Type
+				+ "?" // 15 - TrxName
 				+ ")";
 
 		PreparedStatement pstmt = null;
@@ -91,7 +99,11 @@ public class ApiAuditRequestLogDAO
 								 logEntry.getMessage(), // 8 - LogMessage
 								 logEntry.getTimestamp(), // 9 - Updated
 								 logEntry.getUserId(), // 10 - UpdatedBy
-								 logEntry.getAdIssueId() // 11 - AD_Issue_ID
+								 logEntry.getAdIssueId(), // 11 - AD_Issue_ID
+								 logEntry.getRecordReference() != null ? logEntry.getRecordReference().getAD_Table_ID() : null, // 12 - AD_Table_ID
+								 logEntry.getRecordReference() != null ? logEntry.getRecordReference().getRecord_ID() : null, // 13 - Record_ID
+								 logEntry.getType(), // 14 - Type
+								 logEntry.getTrxName() // 15 - TrxName
 				);
 				pstmt.addBatch();
 			}

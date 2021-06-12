@@ -22,9 +22,11 @@
 
 package de.metas.audit;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.audit.request.ApiRequestAuditId;
 import de.metas.audit.request.log.ApiAuditRequestLogDAO;
 import de.metas.audit.request.log.ApiRequestAuditLog;
+import de.metas.audit.request.log.StateType;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.LoggableWithThrowableUtil;
 import de.metas.logging.LogManager;
@@ -35,15 +37,23 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.I_API_Request_Audit;
+import org.compiere.model.I_API_Request_Audit_Log;
+import org.compiere.model.I_API_Response_Audit;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 @EqualsAndHashCode
 public class ApiAuditLoggable implements ILoggable
 {
+	private static final ImmutableSet<String> SKIP_LOGGING_FOR_TABLES = ImmutableSet
+			.of(I_API_Response_Audit.Table_Name, I_API_Request_Audit.Table_Name, I_API_Request_Audit_Log.Table_Name);
+
 	private static final Logger logger = LogManager.getLogger(ApiAuditLoggable.class);
 
 	private final ApiAuditRequestLogDAO apiAuditRequestLogDAO;
@@ -82,17 +92,22 @@ public class ApiAuditLoggable implements ILoggable
 		}
 		final ApiRequestAuditLog logEntry = createLogEntry(msg, msgParameters);
 
-		List<ApiRequestAuditLog> buffer = this.buffer;
-		if (buffer == null)
-		{
-			buffer = this.buffer = new ArrayList<>(bufferSize);
-		}
-		buffer.add(logEntry);
+		addToBuffer(logEntry);
 
-		if (buffer.size() >= bufferSize)
+		return this;
+	}
+
+	@Override
+	public ILoggable addTableRecordReferenceLog(final @NonNull ITableRecordReference recordRef, final @NonNull String type, final @NonNull String trxName)
+	{
+		if (SKIP_LOGGING_FOR_TABLES.contains(recordRef.getTableName()))
 		{
-			flush();
+			return this;
 		}
+
+		final ApiRequestAuditLog logEntry = createLogEntry(recordRef, type, trxName);
+
+		addToBuffer(logEntry);
 
 		return this;
 	}
@@ -131,5 +146,33 @@ public class ApiAuditLoggable implements ILoggable
 				.adClientId(clientId)
 				.userId(userId)
 				.build();
+	}
+
+	private ApiRequestAuditLog createLogEntry(final @NonNull ITableRecordReference recordRef, final @NonNull String type, final @NonNull String trxName)
+	{
+		return ApiRequestAuditLog.builder()
+				.timestamp(SystemTime.asInstant())
+				.apiRequestAuditId(apiRequestAuditId)
+				.adClientId(clientId)
+				.userId(userId)
+				.recordReference(recordRef)
+				.type(StateType.ofCode(type))
+				.trxName(trxName)
+				.build();
+	}
+
+	private void addToBuffer(final ApiRequestAuditLog logEntry)
+	{
+		List<ApiRequestAuditLog> buffer = this.buffer;
+		if (buffer == null)
+		{
+			buffer = this.buffer = new ArrayList<>(bufferSize);
+		}
+		buffer.add(logEntry);
+
+		if (buffer.size() >= bufferSize)
+		{
+			flush();
+		}
 	}
 }
