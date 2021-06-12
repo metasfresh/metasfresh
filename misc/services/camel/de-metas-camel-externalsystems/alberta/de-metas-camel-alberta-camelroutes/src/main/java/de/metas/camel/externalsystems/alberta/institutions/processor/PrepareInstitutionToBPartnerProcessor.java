@@ -39,6 +39,7 @@ import io.swagger.client.model.NursingHome;
 import io.swagger.client.model.NursingService;
 import io.swagger.client.model.Payer;
 import io.swagger.client.model.Pharmacy;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
@@ -58,40 +59,40 @@ public class PrepareInstitutionToBPartnerProcessor implements Processor
 		final String orgCode = routeContext.getOrgCode();
 
 		final JsonBPartnerRole role = routeContext.getRole();
-		final String externalReference = routeContext.getExternalReference();
+		final String albertaResourceId = routeContext.getAlbertaResourceId();
 
 		final JsonRequestBPartnerUpsertItem upsertItem;
 
 		switch (role)
 		{
 			case PhysicianDoctor -> {
-				final Doctor doctor = routeContext.getDoctorApi().getDoctor(apiKey, tenant, externalReference);
-				validateResourceExists(doctor, externalReference, JsonBPartnerRole.PhysicianDoctor.name());
+				final Doctor doctor = routeContext.getDoctorApi().getDoctor(apiKey, tenant, albertaResourceId);
+				validateResourceExists(doctor, albertaResourceId, Doctor.class);
 				upsertItem = DataMapper.mapDoctorToUpsertRequest(doctor, orgCode);
 			}
 			case Hospital -> {
-				final Hospital hospital = routeContext.getHospitalApi().getHospital(apiKey, tenant, externalReference);
-				validateResourceExists(hospital, externalReference, JsonBPartnerRole.Hospital.name());
+				final Hospital hospital = routeContext.getHospitalApi().getHospital(apiKey, tenant, albertaResourceId);
+				validateResourceExists(hospital, albertaResourceId, Hospital.class);
 				upsertItem = DataMapper.mapHospitalToUpsertRequest(hospital, orgCode);
 			}
 			case NursingHome -> {
-				final NursingHome nursingHome = routeContext.getNursingHomeApi().geNursingHome(apiKey, tenant, externalReference);
-				validateResourceExists(nursingHome, externalReference, JsonBPartnerRole.NursingHome.name());
+				final NursingHome nursingHome = routeContext.getNursingHomeApi().geNursingHome(apiKey, tenant, albertaResourceId);
+				validateResourceExists(nursingHome, albertaResourceId, NursingHome.class);
 				upsertItem = DataMapper.mapNursingHomeToUpsertRequest(nursingHome, orgCode);
 			}
 			case NursingService -> {
-				final NursingService nursingService = routeContext.getNursingServiceApi().getNursingService(apiKey, tenant, externalReference);
-				validateResourceExists(nursingService, externalReference, JsonBPartnerRole.NursingService.name());
+				final NursingService nursingService = routeContext.getNursingServiceApi().getNursingService(apiKey, tenant, albertaResourceId);
+				validateResourceExists(nursingService, albertaResourceId, NursingService.class);
 				upsertItem = DataMapper.mapNursingServiceToUpsertRequest(nursingService, orgCode);
 			}
 			case Payer -> {
-				final Payer payer = routeContext.getPayerApi().getPayer(apiKey, tenant, externalReference);
-				validateResourceExists(payer, externalReference, JsonBPartnerRole.Payer.name());
+				final Payer payer = routeContext.getPayerApi().getPayer(apiKey, tenant, albertaResourceId);
+				validateResourceExists(payer, albertaResourceId, Payer.class);
 				upsertItem = DataMapper.mapPayerToUpsertRequest(payer, orgCode);
 			}
 			case Pharmacy -> {
-				final Pharmacy pharmacy = routeContext.getPharmacyApi().getPharmacy(apiKey, tenant, externalReference);
-				validateResourceExists(pharmacy, externalReference, JsonBPartnerRole.Pharmacy.name());
+				final Pharmacy pharmacy = routeContext.getPharmacyApi().getPharmacy(apiKey, tenant, albertaResourceId);
+				validateResourceExists(pharmacy, albertaResourceId, Pharmacy.class);
 				upsertItem = DataMapper.mapPharmacyToUpsertRequest(pharmacy, orgCode);
 			}
 			default -> throw new RuntimeCamelException("No bpartner role matched for " + role);
@@ -110,11 +111,11 @@ public class PrepareInstitutionToBPartnerProcessor implements Processor
 		exchange.getIn().setBody(bpUpsertCamelRequest);
 	}
 
-	private void validateResourceExists(@Nullable final Object resource, final String resourceIdentifier, final String resourceType)
+	private void validateResourceExists(@Nullable final Object resource, @NonNull final String resourceIdentifier, @NonNull final Class<?> resourceType)
 	{
 		if (EmptyUtil.isEmpty(resource))
 		{
-			throw new RuntimeCamelException("No resource returned for identifier:" + resourceIdentifier + " of resource type:" + resourceType);
+			throw new RuntimeCamelException("No resource returned for identifier:" + resourceIdentifier + " of resource type:" + resourceType.getName());
 		}
 	}
 }

@@ -22,9 +22,8 @@
 
 package de.metas.externalsystem.process;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
@@ -49,28 +48,38 @@ import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRole;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleRepository;
 import de.metas.vertical.healthcare.alberta.bpartner.role.AlbertaRoleType;
 import lombok.NonNull;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 @Service
 public class InvokeAlbertaService
 {
+	private static final String EXTERNAL_SYSTEM_COMMAND_SYNC_BPARTNER = "syncBPartnerById";
+	private static final Set<AlbertaRoleType> ALBERTA_ROLE_TYPES_TO_SYNC = ImmutableSet.of(
+			AlbertaRoleType.Hospital,
+			AlbertaRoleType.NursingHome,
+			AlbertaRoleType.NursingService,
+			AlbertaRoleType.Payer,
+			AlbertaRoleType.PhysicianDoctor,
+			AlbertaRoleType.Pharmacy);
+
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final AlbertaRoleRepository albertaRoleRepository;
 	private final ExternalReferenceRepository externalReferenceRepository;
 	private final ExternalSystemConfigRepo externalSystemConfigDAO;
 
-	private static final String EXTERNAL_SYSTEM_COMMAND = "syncBPartnerById";
 
-	public InvokeAlbertaService(final AlbertaRoleRepository albertaRoleRepository, final ExternalReferenceRepository externalReferenceRepository, final ExternalSystemConfigRepo externalSystemConfigDAO)
+	public InvokeAlbertaService(
+			@NonNull final AlbertaRoleRepository albertaRoleRepository,
+			@NonNull final ExternalReferenceRepository externalReferenceRepository,
+			@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO)
 	{
 		this.albertaRoleRepository = albertaRoleRepository;
 		this.externalReferenceRepository = externalReferenceRepository;
@@ -78,22 +87,33 @@ public class InvokeAlbertaService
 	}
 
 	@NonNull
-	public ImmutableList<AlbertaRole> getAlbertaRoleForBPartner(final @NonNull BPartnerId bPartnerId)
+	public Stream<JsonExternalSystemRequest> streamSyncExternalRequestsForBPartnerIds(
+			@NonNull final Set<BPartnerId> bPartnerIds,
+			@NonNull final ExternalSystemAlbertaConfigId configId,
+			@NonNull final PInstanceId pInstanceId,
+			@NonNull final OrgId orgId)
+	{
+		return bPartnerIds
+				.stream()
+				.map(this::getAlbertaRoleForBPartner)
+				.flatMap(Collection::stream)
+				.map(this::toOptionalAlbertaBPartnerReference)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.map(albertaReference -> this.toJsonExternalSystemRequest(orgId, configId, pInstanceId, albertaReference));
+	}
+
+	@NonNull
+	private ImmutableList<AlbertaRole> getAlbertaRoleForBPartner(final @NonNull BPartnerId bPartnerId)
 	{
 		return albertaRoleRepository.getByPartnerId(bPartnerId)
 				.stream()
-				.filter(albertaRole -> !(albertaRole.getRole().equals(AlbertaRoleType.Patient)
-						|| albertaRole.getRole().equals(AlbertaRoleType.PreferredPharmacy)
-						|| albertaRole.getRole().equals(AlbertaRoleType.Caregiver)
-						|| albertaRole.getRole().equals(AlbertaRoleType.CareTaker)
-						|| albertaRole.getRole().equals(AlbertaRoleType.GeneralPractitioner)
-						|| albertaRole.getRole().equals(AlbertaRoleType.HealthInsurance)
-						|| albertaRole.getRole().equals(AlbertaRoleType.MainProducer)))
+				.filter(albertaRole -> ALBERTA_ROLE_TYPES_TO_SYNC.contains(albertaRole.getRole()))
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	public Optional<AlbertaBPartnerReference> toOptionalAlbertaBPartnerReference(final @NonNull AlbertaRole albertaRole)
+	private Optional<AlbertaBPartnerReference> toOptionalAlbertaBPartnerReference(final @NonNull AlbertaRole albertaRole)
 	{
 		final AlbertaBPartnerReference.AlbertaBPartnerReferenceBuilder builder = AlbertaBPartnerReference.builder();
 		builder.albertaRoleType(albertaRole.getRole());
@@ -110,20 +130,20 @@ public class InvokeAlbertaService
 	}
 
 	@NonNull
-	public JsonExternalSystemRequest toJsonExternalSystemRequest(
+	private JsonExternalSystemRequest toJsonExternalSystemRequest(
 			@NonNull final OrgId orgId,
-			final int externalSystemConfigAlbertaId,
+			@NonNull final ExternalSystemAlbertaConfigId configId,
 			@NonNull final PInstanceId pInstanceId,
 			@NonNull final AlbertaBPartnerReference albertaBPartnerReference)
 	{
-		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(ExternalSystemAlbertaConfigId.ofRepoId(externalSystemConfigAlbertaId));
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(configId);
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 				.externalSystemName(JsonExternalSystemName.of(ExternalSystemType.Alberta.getName()))
 				.parameters(extractParameters(config, albertaBPartnerReference))
 				.orgCode(orgDAO.getById(orgId).getValue())
-				.command(EXTERNAL_SYSTEM_COMMAND)
+				.command(EXTERNAL_SYSTEM_COMMAND_SYNC_BPARTNER)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(pInstanceId)))
 				.build();
 	}
@@ -144,25 +164,5 @@ public class InvokeAlbertaService
 		parameters.put(ExternalSystemConstants.PARAM_ALBERTA_ROLE, albertaBPartnerReference.getAlbertaRoleType().name());
 
 		return parameters;
-	}
-
-	@NonNull
-	public HttpPut toHttpPutRequest(
-			@NonNull final JsonExternalSystemRequest jsonExternalSystemRequest,
-			final int externalSystemConfigAlbertaId) throws UnsupportedEncodingException, JsonProcessingException
-	{
-		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(ExternalSystemAlbertaConfigId.ofRepoId(externalSystemConfigAlbertaId));
-
-		final HttpPut request = new HttpPut(config.getCamelUrl());
-
-		// attempt to encode the request body as UTF-8. Oftherwise camel might fail to deserialize the JSON
-		// by default http-client encodes the content as ISO-8859-1, https://hc.apache.org/httpclient-legacy/charencodings.html
-		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
-
-		final String jsonExternalSystemRequestString = new ObjectMapper().writeValueAsString(jsonExternalSystemRequest);
-
-		request.setEntity(new StringEntity(jsonExternalSystemRequestString));
-
-		return request;
 	}
 }

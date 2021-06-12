@@ -22,12 +22,16 @@
 
 package de.metas.externalsystem.process;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
@@ -42,6 +46,9 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.http.HttpHeaders;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.compiere.SpringContextHolder;
@@ -49,9 +56,9 @@ import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.Collection;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
@@ -107,20 +114,17 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 	{
 		addLog("Calling with params: externalSystemConfigAlbertaId {}, ignoreSelection {}, orgId {}", externalSystemConfigAlbertaId, ignoreSelection, orgId);
 
-		final List<I_C_BPartner> bpartnerRecords = ignoreSelection ? getAllBPartnerRecords() : getSelectedBPartnerRecords();
-
-		final OrgId computedOrgId = orgId > 0 ? OrgId.ofRepoId(orgId) : getProcessInfo().getOrgId();
-
-		final Stream<JsonExternalSystemRequest> requestList = bpartnerRecords
+		final Set<BPartnerId> bPartnerIdSet = (ignoreSelection ? getAllBPartnerRecords() : getSelectedBPartnerRecords())
 				.stream()
 				.map(I_C_BPartner::getC_BPartner_ID)
 				.map(BPartnerId::ofRepoId)
-				.map(invokeAlbertaService::getAlbertaRoleForBPartner)
-				.flatMap(Collection::stream)
-				.map(invokeAlbertaService::toOptionalAlbertaBPartnerReference)
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.map(albertaReference -> invokeAlbertaService.toJsonExternalSystemRequest(computedOrgId, externalSystemConfigAlbertaId, getPinstanceId(), albertaReference));
+				.collect(ImmutableSet.toImmutableSet());
+
+		final OrgId computedOrgId = orgId > 0 ? OrgId.ofRepoId(orgId) : getProcessInfo().getOrgId();
+		final ExternalSystemAlbertaConfigId albertaConfigId = ExternalSystemAlbertaConfigId.ofRepoId(externalSystemConfigAlbertaId);
+
+		final Stream<JsonExternalSystemRequest> requestList = invokeAlbertaService
+				.streamSyncExternalRequestsForBPartnerIds(bPartnerIdSet, albertaConfigId, getPinstanceId(), computedOrgId);
 
 		final boolean allFine;
 		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
@@ -129,7 +133,7 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 					.allMatch(request -> {
 						try
 						{
-							return aDefault.execute(invokeAlbertaService.toHttpPutRequest(request, externalSystemConfigAlbertaId), response -> {
+							return aDefault.execute(toHttpPutRequest(request), response -> {
 								final int statusCode = response.getStatusLine().getStatusCode();
 								if (statusCode != 200)
 								{
@@ -183,5 +187,23 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 		return bPartnerQuery.create()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private HttpPut toHttpPutRequest(
+			@NonNull final JsonExternalSystemRequest jsonExternalSystemRequest) throws UnsupportedEncodingException, JsonProcessingException
+	{
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(ExternalSystemAlbertaConfigId.ofRepoId(externalSystemConfigAlbertaId));
+
+		final HttpPut request = new HttpPut(config.getCamelUrl());
+
+		// attempt to encode the request body as UTF-8. Oftherwise camel might fail to deserialize the JSON
+		// by default http-client encodes the content as ISO-8859-1, https://hc.apache.org/httpclient-legacy/charencodings.html
+		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
+
+		final String jsonExternalSystemRequestString = new ObjectMapper().writeValueAsString(jsonExternalSystemRequest);
+
+		request.setEntity(new StringEntity(jsonExternalSystemRequestString));
+
+		return request;
 	}
 }

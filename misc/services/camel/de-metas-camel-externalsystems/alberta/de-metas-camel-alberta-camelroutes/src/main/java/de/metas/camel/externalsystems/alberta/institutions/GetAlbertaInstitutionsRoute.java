@@ -38,6 +38,7 @@ import io.swagger.client.api.PharmacyApi;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
+import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -79,13 +80,18 @@ public class GetAlbertaInstitutionsRoute extends RouteBuilder
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
+		if (request == null)
+		{
+			throw new RuntimeCamelException("Missing exchange body! No JsonExternalSystemRequest found!");
+		}
+
 		final String orgCode = request.getOrgCode();
 
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 		final String apiKey = request.getParameters().get(ExternalSystemConstants.PARAM_API_KEY);
 		final String tenant = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT);
 
-		final String externalReference = request.getParameters().get(ExternalSystemConstants.PARAM_ALBERTA_ID);
+		final String albertaResourceId = request.getParameters().get(ExternalSystemConstants.PARAM_ALBERTA_ID);
 		final String role = request.getParameters().get(ExternalSystemConstants.PARAM_ALBERTA_ROLE);
 
 		final AlbertaConnectionDetails albertaConnectionDetails = AlbertaConnectionDetails.builder()
@@ -99,7 +105,7 @@ public class GetAlbertaInstitutionsRoute extends RouteBuilder
 		final GetInstitutionsRouteContext context = GetInstitutionsRouteContext.builder()
 				.orgCode(orgCode)
 				.albertaConnectionDetails(albertaConnectionDetails)
-				.externalReference(externalReference)
+				.albertaResourceId(albertaResourceId)
 				.role(JsonBPartnerRole.valueOf(role))
 				.doctorApi(new DoctorApi(apiClient))
 				.hospitalApi(new HospitalApi(apiClient))

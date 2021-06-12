@@ -31,40 +31,40 @@ import io.swagger.client.api.NursingServiceApi;
 import io.swagger.client.api.PayerApi;
 import io.swagger.client.api.PharmacyApi;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class GetInstitutionsRouteContext
 {
 	@NonNull
-	private final String orgCode;
+	String orgCode;
 
 	@NonNull
-	private final AlbertaConnectionDetails albertaConnectionDetails;
+	AlbertaConnectionDetails albertaConnectionDetails;
 
 	@NonNull
-	private final String externalReference;
+	String albertaResourceId;
 
 	@NonNull
-	private final JsonBPartnerRole role;
+	JsonBPartnerRole role;
 
 	@NonNull
-	private final DoctorApi doctorApi;
+	DoctorApi doctorApi;
 
 	@NonNull
-	private final HospitalApi hospitalApi;
+	HospitalApi hospitalApi;
 
 	@NonNull
-	private final NursingHomeApi nursingHomeApi;
+	NursingHomeApi nursingHomeApi;
 
 	@NonNull
-	private final NursingServiceApi nursingServiceApi;
+	NursingServiceApi nursingServiceApi;
 
 	@NonNull
-	private final PayerApi payerApi;
+	PayerApi payerApi;
 
 	@NonNull
-	private final PharmacyApi pharmacyApi;
+	PharmacyApi pharmacyApi;
 }
