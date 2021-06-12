@@ -39,6 +39,7 @@ import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.Language;
 import de.metas.location.LocationId;
@@ -53,11 +54,16 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Contact_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +80,7 @@ public class BPartnerQuickInputService
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
@@ -199,6 +206,16 @@ public class BPartnerQuickInputService
 	public BPartnerId createBPartnerFromTemplate(@NonNull final I_C_BPartner_QuickInput template)
 	{
 		Check.assume(!template.isProcessed(), "{} not already processed", template);
+
+		final BooleanWithReason canCreateNewBPartner = Env.getUserRolePermissions()
+				.checkCanCreateNewRecord(
+						ClientId.ofRepoId(template.getAD_Client_ID()),
+						OrgId.ofRepoId(template.getAD_Org_ID()),
+						adTableDAO.retrieveAdTableId(I_C_BPartner.Table_Name));
+		if (canCreateNewBPartner.isFalse())
+		{
+			throw new AdempiereException(canCreateNewBPartner.getReason());
+		}
 
 		trxManager.assertThreadInheritedTrxExists();
 
