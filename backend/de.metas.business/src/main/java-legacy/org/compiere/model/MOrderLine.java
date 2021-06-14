@@ -334,6 +334,7 @@ public class MOrderLine extends X_C_OrderLine
 				.fromCountryId(countryFromId)
 				.orgId(OrgId.ofRepoId(getAD_Org_ID()))
 				.bPartnerLocationId(bpLocationId)
+				.warehouseId(warehouseId)
 				.dateOfInterest(taxDate)
 				.taxCategoryId(taxCategoryId)
 				.isSoTrx(isSOTrx)

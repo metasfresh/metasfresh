@@ -110,6 +110,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					.bPartnerLocationId(bPartnerLocationId)
 					.dateOfInterest(shipDate)
 					.taxCategoryId(taxCategoryId)
+					.warehouseId(warehouseId)
 					.isSoTrx(isSOTrx)
 					.build());
 

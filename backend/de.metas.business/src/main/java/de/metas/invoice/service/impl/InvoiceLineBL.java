@@ -72,8 +72,6 @@ import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Properties;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-
 /*
  * #%L
  * de.metas.swat.base
@@ -165,7 +163,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final boolean isSOTrx)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -191,9 +188,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				return false;
 			}
 
-			final Properties ctx = getCtx(invoice);
-
-			final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
+			final Tax tax = taxDAO.getBy(TaxQuery.builder()
 					.fromCountryId(countryFromId)
 					.orgId(orgId)
 					.bPartnerLocationId(partnerLocationId)
