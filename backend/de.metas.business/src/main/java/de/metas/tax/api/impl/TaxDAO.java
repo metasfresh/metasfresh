@@ -382,7 +382,7 @@ public class TaxDAO implements ITaxDAO
 			loggable.addLog("Type of dest country: {}", typeOfDestCountry);
 			if (typeOfDestCountry != null)
 			{
-				queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, typeOfDestCountry.getCode());
+				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_TypeOfDestCountry, typeOfDestCountry.getCode(), null);
 			}
 		}
 		return queryBuilder;
