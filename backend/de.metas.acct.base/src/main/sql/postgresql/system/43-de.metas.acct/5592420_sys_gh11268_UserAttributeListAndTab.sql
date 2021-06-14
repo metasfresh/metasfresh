@@ -308,8 +308,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-06-11T12:58:36.275Z
 -- URL zum Konzept
-ALTER TABLE AD_User_Attribute ADD CONSTRAINT CBPartner_ADUserAttribute FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
-;
+--ALTER TABLE AD_User_Attribute ADD CONSTRAINT CBPartner_ADUserAttribute FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED
+--;
 
 -- Tab
 
