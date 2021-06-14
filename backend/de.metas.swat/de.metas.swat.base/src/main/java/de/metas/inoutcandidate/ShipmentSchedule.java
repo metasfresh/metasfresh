@@ -105,6 +105,16 @@ public class ShipmentSchedule
 			@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds,
 			@NonNull final IAttributeDAO attributeDAO)
 	{
+		final ImmutableSet<AttributeSetInstanceId> nonNullTargetAsiIds = targetAsiIds
+				.stream()
+				.filter(asiId -> !AttributeSetInstanceId.NONE.equals(asiId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (nonNullTargetAsiIds.isEmpty())
+		{
+			return true;
+		}
+
 		if (getAttributeSetInstanceId() == null)
 		{
 			return false;
@@ -112,7 +122,7 @@ public class ShipmentSchedule
 
 		final ImmutableAttributeSet shipmentScheduleAsi = attributeDAO.getImmutableAttributeSetById(getAttributeSetInstanceId());
 
-		return targetAsiIds.stream()
+		return nonNullTargetAsiIds.stream()
 				.map(attributeDAO::getImmutableAttributeSetById)
 				.anyMatch(shipmentScheduleAsi::containsAttributeValues);
 	}
