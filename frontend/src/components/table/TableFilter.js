@@ -262,7 +262,7 @@ class TableFilter extends PureComponent {
               </button>
             )}
             {!isBatchEntry && this.actionButtons}
-            {!isBatchEntry && (
+            {!isBatchEntry && shortcutActions.length && (
               <TableFilterContextShortcuts shortcutActions={shortcutActions} />
             )}
           </div>
