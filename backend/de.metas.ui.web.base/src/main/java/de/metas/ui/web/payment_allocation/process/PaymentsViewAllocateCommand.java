@@ -65,8 +65,8 @@ public class PaymentsViewAllocateCommand
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 
-	private final PaymentRow paymentRow;
-	private final List<InvoiceRow> invoiceRows;
+	private final ImmutableList<PaymentRow> paymentRows;
+	private final ImmutableList<InvoiceRow> invoiceRows;
 	private final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy;
 	private final boolean allowPurchaseSalesInvoiceCompensation;
 	private final LocalDate defaultDateTrx;
@@ -76,7 +76,7 @@ public class PaymentsViewAllocateCommand
 			@NonNull final MoneyService moneyService,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
 			//
-			@Nullable final PaymentRow paymentRow,
+			@NonNull @Singular final ImmutableList<PaymentRow> paymentRows,
 			@NonNull @Singular final ImmutableList<InvoiceRow> invoiceRows,
 			@Nullable final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy,
 			@NonNull final Boolean allowPurchaseSalesInvoiceCompensation,
@@ -85,7 +85,7 @@ public class PaymentsViewAllocateCommand
 		this.moneyService = moneyService;
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
 
-		this.paymentRow = paymentRow;
+		this.paymentRows = paymentRows;
 		this.invoiceRows = invoiceRows;
 		this.payableRemainingOpenAmtPolicy = CoalesceUtil.coalesce(payableRemainingOpenAmtPolicy, PayableRemainingOpenAmtPolicy.DO_NOTHING);
 		this.allowPurchaseSalesInvoiceCompensation = allowPurchaseSalesInvoiceCompensation;
@@ -111,7 +111,7 @@ public class PaymentsViewAllocateCommand
 		{
 			throw new AdempiereException("Invalid allocation")
 					.appendParametersToMessage()
-					.setParameter("paymentRow", paymentRow)
+					.setParameter("paymentRows", paymentRows)
 					.setParameter("invoiceRows", invoiceRows)
 					.setParameter("payableRemainingOpenAmtPolicy", payableRemainingOpenAmtPolicy);
 		}
@@ -121,14 +121,14 @@ public class PaymentsViewAllocateCommand
 	@Nullable
 	private PaymentAllocationBuilder preparePaymentAllocationBuilder()
 	{
-		if (paymentRow == null && invoiceRows.isEmpty())
+		if (paymentRows.isEmpty() && invoiceRows.isEmpty())
 		{
 			return null;
 		}
 
-		final List<PaymentDocument> paymentDocuments = paymentRow != null
-				? ImmutableList.of(toPaymentDocument(paymentRow))
-				: ImmutableList.of();
+		final ImmutableList<PaymentDocument> paymentDocuments = paymentRows.stream()
+				.map(this::toPaymentDocument)
+				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList<PayableDocument> invoiceDocuments = invoiceRows.stream()
 				.map(row -> toPayableDocument(row, paymentDocuments, moneyService, invoiceProcessingServiceCompanyService))
