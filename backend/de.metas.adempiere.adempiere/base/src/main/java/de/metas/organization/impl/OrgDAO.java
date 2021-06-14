@@ -263,4 +263,10 @@ public class OrgDAO implements IOrgDAO
 		return timeZone != null ? timeZone : SystemTime.zoneId();
 	}
 
+	@Override
+	public boolean isEUOneStopShop(@NonNull final OrgId orgId)
+	{
+		return getById(orgId).isEUOneStopShop();
+	}
+
 }

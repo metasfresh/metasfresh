@@ -6,7 +6,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.annotation.CacheCtx;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.CountryId;
@@ -15,6 +14,7 @@ import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -66,6 +66,7 @@ public class TaxDAO implements ITaxDAO
 	private final static transient Logger logger = LogManager.getLogger(TaxDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -295,30 +296,31 @@ public class TaxDAO implements ITaxDAO
 		loggable.addLog("Using query {}", taxQuery);
 		final IQueryBuilder<I_C_Tax> queryBuilder = queryBL.createQueryBuilder(I_C_Tax.class);
 
-		final OrgId orgId = taxQuery.getOrgId();
+		OrgId orgId = taxQuery.getOrgId();
 		CountryId countryId = taxQuery.getFromCountryId();
+
 		if (countryId != null)
 		{
 			loggable.addLog("Country ID provided in query: {}", countryId);
 		}
 		else
 		{
-			if (orgId != null)
-			{
-				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
-				countryId = bPartnerOrgBL.getOrgCountryId(orgId);
-				loggable.addLog("Country ID based on organization: {}", countryId);
-			}
-
 			final WarehouseId warehouseId = taxQuery.getWarehouseId();
 			if (warehouseId != null)
 			{
 				final CountryId warehouseCountryId = warehouseBL.getCountryId(warehouseId);
+				orgId = warehouseBL.getWarehouseOrgId(warehouseId);
 				loggable.addLog("Country ID based on warehouse: {}", warehouseCountryId);
 				if (warehouseCountryId != null)
 				{
-					countryId = CoalesceUtil.coalesce(warehouseCountryId, countryId);
+					countryId = warehouseCountryId;
 				}
+			}
+			else if (orgId != null)
+			{
+				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
+				countryId = bPartnerOrgBL.getOrgCountryId(orgId);
+				loggable.addLog("Country ID based on organization: {}", countryId);
 			}
 			if (countryId == null)
 			{
@@ -326,20 +328,27 @@ public class TaxDAO implements ITaxDAO
 			}
 		}
 
-		queryBuilder.addEqualsFilter(I_C_Tax.COLUMN_C_Country_ID, countryId);
+		if (orgId == null || !orgDAO.isEUOneStopShop(orgId))
+		{
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMN_C_Country_ID, countryId);
+		}
+
 		final TaxCategoryId taxCategoryId = taxQuery.getTaxCategoryId();
 		if (taxCategoryId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategoryId);
 			loggable.addLog("Tax Category ID: {}", taxCategoryId.getRepoId());
 		}
+
 		final Timestamp dateOfInterest = taxQuery.getDateOfInterest();
 		if (dateOfInterest != null)
+
 		{
 			queryBuilder.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, dateOfInterest);
 			loggable.addLog("Date of Interest<= {}", dateOfInterest);
 		}
 		if (taxQuery.getIsSoTrx() != null)
+
 		{
 			if (taxQuery.getIsSoTrx())
 			{
@@ -356,6 +365,7 @@ public class TaxDAO implements ITaxDAO
 		final BPartnerLocationId bPartnerLocationId = taxQuery.getBPartnerLocationId();
 		final BPartnerId bpartnerId = taxQuery.getBpartnerId();
 		if (bpartnerId != null)
+
 		{
 			final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 			final boolean requiresTaxCertificate = !Check.isBlank(bpartner.getVATaxID());
@@ -363,6 +373,7 @@ public class TaxDAO implements ITaxDAO
 			queryBuilder.addEqualsFilter(I_C_Tax.COLUMN_RequiresTaxCertificate, requiresTaxCertificate);
 		}
 		if (bPartnerLocationId != null)
+
 		{
 			final CountryId toCountryId = getCountryId(bPartnerLocationId);
 			loggable.addLog("To country ID from bpartnerLocation: {}", toCountryId);
