@@ -98,28 +98,6 @@ UPDATE AD_Element_Trl SET Description='Wenn gesetzt, werden unabhängig von der 
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579313,'nl_NL') 
 ;
 
-/*
- * #%L
- * de.metas.vertical.healthcare.alberta
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- 2021-06-11T03:49:59.566Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para SET IsActive='Y', SeqNo=10,Updated=TO_TIMESTAMP('2021-06-11 06:49:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542023
@@ -154,4 +132,3 @@ UPDATE AD_Process_Para_Trl SET Description='If set, then only partners from the 
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Para_Trl SET Description='Wenn gesetzt werden generell nur Geschäftspartner der jeweiligen Organisation synchronisiert', Help='', Name='Organisation',Updated=TO_TIMESTAMP('2021-06-11 07:05:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_Para_ID=542024
 ;
-
