@@ -594,22 +594,16 @@ export default function windowHandler(state = initialState, action) {
         }),
       });
     case UPDATE_DATA_INCLUDED_TABS_INFO:
-      return Object.assign({}, state, {
-        [action.scope]: Object.assign({}, state[action.scope], {
-          includedTabsInfo: Object.keys(
-            state[action.scope].includedTabsInfo
-          ).reduce((result, current) => {
-            result[current] = Object.assign(
-              {},
-              state[action.scope].includedTabsInfo[current],
-              action.includedTabsInfo[current]
-                ? action.includedTabsInfo[current]
-                : {}
-            );
-            return result;
-          }, {}),
-        }),
-      });
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          includedTabsInfo: {
+            ...state.master.includedTabsInfo,
+            ...action.includedTabsInfo,
+          },
+        },
+      };
     // END OF SCOPED ACTIONS
 
     case OPEN_FILTER_BOX:

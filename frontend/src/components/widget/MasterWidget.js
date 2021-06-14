@@ -140,7 +140,8 @@ class MasterWidget extends PureComponent {
       isModal,
       isAdvanced,
       viewId,
-      isEdit
+      isEdit,
+      disconnected
     );
 
     // flash the row to indicate a change

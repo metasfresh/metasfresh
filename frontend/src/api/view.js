@@ -113,6 +113,7 @@ export function patchRequest({
     if (!rawResponse.data.documents) {
       rawResponse.data.documents = rawResponse.data;
     }
+
     return Promise.resolve(rawResponse);
   });
 }

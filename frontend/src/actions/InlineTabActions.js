@@ -227,8 +227,9 @@ export function inlineTabAfterGetLayout({ data, disconnectedData }) {
 export function patchInlineTab({ ret, windowId, tabId, docId, rowId }) {
   return (dispatch) => {
     ret.then((response) => {
-      const respDocuments = response.documents ? response.documents : response;
-      if (respDocuments[0]) {
+      const respDocuments =
+        response && response.documents ? response.documents : response;
+      if (respDocuments && respDocuments[0]) {
         dispatch(
           updateInlineTabWrapperFields({
             inlineTabWrapperId: `${windowId}_${tabId}_${docId}`,
