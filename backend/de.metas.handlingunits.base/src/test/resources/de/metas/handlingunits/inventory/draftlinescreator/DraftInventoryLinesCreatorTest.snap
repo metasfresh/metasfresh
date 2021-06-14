@@ -2,6 +2,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
   {
     "id" : 100011,
     "orgId" : 100001,
+    "documentNo":"documentNo",
     "docBaseAndSubType" : {
       "docBaseType" : "MMI",
       "docSubType" : "IAH"
@@ -105,6 +106,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
   {
     "id" : 100028,
     "orgId" : 100001,
+    "documentNo":"documentNo",
     "docBaseAndSubType" : {
       "docBaseType" : "MMI",
       "docSubType" : "IAH"
@@ -221,6 +223,7 @@ de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreatorTes
   {
     "id" : 100011,
     "orgId" : 100001,
+    "documentNo":"documentNo",
     "docBaseAndSubType" : {
       "docBaseType" : "MMI",
       "docSubType" : "ISH"

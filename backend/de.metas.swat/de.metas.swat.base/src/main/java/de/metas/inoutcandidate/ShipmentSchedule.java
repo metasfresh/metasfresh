@@ -22,6 +22,7 @@
 
 package de.metas.inoutcandidate;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -35,6 +36,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 
 import javax.annotation.Nullable;
 import java.time.LocalDateTime;
@@ -95,4 +98,22 @@ public class ShipmentSchedule
 
 	@Nullable
 	private ShipperId shipperId;
+
+	private boolean isProcessed;
+
+	public boolean hasAttributes(
+			@NonNull final ImmutableSet<AttributeSetInstanceId> targetAsiIds,
+			@NonNull final IAttributeDAO attributeDAO)
+	{
+		if (getAttributeSetInstanceId() == null)
+		{
+			return false;
+		}
+
+		final ImmutableAttributeSet shipmentScheduleAsi = attributeDAO.getImmutableAttributeSetById(getAttributeSetInstanceId());
+
+		return targetAsiIds.stream()
+				.map(attributeDAO::getImmutableAttributeSetById)
+				.anyMatch(shipmentScheduleAsi::containsAttributeValues);
+	}
 }
