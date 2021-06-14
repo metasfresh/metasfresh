@@ -55,6 +55,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Invoice_Verification_Run;
 import org.compiere.model.I_C_Invoice_Verification_RunLine;
 import org.compiere.model.I_C_Invoice_Verification_SetLine;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -104,10 +105,11 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 	{
 		final Tax invoiceTax = runResult.getInvoiceTax();
 		final Tax resultingTax = runResult.getResultingTax();
-		final TaxId resultingTaxId = resultingTax.getTaxId();
+		final boolean noTaxFound = resultingTax == null;
+		final TaxId resultingTaxId = noTaxFound ? taxDAO.retrieveNoTaxFoundId(Env.getCtx()) : resultingTax.getTaxId();
 		final boolean sameTax = invoiceTax.getTaxId().equals(resultingTaxId);
-		final boolean sameRate = invoiceTax.getRate().compareTo(resultingTax.getRate()) == 0;
-		final boolean sameBoilerPlate = Objects.equals(invoiceTax.getBoilerPlateId(), resultingTax.getBoilerPlateId());
+		final boolean sameRate = !noTaxFound && invoiceTax.getRate().compareTo(resultingTax.getRate()) == 0;
+		final boolean sameBoilerPlate = !noTaxFound && Objects.equals(invoiceTax.getBoilerPlateId(), resultingTax.getBoilerPlateId());
 
 		final I_C_Invoice_Verification_RunLine runLine = newInstance(I_C_Invoice_Verification_RunLine.class);
 		runLine.setC_Invoice_Verification_Run_ID(runId.getRepoId());
@@ -207,7 +209,7 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 	private static class InvoiceVerificationRunResult
 	{
 		@NonNull Tax invoiceTax;
-		@NonNull Tax resultingTax;
+		@Nullable Tax resultingTax;
 		@NonNull InvoiceVerificationSetLineId setLineId;
 		@NonNull
 		OrgId orgId;
@@ -216,7 +218,7 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 
 		@Builder
 		public InvoiceVerificationRunResult(final @NonNull Tax invoiceTax,
-				final @NonNull Tax resultingTax,
+				final @Nullable Tax resultingTax,
 				final @NonNull InvoiceVerificationSetLineId setLineId,
 				final @NonNull OrgId orgId,
 				@Nullable final String log)
