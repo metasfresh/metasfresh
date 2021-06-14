@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.banking.process.paymentdocumentform;
+package de.metas.ui.web.banking.payment.process;
 
 import java.math.BigDecimal;
 
@@ -34,6 +34,7 @@ import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
+import de.metas.banking.process.paymentdocumentform.PaymentStringProcessService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
@@ -45,12 +46,15 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ParamBarcodeScannerType;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.process.adprocess.WebuiProcess;
+import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
  * IProcessParametersCallout is used to update frontend data from backend inside "onParameterChanged. Nice!
  */
+@WebuiProcess(layoutType = PanelLayoutType.SingleOverlayField)
 public final class WEBUI_Import_Payment_Request_For_Purchase_Invoice_QRCode extends JavaProcess implements IProcessParametersCallout, IProcessPrecondition
 {
 
