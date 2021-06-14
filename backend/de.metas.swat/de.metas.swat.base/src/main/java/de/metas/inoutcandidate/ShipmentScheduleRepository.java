@@ -48,6 +48,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -305,7 +306,20 @@ public class ShipmentScheduleRepository
 
 		if (!Check.isEmpty(shipmentScheduleSegment.getBpartnerIds()) && !shipmentScheduleSegment.isAnyBPartner())
 		{
-			shipmentScheduleIQueryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID, shipmentScheduleSegment.getBpartnerIds());
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> bPartnerFilter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID, null)
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID, shipmentScheduleSegment.getBpartnerIds());
+
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> bPartnerOverrideFilter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addNotNull(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID)
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID, shipmentScheduleSegment.getBpartnerIds());
+
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> orJoinedBPartnerFilters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.setJoinOr()
+					.addFilter(bPartnerFilter)
+					.addFilter(bPartnerOverrideFilter);
+
+			shipmentScheduleIQueryBuilder.filter(orJoinedBPartnerFilters);
 		}
 
 		if (!Check.isEmpty(shipmentScheduleSegment.getBillBPartnerIds()) && !shipmentScheduleSegment.isAnyBillBPartner())
@@ -323,7 +337,20 @@ public class ShipmentScheduleRepository
 					.map(WarehouseId::ofRepoId)
 					.collect(ImmutableSet.toImmutableSet());
 
-			shipmentScheduleIQueryBuilder.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseIds);
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> warehouseFilter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, null)
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseIds);
+
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> warehouseOverrideFilter = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.addNotNull(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID)
+					.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID, warehouseIds);
+
+			final ICompositeQueryFilter<I_M_ShipmentSchedule> orJoinedWarehouseFilters = queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+					.setJoinOr()
+					.addFilter(warehouseFilter)
+					.addFilter(warehouseOverrideFilter);
+
+			shipmentScheduleIQueryBuilder.filter(orJoinedWarehouseFilters);
 		}
 
 		if (!Check.isEmpty(shipmentScheduleSegment.getProductIds()) && !shipmentScheduleSegment.isAnyProduct())
