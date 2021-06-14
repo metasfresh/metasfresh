@@ -69,7 +69,7 @@ public class ReceiptCandidatesRestController
 		final QueryLimit limitEff = QueryLimit.ofNullableOrNoLimit(limit).ifNoLimitUse(500);
 
 		final JsonResponseReceiptCandidates result = receiptCandidateAPIService.exportReceiptCandidates(limitEff);
-		Loggables.withLogger(logger, Level.DEBUG).addLog("Number of exported receiptCandidates: {}" + result.getItems().size());
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Number of exported receiptCandidates: {}", result.getItems().size());
 		return ResponseEntity.ok(result);
 	}
 

@@ -69,7 +69,7 @@ public class ShipmentCandidatesRestController
 	{
 		final QueryLimit limitEff = QueryLimit.ofNullableOrNoLimit(limit).ifNoLimitUse(10);
 		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(limitEff);
-		Loggables.withLogger(logger, Level.DEBUG).addLog("Number of exported shipmentCandidates: {}" + result.getItems().size());
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Number of exported shipmentCandidates: {}", result.getItems().size());
 		
 		return ResponseEntity.ok(result);
 	}
