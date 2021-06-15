@@ -46,15 +46,12 @@ import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ParamBarcodeScannerType;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.ui.web.process.adprocess.WebuiProcess;
-import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
  * IProcessParametersCallout is used to update frontend data from backend inside "onParameterChanged. Nice!
  */
-@WebuiProcess(layoutType = PanelLayoutType.SingleOverlayField)
 public final class WEBUI_Import_Payment_Request_For_Purchase_Invoice_QRCode extends JavaProcess implements IProcessParametersCallout, IProcessPrecondition
 {
 
