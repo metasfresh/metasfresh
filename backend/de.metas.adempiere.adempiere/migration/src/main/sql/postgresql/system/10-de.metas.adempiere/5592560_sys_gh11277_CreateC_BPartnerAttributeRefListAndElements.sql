@@ -225,13 +225,13 @@ UPDATE AD_Column SET IsIdentifier='Y', IsMandatory='Y', SeqNo=10,Updated=TO_TIME
 
 -- 2021-06-14T08:43:33.284Z
 -- URL zum Konzept
-INSERT INTO t_alter_column values('c_bpartner_attribute2','Attribute2','VARCHAR(40)',null,null)
-;
+--INSERT INTO t_alter_column values('c_bpartner_attribute2','Attribute2','VARCHAR(40)',null,null)
+--;
 
 -- 2021-06-14T08:43:33.287Z
 -- URL zum Konzept
-INSERT INTO t_alter_column values('c_bpartner_attribute2','Attribute2',null,'NOT NULL',null)
-;
+--INSERT INTO t_alter_column values('c_bpartner_attribute2','Attribute2',null,'NOT NULL',null)
+--;
 
 --Table C_BPartner_Attribute3
 -- 2021-06-14T08:45:32.586Z
