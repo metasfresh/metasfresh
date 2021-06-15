@@ -7,7 +7,7 @@ import { List as ImmutableList } from 'immutable';
 import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
-
+import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
 import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
@@ -482,8 +482,6 @@ export class RawWidget extends PureComponent {
    */
   isScanQRbuttonPanel = () => {
     const { barcodeScannerType, layoutType } = this.props;
-    console.log('barcodeScannerType:', barcodeScannerType);
-    console.log('layoutType:', layoutType);
     return barcodeScannerType === 'qrCode' && layoutType === 'panel'
       ? true
       : false;
@@ -494,7 +492,7 @@ export class RawWidget extends PureComponent {
    * @returns adaptive size for the case when we have barcodeScannerType and `panel` layout type
    */
   getAdaptedFieldColSize = () =>
-    this.isScanQRbuttonPanel() ? 'col-sm-8' : 'col-sm-9';
+    this.isScanQRbuttonPanel() ? 'col-sm-7' : 'col-sm-9';
 
   render() {
     const {
@@ -682,9 +680,7 @@ export class RawWidget extends PureComponent {
             )}
           </div>
           {/* this is a special case for displaying the scan button on the right side of the field */}
-          {this.isScanQRbuttonPanel() && (
-            <div className="col-sm-1">ScanBtn</div>
-          )}
+          {this.isScanQRbuttonPanel() && <BarcodeScannerBtn />}
         </div>
       </div>
     );
