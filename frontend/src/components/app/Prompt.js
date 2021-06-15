@@ -35,12 +35,13 @@ class Prompt extends Component {
   renderSubmitButton = () => {
     const { buttons } = this.props;
     return (
-      <span
-        className="btn btn-meta-primary btn-sm btn-submit"
+      <button
+        className="btn btn-meta-primary btn-sm btn-submit btn-borderless"
         onClick={this.submitClick}
+        autoFocus
       >
         {buttons.submit}
-      </span>
+      </button>
     );
   };
 
