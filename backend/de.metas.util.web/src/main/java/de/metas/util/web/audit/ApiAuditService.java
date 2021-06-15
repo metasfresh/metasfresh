@@ -71,6 +71,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -246,7 +247,7 @@ public class ApiAuditService
 		}
 
 		return bodySpec.exchangeToMono(cr -> cr
-				.bodyToMono(Object.class)
+				.bodyToMono(String.class)
 
 				.map(body -> ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), body))
 
@@ -448,6 +449,9 @@ public class ApiAuditService
 			forwardResponseHttpHeaders(actualAPIResponse.getHttpHeaders(), httpServletResponse);
 		}
 
+		httpServletResponse.setContentType(APPLICATION_JSON_VALUE);
+		httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
+
 		httpServletResponse.resetBuffer();
 		httpServletResponse.setStatus(actualAPIResponse.getStatusCode());
 		httpServletResponse.getWriter().write(objectMapper.writeValueAsString(apiResponse));
@@ -469,6 +473,7 @@ public class ApiAuditService
 				.stream()
 				.filter(key -> !key.equals(HttpHeaders.CONNECTION))
 				.filter(key -> !key.equals(HttpHeaders.CONTENT_LENGTH))
+				.filter(key -> !key.equals(HttpHeaders.CONTENT_TYPE))
 				.forEach(key -> {
 					final List<String> values = httpHeaders.get(key);
 					if (values != null)
