@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.compiere.util.Env.CTXNAME_AD_Org_ID;
+
 /* package */class MutableHUContext implements IMutableHUContext
 {
 	private final Properties ctx;
@@ -52,6 +54,12 @@ import java.util.Properties;
 		ctx = contextAware.getCtx();
 		trxName = contextAware.getTrxName();
 		date = DateTrxProvider.getDateTrx();
+
+		final String orgId = InterfaceWrapperHelper.getCtx(contextAware, true).getProperty(CTXNAME_AD_Org_ID);
+		if (Check.isNotBlank(orgId))
+		{
+			ctx.setProperty(CTXNAME_AD_Org_ID, orgId);
+		}
 	}
 
 	public MutableHUContext(final Properties ctx)
