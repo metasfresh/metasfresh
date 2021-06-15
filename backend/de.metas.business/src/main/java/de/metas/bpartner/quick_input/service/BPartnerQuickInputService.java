@@ -25,6 +25,8 @@ package de.metas.bpartner.quick_input.service;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.attributes.BPartnerAttributes;
+import de.metas.bpartner.attributes.service.BPartnerAttributesRepository;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -76,8 +78,10 @@ public class BPartnerQuickInputService
 {
 	private static final Logger logger = LogManager.getLogger(BPartnerQuickInputService.class);
 	private final BPartnerQuickInputRepository bpartnerQuickInputRepository;
+	private final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository;
 	private final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
+	private final BPartnerAttributesRepository bpartnerAttributesRepository;
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -88,12 +92,14 @@ public class BPartnerQuickInputService
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
-			@NonNull final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository)
+			@NonNull final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository, @NonNull final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies,
+			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository, final BPartnerAttributesRepository bpartnerAttributesRepository)
 	{
 		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
+		this.bpartnerQuickInputAttributesRepository = bpartnerQuickInputAttributesRepository;
 		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
+		this.bpartnerAttributesRepository = bpartnerAttributesRepository;
 	}
 
 	public Optional<AdWindowId> getNewBPartnerWindowId()
@@ -165,7 +171,7 @@ public class BPartnerQuickInputService
 				return ExplainedOptional.emptyBecause("C_BP_Group_ID was not set");
 			}
 
-			final List<I_C_BPartner_Contact_QuickInput> contacts = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(BPartnerQuickInputId.ofRepoId(bpartner.getC_BPartner_QuickInput_ID()));
+			final List<I_C_BPartner_Contact_QuickInput> contacts = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(extractBpartnerQuickInputId(bpartner));
 			if (contacts.isEmpty())
 			{
 				return ExplainedOptional.emptyBecause("no contacts");
@@ -229,16 +235,33 @@ public class BPartnerQuickInputService
 				.getContacts()
 				.forEach(contact -> contact.setBPartnerLocationId(bpartnerLocationId));
 		bpartnerCompositeRepository.save(bpartnerComposite);
+		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
+
+		//
+		// Copy BPartner Attributes
+		bpartnerAttributesRepository.saveAttributes(
+				bpartnerQuickInputAttributesRepository.getByBPartnerQuickInputId(extractBpartnerQuickInputId(template)),
+				bpartnerId);
+
+		//
+		// Copy Contact attributes
+		// TODO
 
 		//
 		// Update the template and mark it as processed
-		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 		template.setC_BPartner_ID(bpartnerId.getRepoId());
 		template.setC_BPartner_Location_ID(bpartnerLocationId.getRepoId());
 		template.setProcessed(true);
 		bpartnerQuickInputRepository.save(template);
 
+		//
 		return bpartnerId;
+	}
+
+	@NonNull
+	private static BPartnerQuickInputId extractBpartnerQuickInputId(final @NonNull I_C_BPartner_QuickInput template)
+	{
+		return BPartnerQuickInputId.ofRepoId(template.getC_BPartner_QuickInput_ID());
 	}
 
 	private BPartnerComposite toBPartnerComposite(final I_C_BPartner_QuickInput template)
@@ -293,7 +316,7 @@ public class BPartnerQuickInputService
 		// Contacts
 		final ArrayList<BPartnerContact> contacts = new ArrayList<>();
 		{
-			final BPartnerQuickInputId bpartnerQuickInputId = BPartnerQuickInputId.ofRepoId(template.getC_BPartner_QuickInput_ID());
+			final BPartnerQuickInputId bpartnerQuickInputId = extractBpartnerQuickInputId(template);
 			final List<I_C_BPartner_Contact_QuickInput> contactTemplates = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(bpartnerQuickInputId);
 			for (final I_C_BPartner_Contact_QuickInput contactTemplate : contactTemplates)
 			{
