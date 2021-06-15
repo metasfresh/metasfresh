@@ -112,7 +112,7 @@ public class ShipmentSchedule
 
 		if (nonNullTargetAsiIds.isEmpty())
 		{
-			return true;
+			return true; // targetAsiIds was effectively empty, so we return true
 		}
 
 		if (getAttributeSetInstanceId() == null)
