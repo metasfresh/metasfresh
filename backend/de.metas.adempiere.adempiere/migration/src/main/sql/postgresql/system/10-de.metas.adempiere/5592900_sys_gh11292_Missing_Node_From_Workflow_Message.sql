@@ -18,3 +18,28 @@ UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Bitte fügen Sie im Produkt
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Bitte fügen Sie im Produktions-Arbeitsablauf {} eine Produktionsaktivität hinzu.',Updated=TO_TIMESTAMP('2021-06-15 19:13:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545036
 ;
 
+-- 2021-06-15T17:19:52.622Z
+-- URL zum Konzept
+UPDATE AD_Message SET MsgText='Please, set a Manufacturing Activity to the Manufacturing Workflow {0}.',Updated=TO_TIMESTAMP('2021-06-15 20:19:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545036
+;
+
+-- 2021-06-15T17:19:57.411Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET MsgText='Bitte fügen Sie im Produktions-Arbeitsablauf {0} eine Produktionsaktivität hinzu.',Updated=TO_TIMESTAMP('2021-06-15 20:19:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545036
+;
+
+-- 2021-06-15T17:20:03.446Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET MsgText='Please, set a Manufacturing Activity to the Manufacturing Workflow {0}.',Updated=TO_TIMESTAMP('2021-06-15 20:20:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545036
+;
+
+-- 2021-06-15T17:20:05.383Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET MsgText='Please, set a Manufacturing Activity to the Manufacturing Workflow {0}.',Updated=TO_TIMESTAMP('2021-06-15 20:20:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545036
+;
+
+-- 2021-06-15T17:20:09.152Z
+-- URL zum Konzept
+UPDATE AD_Message_Trl SET MsgText='Bitte fügen Sie im Produktions-Arbeitsablauf {0} eine Produktionsaktivität hinzu.',Updated=TO_TIMESTAMP('2021-06-15 20:20:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545036
+;
+
