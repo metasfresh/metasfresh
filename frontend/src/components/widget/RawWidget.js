@@ -494,6 +494,16 @@ export class RawWidget extends PureComponent {
   getAdaptedFieldColSize = () =>
     this.isScanQRbuttonPanel() ? 'col-sm-7' : 'col-sm-9';
 
+  /**
+   * @method onDetectedQR
+   * @summary After the QR code is detected the value of the field is updated with the corresponding string
+   * @param {string} qrCode
+   */
+  onDetectedQR = (qrCode) => {
+    const { widgetField, handleChange } = this.props;
+    handleChange(widgetField, qrCode);
+  };
+
   render() {
     const {
       caption,
@@ -680,7 +690,9 @@ export class RawWidget extends PureComponent {
             )}
           </div>
           {/* this is a special case for displaying the scan button on the right side of the field */}
-          {this.isScanQRbuttonPanel() && <BarcodeScannerBtn />}
+          {this.isScanQRbuttonPanel() && (
+            <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+          )}
         </div>
       </div>
     );
