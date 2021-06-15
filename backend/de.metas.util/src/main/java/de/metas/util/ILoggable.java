@@ -48,10 +48,8 @@ public interface ILoggable
 
 	default ILoggable addTableRecordReferenceLog(final ITableRecordReference recordRef, final String type, final String trxName)
 	{
-
 		this.addLog("addTableRecordReferenceLog called on {} with args: ad_table_id: {}, record_id: {}, type: {}. trxName: {}",
-					this, recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), type, trxName);
+		 			this.getClass().getSimpleName(), recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), type, trxName);
 		return this;
-
 	}
 }
