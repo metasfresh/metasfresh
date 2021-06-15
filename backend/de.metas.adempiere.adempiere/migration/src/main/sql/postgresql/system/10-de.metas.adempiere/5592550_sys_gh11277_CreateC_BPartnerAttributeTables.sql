@@ -28,6 +28,10 @@
 /* DDL */ SELECT public.db_alter_table('C_BPartner_Attribute2','ALTER TABLE public.C_BPartner_Attribute2 ADD COLUMN Attributes2 VARCHAR(40) NOT NULL')
 ;
 
+--Drop renamed column
+/* DDL */ SELECT public.db_alter_table('C_BPartner_Attribute2','ALTER TABLE public.C_BPartner_Attribute2 DROP COLUMN attribute2')
+;
+
 -- 2021-06-14T09:15:20.762Z
 -- URL zum Konzept
 /* DDL */ SELECT public.db_alter_table('C_BPartner_Attribute2','ALTER TABLE public.C_BPartner_Attribute2 ADD COLUMN C_BPartner_ID NUMERIC(10) NOT NULL')
