@@ -49,4 +49,7 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
 	public static final String PARAM_ROOT_BPARTNER_ID_FOR_USERS = "RootBPartnerID";
+
+	public static final String PARAM_ALBERTA_ID = "Alberta_Id";
+	public static final String PARAM_ALBERTA_ROLE = "Alberta_Role";
 }
