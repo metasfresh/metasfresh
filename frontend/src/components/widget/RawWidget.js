@@ -476,6 +476,26 @@ export class RawWidget extends PureComponent {
     );
   };
 
+  /**
+   * @method isScanQRbuttonPanel
+   * @returns boolean value indicating that we care in the case where the widget is rendered within a panel layout and has a barcodeScannerType (qrcode)
+   */
+  isScanQRbuttonPanel = () => {
+    const { barcodeScannerType, layoutType } = this.props;
+    console.log('barcodeScannerType:', barcodeScannerType);
+    console.log('layoutType:', layoutType);
+    return barcodeScannerType === 'qrCode' && layoutType === 'panel'
+      ? true
+      : false;
+  };
+
+  /**
+   * @method getAdaptedFieldColSize
+   * @returns adaptive size for the case when we have barcodeScannerType and `panel` layout type
+   */
+  getAdaptedFieldColSize = () =>
+    this.isScanQRbuttonPanel() ? 'col-sm-8' : 'col-sm-9';
+
   render() {
     const {
       caption,
@@ -496,6 +516,8 @@ export class RawWidget extends PureComponent {
       fieldLabelClass,
       fieldInputClass,
     } = this.props;
+
+    const fieldColSize = this.getAdaptedFieldColSize();
 
     const {
       errorPopup,
@@ -563,7 +585,8 @@ export class RawWidget extends PureComponent {
             ? 'col-sm-12 '
             : type === 'primaryLongLabels'
             ? 'col-sm-6'
-            : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex' : '');
+            : fieldColSize + ' ') +
+          (fields[0].devices ? 'form-group-flex' : '');
       }
     }
 
@@ -658,6 +681,10 @@ export class RawWidget extends PureComponent {
               />
             )}
           </div>
+          {/* this is a special case for displaying the scan button on the right side of the field */}
+          {this.isScanQRbuttonPanel() && (
+            <div className="col-sm-1">ScanBtn</div>
+          )}
         </div>
       </div>
     );
