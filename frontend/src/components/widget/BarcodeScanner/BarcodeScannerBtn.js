@@ -4,12 +4,15 @@ import PropTypes from 'prop-types';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
 
 class BarcodeScannerBtn extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   render() {
-    const { onScanBarcode } = this.props;
+    const { onScanBarcode, scanning, scannerElement } = this.props;
+
+    if (scanning) {
+      return (
+        <div className="overlay-field js-not-unselect">{scannerElement}</div>
+      );
+    }
+
     return (
       <div className="col-sm-2">
         <button
