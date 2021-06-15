@@ -7,6 +7,7 @@ class BarcodeScannerBtn extends Component {
   render() {
     const { onScanBarcode, scanning, scannerElement } = this.props;
 
+    // the HOC is creating an element that we need to render, we need to check the `scanning` flag and render it when it is true
     if (scanning) {
       return (
         <div className="overlay-field js-not-unselect">{scannerElement}</div>
@@ -27,6 +28,8 @@ class BarcodeScannerBtn extends Component {
 }
 BarcodeScannerBtn.propTypes = {
   onScanBarcode: PropTypes.func,
+  scanning: PropTypes.bool,
+  scannerElement: PropTypes.node,
 };
 
 export default BarcodeScanner(BarcodeScannerBtn);
