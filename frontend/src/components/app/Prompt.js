@@ -8,12 +8,12 @@ import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
  * @file Class based component.
  * @module Prompt
  * @extends Component
+ * @summary Used through the app for confirmation purposes. i.e deletion
  */
 class Prompt extends Component {
   /**
    * @method renderCancelButton
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Renders the button that will allow canceling and closing the prompt
    */
   renderCancelButton = () => {
     const { buttons } = this.props;
@@ -29,8 +29,7 @@ class Prompt extends Component {
 
   /**
    * @method renderSubmitButton
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Renders the button that will allow the submitting, this will continue/confirm the action for which we need the confirmation
    */
   renderSubmitButton = () => {
     const { buttons } = this.props;
@@ -38,6 +37,7 @@ class Prompt extends Component {
       <button
         className="btn btn-meta-primary btn-sm btn-submit btn-borderless"
         onClick={this.submitClick}
+        onKeyDown={this.onKeyDown}
         autoFocus
       >
         {buttons.submit}
@@ -45,14 +45,23 @@ class Prompt extends Component {
     );
   };
 
+  /**
+   * @method submitClick
+   * @summary actions performed when the confirm/submit button is clicked
+   */
   submitClick = () => {
     this.props.onSubmitClick(this.props.selected);
   };
 
   /**
+   * @method onKeyDown
+   * @summary Catches key presses and do not execute the default action
+   */
+  onKeyDown = (e) => e.preventDefault();
+
+  /**
    * @method render
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary Main render function
    */
   render() {
     const { onCancelClick, title, buttons } = this.props;
