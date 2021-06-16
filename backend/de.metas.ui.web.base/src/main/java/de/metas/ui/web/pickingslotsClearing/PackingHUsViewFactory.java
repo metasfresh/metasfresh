@@ -22,14 +22,10 @@
 
 package de.metas.ui.web.pickingslotsClearing;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalNotification;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.logging.LogManager;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.RelatedProcessDescriptor;
@@ -55,24 +51,16 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 @ViewFactory(windowId = PackingHUsViewFactory.WINDOW_ID_STRING)
 public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 {
-	private static transient final Logger logger = LogManager.getLogger(PackingHUsViewFactory.class);
-	private final Cache<ViewId, IView> views = CacheBuilder.newBuilder()
-			.expireAfterAccess(1, TimeUnit.HOURS)
-			.removalListener(this::onViewRemoved)
-			.build();
-
 	static final String WINDOW_ID_STRING = "packingHUs";
 	static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
@@ -102,15 +90,9 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 			final @NonNull Supplier<IViewsRepository> viewsRepo)
 	{
 		final ViewId packingHUsViewId = packingHUsView.getViewId();
-		final PickingSlotsClearingView pickingSlotsClearingView = getPickingSlotsClearingView(packingHUsViewId);
-
-		final HUEditorView newPackingHUsView = createPackingHUsView(
+		return createPackingHUsView(
 				PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId),
 				filterViewRequest);
-
-		pickingSlotsClearingView.setPackingHUsView(newPackingHUsView);
-
-		return newPackingHUsView;
 	}
 
 	@Override
@@ -128,7 +110,8 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 	@Override
 	public void put(final IView view)
 	{
-		views.put(view.getViewId(), view);
+		final PickingSlotsClearingView pickingSlotsClearingView = getPickingSlotsClearingView(view.getViewId());
+		pickingSlotsClearingView.setPackingHUsView(HUEditorView.cast(view));
 	}
 
 	@Nullable
@@ -232,12 +215,5 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 			huQuery.addOnlyWithBPartnerLocationId(key.getBpartnerLocationId());
 		}
 		return huQuery;
-	}
-
-	private void onViewRemoved(final RemovalNotification<Object, Object> notification)
-	{
-		final IView view = (IView)notification.getValue();
-		logger.debug("View <" + view.getViewId() + "> removed from cache. Cause: " + notification.getCause());
-		view.afterDestroy();
 	}
 }
