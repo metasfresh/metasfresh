@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,25 +20,29 @@
  * #L%
  */
 
-package de.metas.bpartner.service.impl;
+package de.metas.bpartner.quick_input.service;
 
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.attributes.service.BPartnerAttributesRepository;
+import de.metas.bpartner.attributes.service.BPartnerContactAttributesRepository;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyCode;
 import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingStrategy;
+import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.greeting.GreetingStandardType;
 import de.metas.user.UserRepository;
-import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Contact_QuickInput;
+import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.I_C_Greeting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,13 +56,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.*;
 
-public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
+public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 {
 	private I_C_Greeting greeting_MR;
 	private I_C_Greeting greeting_MRS;
 	private I_C_Greeting greeting_MR_AND_MRS;
 
-	private BPartnerBL bPartnerBL;
+	private BPartnerQuickInputService bPartnerQuickInputService;
 
 	@BeforeEach
 	public void init()
@@ -73,8 +77,15 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		strategies.add(new MembershipContactBPartnerNameAndGreetingStrategy(new GreetingRepository()));
 		SpringContextHolder.registerJUnitBean(BPartnerNameAndGreetingStrategies.class, new BPartnerNameAndGreetingStrategies(Optional.of(strategies)));
 
-		bPartnerBL = new BPartnerBL(new UserRepository());
-		Services.registerService(IBPartnerBL.class, bPartnerBL);
+		bPartnerQuickInputService = new BPartnerQuickInputService(
+				new BPartnerQuickInputRepository(),
+				new BPartnerQuickInputAttributesRepository(),
+				new BPartnerContactQuickInputAttributesRepository(),
+				new BPartnerNameAndGreetingStrategies(Optional.of(strategies)),
+				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository()),
+				new BPartnerAttributesRepository(),
+				new BPartnerContactAttributesRepository()
+		);
 
 		greeting_MR = createGreeting(GreetingStandardType.MR);
 		greeting_MRS = createGreeting(GreetingStandardType.MRS);
@@ -87,7 +98,7 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		final String bPartnerNameAndGreetingStrategyCode = BPartnerNameAndGreetingStrategyCode.FirstContact.getCode();
 
 		final I_C_BP_Group group = createGroup("Group", bPartnerNameAndGreetingStrategyCode);
-		final I_C_BPartner partner = createPartner(group);
+		final I_C_BPartner_QuickInput partner = createPartner(group);
 
 		final String firstName = "FirstName";
 		final String lastname = "LastName";
@@ -99,14 +110,12 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 				greeting_MRS,
 				isMembership);
 
-		bPartnerBL.updateNameAndGreetingFromContacts(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getName()).isEqualTo(lastname + ", " + firstName);
+		assertThat(partner.getBPartnerName()).isEqualTo(lastname + ", " + firstName);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
 	}
-
-
 
 	@Test
 	public void useFirstMembershipContact()
@@ -114,11 +123,10 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		final String bPartnerNameAndGreetingStrategyCode = BPartnerNameAndGreetingStrategyCode.MembershipContact.getCode();
 
 		final I_C_BP_Group group = createGroup("Group", bPartnerNameAndGreetingStrategyCode);
-		final I_C_BPartner partner = createPartner(group);
+		final I_C_BPartner_QuickInput partner = createPartner(group);
 
 		final String firstName = "FirstName";
 		final String lastname = "LastName";
-
 
 		final boolean isMembership = true;
 		createUser(
@@ -128,10 +136,10 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 				greeting_MRS,
 				isMembership);
 
-		bPartnerBL.updateNameAndGreetingFromContacts(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getName()).isEqualTo(lastname + ", " + firstName);
+		assertThat(partner.getBPartnerName()).isEqualTo(lastname + ", " + firstName);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
 	}
 
@@ -141,7 +149,7 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		final String bPartnerNameAndGreetingStrategyCode = BPartnerNameAndGreetingStrategyCode.MembershipContact.getCode();
 
 		final I_C_BP_Group group = createGroup("Group", bPartnerNameAndGreetingStrategyCode);
-		final I_C_BPartner partner = createPartner(group);
+		final I_C_BPartner_QuickInput partner = createPartner(group);
 
 		final String firstName = "FirstName";
 		final String lastname = "LastName";
@@ -164,14 +172,13 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 				greeting_MRS,
 				isMembership2);
 
-
-		bPartnerBL.updateNameAndGreetingFromContacts(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getName()).isEqualTo(lastname + ", " +
-														firstName+
-														" And " +
-														firstName2);
+		assertThat(partner.getBPartnerName()).isEqualTo(lastname + ", " +
+																firstName +
+																" And " +
+																firstName2);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
@@ -187,24 +194,24 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		return group;
 	}
 
-	private I_C_BPartner createPartner(final I_C_BP_Group group)
+	private I_C_BPartner_QuickInput createPartner(final I_C_BP_Group group)
 	{
 
-		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		final I_C_BPartner_QuickInput partner = newInstance(I_C_BPartner_QuickInput.class);
 		partner.setC_BP_Group_ID(group.getC_BP_Group_ID());
 
 		save(partner);
 		return partner;
 	}
 
-	private I_AD_User createUser(final I_C_BPartner partner,
+	private I_C_BPartner_Contact_QuickInput createUser(final I_C_BPartner_QuickInput partner,
 			final String firstName,
 			final String lastname,
 			final I_C_Greeting greeting,
 			final boolean isMembership)
 	{
-		final I_AD_User user = newInstance(I_AD_User.class);
-		user.setC_BPartner_ID(partner.getC_BPartner_ID());
+		final I_C_BPartner_Contact_QuickInput user = newInstance(I_C_BPartner_Contact_QuickInput.class);
+		user.setC_BPartner_QuickInput_ID(partner.getC_BPartner_QuickInput_ID());
 		user.setFirstname(firstName);
 		user.setLastname(lastname);
 		user.setIsMembershipContact(isMembership);
@@ -214,7 +221,6 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 
 		return user;
 	}
-
 
 	private I_C_Greeting createGreeting(@NonNull final GreetingStandardType standardType)
 	{
@@ -226,9 +232,7 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 
 		save(greeting);
 
-
 		return greeting;
 	}
 
 }
-
