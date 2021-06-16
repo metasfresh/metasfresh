@@ -175,7 +175,6 @@ public class HUItemStorage implements IHUItemStorage
 		final BigDecimal qtyOld = storageLine.getQty().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode());
 		
 		// Update storage line
-		final BigDecimal qtyOld = storageLine.getQty();
 		BigDecimal qtyNew = qtyOld.add(qtyConv);
 
 		final BigDecimal qtyOnParent = getParentStorage().getQty(productId, uom);

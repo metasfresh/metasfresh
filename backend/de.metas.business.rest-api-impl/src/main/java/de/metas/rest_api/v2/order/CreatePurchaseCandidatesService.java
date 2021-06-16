@@ -38,7 +38,6 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -50,7 +49,6 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.quantity.Quantity;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
@@ -275,89 +273,5 @@ public class CreatePurchaseCandidatesService
 			default:
 				throw new InvalidIdentifierException(productExternalIdentifier.getRawValue());
 		}
-	}
-
-	@NonNull
-	private WarehouseId getWarehouseByIdentifier(
-			@NonNull final OrgId orgId,
-			@NonNull final String warehouseIdentifier)
-	{
-		final Optional<ExternalIdentifier> optionalExternalIdentifier = ExternalIdentifier.ofOptional(warehouseIdentifier);
-
-		if (!optionalExternalIdentifier.isPresent())
-		{
-			return getWarehouseByIdentifierString(orgId, warehouseIdentifier);
-		}
-
-		final ExternalIdentifier warehouseExternalIdentifier = optionalExternalIdentifier.get();
-
-		switch (warehouseExternalIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return WarehouseId.ofRepoId(warehouseExternalIdentifier.asMetasfreshId().getValue());
-			case EXTERNAL_REFERENCE:
-				return externalReferenceService.resolveExternalReference(orgId, warehouseExternalIdentifier, WarehouseExternalReferenceType.WAREHOUSE)
-						.map(metasfreshId -> WarehouseId.ofRepoId(metasfreshId.getValue()))
-						.orElseThrow(() -> MissingResourceException.builder()
-								.resourceName("warehouseIdentifier")
-								.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
-								.build());
-			case VALUE:
-				final WarehouseId warehouseId = Services.get(IWarehouseDAO.class).getWarehouseIdByValue(warehouseExternalIdentifier.asValue());
-				if (warehouseId == null)
-				{
-					throw MissingResourceException.builder()
-							.resourceName("warehouseIdentifier")
-							.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
-							.build();
-				}
-				return warehouseId;
-			default:
-				throw new InvalidIdentifierException(warehouseIdentifier);
-		}
-		if (result == null)
-		{
-			throw new InvalidIdentifierException(productIdentifier);
-		}
-
-		return result;
-	}
-
-	@NonNull
-	private WarehouseId getWarehouseByIdentifierString(
-			@NonNull final OrgId orgId
-			@NonNull final String warehouseIdentifier)
-	{
-		final IdentifierString warehouseString = IdentifierString.of(warehouseIdentifier);
-		final IWarehouseDAO.WarehouseQuery.WarehouseQueryBuilder builder = IWarehouseDAO.WarehouseQuery.builder().orgId(orgId);
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
-		final WarehouseId result;
-		if (warehouseString.getType().equals(IdentifierString.Type.METASFRESH_ID))
-		{
-			result = WarehouseId.ofRepoId(warehouseString.asMetasfreshId().getValue());
-		}
-		else
-		{
-			if (warehouseString.getType().equals(IdentifierString.Type.EXTERNAL_ID))
-			{
-				builder.externalId(warehouseString.asExternalId());
-			}
-			else if (warehouseString.getType().equals(IdentifierString.Type.VALUE))
-			{
-				builder.value(warehouseString.asValue());
-			}
-			else
-			{
-				throw new InvalidIdentifierException(warehouseIdentifier);
-			}
-			result = warehouseDAO.retrieveWarehouseIdBy(builder.build());
-		}
-		if (result == null)
-		{
-			throw new InvalidIdentifierException(warehouseIdentifier);
-		}
-
-		return result;
 	}
 }
