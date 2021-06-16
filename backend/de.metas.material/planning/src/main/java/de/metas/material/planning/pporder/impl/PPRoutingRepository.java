@@ -139,7 +139,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 
 		if(wfNodeId <= 0)
 		{
-			throw new AdempiereException(MSG_AD_Workflow_Missing_Node, routingRecord);
+			throw new AdempiereException(MSG_AD_Workflow_Missing_Node, routingRecord.getName());
 		}
 		final PPRoutingActivityId firstActivityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, wfNodeId);
 
@@ -322,7 +322,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 
 			for (final I_AD_WF_Node routingActivityRecord : routingActivityRecords)
 			{
-				final PPRoutingActivityId activityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, routingRecord.getAD_WF_Node_ID());
+				final PPRoutingActivityId activityId = PPRoutingActivityId.ofAD_WF_Node_ID(routingId, routingActivityRecord.getAD_WF_Node_ID());
 				final BigDecimal cost = changeRequest.getActivityCostOrNull(activityId);
 				routingActivityRecord.setCost(cost != null ? cost : BigDecimal.ZERO);
 			}
