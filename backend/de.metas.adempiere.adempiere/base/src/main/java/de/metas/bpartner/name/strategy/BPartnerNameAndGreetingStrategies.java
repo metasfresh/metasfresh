@@ -42,7 +42,7 @@ public class BPartnerNameAndGreetingStrategies
 
 	private final ImmutableMap<BPartnerNameAndGreetingStrategyId, BPartnerNameAndGreetingStrategy> strategiesById;
 
-	BPartnerNameAndGreetingStrategies(
+	public BPartnerNameAndGreetingStrategies(
 			@NonNull final Optional<List<BPartnerNameAndGreetingStrategy>> strategies)
 	{
 		this.strategiesById = strategies

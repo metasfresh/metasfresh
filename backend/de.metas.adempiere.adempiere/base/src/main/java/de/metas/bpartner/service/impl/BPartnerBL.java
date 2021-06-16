@@ -5,11 +5,10 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
-import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
-import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerAware;
@@ -638,7 +637,7 @@ public class BPartnerBL implements IBPartnerBL
 										.lastName(contact.getLastname())
 										.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
 										.isDefaultContact(contact.isDefaultContact())
-										// .isMembershipContact(contact.isMembershipContact()) // TODO introduce AD_User.IsMembershipContact
+										.isMembershipContact(contact.isMembershipContact())
 										.build())
 								.collect(ImmutableList.toImmutableList()))
 						.build())

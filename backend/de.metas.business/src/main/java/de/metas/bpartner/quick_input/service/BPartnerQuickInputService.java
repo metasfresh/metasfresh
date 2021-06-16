@@ -200,7 +200,7 @@ public class BPartnerQuickInputService
 		final ComputeNameAndGreetingRequest.ComputeNameAndGreetingRequestBuilder requestBuilder = ComputeNameAndGreetingRequest.builder();
 		for (int i = 0; i < contacts.size(); i++)
 		{
-			final I_C_BPartner_Contact_QuickInput contact = contacts.get(0);
+			final I_C_BPartner_Contact_QuickInput contact = contacts.get(i);
 			requestBuilder.contact(
 					ComputeNameAndGreetingRequest.Contact.builder()
 							.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
