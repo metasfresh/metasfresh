@@ -147,7 +147,7 @@ public class ExternalSystemRestController
 
 		return ResponseEntity
 				.ok()
-				.contentType(MediaType.APPLICATION_JSON_UTF8)
+				.contentType(MediaType.APPLICATION_JSON)
 				.body(runProcessResponse);
 	}
 }

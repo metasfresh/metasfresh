@@ -22,7 +22,7 @@
 
 package de.metas.camel.externalsystems.alberta.product.processor;
 
-import de.metas.camel.externalsystems.alberta.patient.AlbertaConnectionDetails;
+import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DefaultApi;

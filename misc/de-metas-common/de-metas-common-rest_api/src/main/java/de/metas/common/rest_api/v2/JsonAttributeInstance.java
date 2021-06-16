@@ -23,6 +23,7 @@
 package de.metas.common.rest_api.v2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.NonNull;
@@ -53,5 +54,21 @@ public class JsonAttributeInstance
 		this.valueStr = valueStr;
 		this.valueNumber = valueNumber;
 		this.valueDate = valueDate;
+	}
+
+	@JsonIgnore
+	@Nullable
+	public Object getValue()
+	{
+		if (valueStr != null)
+		{
+			return valueStr;
+		}
+		else if (valueDate != null)
+		{
+			return valueDate;
+		}
+
+		return valueNumber;
 	}
 }

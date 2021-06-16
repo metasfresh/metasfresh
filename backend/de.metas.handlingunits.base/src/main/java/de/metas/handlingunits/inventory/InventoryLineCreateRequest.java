@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.inventory;
 
+import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -32,9 +33,9 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
-@Builder
 public class InventoryLineCreateRequest
 {
 	@NonNull
@@ -54,4 +55,39 @@ public class InventoryLineCreateRequest
 
 	@Nullable
 	AttributeSetInstanceId attributeSetId;
+
+	@Nullable
+	HUAggregationType aggregationType;
+
+	@Nullable
+	List<InventoryLineHU> inventoryLineHUList;
+
+	@Builder
+	public InventoryLineCreateRequest(
+			@NonNull final InventoryId inventoryId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qtyCount,
+			@NonNull final Quantity qtyBooked,
+			@NonNull final LocatorId locatorId,
+			@Nullable final AttributeSetInstanceId attributeSetId,
+			@Nullable final HUAggregationType aggregationType,
+			@Nullable final List<InventoryLineHU> inventoryLineHUList)
+	{
+		Quantity.getCommonUomIdOfAll(qtyBooked, qtyCount);
+
+		if (inventoryLineHUList != null)
+		{
+			inventoryLineHUList
+					.forEach(lineHU -> Quantity.getCommonUomIdOfAll(lineHU.getQtyBook(), qtyBooked));
+		}
+
+		this.inventoryId = inventoryId;
+		this.productId = productId;
+		this.qtyCount = qtyCount;
+		this.qtyBooked = qtyBooked;
+		this.locatorId = locatorId;
+		this.attributeSetId = attributeSetId;
+		this.aggregationType = aggregationType;
+		this.inventoryLineHUList = inventoryLineHUList;
+	}
 }
