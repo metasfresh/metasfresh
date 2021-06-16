@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.attributes.BPartnerAttributes;
 import de.metas.bpartner.attributes.service.BPartnerAttributesRepository;
+import de.metas.bpartner.attributes.service.BPartnerContactAttributesRepository;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -37,6 +38,7 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
+import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
@@ -51,6 +53,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -79,9 +82,11 @@ public class BPartnerQuickInputService
 	private static final Logger logger = LogManager.getLogger(BPartnerQuickInputService.class);
 	private final BPartnerQuickInputRepository bpartnerQuickInputRepository;
 	private final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository;
+	private final BPartnerContactQuickInputAttributesRepository bpartnerContactQuickInputAttributesRepository;
 	private final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPartnerAttributesRepository bpartnerAttributesRepository;
+	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
@@ -92,14 +97,20 @@ public class BPartnerQuickInputService
 
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
-			@NonNull final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository, @NonNull final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies,
-			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository, final BPartnerAttributesRepository bpartnerAttributesRepository)
+			@NonNull final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository,
+			@NonNull final BPartnerContactQuickInputAttributesRepository bpartnerContactQuickInputAttributesRepository,
+			@NonNull final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies,
+			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
+			@NonNull final BPartnerAttributesRepository bpartnerAttributesRepository,
+			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository)
 	{
 		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
 		this.bpartnerQuickInputAttributesRepository = bpartnerQuickInputAttributesRepository;
+		this.bpartnerContactQuickInputAttributesRepository = bpartnerContactQuickInputAttributesRepository;
 		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpartnerAttributesRepository = bpartnerAttributesRepository;
+		this.bpartnerContactAttributesRepository = bpartnerContactAttributesRepository;
 	}
 
 	public Optional<AdWindowId> getNewBPartnerWindowId()
@@ -245,7 +256,12 @@ public class BPartnerQuickInputService
 
 		//
 		// Copy Contact attributes
-		// TODO
+		for (final BPartnerContact contact : bpartnerComposite.getContacts())
+		{
+			final BPartnerContactQuickInputId bpartnerContactQuickInputId = TransientIdConverter.fromTransientId(contact.getTransientId());
+			final BPartnerAttributes contactAttributes = bpartnerContactQuickInputAttributesRepository.getByBPartnerContactQuickInputId(bpartnerContactQuickInputId);
+			bpartnerContactAttributesRepository.saveAttributes(contactAttributes, contact.getId());
+		}
 
 		//
 		// Update the template and mark it as processed
@@ -320,11 +336,15 @@ public class BPartnerQuickInputService
 			final List<I_C_BPartner_Contact_QuickInput> contactTemplates = bpartnerQuickInputRepository.retrieveContactsByQuickInputId(bpartnerQuickInputId);
 			for (final I_C_BPartner_Contact_QuickInput contactTemplate : contactTemplates)
 			{
+				final BPartnerContactQuickInputId partnerContactQuickInputId = BPartnerContactQuickInputId.ofRepoId(contactTemplate.getC_BPartner_Contact_QuickInput_ID());
+				final String transientId = TransientIdConverter.toTransientId(partnerContactQuickInputId);
+
 				final boolean isDefaultContact = contacts.isEmpty();
 				final boolean isSalesContact = template.isCustomer();
 				final boolean isPurchaseContact = template.isVendor();
 
 				contacts.add(BPartnerContact.builder()
+						.transientId(transientId)
 						.contactType(BPartnerContactType.builder()
 								.defaultContact(isDefaultContact)
 								.billToDefault(isDefaultContact)
@@ -353,5 +373,18 @@ public class BPartnerQuickInputService
 				.location(bpLocation)
 				.contacts(contacts)
 				.build();
+	}
+
+	private static class TransientIdConverter
+	{
+		public static String toTransientId(@NonNull final BPartnerContactQuickInputId id)
+		{
+			return String.valueOf(id.getRepoId());
+		}
+
+		public static BPartnerContactQuickInputId fromTransientId(@NonNull final String transientId)
+		{
+			return BPartnerContactQuickInputId.ofRepoId(NumberUtils.asInt(transientId, -1));
+		}
 	}
 }

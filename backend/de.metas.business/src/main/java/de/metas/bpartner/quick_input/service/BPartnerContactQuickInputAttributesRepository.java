@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,31 +20,30 @@
  * #L%
  */
 
-package de.metas.bpartner.attributes.service;
+package de.metas.bpartner.quick_input.service;
 
-import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.attributes.BPartnerAttributes;
-import de.metas.bpartner.attributes.service.attributes_record_adapter.BPContactAttributesRecordAdapter;
+import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
+import de.metas.bpartner.quick_input.service.attributes_record_adapter.BPContactQuickInputAttributesRecordAdapter;
 import lombok.NonNull;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class BPartnerContactAttributesRepository
+public class BPartnerContactQuickInputAttributesRepository
 {
-	private final BPContactAttributesRecordAdapter attributesRecordAdapter = new BPContactAttributesRecordAdapter();
+	private final BPContactQuickInputAttributesRecordAdapter attributesRecordAdapter = new BPContactQuickInputAttributesRecordAdapter();
 
-	public BPartnerAttributes getByContactId(@NonNull final BPartnerContactId contactId)
+	public BPartnerAttributes getByBPartnerContactQuickInputId(@NonNull final BPartnerContactQuickInputId bpartnerContactQuickInputId)
 	{
 		return BPartnerAttributes.builder()
-				.attributesSet1(attributesRecordAdapter.getAttributes(contactId))
+				.attributesSet1(attributesRecordAdapter.getAttributes(bpartnerContactQuickInputId))
 				.build();
 	}
 
 	public void saveAttributes(
 			@NonNull final BPartnerAttributes bpartnerAttributes,
-			@NonNull final BPartnerContactId contactId)
+			@NonNull final BPartnerContactQuickInputId bpartnerContactQuickInputId)
 	{
-		attributesRecordAdapter.saveAttributes(bpartnerAttributes.getAttributesSet1(), contactId);
+		attributesRecordAdapter.saveAttributes(bpartnerAttributes.getAttributesSet1(), bpartnerContactQuickInputId);
 	}
-
 }
