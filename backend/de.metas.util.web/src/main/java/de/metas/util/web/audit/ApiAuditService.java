@@ -71,6 +71,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
@@ -186,7 +187,7 @@ public class ApiAuditService
 					.orgId(orgId)
 					.build();
 
-			actualRestApiResponseCF
+			final CompletableFuture<ApiResponse> whenCompleteFuture = actualRestApiResponseCF
 					.whenComplete((apiResponse, throwable) -> handleFutureCompletion(apiResponse, throwable, futureCompletionContext));
 
 			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(requestAudit);
@@ -199,11 +200,11 @@ public class ApiAuditService
 
 			httpCallScheduler.schedule(scheduleRequest);
 
-			handleSuccessfulResponse(apiAuditConfig, requestAudit, actualRestApiResponseCF, response);
+			handleSuccessfulResponse(apiAuditConfig, requestAudit, whenCompleteFuture, response);
 		}
 		catch (final Exception e)
 		{
-			apiAuditLoggable.addLog(e.getMessage(), e);
+			apiAuditLoggable.addLog("Caught {} with message={}", e.getClass().getName(), e.getMessage(), e);
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 		finally
@@ -246,7 +247,7 @@ public class ApiAuditService
 		}
 
 		return bodySpec.exchangeToMono(cr -> cr
-				.bodyToMono(Object.class)
+				.bodyToMono(String.class)
 
 				.map(body -> ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), body))
 
@@ -431,11 +432,11 @@ public class ApiAuditService
 	private void handleSuccessfulResponse(
 			@NonNull final ApiAuditConfig apiAuditConfig,
 			@NonNull final ApiRequestAudit apiRequestAudit,
-			@NonNull final CompletableFuture<ApiResponse> actualRestApiResponseCF,
+			@NonNull final CompletableFuture<ApiResponse> whenCompleteFuture,
 			@NonNull final HttpServletResponse httpServletResponse) throws IOException, InterruptedException, ExecutionException, TimeoutException
 	{
 		final ApiResponse actualAPIResponse = apiAuditConfig.isInvokerWaitsForResponse()
-				? actualRestApiResponseCF.get(300, TimeUnit.SECONDS)
+				? whenCompleteFuture.get(300, TimeUnit.SECONDS)
 				: getGenericNoWaitResponse();
 
 		final JsonApiResponse apiResponse = JsonApiResponse.builder()
@@ -447,6 +448,9 @@ public class ApiAuditService
 		{
 			forwardResponseHttpHeaders(actualAPIResponse.getHttpHeaders(), httpServletResponse);
 		}
+
+		httpServletResponse.setContentType(APPLICATION_JSON_VALUE);
+		httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
 
 		httpServletResponse.resetBuffer();
 		httpServletResponse.setStatus(actualAPIResponse.getStatusCode());
@@ -469,6 +473,7 @@ public class ApiAuditService
 				.stream()
 				.filter(key -> !key.equals(HttpHeaders.CONNECTION))
 				.filter(key -> !key.equals(HttpHeaders.CONTENT_LENGTH))
+				.filter(key -> !key.equals(HttpHeaders.CONTENT_TYPE))
 				.forEach(key -> {
 					final List<String> values = httpHeaders.get(key);
 					if (values != null)
