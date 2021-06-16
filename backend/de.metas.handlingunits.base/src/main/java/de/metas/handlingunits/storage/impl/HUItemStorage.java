@@ -55,8 +55,17 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class HUItemStorage implements IHUItemStorage
 {
@@ -166,7 +175,20 @@ public class HUItemStorage implements IHUItemStorage
 		final BigDecimal qtyOld = storageLine.getQty().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode());
 		
 		// Update storage line
-		final BigDecimal qtyNew = qtyOld.add(qtyConv);
+		BigDecimal qtyNew = qtyOld.add(qtyConv);
+
+		final BigDecimal qtyOnParent = getParentStorage().getQty(productId, uom);
+
+		if (qtyNew.signum() < 0 && !qtyOld.equals(qtyOnParent))
+		{
+			Loggables.addLog("Warning! M_HU_Item_Storage.Qty out of sync with M_HU_Storage! "
+									 + "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}"
+									 + "M_HU_ID: {}, M_HU_Storage.Qty: {}, qtyToAdd: {} same UOM",
+							 storageLine.getM_HU_Item_ID(), storageLine.getQty(), storageLine.getM_Product_ID(), storageLine.getC_UOM_ID(),
+							 item.getM_HU_ID(), qtyOnParent, qtyConv);
+
+			qtyNew = qtyOnParent.add(qtyConv);
+		}
 
 		Check.errorIf(qtyNew.signum() < 0, "Attempt to set negative qty on storageLine; qtyOld={}; qtyToAdd={}; qtyNew={}; this={}; storageLine={}", qtyOld, qtyToAdd, qtyNew, this, storageLine);
 

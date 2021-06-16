@@ -25,6 +25,7 @@ package de.metas.common.rest_api.v2;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.Builder;
@@ -36,6 +37,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
+@JsonDeserialize(builder = JsonAttributeSetInstance.JsonAttributeSetInstanceBuilder.class)
 public class JsonAttributeSetInstance
 {
 	List<JsonAttributeInstance> attributeInstances;

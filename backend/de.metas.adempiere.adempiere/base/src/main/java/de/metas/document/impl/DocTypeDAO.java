@@ -97,6 +97,7 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
+	@NonNull
 	public DocTypeId getDocTypeId(@NonNull final DocTypeQuery query)
 	{
 		final DocTypeId docTypeId = getDocTypeIdOrNull(query);
