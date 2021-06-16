@@ -1182,11 +1182,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(618) 
 ;
 
--- 2021-06-15T13:03:35.155Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Column SET DefaultValue='TO_TIMESTAMP(''9999-12-31 23:59:59'',''YYYY-MM-DD HH24:MI:SS'')',Updated=TO_TIMESTAMP('2021-06-15 16:03:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574444
-;
-
+COMMIT;
 -- 2021-06-15T13:03:35.536Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ SELECT public.db_alter_table('C_Tax','ALTER TABLE public.C_Tax ADD COLUMN ValidTo TIMESTAMP WITHOUT TIME ZONE DEFAULT TO_TIMESTAMP(''9999-12-31 23:59:59'',''YYYY-MM-DD HH24:MI:SS'') NOT NULL')
@@ -1206,6 +1202,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */  select update_Column_Translation_From_AD_Element(566) 
 ;
+
+COMMIT;
 
 -- 2021-06-15T13:05:20.829Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
