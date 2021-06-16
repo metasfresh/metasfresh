@@ -22,8 +22,6 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
 /*
  * #%L
  * de.metas.ordercandidate.rest-api
@@ -72,7 +70,9 @@ public class BPartnerContact
 	@Nullable
 	private BPartnerContactId id;
 
-	/** A bit redundant because it's already part of the {@link BPartnerContactId}, but we use if for mapping purposes. */
+	/**
+	 * A bit redundant because it's already part of the {@link BPartnerContactId}, but we use if for mapping purposes.
+	 */
 	@Setter(lombok.AccessLevel.NONE)
 	@JsonIgnore
 	@Nullable
@@ -80,6 +80,15 @@ public class BPartnerContact
 
 	@Nullable
 	private ExternalId externalId;
+
+	/**
+	 * An ID which is used only by caller API.
+	 * It's not persisted to database.
+	 * It's not loaded from database.
+	 */
+	@Nullable
+	@JsonInclude(Include.NON_NULL)
+	private final transient String transientId;
 
 	@Nullable
 	private String value;
@@ -151,6 +160,7 @@ public class BPartnerContact
 	private BPartnerContact(
 			@Nullable final BPartnerContactId id,
 			@Nullable final ExternalId externalId,
+			@Nullable final String transientId,
 			@Nullable final String value,
 			@Nullable final Boolean active,
 			@Nullable final String name,
@@ -175,6 +185,7 @@ public class BPartnerContact
 		setId(id);
 
 		this.externalId = externalId;
+		this.transientId = transientId;
 		this.value = value;
 
 		this.newsletter = newsletter != null ? newsletter : false;
