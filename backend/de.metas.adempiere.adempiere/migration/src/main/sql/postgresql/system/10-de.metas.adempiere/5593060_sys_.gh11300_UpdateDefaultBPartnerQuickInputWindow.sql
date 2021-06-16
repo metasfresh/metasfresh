@@ -48,3 +48,8 @@ UPDATE AD_UI_Column SET SeqNo=10,Updated=TO_TIMESTAMP('2021-06-16 12:15:11','YYY
 UPDATE AD_UI_Column SET SeqNo=20,Updated=TO_TIMESTAMP('2021-06-16 12:15:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Column_ID=540110
 ;
 
+--Hide Is Membership Contact from default window
+-- 2021-06-16T11:00:13.364Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2021-06-16 14:00:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=585303
+;
