@@ -2,8 +2,10 @@ package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyCode;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
+import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.logging.LogManager;
@@ -79,8 +81,8 @@ public class BPGroupDAO implements IBPGroupDAO
 		final BPGroupId bpGroupId = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BP_Group.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_Group.COLUMN_AD_Client_ID, clientId)
-				.addEqualsFilter(I_C_BP_Group.COLUMN_IsDefault, true)
+				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_C_BP_Group.COLUMNNAME_IsDefault, true)
 				.create()
 				.firstIdOnly(BPGroupId::ofRepoIdOrNull);
 		if (bpGroupId == null)
@@ -97,8 +99,16 @@ public class BPGroupDAO implements IBPGroupDAO
 	{
 		final I_C_BP_Group bpGroup = getById(bpGroupId);
 
-		// TODO: introduce C_BP_Group.NameAndGreetingComputeStrategy dropdown list
+		final BPartnerNameAndGreetingStrategyCode strategy =
+				BPartnerNameAndGreetingStrategyCode.ofNullableCode(bpGroup.getBPNameAndGreetingStrategy());
 
-		return FirstContactBPartnerNameAndGreetingStrategy.ID;
+		if (strategy != null && strategy.isMembershipContact())
+		{
+			return MembershipContactBPartnerNameAndGreetingStrategy.ID;
+		}
+		else
+		{
+			return FirstContactBPartnerNameAndGreetingStrategy.ID;
+		}
 	}
 }
