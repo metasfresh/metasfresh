@@ -28,31 +28,31 @@ import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner_QuickInput_Attribute5;
+import org.compiere.model.I_C_BPartner_QuickInput_Attributes5;
 
-public class BPQuickInputAttributes5RecordAdapter extends AttributesRecordAdapter<I_C_BPartner_QuickInput_Attribute5, BPartnerQuickInputId>
+public class BPQuickInputAttributes5RecordAdapter extends AttributesRecordAdapter<I_C_BPartner_QuickInput_Attributes5, BPartnerQuickInputId>
 {
 	@Override
-	protected IQuery<I_C_BPartner_QuickInput_Attribute5> queryRecords(final @NonNull BPartnerQuickInputId bpartnerQuickInputId)
+	protected IQuery<I_C_BPartner_QuickInput_Attributes5> queryRecords(final @NonNull BPartnerQuickInputId bpartnerQuickInputId)
 	{
-		return queryBL.createQueryBuilder(I_C_BPartner_QuickInput_Attribute5.class)
-				.addEqualsFilter(I_C_BPartner_QuickInput_Attribute5.COLUMNNAME_C_BPartner_QuickInput_ID, bpartnerQuickInputId)
-				.orderBy(I_C_BPartner_QuickInput_Attribute5.COLUMNNAME_Created)
+		return queryBL.createQueryBuilder(I_C_BPartner_QuickInput_Attributes5.class)
+				.addEqualsFilter(I_C_BPartner_QuickInput_Attributes5.COLUMNNAME_C_BPartner_QuickInput_ID, bpartnerQuickInputId)
+				.orderBy(I_C_BPartner_QuickInput_Attributes5.COLUMNNAME_Created)
 				.create();
 	}
 
 	@Override
-	protected BPartnerAttribute extractAttribute(final @NonNull I_C_BPartner_QuickInput_Attribute5 record)
+	protected BPartnerAttribute extractAttribute(final @NonNull I_C_BPartner_QuickInput_Attributes5 record)
 	{
-		return BPartnerAttribute.ofCode(record.getAttribute());
+		return BPartnerAttribute.ofCode(record.getAttributes5());
 	}
 
 	@Override
-	protected I_C_BPartner_QuickInput_Attribute5 createNewRecord(final @NonNull BPartnerQuickInputId bpartnerQuickInputId, @NonNull final BPartnerAttribute attribute)
+	protected I_C_BPartner_QuickInput_Attributes5 createNewRecord(final @NonNull BPartnerQuickInputId bpartnerQuickInputId, @NonNull final BPartnerAttribute attribute)
 	{
-		final I_C_BPartner_QuickInput_Attribute5 newRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_QuickInput_Attribute5.class);
+		final I_C_BPartner_QuickInput_Attributes5 newRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_QuickInput_Attributes5.class);
 		newRecord.setC_BPartner_QuickInput_ID(bpartnerQuickInputId.getRepoId());
-		newRecord.setAttribute(attribute.getCode());
+		newRecord.setAttributes5(attribute.getCode());
 		InterfaceWrapperHelper.saveRecord(newRecord);
 		return newRecord;
 	}

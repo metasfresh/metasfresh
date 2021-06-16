@@ -2,16 +2,16 @@ package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for AD_User_Attribute
+/** Generated Interface for C_BPartner_QuickInput_Attributes3
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_AD_User_Attribute 
+public interface I_C_BPartner_QuickInput_Attributes3 
 {
 
-	String Table_Name = "AD_User_Attribute";
+	String Table_Name = "C_BPartner_QuickInput_Attributes3";
 
-//	/** AD_Table_ID=541699 */
+//	/** AD_Table_ID=541707 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -50,68 +50,71 @@ public interface I_AD_User_Attribute
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set User Attribute.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_User_Attribute_ID (int AD_User_Attribute_ID);
-
-	/**
-	 * Get User Attribute.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_User_Attribute_ID();
-
-	ModelColumn<I_AD_User_Attribute, Object> COLUMN_AD_User_Attribute_ID = new ModelColumn<>(I_AD_User_Attribute.class, "AD_User_Attribute_ID", null);
-	String COLUMNNAME_AD_User_Attribute_ID = "AD_User_Attribute_ID";
-
-	/**
-	 * Set Contact.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setAD_User_ID (int AD_User_ID);
-
-	/**
-	 * Get Contact.
-	 * User within the system - Internal or Business Partner Contact
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getAD_User_ID();
-
-	String COLUMNNAME_AD_User_ID = "AD_User_ID";
-
-	/**
-	 * Set Attribute.
+	 * Set Attributes3.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setAttribute (java.lang.String Attribute);
+	void setAttributes3 (java.lang.String Attributes3);
 
 	/**
-	 * Get Attribute.
+	 * Get Attributes3.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getAttribute();
+	java.lang.String getAttributes3();
 
-	ModelColumn<I_AD_User_Attribute, Object> COLUMN_Attribute = new ModelColumn<>(I_AD_User_Attribute.class, "Attribute", null);
-	String COLUMNNAME_Attribute = "Attribute";
+	ModelColumn<I_C_BPartner_QuickInput_Attributes3, Object> COLUMN_Attributes3 = new ModelColumn<>(I_C_BPartner_QuickInput_Attributes3.class, "Attributes3", null);
+	String COLUMNNAME_Attributes3 = "Attributes3";
+
+	/**
+	 * Set BPartner QuickInput Attributes3.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_QuickInput_Attributes3_ID (int C_BPartner_QuickInput_Attributes3_ID);
+
+	/**
+	 * Get BPartner QuickInput Attributes3.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_QuickInput_Attributes3_ID();
+
+	ModelColumn<I_C_BPartner_QuickInput_Attributes3, Object> COLUMN_C_BPartner_QuickInput_Attributes3_ID = new ModelColumn<>(I_C_BPartner_QuickInput_Attributes3.class, "C_BPartner_QuickInput_Attributes3_ID", null);
+	String COLUMNNAME_C_BPartner_QuickInput_Attributes3_ID = "C_BPartner_QuickInput_Attributes3_ID";
+
+	/**
+	 * Set New BPartner quick input.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_QuickInput_ID (int C_BPartner_QuickInput_ID);
+
+	/**
+	 * Get New BPartner quick input.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_QuickInput_ID();
+
+	org.compiere.model.I_C_BPartner_QuickInput getC_BPartner_QuickInput();
+
+	void setC_BPartner_QuickInput(org.compiere.model.I_C_BPartner_QuickInput C_BPartner_QuickInput);
+
+	ModelColumn<I_C_BPartner_QuickInput_Attributes3, org.compiere.model.I_C_BPartner_QuickInput> COLUMN_C_BPartner_QuickInput_ID = new ModelColumn<>(I_C_BPartner_QuickInput_Attributes3.class, "C_BPartner_QuickInput_ID", org.compiere.model.I_C_BPartner_QuickInput.class);
+	String COLUMNNAME_C_BPartner_QuickInput_ID = "C_BPartner_QuickInput_ID";
 
 	/**
 	 * Get Created.
@@ -123,7 +126,7 @@ public interface I_AD_User_Attribute
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_AD_User_Attribute, Object> COLUMN_Created = new ModelColumn<>(I_AD_User_Attribute.class, "Created", null);
+	ModelColumn<I_C_BPartner_QuickInput_Attributes3, Object> COLUMN_Created = new ModelColumn<>(I_C_BPartner_QuickInput_Attributes3.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -158,7 +161,7 @@ public interface I_AD_User_Attribute
 	 */
 	boolean isActive();
 
-	ModelColumn<I_AD_User_Attribute, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_User_Attribute.class, "IsActive", null);
+	ModelColumn<I_C_BPartner_QuickInput_Attributes3, Object> COLUMN_IsActive = new ModelColumn<>(I_C_BPartner_QuickInput_Attributes3.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
@@ -171,7 +174,7 @@ public interface I_AD_User_Attribute
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_AD_User_Attribute, Object> COLUMN_Updated = new ModelColumn<>(I_AD_User_Attribute.class, "Updated", null);
+	ModelColumn<I_C_BPartner_QuickInput_Attributes3, Object> COLUMN_Updated = new ModelColumn<>(I_C_BPartner_QuickInput_Attributes3.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

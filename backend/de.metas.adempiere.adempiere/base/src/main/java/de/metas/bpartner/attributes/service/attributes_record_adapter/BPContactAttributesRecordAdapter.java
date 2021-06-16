@@ -43,7 +43,7 @@ public class BPContactAttributesRecordAdapter extends AttributesRecordAdapter<I_
 	@Override
 	protected BPartnerAttribute extractAttribute(final @NonNull I_AD_User_Attribute record)
 	{
-		return BPartnerAttribute.ofCode(record.getAttributes());
+		return BPartnerAttribute.ofCode(record.getAttribute());
 	}
 
 	@Override
@@ -51,7 +51,7 @@ public class BPContactAttributesRecordAdapter extends AttributesRecordAdapter<I_
 	{
 		final I_AD_User_Attribute newRecord = InterfaceWrapperHelper.newInstance(I_AD_User_Attribute.class);
 		newRecord.setAD_User_ID(contactId.getRepoId());
-		newRecord.setAttributes(attribute.getCode());
+		newRecord.setAttribute(attribute.getCode());
 		InterfaceWrapperHelper.saveRecord(newRecord);
 		return newRecord;
 	}
