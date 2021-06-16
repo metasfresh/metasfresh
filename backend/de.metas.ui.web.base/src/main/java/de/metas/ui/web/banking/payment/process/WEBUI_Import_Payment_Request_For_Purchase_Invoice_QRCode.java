@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.banking.process.paymentdocumentform;
+package de.metas.ui.web.banking.payment.process;
 
 import java.math.BigDecimal;
 
@@ -34,10 +34,9 @@ import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentStringDataProvider;
 import de.metas.banking.payment.PaymentString;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
+import de.metas.banking.process.paymentdocumentform.PaymentStringProcessService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.IProcessParametersCallout;
@@ -45,6 +44,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.process.ParamBarcodeScannerType;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -52,11 +52,11 @@ import de.metas.util.Services;
 /**
  * IProcessParametersCallout is used to update frontend data from backend inside "onParameterChanged. Nice!
  */
-public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProcess implements IProcessParametersCallout, IProcessPrecondition
+public final class WEBUI_Import_Payment_Request_For_Purchase_Invoice_QRCode extends JavaProcess implements IProcessParametersCallout, IProcessPrecondition
 {
 
 	private static final String PARAM_fullPaymentString = "FullPaymentString";
-	@Param(parameterName = PARAM_fullPaymentString)
+	@Param(parameterName = PARAM_fullPaymentString, barcodeScannerType = ParamBarcodeScannerType.QRCode)
 	private String fullPaymentStringParam;
 
 	private static final String PARAM_C_BPartner_ID = "C_BPartner_ID";
@@ -90,6 +90,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 	private static final AdMessageKey MSG_CouldNotFindOrCreateBPBankAccount = AdMessageKey
 			.of("de.metas.payment.CouldNotFindOrCreateBPBankAccount");
 	
+
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -112,7 +113,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 		paymentStringProcessService.createPaymentRequestFromTemplate(getActualInvoice(), paymentRequestTemplate);
 		return MSG_OK;
 	}
-
+	
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
@@ -135,8 +136,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 		}
 		catch (final PaymentStringParseException pspe)
 		{
-			final String adMessage = pspe.getLocalizedMessage() + " (\"" + fullPaymentStringParam + "\")";
-			throw new AdempiereException(adMessage);
+			throw pspe.setParameter("fullPaymentStringParam", fullPaymentStringParam).appendParametersToMessage();
 		}
 
 		final PaymentString paymentString = dataProvider.getPaymentString();
@@ -158,8 +158,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 			 * */
 			if (bPartnerParam == null)
 			{
-				final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_CouldNotFindOrCreateBPBankAccount, paymentString.getPostAccountNo());
-				throw new AdempiereException(msg);
+				throw new AdempiereException(MSG_CouldNotFindOrCreateBPBankAccount, paymentString.getPostAccountNo());
 			}
 			else
 			{
@@ -173,7 +172,7 @@ public class WEBUI_Import_Payment_Request_For_Purchase_Invoice extends JavaProce
 
 	private IPaymentStringDataProvider getDataProvider()
 	{
-		return paymentStringProcessService.parsePaymentString(getCtx(), fullPaymentStringParam);
+		return paymentStringProcessService.parseQRPaymentString(fullPaymentStringParam);
 	}
 	
 	private I_C_Invoice getActualInvoice()
