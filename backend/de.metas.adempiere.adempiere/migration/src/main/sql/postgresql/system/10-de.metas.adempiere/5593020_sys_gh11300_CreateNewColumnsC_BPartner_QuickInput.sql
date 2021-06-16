@@ -1,12 +1,4 @@
 --Create new elements
-
-
-
-
-
-
-
-
 -- 2021-06-16T06:34:55.505Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,579361,0,'ExcludeFromPromotions',TO_TIMESTAMP('2021-06-16 09:34:55','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Exclude From Promotions','Exclude From Promotions',TO_TIMESTAMP('2021-06-16 09:34:55','YYYY-MM-DD HH24:MI:SS'),100)
