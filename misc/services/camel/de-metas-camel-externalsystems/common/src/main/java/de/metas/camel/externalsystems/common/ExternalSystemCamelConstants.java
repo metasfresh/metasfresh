@@ -70,5 +70,5 @@ public class ExternalSystemCamelConstants
 
 	public static String MF_ATTACHMENT_ROUTE_ID = "To-MF_GetAttachment-Route";
 
-	public static String MF_ENQUEUE_PURCHASES_CANDIDATE_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
+	public static String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
 }

@@ -31,7 +31,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ENQUEUE_PURCHASES_CANDIDATE_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -43,18 +43,18 @@ public class EnqueuePurchaseCandidateRouteBuilder extends RouteBuilder
 	{
 		errorHandler(noErrorHandler());
 
-		from(direct(MF_ENQUEUE_PURCHASES_CANDIDATE_V2_CAMEL_URI))
-				.routeId(MF_ENQUEUE_PURCHASES_CANDIDATE_V2_CAMEL_URI)
+		from(direct(MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI))
+				.routeId(MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI)
 				.streamCaching()
 				.process(exchange -> {
-					final var lookupRequest = exchange.getIn().getBody();
-					if (!(lookupRequest instanceof JsonPurchaseCandidatesRequest))//
+					final var request = exchange.getIn().getBody();
+					if (!(request instanceof JsonPurchaseCandidatesRequest))//
 					{
-						throw new RuntimeCamelException("The route " + MF_ENQUEUE_PURCHASES_CANDIDATE_V2_CAMEL_URI + " requires the body to be instanceof JsonPurchaseCandidatesRequest."
-																+ " However, it is " + (lookupRequest == null ? "null" : lookupRequest.getClass().getName()));
+						throw new RuntimeCamelException("The route " + MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI + " requires the body to be instanceof JsonPurchaseCandidatesRequest."
+																+ " However, it is " + (request == null ? "null" : request.getClass().getName()));
 					}
 
-					final JsonPurchaseCandidatesRequest jsonPurchaseCandidatesRequest = (JsonPurchaseCandidatesRequest)lookupRequest;
+					final JsonPurchaseCandidatesRequest jsonPurchaseCandidatesRequest = (JsonPurchaseCandidatesRequest)request;
 					log.info("Enqueue purchases candidate route invoked with " + jsonPurchaseCandidatesRequest);
 					exchange.getIn().setBody(jsonPurchaseCandidatesRequest);
 				})
