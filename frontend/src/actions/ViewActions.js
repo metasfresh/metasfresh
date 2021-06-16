@@ -22,7 +22,6 @@ import {
   FETCH_LAYOUT_ERROR,
   FILTER_VIEW_PENDING,
   FILTER_VIEW_SUCCESS,
-  FILTER_VIEW_ERROR,
   FETCH_LOCATION_CONFIG_SUCCESS,
   FETCH_LOCATION_CONFIG_ERROR,
   RESET_VIEW,
@@ -185,17 +184,6 @@ function filterViewSuccess(id, data, isModal) {
   return {
     type: FILTER_VIEW_SUCCESS,
     payload: { id, data, isModal },
-  };
-}
-
-/**
- * @method filterViewError
- * @summary
- */
-function filterViewError(id, error, isModal) {
-  return {
-    type: FILTER_VIEW_ERROR,
-    payload: { id, error, isModal },
   };
 }
 
@@ -547,7 +535,11 @@ export function filterView(windowId, viewId, filters, isModal = false) {
         return Promise.resolve(response.data);
       })
       .catch((error) => {
-        dispatch(filterViewError(windowId, error, isModal));
+        /**
+         * Note: dispatching the following action would lead to a 404 screen on the FE and user will not know
+         * from where the initial error occurs, this is why took the decision to remove it
+         * previously we had in here: dispatch(filterViewError(windowId, error, isModal));
+         */
 
         return Promise.reject(error);
       });

@@ -20,22 +20,9 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.alberta.patient;
+package de.metas.camel.externalsystems.alberta.institutions;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-@Value
-@Builder
-public class AlbertaConnectionDetails
+public interface GetInstitutionsRouteConstants
 {
-	@NonNull
-	String apiKey;
-
-	@NonNull
-	String tenant;
-
-	@NonNull
-	String basePath;
+	String ROUTE_PROPERTY_GET_INSTITUTIONS_CONTEXT = "GetInstitutionsRouteConstants";
 }

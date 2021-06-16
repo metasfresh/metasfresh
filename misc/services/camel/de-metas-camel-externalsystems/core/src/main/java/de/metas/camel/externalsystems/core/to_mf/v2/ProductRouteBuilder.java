@@ -100,7 +100,7 @@ public class ProductRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("http://{{metasfresh.upsert-product-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}");
+				.toD("{{metasfresh.upsert-product-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}");
 	}
 
 	@NonNull

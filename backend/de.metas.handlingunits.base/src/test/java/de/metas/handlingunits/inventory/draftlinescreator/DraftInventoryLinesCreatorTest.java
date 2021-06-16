@@ -45,7 +45,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -131,6 +131,7 @@ class DraftInventoryLinesCreatorTest
 		inventoryRecord.setC_DocType_ID(docTypeId.getRepoId());
 		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
 		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-15"), orgTimeZone));
+		inventoryRecord.setDocumentNo("documentNo");
 		saveRecord(inventoryRecord);
 		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 	}

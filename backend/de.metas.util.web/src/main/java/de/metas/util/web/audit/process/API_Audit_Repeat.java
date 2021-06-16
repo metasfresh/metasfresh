@@ -67,14 +67,10 @@ public class API_Audit_Repeat extends JavaProcess implements IProcessPreconditio
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		final long selectedRecordsCount = context.getSelectionSize()
-				.getSize();
-
-		if (selectedRecordsCount > 0)
+		if (context.getSelectionSize().isNoSelection())
 		{
-			return ProcessPreconditionsResolution.accept();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
-
-		return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		return ProcessPreconditionsResolution.accept();
 	}
 }

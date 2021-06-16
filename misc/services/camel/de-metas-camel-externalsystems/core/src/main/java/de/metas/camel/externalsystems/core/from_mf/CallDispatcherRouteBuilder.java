@@ -34,6 +34,7 @@ import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static org.apache.camel.Exchange.HTTP_RESPONSE_CODE;
 
 @Component
 public class CallDispatcherRouteBuilder extends RouteBuilder
@@ -74,6 +75,7 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 				})
 				.log("routing request to route ${header.targetRoute}")
 				.toD("direct:${header.targetRoute}", false)
-				.process(exchange -> exchange.getIn().setBody("OK")); //FIXME with the TODO from line 56
+				.process(exchange -> exchange.getIn().setBody("OK"))
+				.setHeader(HTTP_RESPONSE_CODE, constant(200)); //FIXME with the TODO from line 56
 	}
 }
