@@ -25,10 +25,6 @@ UPDATE AD_Role SET IsChangeLog='Y',Updated=TO_TIMESTAMP('2021-05-26 12:36:19','Y
 UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2021-06-16 06:53:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=13025
 ;
 
--- 2021-06-16T04:53:22.434Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('ad_role','IsChangeLog','CHAR(1)',null,'Y')
-;
 
 -- 2021-06-16T04:53:22.598Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -38,11 +34,6 @@ UPDATE AD_Role SET IsChangeLog='Y' WHERE IsChangeLog IS NULL
 -- 2021-06-16T04:57:12.483Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2021-06-16 06:57:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=9593
-;
-
--- 2021-06-16T04:57:13.817Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('ad_role','IsManual','CHAR(1)',null,'Y')
 ;
 
 -- 2021-06-16T04:57:13.883Z
@@ -78,3 +69,17 @@ UPDATE AD_Column SET isallowlogging='N' WHERE ad_column_id = 552712; /* change A
 
 DELETE FROM AD_ChangeLog WHERE AD_Column_ID=571840;/*delete M_ShipmentSchedule.NrOfOLCandsWithSamePOReference AD_ChangeLog records */
 UPDATE AD_Column SET isallowlogging='N' WHERE ad_column_id = 571840; /* change AD_Column M_ShipmentSchedule.NrOfOLCandsWithSamePOReference to not be AD_ChangeLog'ed anymore */
+
+-- DDL
+
+COMMIT;
+
+-- 2021-06-16T04:53:22.434Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('ad_role','IsChangeLog','CHAR(1)',null,'Y')
+;
+
+-- 2021-06-16T04:57:13.817Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('ad_role','IsManual','CHAR(1)',null,'Y')
+;
