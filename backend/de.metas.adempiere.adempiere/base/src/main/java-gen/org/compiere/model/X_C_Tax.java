@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Tax
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1151858783L;
+	private static final long serialVersionUID = -1466536554L;
 
     /** Standard Constructor */
     public X_C_Tax (final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
@@ -333,6 +333,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 		return get_ValueAsBoolean(COLUMNNAME_RequiresTaxCertificate);
 	}
 
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
 	/** 
 	 * SOPOType AD_Reference_ID=287
 	 * Reference name: C_Tax SPPOType
@@ -427,11 +439,11 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	 * Reference name: TypeDestCountry
 	 */
 	public static final int TYPEOFDESTCOUNTRY_AD_Reference_ID=541323;
-	/** Inland = DOMESTIC */
+	/** Domestic = DOMESTIC */
 	public static final String TYPEOFDESTCOUNTRY_Domestic = "DOMESTIC";
-	/** EU-Ausland = WITHIN_COUNTRY_AREA */
+	/** EU-foreign = WITHIN_COUNTRY_AREA */
 	public static final String TYPEOFDESTCOUNTRY_EU_Foreign = "WITHIN_COUNTRY_AREA";
-	/** Nicht-EU-Ausland = OUTSIDE_COUNTRY_AREA */
+	/** Non-EU country = OUTSIDE_COUNTRY_AREA */
 	public static final String TYPEOFDESTCOUNTRY_Non_EUCountry = "OUTSIDE_COUNTRY_AREA";
 	@Override
 	public void setTypeOfDestCountry (final @Nullable java.lang.String TypeOfDestCountry)
@@ -455,5 +467,17 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	public java.sql.Timestamp getValidFrom() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ValidFrom);
+	}
+
+	@Override
+	public void setValidTo (final java.sql.Timestamp ValidTo)
+	{
+		set_Value (COLUMNNAME_ValidTo, ValidTo);
+	}
+
+	@Override
+	public java.sql.Timestamp getValidTo() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ValidTo);
 	}
 }

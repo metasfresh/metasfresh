@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Tax
  *  @author metasfresh (generated) 
@@ -562,6 +563,31 @@ public interface I_C_Tax
 	String COLUMNNAME_RequiresTaxCertificate = "RequiresTaxCertificate";
 
 	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_Tax, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_Tax.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Set VK/ EK Typ.
 	 * Steuer für Einkauf und/ oder Verkauf Transaktionen.
 	 *
@@ -727,4 +753,27 @@ public interface I_C_Tax
 
 	ModelColumn<I_C_Tax, Object> COLUMN_ValidFrom = new ModelColumn<>(I_C_Tax.class, "ValidFrom", null);
 	String COLUMNNAME_ValidFrom = "ValidFrom";
+
+	/**
+	 * Set Valid to.
+	 * Valid to including this date (last day)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setValidTo (java.sql.Timestamp ValidTo);
+
+	/**
+	 * Get Valid to.
+	 * Valid to including this date (last day)
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getValidTo();
+
+	ModelColumn<I_C_Tax, Object> COLUMN_ValidTo = new ModelColumn<>(I_C_Tax.class, "ValidTo", null);
+	String COLUMNNAME_ValidTo = "ValidTo";
 }

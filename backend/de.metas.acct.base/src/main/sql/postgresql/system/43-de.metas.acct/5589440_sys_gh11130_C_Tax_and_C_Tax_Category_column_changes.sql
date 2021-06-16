@@ -1166,3 +1166,61 @@ UPDATE AD_Val_Rule SET Code='C_TaxCategory.C_TaxCategory_ID IN (SELECT cat.C_Tax
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET AD_Val_Rule_ID=540543,Updated=TO_TIMESTAMP('2021-06-08 13:17:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=505149
 ;
+
+-- 2021-06-15T13:01:37.724Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,Updated,UpdatedBy,Version) VALUES (0,574444,618,0,15,261,'ValidTo',TO_TIMESTAMP('2021-06-15 16:01:37','YYYY-MM-DD HH24:MI:SS'),100,'N','9999-12-31','Gültig bis inklusiv (letzter Tag)','D',7,'"Gültig bis" bezeichnet den letzten Tag eines Gültigkeitzeitraumes.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Y','N',0,'Gültig bis','NP',0,TO_TIMESTAMP('2021-06-15 16:01:37','YYYY-MM-DD HH24:MI:SS'),100,0.0)
+;
+
+-- 2021-06-15T13:01:37.731Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=574444 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-06-15T13:01:37.754Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_Column_Translation_From_AD_Element(618) 
+;
+
+-- 2021-06-15T13:03:35.155Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='TO_TIMESTAMP(''9999-12-31 23:59:59'',''YYYY-MM-DD HH24:MI:SS'')',Updated=TO_TIMESTAMP('2021-06-15 16:03:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574444
+;
+
+-- 2021-06-15T13:03:35.536Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('C_Tax','ALTER TABLE public.C_Tax ADD COLUMN ValidTo TIMESTAMP WITHOUT TIME ZONE DEFAULT TO_TIMESTAMP(''9999-12-31 23:59:59'',''YYYY-MM-DD HH24:MI:SS'') NOT NULL')
+;
+
+-- 2021-06-15T13:04:57.506Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,574445,566,0,22,261,'SeqNo',TO_TIMESTAMP('2021-06-15 16:04:57','YYYY-MM-DD HH24:MI:SS'),100,'N','1000','Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst','D',0,14,'"Reihenfolge" bestimmt die Reihenfolge der Einträge','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N',0,'Reihenfolge',0,0,TO_TIMESTAMP('2021-06-15 16:04:57','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-06-15T13:04:57.508Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=574445 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-06-15T13:04:57.510Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_Column_Translation_From_AD_Element(566) 
+;
+
+-- 2021-06-15T13:05:20.829Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('C_Tax','ALTER TABLE public.C_Tax ADD COLUMN SeqNo NUMERIC DEFAULT 1000 NOT NULL')
+;
+
+-- 2021-06-15T13:11:00.038Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_Tax SET SeqNo=2000, Updated=TO_TIMESTAMP('2021-06-15 13:11:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE To_Country_ID IS NOT NULL
+;
+
+UPDATE C_Tax SET ValidTo=TO_TIMESTAMP('2017-12-31 23:59:59', 'YYYY-MM-DD HH24:MI:SS'), Updated=TO_TIMESTAMP('2021-06-16 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE C_Tax_ID=1000010
+;
+
+UPDATE C_Tax SET ValidTo=TO_TIMESTAMP('2017-12-31 23:59:59', 'YYYY-MM-DD HH24:MI:SS'), Updated=TO_TIMESTAMP('2021-06-16 13:00:00', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE C_Tax_ID=1000016
+;
+
+

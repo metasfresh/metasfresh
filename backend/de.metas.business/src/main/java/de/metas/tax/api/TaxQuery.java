@@ -27,12 +27,16 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Value
 public class TaxQuery
@@ -46,7 +50,7 @@ public class TaxQuery
 	@Nullable
 	CountryId fromCountryId;
 
-	@Nullable
+	@NonNull
 	Timestamp dateOfInterest;
 
 	@Nullable
@@ -74,7 +78,7 @@ public class TaxQuery
 		this.orgId = orgId;
 		this.warehouseId = warehouseId;
 		this.fromCountryId = fromCountryId;
-		this.dateOfInterest = dateOfInterest;
+		this.dateOfInterest = coalesce(dateOfInterest, Env.getDate());
 		this.bPartnerLocationId = bPartnerLocationId;
 		if (bpartnerId == null && bPartnerLocationId != null)
 		{

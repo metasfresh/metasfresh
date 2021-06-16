@@ -51,6 +51,7 @@ public class TaxUtils
 				.isDocumentLevel(from.isDocumentLevel())
 				.rate(from.getRate())
 				.boilerPlateId(BoilerPlateId.ofRepoIdOrNull(from.getAD_BoilerPlate_ID()))
+				.seqNo(from.getSeqNo())
 				.build();
 	}
 }
