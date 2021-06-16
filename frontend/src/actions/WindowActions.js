@@ -434,7 +434,7 @@ export function updateTabLayout(windowId, tabId) {
       .then(({ data }) => {
         dispatch(setUpdatedTabLayout(tabId, data));
 
-        return Promise.reject(tabId);
+        return Promise.resolve(tabId);
       })
       .catch((error) => {
         return Promise.reject(error);
