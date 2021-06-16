@@ -389,8 +389,16 @@ public class TaxDAO implements ITaxDAO
 		if (bPartnerLocationId != null)
 		{
 			final CountryId toCountryId = getCountryId(bPartnerLocationId);
-			loggable.addLog("To country ID from bpartnerLocation: {} or NULL", toCountryId);
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, toCountryId, null);
+			if (euOneStopShop)
+			{
+				loggable.addLog("To country ID from bpartnerLocation: {}", toCountryId);
+				queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_To_Country_ID, toCountryId);
+			}
+			else
+			{
+				loggable.addLog("To country ID from bpartnerLocation: {} or NULL", toCountryId);
+				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, toCountryId, null);
+			}
 
 			final TypeOfDestCountry typeOfDestCountry = getTypeOfDestCountry(countryId, toCountryId);
 			loggable.addLog("Type of dest country: {} or NULL", typeOfDestCountry);
