@@ -10,7 +10,9 @@ class BarcodeScannerBtn extends Component {
     // the HOC is creating an element that we need to render, we need to check the `scanning` flag and render it when it is true
     if (scanning) {
       return (
-        <div className="overlay-field js-not-unselect">{scannerElement}</div>
+        <div className="overlay-field js-not-unselect col-sm-10 input-qr-scanner-wrapper">
+          {scannerElement}
+        </div>
       );
     }
 
