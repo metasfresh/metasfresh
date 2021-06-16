@@ -54,6 +54,7 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.warehouse.WarehouseService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -67,8 +68,6 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -89,17 +88,20 @@ public class CreatePurchaseCandidatesService
 	private final JsonRetrieverService jsonRetrieverService;
 	private final CurrencyRepository currencyRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final WarehouseService warehouseService;
 
 	public CreatePurchaseCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final WarehouseService warehouseService)
 	{
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.currencyRepository = currencyRepository;
 		this.externalReferenceService = externalReferenceService;
+		this.warehouseService = warehouseService;
 	}
 
 	public Optional<JsonPurchaseCandidate> createCandidate(@RequestBody final JsonPurchaseCandidateCreateItem request)
@@ -147,7 +149,7 @@ public class CreatePurchaseCandidatesService
 				.externalHeaderId(ExternalId.of(request.getExternalHeaderId()))
 				.externalLineId(ExternalId.of(request.getExternalLineId()))
 				.productId(productId)
-				.warehouseId(getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
+				.warehouseId(warehouseService.getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
 				.purchaseDatePromised(datePromised)
 				.purchaseDateOrdered(request.getPurchaseDateOrdered())
 				.vendorId(vendorId)
@@ -313,11 +315,17 @@ public class CreatePurchaseCandidatesService
 			default:
 				throw new InvalidIdentifierException(warehouseIdentifier);
 		}
+		if (result == null)
+		{
+			throw new InvalidIdentifierException(productIdentifier);
+		}
+
+		return result;
 	}
 
 	@NonNull
 	private WarehouseId getWarehouseByIdentifierString(
-			@NonNull final OrgId orgId,
+			@NonNull final OrgId orgId
 			@NonNull final String warehouseIdentifier)
 	{
 		final IdentifierString warehouseString = IdentifierString.of(warehouseIdentifier);

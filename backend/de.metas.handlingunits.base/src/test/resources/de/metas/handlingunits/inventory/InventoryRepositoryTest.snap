@@ -2,6 +2,7 @@ de.metas.handlingunits.inventory.InventoryRepositoryTest.saveInventoryLine=[
   {
     "id" : 100015,
     "orgId" : 100001,
+    "documentNo": "documentNo",
     "docBaseAndSubType" : {
       "docBaseType" : "MMI",
       "docSubType" : "ISH"

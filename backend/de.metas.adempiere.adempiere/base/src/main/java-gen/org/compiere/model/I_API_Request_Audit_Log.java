@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for API_Request_Audit_Log
  *  @author metasfresh (generated) 
@@ -70,6 +69,28 @@ public interface I_API_Request_Audit_Log
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Table.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get Table.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Table_ID();
+
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
 	 * Set API Request Audit.
@@ -185,6 +206,75 @@ public interface I_API_Request_Audit_Log
 
 	ModelColumn<I_API_Request_Audit_Log, Object> COLUMN_Logmessage = new ModelColumn<>(I_API_Request_Audit_Log.class, "Logmessage", null);
 	String COLUMNNAME_Logmessage = "Logmessage";
+
+	/**
+	 * Set Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRecord_ID();
+
+	ModelColumn<I_API_Request_Audit_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_API_Request_Audit_Log.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Set Transaction.
+	 * Name of the transaction
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTrxName (@Nullable java.lang.String TrxName);
+
+	/**
+	 * Get Transaction.
+	 * Name of the transaction
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTrxName();
+
+	ModelColumn<I_API_Request_Audit_Log, Object> COLUMN_TrxName = new ModelColumn<>(I_API_Request_Audit_Log.class, "TrxName", null);
+	String COLUMNNAME_TrxName = "TrxName";
+
+	/**
+	 * Set Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setType (@Nullable java.lang.String Type);
+
+	/**
+	 * Get Type.
+	 * Type of Validation (SQL, Java Script, Java Language)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getType();
+
+	ModelColumn<I_API_Request_Audit_Log, Object> COLUMN_Type = new ModelColumn<>(I_API_Request_Audit_Log.class, "Type", null);
+	String COLUMNNAME_Type = "Type";
 
 	/**
 	 * Get Updated.
