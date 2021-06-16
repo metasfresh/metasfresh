@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.process;
 
+import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -41,11 +42,11 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
@@ -59,6 +60,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
@@ -126,36 +128,36 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 		final Stream<JsonExternalSystemRequest> requestList = invokeAlbertaService
 				.streamSyncExternalRequestsForBPartnerIds(bPartnerIdSet, albertaConfigId, getPinstanceId(), computedOrgId);
 
-		final boolean allFine;
+		final AtomicBoolean withError = new AtomicBoolean();
 		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
 		{
-			allFine = requestList
-					.allMatch(request -> {
+			requestList
+					.forEach(request -> {
 						try
 						{
-							return aDefault.execute(toHttpPutRequest(request), response -> {
+							aDefault.execute(toHttpPutRequest(request), response -> {
 								final int statusCode = response.getStatusLine().getStatusCode();
 								if (statusCode != 200)
 								{
 									addLog("Camel request error message: {}", response);
+									withError.set(true);
 								}
 								else
 								{
 									addLog("Status code from camel: {}", statusCode);
 								}
-								return statusCode == 200;
+								return response;
 							});
 						}
 						catch (final IOException e)
 						{
-							throw new AdempiereException("Failed to execute request")
-									.appendParametersToMessage()
-									.setParameter("request", request);
+							Loggables.withLogger(log, Level.ERROR).addLog("Failed to execute request " + request);
+							withError.set(true);
 						}
 					});
 		}
 
-		return allFine ? JavaProcess.MSG_OK : JavaProcess.MSG_Error;
+		return withError.get() ? JavaProcess.MSG_Error : JavaProcess.MSG_OK;
 	}
 
 	@NonNull
