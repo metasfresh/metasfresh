@@ -76,5 +76,5 @@ DELETE FROM AD_ChangeLog WHERE AD_Column_ID=552712;/*delete C_Order.QtyInvoiced 
 UPDATE AD_Column SET isallowlogging='N' WHERE ad_column_id = 552712; /* change AD_Column C_Order.QtyInvoiced to not be AD_ChangeLog'ed anymore */
 
 
-DELETE FROM AD_ChangeLog WHERE AD_Column_ID=571840;/*delete M_ShipmentSchedule.NrOfOLCandsWithSamePOReference AD_ChangeLog records */,
+DELETE FROM AD_ChangeLog WHERE AD_Column_ID=571840;/*delete M_ShipmentSchedule.NrOfOLCandsWithSamePOReference AD_ChangeLog records */
 UPDATE AD_Column SET isallowlogging='N' WHERE ad_column_id = 571840; /* change AD_Column M_ShipmentSchedule.NrOfOLCandsWithSamePOReference to not be AD_ChangeLog'ed anymore */
