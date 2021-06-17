@@ -30,5 +30,8 @@ import java.sql.Timestamp;
 
 public interface IFiscalRepresentationBL extends ISingletonService
 {
+    /**
+     * @return true if the given org has a fiscal representation in the given country at the given time
+     */
 	boolean hasFiscalRepresentation(@NonNull CountryId countryId, @NonNull OrgId orgId, @NonNull Timestamp date);
 }
