@@ -22,10 +22,10 @@ package de.metas.inoutcandidate.invalidation.segments;
  * #L%
  */
 
-import java.util.Set;
-
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
+
+import java.util.Set;
 
 /**
  * A storage segment can identify a set of concrete storage records.
