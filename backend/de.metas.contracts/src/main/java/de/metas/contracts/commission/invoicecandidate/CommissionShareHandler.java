@@ -20,6 +20,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
@@ -33,6 +34,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
@@ -42,8 +44,10 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.Iterator;
@@ -81,6 +85,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
  */
 public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 {
+	protected transient final Logger log = LogManager.getLogger(getClass());
 	private final transient IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final transient IProductAcctDAO productAcctDAO = Services.get(IProductAcctDAO.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
@@ -234,7 +239,18 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 				.isSoTrx(false)
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				.build());
-
+		if (tax == null)
+		{
+			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(commissionToLocationId);
+			TaxNotFoundException.builder()
+					.taxCategoryId(pricingResult.getTaxCategoryId())
+					.isSOTrx(false)
+					.billDate(icRecord.getDeliveryDate())
+					.orgId(orgId)
+					.billToC_Location_ID(bpLocation.getC_Location_ID())
+					.build()
+					.throwOrLogWarning(true, log);
+		}
 		icRecord.setC_Tax_ID(tax.getTaxId().getRepoId());
 		icRecord.setIsSimulation(commissionShareRecord.isSimulation());
 
