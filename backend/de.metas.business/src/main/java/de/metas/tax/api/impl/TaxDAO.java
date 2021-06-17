@@ -410,10 +410,10 @@ public class TaxDAO implements ITaxDAO
 			final Timestamp fiscalRepresentationFromDate = coalesce(taxQuery.getDateOfInterest(), Env.getDate());
 			final boolean hasFiscalRepresentation = fiscalRepresentationBL.hasFiscalRepresentation(toCountryId, orgId, fiscalRepresentationFromDate);
 			final boolean isNonEU = OUTSIDE_COUNTRY_AREA.equals(typeOfDestCountry);
-			if (hasFiscalRepresentation && !euOneStopShop && isNonEU)
+			if (!euOneStopShop && isNonEU)
 			{
-				loggable.addLog("Has fiscal Representation = {}", true);
-				queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, true);
+				loggable.addLog("Has fiscal Representation = {}", hasFiscalRepresentation);
+				queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, hasFiscalRepresentation);
 			}
 		}
 
