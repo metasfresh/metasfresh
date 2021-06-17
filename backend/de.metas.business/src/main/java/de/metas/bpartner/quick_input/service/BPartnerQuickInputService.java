@@ -317,6 +317,9 @@ public class BPartnerQuickInputService
 				.vendorPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getPO_PricingSystem_ID()))
 				.vendorPaymentTermId(PaymentTermId.ofRepoIdOrNull(template.getPO_PaymentTerm_ID()))
 				//
+				.excludeFromPromotions(template.isExcludeFromPromotions())
+				.referrer(template.getReferrer())
+				//
 				.build();
 
 		//

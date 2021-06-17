@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated) 
@@ -942,6 +943,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
+	 * Set Exclude From Promotions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExcludeFromPromotions (boolean ExcludeFromPromotions);
+
+	/**
+	 * Get Exclude From Promotions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromPromotions();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_ExcludeFromPromotions = new ModelColumn<>(I_C_BPartner.class, "ExcludeFromPromotions", null);
+	String COLUMNNAME_ExcludeFromPromotions = "ExcludeFromPromotions";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -1369,7 +1391,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsCreateDefaultPOReference = "IsCreateDefaultPOReference";
 
 	/**
-	 * Set Customer.
+	 * Set Kunde.
 	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
@@ -1379,7 +1401,7 @@ public interface I_C_BPartner
 	void setIsCustomer (boolean IsCustomer);
 
 	/**
-	 * Get Customer.
+	 * Get Kunde.
 	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
@@ -1863,7 +1885,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
-	 * Set Flat-rate freight charges.
+	 * Set Frachtkostenpauschale.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1872,7 +1894,7 @@ public interface I_C_BPartner
 	void setM_FreightCost_ID (int M_FreightCost_ID);
 
 	/**
-	 * Get Flat-rate freight charges.
+	 * Get Frachtkostenpauschale.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -2581,6 +2603,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_ReferenceNo = new ModelColumn<>(I_C_BPartner.class, "ReferenceNo", null);
 	String COLUMNNAME_ReferenceNo = "ReferenceNo";
+
+	/**
+	 * Set Referrer.
+	 * Referring web address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReferrer (@Nullable java.lang.String Referrer);
+
+	/**
+	 * Get Referrer.
+	 * Referring web address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReferrer();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Referrer = new ModelColumn<>(I_C_BPartner.class, "Referrer", null);
+	String COLUMNNAME_Referrer = "Referrer";
 
 	/**
 	 * Set Wiedervorlage Datum Aussen.

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_QuickInput
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_C_BPartner_QuickInput, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 939428544L;
+	private static final long serialVersionUID = -949135302L;
 
     /** Standard Constructor */
     public X_C_BPartner_QuickInput (final Properties ctx, final int C_BPartner_QuickInput_ID, @Nullable final String trxName)
@@ -232,6 +232,18 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setExcludeFromPromotions (final boolean ExcludeFromPromotions)
+	{
+		set_Value (COLUMNNAME_ExcludeFromPromotions, ExcludeFromPromotions);
+	}
+
+	@Override
+	public boolean isExcludeFromPromotions() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_ExcludeFromPromotions);
+	}
+
+	@Override
 	public void setIsCompany (final boolean IsCompany)
 	{
 		set_Value (COLUMNNAME_IsCompany, IsCompany);
@@ -358,5 +370,17 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setReferrer (final @Nullable java.lang.String Referrer)
+	{
+		set_Value (COLUMNNAME_Referrer, Referrer);
+	}
+
+	@Override
+	public java.lang.String getReferrer() 
+	{
+		return get_ValueAsString(COLUMNNAME_Referrer);
 	}
 }

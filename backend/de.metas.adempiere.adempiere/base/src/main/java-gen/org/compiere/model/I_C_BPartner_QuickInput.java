@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_BPartner_QuickInput
  *  @author metasfresh (generated) 
@@ -343,6 +344,27 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_EMail = "EMail";
 
 	/**
+	 * Set Exclude From Promotions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExcludeFromPromotions (boolean ExcludeFromPromotions);
+
+	/**
+	 * Get Exclude From Promotions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromPromotions();
+
+	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_ExcludeFromPromotions = new ModelColumn<>(I_C_BPartner_QuickInput.class, "ExcludeFromPromotions", null);
+	String COLUMNNAME_ExcludeFromPromotions = "ExcludeFromPromotions";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -387,8 +409,8 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_IsCompany = "IsCompany";
 
 	/**
-	 * Set Customer.
-	 * Indicates if this Business Partner is a Customer
+	 * Set Kunde.
+	 * Zeigt an, ob dieser Geschäftspartner ein Kunde ist
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -397,8 +419,8 @@ public interface I_C_BPartner_QuickInput
 	void setIsCustomer (boolean IsCustomer);
 
 	/**
-	 * Get Customer.
-	 * Indicates if this Business Partner is a Customer
+	 * Get Kunde.
+	 * Zeigt an, ob dieser Geschäftspartner ein Kunde ist
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -581,6 +603,29 @@ public interface I_C_BPartner_QuickInput
 
 	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Processed = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Referrer.
+	 * Referring web address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReferrer (@Nullable java.lang.String Referrer);
+
+	/**
+	 * Get Referrer.
+	 * Referring web address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReferrer();
+
+	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Referrer = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Referrer", null);
+	String COLUMNNAME_Referrer = "Referrer";
 
 	/**
 	 * Get Updated.
