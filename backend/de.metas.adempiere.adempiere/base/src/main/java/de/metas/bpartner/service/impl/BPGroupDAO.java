@@ -2,14 +2,13 @@ package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyCode;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
-import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
@@ -99,16 +98,8 @@ public class BPGroupDAO implements IBPGroupDAO
 	{
 		final I_C_BP_Group bpGroup = getById(bpGroupId);
 
-		final BPartnerNameAndGreetingStrategyCode strategy =
-				BPartnerNameAndGreetingStrategyCode.ofNullableCode(bpGroup.getBPNameAndGreetingStrategy());
-
-		if (strategy != null && strategy.isMembershipContact())
-		{
-			return MembershipContactBPartnerNameAndGreetingStrategy.ID;
-		}
-		else
-		{
-			return FirstContactBPartnerNameAndGreetingStrategy.ID;
-		}
+		return StringUtils.trimBlankToOptional(bpGroup.getBPNameAndGreetingStrategy())
+				.map(BPartnerNameAndGreetingStrategyId::ofString)
+				.orElse(FirstContactBPartnerNameAndGreetingStrategy.ID);
 	}
 }

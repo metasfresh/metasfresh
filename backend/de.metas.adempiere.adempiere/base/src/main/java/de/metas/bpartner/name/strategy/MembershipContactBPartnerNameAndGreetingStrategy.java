@@ -35,6 +35,7 @@ import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.compiere.model.X_C_BP_Group;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -42,7 +43,7 @@ import java.util.Objects;
 @Component
 public class MembershipContactBPartnerNameAndGreetingStrategy implements BPartnerNameAndGreetingStrategy
 {
-	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString("MEMBERSHIP_CONTACT");
+	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString(X_C_BP_Group.BPNAMEANDGREETINGSTRATEGY_MembershipContact);
 
 	private static final AdMessageKey MSG_And = AdMessageKey.of("And");
 

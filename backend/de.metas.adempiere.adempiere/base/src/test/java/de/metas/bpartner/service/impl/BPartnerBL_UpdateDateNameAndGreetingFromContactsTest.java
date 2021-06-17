@@ -25,7 +25,7 @@ package de.metas.bpartner.service.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategy;
-import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyCode;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -43,6 +43,7 @@ import org.compiere.model.I_C_Greeting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -50,12 +51,11 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 {
 	// taken from de.metas.greeting.GreetingsMapTest
-
 	private I_C_Greeting greeting_MR;
 	private I_C_Greeting greeting_MRS;
 	private I_C_Greeting greeting_MR_AND_MRS;
@@ -86,9 +86,7 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 	@Test
 	public void useFirstContact()
 	{
-		final String bPartnerNameAndGreetingStrategyCode = BPartnerNameAndGreetingStrategyCode.FirstContact.getCode();
-
-		final I_C_BP_Group group = createGroup("Group", bPartnerNameAndGreetingStrategyCode);
+		final I_C_BP_Group group = createGroup(FirstContactBPartnerNameAndGreetingStrategy.ID);
 		final I_C_BPartner partner = createPartner(group);
 
 		final String firstName = "FirstName";
@@ -113,9 +111,7 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 	@Test
 	public void useFirstMembershipContact()
 	{
-		final String bPartnerNameAndGreetingStrategyCode = BPartnerNameAndGreetingStrategyCode.MembershipContact.getCode();
-
-		final I_C_BP_Group group = createGroup("Group", bPartnerNameAndGreetingStrategyCode);
+		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
 		final I_C_BPartner partner = createPartner(group);
 
 		final String firstName = "FirstName";
@@ -140,9 +136,7 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 	@Test
 	public void use2MembershipContacts()
 	{
-		final String bPartnerNameAndGreetingStrategyCode = BPartnerNameAndGreetingStrategyCode.MembershipContact.getCode();
-
-		final I_C_BP_Group group = createGroup("Group", bPartnerNameAndGreetingStrategyCode);
+		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
 		final I_C_BPartner partner = createPartner(group);
 
 		final String firstName = "FirstName";
@@ -158,7 +152,7 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 
 		final String firstName2 = "FirstName2";
 
-		final I_C_Greeting greeting2 = createGreeting(GreetingStandardType.MRS);
+		createGreeting(GreetingStandardType.MRS);
 		final boolean isMembership2 = true;
 		createUser(
 				partner,
@@ -178,12 +172,12 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
-	private I_C_BP_Group createGroup(final String name,
-			final String bPartnerNameAndGreetingStrategyCode)
+	private I_C_BP_Group createGroup(
+			@Nullable final BPartnerNameAndGreetingStrategyId strategyId)
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
-		group.setName(name);
-		group.setBPNameAndGreetingStrategy(bPartnerNameAndGreetingStrategyCode);
+		group.setName("Group");
+		group.setBPNameAndGreetingStrategy(strategyId != null ? strategyId.getAsString() : null);
 
 		save(group);
 
@@ -200,11 +194,12 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		return partner;
 	}
 
-	private I_AD_User createUser(final I_C_BPartner partner,
-			final String firstName,
-			final String lastname,
-			final I_C_Greeting greeting,
-			final boolean isMembership)
+	@SuppressWarnings("SameParameterValue")
+	private void createUser(final I_C_BPartner partner,
+							final String firstName,
+							final String lastname,
+							final I_C_Greeting greeting,
+							final boolean isMembership)
 	{
 		final I_AD_User user = newInstance(I_AD_User.class);
 		user.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -215,7 +210,6 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 
 		save(user);
 
-		return user;
 	}
 
 

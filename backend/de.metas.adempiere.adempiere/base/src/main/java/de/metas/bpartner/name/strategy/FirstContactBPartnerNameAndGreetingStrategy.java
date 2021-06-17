@@ -26,12 +26,13 @@ import de.metas.bpartner.name.NameAndGreeting;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
+import org.compiere.model.X_C_BP_Group;
 import org.springframework.stereotype.Component;
 
 @Component
 public final class FirstContactBPartnerNameAndGreetingStrategy implements BPartnerNameAndGreetingStrategy
 {
-	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString("FIRST_CONTACT");
+	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString(X_C_BP_Group.BPNAMEANDGREETINGSTRATEGY_FirstContact);
 
 	private final IUserBL userBL = Services.get(IUserBL.class);
 
