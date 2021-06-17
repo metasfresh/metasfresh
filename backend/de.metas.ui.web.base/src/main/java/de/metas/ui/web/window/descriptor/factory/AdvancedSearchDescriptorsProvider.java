@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.factory;
 
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.AdvancedSearchBPartnerProcessor;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /*
@@ -48,7 +50,23 @@ public class AdvancedSearchDescriptorsProvider
 	AdvancedSearchDescriptorsProvider()
 	{
 		// FIXME: hardcoded AdvancedSearchDescriptor for C_BPartner_Adv_Search_v
-		addAdvancedSearchDescriptor(AdvancedSearchDescriptor.of(I_C_BPartner.Table_Name, 541045, new AdvancedSearchBPartnerProcessor()));
+		final WindowId searchAssistentWindowId = getSearchAssistantWindowId().orElse(null);
+		if(searchAssistentWindowId != null)
+		{
+			addAdvancedSearchDescriptor(AdvancedSearchDescriptor.of(I_C_BPartner.Table_Name, searchAssistentWindowId, new AdvancedSearchBPartnerProcessor()));
+		}
+		else
+		{
+			logger.warn("Advanced Search Assistant not registered for C_BPartner because no windows was found");
+		}
+	}
+
+	private Optional<WindowId> getSearchAssistantWindowId()
+	{
+		return RecordWindowFinder.newInstance("I_C_BPartner_Adv_Search_v.Table_Name") // FIXME generate model
+				.ignoreExcludeFromZoomTargetsFlag()
+				.findAdWindowId()
+				.map(WindowId::of);
 	}
 
 	public void addAdvancedSearchDescriptor(final AdvancedSearchDescriptor searchDescriptor)
@@ -67,11 +85,9 @@ public class AdvancedSearchDescriptorsProvider
 	 */
 	public AdvancedSearchDescriptor getAdvancedSearchDescriptor(final WindowId windowId)
 	{
-		final int windowIdValue = windowId.toInt();
-
 		return advSearchDescriptorsByTableName.values()
 				.stream()
-				.filter(descriptor -> windowIdValue == descriptor.getWindowId())
+				.filter(descriptor -> WindowId.equals(windowId, descriptor.getWindowId()))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No advanced search quick input defined windowId=" + windowId));
 	}

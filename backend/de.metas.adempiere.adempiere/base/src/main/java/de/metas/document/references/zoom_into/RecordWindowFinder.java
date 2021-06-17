@@ -439,4 +439,10 @@ public class RecordWindowFinder
 			return Optional.empty();
 		}
 	}
+
+	public RecordWindowFinder ignoreExcludeFromZoomTargetsFlag()
+	{
+		// FIXME: this method will be introduced by other task
+		return this;
+	}
 }
