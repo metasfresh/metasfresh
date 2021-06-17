@@ -27,7 +27,7 @@ import de.metas.bpartner.attributes.service.BPartnerContactAttributesRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategies;
 import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategy;
-import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyCode;
+import de.metas.bpartner.name.strategy.BPartnerNameAndGreetingStrategyId;
 import de.metas.bpartner.name.strategy.FirstContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingStrategy;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
@@ -47,6 +47,7 @@ import org.compiere.model.I_C_Greeting;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -95,9 +96,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 	@Test
 	public void useFirstContact()
 	{
-		final String bPartnerNameAndGreetingStrategyCode = BPartnerNameAndGreetingStrategyCode.FirstContact.getCode();
-
-		final I_C_BP_Group group = createGroup("Group", bPartnerNameAndGreetingStrategyCode);
+		final I_C_BP_Group group = createGroup(FirstContactBPartnerNameAndGreetingStrategy.ID);
 		final I_C_BPartner_QuickInput partner = createPartner(group);
 
 		final String firstName = "FirstName";
@@ -120,9 +119,8 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 	@Test
 	public void useFirstMembershipContact()
 	{
-		final String bPartnerNameAndGreetingStrategyCode = BPartnerNameAndGreetingStrategyCode.MembershipContact.getCode();
 
-		final I_C_BP_Group group = createGroup("Group", bPartnerNameAndGreetingStrategyCode);
+		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
 		final I_C_BPartner_QuickInput partner = createPartner(group);
 
 		final String firstName = "FirstName";
@@ -146,9 +144,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 	@Test
 	public void use2MembershipContacts()
 	{
-		final String bPartnerNameAndGreetingStrategyCode = BPartnerNameAndGreetingStrategyCode.MembershipContact.getCode();
-
-		final I_C_BP_Group group = createGroup("Group", bPartnerNameAndGreetingStrategyCode);
+		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
 		final I_C_BPartner_QuickInput partner = createPartner(group);
 
 		final String firstName = "FirstName";
@@ -182,12 +178,12 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
-	private I_C_BP_Group createGroup(final String name,
-			final String bPartnerNameAndGreetingStrategyCode)
+	private I_C_BP_Group createGroup(
+			@Nullable final BPartnerNameAndGreetingStrategyId strategyId)
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
-		group.setName(name);
-		group.setBPNameAndGreetingStrategy(bPartnerNameAndGreetingStrategyCode);
+		group.setName("Group");
+		group.setBPNameAndGreetingStrategy(strategyId != null ? strategyId.getAsString() : null);
 
 		save(group);
 
@@ -196,7 +192,6 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 
 	private I_C_BPartner_QuickInput createPartner(final I_C_BP_Group group)
 	{
-
 		final I_C_BPartner_QuickInput partner = newInstance(I_C_BPartner_QuickInput.class);
 		partner.setC_BP_Group_ID(group.getC_BP_Group_ID());
 
