@@ -38,6 +38,9 @@ import java.util.Optional;
 @Builder
 public class ComputeNameAndGreetingRequest
 {
+	@Nullable
+	String adLanguage;
+
 	@Value
 	@Builder
 	public static class Contact

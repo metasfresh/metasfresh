@@ -29,25 +29,25 @@ import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
-import org.compiere.util.Env;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.compiere.model.X_C_BP_Group;
 import org.springframework.stereotype.Component;
 
-import java.util.Comparator;
 import java.util.Objects;
-import java.util.Optional;
 
 @Component
 public class MembershipContactBPartnerNameAndGreetingStrategy implements BPartnerNameAndGreetingStrategy
 {
-	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString("MEMBERSHIP_CONTACT");
+	public static final BPartnerNameAndGreetingStrategyId ID = BPartnerNameAndGreetingStrategyId.ofString(X_C_BP_Group.BPNAMEANDGREETINGSTRATEGY_MembershipContact);
 
 	private static final AdMessageKey MSG_And = AdMessageKey.of("And");
 
 	private final IUserBL userBL = Services.get(IUserBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final GreetingRepository greetingRepo;
 
 	public MembershipContactBPartnerNameAndGreetingStrategy(final GreetingRepository greetingRepo)
@@ -64,53 +64,72 @@ public class MembershipContactBPartnerNameAndGreetingStrategy implements BPartne
 	@Override
 	public ExplainedOptional<NameAndGreeting> compute(final ComputeNameAndGreetingRequest request)
 	{
-		final ImmutableList<ComputeNameAndGreetingRequest.Contact> membershipContacts = request.getContacts()
+		final ImmutableList<ComputeNameAndGreetingRequest.Contact> allContacts = request.getContacts();
+		final ImmutableList<ComputeNameAndGreetingRequest.Contact> membershipContacts = allContacts
 				.stream()
 				.filter(ComputeNameAndGreetingRequest.Contact::isMembershipContact)
-				.sorted(Comparator.comparing(ComputeNameAndGreetingRequest.Contact::getLastName))
-				.limit(2)
 				.collect(ImmutableList.toImmutableList());
 
 		if (membershipContacts.isEmpty())
 		{
-			return ExplainedOptional.emptyBecause("no membership contact");
+			return !allContacts.isEmpty()
+					? computeForSingleContact(allContacts.get(0))
+					: ExplainedOptional.emptyBecause("no membership contact");
 		}
 		else if (membershipContacts.size() == 1)
 		{
 			final ComputeNameAndGreetingRequest.Contact contact = membershipContacts.get(0);
-			return ExplainedOptional.of(NameAndGreeting.builder()
-												.name(userBL.buildContactName(contact.getFirstName(), contact.getLastName()))
-												.greetingId(contact.getGreetingId())
-												.build());
+			return computeForSingleContact(contact);
 		}
-		else
+		else // at least 2 membership contacts
 		{
+			final String adLanguage = StringUtils.trimBlankToOptional(request.getAdLanguage()).orElseGet(Language::getBaseAD_Language);
 			final ComputeNameAndGreetingRequest.Contact person1 = membershipContacts.get(0);
 			final ComputeNameAndGreetingRequest.Contact person2 = membershipContacts.get(1);
 
-			if (!Objects.equals(person1.getLastName(), person2.getLastName()))
-			{
-				return ExplainedOptional.of(NameAndGreeting.builder()
-													.name(userBL.buildContactName(person1.getFirstName(), person1.getLastName()))
-													.greetingId(person1.getGreetingId())
-													.build());
-			}
+			return computeForTwoContacts(person1, person2, adLanguage);
+		}
+	}
 
-			final Optional<Greeting> greetingComposite = greetingRepo.getComposite(person1.getGreetingId(), person2.getGreetingId());
+	@NonNull
+	private ExplainedOptional<NameAndGreeting> computeForSingleContact(final ComputeNameAndGreetingRequest.Contact contact)
+	{
+		return ExplainedOptional.of(NameAndGreeting.builder()
+				.name(userBL.buildContactName(contact.getFirstName(), contact.getLastName()))
+				.greetingId(contact.getGreetingId())
+				.build());
+	}
 
-			final Greeting greeting = greetingComposite.orElse(null);
+	@NonNull
+	private ExplainedOptional<NameAndGreeting> computeForTwoContacts(
+			@NonNull final ComputeNameAndGreetingRequest.Contact person1,
+			@NonNull final ComputeNameAndGreetingRequest.Contact person2,
+			@NonNull final String adLanguage)
+	{
+		if (!Objects.equals(person1.getLastName(), person2.getLastName()))
+		{
+			// TODO: clarify what shall we do with person2, if we shall do something
+			return computeForSingleContact(person1);
+		}
+		else
+		{
+			final GreetingId greetingId = greetingRepo.getComposite(person1.getGreetingId(), person2.getGreetingId())
+					.map(Greeting::getId)
+					.orElse(null);
 
-			final GreetingId greetingId = greeting== null? null : greeting.getId();
+			final String nameComposite = TranslatableStrings.builder()
+					.append(person1.getFirstName())
+					.append(" ")
+					.appendADMessage(MSG_And)
+					.append(" ")
+					.append(person2.getFirstName())
+					.build()
+					.translate(adLanguage);
 
-			final String nameComposite = person1.getFirstName()
-					+ " "
-					+ msgBL.getMsg(Env.getCtx(), MSG_And)
-					+ " "
-					+ person2.getFirstName();
 			return ExplainedOptional.of(NameAndGreeting.builder()
-												.name(userBL.buildContactName(nameComposite, person1.getLastName()))
-												.greetingId(greetingId)
-												.build());
+					.name(userBL.buildContactName(nameComposite, person1.getLastName()))
+					.greetingId(greetingId)
+					.build());
 		}
 	}
 
