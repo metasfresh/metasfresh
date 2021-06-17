@@ -6,10 +6,10 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.AdvancedSearchBPartnerProcessor;
 import de.metas.ui.web.window.descriptor.AdvancedSearchDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -42,13 +42,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AdvancedSearchDescriptorsProvider
 {
 	private static final Logger logger = LogManager.getLogger(AdvancedSearchDescriptorsProvider.class);
-	@Autowired
-	private DocumentDescriptorFactory documentDescriptors;
+
+	private final DocumentDescriptorFactory documentDescriptors;
 
 	private final ConcurrentHashMap<String, AdvancedSearchDescriptor> advSearchDescriptorsByTableName = new ConcurrentHashMap<>();
 
-	AdvancedSearchDescriptorsProvider()
+	AdvancedSearchDescriptorsProvider(
+			@NonNull final DocumentDescriptorFactory documentDescriptors)
 	{
+		this.documentDescriptors = documentDescriptors;
+
 		// FIXME: hardcoded AdvancedSearchDescriptor for C_BPartner_Adv_Search_v
 		final WindowId searchAssistentWindowId = getSearchAssistantWindowId().orElse(null);
 		if(searchAssistentWindowId != null)
@@ -72,6 +75,7 @@ public class AdvancedSearchDescriptorsProvider
 	public void addAdvancedSearchDescriptor(final AdvancedSearchDescriptor searchDescriptor)
 	{
 		advSearchDescriptorsByTableName.put(searchDescriptor.getTableName(), searchDescriptor);
+		logger.info("Registered {}", searchDescriptor);
 	}
 
 	public AdvancedSearchDescriptor getAdvancedSearchDescriptorOrNull(final String tableName)
