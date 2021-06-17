@@ -82,7 +82,6 @@ public class SerializeDeserializeTest
 											  .attributeInstance(JsonAttributeInstance.builder()
 																		 .attributeCode("attributeCode")
 																		 .valueStr("valueStr")
-																		 .attributeName("attributeName")
 																		 .build())
 											  .build())
 				.build();
