@@ -34,7 +34,6 @@ class Labels extends Component {
   handleClick = async () => {
     const {
       windowType, // windowId
-      docId,
       name,
       entity,
       subentity,
@@ -43,7 +42,6 @@ class Labels extends Component {
       rowId,
       viewId,
       readonly,
-      disconnected,
       dataId,
     } = this.props;
 
@@ -54,7 +52,7 @@ class Labels extends Component {
 
     const response = await dropdownRequest({
       docType: windowType,
-      docId: disconnected === 'inlineTab' ? dataId : docId,
+      docId: dataId,
       entity,
       subentity,
       subentityId,
@@ -62,7 +60,6 @@ class Labels extends Component {
       rowId,
       viewId,
       propertyName: name,
-      disconnected,
     });
 
     const suggestions = response.data.values;
@@ -109,7 +106,6 @@ class Labels extends Component {
     if (typeAhead !== this.lastTypeAhead) {
       const {
         windowType, // windowId
-        docId,
         name,
         entity,
         subentity,
@@ -117,13 +113,12 @@ class Labels extends Component {
         tabId,
         rowId,
         viewId,
-        disconnected,
         dataId,
       } = this.props;
 
       const response = await autocompleteRequest({
         docType: windowType, // windowId
-        docId: disconnected === 'inlineTab' ? dataId : docId,
+        docId: dataId,
         entity,
         subentity,
         subentityId,
@@ -425,7 +420,6 @@ Labels.propTypes = {
   rowId: PropTypes.string,
   viewId: PropTypes.any,
   readonly: PropTypes.bool,
-  disconnected: PropTypes.string,
   dataId: PropTypes.string,
 };
 
