@@ -629,6 +629,7 @@ public class BPartnerBL implements IBPartnerBL
 		final NameAndGreeting nameAndGreeting = partnerNameAndGreetingStrategies.compute(
 				strategyId,
 				ComputeNameAndGreetingRequest.builder()
+						.adLanguage(bpartner.getAD_Language())
 						.contacts(bpartnersRepo.retrieveContacts(bpartner)
 								.stream()
 								.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()

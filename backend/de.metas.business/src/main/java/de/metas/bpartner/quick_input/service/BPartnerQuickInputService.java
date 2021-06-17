@@ -72,6 +72,7 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -190,14 +191,17 @@ public class BPartnerQuickInputService
 
 			return bpartnerNameAndGreetingStrategies.compute(
 					bpGroupDAO.getBPartnerNameAndGreetingStrategyId(bpGroupId),
-					toComputeNameAndGreetingRequest(contacts));
+					toComputeNameAndGreetingRequest(contacts, bpartner.getAD_Language()));
 		}
 	}
 
 	private static ComputeNameAndGreetingRequest toComputeNameAndGreetingRequest(
-			final List<I_C_BPartner_Contact_QuickInput> contacts)
+			@NonNull final List<I_C_BPartner_Contact_QuickInput> contacts,
+			@Nullable final String adLanguage)
 	{
-		final ComputeNameAndGreetingRequest.ComputeNameAndGreetingRequestBuilder requestBuilder = ComputeNameAndGreetingRequest.builder();
+		final ComputeNameAndGreetingRequest.ComputeNameAndGreetingRequestBuilder requestBuilder = ComputeNameAndGreetingRequest.builder()
+				.adLanguage(adLanguage);
+
 		for (int i = 0; i < contacts.size(); i++)
 		{
 			final I_C_BPartner_Contact_QuickInput contact = contacts.get(i);
