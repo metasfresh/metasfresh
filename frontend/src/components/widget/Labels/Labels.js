@@ -117,11 +117,13 @@ class Labels extends Component {
         tabId,
         rowId,
         viewId,
+        disconnected,
+        dataId,
       } = this.props;
 
       const response = await autocompleteRequest({
         docType: windowType, // windowId
-        docId,
+        docId: disconnected === 'inlineTab' ? dataId : docId,
         entity,
         subentity,
         subentityId,
