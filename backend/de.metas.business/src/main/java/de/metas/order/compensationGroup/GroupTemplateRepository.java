@@ -12,7 +12,6 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -81,13 +80,8 @@ public class GroupTemplateRepository
 	{
 		final I_C_CompensationGroup_Schema schemaRecord = InterfaceWrapperHelper.load(groupTemplateId, I_C_CompensationGroup_Schema.class);
 
-		final ImmutableList<GroupTemplateRegularLine> mainLines = retrieveRegularLineRecords(groupTemplateId);
-
-		final List<I_C_CompensationGroup_SchemaLine> compensationLineRecords = retrieveCompensationLineRecords(groupTemplateId);
-		final List<GroupTemplateCompensationLine> compensationLines = compensationLineRecords.stream()
-				.map(compensationLineRecord -> fromRecord(compensationLineRecord, compensationLineRecords))
-				.collect(ImmutableList.toImmutableList());
-		Check.assumeNotEmpty(compensationLines, "compensationLines is not empty");
+		final ImmutableList<GroupTemplateRegularLine> mainLines = retrieveRegularLines(groupTemplateId);
+		final ImmutableList<GroupTemplateCompensationLine> compensationLines = retrieveCompensationLines(groupTemplateId);
 
 		return GroupTemplate.builder()
 				.id(GroupTemplateId.ofRepoId(schemaRecord.getC_CompensationGroup_Schema_ID()))
@@ -98,7 +92,7 @@ public class GroupTemplateRepository
 				.build();
 	}
 
-	private ImmutableList<GroupTemplateRegularLine> retrieveRegularLineRecords(final GroupTemplateId groupTemplateId)
+	private ImmutableList<GroupTemplateRegularLine> retrieveRegularLines(final GroupTemplateId groupTemplateId)
 	{
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_C_CompensationGroup_Schema_TemplateLine.class)
@@ -123,6 +117,14 @@ public class GroupTemplateRepository
 				.qty(Quantity.of(record.getQty(), uom))
 				.contractConditionsId(ConditionsId.ofRepoIdOrNull(record.getC_Flatrate_Conditions_ID()))
 				.build();
+	}
+
+	private ImmutableList<GroupTemplateCompensationLine> retrieveCompensationLines(final @NonNull GroupTemplateId groupTemplateId)
+	{
+		final List<I_C_CompensationGroup_SchemaLine> compensationLineRecords = retrieveCompensationLineRecords(groupTemplateId);
+		return compensationLineRecords.stream()
+				.map(compensationLineRecord -> fromRecord(compensationLineRecord, compensationLineRecords))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private List<I_C_CompensationGroup_SchemaLine> retrieveCompensationLineRecords(final GroupTemplateId groupTemplateId)
