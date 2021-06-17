@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.shipping;
 
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.shipping.v2.receiptcandidate.JsonResponseReceiptCandidates;
 import de.metas.common.util.time.SystemTime;
@@ -33,6 +34,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_ExportAudit;
 import de.metas.location.CountryId;
 import de.metas.product.ProductRepository;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -101,10 +103,12 @@ class ReceiptCandidateAPIServiceTest
 		final ReceiptCandidateExportSequenceNumberProvider exportSequenceNumberProvider = Mockito.mock(ReceiptCandidateExportSequenceNumberProvider.class);
 		Mockito.doReturn(1).when(exportSequenceNumberProvider).provideNextReceiptCandidateSeqNo();
 
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+
 		receiptCandidateAPIService = new ReceiptCandidateAPIService(
 				new ReceiptScheduleAuditRepository(),
 				new ReceiptScheduleRepository(),
-				new BPartnerCompositeRepository(new MockLogEntriesRepository()),
+				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}

@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner
  *  @author metasfresh (generated) 
@@ -354,7 +353,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -364,7 +363,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -372,11 +371,6 @@ public interface I_C_BPartner
 	 */
 	int getC_Greeting_ID();
 
-	@Nullable org.compiere.model.I_C_Greeting getC_Greeting();
-
-	void setC_Greeting(@Nullable org.compiere.model.I_C_Greeting C_Greeting);
-
-	ModelColumn<I_C_BPartner, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new ModelColumn<>(I_C_BPartner.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
 	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
 	/**
@@ -1375,7 +1369,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsCreateDefaultPOReference = "IsCreateDefaultPOReference";
 
 	/**
-	 * Set Kunde.
+	 * Set Customer.
 	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
@@ -1385,7 +1379,7 @@ public interface I_C_BPartner
 	void setIsCustomer (boolean IsCustomer);
 
 	/**
-	 * Get Kunde.
+	 * Get Customer.
 	 * Indicates if this Business Partner is a Customer
 	 *
 	 * <br>Type: YesNo
@@ -1869,7 +1863,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
 
 	/**
-	 * Set Frachtkostenpauschale.
+	 * Set Flat-rate freight charges.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1878,7 +1872,7 @@ public interface I_C_BPartner
 	void setM_FreightCost_ID (int M_FreightCost_ID);
 
 	/**
-	 * Get Frachtkostenpauschale.
+	 * Get Flat-rate freight charges.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false

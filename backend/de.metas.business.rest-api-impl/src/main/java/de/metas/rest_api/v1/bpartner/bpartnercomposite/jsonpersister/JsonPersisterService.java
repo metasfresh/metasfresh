@@ -1135,6 +1135,19 @@ public class JsonPersisterService
 			}
 		}
 
+		// subjectMatter
+		if (jsonBPartnerContact.isSubjectMatterSet())
+		{
+			if (jsonBPartnerContact.getSubjectMatter() == null)
+			{
+				logger.debug("Ignoring boolean property \"subjectMatter\" : null ");
+			}
+			else
+			{
+				contact.setSubjectMatterContact(jsonBPartnerContact.getSubjectMatter());
+			}
+		}
+
 		final BPartnerContactType bpartnerContactType = syncJsonToContactType(jsonBPartnerContact);
 		contact.setContactType(bpartnerContactType);
 	}
@@ -1218,17 +1231,6 @@ public class JsonPersisterService
 			else
 			{
 				contactType.salesDefault(jsonBPartnerContact.getSalesDefault());
-			}
-		}
-		if (jsonBPartnerContact.isSubjectMatterSet())
-		{
-			if (jsonBPartnerContact.getSubjectMatter() == null)
-			{
-				logger.debug("Ignoring boolean property \"subjectMatter\" : null ");
-			}
-			else
-			{
-				contactType.subjectMatter(jsonBPartnerContact.getSubjectMatter());
 			}
 		}
 

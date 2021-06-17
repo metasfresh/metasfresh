@@ -22,7 +22,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_Greeting;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -124,8 +123,8 @@ public class AddressBuilder
 	public String buildAddressString(
 			final I_C_Location location,
 			final boolean isLocalAddress,
-			final String bPartnerBlock,
-			final String userBlock)
+			@Nullable final String bPartnerBlock,
+			@Nullable final String userBlock)
 	{
 		final CountryId countryId = CountryId.ofRepoId(location.getC_Country_ID());
 		final I_C_Country country = countriesRepo.getById(countryId);
@@ -423,7 +422,7 @@ public class AddressBuilder
 			@Nullable final org.compiere.model.I_C_BPartner bPartner,
 			@Nullable final org.compiere.model.I_C_BPartner_Location location,
 			final I_AD_User user,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		if (bPartner == null || location == null)
 		{
@@ -511,8 +510,11 @@ public class AddressBuilder
 	private void replaceUserToken(String inStr, final I_AD_User user, final boolean withBrackets, StringBuilder outStr, final boolean isPartnerCompany)
 	{
 		String userGreeting = "";
-		final I_C_Greeting greetingOfUser = user.getC_Greeting();
-		if (greetingOfUser != null && greetingOfUser.getC_Greeting_ID() > 0)
+		final GreetingId greetingIdOfUser = GreetingId.ofRepoIdOrNull(user.getC_Greeting_ID());
+		final Greeting greetingOfUser = greetingIdOfUser != null
+				? greetingRepository.getById(greetingIdOfUser)
+				: null;
+		if (greetingOfUser != null)
 		{
 			userGreeting = greetingOfUser.getName();
 		}
@@ -642,18 +644,14 @@ public class AddressBuilder
 	/**
 	 * build User block
 	 *
-	 * @param ctx
 	 * @param isLocal       true if local country
-	 * @param user
-	 * @param bPartnerBlock
-	 * @param trxName
-	 * @return
 	 */
 	private String buildUserBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner, final boolean isLocal, final I_AD_User user, final String bPartnerBlock, final String trxName)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(bPartner);
 		final boolean isPartnerCompany = bPartner.isCompany();
-		final Language language = Language.asLanguage(bPartner.getAD_Language());
+		final Language language = Language.optionalOfNullable(bPartner.getAD_Language())
+				.orElseGet(Language::getBaseLanguage);
 
 		String userGreeting = "";
 		if (user != null)
@@ -662,8 +660,8 @@ public class AddressBuilder
 			final GreetingId greetingId = GreetingId.ofRepoIdOrNull(user.getC_Greeting_ID());
 			if (greetingId != null)
 			{
-				final Greeting greeting = greetingRepository.getByIdAndLang(greetingId, language);
-				userGreeting = greeting.getGreeting();
+				final Greeting greeting = greetingRepository.getById(greetingId);
+				userGreeting = greeting.getGreeting(language.getAD_Language());
 			}
 
 			final String userName = user.getLastname();
