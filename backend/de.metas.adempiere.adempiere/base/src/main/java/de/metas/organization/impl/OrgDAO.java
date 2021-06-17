@@ -266,7 +266,12 @@ public class OrgDAO implements IOrgDAO
 	@Override
 	public boolean isEUOneStopShop(@NonNull final OrgId orgId)
 	{
-		return getById(orgId).isEUOneStopShop();
+		final I_AD_Org org = getById(orgId);
+		if (org == null)
+		{
+			throw new AdempiereException("No Organization found for ID: " + orgId);
+		}
+		return org.isEUOneStopShop();
 	}
 
 }

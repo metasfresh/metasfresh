@@ -79,6 +79,7 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 				.addEqualsFilter(I_C_Fiscal_Representation.COLUMNNAME_To_Country_ID, countryId)
 				.addEqualsFilter(I_C_Fiscal_Representation.COLUMNNAME_AD_Org_ID, orgId)
 				.addCompareFilter(I_C_Fiscal_Representation.COLUMN_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL,date)
+				.addCompareFilter(I_C_Fiscal_Representation.COLUMN_ValidTo, CompareQueryFilter.Operator.GREATER_OR_EQUAL,date)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
