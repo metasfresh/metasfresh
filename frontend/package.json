@@ -84,7 +84,7 @@
     "eventsourcemock": "^2.0.0",
     "globby": "11.0.4",
     "html-loader": "2.1.2",
-    "html-webpack-plugin": "4.5.2",
+    "html-webpack-plugin": "5.3.1",
     "identity-obj-proxy": "3.0.0",
     "jest": "26.4.2",
     "jest-environment-jsdom-sixteen": "1.0.3",
