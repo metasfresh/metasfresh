@@ -83,7 +83,7 @@
     "eslint-plugin-react": "7.20.6",
     "eventsourcemock": "^2.0.0",
     "globby": "11.0.4",
-    "html-loader": "0.5.5",
+    "html-loader": "2.1.2",
     "html-webpack-plugin": "4.5.2",
     "identity-obj-proxy": "3.0.0",
     "jest": "26.4.2",
