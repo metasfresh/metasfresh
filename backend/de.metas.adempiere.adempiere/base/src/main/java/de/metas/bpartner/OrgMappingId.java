@@ -31,7 +31,6 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.Optional;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
@@ -78,7 +77,7 @@ public class OrgMappingId implements RepoIdAware
 		return getRepoId();
 	}
 
-	public static boolean equals(final OrgMappingId o1, final OrgMappingId o2)
+	public static boolean equals(@Nullable final OrgMappingId o1, @Nullable final OrgMappingId o2)
 	{
 		return Objects.equals(o1, o2);
 	}

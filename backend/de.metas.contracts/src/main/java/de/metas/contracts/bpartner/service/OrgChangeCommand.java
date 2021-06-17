@@ -151,8 +151,9 @@ public class OrgChangeCommand
 		createOrgSwitchRequest(orgChangeHistoryId);
 	}
 
-	private void createFlatrateTerms(@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
-									@NonNull final BPartnerComposite destinationBPartnerComposite)
+	private void createFlatrateTerms(
+			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
 		createMembershipFlatrateTerms(
 				orgChangeBPartnerComposite,
@@ -192,7 +193,6 @@ public class OrgChangeCommand
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
 		orgChangeRepo.createNonMembershipSubscriptionTerm(orgChangeBPartnerComposite, destinationBPartnerComposite, request);
-
 	}
 
 	private void createMembershipFlatrateTerms(

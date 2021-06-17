@@ -78,7 +78,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_OrgChange_History;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
@@ -329,12 +328,12 @@ public class OrgChangeRepository
 				.listIds(FlatrateTermId::ofRepoId);
 	}
 
-	public void createMembershipSubscriptionTerm(final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+	public void createMembershipSubscriptionTerm(
+			final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			final BPartnerComposite destinationBPartnerComposite,
 			final OrgChangeRequest orgChangeRequest)
 	{
 		final ProductId membershipProductId = orgChangeRequest.getMembershipProductId();
-
 		if (membershipProductId == null)
 		{
 			loggable.addLog("No membership subscription will be created for partner {} because there was no membership product ID "
@@ -343,29 +342,24 @@ public class OrgChangeRepository
 		}
 
 		final I_M_Product newOrgMembershipProduct = getNewOrgProductForMappingOrNull(membershipProductId, destinationBPartnerComposite.getOrgId());
-
 		if (newOrgMembershipProduct == null)
 		{
 			loggable.addLog("No counterpart membership product for {} was found in org {}",
 							membershipProductId,
 							destinationBPartnerComposite.getOrgId());
-
 			return;
 		}
 		final FlatrateTerm sourceMembershipSubscription = orgChangeBPartnerComposite.getMembershipSubscriptions().get(0);
-
 		if (sourceMembershipSubscription == null)
 		{
 			loggable.addLog("No membership subscription will be created for partner {} because there is no running membership "
 									+ "subscription in the initial partner {}",
 							destinationBPartnerComposite.getBpartner(),
 							orgChangeBPartnerComposite.getBPartnerComposite().getBpartner());
-
 			return;
 		}
 
 		createTerm(destinationBPartnerComposite, orgChangeRequest, newOrgMembershipProduct, sourceMembershipSubscription);
-
 	}
 
 	public void createNonMembershipSubscriptionTerm(final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
@@ -407,7 +401,8 @@ public class OrgChangeRepository
 		}
 	}
 
-	private void createTerm(final BPartnerComposite destinationBPartnerComposite,
+	private void createTerm(
+			@NonNull final BPartnerComposite destinationBPartnerComposite,
 			@NonNull final OrgChangeRequest orgChangeRequest,
 			@NonNull final I_M_Product newProduct,
 			@NonNull final FlatrateTerm sourceSubscription)
