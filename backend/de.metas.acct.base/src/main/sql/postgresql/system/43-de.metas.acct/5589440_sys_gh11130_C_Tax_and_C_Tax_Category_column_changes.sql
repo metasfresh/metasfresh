@@ -1169,7 +1169,7 @@ UPDATE AD_Column SET AD_Val_Rule_ID=540543,Updated=TO_TIMESTAMP('2021-06-08 13:1
 
 -- 2021-06-15T13:01:37.724Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,Updated,UpdatedBy,Version) VALUES (0,574444,618,0,15,261,'ValidTo',TO_TIMESTAMP('2021-06-15 16:01:37','YYYY-MM-DD HH24:MI:SS'),100,'N','9999-12-31','Gültig bis inklusiv (letzter Tag)','D',7,'"Gültig bis" bezeichnet den letzten Tag eines Gültigkeitzeitraumes.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Y','N',0,'Gültig bis','NP',0,TO_TIMESTAMP('2021-06-15 16:01:37','YYYY-MM-DD HH24:MI:SS'),100,0.0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,Updated,UpdatedBy,Version) VALUES (0,574444,618,0,15,261,'ValidTo',TO_TIMESTAMP('2021-06-15 16:01:37','YYYY-MM-DD HH24:MI:SS'),100,'N','9999-12-31 23:59:59.0','Gültig bis inklusiv (letzter Tag)','D',7,'"Gültig bis" bezeichnet den letzten Tag eines Gültigkeitzeitraumes.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','Y','N','Y','N',0,'Gültig bis','NP',0,TO_TIMESTAMP('2021-06-15 16:01:37','YYYY-MM-DD HH24:MI:SS'),100,0.0)
 ;
 
 -- 2021-06-15T13:01:37.731Z
@@ -1208,4 +1208,34 @@ COMMIT;
 -- 2021-06-15T13:05:20.829Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */ SELECT public.db_alter_table('C_Tax','ALTER TABLE public.C_Tax ADD COLUMN SeqNo NUMERIC DEFAULT 1000 NOT NULL')
+;
+
+-- 2021-06-17T08:10:57.059Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,574444,649715,0,174,0,TO_TIMESTAMP('2021-06-17 11:10:56','YYYY-MM-DD HH24:MI:SS'),100,'Gültig bis inklusiv (letzter Tag)',0,'D','"Gültig bis" bezeichnet den letzten Tag eines Gültigkeitzeitraumes.',0,'Y','Y','Y','N','N','N','N','N','Gültig bis',310,240,0,1,1,TO_TIMESTAMP('2021-06-17 11:10:56','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-06-17T08:10:57.062Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=649715 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-06-17T08:10:57.085Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(618) 
+;
+
+-- 2021-06-17T08:10:57.116Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=649715
+;
+
+-- 2021-06-17T08:10:57.117Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(649715)
+;
+
+-- 2021-06-17T08:11:54.753Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,649715,0,174,540519,586782,'F',TO_TIMESTAMP('2021-06-17 11:11:54','YYYY-MM-DD HH24:MI:SS'),100,'Gültig bis inklusiv (letzter Tag)','"Gültig bis" bezeichnet den letzten Tag eines Gültigkeitzeitraumes.','Y','N','N','Y','N','N','N',0,'Gültig bis',25,0,0,TO_TIMESTAMP('2021-06-17 11:11:54','YYYY-MM-DD HH24:MI:SS'),100)
 ;
