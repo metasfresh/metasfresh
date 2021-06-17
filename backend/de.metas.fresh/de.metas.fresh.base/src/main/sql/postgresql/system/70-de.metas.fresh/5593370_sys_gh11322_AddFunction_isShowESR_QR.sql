@@ -9,7 +9,8 @@ BEGIN
         SELECT VALUE
         INTO isShowESR_QR
         from AD_SysConfig
-        where Name = 'de.metas.payment.esr.Enabled' AND AD_Client_ID IN (0,1000000) AND AD_Org_ID IN (0, p_AD_Org_ID) ORDER BY AD_Org_ID DESC, AD_Client_ID DESC LIMIT 1;
+        where Name = 'de.metas.payment.esr.Enabled' AND AD_Client_ID IN (0,1000000) AND AD_Org_ID IN (0, p_AD_Org_ID) and IsActive='Y'
+		ORDER BY AD_Org_ID DESC, AD_Client_ID DESC LIMIT 1;
 
     return isShowESR_QR;
 END
