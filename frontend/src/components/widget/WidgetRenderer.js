@@ -608,6 +608,7 @@ class WidgetRenderer extends PureComponent {
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
+            dataId={dataId}
             tabId={tabId}
             rowId={rowId}
             windowType={windowType}
@@ -621,6 +622,7 @@ class WidgetRenderer extends PureComponent {
               })
             }
             tabIndex={tabIndex}
+            disconnected={disconnected}
           />
         );
       }

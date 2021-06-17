@@ -43,6 +43,8 @@ class Labels extends Component {
       rowId,
       viewId,
       readonly,
+      disconnected,
+      dataId,
     } = this.props;
 
     if (readonly) return false;
@@ -52,7 +54,7 @@ class Labels extends Component {
 
     const response = await dropdownRequest({
       docType: windowType,
-      docId,
+      docId: disconnected === 'inlineTab' ? dataId : docId,
       entity,
       subentity,
       subentityId,
@@ -60,6 +62,7 @@ class Labels extends Component {
       rowId,
       viewId,
       propertyName: name,
+      disconnected,
     });
 
     const suggestions = response.data.values;
@@ -420,6 +423,8 @@ Labels.propTypes = {
   rowId: PropTypes.string,
   viewId: PropTypes.any,
   readonly: PropTypes.bool,
+  disconnected: PropTypes.string,
+  dataId: PropTypes.string,
 };
 
 Labels.defaultProps = {
