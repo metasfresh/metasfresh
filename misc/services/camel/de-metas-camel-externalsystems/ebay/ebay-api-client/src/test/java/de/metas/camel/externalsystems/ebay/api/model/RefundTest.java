@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,35 +24,38 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for Refund
  */
-public class RefundTest {
-    private final Refund model = new Refund();
+public class RefundTest
+{
+	private final Refund model = new Refund();
 
-    /**
-     * Model tests for Refund
-     */
-    @Test
-    public void testRefund() {
-        // TODO: test Refund
-    }
+	/**
+	 * Model tests for Refund
+	 */
+	@Test
+	public void testRefund()
+	{
+		// TODO: test Refund
+	}
 
-    /**
-     * Test the property 'refundId'
-     */
-    @Test
-    public void refundIdTest() {
-        // TODO: test refundId
-    }
+	/**
+	 * Test the property 'refundId'
+	 */
+	@Test
+	public void refundIdTest()
+	{
+		// TODO: test refundId
+	}
 
-    /**
-     * Test the property 'refundStatus'
-     */
-    @Test
-    public void refundStatusTest() {
-        // TODO: test refundStatus
-    }
+	/**
+	 * Test the property 'refundStatus'
+	 */
+	@Test
+	public void refundStatusTest()
+	{
+		// TODO: test refundStatus
+	}
 
 }

@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,27 +24,29 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for PhoneNumber
  */
-public class PhoneNumberTest {
-    private final PhoneNumber model = new PhoneNumber();
+public class PhoneNumberTest
+{
+	private final PhoneNumber model = new PhoneNumber();
 
-    /**
-     * Model tests for PhoneNumber
-     */
-    @Test
-    public void testPhoneNumber() {
-        // TODO: test PhoneNumber
-    }
+	/**
+	 * Model tests for PhoneNumber
+	 */
+	@Test
+	public void testPhoneNumber()
+	{
+		// TODO: test PhoneNumber
+	}
 
-    /**
-     * Test the property 'phoneNumber'
-     */
-    @Test
-    public void phoneNumberTest() {
-        // TODO: test phoneNumber
-    }
+	/**
+	 * Test the property 'phoneNumber'
+	 */
+	@Test
+	public void phoneNumberTest()
+	{
+		// TODO: test phoneNumber
+	}
 
 }

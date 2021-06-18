@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,35 +24,38 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for ErrorParameter
  */
-public class ErrorParameterTest {
-    private final ErrorParameter model = new ErrorParameter();
+public class ErrorParameterTest
+{
+	private final ErrorParameter model = new ErrorParameter();
 
-    /**
-     * Model tests for ErrorParameter
-     */
-    @Test
-    public void testErrorParameter() {
-        // TODO: test ErrorParameter
-    }
+	/**
+	 * Model tests for ErrorParameter
+	 */
+	@Test
+	public void testErrorParameter()
+	{
+		// TODO: test ErrorParameter
+	}
 
-    /**
-     * Test the property 'name'
-     */
-    @Test
-    public void nameTest() {
-        // TODO: test name
-    }
+	/**
+	 * Test the property 'name'
+	 */
+	@Test
+	public void nameTest()
+	{
+		// TODO: test name
+	}
 
-    /**
-     * Test the property 'value'
-     */
-    @Test
-    public void valueTest() {
-        // TODO: test value
-    }
+	/**
+	 * Test the property 'value'
+	 */
+	@Test
+	public void valueTest()
+	{
+		// TODO: test value
+	}
 
 }

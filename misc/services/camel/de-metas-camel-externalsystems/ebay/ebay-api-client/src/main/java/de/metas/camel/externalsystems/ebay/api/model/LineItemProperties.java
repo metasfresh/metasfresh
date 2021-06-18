@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,129 +24,141 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type contains information about the eBay programs under which a line item was listed and sold.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class LineItemProperties {
-  public static final String SERIALIZED_NAME_BUYER_PROTECTION = "buyerProtection";
-  @SerializedName(SERIALIZED_NAME_BUYER_PROTECTION)
-  private Boolean buyerProtection;
+public class LineItemProperties
+{
+	public static final String SERIALIZED_NAME_BUYER_PROTECTION = "buyerProtection";
+	@SerializedName(SERIALIZED_NAME_BUYER_PROTECTION)
+	private Boolean buyerProtection;
 
-  public static final String SERIALIZED_NAME_FROM_BEST_OFFER = "fromBestOffer";
-  @SerializedName(SERIALIZED_NAME_FROM_BEST_OFFER)
-  private Boolean fromBestOffer;
+	public static final String SERIALIZED_NAME_FROM_BEST_OFFER = "fromBestOffer";
+	@SerializedName(SERIALIZED_NAME_FROM_BEST_OFFER)
+	private Boolean fromBestOffer;
 
-  public static final String SERIALIZED_NAME_SOLD_VIA_AD_CAMPAIGN = "soldViaAdCampaign";
-  @SerializedName(SERIALIZED_NAME_SOLD_VIA_AD_CAMPAIGN)
-  private Boolean soldViaAdCampaign;
+	public static final String SERIALIZED_NAME_SOLD_VIA_AD_CAMPAIGN = "soldViaAdCampaign";
+	@SerializedName(SERIALIZED_NAME_SOLD_VIA_AD_CAMPAIGN)
+	private Boolean soldViaAdCampaign;
 
+	public LineItemProperties buyerProtection(Boolean buyerProtection)
+	{
 
-  public LineItemProperties buyerProtection(Boolean buyerProtection) {
-    
-    this.buyerProtection = buyerProtection;
-    return this;
-  }
+		this.buyerProtection = buyerProtection;
+		return this;
+	}
 
-   /**
-   * A value of true indicates that the line item is covered by eBay&#39;s Buyer Protection program.
-   * @return buyerProtection
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "A value of true indicates that the line item is covered by eBay's Buyer Protection program.")
+	/**
+	 * A value of true indicates that the line item is covered by eBay&#39;s Buyer Protection program.
+	 * 
+	 * @return buyerProtection
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "A value of true indicates that the line item is covered by eBay's Buyer Protection program.")
 
-  public Boolean getBuyerProtection() {
-    return buyerProtection;
-  }
+	public Boolean getBuyerProtection()
+	{
+		return buyerProtection;
+	}
 
+	public void setBuyerProtection(Boolean buyerProtection)
+	{
+		this.buyerProtection = buyerProtection;
+	}
 
-  public void setBuyerProtection(Boolean buyerProtection) {
-    this.buyerProtection = buyerProtection;
-  }
+	public LineItemProperties fromBestOffer(Boolean fromBestOffer)
+	{
 
+		this.fromBestOffer = fromBestOffer;
+		return this;
+	}
 
-  public LineItemProperties fromBestOffer(Boolean fromBestOffer) {
-    
-    this.fromBestOffer = fromBestOffer;
-    return this;
-  }
+	/**
+	 * This field is only returned if true and indicates that the purchase occurred by the buyer and seller mutually agreeing on a Best Offer amount. The Best Offer feature can be set up for any listing type, but if this feature is set up for an auction listing, it will no longer be available once a bid has been placed on the listing.
+	 * 
+	 * @return fromBestOffer
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This field is only returned if true and indicates that the purchase occurred by the buyer and seller mutually agreeing on a Best Offer amount. The Best Offer feature can be set up for any listing type, but if this feature is set up for an auction listing, it will no longer be available once a bid has been placed on the listing.")
 
-   /**
-   * This field is only returned if true and indicates that the purchase occurred by the buyer and seller mutually agreeing on a Best Offer amount. The Best Offer feature can be set up for any listing type, but if this feature is set up for an auction listing, it will no longer be available once a bid has been placed on the listing.
-   * @return fromBestOffer
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This field is only returned if true and indicates that the purchase occurred by the buyer and seller mutually agreeing on a Best Offer amount. The Best Offer feature can be set up for any listing type, but if this feature is set up for an auction listing, it will no longer be available once a bid has been placed on the listing.")
+	public Boolean getFromBestOffer()
+	{
+		return fromBestOffer;
+	}
 
-  public Boolean getFromBestOffer() {
-    return fromBestOffer;
-  }
+	public void setFromBestOffer(Boolean fromBestOffer)
+	{
+		this.fromBestOffer = fromBestOffer;
+	}
 
+	public LineItemProperties soldViaAdCampaign(Boolean soldViaAdCampaign)
+	{
 
-  public void setFromBestOffer(Boolean fromBestOffer) {
-    this.fromBestOffer = fromBestOffer;
-  }
+		this.soldViaAdCampaign = soldViaAdCampaign;
+		return this;
+	}
 
+	/**
+	 * This field is only returned if true and indicates that the line item was sold as a result of a seller&#39;s ad campaign.
+	 * 
+	 * @return soldViaAdCampaign
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This field is only returned if true and indicates that the line item was sold as a result of a seller's ad campaign.")
 
-  public LineItemProperties soldViaAdCampaign(Boolean soldViaAdCampaign) {
-    
-    this.soldViaAdCampaign = soldViaAdCampaign;
-    return this;
-  }
+	public Boolean getSoldViaAdCampaign()
+	{
+		return soldViaAdCampaign;
+	}
 
-   /**
-   * This field is only returned if true and indicates that the line item was sold as a result of a seller&#39;s ad campaign.
-   * @return soldViaAdCampaign
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This field is only returned if true and indicates that the line item was sold as a result of a seller's ad campaign.")
+	public void setSoldViaAdCampaign(Boolean soldViaAdCampaign)
+	{
+		this.soldViaAdCampaign = soldViaAdCampaign;
+	}
 
-  public Boolean getSoldViaAdCampaign() {
-    return soldViaAdCampaign;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		LineItemProperties lineItemProperties = (LineItemProperties)o;
+		return Objects.equals(this.buyerProtection, lineItemProperties.buyerProtection) &&
+				Objects.equals(this.fromBestOffer, lineItemProperties.fromBestOffer) &&
+				Objects.equals(this.soldViaAdCampaign, lineItemProperties.soldViaAdCampaign);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(buyerProtection, fromBestOffer, soldViaAdCampaign);
+	}
 
-  public void setSoldViaAdCampaign(Boolean soldViaAdCampaign) {
-    this.soldViaAdCampaign = soldViaAdCampaign;
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class LineItemProperties {\n");
+		sb.append("    buyerProtection: ").append(toIndentedString(buyerProtection)).append("\n");
+		sb.append("    fromBestOffer: ").append(toIndentedString(fromBestOffer)).append("\n");
+		sb.append("    soldViaAdCampaign: ").append(toIndentedString(soldViaAdCampaign)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    LineItemProperties lineItemProperties = (LineItemProperties) o;
-    return Objects.equals(this.buyerProtection, lineItemProperties.buyerProtection) &&
-        Objects.equals(this.fromBestOffer, lineItemProperties.fromBestOffer) &&
-        Objects.equals(this.soldViaAdCampaign, lineItemProperties.soldViaAdCampaign);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(buyerProtection, fromBestOffer, soldViaAdCampaign);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class LineItemProperties {\n");
-    sb.append("    buyerProtection: ").append(toIndentedString(buyerProtection)).append("\n");
-    sb.append("    fromBestOffer: ").append(toIndentedString(fromBestOffer)).append("\n");
-    sb.append("    soldViaAdCampaign: ").append(toIndentedString(soldViaAdCampaign)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

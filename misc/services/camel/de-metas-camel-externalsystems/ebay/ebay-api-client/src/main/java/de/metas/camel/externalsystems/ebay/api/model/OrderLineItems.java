@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,100 +24,110 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used by the lineItems array that is used to identify one or more line items in the order with the payment dispute.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class OrderLineItems {
-  public static final String SERIALIZED_NAME_ITEM_ID = "itemId";
-  @SerializedName(SERIALIZED_NAME_ITEM_ID)
-  private String itemId;
+public class OrderLineItems
+{
+	public static final String SERIALIZED_NAME_ITEM_ID = "itemId";
+	@SerializedName(SERIALIZED_NAME_ITEM_ID)
+	private String itemId;
 
-  public static final String SERIALIZED_NAME_LINE_ITEM_ID = "lineItemId";
-  @SerializedName(SERIALIZED_NAME_LINE_ITEM_ID)
-  private String lineItemId;
+	public static final String SERIALIZED_NAME_LINE_ITEM_ID = "lineItemId";
+	@SerializedName(SERIALIZED_NAME_LINE_ITEM_ID)
+	private String lineItemId;
 
+	public OrderLineItems itemId(String itemId)
+	{
 
-  public OrderLineItems itemId(String itemId) {
-    
-    this.itemId = itemId;
-    return this;
-  }
+		this.itemId = itemId;
+		return this;
+	}
 
-   /**
-   * The unique identifier of the eBay listing associated with the order.
-   * @return itemId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The unique identifier of the eBay listing associated with the order.")
+	/**
+	 * The unique identifier of the eBay listing associated with the order.
+	 * 
+	 * @return itemId
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The unique identifier of the eBay listing associated with the order.")
 
-  public String getItemId() {
-    return itemId;
-  }
+	public String getItemId()
+	{
+		return itemId;
+	}
 
+	public void setItemId(String itemId)
+	{
+		this.itemId = itemId;
+	}
 
-  public void setItemId(String itemId) {
-    this.itemId = itemId;
-  }
+	public OrderLineItems lineItemId(String lineItemId)
+	{
 
+		this.lineItemId = lineItemId;
+		return this;
+	}
 
-  public OrderLineItems lineItemId(String lineItemId) {
-    
-    this.lineItemId = lineItemId;
-    return this;
-  }
+	/**
+	 * The unique identifier of the line item within the order. The lineItemId value is created once the buyer actually purchases the item, or if there is a commitment to buy (such as an auction that is won by the buyer, an accepted Best Offer, or other situation that does not require immediate payment from the buyer).
+	 * 
+	 * @return lineItemId
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The unique identifier of the line item within the order. The lineItemId value is created once the buyer actually purchases the item, or if there is a commitment to buy (such as an auction that is won by the buyer, an accepted Best Offer, or other situation that does not require immediate payment from the buyer).")
 
-   /**
-   * The unique identifier of the line item within the order. The lineItemId value is created once the buyer actually purchases the item, or if there is a commitment to buy (such as an auction that is won by the buyer, an accepted Best Offer, or other situation that does not require immediate payment from the buyer).
-   * @return lineItemId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The unique identifier of the line item within the order. The lineItemId value is created once the buyer actually purchases the item, or if there is a commitment to buy (such as an auction that is won by the buyer, an accepted Best Offer, or other situation that does not require immediate payment from the buyer).")
+	public String getLineItemId()
+	{
+		return lineItemId;
+	}
 
-  public String getLineItemId() {
-    return lineItemId;
-  }
+	public void setLineItemId(String lineItemId)
+	{
+		this.lineItemId = lineItemId;
+	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		OrderLineItems orderLineItems = (OrderLineItems)o;
+		return Objects.equals(this.itemId, orderLineItems.itemId) &&
+				Objects.equals(this.lineItemId, orderLineItems.lineItemId);
+	}
 
-  public void setLineItemId(String lineItemId) {
-    this.lineItemId = lineItemId;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(itemId, lineItemId);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class OrderLineItems {\n");
+		sb.append("    itemId: ").append(toIndentedString(itemId)).append("\n");
+		sb.append("    lineItemId: ").append(toIndentedString(lineItemId)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    OrderLineItems orderLineItems = (OrderLineItems) o;
-    return Objects.equals(this.itemId, orderLineItems.itemId) &&
-        Objects.equals(this.lineItemId, orderLineItems.lineItemId);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(itemId, lineItemId);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class OrderLineItems {\n");
-    sb.append("    itemId: ").append(toIndentedString(itemId)).append("\n");
-    sb.append("    lineItemId: ").append(toIndentedString(lineItemId)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

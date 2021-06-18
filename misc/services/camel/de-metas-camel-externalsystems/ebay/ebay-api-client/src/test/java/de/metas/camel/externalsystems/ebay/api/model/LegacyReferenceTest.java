@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,35 +24,38 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for LegacyReference
  */
-public class LegacyReferenceTest {
-    private final LegacyReference model = new LegacyReference();
+public class LegacyReferenceTest
+{
+	private final LegacyReference model = new LegacyReference();
 
-    /**
-     * Model tests for LegacyReference
-     */
-    @Test
-    public void testLegacyReference() {
-        // TODO: test LegacyReference
-    }
+	/**
+	 * Model tests for LegacyReference
+	 */
+	@Test
+	public void testLegacyReference()
+	{
+		// TODO: test LegacyReference
+	}
 
-    /**
-     * Test the property 'legacyItemId'
-     */
-    @Test
-    public void legacyItemIdTest() {
-        // TODO: test legacyItemId
-    }
+	/**
+	 * Test the property 'legacyItemId'
+	 */
+	@Test
+	public void legacyItemIdTest()
+	{
+		// TODO: test legacyItemId
+	}
 
-    /**
-     * Test the property 'legacyTransactionId'
-     */
-    @Test
-    public void legacyTransactionIdTest() {
-        // TODO: test legacyTransactionId
-    }
+	/**
+	 * Test the property 'legacyTransactionId'
+	 */
+	@Test
+	public void legacyTransactionIdTest()
+	{
+		// TODO: test legacyTransactionId
+	}
 
 }

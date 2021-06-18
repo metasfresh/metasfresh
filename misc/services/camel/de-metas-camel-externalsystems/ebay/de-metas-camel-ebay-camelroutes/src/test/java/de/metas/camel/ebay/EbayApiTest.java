@@ -55,131 +55,139 @@ import de.metas.camel.externalsystems.ebay.api.invoker.auth.OAuth;
 import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
 import io.github.bonigarcia.wdm.WebDriverManager;
 
+public class EbayApiTest
+{
 
-public class EbayApiTest {
-	
 	private static final Environment EXECUTION_ENV = Environment.SANDBOX;
-	
-    private static final List<String> SCOPE_LIST = Arrays.asList("https://api.ebay.com/oauth/api_scope", 
-    		"https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
-    		"https://api.ebay.com/oauth/api_scope/sell.fulfillment");
-	
-    
-    @BeforeAll
-    public static void setupClass() throws FileNotFoundException {
-    	WebDriverManager.chromedriver().setup();
-    	
-    	CredentialUtil.load(new FileInputStream("src/test/resources/ebay-test-creds.yaml"));
-    	CredentialUtil.dump();
-    }
-    
-	
+
+	private static final List<String> SCOPE_LIST = Arrays.asList("https://api.ebay.com/oauth/api_scope",
+			"https://api.ebay.com/oauth/api_scope/sell.marketing.readonly",
+			"https://api.ebay.com/oauth/api_scope/sell.fulfillment");
+
+	@BeforeAll
+	public static void setupClass() throws FileNotFoundException
+	{
+		WebDriverManager.chromedriver().setup();
+
+		CredentialUtil.load(new FileInputStream("src/test/resources/ebay-test-creds.yaml"));
+		CredentialUtil.dump();
+	}
+
 	@Test
-	public void testLoadOrders() throws Exception {
-		
+	public void testLoadOrders() throws Exception
+	{
+
 		String authorizationCode = getAuthorizationCode();
 
-		
-        OAuth2Api auth2Api = new OAuth2Api();
-        OAuthResponse oauth2Response = auth2Api.exchangeCodeForAccessToken(EXECUTION_ENV, authorizationCode);
+		OAuth2Api auth2Api = new OAuth2Api();
+		OAuthResponse oauth2Response = auth2Api.exchangeCodeForAccessToken(EXECUTION_ENV, authorizationCode);
 		Assert.assertNotNull(oauth2Response);
-		
-		
-		if(oauth2Response.getAccessToken().isPresent()) {
-			
+
+		if (oauth2Response.getAccessToken().isPresent())
+		{
+
 			ApiClient defaultClient = Configuration.getDefaultApiClient();
 			defaultClient.setBasePath("https://api.sandbox.ebay.com/sell/fulfillment/v1");
-//			defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
+			// defaultClient.setBasePath("https://api.ebay.com/sell/fulfillment/v1");
 
-	        // Configure OAuth2 access token for authorization: api_auth
-	        OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
-	        api_auth.setAccessToken(oauth2Response.getAccessToken().get().getToken());
-	        
-	        try {
-	        	final OrderApi api = new OrderApi(defaultClient);
-	        	
-	        	
+			// Configure OAuth2 access token for authorization: api_auth
+			OAuth api_auth = (OAuth)defaultClient.getAuthentication("api_auth");
+			api_auth.setAccessToken(oauth2Response.getAccessToken().get().getToken());
+
+			try
+			{
+				final OrderApi api = new OrderApi(defaultClient);
+
 				String fieldGroups = null;
-			    String filter = null;
-			    String limit = "20";
-			    String offset = null;
-			    String orderIds = null;
-			    OrderSearchPagedCollection response = api.getOrders(fieldGroups, filter, limit, offset, orderIds);
-			    
-			    Assert.assertNotNull(response);
-	            System.out.println(response);
-	            
-	          } catch (ApiException e) {
-	            System.err.println("Exception when calling OrderApi#getOrder");
-	            System.err.println("Status code: " + e.getCode());
-	            System.err.println("Reason: " + e.getResponseBody());
-	            System.err.println("Response headers: " + e.getResponseHeaders());
-	            e.printStackTrace();
-	          }
-		} else {
-			
-			
-			
+				String filter = null;
+				String limit = "20";
+				String offset = null;
+				String orderIds = null;
+				OrderSearchPagedCollection response = api.getOrders(fieldGroups, filter, limit, offset, orderIds);
+
+				Assert.assertNotNull(response);
+				System.out.println(response);
+
+			}
+			catch (ApiException e)
+			{
+				System.err.println("Exception when calling OrderApi#getOrder");
+				System.err.println("Status code: " + e.getCode());
+				System.err.println("Reason: " + e.getResponseBody());
+				System.err.println("Response headers: " + e.getResponseHeaders());
+				e.printStackTrace();
+			}
+		}
+		else
+		{
+
 		}
 
 	}
-	
-	
-	private String getAuthorizationResponseUrl() throws InterruptedException {
+
+	private String getAuthorizationResponseUrl() throws InterruptedException
+	{
 		Properties prop = new Properties();
-        try {
-            prop.load(EbayApiTest.class.getClassLoader().getResourceAsStream("application.properties"));
-            
-        } catch (IOException ex) {
-        	System.err.println("Please provide a a properties file with ebay user and pass.");
-        } 
-		
-		
-        WebDriver driver = new ChromeDriver();
-        OAuth2Api auth2Api = new OAuth2Api();
-        String authorizeUrl = auth2Api.generateUserAuthorizationUrl(EXECUTION_ENV, SCOPE_LIST, Optional.of("current-page"));
+		try
+		{
+			prop.load(EbayApiTest.class.getClassLoader().getResourceAsStream("application.properties"));
 
-        driver.get(authorizeUrl);
-        Thread.sleep(4000);
+		}
+		catch (IOException ex)
+		{
+			System.err.println("Please provide a a properties file with ebay user and pass.");
+		}
 
-        WebElement userId = (new WebDriverWait(driver, 10))
-                .until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector("input[type='text']"))));
-        WebElement password = driver.findElement(By.cssSelector("input[type='password']"));
-        
-        userId.sendKeys(prop.getProperty("ebay.app.userid"));
-        password.sendKeys(prop.getProperty("ebay.app.userpass"));
-        driver.findElement(By.name("sgnBt")).submit();
+		WebDriver driver = new ChromeDriver();
+		OAuth2Api auth2Api = new OAuth2Api();
+		String authorizeUrl = auth2Api.generateUserAuthorizationUrl(EXECUTION_ENV, SCOPE_LIST, Optional.of("current-page"));
 
-        Thread.sleep(4000);
+		driver.get(authorizeUrl);
+		Thread.sleep(4000);
 
-        String url = null;
-        if (driver.getCurrentUrl().contains("code=")) {
-            url = driver.getCurrentUrl();
-        } else {
-            WebElement agreeBtn = (new WebDriverWait(driver, 10))
-                    .until(ExpectedConditions.visibilityOf(driver.findElement(By.id("submit"))));
+		WebElement userId = (new WebDriverWait(driver, 10))
+				.until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector("input[type='text']"))));
+		WebElement password = driver.findElement(By.cssSelector("input[type='password']"));
 
-            agreeBtn.submit();
-            Thread.sleep(5000);
-            url = driver.getCurrentUrl();
-        }
-        driver.quit();
-        return url;
-    }
-	
-	
-	private String getAuthorizationCode() throws InterruptedException {
-        String url = getAuthorizationResponseUrl();
-        int codeIndex = url.indexOf("code=");
-        String authorizationCode = null;
-        if (codeIndex > 0) {
-            Pattern pattern = Pattern.compile("code=(.*?)&");
-            Matcher matcher = pattern.matcher(url);
-            if (matcher.find()) {
-                authorizationCode = matcher.group(1);
-            }
-        }
-        return authorizationCode;
-    }
+		userId.sendKeys(prop.getProperty("ebay.app.userid"));
+		password.sendKeys(prop.getProperty("ebay.app.userpass"));
+		driver.findElement(By.name("sgnBt")).submit();
+
+		Thread.sleep(4000);
+
+		String url = null;
+		if (driver.getCurrentUrl().contains("code="))
+		{
+			url = driver.getCurrentUrl();
+		}
+		else
+		{
+			WebElement agreeBtn = (new WebDriverWait(driver, 10))
+					.until(ExpectedConditions.visibilityOf(driver.findElement(By.id("submit"))));
+
+			agreeBtn.submit();
+			Thread.sleep(5000);
+			url = driver.getCurrentUrl();
+		}
+		driver.quit();
+		return url;
+	}
+
+	private String getAuthorizationCode() throws InterruptedException
+	{
+		String url = getAuthorizationResponseUrl();
+		int codeIndex = url.indexOf("code=");
+		String authorizationCode = null;
+		if (codeIndex > 0)
+		{
+			Pattern pattern = Pattern.compile("code=(.*?)&");
+			Matcher matcher = pattern.matcher(url);
+			if (matcher.find())
+			{
+				authorizationCode = matcher.group(1);
+			}
+		}
+		return authorizationCode;
+	}
 
 }

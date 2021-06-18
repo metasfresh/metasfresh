@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,129 +24,141 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type contains information about the order's buyer.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class Buyer {
-  public static final String SERIALIZED_NAME_TAX_ADDRESS = "taxAddress";
-  @SerializedName(SERIALIZED_NAME_TAX_ADDRESS)
-  private TaxAddress taxAddress;
+public class Buyer
+{
+	public static final String SERIALIZED_NAME_TAX_ADDRESS = "taxAddress";
+	@SerializedName(SERIALIZED_NAME_TAX_ADDRESS)
+	private TaxAddress taxAddress;
 
-  public static final String SERIALIZED_NAME_TAX_IDENTIFIER = "taxIdentifier";
-  @SerializedName(SERIALIZED_NAME_TAX_IDENTIFIER)
-  private TaxIdentifier taxIdentifier;
+	public static final String SERIALIZED_NAME_TAX_IDENTIFIER = "taxIdentifier";
+	@SerializedName(SERIALIZED_NAME_TAX_IDENTIFIER)
+	private TaxIdentifier taxIdentifier;
 
-  public static final String SERIALIZED_NAME_USERNAME = "username";
-  @SerializedName(SERIALIZED_NAME_USERNAME)
-  private String username;
+	public static final String SERIALIZED_NAME_USERNAME = "username";
+	@SerializedName(SERIALIZED_NAME_USERNAME)
+	private String username;
 
+	public Buyer taxAddress(TaxAddress taxAddress)
+	{
 
-  public Buyer taxAddress(TaxAddress taxAddress) {
-    
-    this.taxAddress = taxAddress;
-    return this;
-  }
+		this.taxAddress = taxAddress;
+		return this;
+	}
 
-   /**
-   * Get taxAddress
-   * @return taxAddress
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	/**
+	 * Get taxAddress
+	 * 
+	 * @return taxAddress
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-  public TaxAddress getTaxAddress() {
-    return taxAddress;
-  }
+	public TaxAddress getTaxAddress()
+	{
+		return taxAddress;
+	}
 
+	public void setTaxAddress(TaxAddress taxAddress)
+	{
+		this.taxAddress = taxAddress;
+	}
 
-  public void setTaxAddress(TaxAddress taxAddress) {
-    this.taxAddress = taxAddress;
-  }
+	public Buyer taxIdentifier(TaxIdentifier taxIdentifier)
+	{
 
+		this.taxIdentifier = taxIdentifier;
+		return this;
+	}
 
-  public Buyer taxIdentifier(TaxIdentifier taxIdentifier) {
-    
-    this.taxIdentifier = taxIdentifier;
-    return this;
-  }
+	/**
+	 * Get taxIdentifier
+	 * 
+	 * @return taxIdentifier
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-   /**
-   * Get taxIdentifier
-   * @return taxIdentifier
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	public TaxIdentifier getTaxIdentifier()
+	{
+		return taxIdentifier;
+	}
 
-  public TaxIdentifier getTaxIdentifier() {
-    return taxIdentifier;
-  }
+	public void setTaxIdentifier(TaxIdentifier taxIdentifier)
+	{
+		this.taxIdentifier = taxIdentifier;
+	}
 
+	public Buyer username(String username)
+	{
 
-  public void setTaxIdentifier(TaxIdentifier taxIdentifier) {
-    this.taxIdentifier = taxIdentifier;
-  }
+		this.username = username;
+		return this;
+	}
 
+	/**
+	 * The buyer&#39;s eBay user ID.
+	 * 
+	 * @return username
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The buyer's eBay user ID.")
 
-  public Buyer username(String username) {
-    
-    this.username = username;
-    return this;
-  }
+	public String getUsername()
+	{
+		return username;
+	}
 
-   /**
-   * The buyer&#39;s eBay user ID.
-   * @return username
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The buyer's eBay user ID.")
+	public void setUsername(String username)
+	{
+		this.username = username;
+	}
 
-  public String getUsername() {
-    return username;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		Buyer buyer = (Buyer)o;
+		return Objects.equals(this.taxAddress, buyer.taxAddress) &&
+				Objects.equals(this.taxIdentifier, buyer.taxIdentifier) &&
+				Objects.equals(this.username, buyer.username);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(taxAddress, taxIdentifier, username);
+	}
 
-  public void setUsername(String username) {
-    this.username = username;
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class Buyer {\n");
+		sb.append("    taxAddress: ").append(toIndentedString(taxAddress)).append("\n");
+		sb.append("    taxIdentifier: ").append(toIndentedString(taxIdentifier)).append("\n");
+		sb.append("    username: ").append(toIndentedString(username)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Buyer buyer = (Buyer) o;
-    return Objects.equals(this.taxAddress, buyer.taxAddress) &&
-        Objects.equals(this.taxIdentifier, buyer.taxIdentifier) &&
-        Objects.equals(this.username, buyer.username);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(taxAddress, taxIdentifier, username);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class Buyer {\n");
-    sb.append("    taxAddress: ").append(toIndentedString(taxAddress)).append("\n");
-    sb.append("    taxIdentifier: ").append(toIndentedString(taxIdentifier)).append("\n");
-    sb.append("    username: ").append(toIndentedString(username)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

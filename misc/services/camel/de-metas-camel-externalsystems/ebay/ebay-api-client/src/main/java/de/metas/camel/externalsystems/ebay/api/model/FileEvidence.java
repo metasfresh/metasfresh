@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,71 +24,80 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used to store the unique identifier of an evidence file. Evidence files are used by seller to contest a payment dispute.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class FileEvidence {
-  public static final String SERIALIZED_NAME_FILE_ID = "fileId";
-  @SerializedName(SERIALIZED_NAME_FILE_ID)
-  private String fileId;
+public class FileEvidence
+{
+	public static final String SERIALIZED_NAME_FILE_ID = "fileId";
+	@SerializedName(SERIALIZED_NAME_FILE_ID)
+	private String fileId;
 
+	public FileEvidence fileId(String fileId)
+	{
 
-  public FileEvidence fileId(String fileId) {
-    
-    this.fileId = fileId;
-    return this;
-  }
+		this.fileId = fileId;
+		return this;
+	}
 
-   /**
-   * If an uploadEvidenceFile call is successful, a unique identifier of this evidence file will be returned in the uploadEvidenceFile response payload. This unique fileId value is then used to either add this evidence file to a new evidence set using the addEvidence method, or to add this file to an existing evidence set using the updateEvidence method. Note that if an evidence set already exists for a payment dispute, the getPaymentDispute method will return both the evidenceId (unique identifier of evidence set) value, and the fileId (unique identifier of a file within that evidence set) value(s).
-   * @return fileId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "If an uploadEvidenceFile call is successful, a unique identifier of this evidence file will be returned in the uploadEvidenceFile response payload. This unique fileId value is then used to either add this evidence file to a new evidence set using the addEvidence method, or to add this file to an existing evidence set using the updateEvidence method. Note that if an evidence set already exists for a payment dispute, the getPaymentDispute method will return both the evidenceId (unique identifier of evidence set) value, and the fileId (unique identifier of a file within that evidence set) value(s).")
+	/**
+	 * If an uploadEvidenceFile call is successful, a unique identifier of this evidence file will be returned in the uploadEvidenceFile response payload. This unique fileId value is then used to either add this evidence file to a new evidence set using the addEvidence method, or to add this file to an existing evidence set using the updateEvidence method. Note that if an evidence set already
+	 * exists for a payment dispute, the getPaymentDispute method will return both the evidenceId (unique identifier of evidence set) value, and the fileId (unique identifier of a file within that evidence set) value(s).
+	 * 
+	 * @return fileId
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "If an uploadEvidenceFile call is successful, a unique identifier of this evidence file will be returned in the uploadEvidenceFile response payload. This unique fileId value is then used to either add this evidence file to a new evidence set using the addEvidence method, or to add this file to an existing evidence set using the updateEvidence method. Note that if an evidence set already exists for a payment dispute, the getPaymentDispute method will return both the evidenceId (unique identifier of evidence set) value, and the fileId (unique identifier of a file within that evidence set) value(s).")
 
-  public String getFileId() {
-    return fileId;
-  }
+	public String getFileId()
+	{
+		return fileId;
+	}
 
+	public void setFileId(String fileId)
+	{
+		this.fileId = fileId;
+	}
 
-  public void setFileId(String fileId) {
-    this.fileId = fileId;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		FileEvidence fileEvidence = (FileEvidence)o;
+		return Objects.equals(this.fileId, fileEvidence.fileId);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(fileId);
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    FileEvidence fileEvidence = (FileEvidence) o;
-    return Objects.equals(this.fileId, fileEvidence.fileId);
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class FileEvidence {\n");
+		sb.append("    fileId: ").append(toIndentedString(fileId)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(fileId);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class FileEvidence {\n");
-    sb.append("    fileId: ").append(toIndentedString(fileId)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

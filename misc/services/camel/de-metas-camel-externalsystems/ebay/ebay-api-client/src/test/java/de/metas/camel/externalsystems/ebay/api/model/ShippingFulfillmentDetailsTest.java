@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -28,51 +27,56 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for ShippingFulfillmentDetails
  */
-public class ShippingFulfillmentDetailsTest {
-    private final ShippingFulfillmentDetails model = new ShippingFulfillmentDetails();
+public class ShippingFulfillmentDetailsTest
+{
+	private final ShippingFulfillmentDetails model = new ShippingFulfillmentDetails();
 
-    /**
-     * Model tests for ShippingFulfillmentDetails
-     */
-    @Test
-    public void testShippingFulfillmentDetails() {
-        // TODO: test ShippingFulfillmentDetails
-    }
+	/**
+	 * Model tests for ShippingFulfillmentDetails
+	 */
+	@Test
+	public void testShippingFulfillmentDetails()
+	{
+		// TODO: test ShippingFulfillmentDetails
+	}
 
-    /**
-     * Test the property 'lineItems'
-     */
-    @Test
-    public void lineItemsTest() {
-        // TODO: test lineItems
-    }
+	/**
+	 * Test the property 'lineItems'
+	 */
+	@Test
+	public void lineItemsTest()
+	{
+		// TODO: test lineItems
+	}
 
-    /**
-     * Test the property 'shippedDate'
-     */
-    @Test
-    public void shippedDateTest() {
-        // TODO: test shippedDate
-    }
+	/**
+	 * Test the property 'shippedDate'
+	 */
+	@Test
+	public void shippedDateTest()
+	{
+		// TODO: test shippedDate
+	}
 
-    /**
-     * Test the property 'shippingCarrierCode'
-     */
-    @Test
-    public void shippingCarrierCodeTest() {
-        // TODO: test shippingCarrierCode
-    }
+	/**
+	 * Test the property 'shippingCarrierCode'
+	 */
+	@Test
+	public void shippingCarrierCodeTest()
+	{
+		// TODO: test shippingCarrierCode
+	}
 
-    /**
-     * Test the property 'trackingNumber'
-     */
-    @Test
-    public void trackingNumberTest() {
-        // TODO: test trackingNumber
-    }
+	/**
+	 * Test the property 'trackingNumber'
+	 */
+	@Test
+	public void trackingNumberTest()
+	{
+		// TODO: test trackingNumber
+	}
 
 }

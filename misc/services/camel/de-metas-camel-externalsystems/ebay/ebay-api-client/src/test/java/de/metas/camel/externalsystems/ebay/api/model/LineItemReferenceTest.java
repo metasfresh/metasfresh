@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,35 +24,38 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for LineItemReference
  */
-public class LineItemReferenceTest {
-    private final LineItemReference model = new LineItemReference();
+public class LineItemReferenceTest
+{
+	private final LineItemReference model = new LineItemReference();
 
-    /**
-     * Model tests for LineItemReference
-     */
-    @Test
-    public void testLineItemReference() {
-        // TODO: test LineItemReference
-    }
+	/**
+	 * Model tests for LineItemReference
+	 */
+	@Test
+	public void testLineItemReference()
+	{
+		// TODO: test LineItemReference
+	}
 
-    /**
-     * Test the property 'lineItemId'
-     */
-    @Test
-    public void lineItemIdTest() {
-        // TODO: test lineItemId
-    }
+	/**
+	 * Test the property 'lineItemId'
+	 */
+	@Test
+	public void lineItemIdTest()
+	{
+		// TODO: test lineItemId
+	}
 
-    /**
-     * Test the property 'quantity'
-     */
-    @Test
-    public void quantityTest() {
-        // TODO: test quantity
-    }
+	/**
+	 * Test the property 'quantity'
+	 */
+	@Test
+	public void quantityTest()
+	{
+		// TODO: test quantity
+	}
 
 }

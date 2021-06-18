@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,100 +24,110 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type contains the name and value of an input parameter that contributed to a specific error or warning condition.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class ErrorParameter {
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+public class ErrorParameter
+{
+	public static final String SERIALIZED_NAME_NAME = "name";
+	@SerializedName(SERIALIZED_NAME_NAME)
+	private String name;
 
-  public static final String SERIALIZED_NAME_VALUE = "value";
-  @SerializedName(SERIALIZED_NAME_VALUE)
-  private String value;
+	public static final String SERIALIZED_NAME_VALUE = "value";
+	@SerializedName(SERIALIZED_NAME_VALUE)
+	private String value;
 
+	public ErrorParameter name(String name)
+	{
 
-  public ErrorParameter name(String name) {
-    
-    this.name = name;
-    return this;
-  }
+		this.name = name;
+		return this;
+	}
 
-   /**
-   * This is the name of input field that caused an issue with the call request.
-   * @return name
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This is the name of input field that caused an issue with the call request.")
+	/**
+	 * This is the name of input field that caused an issue with the call request.
+	 * 
+	 * @return name
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This is the name of input field that caused an issue with the call request.")
 
-  public String getName() {
-    return name;
-  }
+	public String getName()
+	{
+		return name;
+	}
 
+	public void setName(String name)
+	{
+		this.name = name;
+	}
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	public ErrorParameter value(String value)
+	{
 
+		this.value = value;
+		return this;
+	}
 
-  public ErrorParameter value(String value) {
-    
-    this.value = value;
-    return this;
-  }
+	/**
+	 * This is the actual value that was passed in for the element specified in the name field.
+	 * 
+	 * @return value
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This is the actual value that was passed in for the element specified in the name field.")
 
-   /**
-   * This is the actual value that was passed in for the element specified in the name field.
-   * @return value
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This is the actual value that was passed in for the element specified in the name field.")
+	public String getValue()
+	{
+		return value;
+	}
 
-  public String getValue() {
-    return value;
-  }
+	public void setValue(String value)
+	{
+		this.value = value;
+	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		ErrorParameter errorParameter = (ErrorParameter)o;
+		return Objects.equals(this.name, errorParameter.name) &&
+				Objects.equals(this.value, errorParameter.value);
+	}
 
-  public void setValue(String value) {
-    this.value = value;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(name, value);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class ErrorParameter {\n");
+		sb.append("    name: ").append(toIndentedString(name)).append("\n");
+		sb.append("    value: ").append(toIndentedString(value)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    ErrorParameter errorParameter = (ErrorParameter) o;
-    return Objects.equals(this.name, errorParameter.name) &&
-        Objects.equals(this.value, errorParameter.value);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(name, value);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ErrorParameter {\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    value: ").append(toIndentedString(value)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

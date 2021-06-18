@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -29,43 +28,47 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for ShippingFulfillmentPagedCollection
  */
-public class ShippingFulfillmentPagedCollectionTest {
-    private final ShippingFulfillmentPagedCollection model = new ShippingFulfillmentPagedCollection();
+public class ShippingFulfillmentPagedCollectionTest
+{
+	private final ShippingFulfillmentPagedCollection model = new ShippingFulfillmentPagedCollection();
 
-    /**
-     * Model tests for ShippingFulfillmentPagedCollection
-     */
-    @Test
-    public void testShippingFulfillmentPagedCollection() {
-        // TODO: test ShippingFulfillmentPagedCollection
-    }
+	/**
+	 * Model tests for ShippingFulfillmentPagedCollection
+	 */
+	@Test
+	public void testShippingFulfillmentPagedCollection()
+	{
+		// TODO: test ShippingFulfillmentPagedCollection
+	}
 
-    /**
-     * Test the property 'fulfillments'
-     */
-    @Test
-    public void fulfillmentsTest() {
-        // TODO: test fulfillments
-    }
+	/**
+	 * Test the property 'fulfillments'
+	 */
+	@Test
+	public void fulfillmentsTest()
+	{
+		// TODO: test fulfillments
+	}
 
-    /**
-     * Test the property 'total'
-     */
-    @Test
-    public void totalTest() {
-        // TODO: test total
-    }
+	/**
+	 * Test the property 'total'
+	 */
+	@Test
+	public void totalTest()
+	{
+		// TODO: test total
+	}
 
-    /**
-     * Test the property 'warnings'
-     */
-    @Test
-    public void warningsTest() {
-        // TODO: test warnings
-    }
+	/**
+	 * Test the property 'warnings'
+	 */
+	@Test
+	public void warningsTest()
+	{
+		// TODO: test warnings
+	}
 
 }

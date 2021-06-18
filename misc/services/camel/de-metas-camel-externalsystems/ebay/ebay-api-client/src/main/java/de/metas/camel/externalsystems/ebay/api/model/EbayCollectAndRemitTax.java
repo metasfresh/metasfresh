@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,129 +24,143 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type contains information about the type and amount of tax that eBay will collect and remit to the state, province, country, or other taxing authority in the buyer's location, as required by that taxing authority. 'Collect and Remit' tax includes US state-mandated sales tax and 'Goods and Services' tax that is applicable to Australian and New Zealand sellers.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class EbayCollectAndRemitTax {
-  public static final String SERIALIZED_NAME_AMOUNT = "amount";
-  @SerializedName(SERIALIZED_NAME_AMOUNT)
-  private Amount amount;
+public class EbayCollectAndRemitTax
+{
+	public static final String SERIALIZED_NAME_AMOUNT = "amount";
+	@SerializedName(SERIALIZED_NAME_AMOUNT)
+	private Amount amount;
 
-  public static final String SERIALIZED_NAME_TAX_TYPE = "taxType";
-  @SerializedName(SERIALIZED_NAME_TAX_TYPE)
-  private String taxType;
+	public static final String SERIALIZED_NAME_TAX_TYPE = "taxType";
+	@SerializedName(SERIALIZED_NAME_TAX_TYPE)
+	private String taxType;
 
-  public static final String SERIALIZED_NAME_COLLECTION_METHOD = "collectionMethod";
-  @SerializedName(SERIALIZED_NAME_COLLECTION_METHOD)
-  private String collectionMethod;
+	public static final String SERIALIZED_NAME_COLLECTION_METHOD = "collectionMethod";
+	@SerializedName(SERIALIZED_NAME_COLLECTION_METHOD)
+	private String collectionMethod;
 
+	public EbayCollectAndRemitTax amount(Amount amount)
+	{
 
-  public EbayCollectAndRemitTax amount(Amount amount) {
-    
-    this.amount = amount;
-    return this;
-  }
+		this.amount = amount;
+		return this;
+	}
 
-   /**
-   * Get amount
-   * @return amount
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	/**
+	 * Get amount
+	 * 
+	 * @return amount
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-  public Amount getAmount() {
-    return amount;
-  }
+	public Amount getAmount()
+	{
+		return amount;
+	}
 
+	public void setAmount(Amount amount)
+	{
+		this.amount = amount;
+	}
 
-  public void setAmount(Amount amount) {
-    this.amount = amount;
-  }
+	public EbayCollectAndRemitTax taxType(String taxType)
+	{
 
+		this.taxType = taxType;
+		return this;
+	}
 
-  public EbayCollectAndRemitTax taxType(String taxType) {
-    
-    this.taxType = taxType;
-    return this;
-  }
+	/**
+	 * The type of tax and fees that eBay will collect and remit to the taxing or fee authority. See the TaxTypeEnum type definition for more information about each tax or fee type. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:TaxTypeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
+	 * 
+	 * @return taxType
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The type of tax and fees that eBay will collect and remit to the taxing or fee authority. See the TaxTypeEnum type definition for more information about each tax or fee type. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:TaxTypeEnum'>eBay API documentation</a>")
 
-   /**
-   * The type of tax and fees that eBay will collect and remit to the taxing or fee authority. See the TaxTypeEnum type definition for more information about each tax or fee type. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:TaxTypeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return taxType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The type of tax and fees that eBay will collect and remit to the taxing or fee authority. See the TaxTypeEnum type definition for more information about each tax or fee type. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:TaxTypeEnum'>eBay API documentation</a>")
+	public String getTaxType()
+	{
+		return taxType;
+	}
 
-  public String getTaxType() {
-    return taxType;
-  }
+	public void setTaxType(String taxType)
+	{
+		this.taxType = taxType;
+	}
 
+	public EbayCollectAndRemitTax collectionMethod(String collectionMethod)
+	{
 
-  public void setTaxType(String taxType) {
-    this.taxType = taxType;
-  }
+		this.collectionMethod = collectionMethod;
+		return this;
+	}
 
+	/**
+	 * This field indicates the collection method used to collect the &#39;Collect and Remit&#39; tax for the order. This field is always returned for orders subject to &#39;Collect and Remit&#39; tax, and its value is always NET. Note: Although the collectionMethod field is returned for all orders subject to &#39;Collect and Remit&#39; tax, the collectionMethod field and the CollectionMethodEnum
+	 * type are not currently of any practical use, although this field may have use in the future. If and when the logic of this field is changed, this note will be updated and a note will also be added to the Release Notes. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CollectionMethodEnum&#39;&gt;eBay API
+	 * documentation&lt;/a&gt;
+	 * 
+	 * @return collectionMethod
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This field indicates the collection method used to collect the 'Collect and Remit' tax for the order. This field is always returned for orders subject to 'Collect and Remit' tax, and its value is always NET. Note: Although the collectionMethod field is returned for all orders subject to 'Collect and Remit' tax, the collectionMethod field and the CollectionMethodEnum type are not currently of any practical use, although this field may have use in the future. If and when the logic of this field is changed, this note will be updated and a note will also be added to the Release Notes. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CollectionMethodEnum'>eBay API documentation</a>")
 
-  public EbayCollectAndRemitTax collectionMethod(String collectionMethod) {
-    
-    this.collectionMethod = collectionMethod;
-    return this;
-  }
+	public String getCollectionMethod()
+	{
+		return collectionMethod;
+	}
 
-   /**
-   * This field indicates the collection method used to collect the &#39;Collect and Remit&#39; tax for the order. This field is always returned for orders subject to &#39;Collect and Remit&#39; tax, and its value is always NET. Note: Although the collectionMethod field is returned for all orders subject to &#39;Collect and Remit&#39; tax, the collectionMethod field and the CollectionMethodEnum type are not currently of any practical use, although this field may have use in the future. If and when the logic of this field is changed, this note will be updated and a note will also be added to the Release Notes. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CollectionMethodEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return collectionMethod
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This field indicates the collection method used to collect the 'Collect and Remit' tax for the order. This field is always returned for orders subject to 'Collect and Remit' tax, and its value is always NET. Note: Although the collectionMethod field is returned for all orders subject to 'Collect and Remit' tax, the collectionMethod field and the CollectionMethodEnum type are not currently of any practical use, although this field may have use in the future. If and when the logic of this field is changed, this note will be updated and a note will also be added to the Release Notes. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CollectionMethodEnum'>eBay API documentation</a>")
+	public void setCollectionMethod(String collectionMethod)
+	{
+		this.collectionMethod = collectionMethod;
+	}
 
-  public String getCollectionMethod() {
-    return collectionMethod;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		EbayCollectAndRemitTax ebayCollectAndRemitTax = (EbayCollectAndRemitTax)o;
+		return Objects.equals(this.amount, ebayCollectAndRemitTax.amount) &&
+				Objects.equals(this.taxType, ebayCollectAndRemitTax.taxType) &&
+				Objects.equals(this.collectionMethod, ebayCollectAndRemitTax.collectionMethod);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(amount, taxType, collectionMethod);
+	}
 
-  public void setCollectionMethod(String collectionMethod) {
-    this.collectionMethod = collectionMethod;
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class EbayCollectAndRemitTax {\n");
+		sb.append("    amount: ").append(toIndentedString(amount)).append("\n");
+		sb.append("    taxType: ").append(toIndentedString(taxType)).append("\n");
+		sb.append("    collectionMethod: ").append(toIndentedString(collectionMethod)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    EbayCollectAndRemitTax ebayCollectAndRemitTax = (EbayCollectAndRemitTax) o;
-    return Objects.equals(this.amount, ebayCollectAndRemitTax.amount) &&
-        Objects.equals(this.taxType, ebayCollectAndRemitTax.taxType) &&
-        Objects.equals(this.collectionMethod, ebayCollectAndRemitTax.collectionMethod);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(amount, taxType, collectionMethod);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class EbayCollectAndRemitTax {\n");
-    sb.append("    amount: ").append(toIndentedString(amount)).append("\n");
-    sb.append("    taxType: ").append(toIndentedString(taxType)).append("\n");
-    sb.append("    collectionMethod: ").append(toIndentedString(collectionMethod)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -26,51 +25,56 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for MonetaryTransaction
  */
-public class MonetaryTransactionTest {
-    private final MonetaryTransaction model = new MonetaryTransaction();
+public class MonetaryTransactionTest
+{
+	private final MonetaryTransaction model = new MonetaryTransaction();
 
-    /**
-     * Model tests for MonetaryTransaction
-     */
-    @Test
-    public void testMonetaryTransaction() {
-        // TODO: test MonetaryTransaction
-    }
+	/**
+	 * Model tests for MonetaryTransaction
+	 */
+	@Test
+	public void testMonetaryTransaction()
+	{
+		// TODO: test MonetaryTransaction
+	}
 
-    /**
-     * Test the property 'date'
-     */
-    @Test
-    public void dateTest() {
-        // TODO: test date
-    }
+	/**
+	 * Test the property 'date'
+	 */
+	@Test
+	public void dateTest()
+	{
+		// TODO: test date
+	}
 
-    /**
-     * Test the property 'type'
-     */
-    @Test
-    public void typeTest() {
-        // TODO: test type
-    }
+	/**
+	 * Test the property 'type'
+	 */
+	@Test
+	public void typeTest()
+	{
+		// TODO: test type
+	}
 
-    /**
-     * Test the property 'reason'
-     */
-    @Test
-    public void reasonTest() {
-        // TODO: test reason
-    }
+	/**
+	 * Test the property 'reason'
+	 */
+	@Test
+	public void reasonTest()
+	{
+		// TODO: test reason
+	}
 
-    /**
-     * Test the property 'amount'
-     */
-    @Test
-    public void amountTest() {
-        // TODO: test amount
-    }
+	/**
+	 * Test the property 'amount'
+	 */
+	@Test
+	public void amountTest()
+	{
+		// TODO: test amount
+	}
 
 }

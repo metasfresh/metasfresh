@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -29,51 +28,56 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for IssueRefundRequest
  */
-public class IssueRefundRequestTest {
-    private final IssueRefundRequest model = new IssueRefundRequest();
+public class IssueRefundRequestTest
+{
+	private final IssueRefundRequest model = new IssueRefundRequest();
 
-    /**
-     * Model tests for IssueRefundRequest
-     */
-    @Test
-    public void testIssueRefundRequest() {
-        // TODO: test IssueRefundRequest
-    }
+	/**
+	 * Model tests for IssueRefundRequest
+	 */
+	@Test
+	public void testIssueRefundRequest()
+	{
+		// TODO: test IssueRefundRequest
+	}
 
-    /**
-     * Test the property 'reasonForRefund'
-     */
-    @Test
-    public void reasonForRefundTest() {
-        // TODO: test reasonForRefund
-    }
+	/**
+	 * Test the property 'reasonForRefund'
+	 */
+	@Test
+	public void reasonForRefundTest()
+	{
+		// TODO: test reasonForRefund
+	}
 
-    /**
-     * Test the property 'comment'
-     */
-    @Test
-    public void commentTest() {
-        // TODO: test comment
-    }
+	/**
+	 * Test the property 'comment'
+	 */
+	@Test
+	public void commentTest()
+	{
+		// TODO: test comment
+	}
 
-    /**
-     * Test the property 'refundItems'
-     */
-    @Test
-    public void refundItemsTest() {
-        // TODO: test refundItems
-    }
+	/**
+	 * Test the property 'refundItems'
+	 */
+	@Test
+	public void refundItemsTest()
+	{
+		// TODO: test refundItems
+	}
 
-    /**
-     * Test the property 'orderLevelRefundAmount'
-     */
-    @Test
-    public void orderLevelRefundAmountTest() {
-        // TODO: test orderLevelRefundAmount
-    }
+	/**
+	 * Test the property 'orderLevelRefundAmount'
+	 */
+	@Test
+	public void orderLevelRefundAmountTest()
+	{
+		// TODO: test orderLevelRefundAmount
+	}
 
 }

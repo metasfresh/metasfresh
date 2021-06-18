@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -28,91 +27,101 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for Error
  */
-public class ErrorTest {
-    private final Error model = new Error();
+public class ErrorTest
+{
+	private final Error model = new Error();
 
-    /**
-     * Model tests for Error
-     */
-    @Test
-    public void testError() {
-        // TODO: test Error
-    }
+	/**
+	 * Model tests for Error
+	 */
+	@Test
+	public void testError()
+	{
+		// TODO: test Error
+	}
 
-    /**
-     * Test the property 'category'
-     */
-    @Test
-    public void categoryTest() {
-        // TODO: test category
-    }
+	/**
+	 * Test the property 'category'
+	 */
+	@Test
+	public void categoryTest()
+	{
+		// TODO: test category
+	}
 
-    /**
-     * Test the property 'domain'
-     */
-    @Test
-    public void domainTest() {
-        // TODO: test domain
-    }
+	/**
+	 * Test the property 'domain'
+	 */
+	@Test
+	public void domainTest()
+	{
+		// TODO: test domain
+	}
 
-    /**
-     * Test the property 'errorId'
-     */
-    @Test
-    public void errorIdTest() {
-        // TODO: test errorId
-    }
+	/**
+	 * Test the property 'errorId'
+	 */
+	@Test
+	public void errorIdTest()
+	{
+		// TODO: test errorId
+	}
 
-    /**
-     * Test the property 'inputRefIds'
-     */
-    @Test
-    public void inputRefIdsTest() {
-        // TODO: test inputRefIds
-    }
+	/**
+	 * Test the property 'inputRefIds'
+	 */
+	@Test
+	public void inputRefIdsTest()
+	{
+		// TODO: test inputRefIds
+	}
 
-    /**
-     * Test the property 'longMessage'
-     */
-    @Test
-    public void longMessageTest() {
-        // TODO: test longMessage
-    }
+	/**
+	 * Test the property 'longMessage'
+	 */
+	@Test
+	public void longMessageTest()
+	{
+		// TODO: test longMessage
+	}
 
-    /**
-     * Test the property 'message'
-     */
-    @Test
-    public void messageTest() {
-        // TODO: test message
-    }
+	/**
+	 * Test the property 'message'
+	 */
+	@Test
+	public void messageTest()
+	{
+		// TODO: test message
+	}
 
-    /**
-     * Test the property 'outputRefIds'
-     */
-    @Test
-    public void outputRefIdsTest() {
-        // TODO: test outputRefIds
-    }
+	/**
+	 * Test the property 'outputRefIds'
+	 */
+	@Test
+	public void outputRefIdsTest()
+	{
+		// TODO: test outputRefIds
+	}
 
-    /**
-     * Test the property 'parameters'
-     */
-    @Test
-    public void parametersTest() {
-        // TODO: test parameters
-    }
+	/**
+	 * Test the property 'parameters'
+	 */
+	@Test
+	public void parametersTest()
+	{
+		// TODO: test parameters
+	}
 
-    /**
-     * Test the property 'subdomain'
-     */
-    @Test
-    public void subdomainTest() {
-        // TODO: test subdomain
-    }
+	/**
+	 * Test the property 'subdomain'
+	 */
+	@Test
+	public void subdomainTest()
+	{
+		// TODO: test subdomain
+	}
 
 }

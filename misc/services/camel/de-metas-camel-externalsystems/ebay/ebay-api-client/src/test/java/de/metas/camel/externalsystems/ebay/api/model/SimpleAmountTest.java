@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,35 +24,38 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for SimpleAmount
  */
-public class SimpleAmountTest {
-    private final SimpleAmount model = new SimpleAmount();
+public class SimpleAmountTest
+{
+	private final SimpleAmount model = new SimpleAmount();
 
-    /**
-     * Model tests for SimpleAmount
-     */
-    @Test
-    public void testSimpleAmount() {
-        // TODO: test SimpleAmount
-    }
+	/**
+	 * Model tests for SimpleAmount
+	 */
+	@Test
+	public void testSimpleAmount()
+	{
+		// TODO: test SimpleAmount
+	}
 
-    /**
-     * Test the property 'currency'
-     */
-    @Test
-    public void currencyTest() {
-        // TODO: test currency
-    }
+	/**
+	 * Test the property 'currency'
+	 */
+	@Test
+	public void currencyTest()
+	{
+		// TODO: test currency
+	}
 
-    /**
-     * Test the property 'value'
-     */
-    @Test
-    public void valueTest() {
-        // TODO: test value
-    }
+	/**
+	 * Test the property 'value'
+	 */
+	@Test
+	public void valueTest()
+	{
+		// TODO: test value
+	}
 
 }

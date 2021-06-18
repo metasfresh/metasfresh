@@ -56,8 +56,9 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 
-public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements Processor {
-	
+public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements Processor
+{
+
 	protected Logger log = LoggerFactory.getLogger(getClass());
 
 	@Override
@@ -65,8 +66,7 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 	{
 		final EbayImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, EbayImportOrdersRouteContext.class);
 		log.debug("Create OrderLineCandidates for ebay order {}", importOrdersRouteContext.getOrder().getOrderId());
-		
-		
+
 		final JsonResponseBPartnerCompositeUpsert bPartnerUpsertResponseList = exchange.getIn().getBody(JsonResponseBPartnerCompositeUpsert.class);
 		final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse = Check.singleElement(bPartnerUpsertResponseList.getResponseItems());
 
@@ -88,7 +88,6 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 
 		final Order ebayOrder = context.getOrderNotNull();
 
-	
 		final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder = JsonOLCandCreateRequest.builder();
 		olCandCreateRequestBuilder
 				.orgCode(context.getOrgCode())
@@ -98,14 +97,14 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 				.bpartner(getBPartnerInfo(context, bPartnerUpsertResponse))
 				.billBPartner(getBillBPartnerInfo(context, bPartnerUpsertResponse))
 				.dateOrdered(getDateOrdered(ebayOrder))
-				.dateRequired(getDateOrdered(ebayOrder).plusDays(7)) //TODO - no mapping. 
+				.dateRequired(getDateOrdered(ebayOrder).plusDays(7)) // TODO - no mapping.
 				.dataSource(DATA_SOURCE_INT_EBAY)
 				.isManualPrice(true)
 				.isImportedWithIssues(true)
 				.discount(DEFAULT_ORDER_LINE_DISCOUNT)
 				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
 				.deliveryRule(DEFAULT_DELIVERY_RULE)
-				.importWarningMessage("PRE ALPHA TEST IMPORT"); //FIXME ;)
+				.importWarningMessage("PRE ALPHA TEST IMPORT"); // FIXME ;)
 
 		final List<LineItem> orderLines = ebayOrder.getLineItems();
 
@@ -160,7 +159,6 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 				.build();
 	}
 
-
 	private JsonOLCandCreateRequest processOrderLine(
 			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder,
 			@NonNull final Order order,
@@ -169,7 +167,7 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 		return olCandCreateRequestBuilder
 				.externalLineId(orderLine.getLineItemId())
 				.productIdentifier("TODO")
-				.price(new BigDecimal(orderLine.getTotal().getValue()))  
+				.price(new BigDecimal(orderLine.getTotal().getValue()))
 				.qty(BigDecimal.valueOf(orderLine.getQuantity()))
 				.description(orderLine.getTitle())
 				.dateCandidate(getDateCandidate(order))
@@ -217,5 +215,5 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 				? EbayUtils.toLocalDate(order.getCreationDate())
 				: null;
 	}
-	
+
 }

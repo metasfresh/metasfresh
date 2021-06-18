@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -36,187 +35,209 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for LineItem
  */
-public class LineItemTest {
-    private final LineItem model = new LineItem();
+public class LineItemTest
+{
+	private final LineItem model = new LineItem();
 
-    /**
-     * Model tests for LineItem
-     */
-    @Test
-    public void testLineItem() {
-        // TODO: test LineItem
-    }
+	/**
+	 * Model tests for LineItem
+	 */
+	@Test
+	public void testLineItem()
+	{
+		// TODO: test LineItem
+	}
 
-    /**
-     * Test the property 'appliedPromotions'
-     */
-    @Test
-    public void appliedPromotionsTest() {
-        // TODO: test appliedPromotions
-    }
+	/**
+	 * Test the property 'appliedPromotions'
+	 */
+	@Test
+	public void appliedPromotionsTest()
+	{
+		// TODO: test appliedPromotions
+	}
 
-    /**
-     * Test the property 'deliveryCost'
-     */
-    @Test
-    public void deliveryCostTest() {
-        // TODO: test deliveryCost
-    }
+	/**
+	 * Test the property 'deliveryCost'
+	 */
+	@Test
+	public void deliveryCostTest()
+	{
+		// TODO: test deliveryCost
+	}
 
-    /**
-     * Test the property 'discountedLineItemCost'
-     */
-    @Test
-    public void discountedLineItemCostTest() {
-        // TODO: test discountedLineItemCost
-    }
+	/**
+	 * Test the property 'discountedLineItemCost'
+	 */
+	@Test
+	public void discountedLineItemCostTest()
+	{
+		// TODO: test discountedLineItemCost
+	}
 
-    /**
-     * Test the property 'ebayCollectAndRemitTaxes'
-     */
-    @Test
-    public void ebayCollectAndRemitTaxesTest() {
-        // TODO: test ebayCollectAndRemitTaxes
-    }
+	/**
+	 * Test the property 'ebayCollectAndRemitTaxes'
+	 */
+	@Test
+	public void ebayCollectAndRemitTaxesTest()
+	{
+		// TODO: test ebayCollectAndRemitTaxes
+	}
 
-    /**
-     * Test the property 'giftDetails'
-     */
-    @Test
-    public void giftDetailsTest() {
-        // TODO: test giftDetails
-    }
+	/**
+	 * Test the property 'giftDetails'
+	 */
+	@Test
+	public void giftDetailsTest()
+	{
+		// TODO: test giftDetails
+	}
 
-    /**
-     * Test the property 'legacyItemId'
-     */
-    @Test
-    public void legacyItemIdTest() {
-        // TODO: test legacyItemId
-    }
+	/**
+	 * Test the property 'legacyItemId'
+	 */
+	@Test
+	public void legacyItemIdTest()
+	{
+		// TODO: test legacyItemId
+	}
 
-    /**
-     * Test the property 'legacyVariationId'
-     */
-    @Test
-    public void legacyVariationIdTest() {
-        // TODO: test legacyVariationId
-    }
+	/**
+	 * Test the property 'legacyVariationId'
+	 */
+	@Test
+	public void legacyVariationIdTest()
+	{
+		// TODO: test legacyVariationId
+	}
 
-    /**
-     * Test the property 'lineItemCost'
-     */
-    @Test
-    public void lineItemCostTest() {
-        // TODO: test lineItemCost
-    }
+	/**
+	 * Test the property 'lineItemCost'
+	 */
+	@Test
+	public void lineItemCostTest()
+	{
+		// TODO: test lineItemCost
+	}
 
-    /**
-     * Test the property 'lineItemFulfillmentInstructions'
-     */
-    @Test
-    public void lineItemFulfillmentInstructionsTest() {
-        // TODO: test lineItemFulfillmentInstructions
-    }
+	/**
+	 * Test the property 'lineItemFulfillmentInstructions'
+	 */
+	@Test
+	public void lineItemFulfillmentInstructionsTest()
+	{
+		// TODO: test lineItemFulfillmentInstructions
+	}
 
-    /**
-     * Test the property 'lineItemFulfillmentStatus'
-     */
-    @Test
-    public void lineItemFulfillmentStatusTest() {
-        // TODO: test lineItemFulfillmentStatus
-    }
+	/**
+	 * Test the property 'lineItemFulfillmentStatus'
+	 */
+	@Test
+	public void lineItemFulfillmentStatusTest()
+	{
+		// TODO: test lineItemFulfillmentStatus
+	}
 
-    /**
-     * Test the property 'lineItemId'
-     */
-    @Test
-    public void lineItemIdTest() {
-        // TODO: test lineItemId
-    }
+	/**
+	 * Test the property 'lineItemId'
+	 */
+	@Test
+	public void lineItemIdTest()
+	{
+		// TODO: test lineItemId
+	}
 
-    /**
-     * Test the property 'listingMarketplaceId'
-     */
-    @Test
-    public void listingMarketplaceIdTest() {
-        // TODO: test listingMarketplaceId
-    }
+	/**
+	 * Test the property 'listingMarketplaceId'
+	 */
+	@Test
+	public void listingMarketplaceIdTest()
+	{
+		// TODO: test listingMarketplaceId
+	}
 
-    /**
-     * Test the property 'properties'
-     */
-    @Test
-    public void propertiesTest() {
-        // TODO: test properties
-    }
+	/**
+	 * Test the property 'properties'
+	 */
+	@Test
+	public void propertiesTest()
+	{
+		// TODO: test properties
+	}
 
-    /**
-     * Test the property 'purchaseMarketplaceId'
-     */
-    @Test
-    public void purchaseMarketplaceIdTest() {
-        // TODO: test purchaseMarketplaceId
-    }
+	/**
+	 * Test the property 'purchaseMarketplaceId'
+	 */
+	@Test
+	public void purchaseMarketplaceIdTest()
+	{
+		// TODO: test purchaseMarketplaceId
+	}
 
-    /**
-     * Test the property 'quantity'
-     */
-    @Test
-    public void quantityTest() {
-        // TODO: test quantity
-    }
+	/**
+	 * Test the property 'quantity'
+	 */
+	@Test
+	public void quantityTest()
+	{
+		// TODO: test quantity
+	}
 
-    /**
-     * Test the property 'refunds'
-     */
-    @Test
-    public void refundsTest() {
-        // TODO: test refunds
-    }
+	/**
+	 * Test the property 'refunds'
+	 */
+	@Test
+	public void refundsTest()
+	{
+		// TODO: test refunds
+	}
 
-    /**
-     * Test the property 'sku'
-     */
-    @Test
-    public void skuTest() {
-        // TODO: test sku
-    }
+	/**
+	 * Test the property 'sku'
+	 */
+	@Test
+	public void skuTest()
+	{
+		// TODO: test sku
+	}
 
-    /**
-     * Test the property 'soldFormat'
-     */
-    @Test
-    public void soldFormatTest() {
-        // TODO: test soldFormat
-    }
+	/**
+	 * Test the property 'soldFormat'
+	 */
+	@Test
+	public void soldFormatTest()
+	{
+		// TODO: test soldFormat
+	}
 
-    /**
-     * Test the property 'taxes'
-     */
-    @Test
-    public void taxesTest() {
-        // TODO: test taxes
-    }
+	/**
+	 * Test the property 'taxes'
+	 */
+	@Test
+	public void taxesTest()
+	{
+		// TODO: test taxes
+	}
 
-    /**
-     * Test the property 'title'
-     */
-    @Test
-    public void titleTest() {
-        // TODO: test title
-    }
+	/**
+	 * Test the property 'title'
+	 */
+	@Test
+	public void titleTest()
+	{
+		// TODO: test title
+	}
 
-    /**
-     * Test the property 'total'
-     */
-    @Test
-    public void totalTest() {
-        // TODO: test total
-    }
+	/**
+	 * Test the property 'total'
+	 */
+	@Test
+	public void totalTest()
+	{
+		// TODO: test total
+	}
 
 }

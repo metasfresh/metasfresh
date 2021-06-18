@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -27,59 +26,65 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for ExtendedContact
  */
-public class ExtendedContactTest {
-    private final ExtendedContact model = new ExtendedContact();
+public class ExtendedContactTest
+{
+	private final ExtendedContact model = new ExtendedContact();
 
-    /**
-     * Model tests for ExtendedContact
-     */
-    @Test
-    public void testExtendedContact() {
-        // TODO: test ExtendedContact
-    }
+	/**
+	 * Model tests for ExtendedContact
+	 */
+	@Test
+	public void testExtendedContact()
+	{
+		// TODO: test ExtendedContact
+	}
 
-    /**
-     * Test the property 'companyName'
-     */
-    @Test
-    public void companyNameTest() {
-        // TODO: test companyName
-    }
+	/**
+	 * Test the property 'companyName'
+	 */
+	@Test
+	public void companyNameTest()
+	{
+		// TODO: test companyName
+	}
 
-    /**
-     * Test the property 'contactAddress'
-     */
-    @Test
-    public void contactAddressTest() {
-        // TODO: test contactAddress
-    }
+	/**
+	 * Test the property 'contactAddress'
+	 */
+	@Test
+	public void contactAddressTest()
+	{
+		// TODO: test contactAddress
+	}
 
-    /**
-     * Test the property 'email'
-     */
-    @Test
-    public void emailTest() {
-        // TODO: test email
-    }
+	/**
+	 * Test the property 'email'
+	 */
+	@Test
+	public void emailTest()
+	{
+		// TODO: test email
+	}
 
-    /**
-     * Test the property 'fullName'
-     */
-    @Test
-    public void fullNameTest() {
-        // TODO: test fullName
-    }
+	/**
+	 * Test the property 'fullName'
+	 */
+	@Test
+	public void fullNameTest()
+	{
+		// TODO: test fullName
+	}
 
-    /**
-     * Test the property 'primaryPhone'
-     */
-    @Test
-    public void primaryPhoneTest() {
-        // TODO: test primaryPhone
-    }
+	/**
+	 * Test the property 'primaryPhone'
+	 */
+	@Test
+	public void primaryPhoneTest()
+	{
+		// TODO: test primaryPhone
+	}
 
 }

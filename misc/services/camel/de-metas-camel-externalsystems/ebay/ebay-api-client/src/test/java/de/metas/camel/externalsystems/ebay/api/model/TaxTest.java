@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -26,35 +25,38 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for Tax
  */
-public class TaxTest {
-    private final Tax model = new Tax();
+public class TaxTest
+{
+	private final Tax model = new Tax();
 
-    /**
-     * Model tests for Tax
-     */
-    @Test
-    public void testTax() {
-        // TODO: test Tax
-    }
+	/**
+	 * Model tests for Tax
+	 */
+	@Test
+	public void testTax()
+	{
+		// TODO: test Tax
+	}
 
-    /**
-     * Test the property 'amount'
-     */
-    @Test
-    public void amountTest() {
-        // TODO: test amount
-    }
+	/**
+	 * Test the property 'amount'
+	 */
+	@Test
+	public void amountTest()
+	{
+		// TODO: test amount
+	}
 
-    /**
-     * Test the property 'taxType'
-     */
-    @Test
-    public void taxTypeTest() {
-        // TODO: test taxType
-    }
+	/**
+	 * Test the property 'taxType'
+	 */
+	@Test
+	public void taxTypeTest()
+	{
+		// TODO: test taxType
+	}
 
 }

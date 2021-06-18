@@ -31,17 +31,19 @@ import java.time.ZoneOffset;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 import lombok.NonNull;
 
-public class EbayUtils {
+public class EbayUtils
+{
 
-	public static LocalDate toLocalDate(@NonNull final String in) {
+	public static LocalDate toLocalDate(@NonNull final String in)
+	{
 		Instant instant = Instant.parse(in);
-		LocalDate localDate = LocalDate.ofInstant(instant,ZoneOffset.UTC);
-        return localDate;
+		LocalDate localDate = LocalDate.ofInstant(instant, ZoneOffset.UTC);
+		return localDate;
 	}
 
-	
-	public static String bPartnerIdentifier(Order order) {
+	public static String bPartnerIdentifier(Order order)
+	{
 		return EXTERNAL_ID_PREFIX + order.getBuyer().getUsername();
 	}
-	
+
 }

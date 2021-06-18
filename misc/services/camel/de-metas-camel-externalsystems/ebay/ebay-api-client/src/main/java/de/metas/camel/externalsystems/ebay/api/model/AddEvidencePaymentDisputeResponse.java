@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,71 +24,80 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used by the response payload of the addEvidence method. Its only field is an unique identifier of an evidence set.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class AddEvidencePaymentDisputeResponse {
-  public static final String SERIALIZED_NAME_EVIDENCE_ID = "evidenceId";
-  @SerializedName(SERIALIZED_NAME_EVIDENCE_ID)
-  private String evidenceId;
+public class AddEvidencePaymentDisputeResponse
+{
+	public static final String SERIALIZED_NAME_EVIDENCE_ID = "evidenceId";
+	@SerializedName(SERIALIZED_NAME_EVIDENCE_ID)
+	private String evidenceId;
 
+	public AddEvidencePaymentDisputeResponse evidenceId(String evidenceId)
+	{
 
-  public AddEvidencePaymentDisputeResponse evidenceId(String evidenceId) {
-    
-    this.evidenceId = evidenceId;
-    return this;
-  }
+		this.evidenceId = evidenceId;
+		return this;
+	}
 
-   /**
-   * The value returned in this field is the unique identifier of the newly-created evidence set. Upon a successful call, this value is automatically genererated. This new evidence set for the payment dispute includes the evidence file(s) that were passed in to the fileId array in the request payload. The evidenceId value will be needed if the seller wishes to add to the evidence set by using the updateEvidence method, or if they want to retrieve a specific evidence file within the evidence set by using the fetchEvidenceContent method.
-   * @return evidenceId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The value returned in this field is the unique identifier of the newly-created evidence set. Upon a successful call, this value is automatically genererated. This new evidence set for the payment dispute includes the evidence file(s) that were passed in to the fileId array in the request payload. The evidenceId value will be needed if the seller wishes to add to the evidence set by using the updateEvidence method, or if they want to retrieve a specific evidence file within the evidence set by using the fetchEvidenceContent method.")
+	/**
+	 * The value returned in this field is the unique identifier of the newly-created evidence set. Upon a successful call, this value is automatically genererated. This new evidence set for the payment dispute includes the evidence file(s) that were passed in to the fileId array in the request payload. The evidenceId value will be needed if the seller wishes to add to the evidence set by using
+	 * the updateEvidence method, or if they want to retrieve a specific evidence file within the evidence set by using the fetchEvidenceContent method.
+	 * 
+	 * @return evidenceId
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The value returned in this field is the unique identifier of the newly-created evidence set. Upon a successful call, this value is automatically genererated. This new evidence set for the payment dispute includes the evidence file(s) that were passed in to the fileId array in the request payload. The evidenceId value will be needed if the seller wishes to add to the evidence set by using the updateEvidence method, or if they want to retrieve a specific evidence file within the evidence set by using the fetchEvidenceContent method.")
 
-  public String getEvidenceId() {
-    return evidenceId;
-  }
+	public String getEvidenceId()
+	{
+		return evidenceId;
+	}
 
+	public void setEvidenceId(String evidenceId)
+	{
+		this.evidenceId = evidenceId;
+	}
 
-  public void setEvidenceId(String evidenceId) {
-    this.evidenceId = evidenceId;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		AddEvidencePaymentDisputeResponse addEvidencePaymentDisputeResponse = (AddEvidencePaymentDisputeResponse)o;
+		return Objects.equals(this.evidenceId, addEvidencePaymentDisputeResponse.evidenceId);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(evidenceId);
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    AddEvidencePaymentDisputeResponse addEvidencePaymentDisputeResponse = (AddEvidencePaymentDisputeResponse) o;
-    return Objects.equals(this.evidenceId, addEvidencePaymentDisputeResponse.evidenceId);
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class AddEvidencePaymentDisputeResponse {\n");
+		sb.append("    evidenceId: ").append(toIndentedString(evidenceId)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(evidenceId);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class AddEvidencePaymentDisputeResponse {\n");
-    sb.append("    evidenceId: ").append(toIndentedString(evidenceId)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,71 +24,79 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used by the program container, which is returned for order line items eligible for the Authenticity Guarantee service.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class Program {
-  public static final String SERIALIZED_NAME_AUTHENTICITY_VERIFICATION = "authenticityVerification";
-  @SerializedName(SERIALIZED_NAME_AUTHENTICITY_VERIFICATION)
-  private PostSaleAuthenticationProgram authenticityVerification;
+public class Program
+{
+	public static final String SERIALIZED_NAME_AUTHENTICITY_VERIFICATION = "authenticityVerification";
+	@SerializedName(SERIALIZED_NAME_AUTHENTICITY_VERIFICATION)
+	private PostSaleAuthenticationProgram authenticityVerification;
 
+	public Program authenticityVerification(PostSaleAuthenticationProgram authenticityVerification)
+	{
 
-  public Program authenticityVerification(PostSaleAuthenticationProgram authenticityVerification) {
-    
-    this.authenticityVerification = authenticityVerification;
-    return this;
-  }
+		this.authenticityVerification = authenticityVerification;
+		return this;
+	}
 
-   /**
-   * Get authenticityVerification
-   * @return authenticityVerification
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	/**
+	 * Get authenticityVerification
+	 * 
+	 * @return authenticityVerification
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-  public PostSaleAuthenticationProgram getAuthenticityVerification() {
-    return authenticityVerification;
-  }
+	public PostSaleAuthenticationProgram getAuthenticityVerification()
+	{
+		return authenticityVerification;
+	}
 
+	public void setAuthenticityVerification(PostSaleAuthenticationProgram authenticityVerification)
+	{
+		this.authenticityVerification = authenticityVerification;
+	}
 
-  public void setAuthenticityVerification(PostSaleAuthenticationProgram authenticityVerification) {
-    this.authenticityVerification = authenticityVerification;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		Program program = (Program)o;
+		return Objects.equals(this.authenticityVerification, program.authenticityVerification);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(authenticityVerification);
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Program program = (Program) o;
-    return Objects.equals(this.authenticityVerification, program.authenticityVerification);
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class Program {\n");
+		sb.append("    authenticityVerification: ").append(toIndentedString(authenticityVerification)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(authenticityVerification);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class Program {\n");
-    sb.append("    authenticityVerification: ").append(toIndentedString(authenticityVerification)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

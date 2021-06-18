@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,129 +24,141 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type contains information about a digital gift card line item that was purchased as a gift, and sent to the recipient by email.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class GiftDetails {
-  public static final String SERIALIZED_NAME_MESSAGE = "message";
-  @SerializedName(SERIALIZED_NAME_MESSAGE)
-  private String message;
+public class GiftDetails
+{
+	public static final String SERIALIZED_NAME_MESSAGE = "message";
+	@SerializedName(SERIALIZED_NAME_MESSAGE)
+	private String message;
 
-  public static final String SERIALIZED_NAME_RECIPIENT_EMAIL = "recipientEmail";
-  @SerializedName(SERIALIZED_NAME_RECIPIENT_EMAIL)
-  private String recipientEmail;
+	public static final String SERIALIZED_NAME_RECIPIENT_EMAIL = "recipientEmail";
+	@SerializedName(SERIALIZED_NAME_RECIPIENT_EMAIL)
+	private String recipientEmail;
 
-  public static final String SERIALIZED_NAME_SENDER_NAME = "senderName";
-  @SerializedName(SERIALIZED_NAME_SENDER_NAME)
-  private String senderName;
+	public static final String SERIALIZED_NAME_SENDER_NAME = "senderName";
+	@SerializedName(SERIALIZED_NAME_SENDER_NAME)
+	private String senderName;
 
+	public GiftDetails message(String message)
+	{
 
-  public GiftDetails message(String message) {
-    
-    this.message = message;
-    return this;
-  }
+		this.message = message;
+		return this;
+	}
 
-   /**
-   * This field contains the gift message from the buyer to the gift recipient. This field is only returned if the buyer of the gift included a message for the gift.
-   * @return message
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This field contains the gift message from the buyer to the gift recipient. This field is only returned if the buyer of the gift included a message for the gift.")
+	/**
+	 * This field contains the gift message from the buyer to the gift recipient. This field is only returned if the buyer of the gift included a message for the gift.
+	 * 
+	 * @return message
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This field contains the gift message from the buyer to the gift recipient. This field is only returned if the buyer of the gift included a message for the gift.")
 
-  public String getMessage() {
-    return message;
-  }
+	public String getMessage()
+	{
+		return message;
+	}
 
+	public void setMessage(String message)
+	{
+		this.message = message;
+	}
 
-  public void setMessage(String message) {
-    this.message = message;
-  }
+	public GiftDetails recipientEmail(String recipientEmail)
+	{
 
+		this.recipientEmail = recipientEmail;
+		return this;
+	}
 
-  public GiftDetails recipientEmail(String recipientEmail) {
-    
-    this.recipientEmail = recipientEmail;
-    return this;
-  }
+	/**
+	 * The email address of the gift recipient. The seller will send the digital gift card to this email address.
+	 * 
+	 * @return recipientEmail
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The email address of the gift recipient. The seller will send the digital gift card to this email address.")
 
-   /**
-   * The email address of the gift recipient. The seller will send the digital gift card to this email address.
-   * @return recipientEmail
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The email address of the gift recipient. The seller will send the digital gift card to this email address.")
+	public String getRecipientEmail()
+	{
+		return recipientEmail;
+	}
 
-  public String getRecipientEmail() {
-    return recipientEmail;
-  }
+	public void setRecipientEmail(String recipientEmail)
+	{
+		this.recipientEmail = recipientEmail;
+	}
 
+	public GiftDetails senderName(String senderName)
+	{
 
-  public void setRecipientEmail(String recipientEmail) {
-    this.recipientEmail = recipientEmail;
-  }
+		this.senderName = senderName;
+		return this;
+	}
 
+	/**
+	 * The name of the buyer, which will appear on the email that is sent to the gift recipient.
+	 * 
+	 * @return senderName
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The name of the buyer, which will appear on the email that is sent to the gift recipient.")
 
-  public GiftDetails senderName(String senderName) {
-    
-    this.senderName = senderName;
-    return this;
-  }
+	public String getSenderName()
+	{
+		return senderName;
+	}
 
-   /**
-   * The name of the buyer, which will appear on the email that is sent to the gift recipient.
-   * @return senderName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The name of the buyer, which will appear on the email that is sent to the gift recipient.")
+	public void setSenderName(String senderName)
+	{
+		this.senderName = senderName;
+	}
 
-  public String getSenderName() {
-    return senderName;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		GiftDetails giftDetails = (GiftDetails)o;
+		return Objects.equals(this.message, giftDetails.message) &&
+				Objects.equals(this.recipientEmail, giftDetails.recipientEmail) &&
+				Objects.equals(this.senderName, giftDetails.senderName);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(message, recipientEmail, senderName);
+	}
 
-  public void setSenderName(String senderName) {
-    this.senderName = senderName;
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class GiftDetails {\n");
+		sb.append("    message: ").append(toIndentedString(message)).append("\n");
+		sb.append("    recipientEmail: ").append(toIndentedString(recipientEmail)).append("\n");
+		sb.append("    senderName: ").append(toIndentedString(senderName)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    GiftDetails giftDetails = (GiftDetails) o;
-    return Objects.equals(this.message, giftDetails.message) &&
-        Objects.equals(this.recipientEmail, giftDetails.recipientEmail) &&
-        Objects.equals(this.senderName, giftDetails.senderName);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(message, recipientEmail, senderName);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class GiftDetails {\n");
-    sb.append("    message: ").append(toIndentedString(message)).append("\n");
-    sb.append("    recipientEmail: ").append(toIndentedString(recipientEmail)).append("\n");
-    sb.append("    senderName: ").append(toIndentedString(senderName)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

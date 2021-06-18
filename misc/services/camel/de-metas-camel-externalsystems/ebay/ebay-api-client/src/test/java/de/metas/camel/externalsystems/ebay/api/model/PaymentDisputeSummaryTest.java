@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -26,91 +25,101 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for PaymentDisputeSummary
  */
-public class PaymentDisputeSummaryTest {
-    private final PaymentDisputeSummary model = new PaymentDisputeSummary();
+public class PaymentDisputeSummaryTest
+{
+	private final PaymentDisputeSummary model = new PaymentDisputeSummary();
 
-    /**
-     * Model tests for PaymentDisputeSummary
-     */
-    @Test
-    public void testPaymentDisputeSummary() {
-        // TODO: test PaymentDisputeSummary
-    }
+	/**
+	 * Model tests for PaymentDisputeSummary
+	 */
+	@Test
+	public void testPaymentDisputeSummary()
+	{
+		// TODO: test PaymentDisputeSummary
+	}
 
-    /**
-     * Test the property 'amount'
-     */
-    @Test
-    public void amountTest() {
-        // TODO: test amount
-    }
+	/**
+	 * Test the property 'amount'
+	 */
+	@Test
+	public void amountTest()
+	{
+		// TODO: test amount
+	}
 
-    /**
-     * Test the property 'buyerUsername'
-     */
-    @Test
-    public void buyerUsernameTest() {
-        // TODO: test buyerUsername
-    }
+	/**
+	 * Test the property 'buyerUsername'
+	 */
+	@Test
+	public void buyerUsernameTest()
+	{
+		// TODO: test buyerUsername
+	}
 
-    /**
-     * Test the property 'closedDate'
-     */
-    @Test
-    public void closedDateTest() {
-        // TODO: test closedDate
-    }
+	/**
+	 * Test the property 'closedDate'
+	 */
+	@Test
+	public void closedDateTest()
+	{
+		// TODO: test closedDate
+	}
 
-    /**
-     * Test the property 'openDate'
-     */
-    @Test
-    public void openDateTest() {
-        // TODO: test openDate
-    }
+	/**
+	 * Test the property 'openDate'
+	 */
+	@Test
+	public void openDateTest()
+	{
+		// TODO: test openDate
+	}
 
-    /**
-     * Test the property 'orderId'
-     */
-    @Test
-    public void orderIdTest() {
-        // TODO: test orderId
-    }
+	/**
+	 * Test the property 'orderId'
+	 */
+	@Test
+	public void orderIdTest()
+	{
+		// TODO: test orderId
+	}
 
-    /**
-     * Test the property 'paymentDisputeId'
-     */
-    @Test
-    public void paymentDisputeIdTest() {
-        // TODO: test paymentDisputeId
-    }
+	/**
+	 * Test the property 'paymentDisputeId'
+	 */
+	@Test
+	public void paymentDisputeIdTest()
+	{
+		// TODO: test paymentDisputeId
+	}
 
-    /**
-     * Test the property 'paymentDisputeStatus'
-     */
-    @Test
-    public void paymentDisputeStatusTest() {
-        // TODO: test paymentDisputeStatus
-    }
+	/**
+	 * Test the property 'paymentDisputeStatus'
+	 */
+	@Test
+	public void paymentDisputeStatusTest()
+	{
+		// TODO: test paymentDisputeStatus
+	}
 
-    /**
-     * Test the property 'reason'
-     */
-    @Test
-    public void reasonTest() {
-        // TODO: test reason
-    }
+	/**
+	 * Test the property 'reason'
+	 */
+	@Test
+	public void reasonTest()
+	{
+		// TODO: test reason
+	}
 
-    /**
-     * Test the property 'respondByDate'
-     */
-    @Test
-    public void respondByDateTest() {
-        // TODO: test respondByDate
-    }
+	/**
+	 * Test the property 'respondByDate'
+	 */
+	@Test
+	public void respondByDateTest()
+	{
+		// TODO: test respondByDate
+	}
 
 }

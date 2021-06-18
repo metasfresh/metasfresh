@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,43 +24,47 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for LineItemProperties
  */
-public class LineItemPropertiesTest {
-    private final LineItemProperties model = new LineItemProperties();
+public class LineItemPropertiesTest
+{
+	private final LineItemProperties model = new LineItemProperties();
 
-    /**
-     * Model tests for LineItemProperties
-     */
-    @Test
-    public void testLineItemProperties() {
-        // TODO: test LineItemProperties
-    }
+	/**
+	 * Model tests for LineItemProperties
+	 */
+	@Test
+	public void testLineItemProperties()
+	{
+		// TODO: test LineItemProperties
+	}
 
-    /**
-     * Test the property 'buyerProtection'
-     */
-    @Test
-    public void buyerProtectionTest() {
-        // TODO: test buyerProtection
-    }
+	/**
+	 * Test the property 'buyerProtection'
+	 */
+	@Test
+	public void buyerProtectionTest()
+	{
+		// TODO: test buyerProtection
+	}
 
-    /**
-     * Test the property 'fromBestOffer'
-     */
-    @Test
-    public void fromBestOfferTest() {
-        // TODO: test fromBestOffer
-    }
+	/**
+	 * Test the property 'fromBestOffer'
+	 */
+	@Test
+	public void fromBestOfferTest()
+	{
+		// TODO: test fromBestOffer
+	}
 
-    /**
-     * Test the property 'soldViaAdCampaign'
-     */
-    @Test
-    public void soldViaAdCampaignTest() {
-        // TODO: test soldViaAdCampaign
-    }
+	/**
+	 * Test the property 'soldViaAdCampaign'
+	 */
+	@Test
+	public void soldViaAdCampaignTest()
+	{
+		// TODO: test soldViaAdCampaign
+	}
 
 }

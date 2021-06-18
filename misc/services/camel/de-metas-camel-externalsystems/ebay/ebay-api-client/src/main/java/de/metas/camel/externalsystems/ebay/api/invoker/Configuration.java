@@ -10,30 +10,32 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.invoker;
 
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class Configuration {
-    private static ApiClient defaultApiClient = new ApiClient();
+public class Configuration
+{
+	private static ApiClient defaultApiClient = new ApiClient();
 
-    /**
-     * Get the default API client, which would be used when creating API
-     * instances without providing an API client.
-     *
-     * @return Default API client
-     */
-    public static ApiClient getDefaultApiClient() {
-        return defaultApiClient;
-    }
+	/**
+	 * Get the default API client, which would be used when creating API
+	 * instances without providing an API client.
+	 *
+	 * @return Default API client
+	 */
+	public static ApiClient getDefaultApiClient()
+	{
+		return defaultApiClient;
+	}
 
-    /**
-     * Set the default API client, which would be used when creating API
-     * instances without providing an API client.
-     *
-     * @param apiClient API client
-     */
-    public static void setDefaultApiClient(ApiClient apiClient) {
-        defaultApiClient = apiClient;
-    }
+	/**
+	 * Set the default API client, which would be used when creating API
+	 * instances without providing an API client.
+	 *
+	 * @param apiClient API client
+	 */
+	public static void setDefaultApiClient(ApiClient apiClient)
+	{
+		defaultApiClient = apiClient;
+	}
 }

@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -28,43 +27,47 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for CancelStatus
  */
-public class CancelStatusTest {
-    private final CancelStatus model = new CancelStatus();
+public class CancelStatusTest
+{
+	private final CancelStatus model = new CancelStatus();
 
-    /**
-     * Model tests for CancelStatus
-     */
-    @Test
-    public void testCancelStatus() {
-        // TODO: test CancelStatus
-    }
+	/**
+	 * Model tests for CancelStatus
+	 */
+	@Test
+	public void testCancelStatus()
+	{
+		// TODO: test CancelStatus
+	}
 
-    /**
-     * Test the property 'cancelledDate'
-     */
-    @Test
-    public void cancelledDateTest() {
-        // TODO: test cancelledDate
-    }
+	/**
+	 * Test the property 'cancelledDate'
+	 */
+	@Test
+	public void cancelledDateTest()
+	{
+		// TODO: test cancelledDate
+	}
 
-    /**
-     * Test the property 'cancelRequests'
-     */
-    @Test
-    public void cancelRequestsTest() {
-        // TODO: test cancelRequests
-    }
+	/**
+	 * Test the property 'cancelRequests'
+	 */
+	@Test
+	public void cancelRequestsTest()
+	{
+		// TODO: test cancelRequests
+	}
 
-    /**
-     * Test the property 'cancelState'
-     */
-    @Test
-    public void cancelStateTest() {
-        // TODO: test cancelState
-    }
+	/**
+	 * Test the property 'cancelState'
+	 */
+	@Test
+	public void cancelStateTest()
+	{
+		// TODO: test cancelState
+	}
 
 }

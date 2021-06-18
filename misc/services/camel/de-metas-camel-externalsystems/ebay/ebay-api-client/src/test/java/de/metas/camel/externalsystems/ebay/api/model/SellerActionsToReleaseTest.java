@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,27 +24,29 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for SellerActionsToRelease
  */
-public class SellerActionsToReleaseTest {
-    private final SellerActionsToRelease model = new SellerActionsToRelease();
+public class SellerActionsToReleaseTest
+{
+	private final SellerActionsToRelease model = new SellerActionsToRelease();
 
-    /**
-     * Model tests for SellerActionsToRelease
-     */
-    @Test
-    public void testSellerActionsToRelease() {
-        // TODO: test SellerActionsToRelease
-    }
+	/**
+	 * Model tests for SellerActionsToRelease
+	 */
+	@Test
+	public void testSellerActionsToRelease()
+	{
+		// TODO: test SellerActionsToRelease
+	}
 
-    /**
-     * Test the property 'sellerActionToRelease'
-     */
-    @Test
-    public void sellerActionToReleaseTest() {
-        // TODO: test sellerActionToRelease
-    }
+	/**
+	 * Test the property 'sellerActionToRelease'
+	 */
+	@Test
+	public void sellerActionToReleaseTest()
+	{
+		// TODO: test sellerActionToRelease
+	}
 
 }

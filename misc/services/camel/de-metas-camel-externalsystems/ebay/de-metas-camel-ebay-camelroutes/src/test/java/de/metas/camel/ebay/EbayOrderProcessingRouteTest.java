@@ -82,31 +82,31 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 @ContextConfiguration(classes = EbayOrderProcessingRouteTest.ContextConfig.class)
 @MockEndpointsAndSkip("direct:metasfresh.upsert-bpartner-v2.camel.uri")
 @UseAdviceWith
-public class EbayOrderProcessingRouteTest {
-	
+public class EbayOrderProcessingRouteTest
+{
+
 	@Autowired
 	protected CamelContext camelContext;
-	
-	//@EndpointInject("metasfresh.upsert-bpartner.camel.uri") 
+
+	// @EndpointInject("metasfresh.upsert-bpartner.camel.uri")
 	@EndpointInject("mock:result")
 	protected MockEndpoint resultEndpoint;
-	
+
 	@EndpointInject("mock:direct:metasfresh.upsert-bpartner-v2.camel.uri")
 	protected MockEndpoint resultBParnters;
-	
+
 	@EndpointInject("mock:direct:To-MF_PushOLCandidates-Route")
 	protected MockEndpoint resultOLCs;
-	
+
 	@Produce("direct:start")
-    protected ProducerTemplate template;
-	
+	protected ProducerTemplate template;
+
 	@Mock
 	public OrderApi orderApi;
-	
+
 	@Mock
 	public OAuth2Api authApi;
-	
-	
+
 	@UseOverridePropertiesWithPropertiesComponent
 	public static Properties overrideProperties()
 	{
@@ -121,84 +121,82 @@ public class EbayOrderProcessingRouteTest {
 			throw new RuntimeException(e);
 		}
 	}
-	
 
 	@Test
 	@DirtiesContext
-	public void flowWithSimpleOrder() throws Exception {
-		
-		//mock result of bpartner upsert.
+	public void flowWithSimpleOrder() throws Exception
+	{
+
+		// mock result of bpartner upsert.
 		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor();
 		AdviceWith.adviceWith(camelContext, GetEbayOrdersRouteBuilder.PROCESS_ORDERS_ROUTE_ID,
-				advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI+ "}}")
+				advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 						.skipSendToOriginalEndpoint()
-						.process(createdBPartnerProcessor)
-		);
-		 
+						.process(createdBPartnerProcessor));
+
 		camelContext.start();
-		 
-		
-		//our assertions for the example json
+
+		// our assertions for the example json
 		resultBParnters.expectedMessageCount(1);
 		resultOLCs.expectedMessageCount(1);
-		
-		
-		//prepare api call
-        Map<String,String> parameters = new HashMap<>();
-        parameters.put(ExternalSystemConstants.PARAM_API_KEY, "key");
-        parameters.put(ExternalSystemConstants.PARAM_TENANT, "tenant");
-        parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, "ua");
-        parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, "bp");
-        parameters.put(EbayConstants.PARAM_API_MODE, "sandbox");
-        parameters.put(EbayConstants.PARAM_API_AUTH_CODE, "");
-        parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, "%5B2016-03-21T08:25:43.511Z%5D");
-        
-        JsonExternalSystemRequest jesr = new JsonExternalSystemRequest(
-        		"orgCode",
-        		JsonExternalSystemName.of("ebay"),
-        		"command",
-        		null,
-        		JsonMetasfreshId.of(1), 
-        		parameters);
-        
-        
-        //put mock clients into body
-        Map<String,Object> body = new HashMap<>();
-        body.put(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT, orderApi);
-        body.put(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT, authApi);
 
-        //prepare order api
-    	ObjectMapper mapper = new ObjectMapper();
-        InputStream is = EbayOrderProcessingRouteTest.class.getResourceAsStream("/examples/01_ebay-order-new-of-consumer.json");
-        OrderSearchPagedCollection mockResult = mapper.readValue(is, OrderSearchPagedCollection.class);
-        
-        when(orderApi.getOrders(any(), any(), any(), any(), any())).thenReturn(mockResult);
-        
-        //prepare auth api
-        Optional<AccessToken> token = Optional.of(new AccessToken());
-        Optional<RefreshToken> rtoken = Optional.of(new RefreshToken());
-        
-        OAuthResponse res = new OAuthResponse(token, rtoken);
-        when(authApi.exchangeCodeForAccessToken(any(),anyString())).thenReturn(res);
-        
-        //send message
-        template.sendBodyAndHeaders("direct:" + GetEbayOrdersRouteBuilder.GET_ORDERS_ROUTE_ID, jesr, body);
-        
-        //check assertions
-        resultBParnters.assertIsSatisfied();
-        resultOLCs.assertIsSatisfied();
-        assertThat(createdBPartnerProcessor.called).isEqualTo(1);
+		// prepare api call
+		Map<String, String> parameters = new HashMap<>();
+		parameters.put(ExternalSystemConstants.PARAM_API_KEY, "key");
+		parameters.put(ExternalSystemConstants.PARAM_TENANT, "tenant");
+		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, "ua");
+		parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, "bp");
+		parameters.put(EbayConstants.PARAM_API_MODE, "sandbox");
+		parameters.put(EbayConstants.PARAM_API_AUTH_CODE, "");
+		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, "%5B2016-03-21T08:25:43.511Z%5D");
+
+		JsonExternalSystemRequest jesr = new JsonExternalSystemRequest(
+				"orgCode",
+				JsonExternalSystemName.of("ebay"),
+				"command",
+				null,
+				JsonMetasfreshId.of(1),
+				parameters);
+
+		// put mock clients into body
+		Map<String, Object> body = new HashMap<>();
+		body.put(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT, orderApi);
+		body.put(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT, authApi);
+
+		// prepare order api
+		ObjectMapper mapper = new ObjectMapper();
+		InputStream is = EbayOrderProcessingRouteTest.class.getResourceAsStream("/examples/01_ebay-order-new-of-consumer.json");
+		OrderSearchPagedCollection mockResult = mapper.readValue(is, OrderSearchPagedCollection.class);
+
+		when(orderApi.getOrders(any(), any(), any(), any(), any())).thenReturn(mockResult);
+
+		// prepare auth api
+		Optional<AccessToken> token = Optional.of(new AccessToken());
+		Optional<RefreshToken> rtoken = Optional.of(new RefreshToken());
+
+		OAuthResponse res = new OAuthResponse(token, rtoken);
+		when(authApi.exchangeCodeForAccessToken(any(), anyString())).thenReturn(res);
+
+		// send message
+		template.sendBodyAndHeaders("direct:" + GetEbayOrdersRouteBuilder.GET_ORDERS_ROUTE_ID, jesr, body);
+
+		// check assertions
+		resultBParnters.assertIsSatisfied();
+		resultOLCs.assertIsSatisfied();
+		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
 	}
-	
+
 	@Configuration
-    public static class ContextConfig extends SingleRouteCamelConfiguration {
-        @Override
-        @Bean
-        public RouteBuilder route() {
-        	return new GetEbayOrdersRouteBuilder();
-        }
-    }
-	
+	public static class ContextConfig extends SingleRouteCamelConfiguration
+	{
+		@Override
+		@Bean
+		public RouteBuilder route()
+		{
+			return new GetEbayOrdersRouteBuilder();
+		}
+	}
+
 	private static class MockUpsertBPartnerProcessor implements Processor
 	{
 		private int called = 0;

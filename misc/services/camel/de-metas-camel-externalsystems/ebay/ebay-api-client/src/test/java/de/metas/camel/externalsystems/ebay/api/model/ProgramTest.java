@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -26,27 +25,29 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for Program
  */
-public class ProgramTest {
-    private final Program model = new Program();
+public class ProgramTest
+{
+	private final Program model = new Program();
 
-    /**
-     * Model tests for Program
-     */
-    @Test
-    public void testProgram() {
-        // TODO: test Program
-    }
+	/**
+	 * Model tests for Program
+	 */
+	@Test
+	public void testProgram()
+	{
+		// TODO: test Program
+	}
 
-    /**
-     * Test the property 'authenticityVerification'
-     */
-    @Test
-    public void authenticityVerificationTest() {
-        // TODO: test authenticityVerification
-    }
+	/**
+	 * Test the property 'authenticityVerification'
+	 */
+	@Test
+	public void authenticityVerificationTest()
+	{
+		// TODO: test authenticityVerification
+	}
 
 }

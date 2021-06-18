@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,100 +24,111 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used by the returnAddress")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class Phone {
-  public static final String SERIALIZED_NAME_COUNTRY_CODE = "countryCode";
-  @SerializedName(SERIALIZED_NAME_COUNTRY_CODE)
-  private String countryCode;
+public class Phone
+{
+	public static final String SERIALIZED_NAME_COUNTRY_CODE = "countryCode";
+	@SerializedName(SERIALIZED_NAME_COUNTRY_CODE)
+	private String countryCode;
 
-  public static final String SERIALIZED_NAME_NUMBER = "number";
-  @SerializedName(SERIALIZED_NAME_NUMBER)
-  private String number;
+	public static final String SERIALIZED_NAME_NUMBER = "number";
+	@SerializedName(SERIALIZED_NAME_NUMBER)
+	private String number;
 
+	public Phone countryCode(String countryCode)
+	{
 
-  public Phone countryCode(String countryCode) {
-    
-    this.countryCode = countryCode;
-    return this;
-  }
+		this.countryCode = countryCode;
+		return this;
+	}
 
-   /**
-   * The seller&#39;s country calling code. This field is needed if the buyer is located in a different country than the seller. It is also OK to provide if the buyer and seller are both located in the same country. For a full list of calling codes for all countries, see the countrycode.org site.
-   * @return countryCode
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The seller's country calling code. This field is needed if the buyer is located in a different country than the seller. It is also OK to provide if the buyer and seller are both located in the same country. For a full list of calling codes for all countries, see the countrycode.org site.")
+	/**
+	 * The seller&#39;s country calling code. This field is needed if the buyer is located in a different country than the seller. It is also OK to provide if the buyer and seller are both located in the same country. For a full list of calling codes for all countries, see the countrycode.org site.
+	 * 
+	 * @return countryCode
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The seller's country calling code. This field is needed if the buyer is located in a different country than the seller. It is also OK to provide if the buyer and seller are both located in the same country. For a full list of calling codes for all countries, see the countrycode.org site.")
 
-  public String getCountryCode() {
-    return countryCode;
-  }
+	public String getCountryCode()
+	{
+		return countryCode;
+	}
 
+	public void setCountryCode(String countryCode)
+	{
+		this.countryCode = countryCode;
+	}
 
-  public void setCountryCode(String countryCode) {
-    this.countryCode = countryCode;
-  }
+	public Phone number(String number)
+	{
 
+		this.number = number;
+		return this;
+	}
 
-  public Phone number(String number) {
-    
-    this.number = number;
-    return this;
-  }
+	/**
+	 * The seller&#39;s primary phone number associated with the return address. When this number is provided in a contestPaymentDispute or contestPaymentDispute method, it is provided as one continuous numeric string, including the area code. So, if the phone number&#39;s area code was &#39;408&#39;, a number in this field may look something like this: &amp;quot;number&amp;quot; :
+	 * &amp;quot;4088084356&amp;quot; If the buyer is located in a different country than the seller, the seller&#39;s country calling code will need to be specified in the countryCode field.
+	 * 
+	 * @return number
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The seller's primary phone number associated with the return address. When this number is provided in a contestPaymentDispute or contestPaymentDispute method, it is provided as one continuous numeric string, including the area code. So, if the phone number's area code was '408', a number in this field may look something like this: &quot;number&quot; : &quot;4088084356&quot; If the buyer is located in a different country than the seller, the seller's country calling code will need to be specified in the countryCode field.")
 
-   /**
-   * The seller&#39;s primary phone number associated with the return address. When this number is provided in a contestPaymentDispute or contestPaymentDispute method, it is provided as one continuous numeric string, including the area code. So, if the phone number&#39;s area code was &#39;408&#39;, a number in this field may look something like this: &amp;quot;number&amp;quot; : &amp;quot;4088084356&amp;quot; If the buyer is located in a different country than the seller, the seller&#39;s country calling code will need to be specified in the countryCode field.
-   * @return number
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The seller's primary phone number associated with the return address. When this number is provided in a contestPaymentDispute or contestPaymentDispute method, it is provided as one continuous numeric string, including the area code. So, if the phone number's area code was '408', a number in this field may look something like this: &quot;number&quot; : &quot;4088084356&quot; If the buyer is located in a different country than the seller, the seller's country calling code will need to be specified in the countryCode field.")
+	public String getNumber()
+	{
+		return number;
+	}
 
-  public String getNumber() {
-    return number;
-  }
+	public void setNumber(String number)
+	{
+		this.number = number;
+	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		Phone phone = (Phone)o;
+		return Objects.equals(this.countryCode, phone.countryCode) &&
+				Objects.equals(this.number, phone.number);
+	}
 
-  public void setNumber(String number) {
-    this.number = number;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(countryCode, number);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class Phone {\n");
+		sb.append("    countryCode: ").append(toIndentedString(countryCode)).append("\n");
+		sb.append("    number: ").append(toIndentedString(number)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Phone phone = (Phone) o;
-    return Objects.equals(this.countryCode, phone.countryCode) &&
-        Objects.equals(this.number, phone.number);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(countryCode, number);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class Phone {\n");
-    sb.append("    countryCode: ").append(toIndentedString(countryCode)).append("\n");
-    sb.append("    number: ").append(toIndentedString(number)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

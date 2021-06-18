@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -29,67 +28,74 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for PaymentHold
  */
-public class PaymentHoldTest {
-    private final PaymentHold model = new PaymentHold();
+public class PaymentHoldTest
+{
+	private final PaymentHold model = new PaymentHold();
 
-    /**
-     * Model tests for PaymentHold
-     */
-    @Test
-    public void testPaymentHold() {
-        // TODO: test PaymentHold
-    }
+	/**
+	 * Model tests for PaymentHold
+	 */
+	@Test
+	public void testPaymentHold()
+	{
+		// TODO: test PaymentHold
+	}
 
-    /**
-     * Test the property 'expectedReleaseDate'
-     */
-    @Test
-    public void expectedReleaseDateTest() {
-        // TODO: test expectedReleaseDate
-    }
+	/**
+	 * Test the property 'expectedReleaseDate'
+	 */
+	@Test
+	public void expectedReleaseDateTest()
+	{
+		// TODO: test expectedReleaseDate
+	}
 
-    /**
-     * Test the property 'holdAmount'
-     */
-    @Test
-    public void holdAmountTest() {
-        // TODO: test holdAmount
-    }
+	/**
+	 * Test the property 'holdAmount'
+	 */
+	@Test
+	public void holdAmountTest()
+	{
+		// TODO: test holdAmount
+	}
 
-    /**
-     * Test the property 'holdReason'
-     */
-    @Test
-    public void holdReasonTest() {
-        // TODO: test holdReason
-    }
+	/**
+	 * Test the property 'holdReason'
+	 */
+	@Test
+	public void holdReasonTest()
+	{
+		// TODO: test holdReason
+	}
 
-    /**
-     * Test the property 'holdState'
-     */
-    @Test
-    public void holdStateTest() {
-        // TODO: test holdState
-    }
+	/**
+	 * Test the property 'holdState'
+	 */
+	@Test
+	public void holdStateTest()
+	{
+		// TODO: test holdState
+	}
 
-    /**
-     * Test the property 'releaseDate'
-     */
-    @Test
-    public void releaseDateTest() {
-        // TODO: test releaseDate
-    }
+	/**
+	 * Test the property 'releaseDate'
+	 */
+	@Test
+	public void releaseDateTest()
+	{
+		// TODO: test releaseDate
+	}
 
-    /**
-     * Test the property 'sellerActionsToRelease'
-     */
-    @Test
-    public void sellerActionsToReleaseTest() {
-        // TODO: test sellerActionsToRelease
-    }
+	/**
+	 * Test the property 'sellerActionsToRelease'
+	 */
+	@Test
+	public void sellerActionsToReleaseTest()
+	{
+		// TODO: test sellerActionsToRelease
+	}
 
 }

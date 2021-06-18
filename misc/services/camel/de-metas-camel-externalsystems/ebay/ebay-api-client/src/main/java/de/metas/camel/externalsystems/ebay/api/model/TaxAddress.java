@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,158 +24,172 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This container consists of address information that can be used by sellers for tax purpose.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class TaxAddress {
-  public static final String SERIALIZED_NAME_CITY = "city";
-  @SerializedName(SERIALIZED_NAME_CITY)
-  private String city;
+public class TaxAddress
+{
+	public static final String SERIALIZED_NAME_CITY = "city";
+	@SerializedName(SERIALIZED_NAME_CITY)
+	private String city;
 
-  public static final String SERIALIZED_NAME_COUNTRY_CODE = "countryCode";
-  @SerializedName(SERIALIZED_NAME_COUNTRY_CODE)
-  private String countryCode;
+	public static final String SERIALIZED_NAME_COUNTRY_CODE = "countryCode";
+	@SerializedName(SERIALIZED_NAME_COUNTRY_CODE)
+	private String countryCode;
 
-  public static final String SERIALIZED_NAME_POSTAL_CODE = "postalCode";
-  @SerializedName(SERIALIZED_NAME_POSTAL_CODE)
-  private String postalCode;
+	public static final String SERIALIZED_NAME_POSTAL_CODE = "postalCode";
+	@SerializedName(SERIALIZED_NAME_POSTAL_CODE)
+	private String postalCode;
 
-  public static final String SERIALIZED_NAME_STATE_OR_PROVINCE = "stateOrProvince";
-  @SerializedName(SERIALIZED_NAME_STATE_OR_PROVINCE)
-  private String stateOrProvince;
+	public static final String SERIALIZED_NAME_STATE_OR_PROVINCE = "stateOrProvince";
+	@SerializedName(SERIALIZED_NAME_STATE_OR_PROVINCE)
+	private String stateOrProvince;
 
+	public TaxAddress city(String city)
+	{
 
-  public TaxAddress city(String city) {
-    
-    this.city = city;
-    return this;
-  }
+		this.city = city;
+		return this;
+	}
 
-   /**
-   * The city name that can be used by sellers for tax purpose.
-   * @return city
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The city name that can be used by sellers for tax purpose.")
+	/**
+	 * The city name that can be used by sellers for tax purpose.
+	 * 
+	 * @return city
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The city name that can be used by sellers for tax purpose.")
 
-  public String getCity() {
-    return city;
-  }
+	public String getCity()
+	{
+		return city;
+	}
 
+	public void setCity(String city)
+	{
+		this.city = city;
+	}
 
-  public void setCity(String city) {
-    this.city = city;
-  }
+	public TaxAddress countryCode(String countryCode)
+	{
 
+		this.countryCode = countryCode;
+		return this;
+	}
 
-  public TaxAddress countryCode(String countryCode) {
-    
-    this.countryCode = countryCode;
-    return this;
-  }
+	/**
+	 * The country code that can be used by sellers for tax purpose, represented as a two-letter ISO 3166-1 alpha-2 country code. For example, US represents the United States, and DE represents Germany. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CountryCodeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
+	 * 
+	 * @return countryCode
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The country code that can be used by sellers for tax purpose, represented as a two-letter ISO 3166-1 alpha-2 country code. For example, US represents the United States, and DE represents Germany. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CountryCodeEnum'>eBay API documentation</a>")
 
-   /**
-   * The country code that can be used by sellers for tax purpose, represented as a two-letter ISO 3166-1 alpha-2 country code. For example, US represents the United States, and DE represents Germany. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CountryCodeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return countryCode
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The country code that can be used by sellers for tax purpose, represented as a two-letter ISO 3166-1 alpha-2 country code. For example, US represents the United States, and DE represents Germany. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CountryCodeEnum'>eBay API documentation</a>")
+	public String getCountryCode()
+	{
+		return countryCode;
+	}
 
-  public String getCountryCode() {
-    return countryCode;
-  }
+	public void setCountryCode(String countryCode)
+	{
+		this.countryCode = countryCode;
+	}
 
+	public TaxAddress postalCode(String postalCode)
+	{
 
-  public void setCountryCode(String countryCode) {
-    this.countryCode = countryCode;
-  }
+		this.postalCode = postalCode;
+		return this;
+	}
 
+	/**
+	 * The postal code that can be used by sellers for tax purpose. Usually referred to as Zip codes in the US.
+	 * 
+	 * @return postalCode
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The postal code that can be used by sellers for tax purpose. Usually referred to as Zip codes in the US.")
 
-  public TaxAddress postalCode(String postalCode) {
-    
-    this.postalCode = postalCode;
-    return this;
-  }
+	public String getPostalCode()
+	{
+		return postalCode;
+	}
 
-   /**
-   * The postal code that can be used by sellers for tax purpose. Usually referred to as Zip codes in the US.
-   * @return postalCode
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The postal code that can be used by sellers for tax purpose. Usually referred to as Zip codes in the US.")
+	public void setPostalCode(String postalCode)
+	{
+		this.postalCode = postalCode;
+	}
 
-  public String getPostalCode() {
-    return postalCode;
-  }
+	public TaxAddress stateOrProvince(String stateOrProvince)
+	{
 
+		this.stateOrProvince = stateOrProvince;
+		return this;
+	}
 
-  public void setPostalCode(String postalCode) {
-    this.postalCode = postalCode;
-  }
+	/**
+	 * The state name that can be used by sellers for tax purpose.
+	 * 
+	 * @return stateOrProvince
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The state name that can be used by sellers for tax purpose.")
 
+	public String getStateOrProvince()
+	{
+		return stateOrProvince;
+	}
 
-  public TaxAddress stateOrProvince(String stateOrProvince) {
-    
-    this.stateOrProvince = stateOrProvince;
-    return this;
-  }
+	public void setStateOrProvince(String stateOrProvince)
+	{
+		this.stateOrProvince = stateOrProvince;
+	}
 
-   /**
-   * The state name that can be used by sellers for tax purpose.
-   * @return stateOrProvince
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The state name that can be used by sellers for tax purpose.")
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		TaxAddress taxAddress = (TaxAddress)o;
+		return Objects.equals(this.city, taxAddress.city) &&
+				Objects.equals(this.countryCode, taxAddress.countryCode) &&
+				Objects.equals(this.postalCode, taxAddress.postalCode) &&
+				Objects.equals(this.stateOrProvince, taxAddress.stateOrProvince);
+	}
 
-  public String getStateOrProvince() {
-    return stateOrProvince;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(city, countryCode, postalCode, stateOrProvince);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class TaxAddress {\n");
+		sb.append("    city: ").append(toIndentedString(city)).append("\n");
+		sb.append("    countryCode: ").append(toIndentedString(countryCode)).append("\n");
+		sb.append("    postalCode: ").append(toIndentedString(postalCode)).append("\n");
+		sb.append("    stateOrProvince: ").append(toIndentedString(stateOrProvince)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  public void setStateOrProvince(String stateOrProvince) {
-    this.stateOrProvince = stateOrProvince;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    TaxAddress taxAddress = (TaxAddress) o;
-    return Objects.equals(this.city, taxAddress.city) &&
-        Objects.equals(this.countryCode, taxAddress.countryCode) &&
-        Objects.equals(this.postalCode, taxAddress.postalCode) &&
-        Objects.equals(this.stateOrProvince, taxAddress.stateOrProvince);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(city, countryCode, postalCode, stateOrProvince);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class TaxAddress {\n");
-    sb.append("    city: ").append(toIndentedString(city)).append("\n");
-    sb.append("    countryCode: ").append(toIndentedString(countryCode)).append("\n");
-    sb.append("    postalCode: ").append(toIndentedString(postalCode)).append("\n");
-    sb.append("    stateOrProvince: ").append(toIndentedString(stateOrProvince)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

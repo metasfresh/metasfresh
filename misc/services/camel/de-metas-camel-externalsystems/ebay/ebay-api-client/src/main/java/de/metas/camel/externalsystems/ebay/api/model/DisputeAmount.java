@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,187 +24,205 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type defines the monetary value of an amount. It can provide the amount in both the currency used on the eBay site where an item is being offered and the conversion of that value into another currency, if applicable.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class DisputeAmount {
-  public static final String SERIALIZED_NAME_CONVERTED_FROM_CURRENCY = "convertedFromCurrency";
-  @SerializedName(SERIALIZED_NAME_CONVERTED_FROM_CURRENCY)
-  private String convertedFromCurrency;
+public class DisputeAmount
+{
+	public static final String SERIALIZED_NAME_CONVERTED_FROM_CURRENCY = "convertedFromCurrency";
+	@SerializedName(SERIALIZED_NAME_CONVERTED_FROM_CURRENCY)
+	private String convertedFromCurrency;
 
-  public static final String SERIALIZED_NAME_CONVERTED_FROM_VALUE = "convertedFromValue";
-  @SerializedName(SERIALIZED_NAME_CONVERTED_FROM_VALUE)
-  private String convertedFromValue;
+	public static final String SERIALIZED_NAME_CONVERTED_FROM_VALUE = "convertedFromValue";
+	@SerializedName(SERIALIZED_NAME_CONVERTED_FROM_VALUE)
+	private String convertedFromValue;
 
-  public static final String SERIALIZED_NAME_CURRENCY = "currency";
-  @SerializedName(SERIALIZED_NAME_CURRENCY)
-  private String currency;
+	public static final String SERIALIZED_NAME_CURRENCY = "currency";
+	@SerializedName(SERIALIZED_NAME_CURRENCY)
+	private String currency;
 
-  public static final String SERIALIZED_NAME_EXCHANGE_RATE = "exchangeRate";
-  @SerializedName(SERIALIZED_NAME_EXCHANGE_RATE)
-  private String exchangeRate;
+	public static final String SERIALIZED_NAME_EXCHANGE_RATE = "exchangeRate";
+	@SerializedName(SERIALIZED_NAME_EXCHANGE_RATE)
+	private String exchangeRate;
 
-  public static final String SERIALIZED_NAME_VALUE = "value";
-  @SerializedName(SERIALIZED_NAME_VALUE)
-  private String value;
+	public static final String SERIALIZED_NAME_VALUE = "value";
+	@SerializedName(SERIALIZED_NAME_VALUE)
+	private String value;
 
+	public DisputeAmount convertedFromCurrency(String convertedFromCurrency)
+	{
 
-  public DisputeAmount convertedFromCurrency(String convertedFromCurrency) {
-    
-    this.convertedFromCurrency = convertedFromCurrency;
-    return this;
-  }
+		this.convertedFromCurrency = convertedFromCurrency;
+		return this;
+	}
 
-   /**
-   * The three-letter ISO 4217 code representing the currency of the amount in the convertedFromValue field. This value is the pre-conversion currency. This field is only returned if/when currency conversion was applied by eBay. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return convertedFromCurrency
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The three-letter ISO 4217 code representing the currency of the amount in the convertedFromValue field. This value is the pre-conversion currency. This field is only returned if/when currency conversion was applied by eBay. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
+	/**
+	 * The three-letter ISO 4217 code representing the currency of the amount in the convertedFromValue field. This value is the pre-conversion currency. This field is only returned if/when currency conversion was applied by eBay. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum&#39;&gt;eBay API
+	 * documentation&lt;/a&gt;
+	 * 
+	 * @return convertedFromCurrency
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The three-letter ISO 4217 code representing the currency of the amount in the convertedFromValue field. This value is the pre-conversion currency. This field is only returned if/when currency conversion was applied by eBay. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
 
-  public String getConvertedFromCurrency() {
-    return convertedFromCurrency;
-  }
+	public String getConvertedFromCurrency()
+	{
+		return convertedFromCurrency;
+	}
 
+	public void setConvertedFromCurrency(String convertedFromCurrency)
+	{
+		this.convertedFromCurrency = convertedFromCurrency;
+	}
 
-  public void setConvertedFromCurrency(String convertedFromCurrency) {
-    this.convertedFromCurrency = convertedFromCurrency;
-  }
+	public DisputeAmount convertedFromValue(String convertedFromValue)
+	{
 
+		this.convertedFromValue = convertedFromValue;
+		return this;
+	}
 
-  public DisputeAmount convertedFromValue(String convertedFromValue) {
-    
-    this.convertedFromValue = convertedFromValue;
-    return this;
-  }
+	/**
+	 * The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is the pre-conversion amount. The value field contains the converted amount of this value, in the currency specified by the currency field. This field is only returned if/when currency conversion was applied by eBay.
+	 * 
+	 * @return convertedFromValue
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is the pre-conversion amount. The value field contains the converted amount of this value, in the currency specified by the currency field. This field is only returned if/when currency conversion was applied by eBay.")
 
-   /**
-   * The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is the pre-conversion amount. The value field contains the converted amount of this value, in the currency specified by the currency field. This field is only returned if/when currency conversion was applied by eBay.
-   * @return convertedFromValue
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is the pre-conversion amount. The value field contains the converted amount of this value, in the currency specified by the currency field. This field is only returned if/when currency conversion was applied by eBay.")
+	public String getConvertedFromValue()
+	{
+		return convertedFromValue;
+	}
 
-  public String getConvertedFromValue() {
-    return convertedFromValue;
-  }
+	public void setConvertedFromValue(String convertedFromValue)
+	{
+		this.convertedFromValue = convertedFromValue;
+	}
 
+	public DisputeAmount currency(String currency)
+	{
 
-  public void setConvertedFromValue(String convertedFromValue) {
-    this.convertedFromValue = convertedFromValue;
-  }
+		this.currency = currency;
+		return this;
+	}
 
+	/**
+	 * A three-letter ISO 4217 code that indicates the currency of the amount in the value field. This field is always returned with any container using Amount type. Default: The currency of the authenticated user&#39;s country. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum&#39;&gt;eBay API
+	 * documentation&lt;/a&gt;
+	 * 
+	 * @return currency
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "A three-letter ISO 4217 code that indicates the currency of the amount in the value field. This field is always returned with any container using Amount type. Default: The currency of the authenticated user's country. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
 
-  public DisputeAmount currency(String currency) {
-    
-    this.currency = currency;
-    return this;
-  }
+	public String getCurrency()
+	{
+		return currency;
+	}
 
-   /**
-   * A three-letter ISO 4217 code that indicates the currency of the amount in the value field. This field is always returned with any container using Amount type. Default: The currency of the authenticated user&#39;s country. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return currency
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "A three-letter ISO 4217 code that indicates the currency of the amount in the value field. This field is always returned with any container using Amount type. Default: The currency of the authenticated user's country. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
+	public void setCurrency(String currency)
+	{
+		this.currency = currency;
+	}
 
-  public String getCurrency() {
-    return currency;
-  }
+	public DisputeAmount exchangeRate(String exchangeRate)
+	{
 
+		this.exchangeRate = exchangeRate;
+		return this;
+	}
 
-  public void setCurrency(String currency) {
-    this.currency = currency;
-  }
+	/**
+	 * The exchange rate used for the monetary conversion. This field shows the exchange rate used to convert the dollar value in the value field from the dollar value in the convertedFromValue field. This field is only returned if/when currency conversion was applied by eBay.
+	 * 
+	 * @return exchangeRate
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The exchange rate used for the monetary conversion. This field shows the exchange rate used to convert the dollar value in the value field from the dollar value in the convertedFromValue field. This field is only returned if/when currency conversion was applied by eBay.")
 
+	public String getExchangeRate()
+	{
+		return exchangeRate;
+	}
 
-  public DisputeAmount exchangeRate(String exchangeRate) {
-    
-    this.exchangeRate = exchangeRate;
-    return this;
-  }
+	public void setExchangeRate(String exchangeRate)
+	{
+		this.exchangeRate = exchangeRate;
+	}
 
-   /**
-   * The exchange rate used for the monetary conversion. This field shows the exchange rate used to convert the dollar value in the value field from the dollar value in the convertedFromValue field. This field is only returned if/when currency conversion was applied by eBay.
-   * @return exchangeRate
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The exchange rate used for the monetary conversion. This field shows the exchange rate used to convert the dollar value in the value field from the dollar value in the convertedFromValue field. This field is only returned if/when currency conversion was applied by eBay.")
+	public DisputeAmount value(String value)
+	{
 
-  public String getExchangeRate() {
-    return exchangeRate;
-  }
+		this.value = value;
+		return this;
+	}
 
+	/**
+	 * The monetary amount, in the currency specified by the currency field. This field is always returned with any container using Amount type.
+	 * 
+	 * @return value
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The monetary amount, in the currency specified by the currency field. This field is always returned with any container using Amount type.")
 
-  public void setExchangeRate(String exchangeRate) {
-    this.exchangeRate = exchangeRate;
-  }
+	public String getValue()
+	{
+		return value;
+	}
 
+	public void setValue(String value)
+	{
+		this.value = value;
+	}
 
-  public DisputeAmount value(String value) {
-    
-    this.value = value;
-    return this;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		DisputeAmount disputeAmount = (DisputeAmount)o;
+		return Objects.equals(this.convertedFromCurrency, disputeAmount.convertedFromCurrency) &&
+				Objects.equals(this.convertedFromValue, disputeAmount.convertedFromValue) &&
+				Objects.equals(this.currency, disputeAmount.currency) &&
+				Objects.equals(this.exchangeRate, disputeAmount.exchangeRate) &&
+				Objects.equals(this.value, disputeAmount.value);
+	}
 
-   /**
-   * The monetary amount, in the currency specified by the currency field. This field is always returned with any container using Amount type.
-   * @return value
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The monetary amount, in the currency specified by the currency field. This field is always returned with any container using Amount type.")
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(convertedFromCurrency, convertedFromValue, currency, exchangeRate, value);
+	}
 
-  public String getValue() {
-    return value;
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class DisputeAmount {\n");
+		sb.append("    convertedFromCurrency: ").append(toIndentedString(convertedFromCurrency)).append("\n");
+		sb.append("    convertedFromValue: ").append(toIndentedString(convertedFromValue)).append("\n");
+		sb.append("    currency: ").append(toIndentedString(currency)).append("\n");
+		sb.append("    exchangeRate: ").append(toIndentedString(exchangeRate)).append("\n");
+		sb.append("    value: ").append(toIndentedString(value)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    DisputeAmount disputeAmount = (DisputeAmount) o;
-    return Objects.equals(this.convertedFromCurrency, disputeAmount.convertedFromCurrency) &&
-        Objects.equals(this.convertedFromValue, disputeAmount.convertedFromValue) &&
-        Objects.equals(this.currency, disputeAmount.currency) &&
-        Objects.equals(this.exchangeRate, disputeAmount.exchangeRate) &&
-        Objects.equals(this.value, disputeAmount.value);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(convertedFromCurrency, convertedFromValue, currency, exchangeRate, value);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class DisputeAmount {\n");
-    sb.append("    convertedFromCurrency: ").append(toIndentedString(convertedFromCurrency)).append("\n");
-    sb.append("    convertedFromValue: ").append(toIndentedString(convertedFromValue)).append("\n");
-    sb.append("    currency: ").append(toIndentedString(currency)).append("\n");
-    sb.append("    exchangeRate: ").append(toIndentedString(exchangeRate)).append("\n");
-    sb.append("    value: ").append(toIndentedString(value)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,71 +24,79 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type contains a string field representing a telephone number.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class PhoneNumber {
-  public static final String SERIALIZED_NAME_PHONE_NUMBER = "phoneNumber";
-  @SerializedName(SERIALIZED_NAME_PHONE_NUMBER)
-  private String phoneNumber;
+public class PhoneNumber
+{
+	public static final String SERIALIZED_NAME_PHONE_NUMBER = "phoneNumber";
+	@SerializedName(SERIALIZED_NAME_PHONE_NUMBER)
+	private String phoneNumber;
 
+	public PhoneNumber phoneNumber(String phoneNumber)
+	{
 
-  public PhoneNumber phoneNumber(String phoneNumber) {
-    
-    this.phoneNumber = phoneNumber;
-    return this;
-  }
+		this.phoneNumber = phoneNumber;
+		return this;
+	}
 
-   /**
-   * The primary telephone number for the shipping recipient.
-   * @return phoneNumber
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The primary telephone number for the shipping recipient.")
+	/**
+	 * The primary telephone number for the shipping recipient.
+	 * 
+	 * @return phoneNumber
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The primary telephone number for the shipping recipient.")
 
-  public String getPhoneNumber() {
-    return phoneNumber;
-  }
+	public String getPhoneNumber()
+	{
+		return phoneNumber;
+	}
 
+	public void setPhoneNumber(String phoneNumber)
+	{
+		this.phoneNumber = phoneNumber;
+	}
 
-  public void setPhoneNumber(String phoneNumber) {
-    this.phoneNumber = phoneNumber;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		PhoneNumber phoneNumber = (PhoneNumber)o;
+		return Objects.equals(this.phoneNumber, phoneNumber.phoneNumber);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(phoneNumber);
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    PhoneNumber phoneNumber = (PhoneNumber) o;
-    return Objects.equals(this.phoneNumber, phoneNumber.phoneNumber);
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class PhoneNumber {\n");
+		sb.append("    phoneNumber: ").append(toIndentedString(phoneNumber)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(phoneNumber);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class PhoneNumber {\n");
-    sb.append("    phoneNumber: ").append(toIndentedString(phoneNumber)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

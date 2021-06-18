@@ -57,18 +57,19 @@ import de.metas.common.rest_api.v2.SyncAdvise;
  * @author Werner Gaulke
  *
  */
-public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor {
-	
-	protected Logger log = LoggerFactory.getLogger(getClass());	
-	
+public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor
+{
+
+	protected Logger log = LoggerFactory.getLogger(getClass());
+
 	@Override
-	public void process(final Exchange exchange) {
-		
+	public void process(final Exchange exchange)
+	{
+
 		final EbayImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, EbayImportOrdersRouteContext.class);
 		log.debug("Create BPartner for ebay order {}", importOrdersRouteContext.getOrder().getOrderId());
-		
-		
-		//prepare identifiers
+
+		// prepare identifiers
 		final Order order = importOrdersRouteContext.getOrder();
 		final String orgCode = importOrdersRouteContext.getOrgCode();
 
@@ -76,24 +77,25 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor {
 		final String bPartnerShipToLocationIdentifier = bPartnerIdentifier + "-shipTo";
 		final String bParnterBillLocationIdentifier = bPartnerIdentifier + "-billTo";
 		final String bPartnerContactIdentifier = bPartnerIdentifier + "-contact";
-		
-		//add identifiers to contect for reuse.
+
+		// add identifiers to contect for reuse.
 		importOrdersRouteContext.setBillingBPLocationExternalId(bParnterBillLocationIdentifier);
 		importOrdersRouteContext.setShippingBPLocationExternalId(bPartnerShipToLocationIdentifier);
-		
-		
+
 		// First, create bPartner, contact and location and map ebay values
 		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
 		final JsonRequestContact bpartnerContact = new JsonRequestContact();
 		final JsonRequestLocation bpartnerLocation = new JsonRequestLocation();
-		
-		if(order.getBuyer().getTaxIdentifier() != null ) {
+
+		if (order.getBuyer().getTaxIdentifier() != null)
+		{
 			bpartner.setVatId(order.getBuyer().getTaxIdentifier().getTaxpayerId());
 		}
 
 		// shipping location and contact
 		if (order.getFulfillmentStartInstructions() != null && order.getFulfillmentStartInstructions().size() >= 1
-				&& order.getFulfillmentStartInstructions().get(0).getShippingStep() != null) {
+				&& order.getFulfillmentStartInstructions().get(0).getShippingStep() != null)
+		{
 
 			ShippingStep shipTo = order.getFulfillmentStartInstructions().get(0).getShippingStep();
 
@@ -107,7 +109,9 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor {
 			bpartnerContact.setName(shipTo.getShipTo().getFullName());
 			bpartnerContact.setPhone(shipTo.getShipTo().getPrimaryPhone().getPhoneNumber());
 
-		} else {
+		}
+		else
+		{
 			log.error("No address to ship to for ebay order {}", order.getOrderId());
 		}
 
@@ -118,14 +122,13 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor {
 		billBPartnerLocation.setPostal(order.getBuyer().getTaxAddress().getPostalCode());
 		billBPartnerLocation.setDistrict(order.getBuyer().getTaxAddress().getStateOrProvince());
 
-		
-		//Second, create upsert request for json items.
+		// Second, create upsert request for json items.
 		List<JsonRequestLocationUpsertItem> locationUpsertItems = new ArrayList<>();
 		locationUpsertItems.add(JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(bPartnerShipToLocationIdentifier)
 				.location(bpartnerLocation)
 				.build());
-		
+
 		locationUpsertItems.add(JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier(bParnterBillLocationIdentifier)
 				.location(billBPartnerLocation)
@@ -136,12 +139,10 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor {
 				.contactIdentifier(bPartnerContactIdentifier)
 				.build();
 
-		
 		final JsonRequestLocationUpsert locations = JsonRequestLocationUpsert.builder().requestItems(locationUpsertItems).build();
 		final JsonRequestContactUpsert contacts = JsonRequestContactUpsert.builder().requestItem(contactUpsertItem).build();
 
-		
-		//Third, create composite and finalise items 
+		// Third, create composite and finalise items
 		final JsonRequestComposite upsertComposite = JsonRequestComposite.builder()
 				.bpartner(bpartner)
 				.locations(locations)
@@ -154,13 +155,12 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor {
 				.bpartnerComposite(upsertComposite).build();
 
 		final JsonRequestBPartnerUpsert upsertBPartner = JsonRequestBPartnerUpsert.builder().requestItem(bpartnerUpsertItem).build();
-		
+
 		final BPUpsertCamelRequest bpUpsertCamelRequest = BPUpsertCamelRequest.builder()
 				.jsonRequestBPartnerUpsert(upsertBPartner)
 				.orgCode(orgCode).build();
 
-		
-		//Finally to in upsert.
+		// Finally to in upsert.
 		exchange.getIn().setBody(bpUpsertCamelRequest);
 	}
 }

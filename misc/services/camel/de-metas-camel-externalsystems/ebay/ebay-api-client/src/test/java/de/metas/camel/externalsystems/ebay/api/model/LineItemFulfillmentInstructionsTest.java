@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,51 +24,56 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for LineItemFulfillmentInstructions
  */
-public class LineItemFulfillmentInstructionsTest {
-    private final LineItemFulfillmentInstructions model = new LineItemFulfillmentInstructions();
+public class LineItemFulfillmentInstructionsTest
+{
+	private final LineItemFulfillmentInstructions model = new LineItemFulfillmentInstructions();
 
-    /**
-     * Model tests for LineItemFulfillmentInstructions
-     */
-    @Test
-    public void testLineItemFulfillmentInstructions() {
-        // TODO: test LineItemFulfillmentInstructions
-    }
+	/**
+	 * Model tests for LineItemFulfillmentInstructions
+	 */
+	@Test
+	public void testLineItemFulfillmentInstructions()
+	{
+		// TODO: test LineItemFulfillmentInstructions
+	}
 
-    /**
-     * Test the property 'guaranteedDelivery'
-     */
-    @Test
-    public void guaranteedDeliveryTest() {
-        // TODO: test guaranteedDelivery
-    }
+	/**
+	 * Test the property 'guaranteedDelivery'
+	 */
+	@Test
+	public void guaranteedDeliveryTest()
+	{
+		// TODO: test guaranteedDelivery
+	}
 
-    /**
-     * Test the property 'maxEstimatedDeliveryDate'
-     */
-    @Test
-    public void maxEstimatedDeliveryDateTest() {
-        // TODO: test maxEstimatedDeliveryDate
-    }
+	/**
+	 * Test the property 'maxEstimatedDeliveryDate'
+	 */
+	@Test
+	public void maxEstimatedDeliveryDateTest()
+	{
+		// TODO: test maxEstimatedDeliveryDate
+	}
 
-    /**
-     * Test the property 'minEstimatedDeliveryDate'
-     */
-    @Test
-    public void minEstimatedDeliveryDateTest() {
-        // TODO: test minEstimatedDeliveryDate
-    }
+	/**
+	 * Test the property 'minEstimatedDeliveryDate'
+	 */
+	@Test
+	public void minEstimatedDeliveryDateTest()
+	{
+		// TODO: test minEstimatedDeliveryDate
+	}
 
-    /**
-     * Test the property 'shipByDate'
-     */
-    @Test
-    public void shipByDateTest() {
-        // TODO: test shipByDate
-    }
+	/**
+	 * Test the property 'shipByDate'
+	 */
+	@Test
+	public void shipByDateTest()
+	{
+		// TODO: test shipByDate
+	}
 
 }

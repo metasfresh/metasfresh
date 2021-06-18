@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,35 +24,38 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for PostSaleAuthenticationProgram
  */
-public class PostSaleAuthenticationProgramTest {
-    private final PostSaleAuthenticationProgram model = new PostSaleAuthenticationProgram();
+public class PostSaleAuthenticationProgramTest
+{
+	private final PostSaleAuthenticationProgram model = new PostSaleAuthenticationProgram();
 
-    /**
-     * Model tests for PostSaleAuthenticationProgram
-     */
-    @Test
-    public void testPostSaleAuthenticationProgram() {
-        // TODO: test PostSaleAuthenticationProgram
-    }
+	/**
+	 * Model tests for PostSaleAuthenticationProgram
+	 */
+	@Test
+	public void testPostSaleAuthenticationProgram()
+	{
+		// TODO: test PostSaleAuthenticationProgram
+	}
 
-    /**
-     * Test the property 'outcomeReason'
-     */
-    @Test
-    public void outcomeReasonTest() {
-        // TODO: test outcomeReason
-    }
+	/**
+	 * Test the property 'outcomeReason'
+	 */
+	@Test
+	public void outcomeReasonTest()
+	{
+		// TODO: test outcomeReason
+	}
 
-    /**
-     * Test the property 'status'
-     */
-    @Test
-    public void statusTest() {
-        // TODO: test status
-    }
+	/**
+	 * Test the property 'status'
+	 */
+	@Test
+	public void statusTest()
+	{
+		// TODO: test status
+	}
 
 }

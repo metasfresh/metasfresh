@@ -37,7 +37,7 @@ import lombok.NonNull;
 import lombok.Setter;
 
 /**
- * Context to store all properties of a single eBay order and processed meta-data 
+ * Context to store all properties of a single eBay order and processed meta-data
  * from various stages of the {@link GetEbayOrdersRouteBuilder} camel pipeline.
  * 
  * @author Werner Gaulke
@@ -45,14 +45,14 @@ import lombok.Setter;
  */
 @Data
 @Builder
-public class EbayImportOrdersRouteContext {
-	
-	
+public class EbayImportOrdersRouteContext
+{
+
 	@NonNull
 	@Builder.Default
 	@Setter(AccessLevel.NONE)
 	private Set<String> importedExternalHeaderIds = new HashSet<>();
-	
+
 	@NonNull
 	private final String orgCode;
 
@@ -69,11 +69,10 @@ public class EbayImportOrdersRouteContext {
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String billingBPLocationExternalId;
-	
+
 	@Nullable
 	private LocalDate dateRequired;
 
-	
 	@NonNull
 	public Order getOrderNotNull()
 	{
@@ -112,5 +111,5 @@ public class EbayImportOrdersRouteContext {
 		this.order = order;
 		importedExternalHeaderIds.add(order.getOrderId());
 	}
-	
+
 }

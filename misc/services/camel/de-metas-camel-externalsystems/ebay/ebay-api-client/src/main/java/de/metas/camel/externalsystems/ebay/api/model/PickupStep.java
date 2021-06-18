@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,71 +24,79 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used to indicate the merchant's store where the buyer will pickup their In-Store Pickup order. The pickupStep container is only returned for In-Store Pickup orders. The In-Store Pickup feature is supported in the US, Canada, UK, Germany, and Australia marketplaces.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class PickupStep {
-  public static final String SERIALIZED_NAME_MERCHANT_LOCATION_KEY = "merchantLocationKey";
-  @SerializedName(SERIALIZED_NAME_MERCHANT_LOCATION_KEY)
-  private String merchantLocationKey;
+public class PickupStep
+{
+	public static final String SERIALIZED_NAME_MERCHANT_LOCATION_KEY = "merchantLocationKey";
+	@SerializedName(SERIALIZED_NAME_MERCHANT_LOCATION_KEY)
+	private String merchantLocationKey;
 
+	public PickupStep merchantLocationKey(String merchantLocationKey)
+	{
 
-  public PickupStep merchantLocationKey(String merchantLocationKey) {
-    
-    this.merchantLocationKey = merchantLocationKey;
-    return this;
-  }
+		this.merchantLocationKey = merchantLocationKey;
+		return this;
+	}
 
-   /**
-   * A merchant-defined unique identifier of the merchant&#39;s store where the buyer will pick up their In-Store Pickup order. This field is always returned with the pickupStep container.
-   * @return merchantLocationKey
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "A merchant-defined unique identifier of the merchant's store where the buyer will pick up their In-Store Pickup order. This field is always returned with the pickupStep container.")
+	/**
+	 * A merchant-defined unique identifier of the merchant&#39;s store where the buyer will pick up their In-Store Pickup order. This field is always returned with the pickupStep container.
+	 * 
+	 * @return merchantLocationKey
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "A merchant-defined unique identifier of the merchant's store where the buyer will pick up their In-Store Pickup order. This field is always returned with the pickupStep container.")
 
-  public String getMerchantLocationKey() {
-    return merchantLocationKey;
-  }
+	public String getMerchantLocationKey()
+	{
+		return merchantLocationKey;
+	}
 
+	public void setMerchantLocationKey(String merchantLocationKey)
+	{
+		this.merchantLocationKey = merchantLocationKey;
+	}
 
-  public void setMerchantLocationKey(String merchantLocationKey) {
-    this.merchantLocationKey = merchantLocationKey;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		PickupStep pickupStep = (PickupStep)o;
+		return Objects.equals(this.merchantLocationKey, pickupStep.merchantLocationKey);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(merchantLocationKey);
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    PickupStep pickupStep = (PickupStep) o;
-    return Objects.equals(this.merchantLocationKey, pickupStep.merchantLocationKey);
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class PickupStep {\n");
+		sb.append("    merchantLocationKey: ").append(toIndentedString(merchantLocationKey)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(merchantLocationKey);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class PickupStep {\n");
-    sb.append("    merchantLocationKey: ").append(toIndentedString(merchantLocationKey)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

@@ -45,24 +45,25 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
  *
  */
 @Component
-public class GetEbayOrdersRouteBuilder extends RouteBuilder{
-	
+public class GetEbayOrdersRouteBuilder extends RouteBuilder
+{
+
 	public static final String GET_ORDERS_ROUTE_ID = "Ebay-getOrders";
 	public static final String PROCESS_ORDERS_ROUTE_ID = "Ebay-processOrders";
 	public static final String PROCESS_ORDER_BPARTNER_ROUTE_ID = "Ebay-processOrderBPartner";
 	public static final String PROCESS_ORDER_OLC_ROUTE_ID = "Ebay-processOrderOLC";
 	public static final String FILTER_ORDER_ROUTE_ID = "Ebay-filterOrder";
-	
+
 	@Override
-	public void configure() {
-		
+	public void configure()
+	{
+
 		log.debug("Configure ebay order route");
-		
+
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
 				.to(StaticEndpointBuilders.direct(MF_ERROR_ROUTE_ID));
-		
-		
+
 		//@formatter:off
 		//first, get orders from ebay and split them.
 		from(StaticEndpointBuilders.direct(GET_ORDERS_ROUTE_ID))
@@ -103,5 +104,5 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder{
 		.end();
 		//@formatter:on
 	}
-	
+
 }

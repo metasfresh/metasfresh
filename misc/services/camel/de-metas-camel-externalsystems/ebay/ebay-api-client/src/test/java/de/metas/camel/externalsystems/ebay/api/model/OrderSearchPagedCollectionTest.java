@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -29,83 +28,92 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for OrderSearchPagedCollection
  */
-public class OrderSearchPagedCollectionTest {
-    private final OrderSearchPagedCollection model = new OrderSearchPagedCollection();
+public class OrderSearchPagedCollectionTest
+{
+	private final OrderSearchPagedCollection model = new OrderSearchPagedCollection();
 
-    /**
-     * Model tests for OrderSearchPagedCollection
-     */
-    @Test
-    public void testOrderSearchPagedCollection() {
-        // TODO: test OrderSearchPagedCollection
-    }
+	/**
+	 * Model tests for OrderSearchPagedCollection
+	 */
+	@Test
+	public void testOrderSearchPagedCollection()
+	{
+		// TODO: test OrderSearchPagedCollection
+	}
 
-    /**
-     * Test the property 'href'
-     */
-    @Test
-    public void hrefTest() {
-        // TODO: test href
-    }
+	/**
+	 * Test the property 'href'
+	 */
+	@Test
+	public void hrefTest()
+	{
+		// TODO: test href
+	}
 
-    /**
-     * Test the property 'limit'
-     */
-    @Test
-    public void limitTest() {
-        // TODO: test limit
-    }
+	/**
+	 * Test the property 'limit'
+	 */
+	@Test
+	public void limitTest()
+	{
+		// TODO: test limit
+	}
 
-    /**
-     * Test the property 'next'
-     */
-    @Test
-    public void nextTest() {
-        // TODO: test next
-    }
+	/**
+	 * Test the property 'next'
+	 */
+	@Test
+	public void nextTest()
+	{
+		// TODO: test next
+	}
 
-    /**
-     * Test the property 'offset'
-     */
-    @Test
-    public void offsetTest() {
-        // TODO: test offset
-    }
+	/**
+	 * Test the property 'offset'
+	 */
+	@Test
+	public void offsetTest()
+	{
+		// TODO: test offset
+	}
 
-    /**
-     * Test the property 'orders'
-     */
-    @Test
-    public void ordersTest() {
-        // TODO: test orders
-    }
+	/**
+	 * Test the property 'orders'
+	 */
+	@Test
+	public void ordersTest()
+	{
+		// TODO: test orders
+	}
 
-    /**
-     * Test the property 'prev'
-     */
-    @Test
-    public void prevTest() {
-        // TODO: test prev
-    }
+	/**
+	 * Test the property 'prev'
+	 */
+	@Test
+	public void prevTest()
+	{
+		// TODO: test prev
+	}
 
-    /**
-     * Test the property 'total'
-     */
-    @Test
-    public void totalTest() {
-        // TODO: test total
-    }
+	/**
+	 * Test the property 'total'
+	 */
+	@Test
+	public void totalTest()
+	{
+		// TODO: test total
+	}
 
-    /**
-     * Test the property 'warnings'
-     */
-    @Test
-    public void warningsTest() {
-        // TODO: test warnings
-    }
+	/**
+	 * Test the property 'warnings'
+	 */
+	@Test
+	public void warningsTest()
+	{
+		// TODO: test warnings
+	}
 
 }

@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,27 +24,29 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for AddEvidencePaymentDisputeResponse
  */
-public class AddEvidencePaymentDisputeResponseTest {
-    private final AddEvidencePaymentDisputeResponse model = new AddEvidencePaymentDisputeResponse();
+public class AddEvidencePaymentDisputeResponseTest
+{
+	private final AddEvidencePaymentDisputeResponse model = new AddEvidencePaymentDisputeResponse();
 
-    /**
-     * Model tests for AddEvidencePaymentDisputeResponse
-     */
-    @Test
-    public void testAddEvidencePaymentDisputeResponse() {
-        // TODO: test AddEvidencePaymentDisputeResponse
-    }
+	/**
+	 * Model tests for AddEvidencePaymentDisputeResponse
+	 */
+	@Test
+	public void testAddEvidencePaymentDisputeResponse()
+	{
+		// TODO: test AddEvidencePaymentDisputeResponse
+	}
 
-    /**
-     * Test the property 'evidenceId'
-     */
-    @Test
-    public void evidenceIdTest() {
-        // TODO: test evidenceId
-    }
+	/**
+	 * Test the property 'evidenceId'
+	 */
+	@Test
+	public void evidenceIdTest()
+	{
+		// TODO: test evidenceId
+	}
 
 }

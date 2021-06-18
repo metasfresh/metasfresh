@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -26,43 +25,47 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for EbayCollectAndRemitTax
  */
-public class EbayCollectAndRemitTaxTest {
-    private final EbayCollectAndRemitTax model = new EbayCollectAndRemitTax();
+public class EbayCollectAndRemitTaxTest
+{
+	private final EbayCollectAndRemitTax model = new EbayCollectAndRemitTax();
 
-    /**
-     * Model tests for EbayCollectAndRemitTax
-     */
-    @Test
-    public void testEbayCollectAndRemitTax() {
-        // TODO: test EbayCollectAndRemitTax
-    }
+	/**
+	 * Model tests for EbayCollectAndRemitTax
+	 */
+	@Test
+	public void testEbayCollectAndRemitTax()
+	{
+		// TODO: test EbayCollectAndRemitTax
+	}
 
-    /**
-     * Test the property 'amount'
-     */
-    @Test
-    public void amountTest() {
-        // TODO: test amount
-    }
+	/**
+	 * Test the property 'amount'
+	 */
+	@Test
+	public void amountTest()
+	{
+		// TODO: test amount
+	}
 
-    /**
-     * Test the property 'taxType'
-     */
-    @Test
-    public void taxTypeTest() {
-        // TODO: test taxType
-    }
+	/**
+	 * Test the property 'taxType'
+	 */
+	@Test
+	public void taxTypeTest()
+	{
+		// TODO: test taxType
+	}
 
-    /**
-     * Test the property 'collectionMethod'
-     */
-    @Test
-    public void collectionMethodTest() {
-        // TODO: test collectionMethod
-    }
+	/**
+	 * Test the property 'collectionMethod'
+	 */
+	@Test
+	public void collectionMethodTest()
+	{
+		// TODO: test collectionMethod
+	}
 
 }

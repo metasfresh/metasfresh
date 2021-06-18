@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -26,43 +25,47 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for AppliedPromotion
  */
-public class AppliedPromotionTest {
-    private final AppliedPromotion model = new AppliedPromotion();
+public class AppliedPromotionTest
+{
+	private final AppliedPromotion model = new AppliedPromotion();
 
-    /**
-     * Model tests for AppliedPromotion
-     */
-    @Test
-    public void testAppliedPromotion() {
-        // TODO: test AppliedPromotion
-    }
+	/**
+	 * Model tests for AppliedPromotion
+	 */
+	@Test
+	public void testAppliedPromotion()
+	{
+		// TODO: test AppliedPromotion
+	}
 
-    /**
-     * Test the property 'description'
-     */
-    @Test
-    public void descriptionTest() {
-        // TODO: test description
-    }
+	/**
+	 * Test the property 'description'
+	 */
+	@Test
+	public void descriptionTest()
+	{
+		// TODO: test description
+	}
 
-    /**
-     * Test the property 'discountAmount'
-     */
-    @Test
-    public void discountAmountTest() {
-        // TODO: test discountAmount
-    }
+	/**
+	 * Test the property 'discountAmount'
+	 */
+	@Test
+	public void discountAmountTest()
+	{
+		// TODO: test discountAmount
+	}
 
-    /**
-     * Test the property 'promotionId'
-     */
-    @Test
-    public void promotionIdTest() {
-        // TODO: test promotionId
-    }
+	/**
+	 * Test the property 'promotionId'
+	 */
+	@Test
+	public void promotionIdTest()
+	{
+		// TODO: test promotionId
+	}
 
 }

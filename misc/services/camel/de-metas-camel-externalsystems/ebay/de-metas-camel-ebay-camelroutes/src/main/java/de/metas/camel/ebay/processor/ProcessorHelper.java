@@ -34,7 +34,7 @@ import lombok.NonNull;
 
 public class ProcessorHelper
 {
-	public static  <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
+	public static <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
 	{
 		final T property = exchange.getProperty(propertyName, propertyClass);
 		if (property == null)
@@ -52,7 +52,7 @@ public class ProcessorHelper
 	{
 		if (adPInstanceId == null)
 		{
-			return; //nothing to do
+			return; // nothing to do
 		}
 
 		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
@@ -63,5 +63,5 @@ public class ProcessorHelper
 		exchange.getContext().createProducerTemplate()
 				.sendBody("direct:" + MF_LOG_MESSAGE_ROUTE_ID, logMessageRequest);
 	}
-	
+
 }

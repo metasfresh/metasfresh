@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -29,43 +28,47 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for AddEvidencePaymentDisputeRequest
  */
-public class AddEvidencePaymentDisputeRequestTest {
-    private final AddEvidencePaymentDisputeRequest model = new AddEvidencePaymentDisputeRequest();
+public class AddEvidencePaymentDisputeRequestTest
+{
+	private final AddEvidencePaymentDisputeRequest model = new AddEvidencePaymentDisputeRequest();
 
-    /**
-     * Model tests for AddEvidencePaymentDisputeRequest
-     */
-    @Test
-    public void testAddEvidencePaymentDisputeRequest() {
-        // TODO: test AddEvidencePaymentDisputeRequest
-    }
+	/**
+	 * Model tests for AddEvidencePaymentDisputeRequest
+	 */
+	@Test
+	public void testAddEvidencePaymentDisputeRequest()
+	{
+		// TODO: test AddEvidencePaymentDisputeRequest
+	}
 
-    /**
-     * Test the property 'evidenceType'
-     */
-    @Test
-    public void evidenceTypeTest() {
-        // TODO: test evidenceType
-    }
+	/**
+	 * Test the property 'evidenceType'
+	 */
+	@Test
+	public void evidenceTypeTest()
+	{
+		// TODO: test evidenceType
+	}
 
-    /**
-     * Test the property 'files'
-     */
-    @Test
-    public void filesTest() {
-        // TODO: test files
-    }
+	/**
+	 * Test the property 'files'
+	 */
+	@Test
+	public void filesTest()
+	{
+		// TODO: test files
+	}
 
-    /**
-     * Test the property 'lineItems'
-     */
-    @Test
-    public void lineItemsTest() {
-        // TODO: test lineItems
-    }
+	/**
+	 * Test the property 'lineItems'
+	 */
+	@Test
+	public void lineItemsTest()
+	{
+		// TODO: test lineItems
+	}
 
 }

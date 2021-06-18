@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,216 +24,234 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used by the resolution container that is returned for payment disputes that have been resolved.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class PaymentDisputeOutcomeDetail {
-  public static final String SERIALIZED_NAME_FEES = "fees";
-  @SerializedName(SERIALIZED_NAME_FEES)
-  private SimpleAmount fees;
+public class PaymentDisputeOutcomeDetail
+{
+	public static final String SERIALIZED_NAME_FEES = "fees";
+	@SerializedName(SERIALIZED_NAME_FEES)
+	private SimpleAmount fees;
 
-  public static final String SERIALIZED_NAME_PROTECTED_AMOUNT = "protectedAmount";
-  @SerializedName(SERIALIZED_NAME_PROTECTED_AMOUNT)
-  private SimpleAmount protectedAmount;
+	public static final String SERIALIZED_NAME_PROTECTED_AMOUNT = "protectedAmount";
+	@SerializedName(SERIALIZED_NAME_PROTECTED_AMOUNT)
+	private SimpleAmount protectedAmount;
 
-  public static final String SERIALIZED_NAME_PROTECTION_STATUS = "protectionStatus";
-  @SerializedName(SERIALIZED_NAME_PROTECTION_STATUS)
-  private String protectionStatus;
+	public static final String SERIALIZED_NAME_PROTECTION_STATUS = "protectionStatus";
+	@SerializedName(SERIALIZED_NAME_PROTECTION_STATUS)
+	private String protectionStatus;
 
-  public static final String SERIALIZED_NAME_REASON_FOR_CLOSURE = "reasonForClosure";
-  @SerializedName(SERIALIZED_NAME_REASON_FOR_CLOSURE)
-  private String reasonForClosure;
+	public static final String SERIALIZED_NAME_REASON_FOR_CLOSURE = "reasonForClosure";
+	@SerializedName(SERIALIZED_NAME_REASON_FOR_CLOSURE)
+	private String reasonForClosure;
 
-  public static final String SERIALIZED_NAME_RECOUP_AMOUNT = "recoupAmount";
-  @SerializedName(SERIALIZED_NAME_RECOUP_AMOUNT)
-  private SimpleAmount recoupAmount;
+	public static final String SERIALIZED_NAME_RECOUP_AMOUNT = "recoupAmount";
+	@SerializedName(SERIALIZED_NAME_RECOUP_AMOUNT)
+	private SimpleAmount recoupAmount;
 
-  public static final String SERIALIZED_NAME_TOTAL_FEE_CREDIT = "totalFeeCredit";
-  @SerializedName(SERIALIZED_NAME_TOTAL_FEE_CREDIT)
-  private SimpleAmount totalFeeCredit;
+	public static final String SERIALIZED_NAME_TOTAL_FEE_CREDIT = "totalFeeCredit";
+	@SerializedName(SERIALIZED_NAME_TOTAL_FEE_CREDIT)
+	private SimpleAmount totalFeeCredit;
 
+	public PaymentDisputeOutcomeDetail fees(SimpleAmount fees)
+	{
 
-  public PaymentDisputeOutcomeDetail fees(SimpleAmount fees) {
-    
-    this.fees = fees;
-    return this;
-  }
+		this.fees = fees;
+		return this;
+	}
 
-   /**
-   * Get fees
-   * @return fees
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	/**
+	 * Get fees
+	 * 
+	 * @return fees
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-  public SimpleAmount getFees() {
-    return fees;
-  }
+	public SimpleAmount getFees()
+	{
+		return fees;
+	}
 
+	public void setFees(SimpleAmount fees)
+	{
+		this.fees = fees;
+	}
 
-  public void setFees(SimpleAmount fees) {
-    this.fees = fees;
-  }
+	public PaymentDisputeOutcomeDetail protectedAmount(SimpleAmount protectedAmount)
+	{
 
+		this.protectedAmount = protectedAmount;
+		return this;
+	}
 
-  public PaymentDisputeOutcomeDetail protectedAmount(SimpleAmount protectedAmount) {
-    
-    this.protectedAmount = protectedAmount;
-    return this;
-  }
+	/**
+	 * Get protectedAmount
+	 * 
+	 * @return protectedAmount
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-   /**
-   * Get protectedAmount
-   * @return protectedAmount
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	public SimpleAmount getProtectedAmount()
+	{
+		return protectedAmount;
+	}
 
-  public SimpleAmount getProtectedAmount() {
-    return protectedAmount;
-  }
+	public void setProtectedAmount(SimpleAmount protectedAmount)
+	{
+		this.protectedAmount = protectedAmount;
+	}
 
+	public PaymentDisputeOutcomeDetail protectionStatus(String protectionStatus)
+	{
 
-  public void setProtectedAmount(SimpleAmount protectedAmount) {
-    this.protectedAmount = protectedAmount;
-  }
+		this.protectionStatus = protectionStatus;
+		return this;
+	}
 
+	/**
+	 * This enumeration value indicates if the seller is fully protected, partially protected, or not protected by eBay for the payment dispute. This field is always returned once the payment dispute is resolved. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/api:ProtectionStatusEnum&#39;&gt;eBay API documentation&lt;/a&gt;
+	 * 
+	 * @return protectionStatus
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This enumeration value indicates if the seller is fully protected, partially protected, or not protected by eBay for the payment dispute. This field is always returned once the payment dispute is resolved. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:ProtectionStatusEnum'>eBay API documentation</a>")
 
-  public PaymentDisputeOutcomeDetail protectionStatus(String protectionStatus) {
-    
-    this.protectionStatus = protectionStatus;
-    return this;
-  }
+	public String getProtectionStatus()
+	{
+		return protectionStatus;
+	}
 
-   /**
-   * This enumeration value indicates if the seller is fully protected, partially protected, or not protected by eBay for the payment dispute. This field is always returned once the payment dispute is resolved. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/api:ProtectionStatusEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return protectionStatus
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This enumeration value indicates if the seller is fully protected, partially protected, or not protected by eBay for the payment dispute. This field is always returned once the payment dispute is resolved. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:ProtectionStatusEnum'>eBay API documentation</a>")
+	public void setProtectionStatus(String protectionStatus)
+	{
+		this.protectionStatus = protectionStatus;
+	}
 
-  public String getProtectionStatus() {
-    return protectionStatus;
-  }
+	public PaymentDisputeOutcomeDetail reasonForClosure(String reasonForClosure)
+	{
 
+		this.reasonForClosure = reasonForClosure;
+		return this;
+	}
 
-  public void setProtectionStatus(String protectionStatus) {
-    this.protectionStatus = protectionStatus;
-  }
+	/**
+	 * The enumeration value returned in this field indicates the outcome of the payment dispute for the seller. This field is always returned once the payment dispute is resolved. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/api:OutcomeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
+	 * 
+	 * @return reasonForClosure
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The enumeration value returned in this field indicates the outcome of the payment dispute for the seller. This field is always returned once the payment dispute is resolved. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:OutcomeEnum'>eBay API documentation</a>")
 
+	public String getReasonForClosure()
+	{
+		return reasonForClosure;
+	}
 
-  public PaymentDisputeOutcomeDetail reasonForClosure(String reasonForClosure) {
-    
-    this.reasonForClosure = reasonForClosure;
-    return this;
-  }
+	public void setReasonForClosure(String reasonForClosure)
+	{
+		this.reasonForClosure = reasonForClosure;
+	}
 
-   /**
-   * The enumeration value returned in this field indicates the outcome of the payment dispute for the seller. This field is always returned once the payment dispute is resolved. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/api:OutcomeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return reasonForClosure
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The enumeration value returned in this field indicates the outcome of the payment dispute for the seller. This field is always returned once the payment dispute is resolved. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:OutcomeEnum'>eBay API documentation</a>")
+	public PaymentDisputeOutcomeDetail recoupAmount(SimpleAmount recoupAmount)
+	{
 
-  public String getReasonForClosure() {
-    return reasonForClosure;
-  }
+		this.recoupAmount = recoupAmount;
+		return this;
+	}
 
+	/**
+	 * Get recoupAmount
+	 * 
+	 * @return recoupAmount
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-  public void setReasonForClosure(String reasonForClosure) {
-    this.reasonForClosure = reasonForClosure;
-  }
+	public SimpleAmount getRecoupAmount()
+	{
+		return recoupAmount;
+	}
 
+	public void setRecoupAmount(SimpleAmount recoupAmount)
+	{
+		this.recoupAmount = recoupAmount;
+	}
 
-  public PaymentDisputeOutcomeDetail recoupAmount(SimpleAmount recoupAmount) {
-    
-    this.recoupAmount = recoupAmount;
-    return this;
-  }
+	public PaymentDisputeOutcomeDetail totalFeeCredit(SimpleAmount totalFeeCredit)
+	{
 
-   /**
-   * Get recoupAmount
-   * @return recoupAmount
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+		this.totalFeeCredit = totalFeeCredit;
+		return this;
+	}
 
-  public SimpleAmount getRecoupAmount() {
-    return recoupAmount;
-  }
+	/**
+	 * Get totalFeeCredit
+	 * 
+	 * @return totalFeeCredit
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
+	public SimpleAmount getTotalFeeCredit()
+	{
+		return totalFeeCredit;
+	}
 
-  public void setRecoupAmount(SimpleAmount recoupAmount) {
-    this.recoupAmount = recoupAmount;
-  }
+	public void setTotalFeeCredit(SimpleAmount totalFeeCredit)
+	{
+		this.totalFeeCredit = totalFeeCredit;
+	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		PaymentDisputeOutcomeDetail paymentDisputeOutcomeDetail = (PaymentDisputeOutcomeDetail)o;
+		return Objects.equals(this.fees, paymentDisputeOutcomeDetail.fees) &&
+				Objects.equals(this.protectedAmount, paymentDisputeOutcomeDetail.protectedAmount) &&
+				Objects.equals(this.protectionStatus, paymentDisputeOutcomeDetail.protectionStatus) &&
+				Objects.equals(this.reasonForClosure, paymentDisputeOutcomeDetail.reasonForClosure) &&
+				Objects.equals(this.recoupAmount, paymentDisputeOutcomeDetail.recoupAmount) &&
+				Objects.equals(this.totalFeeCredit, paymentDisputeOutcomeDetail.totalFeeCredit);
+	}
 
-  public PaymentDisputeOutcomeDetail totalFeeCredit(SimpleAmount totalFeeCredit) {
-    
-    this.totalFeeCredit = totalFeeCredit;
-    return this;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(fees, protectedAmount, protectionStatus, reasonForClosure, recoupAmount, totalFeeCredit);
+	}
 
-   /**
-   * Get totalFeeCredit
-   * @return totalFeeCredit
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class PaymentDisputeOutcomeDetail {\n");
+		sb.append("    fees: ").append(toIndentedString(fees)).append("\n");
+		sb.append("    protectedAmount: ").append(toIndentedString(protectedAmount)).append("\n");
+		sb.append("    protectionStatus: ").append(toIndentedString(protectionStatus)).append("\n");
+		sb.append("    reasonForClosure: ").append(toIndentedString(reasonForClosure)).append("\n");
+		sb.append("    recoupAmount: ").append(toIndentedString(recoupAmount)).append("\n");
+		sb.append("    totalFeeCredit: ").append(toIndentedString(totalFeeCredit)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  public SimpleAmount getTotalFeeCredit() {
-    return totalFeeCredit;
-  }
-
-
-  public void setTotalFeeCredit(SimpleAmount totalFeeCredit) {
-    this.totalFeeCredit = totalFeeCredit;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    PaymentDisputeOutcomeDetail paymentDisputeOutcomeDetail = (PaymentDisputeOutcomeDetail) o;
-    return Objects.equals(this.fees, paymentDisputeOutcomeDetail.fees) &&
-        Objects.equals(this.protectedAmount, paymentDisputeOutcomeDetail.protectedAmount) &&
-        Objects.equals(this.protectionStatus, paymentDisputeOutcomeDetail.protectionStatus) &&
-        Objects.equals(this.reasonForClosure, paymentDisputeOutcomeDetail.reasonForClosure) &&
-        Objects.equals(this.recoupAmount, paymentDisputeOutcomeDetail.recoupAmount) &&
-        Objects.equals(this.totalFeeCredit, paymentDisputeOutcomeDetail.totalFeeCredit);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(fees, protectedAmount, protectionStatus, reasonForClosure, recoupAmount, totalFeeCredit);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class PaymentDisputeOutcomeDetail {\n");
-    sb.append("    fees: ").append(toIndentedString(fees)).append("\n");
-    sb.append("    protectedAmount: ").append(toIndentedString(protectedAmount)).append("\n");
-    sb.append("    protectionStatus: ").append(toIndentedString(protectionStatus)).append("\n");
-    sb.append("    reasonForClosure: ").append(toIndentedString(reasonForClosure)).append("\n");
-    sb.append("    recoupAmount: ").append(toIndentedString(recoupAmount)).append("\n");
-    sb.append("    totalFeeCredit: ").append(toIndentedString(totalFeeCredit)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

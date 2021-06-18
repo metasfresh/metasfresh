@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -26,51 +25,56 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for ShippingStep
  */
-public class ShippingStepTest {
-    private final ShippingStep model = new ShippingStep();
+public class ShippingStepTest
+{
+	private final ShippingStep model = new ShippingStep();
 
-    /**
-     * Model tests for ShippingStep
-     */
-    @Test
-    public void testShippingStep() {
-        // TODO: test ShippingStep
-    }
+	/**
+	 * Model tests for ShippingStep
+	 */
+	@Test
+	public void testShippingStep()
+	{
+		// TODO: test ShippingStep
+	}
 
-    /**
-     * Test the property 'shippingCarrierCode'
-     */
-    @Test
-    public void shippingCarrierCodeTest() {
-        // TODO: test shippingCarrierCode
-    }
+	/**
+	 * Test the property 'shippingCarrierCode'
+	 */
+	@Test
+	public void shippingCarrierCodeTest()
+	{
+		// TODO: test shippingCarrierCode
+	}
 
-    /**
-     * Test the property 'shippingServiceCode'
-     */
-    @Test
-    public void shippingServiceCodeTest() {
-        // TODO: test shippingServiceCode
-    }
+	/**
+	 * Test the property 'shippingServiceCode'
+	 */
+	@Test
+	public void shippingServiceCodeTest()
+	{
+		// TODO: test shippingServiceCode
+	}
 
-    /**
-     * Test the property 'shipTo'
-     */
-    @Test
-    public void shipToTest() {
-        // TODO: test shipTo
-    }
+	/**
+	 * Test the property 'shipTo'
+	 */
+	@Test
+	public void shipToTest()
+	{
+		// TODO: test shipTo
+	}
 
-    /**
-     * Test the property 'shipToReferenceId'
-     */
-    @Test
-    public void shipToReferenceIdTest() {
-        // TODO: test shipToReferenceId
-    }
+	/**
+	 * Test the property 'shipToReferenceId'
+	 */
+	@Test
+	public void shipToReferenceIdTest()
+	{
+		// TODO: test shipToReferenceId
+	}
 
 }

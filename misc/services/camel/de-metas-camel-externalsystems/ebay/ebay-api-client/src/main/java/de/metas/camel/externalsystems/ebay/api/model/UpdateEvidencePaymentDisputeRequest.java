@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.ArrayList;
@@ -27,174 +26,193 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used by the request payload of the updateEvidence method. The updateEvidence method is used to update an existing evidence set against a payment dispute with one or more evidence files.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class UpdateEvidencePaymentDisputeRequest {
-  public static final String SERIALIZED_NAME_EVIDENCE_ID = "evidenceId";
-  @SerializedName(SERIALIZED_NAME_EVIDENCE_ID)
-  private String evidenceId;
+public class UpdateEvidencePaymentDisputeRequest
+{
+	public static final String SERIALIZED_NAME_EVIDENCE_ID = "evidenceId";
+	@SerializedName(SERIALIZED_NAME_EVIDENCE_ID)
+	private String evidenceId;
 
-  public static final String SERIALIZED_NAME_EVIDENCE_TYPE = "evidenceType";
-  @SerializedName(SERIALIZED_NAME_EVIDENCE_TYPE)
-  private String evidenceType;
+	public static final String SERIALIZED_NAME_EVIDENCE_TYPE = "evidenceType";
+	@SerializedName(SERIALIZED_NAME_EVIDENCE_TYPE)
+	private String evidenceType;
 
-  public static final String SERIALIZED_NAME_FILES = "files";
-  @SerializedName(SERIALIZED_NAME_FILES)
-  private List<FileEvidence> files = null;
+	public static final String SERIALIZED_NAME_FILES = "files";
+	@SerializedName(SERIALIZED_NAME_FILES)
+	private List<FileEvidence> files = null;
 
-  public static final String SERIALIZED_NAME_LINE_ITEMS = "lineItems";
-  @SerializedName(SERIALIZED_NAME_LINE_ITEMS)
-  private List<OrderLineItems> lineItems = null;
+	public static final String SERIALIZED_NAME_LINE_ITEMS = "lineItems";
+	@SerializedName(SERIALIZED_NAME_LINE_ITEMS)
+	private List<OrderLineItems> lineItems = null;
 
+	public UpdateEvidencePaymentDisputeRequest evidenceId(String evidenceId)
+	{
 
-  public UpdateEvidencePaymentDisputeRequest evidenceId(String evidenceId) {
-    
-    this.evidenceId = evidenceId;
-    return this;
-  }
+		this.evidenceId = evidenceId;
+		return this;
+	}
 
-   /**
-   * The unique identifier of the evidence set that is being updated with new evidence files.
-   * @return evidenceId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The unique identifier of the evidence set that is being updated with new evidence files.")
+	/**
+	 * The unique identifier of the evidence set that is being updated with new evidence files.
+	 * 
+	 * @return evidenceId
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The unique identifier of the evidence set that is being updated with new evidence files.")
 
-  public String getEvidenceId() {
-    return evidenceId;
-  }
+	public String getEvidenceId()
+	{
+		return evidenceId;
+	}
 
+	public void setEvidenceId(String evidenceId)
+	{
+		this.evidenceId = evidenceId;
+	}
 
-  public void setEvidenceId(String evidenceId) {
-    this.evidenceId = evidenceId;
-  }
+	public UpdateEvidencePaymentDisputeRequest evidenceType(String evidenceType)
+	{
 
+		this.evidenceType = evidenceType;
+		return this;
+	}
 
-  public UpdateEvidencePaymentDisputeRequest evidenceType(String evidenceType) {
-    
-    this.evidenceType = evidenceType;
-    return this;
-  }
+	/**
+	 * This field is used to indicate the type of evidence being provided through one or more evidence files. All evidence files (if more than one) should be associated with the evidence type passed in this field. See the EvidenceTypeEnum type for the supported evidence types. For implementation help, refer to &lt;a
+	 * href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/api:EvidenceTypeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
+	 * 
+	 * @return evidenceType
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This field is used to indicate the type of evidence being provided through one or more evidence files. All evidence files (if more than one) should be associated with the evidence type passed in this field. See the EvidenceTypeEnum type for the supported evidence types. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:EvidenceTypeEnum'>eBay API documentation</a>")
 
-   /**
-   * This field is used to indicate the type of evidence being provided through one or more evidence files. All evidence files (if more than one) should be associated with the evidence type passed in this field. See the EvidenceTypeEnum type for the supported evidence types. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/api:EvidenceTypeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return evidenceType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This field is used to indicate the type of evidence being provided through one or more evidence files. All evidence files (if more than one) should be associated with the evidence type passed in this field. See the EvidenceTypeEnum type for the supported evidence types. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/api:EvidenceTypeEnum'>eBay API documentation</a>")
+	public String getEvidenceType()
+	{
+		return evidenceType;
+	}
 
-  public String getEvidenceType() {
-    return evidenceType;
-  }
+	public void setEvidenceType(String evidenceType)
+	{
+		this.evidenceType = evidenceType;
+	}
 
+	public UpdateEvidencePaymentDisputeRequest files(List<FileEvidence> files)
+	{
 
-  public void setEvidenceType(String evidenceType) {
-    this.evidenceType = evidenceType;
-  }
+		this.files = files;
+		return this;
+	}
 
+	public UpdateEvidencePaymentDisputeRequest addFilesItem(FileEvidence filesItem)
+	{
+		if (this.files == null)
+		{
+			this.files = new ArrayList<FileEvidence>();
+		}
+		this.files.add(filesItem);
+		return this;
+	}
 
-  public UpdateEvidencePaymentDisputeRequest files(List<FileEvidence> files) {
-    
-    this.files = files;
-    return this;
-  }
+	/**
+	 * This array is used to specify one or more evidence files that will be added to the evidence set associated with a payment dispute. At least one evidence file must be specified in the files array. The unique identifier of an evidence file is returned in the response payload of the uploadEvidence method.
+	 * 
+	 * @return files
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This array is used to specify one or more evidence files that will be added to the evidence set associated with a payment dispute. At least one evidence file must be specified in the files array. The unique identifier of an evidence file is returned in the response payload of the uploadEvidence method.")
 
-  public UpdateEvidencePaymentDisputeRequest addFilesItem(FileEvidence filesItem) {
-    if (this.files == null) {
-      this.files = new ArrayList<FileEvidence>();
-    }
-    this.files.add(filesItem);
-    return this;
-  }
+	public List<FileEvidence> getFiles()
+	{
+		return files;
+	}
 
-   /**
-   * This array is used to specify one or more evidence files that will be added to the evidence set associated with a payment dispute. At least one evidence file must be specified in the files array. The unique identifier of an evidence file is returned in the response payload of the uploadEvidence method.
-   * @return files
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This array is used to specify one or more evidence files that will be added to the evidence set associated with a payment dispute. At least one evidence file must be specified in the files array. The unique identifier of an evidence file is returned in the response payload of the uploadEvidence method.")
+	public void setFiles(List<FileEvidence> files)
+	{
+		this.files = files;
+	}
 
-  public List<FileEvidence> getFiles() {
-    return files;
-  }
+	public UpdateEvidencePaymentDisputeRequest lineItems(List<OrderLineItems> lineItems)
+	{
 
+		this.lineItems = lineItems;
+		return this;
+	}
 
-  public void setFiles(List<FileEvidence> files) {
-    this.files = files;
-  }
+	public UpdateEvidencePaymentDisputeRequest addLineItemsItem(OrderLineItems lineItemsItem)
+	{
+		if (this.lineItems == null)
+		{
+			this.lineItems = new ArrayList<OrderLineItems>();
+		}
+		this.lineItems.add(lineItemsItem);
+		return this;
+	}
 
+	/**
+	 * This required array identifies the order line item(s) for which the evidence file(s) will be applicable. Both the itemId and lineItemID fields are needed to identify each order line item, and both of these values are returned under the evidenceRequests.lineItems array in the getPaymentDispute response.
+	 * 
+	 * @return lineItems
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This required array identifies the order line item(s) for which the evidence file(s) will be applicable. Both the itemId and lineItemID fields are needed to identify each order line item, and both of these values are returned under the evidenceRequests.lineItems array in the getPaymentDispute response.")
 
-  public UpdateEvidencePaymentDisputeRequest lineItems(List<OrderLineItems> lineItems) {
-    
-    this.lineItems = lineItems;
-    return this;
-  }
+	public List<OrderLineItems> getLineItems()
+	{
+		return lineItems;
+	}
 
-  public UpdateEvidencePaymentDisputeRequest addLineItemsItem(OrderLineItems lineItemsItem) {
-    if (this.lineItems == null) {
-      this.lineItems = new ArrayList<OrderLineItems>();
-    }
-    this.lineItems.add(lineItemsItem);
-    return this;
-  }
+	public void setLineItems(List<OrderLineItems> lineItems)
+	{
+		this.lineItems = lineItems;
+	}
 
-   /**
-   * This required array identifies the order line item(s) for which the evidence file(s) will be applicable. Both the itemId and lineItemID fields are needed to identify each order line item, and both of these values are returned under the evidenceRequests.lineItems array in the getPaymentDispute response.
-   * @return lineItems
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This required array identifies the order line item(s) for which the evidence file(s) will be applicable. Both the itemId and lineItemID fields are needed to identify each order line item, and both of these values are returned under the evidenceRequests.lineItems array in the getPaymentDispute response.")
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		UpdateEvidencePaymentDisputeRequest updateEvidencePaymentDisputeRequest = (UpdateEvidencePaymentDisputeRequest)o;
+		return Objects.equals(this.evidenceId, updateEvidencePaymentDisputeRequest.evidenceId) &&
+				Objects.equals(this.evidenceType, updateEvidencePaymentDisputeRequest.evidenceType) &&
+				Objects.equals(this.files, updateEvidencePaymentDisputeRequest.files) &&
+				Objects.equals(this.lineItems, updateEvidencePaymentDisputeRequest.lineItems);
+	}
 
-  public List<OrderLineItems> getLineItems() {
-    return lineItems;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(evidenceId, evidenceType, files, lineItems);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class UpdateEvidencePaymentDisputeRequest {\n");
+		sb.append("    evidenceId: ").append(toIndentedString(evidenceId)).append("\n");
+		sb.append("    evidenceType: ").append(toIndentedString(evidenceType)).append("\n");
+		sb.append("    files: ").append(toIndentedString(files)).append("\n");
+		sb.append("    lineItems: ").append(toIndentedString(lineItems)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  public void setLineItems(List<OrderLineItems> lineItems) {
-    this.lineItems = lineItems;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    UpdateEvidencePaymentDisputeRequest updateEvidencePaymentDisputeRequest = (UpdateEvidencePaymentDisputeRequest) o;
-    return Objects.equals(this.evidenceId, updateEvidencePaymentDisputeRequest.evidenceId) &&
-        Objects.equals(this.evidenceType, updateEvidencePaymentDisputeRequest.evidenceType) &&
-        Objects.equals(this.files, updateEvidencePaymentDisputeRequest.files) &&
-        Objects.equals(this.lineItems, updateEvidencePaymentDisputeRequest.lineItems);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(evidenceId, evidenceType, files, lineItems);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class UpdateEvidencePaymentDisputeRequest {\n");
-    sb.append("    evidenceId: ").append(toIndentedString(evidenceId)).append("\n");
-    sb.append("    evidenceType: ").append(toIndentedString(evidenceType)).append("\n");
-    sb.append("    files: ").append(toIndentedString(files)).append("\n");
-    sb.append("    lineItems: ").append(toIndentedString(lineItems)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

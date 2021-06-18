@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,43 +24,47 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for TaxIdentifier
  */
-public class TaxIdentifierTest {
-    private final TaxIdentifier model = new TaxIdentifier();
+public class TaxIdentifierTest
+{
+	private final TaxIdentifier model = new TaxIdentifier();
 
-    /**
-     * Model tests for TaxIdentifier
-     */
-    @Test
-    public void testTaxIdentifier() {
-        // TODO: test TaxIdentifier
-    }
+	/**
+	 * Model tests for TaxIdentifier
+	 */
+	@Test
+	public void testTaxIdentifier()
+	{
+		// TODO: test TaxIdentifier
+	}
 
-    /**
-     * Test the property 'taxpayerId'
-     */
-    @Test
-    public void taxpayerIdTest() {
-        // TODO: test taxpayerId
-    }
+	/**
+	 * Test the property 'taxpayerId'
+	 */
+	@Test
+	public void taxpayerIdTest()
+	{
+		// TODO: test taxpayerId
+	}
 
-    /**
-     * Test the property 'taxIdentifierType'
-     */
-    @Test
-    public void taxIdentifierTypeTest() {
-        // TODO: test taxIdentifierType
-    }
+	/**
+	 * Test the property 'taxIdentifierType'
+	 */
+	@Test
+	public void taxIdentifierTypeTest()
+	{
+		// TODO: test taxIdentifierType
+	}
 
-    /**
-     * Test the property 'issuingCountry'
-     */
-    @Test
-    public void issuingCountryTest() {
-        // TODO: test issuingCountry
-    }
+	/**
+	 * Test the property 'issuingCountry'
+	 */
+	@Test
+	public void issuingCountryTest()
+	{
+		// TODO: test issuingCountry
+	}
 
 }

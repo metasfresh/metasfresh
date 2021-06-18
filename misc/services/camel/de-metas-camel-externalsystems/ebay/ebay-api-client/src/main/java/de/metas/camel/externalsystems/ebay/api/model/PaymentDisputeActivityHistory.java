@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.ArrayList;
@@ -27,79 +26,89 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used by the base response of the getActivities method, and includes a log of all activities of a payment dispute, from creation to resolution.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class PaymentDisputeActivityHistory {
-  public static final String SERIALIZED_NAME_ACTIVITY = "activity";
-  @SerializedName(SERIALIZED_NAME_ACTIVITY)
-  private List<PaymentDisputeActivity> activity = null;
+public class PaymentDisputeActivityHistory
+{
+	public static final String SERIALIZED_NAME_ACTIVITY = "activity";
+	@SerializedName(SERIALIZED_NAME_ACTIVITY)
+	private List<PaymentDisputeActivity> activity = null;
 
+	public PaymentDisputeActivityHistory activity(List<PaymentDisputeActivity> activity)
+	{
 
-  public PaymentDisputeActivityHistory activity(List<PaymentDisputeActivity> activity) {
-    
-    this.activity = activity;
-    return this;
-  }
+		this.activity = activity;
+		return this;
+	}
 
-  public PaymentDisputeActivityHistory addActivityItem(PaymentDisputeActivity activityItem) {
-    if (this.activity == null) {
-      this.activity = new ArrayList<PaymentDisputeActivity>();
-    }
-    this.activity.add(activityItem);
-    return this;
-  }
+	public PaymentDisputeActivityHistory addActivityItem(PaymentDisputeActivity activityItem)
+	{
+		if (this.activity == null)
+		{
+			this.activity = new ArrayList<PaymentDisputeActivity>();
+		}
+		this.activity.add(activityItem);
+		return this;
+	}
 
-   /**
-   * This array holds all activities of a payment dispute, from creation to resolution. For each activity, the activity type, the actor, and a timestamp is shown. The getActivities response is dynamic, and grows with each recorded activity.
-   * @return activity
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This array holds all activities of a payment dispute, from creation to resolution. For each activity, the activity type, the actor, and a timestamp is shown. The getActivities response is dynamic, and grows with each recorded activity.")
+	/**
+	 * This array holds all activities of a payment dispute, from creation to resolution. For each activity, the activity type, the actor, and a timestamp is shown. The getActivities response is dynamic, and grows with each recorded activity.
+	 * 
+	 * @return activity
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This array holds all activities of a payment dispute, from creation to resolution. For each activity, the activity type, the actor, and a timestamp is shown. The getActivities response is dynamic, and grows with each recorded activity.")
 
-  public List<PaymentDisputeActivity> getActivity() {
-    return activity;
-  }
+	public List<PaymentDisputeActivity> getActivity()
+	{
+		return activity;
+	}
 
+	public void setActivity(List<PaymentDisputeActivity> activity)
+	{
+		this.activity = activity;
+	}
 
-  public void setActivity(List<PaymentDisputeActivity> activity) {
-    this.activity = activity;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		PaymentDisputeActivityHistory paymentDisputeActivityHistory = (PaymentDisputeActivityHistory)o;
+		return Objects.equals(this.activity, paymentDisputeActivityHistory.activity);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(activity);
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    PaymentDisputeActivityHistory paymentDisputeActivityHistory = (PaymentDisputeActivityHistory) o;
-    return Objects.equals(this.activity, paymentDisputeActivityHistory.activity);
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class PaymentDisputeActivityHistory {\n");
+		sb.append("    activity: ").append(toIndentedString(activity)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public int hashCode() {
-    return Objects.hash(activity);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class PaymentDisputeActivityHistory {\n");
-    sb.append("    activity: ").append(toIndentedString(activity)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

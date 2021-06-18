@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,100 +24,110 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type contains information about any sales tax applied to a line item.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class Tax {
-  public static final String SERIALIZED_NAME_AMOUNT = "amount";
-  @SerializedName(SERIALIZED_NAME_AMOUNT)
-  private Amount amount;
+public class Tax
+{
+	public static final String SERIALIZED_NAME_AMOUNT = "amount";
+	@SerializedName(SERIALIZED_NAME_AMOUNT)
+	private Amount amount;
 
-  public static final String SERIALIZED_NAME_TAX_TYPE = "taxType";
-  @SerializedName(SERIALIZED_NAME_TAX_TYPE)
-  private String taxType;
+	public static final String SERIALIZED_NAME_TAX_TYPE = "taxType";
+	@SerializedName(SERIALIZED_NAME_TAX_TYPE)
+	private String taxType;
 
+	public Tax amount(Amount amount)
+	{
 
-  public Tax amount(Amount amount) {
-    
-    this.amount = amount;
-    return this;
-  }
+		this.amount = amount;
+		return this;
+	}
 
-   /**
-   * Get amount
-   * @return amount
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	/**
+	 * Get amount
+	 * 
+	 * @return amount
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-  public Amount getAmount() {
-    return amount;
-  }
+	public Amount getAmount()
+	{
+		return amount;
+	}
 
+	public void setAmount(Amount amount)
+	{
+		this.amount = amount;
+	}
 
-  public void setAmount(Amount amount) {
-    this.amount = amount;
-  }
+	public Tax taxType(String taxType)
+	{
 
+		this.taxType = taxType;
+		return this;
+	}
 
-  public Tax taxType(String taxType) {
-    
-    this.taxType = taxType;
-    return this;
-  }
+	/**
+	 * Tax type. This field is only available when fieldGroups is set to TAX_BREAKDOWN. If the order has fees, a breakdown of the fees is also provided. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:TaxTypeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
+	 * 
+	 * @return taxType
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "Tax type. This field is only available when fieldGroups is set to TAX_BREAKDOWN. If the order has fees, a breakdown of the fees is also provided. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:TaxTypeEnum'>eBay API documentation</a>")
 
-   /**
-   * Tax type. This field is only available when fieldGroups is set to TAX_BREAKDOWN. If the order has fees, a breakdown of the fees is also provided. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:TaxTypeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return taxType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "Tax type. This field is only available when fieldGroups is set to TAX_BREAKDOWN. If the order has fees, a breakdown of the fees is also provided. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:TaxTypeEnum'>eBay API documentation</a>")
+	public String getTaxType()
+	{
+		return taxType;
+	}
 
-  public String getTaxType() {
-    return taxType;
-  }
+	public void setTaxType(String taxType)
+	{
+		this.taxType = taxType;
+	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		Tax tax = (Tax)o;
+		return Objects.equals(this.amount, tax.amount) &&
+				Objects.equals(this.taxType, tax.taxType);
+	}
 
-  public void setTaxType(String taxType) {
-    this.taxType = taxType;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(amount, taxType);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class Tax {\n");
+		sb.append("    amount: ").append(toIndentedString(amount)).append("\n");
+		sb.append("    taxType: ").append(toIndentedString(taxType)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Tax tax = (Tax) o;
-    return Objects.equals(this.amount, tax.amount) &&
-        Objects.equals(this.taxType, tax.taxType);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(amount, taxType);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class Tax {\n");
-    sb.append("    amount: ").append(toIndentedString(amount)).append("\n");
-    sb.append("    taxType: ").append(toIndentedString(taxType)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

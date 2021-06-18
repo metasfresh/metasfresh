@@ -34,10 +34,12 @@ import lombok.NonNull;
 
 /**
  * TODO: refactor -> copied from sw6 api.
+ * 
  * @author werner
  *
  */
-public class CamelRouteUtil {
+public class CamelRouteUtil
+{
 
 	@NonNull
 	public static JacksonDataFormat setupJacksonDataFormatFor(
@@ -56,5 +58,5 @@ public class CamelRouteUtil {
 		jacksonDataFormat.setUnmarshalType(unmarshalType);
 		return jacksonDataFormat;
 	}
-	
+
 }

@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,100 +24,110 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "Type defining the legacyReference container. This container is needed if the seller is issuing a refund for an individual order line item, and wishes to use an item ID and transaction ID to identify the order line item.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class LegacyReference {
-  public static final String SERIALIZED_NAME_LEGACY_ITEM_ID = "legacyItemId";
-  @SerializedName(SERIALIZED_NAME_LEGACY_ITEM_ID)
-  private String legacyItemId;
+public class LegacyReference
+{
+	public static final String SERIALIZED_NAME_LEGACY_ITEM_ID = "legacyItemId";
+	@SerializedName(SERIALIZED_NAME_LEGACY_ITEM_ID)
+	private String legacyItemId;
 
-  public static final String SERIALIZED_NAME_LEGACY_TRANSACTION_ID = "legacyTransactionId";
-  @SerializedName(SERIALIZED_NAME_LEGACY_TRANSACTION_ID)
-  private String legacyTransactionId;
+	public static final String SERIALIZED_NAME_LEGACY_TRANSACTION_ID = "legacyTransactionId";
+	@SerializedName(SERIALIZED_NAME_LEGACY_TRANSACTION_ID)
+	private String legacyTransactionId;
 
+	public LegacyReference legacyItemId(String legacyItemId)
+	{
 
-  public LegacyReference legacyItemId(String legacyItemId) {
-    
-    this.legacyItemId = legacyItemId;
-    return this;
-  }
+		this.legacyItemId = legacyItemId;
+		return this;
+	}
 
-   /**
-   * The unique identifier of a listing in legacy/Trading API format. Note: Both legacyItemId and legacyTransactionId are needed to identify an order line item.
-   * @return legacyItemId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The unique identifier of a listing in legacy/Trading API format. Note: Both legacyItemId and legacyTransactionId are needed to identify an order line item.")
+	/**
+	 * The unique identifier of a listing in legacy/Trading API format. Note: Both legacyItemId and legacyTransactionId are needed to identify an order line item.
+	 * 
+	 * @return legacyItemId
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The unique identifier of a listing in legacy/Trading API format. Note: Both legacyItemId and legacyTransactionId are needed to identify an order line item.")
 
-  public String getLegacyItemId() {
-    return legacyItemId;
-  }
+	public String getLegacyItemId()
+	{
+		return legacyItemId;
+	}
 
+	public void setLegacyItemId(String legacyItemId)
+	{
+		this.legacyItemId = legacyItemId;
+	}
 
-  public void setLegacyItemId(String legacyItemId) {
-    this.legacyItemId = legacyItemId;
-  }
+	public LegacyReference legacyTransactionId(String legacyTransactionId)
+	{
 
+		this.legacyTransactionId = legacyTransactionId;
+		return this;
+	}
 
-  public LegacyReference legacyTransactionId(String legacyTransactionId) {
-    
-    this.legacyTransactionId = legacyTransactionId;
-    return this;
-  }
+	/**
+	 * The unique identifier of a sale/transaction in legacy/Trading API format. A &#39;transaction ID&#39; is created once a buyer purchases a &#39;Buy It Now&#39; item or if an auction listing ends with a winning bidder. Note: Both legacyItemId and legacyTransactionId are needed to identify an order line item.
+	 * 
+	 * @return legacyTransactionId
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The unique identifier of a sale/transaction in legacy/Trading API format. A 'transaction ID' is created once a buyer purchases a 'Buy It Now' item or if an auction listing ends with a winning bidder. Note: Both legacyItemId and legacyTransactionId are needed to identify an order line item.")
 
-   /**
-   * The unique identifier of a sale/transaction in legacy/Trading API format. A &#39;transaction ID&#39; is created once a buyer purchases a &#39;Buy It Now&#39; item or if an auction listing ends with a winning bidder. Note: Both legacyItemId and legacyTransactionId are needed to identify an order line item.
-   * @return legacyTransactionId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The unique identifier of a sale/transaction in legacy/Trading API format. A 'transaction ID' is created once a buyer purchases a 'Buy It Now' item or if an auction listing ends with a winning bidder. Note: Both legacyItemId and legacyTransactionId are needed to identify an order line item.")
+	public String getLegacyTransactionId()
+	{
+		return legacyTransactionId;
+	}
 
-  public String getLegacyTransactionId() {
-    return legacyTransactionId;
-  }
+	public void setLegacyTransactionId(String legacyTransactionId)
+	{
+		this.legacyTransactionId = legacyTransactionId;
+	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		LegacyReference legacyReference = (LegacyReference)o;
+		return Objects.equals(this.legacyItemId, legacyReference.legacyItemId) &&
+				Objects.equals(this.legacyTransactionId, legacyReference.legacyTransactionId);
+	}
 
-  public void setLegacyTransactionId(String legacyTransactionId) {
-    this.legacyTransactionId = legacyTransactionId;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(legacyItemId, legacyTransactionId);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class LegacyReference {\n");
+		sb.append("    legacyItemId: ").append(toIndentedString(legacyItemId)).append("\n");
+		sb.append("    legacyTransactionId: ").append(toIndentedString(legacyTransactionId)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    LegacyReference legacyReference = (LegacyReference) o;
-    return Objects.equals(this.legacyItemId, legacyReference.legacyItemId) &&
-        Objects.equals(this.legacyTransactionId, legacyReference.legacyTransactionId);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(legacyItemId, legacyTransactionId);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class LegacyReference {\n");
-    sb.append("    legacyItemId: ").append(toIndentedString(legacyItemId)).append("\n");
-    sb.append("    legacyTransactionId: ").append(toIndentedString(legacyTransactionId)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

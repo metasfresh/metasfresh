@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -29,67 +28,74 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for Payment
  */
-public class PaymentTest {
-    private final Payment model = new Payment();
+public class PaymentTest
+{
+	private final Payment model = new Payment();
 
-    /**
-     * Model tests for Payment
-     */
-    @Test
-    public void testPayment() {
-        // TODO: test Payment
-    }
+	/**
+	 * Model tests for Payment
+	 */
+	@Test
+	public void testPayment()
+	{
+		// TODO: test Payment
+	}
 
-    /**
-     * Test the property 'amount'
-     */
-    @Test
-    public void amountTest() {
-        // TODO: test amount
-    }
+	/**
+	 * Test the property 'amount'
+	 */
+	@Test
+	public void amountTest()
+	{
+		// TODO: test amount
+	}
 
-    /**
-     * Test the property 'paymentDate'
-     */
-    @Test
-    public void paymentDateTest() {
-        // TODO: test paymentDate
-    }
+	/**
+	 * Test the property 'paymentDate'
+	 */
+	@Test
+	public void paymentDateTest()
+	{
+		// TODO: test paymentDate
+	}
 
-    /**
-     * Test the property 'paymentHolds'
-     */
-    @Test
-    public void paymentHoldsTest() {
-        // TODO: test paymentHolds
-    }
+	/**
+	 * Test the property 'paymentHolds'
+	 */
+	@Test
+	public void paymentHoldsTest()
+	{
+		// TODO: test paymentHolds
+	}
 
-    /**
-     * Test the property 'paymentMethod'
-     */
-    @Test
-    public void paymentMethodTest() {
-        // TODO: test paymentMethod
-    }
+	/**
+	 * Test the property 'paymentMethod'
+	 */
+	@Test
+	public void paymentMethodTest()
+	{
+		// TODO: test paymentMethod
+	}
 
-    /**
-     * Test the property 'paymentReferenceId'
-     */
-    @Test
-    public void paymentReferenceIdTest() {
-        // TODO: test paymentReferenceId
-    }
+	/**
+	 * Test the property 'paymentReferenceId'
+	 */
+	@Test
+	public void paymentReferenceIdTest()
+	{
+		// TODO: test paymentReferenceId
+	}
 
-    /**
-     * Test the property 'paymentStatus'
-     */
-    @Test
-    public void paymentStatusTest() {
-        // TODO: test paymentStatus
-    }
+	/**
+	 * Test the property 'paymentStatus'
+	 */
+	@Test
+	public void paymentStatusTest()
+	{
+		// TODO: test paymentStatus
+	}
 
 }

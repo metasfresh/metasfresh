@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,35 +24,38 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for TrackingInfo
  */
-public class TrackingInfoTest {
-    private final TrackingInfo model = new TrackingInfo();
+public class TrackingInfoTest
+{
+	private final TrackingInfo model = new TrackingInfo();
 
-    /**
-     * Model tests for TrackingInfo
-     */
-    @Test
-    public void testTrackingInfo() {
-        // TODO: test TrackingInfo
-    }
+	/**
+	 * Model tests for TrackingInfo
+	 */
+	@Test
+	public void testTrackingInfo()
+	{
+		// TODO: test TrackingInfo
+	}
 
-    /**
-     * Test the property 'shipmentTrackingNumber'
-     */
-    @Test
-    public void shipmentTrackingNumberTest() {
-        // TODO: test shipmentTrackingNumber
-    }
+	/**
+	 * Test the property 'shipmentTrackingNumber'
+	 */
+	@Test
+	public void shipmentTrackingNumberTest()
+	{
+		// TODO: test shipmentTrackingNumber
+	}
 
-    /**
-     * Test the property 'shippingCarrierCode'
-     */
-    @Test
-    public void shippingCarrierCodeTest() {
-        // TODO: test shippingCarrierCode
-    }
+	/**
+	 * Test the property 'shippingCarrierCode'
+	 */
+	@Test
+	public void shippingCarrierCodeTest()
+	{
+		// TODO: test shippingCarrierCode
+	}
 
 }

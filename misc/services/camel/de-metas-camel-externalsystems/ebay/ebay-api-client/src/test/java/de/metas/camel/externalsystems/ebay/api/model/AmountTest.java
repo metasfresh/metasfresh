@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,51 +24,56 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for Amount
  */
-public class AmountTest {
-    private final Amount model = new Amount();
+public class AmountTest
+{
+	private final Amount model = new Amount();
 
-    /**
-     * Model tests for Amount
-     */
-    @Test
-    public void testAmount() {
-        // TODO: test Amount
-    }
+	/**
+	 * Model tests for Amount
+	 */
+	@Test
+	public void testAmount()
+	{
+		// TODO: test Amount
+	}
 
-    /**
-     * Test the property 'convertedFromCurrency'
-     */
-    @Test
-    public void convertedFromCurrencyTest() {
-        // TODO: test convertedFromCurrency
-    }
+	/**
+	 * Test the property 'convertedFromCurrency'
+	 */
+	@Test
+	public void convertedFromCurrencyTest()
+	{
+		// TODO: test convertedFromCurrency
+	}
 
-    /**
-     * Test the property 'convertedFromValue'
-     */
-    @Test
-    public void convertedFromValueTest() {
-        // TODO: test convertedFromValue
-    }
+	/**
+	 * Test the property 'convertedFromValue'
+	 */
+	@Test
+	public void convertedFromValueTest()
+	{
+		// TODO: test convertedFromValue
+	}
 
-    /**
-     * Test the property 'currency'
-     */
-    @Test
-    public void currencyTest() {
-        // TODO: test currency
-    }
+	/**
+	 * Test the property 'currency'
+	 */
+	@Test
+	public void currencyTest()
+	{
+		// TODO: test currency
+	}
 
-    /**
-     * Test the property 'value'
-     */
-    @Test
-    public void valueTest() {
-        // TODO: test value
-    }
+	/**
+	 * Test the property 'value'
+	 */
+	@Test
+	public void valueTest()
+	{
+		// TODO: test value
+	}
 
 }

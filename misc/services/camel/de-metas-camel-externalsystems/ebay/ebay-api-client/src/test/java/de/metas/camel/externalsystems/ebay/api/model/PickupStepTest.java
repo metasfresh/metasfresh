@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,27 +24,29 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for PickupStep
  */
-public class PickupStepTest {
-    private final PickupStep model = new PickupStep();
+public class PickupStepTest
+{
+	private final PickupStep model = new PickupStep();
 
-    /**
-     * Model tests for PickupStep
-     */
-    @Test
-    public void testPickupStep() {
-        // TODO: test PickupStep
-    }
+	/**
+	 * Model tests for PickupStep
+	 */
+	@Test
+	public void testPickupStep()
+	{
+		// TODO: test PickupStep
+	}
 
-    /**
-     * Test the property 'merchantLocationKey'
-     */
-    @Test
-    public void merchantLocationKeyTest() {
-        // TODO: test merchantLocationKey
-    }
+	/**
+	 * Test the property 'merchantLocationKey'
+	 */
+	@Test
+	public void merchantLocationKeyTest()
+	{
+		// TODO: test merchantLocationKey
+	}
 
 }

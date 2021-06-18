@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -30,43 +29,47 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for PaymentSummary
  */
-public class PaymentSummaryTest {
-    private final PaymentSummary model = new PaymentSummary();
+public class PaymentSummaryTest
+{
+	private final PaymentSummary model = new PaymentSummary();
 
-    /**
-     * Model tests for PaymentSummary
-     */
-    @Test
-    public void testPaymentSummary() {
-        // TODO: test PaymentSummary
-    }
+	/**
+	 * Model tests for PaymentSummary
+	 */
+	@Test
+	public void testPaymentSummary()
+	{
+		// TODO: test PaymentSummary
+	}
 
-    /**
-     * Test the property 'payments'
-     */
-    @Test
-    public void paymentsTest() {
-        // TODO: test payments
-    }
+	/**
+	 * Test the property 'payments'
+	 */
+	@Test
+	public void paymentsTest()
+	{
+		// TODO: test payments
+	}
 
-    /**
-     * Test the property 'refunds'
-     */
-    @Test
-    public void refundsTest() {
-        // TODO: test refunds
-    }
+	/**
+	 * Test the property 'refunds'
+	 */
+	@Test
+	public void refundsTest()
+	{
+		// TODO: test refunds
+	}
 
-    /**
-     * Test the property 'totalDueSeller'
-     */
-    @Test
-    public void totalDueSellerTest() {
-        // TODO: test totalDueSeller
-    }
+	/**
+	 * Test the property 'totalDueSeller'
+	 */
+	@Test
+	public void totalDueSellerTest()
+	{
+		// TODO: test totalDueSeller
+	}
 
 }

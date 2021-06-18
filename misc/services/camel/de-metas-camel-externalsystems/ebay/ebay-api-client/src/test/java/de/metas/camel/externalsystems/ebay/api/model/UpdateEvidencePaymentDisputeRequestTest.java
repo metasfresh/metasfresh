@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -29,51 +28,56 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for UpdateEvidencePaymentDisputeRequest
  */
-public class UpdateEvidencePaymentDisputeRequestTest {
-    private final UpdateEvidencePaymentDisputeRequest model = new UpdateEvidencePaymentDisputeRequest();
+public class UpdateEvidencePaymentDisputeRequestTest
+{
+	private final UpdateEvidencePaymentDisputeRequest model = new UpdateEvidencePaymentDisputeRequest();
 
-    /**
-     * Model tests for UpdateEvidencePaymentDisputeRequest
-     */
-    @Test
-    public void testUpdateEvidencePaymentDisputeRequest() {
-        // TODO: test UpdateEvidencePaymentDisputeRequest
-    }
+	/**
+	 * Model tests for UpdateEvidencePaymentDisputeRequest
+	 */
+	@Test
+	public void testUpdateEvidencePaymentDisputeRequest()
+	{
+		// TODO: test UpdateEvidencePaymentDisputeRequest
+	}
 
-    /**
-     * Test the property 'evidenceId'
-     */
-    @Test
-    public void evidenceIdTest() {
-        // TODO: test evidenceId
-    }
+	/**
+	 * Test the property 'evidenceId'
+	 */
+	@Test
+	public void evidenceIdTest()
+	{
+		// TODO: test evidenceId
+	}
 
-    /**
-     * Test the property 'evidenceType'
-     */
-    @Test
-    public void evidenceTypeTest() {
-        // TODO: test evidenceType
-    }
+	/**
+	 * Test the property 'evidenceType'
+	 */
+	@Test
+	public void evidenceTypeTest()
+	{
+		// TODO: test evidenceType
+	}
 
-    /**
-     * Test the property 'files'
-     */
-    @Test
-    public void filesTest() {
-        // TODO: test files
-    }
+	/**
+	 * Test the property 'files'
+	 */
+	@Test
+	public void filesTest()
+	{
+		// TODO: test files
+	}
 
-    /**
-     * Test the property 'lineItems'
-     */
-    @Test
-    public void lineItemsTest() {
-        // TODO: test lineItems
-    }
+	/**
+	 * Test the property 'lineItems'
+	 */
+	@Test
+	public void lineItemsTest()
+	{
+		// TODO: test lineItems
+	}
 
 }

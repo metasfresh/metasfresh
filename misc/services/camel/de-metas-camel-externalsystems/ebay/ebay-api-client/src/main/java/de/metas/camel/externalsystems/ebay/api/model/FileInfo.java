@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,158 +24,173 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type is used by the files array, which shows the name, ID, file type, and upload date for each provided evidential file.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class FileInfo {
-  public static final String SERIALIZED_NAME_FILE_ID = "fileId";
-  @SerializedName(SERIALIZED_NAME_FILE_ID)
-  private String fileId;
+public class FileInfo
+{
+	public static final String SERIALIZED_NAME_FILE_ID = "fileId";
+	@SerializedName(SERIALIZED_NAME_FILE_ID)
+	private String fileId;
 
-  public static final String SERIALIZED_NAME_FILE_TYPE = "fileType";
-  @SerializedName(SERIALIZED_NAME_FILE_TYPE)
-  private String fileType;
+	public static final String SERIALIZED_NAME_FILE_TYPE = "fileType";
+	@SerializedName(SERIALIZED_NAME_FILE_TYPE)
+	private String fileType;
 
-  public static final String SERIALIZED_NAME_NAME = "name";
-  @SerializedName(SERIALIZED_NAME_NAME)
-  private String name;
+	public static final String SERIALIZED_NAME_NAME = "name";
+	@SerializedName(SERIALIZED_NAME_NAME)
+	private String name;
 
-  public static final String SERIALIZED_NAME_UPLOADED_DATE = "uploadedDate";
-  @SerializedName(SERIALIZED_NAME_UPLOADED_DATE)
-  private String uploadedDate;
+	public static final String SERIALIZED_NAME_UPLOADED_DATE = "uploadedDate";
+	@SerializedName(SERIALIZED_NAME_UPLOADED_DATE)
+	private String uploadedDate;
 
+	public FileInfo fileId(String fileId)
+	{
 
-  public FileInfo fileId(String fileId) {
-    
-    this.fileId = fileId;
-    return this;
-  }
+		this.fileId = fileId;
+		return this;
+	}
 
-   /**
-   * The unique identifier of the evidence file.
-   * @return fileId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The unique identifier of the evidence file.")
+	/**
+	 * The unique identifier of the evidence file.
+	 * 
+	 * @return fileId
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The unique identifier of the evidence file.")
 
-  public String getFileId() {
-    return fileId;
-  }
+	public String getFileId()
+	{
+		return fileId;
+	}
 
+	public void setFileId(String fileId)
+	{
+		this.fileId = fileId;
+	}
 
-  public void setFileId(String fileId) {
-    this.fileId = fileId;
-  }
+	public FileInfo fileType(String fileType)
+	{
 
+		this.fileType = fileType;
+		return this;
+	}
 
-  public FileInfo fileType(String fileType) {
-    
-    this.fileType = fileType;
-    return this;
-  }
+	/**
+	 * The type of file uploaded. Supported file extensions are .JPEG, .JPG, and .PNG., and maximum file size allowed is 1.5 MB.
+	 * 
+	 * @return fileType
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The type of file uploaded. Supported file extensions are .JPEG, .JPG, and .PNG., and maximum file size allowed is 1.5 MB.")
 
-   /**
-   * The type of file uploaded. Supported file extensions are .JPEG, .JPG, and .PNG., and maximum file size allowed is 1.5 MB.
-   * @return fileType
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The type of file uploaded. Supported file extensions are .JPEG, .JPG, and .PNG., and maximum file size allowed is 1.5 MB.")
+	public String getFileType()
+	{
+		return fileType;
+	}
 
-  public String getFileType() {
-    return fileType;
-  }
+	public void setFileType(String fileType)
+	{
+		this.fileType = fileType;
+	}
 
+	public FileInfo name(String name)
+	{
 
-  public void setFileType(String fileType) {
-    this.fileType = fileType;
-  }
+		this.name = name;
+		return this;
+	}
 
+	/**
+	 * The seller-provided name of the evidence file.
+	 * 
+	 * @return name
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The seller-provided name of the evidence file.")
 
-  public FileInfo name(String name) {
-    
-    this.name = name;
-    return this;
-  }
+	public String getName()
+	{
+		return name;
+	}
 
-   /**
-   * The seller-provided name of the evidence file.
-   * @return name
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The seller-provided name of the evidence file.")
+	public void setName(String name)
+	{
+		this.name = name;
+	}
 
-  public String getName() {
-    return name;
-  }
+	public FileInfo uploadedDate(String uploadedDate)
+	{
 
+		this.uploadedDate = uploadedDate;
+		return this;
+	}
 
-  public void setName(String name) {
-    this.name = name;
-  }
+	/**
+	 * The timestamp in this field shows the date/time when the seller uploaded the evidential document to eBay. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be
+	 * 2019-08-04T19:09:02.768Z.
+	 * 
+	 * @return uploadedDate
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The timestamp in this field shows the date/time when the seller uploaded the evidential document to eBay. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
 
+	public String getUploadedDate()
+	{
+		return uploadedDate;
+	}
 
-  public FileInfo uploadedDate(String uploadedDate) {
-    
-    this.uploadedDate = uploadedDate;
-    return this;
-  }
+	public void setUploadedDate(String uploadedDate)
+	{
+		this.uploadedDate = uploadedDate;
+	}
 
-   /**
-   * The timestamp in this field shows the date/time when the seller uploaded the evidential document to eBay. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.
-   * @return uploadedDate
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The timestamp in this field shows the date/time when the seller uploaded the evidential document to eBay. The timestamps returned here use the ISO-8601 24-hour date and time format, and the time zone used is Universal Coordinated Time (UTC), also known as Greenwich Mean Time (GMT), or Zulu. The ISO-8601 format looks like this: yyyy-MM-ddThh:mm.ss.sssZ. An example would be 2019-08-04T19:09:02.768Z.")
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		FileInfo fileInfo = (FileInfo)o;
+		return Objects.equals(this.fileId, fileInfo.fileId) &&
+				Objects.equals(this.fileType, fileInfo.fileType) &&
+				Objects.equals(this.name, fileInfo.name) &&
+				Objects.equals(this.uploadedDate, fileInfo.uploadedDate);
+	}
 
-  public String getUploadedDate() {
-    return uploadedDate;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(fileId, fileType, name, uploadedDate);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class FileInfo {\n");
+		sb.append("    fileId: ").append(toIndentedString(fileId)).append("\n");
+		sb.append("    fileType: ").append(toIndentedString(fileType)).append("\n");
+		sb.append("    name: ").append(toIndentedString(name)).append("\n");
+		sb.append("    uploadedDate: ").append(toIndentedString(uploadedDate)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  public void setUploadedDate(String uploadedDate) {
-    this.uploadedDate = uploadedDate;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    FileInfo fileInfo = (FileInfo) o;
-    return Objects.equals(this.fileId, fileInfo.fileId) &&
-        Objects.equals(this.fileType, fileInfo.fileType) &&
-        Objects.equals(this.name, fileInfo.name) &&
-        Objects.equals(this.uploadedDate, fileInfo.uploadedDate);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(fileId, fileType, name, uploadedDate);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class FileInfo {\n");
-    sb.append("    fileId: ").append(toIndentedString(fileId)).append("\n");
-    sb.append("    fileType: ").append(toIndentedString(fileType)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    uploadedDate: ").append(toIndentedString(uploadedDate)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

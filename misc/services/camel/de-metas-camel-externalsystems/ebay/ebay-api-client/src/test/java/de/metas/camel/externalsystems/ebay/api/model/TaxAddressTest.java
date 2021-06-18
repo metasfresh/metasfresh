@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,51 +24,56 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for TaxAddress
  */
-public class TaxAddressTest {
-    private final TaxAddress model = new TaxAddress();
+public class TaxAddressTest
+{
+	private final TaxAddress model = new TaxAddress();
 
-    /**
-     * Model tests for TaxAddress
-     */
-    @Test
-    public void testTaxAddress() {
-        // TODO: test TaxAddress
-    }
+	/**
+	 * Model tests for TaxAddress
+	 */
+	@Test
+	public void testTaxAddress()
+	{
+		// TODO: test TaxAddress
+	}
 
-    /**
-     * Test the property 'city'
-     */
-    @Test
-    public void cityTest() {
-        // TODO: test city
-    }
+	/**
+	 * Test the property 'city'
+	 */
+	@Test
+	public void cityTest()
+	{
+		// TODO: test city
+	}
 
-    /**
-     * Test the property 'countryCode'
-     */
-    @Test
-    public void countryCodeTest() {
-        // TODO: test countryCode
-    }
+	/**
+	 * Test the property 'countryCode'
+	 */
+	@Test
+	public void countryCodeTest()
+	{
+		// TODO: test countryCode
+	}
 
-    /**
-     * Test the property 'postalCode'
-     */
-    @Test
-    public void postalCodeTest() {
-        // TODO: test postalCode
-    }
+	/**
+	 * Test the property 'postalCode'
+	 */
+	@Test
+	public void postalCodeTest()
+	{
+		// TODO: test postalCode
+	}
 
-    /**
-     * Test the property 'stateOrProvince'
-     */
-    @Test
-    public void stateOrProvinceTest() {
-        // TODO: test stateOrProvince
-    }
+	/**
+	 * Test the property 'stateOrProvince'
+	 */
+	@Test
+	public void stateOrProvinceTest()
+	{
+		// TODO: test stateOrProvince
+	}
 
 }

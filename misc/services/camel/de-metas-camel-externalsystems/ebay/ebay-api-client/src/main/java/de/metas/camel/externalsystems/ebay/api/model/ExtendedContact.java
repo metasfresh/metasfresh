@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,187 +24,203 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type contains shipping and contact information for a buyer or an eBay shipping partner.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class ExtendedContact {
-  public static final String SERIALIZED_NAME_COMPANY_NAME = "companyName";
-  @SerializedName(SERIALIZED_NAME_COMPANY_NAME)
-  private String companyName;
+public class ExtendedContact
+{
+	public static final String SERIALIZED_NAME_COMPANY_NAME = "companyName";
+	@SerializedName(SERIALIZED_NAME_COMPANY_NAME)
+	private String companyName;
 
-  public static final String SERIALIZED_NAME_CONTACT_ADDRESS = "contactAddress";
-  @SerializedName(SERIALIZED_NAME_CONTACT_ADDRESS)
-  private Address contactAddress;
+	public static final String SERIALIZED_NAME_CONTACT_ADDRESS = "contactAddress";
+	@SerializedName(SERIALIZED_NAME_CONTACT_ADDRESS)
+	private Address contactAddress;
 
-  public static final String SERIALIZED_NAME_EMAIL = "email";
-  @SerializedName(SERIALIZED_NAME_EMAIL)
-  private String email;
+	public static final String SERIALIZED_NAME_EMAIL = "email";
+	@SerializedName(SERIALIZED_NAME_EMAIL)
+	private String email;
 
-  public static final String SERIALIZED_NAME_FULL_NAME = "fullName";
-  @SerializedName(SERIALIZED_NAME_FULL_NAME)
-  private String fullName;
+	public static final String SERIALIZED_NAME_FULL_NAME = "fullName";
+	@SerializedName(SERIALIZED_NAME_FULL_NAME)
+	private String fullName;
 
-  public static final String SERIALIZED_NAME_PRIMARY_PHONE = "primaryPhone";
-  @SerializedName(SERIALIZED_NAME_PRIMARY_PHONE)
-  private PhoneNumber primaryPhone;
+	public static final String SERIALIZED_NAME_PRIMARY_PHONE = "primaryPhone";
+	@SerializedName(SERIALIZED_NAME_PRIMARY_PHONE)
+	private PhoneNumber primaryPhone;
 
+	public ExtendedContact companyName(String companyName)
+	{
 
-  public ExtendedContact companyName(String companyName) {
-    
-    this.companyName = companyName;
-    return this;
-  }
+		this.companyName = companyName;
+		return this;
+	}
 
-   /**
-   * The company name associated with the buyer or eBay shipping partner. This field is only returned if defined/applicable to the buyer or eBay shipping partner.
-   * @return companyName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The company name associated with the buyer or eBay shipping partner. This field is only returned if defined/applicable to the buyer or eBay shipping partner.")
+	/**
+	 * The company name associated with the buyer or eBay shipping partner. This field is only returned if defined/applicable to the buyer or eBay shipping partner.
+	 * 
+	 * @return companyName
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The company name associated with the buyer or eBay shipping partner. This field is only returned if defined/applicable to the buyer or eBay shipping partner.")
 
-  public String getCompanyName() {
-    return companyName;
-  }
+	public String getCompanyName()
+	{
+		return companyName;
+	}
 
+	public void setCompanyName(String companyName)
+	{
+		this.companyName = companyName;
+	}
 
-  public void setCompanyName(String companyName) {
-    this.companyName = companyName;
-  }
+	public ExtendedContact contactAddress(Address contactAddress)
+	{
 
+		this.contactAddress = contactAddress;
+		return this;
+	}
 
-  public ExtendedContact contactAddress(Address contactAddress) {
-    
-    this.contactAddress = contactAddress;
-    return this;
-  }
+	/**
+	 * Get contactAddress
+	 * 
+	 * @return contactAddress
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-   /**
-   * Get contactAddress
-   * @return contactAddress
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	public Address getContactAddress()
+	{
+		return contactAddress;
+	}
 
-  public Address getContactAddress() {
-    return contactAddress;
-  }
+	public void setContactAddress(Address contactAddress)
+	{
+		this.contactAddress = contactAddress;
+	}
 
+	public ExtendedContact email(String email)
+	{
 
-  public void setContactAddress(Address contactAddress) {
-    this.contactAddress = contactAddress;
-  }
+		this.email = email;
+		return this;
+	}
 
+	/**
+	 * This field shows the email address of the buyer. The email address of a buyer will be masked 14 days after order creation. This field will still be returned for the order, but it will not contain the buyer&#39;s email address, but instead, something like &#39;Invalid Request&#39;. Note: This field always contains the email address of the buyer even with a Global Shipping Program shipment.
+	 * 
+	 * @return email
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This field shows the email address of the buyer. The email address of a buyer will be masked 14 days after order creation. This field will still be returned for the order, but it will not contain the buyer's email address, but instead, something like 'Invalid Request'. Note: This field always contains the email address of the buyer even with a Global Shipping Program shipment.")
 
-  public ExtendedContact email(String email) {
-    
-    this.email = email;
-    return this;
-  }
+	public String getEmail()
+	{
+		return email;
+	}
 
-   /**
-   * This field shows the email address of the buyer. The email address of a buyer will be masked 14 days after order creation. This field will still be returned for the order, but it will not contain the buyer&#39;s email address, but instead, something like &#39;Invalid Request&#39;. Note: This field always contains the email address of the buyer even with a Global Shipping Program shipment.
-   * @return email
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This field shows the email address of the buyer. The email address of a buyer will be masked 14 days after order creation. This field will still be returned for the order, but it will not contain the buyer's email address, but instead, something like 'Invalid Request'. Note: This field always contains the email address of the buyer even with a Global Shipping Program shipment.")
+	public void setEmail(String email)
+	{
+		this.email = email;
+	}
 
-  public String getEmail() {
-    return email;
-  }
+	public ExtendedContact fullName(String fullName)
+	{
 
+		this.fullName = fullName;
+		return this;
+	}
 
-  public void setEmail(String email) {
-    this.email = email;
-  }
+	/**
+	 * The full name of the buyer or eBay shipping partner.
+	 * 
+	 * @return fullName
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The full name of the buyer or eBay shipping partner.")
 
+	public String getFullName()
+	{
+		return fullName;
+	}
 
-  public ExtendedContact fullName(String fullName) {
-    
-    this.fullName = fullName;
-    return this;
-  }
+	public void setFullName(String fullName)
+	{
+		this.fullName = fullName;
+	}
 
-   /**
-   * The full name of the buyer or eBay shipping partner.
-   * @return fullName
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The full name of the buyer or eBay shipping partner.")
+	public ExtendedContact primaryPhone(PhoneNumber primaryPhone)
+	{
 
-  public String getFullName() {
-    return fullName;
-  }
+		this.primaryPhone = primaryPhone;
+		return this;
+	}
 
+	/**
+	 * Get primaryPhone
+	 * 
+	 * @return primaryPhone
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "")
 
-  public void setFullName(String fullName) {
-    this.fullName = fullName;
-  }
+	public PhoneNumber getPrimaryPhone()
+	{
+		return primaryPhone;
+	}
 
+	public void setPrimaryPhone(PhoneNumber primaryPhone)
+	{
+		this.primaryPhone = primaryPhone;
+	}
 
-  public ExtendedContact primaryPhone(PhoneNumber primaryPhone) {
-    
-    this.primaryPhone = primaryPhone;
-    return this;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		ExtendedContact extendedContact = (ExtendedContact)o;
+		return Objects.equals(this.companyName, extendedContact.companyName) &&
+				Objects.equals(this.contactAddress, extendedContact.contactAddress) &&
+				Objects.equals(this.email, extendedContact.email) &&
+				Objects.equals(this.fullName, extendedContact.fullName) &&
+				Objects.equals(this.primaryPhone, extendedContact.primaryPhone);
+	}
 
-   /**
-   * Get primaryPhone
-   * @return primaryPhone
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "")
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(companyName, contactAddress, email, fullName, primaryPhone);
+	}
 
-  public PhoneNumber getPrimaryPhone() {
-    return primaryPhone;
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class ExtendedContact {\n");
+		sb.append("    companyName: ").append(toIndentedString(companyName)).append("\n");
+		sb.append("    contactAddress: ").append(toIndentedString(contactAddress)).append("\n");
+		sb.append("    email: ").append(toIndentedString(email)).append("\n");
+		sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
+		sb.append("    primaryPhone: ").append(toIndentedString(primaryPhone)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-
-  public void setPrimaryPhone(PhoneNumber primaryPhone) {
-    this.primaryPhone = primaryPhone;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    ExtendedContact extendedContact = (ExtendedContact) o;
-    return Objects.equals(this.companyName, extendedContact.companyName) &&
-        Objects.equals(this.contactAddress, extendedContact.contactAddress) &&
-        Objects.equals(this.email, extendedContact.email) &&
-        Objects.equals(this.fullName, extendedContact.fullName) &&
-        Objects.equals(this.primaryPhone, extendedContact.primaryPhone);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(companyName, contactAddress, email, fullName, primaryPhone);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class ExtendedContact {\n");
-    sb.append("    companyName: ").append(toIndentedString(companyName)).append("\n");
-    sb.append("    contactAddress: ").append(toIndentedString(contactAddress)).append("\n");
-    sb.append("    email: ").append(toIndentedString(email)).append("\n");
-    sb.append("    fullName: ").append(toIndentedString(fullName)).append("\n");
-    sb.append("    primaryPhone: ").append(toIndentedString(primaryPhone)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

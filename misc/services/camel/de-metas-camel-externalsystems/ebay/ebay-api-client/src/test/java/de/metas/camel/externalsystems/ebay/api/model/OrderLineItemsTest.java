@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,35 +24,38 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for OrderLineItems
  */
-public class OrderLineItemsTest {
-    private final OrderLineItems model = new OrderLineItems();
+public class OrderLineItemsTest
+{
+	private final OrderLineItems model = new OrderLineItems();
 
-    /**
-     * Model tests for OrderLineItems
-     */
-    @Test
-    public void testOrderLineItems() {
-        // TODO: test OrderLineItems
-    }
+	/**
+	 * Model tests for OrderLineItems
+	 */
+	@Test
+	public void testOrderLineItems()
+	{
+		// TODO: test OrderLineItems
+	}
 
-    /**
-     * Test the property 'itemId'
-     */
-    @Test
-    public void itemIdTest() {
-        // TODO: test itemId
-    }
+	/**
+	 * Test the property 'itemId'
+	 */
+	@Test
+	public void itemIdTest()
+	{
+		// TODO: test itemId
+	}
 
-    /**
-     * Test the property 'lineItemId'
-     */
-    @Test
-    public void lineItemIdTest() {
-        // TODO: test lineItemId
-    }
+	/**
+	 * Test the property 'lineItemId'
+	 */
+	@Test
+	public void lineItemIdTest()
+	{
+		// TODO: test lineItemId
+	}
 
 }

@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,158 +24,174 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type defines the monetary value of an amount. It can provide the amount in both the currency used on the eBay site where an item is being offered and the conversion of that value into another currency, if applicable.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class Amount {
-  public static final String SERIALIZED_NAME_CONVERTED_FROM_CURRENCY = "convertedFromCurrency";
-  @SerializedName(SERIALIZED_NAME_CONVERTED_FROM_CURRENCY)
-  private String convertedFromCurrency;
+public class Amount
+{
+	public static final String SERIALIZED_NAME_CONVERTED_FROM_CURRENCY = "convertedFromCurrency";
+	@SerializedName(SERIALIZED_NAME_CONVERTED_FROM_CURRENCY)
+	private String convertedFromCurrency;
 
-  public static final String SERIALIZED_NAME_CONVERTED_FROM_VALUE = "convertedFromValue";
-  @SerializedName(SERIALIZED_NAME_CONVERTED_FROM_VALUE)
-  private String convertedFromValue;
+	public static final String SERIALIZED_NAME_CONVERTED_FROM_VALUE = "convertedFromValue";
+	@SerializedName(SERIALIZED_NAME_CONVERTED_FROM_VALUE)
+	private String convertedFromValue;
 
-  public static final String SERIALIZED_NAME_CURRENCY = "currency";
-  @SerializedName(SERIALIZED_NAME_CURRENCY)
-  private String currency;
+	public static final String SERIALIZED_NAME_CURRENCY = "currency";
+	@SerializedName(SERIALIZED_NAME_CURRENCY)
+	private String currency;
 
-  public static final String SERIALIZED_NAME_VALUE = "value";
-  @SerializedName(SERIALIZED_NAME_VALUE)
-  private String value;
+	public static final String SERIALIZED_NAME_VALUE = "value";
+	@SerializedName(SERIALIZED_NAME_VALUE)
+	private String value;
 
+	public Amount convertedFromCurrency(String convertedFromCurrency)
+	{
 
-  public Amount convertedFromCurrency(String convertedFromCurrency) {
-    
-    this.convertedFromCurrency = convertedFromCurrency;
-    return this;
-  }
+		this.convertedFromCurrency = convertedFromCurrency;
+		return this;
+	}
 
-   /**
-   * A three-letter ISO 4217 code that indicates the currency of the amount in the convertedFromValue field. This value is required or returned only if currency conversion/localization is required, and represents the pre-conversion currency. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return convertedFromCurrency
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "A three-letter ISO 4217 code that indicates the currency of the amount in the convertedFromValue field. This value is required or returned only if currency conversion/localization is required, and represents the pre-conversion currency. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
+	/**
+	 * A three-letter ISO 4217 code that indicates the currency of the amount in the convertedFromValue field. This value is required or returned only if currency conversion/localization is required, and represents the pre-conversion currency. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum&#39;&gt;eBay API
+	 * documentation&lt;/a&gt;
+	 * 
+	 * @return convertedFromCurrency
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "A three-letter ISO 4217 code that indicates the currency of the amount in the convertedFromValue field. This value is required or returned only if currency conversion/localization is required, and represents the pre-conversion currency. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
 
-  public String getConvertedFromCurrency() {
-    return convertedFromCurrency;
-  }
+	public String getConvertedFromCurrency()
+	{
+		return convertedFromCurrency;
+	}
 
+	public void setConvertedFromCurrency(String convertedFromCurrency)
+	{
+		this.convertedFromCurrency = convertedFromCurrency;
+	}
 
-  public void setConvertedFromCurrency(String convertedFromCurrency) {
-    this.convertedFromCurrency = convertedFromCurrency;
-  }
+	public Amount convertedFromValue(String convertedFromValue)
+	{
 
+		this.convertedFromValue = convertedFromValue;
+		return this;
+	}
 
-  public Amount convertedFromValue(String convertedFromValue) {
-    
-    this.convertedFromValue = convertedFromValue;
-    return this;
-  }
+	/**
+	 * The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is required or returned only if currency conversion/localization is required. The value field contains the converted amount of this value, in the currency specified by the currency field.
+	 * 
+	 * @return convertedFromValue
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is required or returned only if currency conversion/localization is required. The value field contains the converted amount of this value, in the currency specified by the currency field.")
 
-   /**
-   * The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is required or returned only if currency conversion/localization is required. The value field contains the converted amount of this value, in the currency specified by the currency field.
-   * @return convertedFromValue
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The monetary amount before any conversion is performed, in the currency specified by the convertedFromCurrency field. This value is required or returned only if currency conversion/localization is required. The value field contains the converted amount of this value, in the currency specified by the currency field.")
+	public String getConvertedFromValue()
+	{
+		return convertedFromValue;
+	}
 
-  public String getConvertedFromValue() {
-    return convertedFromValue;
-  }
+	public void setConvertedFromValue(String convertedFromValue)
+	{
+		this.convertedFromValue = convertedFromValue;
+	}
 
+	public Amount currency(String currency)
+	{
 
-  public void setConvertedFromValue(String convertedFromValue) {
-    this.convertedFromValue = convertedFromValue;
-  }
+		this.currency = currency;
+		return this;
+	}
 
+	/**
+	 * A three-letter ISO 4217 code that indicates the currency of the amount in the value field. If currency conversion/localization is required, this is the post-conversion currency of the amount in the value field. Default: The default currency of the eBay marketplace that hosts the listing. For implementation help, refer to &lt;a
+	 * href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
+	 * 
+	 * @return currency
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "A three-letter ISO 4217 code that indicates the currency of the amount in the value field. If currency conversion/localization is required, this is the post-conversion currency of the amount in the value field. Default: The default currency of the eBay marketplace that hosts the listing. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
 
-  public Amount currency(String currency) {
-    
-    this.currency = currency;
-    return this;
-  }
+	public String getCurrency()
+	{
+		return currency;
+	}
 
-   /**
-   * A three-letter ISO 4217 code that indicates the currency of the amount in the value field. If currency conversion/localization is required, this is the post-conversion currency of the amount in the value field. Default: The default currency of the eBay marketplace that hosts the listing. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return currency
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "A three-letter ISO 4217 code that indicates the currency of the amount in the value field. If currency conversion/localization is required, this is the post-conversion currency of the amount in the value field. Default: The default currency of the eBay marketplace that hosts the listing. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/ba:CurrencyCodeEnum'>eBay API documentation</a>")
+	public void setCurrency(String currency)
+	{
+		this.currency = currency;
+	}
 
-  public String getCurrency() {
-    return currency;
-  }
+	public Amount value(String value)
+	{
 
+		this.value = value;
+		return this;
+	}
 
-  public void setCurrency(String currency) {
-    this.currency = currency;
-  }
+	/**
+	 * The monetary amount, in the currency specified by the currency field. If currency conversion/localization is required, this value is the converted amount, and the convertedFromValue field contains the amount in the original currency. Required in the amount type.
+	 * 
+	 * @return value
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The monetary amount, in the currency specified by the currency field. If currency conversion/localization is required, this value is the converted amount, and the convertedFromValue field contains the amount in the original currency. Required in the amount type.")
 
+	public String getValue()
+	{
+		return value;
+	}
 
-  public Amount value(String value) {
-    
-    this.value = value;
-    return this;
-  }
+	public void setValue(String value)
+	{
+		this.value = value;
+	}
 
-   /**
-   * The monetary amount, in the currency specified by the currency field. If currency conversion/localization is required, this value is the converted amount, and the convertedFromValue field contains the amount in the original currency. Required in the amount type.
-   * @return value
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The monetary amount, in the currency specified by the currency field. If currency conversion/localization is required, this value is the converted amount, and the convertedFromValue field contains the amount in the original currency. Required in the amount type.")
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		Amount amount = (Amount)o;
+		return Objects.equals(this.convertedFromCurrency, amount.convertedFromCurrency) &&
+				Objects.equals(this.convertedFromValue, amount.convertedFromValue) &&
+				Objects.equals(this.currency, amount.currency) &&
+				Objects.equals(this.value, amount.value);
+	}
 
-  public String getValue() {
-    return value;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(convertedFromCurrency, convertedFromValue, currency, value);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class Amount {\n");
+		sb.append("    convertedFromCurrency: ").append(toIndentedString(convertedFromCurrency)).append("\n");
+		sb.append("    convertedFromValue: ").append(toIndentedString(convertedFromValue)).append("\n");
+		sb.append("    currency: ").append(toIndentedString(currency)).append("\n");
+		sb.append("    value: ").append(toIndentedString(value)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  public void setValue(String value) {
-    this.value = value;
-  }
-
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    Amount amount = (Amount) o;
-    return Objects.equals(this.convertedFromCurrency, amount.convertedFromCurrency) &&
-        Objects.equals(this.convertedFromValue, amount.convertedFromValue) &&
-        Objects.equals(this.currency, amount.currency) &&
-        Objects.equals(this.value, amount.value);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(convertedFromCurrency, convertedFromValue, currency, value);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class Amount {\n");
-    sb.append("    convertedFromCurrency: ").append(toIndentedString(convertedFromCurrency)).append("\n");
-    sb.append("    convertedFromValue: ").append(toIndentedString(convertedFromValue)).append("\n");
-    sb.append("    currency: ").append(toIndentedString(currency)).append("\n");
-    sb.append("    value: ").append(toIndentedString(value)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

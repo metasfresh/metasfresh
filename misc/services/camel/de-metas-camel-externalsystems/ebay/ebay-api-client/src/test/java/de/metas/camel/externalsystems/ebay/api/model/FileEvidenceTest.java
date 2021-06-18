@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,27 +24,29 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for FileEvidence
  */
-public class FileEvidenceTest {
-    private final FileEvidence model = new FileEvidence();
+public class FileEvidenceTest
+{
+	private final FileEvidence model = new FileEvidence();
 
-    /**
-     * Model tests for FileEvidence
-     */
-    @Test
-    public void testFileEvidence() {
-        // TODO: test FileEvidence
-    }
+	/**
+	 * Model tests for FileEvidence
+	 */
+	@Test
+	public void testFileEvidence()
+	{
+		// TODO: test FileEvidence
+	}
 
-    /**
-     * Test the property 'fileId'
-     */
-    @Test
-    public void fileIdTest() {
-        // TODO: test fileId
-    }
+	/**
+	 * Test the property 'fileId'
+	 */
+	@Test
+	public void fileIdTest()
+	{
+		// TODO: test fileId
+	}
 
 }

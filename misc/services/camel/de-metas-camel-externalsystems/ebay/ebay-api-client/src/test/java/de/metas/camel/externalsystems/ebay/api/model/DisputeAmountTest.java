@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -25,59 +24,65 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for DisputeAmount
  */
-public class DisputeAmountTest {
-    private final DisputeAmount model = new DisputeAmount();
+public class DisputeAmountTest
+{
+	private final DisputeAmount model = new DisputeAmount();
 
-    /**
-     * Model tests for DisputeAmount
-     */
-    @Test
-    public void testDisputeAmount() {
-        // TODO: test DisputeAmount
-    }
+	/**
+	 * Model tests for DisputeAmount
+	 */
+	@Test
+	public void testDisputeAmount()
+	{
+		// TODO: test DisputeAmount
+	}
 
-    /**
-     * Test the property 'convertedFromCurrency'
-     */
-    @Test
-    public void convertedFromCurrencyTest() {
-        // TODO: test convertedFromCurrency
-    }
+	/**
+	 * Test the property 'convertedFromCurrency'
+	 */
+	@Test
+	public void convertedFromCurrencyTest()
+	{
+		// TODO: test convertedFromCurrency
+	}
 
-    /**
-     * Test the property 'convertedFromValue'
-     */
-    @Test
-    public void convertedFromValueTest() {
-        // TODO: test convertedFromValue
-    }
+	/**
+	 * Test the property 'convertedFromValue'
+	 */
+	@Test
+	public void convertedFromValueTest()
+	{
+		// TODO: test convertedFromValue
+	}
 
-    /**
-     * Test the property 'currency'
-     */
-    @Test
-    public void currencyTest() {
-        // TODO: test currency
-    }
+	/**
+	 * Test the property 'currency'
+	 */
+	@Test
+	public void currencyTest()
+	{
+		// TODO: test currency
+	}
 
-    /**
-     * Test the property 'exchangeRate'
-     */
-    @Test
-    public void exchangeRateTest() {
-        // TODO: test exchangeRate
-    }
+	/**
+	 * Test the property 'exchangeRate'
+	 */
+	@Test
+	public void exchangeRateTest()
+	{
+		// TODO: test exchangeRate
+	}
 
-    /**
-     * Test the property 'value'
-     */
-    @Test
-    public void valueTest() {
-        // TODO: test value
-    }
+	/**
+	 * Test the property 'value'
+	 */
+	@Test
+	public void valueTest()
+	{
+		// TODO: test value
+	}
 
 }

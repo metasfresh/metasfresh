@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -28,59 +27,65 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for EvidenceRequest
  */
-public class EvidenceRequestTest {
-    private final EvidenceRequest model = new EvidenceRequest();
+public class EvidenceRequestTest
+{
+	private final EvidenceRequest model = new EvidenceRequest();
 
-    /**
-     * Model tests for EvidenceRequest
-     */
-    @Test
-    public void testEvidenceRequest() {
-        // TODO: test EvidenceRequest
-    }
+	/**
+	 * Model tests for EvidenceRequest
+	 */
+	@Test
+	public void testEvidenceRequest()
+	{
+		// TODO: test EvidenceRequest
+	}
 
-    /**
-     * Test the property 'evidenceId'
-     */
-    @Test
-    public void evidenceIdTest() {
-        // TODO: test evidenceId
-    }
+	/**
+	 * Test the property 'evidenceId'
+	 */
+	@Test
+	public void evidenceIdTest()
+	{
+		// TODO: test evidenceId
+	}
 
-    /**
-     * Test the property 'evidenceType'
-     */
-    @Test
-    public void evidenceTypeTest() {
-        // TODO: test evidenceType
-    }
+	/**
+	 * Test the property 'evidenceType'
+	 */
+	@Test
+	public void evidenceTypeTest()
+	{
+		// TODO: test evidenceType
+	}
 
-    /**
-     * Test the property 'lineItems'
-     */
-    @Test
-    public void lineItemsTest() {
-        // TODO: test lineItems
-    }
+	/**
+	 * Test the property 'lineItems'
+	 */
+	@Test
+	public void lineItemsTest()
+	{
+		// TODO: test lineItems
+	}
 
-    /**
-     * Test the property 'requestDate'
-     */
-    @Test
-    public void requestDateTest() {
-        // TODO: test requestDate
-    }
+	/**
+	 * Test the property 'requestDate'
+	 */
+	@Test
+	public void requestDateTest()
+	{
+		// TODO: test requestDate
+	}
 
-    /**
-     * Test the property 'respondByDate'
-     */
-    @Test
-    public void respondByDateTest() {
-        // TODO: test respondByDate
-    }
+	/**
+	 * Test the property 'respondByDate'
+	 */
+	@Test
+	public void respondByDateTest()
+	{
+		// TODO: test respondByDate
+	}
 
 }

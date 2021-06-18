@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.Objects;
@@ -25,100 +24,110 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type identifies the line item and quantity of that line item that comprises one fulfillment, such as a shipping package.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class LineItemReference {
-  public static final String SERIALIZED_NAME_LINE_ITEM_ID = "lineItemId";
-  @SerializedName(SERIALIZED_NAME_LINE_ITEM_ID)
-  private String lineItemId;
+public class LineItemReference
+{
+	public static final String SERIALIZED_NAME_LINE_ITEM_ID = "lineItemId";
+	@SerializedName(SERIALIZED_NAME_LINE_ITEM_ID)
+	private String lineItemId;
 
-  public static final String SERIALIZED_NAME_QUANTITY = "quantity";
-  @SerializedName(SERIALIZED_NAME_QUANTITY)
-  private Integer quantity;
+	public static final String SERIALIZED_NAME_QUANTITY = "quantity";
+	@SerializedName(SERIALIZED_NAME_QUANTITY)
+	private Integer quantity;
 
+	public LineItemReference lineItemId(String lineItemId)
+	{
 
-  public LineItemReference lineItemId(String lineItemId) {
-    
-    this.lineItemId = lineItemId;
-    return this;
-  }
+		this.lineItemId = lineItemId;
+		return this;
+	}
 
-   /**
-   * This is the unique identifier of the eBay order line item that is part of the shipping fulfillment. The line item ID is created as soon as there is a commitment to buy from the seller.
-   * @return lineItemId
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This is the unique identifier of the eBay order line item that is part of the shipping fulfillment. The line item ID is created as soon as there is a commitment to buy from the seller.")
+	/**
+	 * This is the unique identifier of the eBay order line item that is part of the shipping fulfillment. The line item ID is created as soon as there is a commitment to buy from the seller.
+	 * 
+	 * @return lineItemId
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This is the unique identifier of the eBay order line item that is part of the shipping fulfillment. The line item ID is created as soon as there is a commitment to buy from the seller.")
 
-  public String getLineItemId() {
-    return lineItemId;
-  }
+	public String getLineItemId()
+	{
+		return lineItemId;
+	}
 
+	public void setLineItemId(String lineItemId)
+	{
+		this.lineItemId = lineItemId;
+	}
 
-  public void setLineItemId(String lineItemId) {
-    this.lineItemId = lineItemId;
-  }
+	public LineItemReference quantity(Integer quantity)
+	{
 
+		this.quantity = quantity;
+		return this;
+	}
 
-  public LineItemReference quantity(Integer quantity) {
-    
-    this.quantity = quantity;
-    return this;
-  }
+	/**
+	 * This field is reserved for internal or future use.
+	 * 
+	 * @return quantity
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This field is reserved for internal or future use.")
 
-   /**
-   * This field is reserved for internal or future use.
-   * @return quantity
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This field is reserved for internal or future use.")
+	public Integer getQuantity()
+	{
+		return quantity;
+	}
 
-  public Integer getQuantity() {
-    return quantity;
-  }
+	public void setQuantity(Integer quantity)
+	{
+		this.quantity = quantity;
+	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		LineItemReference lineItemReference = (LineItemReference)o;
+		return Objects.equals(this.lineItemId, lineItemReference.lineItemId) &&
+				Objects.equals(this.quantity, lineItemReference.quantity);
+	}
 
-  public void setQuantity(Integer quantity) {
-    this.quantity = quantity;
-  }
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(lineItemId, quantity);
+	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class LineItemReference {\n");
+		sb.append("    lineItemId: ").append(toIndentedString(lineItemId)).append("\n");
+		sb.append("    quantity: ").append(toIndentedString(quantity)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    LineItemReference lineItemReference = (LineItemReference) o;
-    return Objects.equals(this.lineItemId, lineItemReference.lineItemId) &&
-        Objects.equals(this.quantity, lineItemReference.quantity);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(lineItemId, quantity);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class LineItemReference {\n");
-    sb.append("    lineItemId: ").append(toIndentedString(lineItemId)).append("\n");
-    sb.append("    quantity: ").append(toIndentedString(quantity)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

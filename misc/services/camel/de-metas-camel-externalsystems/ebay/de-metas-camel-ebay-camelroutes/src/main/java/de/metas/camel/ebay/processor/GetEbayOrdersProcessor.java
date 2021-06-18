@@ -54,20 +54,22 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
  * Processor to load orders from the eBay fulfilment api.
  *
  */
-public class GetEbayOrdersProcessor implements Processor {
-	
+public class GetEbayOrdersProcessor implements Processor
+{
+
 	protected Logger log = LoggerFactory.getLogger(getClass());
-	
 
 	@Override
-	public void process(Exchange exchange) throws Exception {
-		
+	public void process(Exchange exchange) throws Exception
+	{
+
 		log.debug("Execute ebay order request");
-		
+
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		exchange.getIn().setHeader(HEADER_ORG_CODE, request.getOrgCode());
-		if (request.getAdPInstanceId() != null) {
+		if (request.getAdPInstanceId() != null)
+		{
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
 
 			ProcessorHelper.logProcessMessage(exchange, "Ebay:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
@@ -81,52 +83,62 @@ public class GetEbayOrdersProcessor implements Processor {
 
 		// env default to sandbox.
 		Environment ebayExecutionEnv;
-		if (Environment.PRODUCTION.toString().equalsIgnoreCase(apiMode)) {
+		if (Environment.PRODUCTION.toString().equalsIgnoreCase(apiMode))
+		{
 			ebayExecutionEnv = Environment.PRODUCTION;
-		} else {
+		}
+		else
+		{
 			ebayExecutionEnv = Environment.SANDBOX;
-			
+
 		}
 
-		//get api auth token
+		// get api auth token
 		final OAuthResponse oauth2Response;
-		if( exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT) == null) {
-			
+		if (exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT) == null)
+		{
+
 			log.debug("Getting ebay access token");
 			OAuth2Api auth2Api = new OAuth2Api();
-		    oauth2Response = auth2Api.exchangeCodeForAccessToken(ebayExecutionEnv, authCode);
-			
-		} else {
-			
-			log.debug("Using provided ebay auth client");
-			OAuth2Api auth2Api =(OAuth2Api) exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT);;
-		    oauth2Response = auth2Api.exchangeCodeForAccessToken(ebayExecutionEnv, authCode);
+			oauth2Response = auth2Api.exchangeCodeForAccessToken(ebayExecutionEnv, authCode);
+
 		}
-		
-		//execut api call 
-		if (oauth2Response.getAccessToken().isPresent()) {
-			
+		else
+		{
+
+			log.debug("Using provided ebay auth client");
+			OAuth2Api auth2Api = (OAuth2Api)exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT);;
+			oauth2Response = auth2Api.exchangeCodeForAccessToken(ebayExecutionEnv, authCode);
+		}
+
+		// execut api call
+		if (oauth2Response.getAccessToken().isPresent())
+		{
+
 			// construct api client or use provided one.
 			final OrderApi orderApi;
-			if( exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT) == null) {
+			if (exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT) == null)
+			{
 				log.debug("Constructing ebay api client");
-				
+
 				ApiClient defaultClient = Configuration.getDefaultApiClient();
 				defaultClient.setBasePath(ebayExecutionEnv.getApiEndpoint());
 
 				// Configure OAuth2 access token for authorization: api_auth
-				OAuth api_auth = (OAuth) defaultClient.getAuthentication("api_auth");
+				OAuth api_auth = (OAuth)defaultClient.getAuthentication("api_auth");
 				api_auth.setAccessToken(oauth2Response.getAccessToken().get().getToken());
-				
+
 				orderApi = new OrderApi(defaultClient);
-				
-			} else {
-				
-				log.debug("Using provided ebay api client");
-				orderApi = (OrderApi) exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT);
+
 			}
-			
-			//prepare call TODO: config parameters
+			else
+			{
+
+				log.debug("Using provided ebay api client");
+				orderApi = (OrderApi)exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT);
+			}
+
+			// prepare call TODO: config parameters
 			String fieldGroups = null;
 			String filter = "lastmodifieddate:".concat(updatedAfter);
 			String limit = "50";
@@ -136,19 +148,19 @@ public class GetEbayOrdersProcessor implements Processor {
 
 			List<Order> orders = response.getOrders();
 
-
-			//add orders to exchange
+			// add orders to exchange
 			exchange.getIn().setBody(orders);
-			
-			//add order context to exchange.
+
+			// add order context to exchange.
 			final EbayImportOrdersRouteContext ordersContext = EbayImportOrdersRouteContext.builder()
 					.orgCode(request.getOrgCode())
 					.build();
 
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
-			
-			
-		} else {
+
+		}
+		else
+		{
 
 			ProcessorHelper.logProcessMessage(exchange, "Ebay:Failed to aquire access token!" + Instant.now(), request.getAdPInstanceId().getValue());
 			exchange.getIn().setBody(new ArrayList<Order>());

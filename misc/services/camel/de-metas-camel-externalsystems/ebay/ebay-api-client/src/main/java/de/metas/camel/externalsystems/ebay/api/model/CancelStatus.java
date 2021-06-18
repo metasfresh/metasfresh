@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import java.util.ArrayList;
@@ -27,137 +26,151 @@ import io.swagger.annotations.ApiModelProperty;
  */
 @ApiModel(description = "This type contains information about any requests that have been made to cancel an order.")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", date = "2021-05-25T10:27:35.061216+02:00[Europe/Berlin]")
-public class CancelStatus {
-  public static final String SERIALIZED_NAME_CANCELLED_DATE = "cancelledDate";
-  @SerializedName(SERIALIZED_NAME_CANCELLED_DATE)
-  private String cancelledDate;
+public class CancelStatus
+{
+	public static final String SERIALIZED_NAME_CANCELLED_DATE = "cancelledDate";
+	@SerializedName(SERIALIZED_NAME_CANCELLED_DATE)
+	private String cancelledDate;
 
-  public static final String SERIALIZED_NAME_CANCEL_REQUESTS = "cancelRequests";
-  @SerializedName(SERIALIZED_NAME_CANCEL_REQUESTS)
-  private List<CancelRequest> cancelRequests = null;
+	public static final String SERIALIZED_NAME_CANCEL_REQUESTS = "cancelRequests";
+	@SerializedName(SERIALIZED_NAME_CANCEL_REQUESTS)
+	private List<CancelRequest> cancelRequests = null;
 
-  public static final String SERIALIZED_NAME_CANCEL_STATE = "cancelState";
-  @SerializedName(SERIALIZED_NAME_CANCEL_STATE)
-  private String cancelState;
+	public static final String SERIALIZED_NAME_CANCEL_STATE = "cancelState";
+	@SerializedName(SERIALIZED_NAME_CANCEL_STATE)
+	private String cancelState;
 
+	public CancelStatus cancelledDate(String cancelledDate)
+	{
 
-  public CancelStatus cancelledDate(String cancelledDate) {
-    
-    this.cancelledDate = cancelledDate;
-    return this;
-  }
+		this.cancelledDate = cancelledDate;
+		return this;
+	}
 
-   /**
-   * The date and time the order was cancelled, if applicable. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z
-   * @return cancelledDate
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The date and time the order was cancelled, if applicable. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
+	/**
+	 * The date and time the order was cancelled, if applicable. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z
+	 * 
+	 * @return cancelledDate
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The date and time the order was cancelled, if applicable. This timestamp is in ISO 8601 format, which uses the 24-hour Universal Coordinated Time (UTC) clock. Format: [YYYY]-[MM]-[DD]T[hh]:[mm]:[ss].[sss]Z Example: 2015-08-04T19:09:02.768Z")
 
-  public String getCancelledDate() {
-    return cancelledDate;
-  }
+	public String getCancelledDate()
+	{
+		return cancelledDate;
+	}
 
+	public void setCancelledDate(String cancelledDate)
+	{
+		this.cancelledDate = cancelledDate;
+	}
 
-  public void setCancelledDate(String cancelledDate) {
-    this.cancelledDate = cancelledDate;
-  }
+	public CancelStatus cancelRequests(List<CancelRequest> cancelRequests)
+	{
 
+		this.cancelRequests = cancelRequests;
+		return this;
+	}
 
-  public CancelStatus cancelRequests(List<CancelRequest> cancelRequests) {
-    
-    this.cancelRequests = cancelRequests;
-    return this;
-  }
+	public CancelStatus addCancelRequestsItem(CancelRequest cancelRequestsItem)
+	{
+		if (this.cancelRequests == null)
+		{
+			this.cancelRequests = new ArrayList<CancelRequest>();
+		}
+		this.cancelRequests.add(cancelRequestsItem);
+		return this;
+	}
 
-  public CancelStatus addCancelRequestsItem(CancelRequest cancelRequestsItem) {
-    if (this.cancelRequests == null) {
-      this.cancelRequests = new ArrayList<CancelRequest>();
-    }
-    this.cancelRequests.add(cancelRequestsItem);
-    return this;
-  }
+	/**
+	 * This array contains details of one or more buyer requests to cancel the order. For the getOrders call: This array is returned but is always empty. For the getOrder call: This array is returned fully populated with information about any cancellation requests.
+	 * 
+	 * @return cancelRequests
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "This array contains details of one or more buyer requests to cancel the order. For the getOrders call: This array is returned but is always empty. For the getOrder call: This array is returned fully populated with information about any cancellation requests.")
 
-   /**
-   * This array contains details of one or more buyer requests to cancel the order. For the getOrders call: This array is returned but is always empty. For the getOrder call: This array is returned fully populated with information about any cancellation requests.
-   * @return cancelRequests
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "This array contains details of one or more buyer requests to cancel the order. For the getOrders call: This array is returned but is always empty. For the getOrder call: This array is returned fully populated with information about any cancellation requests.")
+	public List<CancelRequest> getCancelRequests()
+	{
+		return cancelRequests;
+	}
 
-  public List<CancelRequest> getCancelRequests() {
-    return cancelRequests;
-  }
+	public void setCancelRequests(List<CancelRequest> cancelRequests)
+	{
+		this.cancelRequests = cancelRequests;
+	}
 
+	public CancelStatus cancelState(String cancelState)
+	{
 
-  public void setCancelRequests(List<CancelRequest> cancelRequests) {
-    this.cancelRequests = cancelRequests;
-  }
+		this.cancelState = cancelState;
+		return this;
+	}
 
+	/**
+	 * The state of the order with regard to cancellation. This field is always returned, and if there are no cancellation requests, a value of NONE_REQUESTED is returned. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CancelStateEnum&#39;&gt;eBay API documentation&lt;/a&gt;
+	 * 
+	 * @return cancelState
+	 **/
+	@javax.annotation.Nullable
+	@ApiModelProperty(value = "The state of the order with regard to cancellation. This field is always returned, and if there are no cancellation requests, a value of NONE_REQUESTED is returned. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CancelStateEnum'>eBay API documentation</a>")
 
-  public CancelStatus cancelState(String cancelState) {
-    
-    this.cancelState = cancelState;
-    return this;
-  }
+	public String getCancelState()
+	{
+		return cancelState;
+	}
 
-   /**
-   * The state of the order with regard to cancellation. This field is always returned, and if there are no cancellation requests, a value of NONE_REQUESTED is returned. For implementation help, refer to &lt;a href&#x3D;&#39;https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CancelStateEnum&#39;&gt;eBay API documentation&lt;/a&gt;
-   * @return cancelState
-  **/
-  @javax.annotation.Nullable
-  @ApiModelProperty(value = "The state of the order with regard to cancellation. This field is always returned, and if there are no cancellation requests, a value of NONE_REQUESTED is returned. For implementation help, refer to <a href='https://developer.ebay.com/api-docs/sell/fulfillment/types/sel:CancelStateEnum'>eBay API documentation</a>")
+	public void setCancelState(String cancelState)
+	{
+		this.cancelState = cancelState;
+	}
 
-  public String getCancelState() {
-    return cancelState;
-  }
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (o == null || getClass() != o.getClass())
+		{
+			return false;
+		}
+		CancelStatus cancelStatus = (CancelStatus)o;
+		return Objects.equals(this.cancelledDate, cancelStatus.cancelledDate) &&
+				Objects.equals(this.cancelRequests, cancelStatus.cancelRequests) &&
+				Objects.equals(this.cancelState, cancelStatus.cancelState);
+	}
 
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(cancelledDate, cancelRequests, cancelState);
+	}
 
-  public void setCancelState(String cancelState) {
-    this.cancelState = cancelState;
-  }
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append("class CancelStatus {\n");
+		sb.append("    cancelledDate: ").append(toIndentedString(cancelledDate)).append("\n");
+		sb.append("    cancelRequests: ").append(toIndentedString(cancelRequests)).append("\n");
+		sb.append("    cancelState: ").append(toIndentedString(cancelState)).append("\n");
+		sb.append("}");
+		return sb.toString();
+	}
 
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    CancelStatus cancelStatus = (CancelStatus) o;
-    return Objects.equals(this.cancelledDate, cancelStatus.cancelledDate) &&
-        Objects.equals(this.cancelRequests, cancelStatus.cancelRequests) &&
-        Objects.equals(this.cancelState, cancelStatus.cancelState);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(cancelledDate, cancelRequests, cancelState);
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("class CancelStatus {\n");
-    sb.append("    cancelledDate: ").append(toIndentedString(cancelledDate)).append("\n");
-    sb.append("    cancelRequests: ").append(toIndentedString(cancelRequests)).append("\n");
-    sb.append("    cancelState: ").append(toIndentedString(cancelState)).append("\n");
-    sb.append("}");
-    return sb.toString();
-  }
-
-  /**
-   * Convert the given object to string with each line indented by 4 spaces
-   * (except the first line).
-   */
-  private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
-  }
+	/**
+	 * Convert the given object to string with each line indented by 4 spaces
+	 * (except the first line).
+	 */
+	private String toIndentedString(Object o)
+	{
+		if (o == null)
+		{
+			return "null";
+		}
+		return o.toString().replace("\n", "\n    ");
+	}
 
 }
-

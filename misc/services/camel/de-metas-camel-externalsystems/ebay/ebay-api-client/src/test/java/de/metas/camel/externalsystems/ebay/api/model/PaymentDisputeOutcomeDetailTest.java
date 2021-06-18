@@ -10,7 +10,6 @@
  * Do not edit the class manually.
  */
 
-
 package de.metas.camel.externalsystems.ebay.api.model;
 
 import com.google.gson.TypeAdapter;
@@ -26,67 +25,74 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
-
 /**
  * Model tests for PaymentDisputeOutcomeDetail
  */
-public class PaymentDisputeOutcomeDetailTest {
-    private final PaymentDisputeOutcomeDetail model = new PaymentDisputeOutcomeDetail();
+public class PaymentDisputeOutcomeDetailTest
+{
+	private final PaymentDisputeOutcomeDetail model = new PaymentDisputeOutcomeDetail();
 
-    /**
-     * Model tests for PaymentDisputeOutcomeDetail
-     */
-    @Test
-    public void testPaymentDisputeOutcomeDetail() {
-        // TODO: test PaymentDisputeOutcomeDetail
-    }
+	/**
+	 * Model tests for PaymentDisputeOutcomeDetail
+	 */
+	@Test
+	public void testPaymentDisputeOutcomeDetail()
+	{
+		// TODO: test PaymentDisputeOutcomeDetail
+	}
 
-    /**
-     * Test the property 'fees'
-     */
-    @Test
-    public void feesTest() {
-        // TODO: test fees
-    }
+	/**
+	 * Test the property 'fees'
+	 */
+	@Test
+	public void feesTest()
+	{
+		// TODO: test fees
+	}
 
-    /**
-     * Test the property 'protectedAmount'
-     */
-    @Test
-    public void protectedAmountTest() {
-        // TODO: test protectedAmount
-    }
+	/**
+	 * Test the property 'protectedAmount'
+	 */
+	@Test
+	public void protectedAmountTest()
+	{
+		// TODO: test protectedAmount
+	}
 
-    /**
-     * Test the property 'protectionStatus'
-     */
-    @Test
-    public void protectionStatusTest() {
-        // TODO: test protectionStatus
-    }
+	/**
+	 * Test the property 'protectionStatus'
+	 */
+	@Test
+	public void protectionStatusTest()
+	{
+		// TODO: test protectionStatus
+	}
 
-    /**
-     * Test the property 'reasonForClosure'
-     */
-    @Test
-    public void reasonForClosureTest() {
-        // TODO: test reasonForClosure
-    }
+	/**
+	 * Test the property 'reasonForClosure'
+	 */
+	@Test
+	public void reasonForClosureTest()
+	{
+		// TODO: test reasonForClosure
+	}
 
-    /**
-     * Test the property 'recoupAmount'
-     */
-    @Test
-    public void recoupAmountTest() {
-        // TODO: test recoupAmount
-    }
+	/**
+	 * Test the property 'recoupAmount'
+	 */
+	@Test
+	public void recoupAmountTest()
+	{
+		// TODO: test recoupAmount
+	}
 
-    /**
-     * Test the property 'totalFeeCredit'
-     */
-    @Test
-    public void totalFeeCreditTest() {
-        // TODO: test totalFeeCredit
-    }
+	/**
+	 * Test the property 'totalFeeCredit'
+	 */
+	@Test
+	public void totalFeeCreditTest()
+	{
+		// TODO: test totalFeeCredit
+	}
 
 }
