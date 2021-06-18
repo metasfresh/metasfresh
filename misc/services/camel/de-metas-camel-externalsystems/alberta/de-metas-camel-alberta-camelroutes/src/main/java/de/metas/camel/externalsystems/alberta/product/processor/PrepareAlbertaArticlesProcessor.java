@@ -42,6 +42,8 @@ import java.util.Optional;
 
 public class PrepareAlbertaArticlesProcessor implements Processor
 {
+	private static final String ARTICLE_PCN_PREFIX = "PZN-";
+
 	@Override
 	public void process(final Exchange exchange)
 	{
@@ -70,14 +72,19 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 				: null;
 
 		final Article article = new Article();
-		article.customerNumber(product.getProductNo())
+		
+		final String productNo = product.getProductNo();
+		final String pcn = productNo.startsWith(ARTICLE_PCN_PREFIX) ? productNo.substring(ARTICLE_PCN_PREFIX.length()) : null;
+		
+		article.customerNumber(productNo)
 				.name(product.getName())
 				.description(product.getDescription())
 				.manufacturer(manufacturerId)
 				.manufacturerNumber(product.getManufacturerNumber());
 
 		final JsonAlbertaProductInfo albertaProductInfo = product.getAlbertaProductInfo();
-
+	
+		
 		article.additionalDescription(albertaProductInfo.getAdditionalDescription())
 				.size(albertaProductInfo.getSize())
 				.purchaseRating(PurchaseRatingEnum.getValueByCodeOrNull(albertaProductInfo.getPurchaseRating()))
@@ -90,7 +97,7 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 				.fixedPrice(albertaProductInfo.getFixedPrice() != null ? String.valueOf(albertaProductInfo.getFixedPrice()) : null)
 				.therapyIds(albertaProductInfo.getTherapyIds())
 				.billableTherapies(albertaProductInfo.getBillableTherapies())
-				.packagingUnits(toPackageUnitList(albertaProductInfo.getPackagingUnits()))
+				.packagingUnits(toPackageUnitList(albertaProductInfo.getPackagingUnits(), pcn))
 				.productGroupId("82d3d688-4035-48fa-90cb-d9d39b8975bd") // TODO
 		;
 
@@ -102,7 +109,9 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 	}
 
 	@Nullable
-	private List<PackagingUnit> toPackageUnitList(@NonNull final List<JsonAlbertaPackagingUnit> albertaPackagingUnits)
+	private List<PackagingUnit> toPackageUnitList(
+			@NonNull final List<JsonAlbertaPackagingUnit> albertaPackagingUnits,
+			@Nullable final String pcn)
 	{
 		if (CollectionUtils.isEmpty(albertaPackagingUnits))
 		{
@@ -111,12 +120,10 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 
 		return albertaPackagingUnits
 				.stream()
-				.map(mfPackageUnit -> {
-					final PackagingUnit packagingUnit = new PackagingUnit();
-
-					return packagingUnit.quantity(mfPackageUnit.getQuantity())
-							.unit(mfPackageUnit.getUnit());
-				})
+				.map(mfPackageUnit -> new PackagingUnit()
+					.pcn(pcn)
+					.quantity(mfPackageUnit.getQuantity())
+					.unit(mfPackageUnit.getUnit()))
 				.collect(ImmutableList.toImmutableList());
 	}
 }

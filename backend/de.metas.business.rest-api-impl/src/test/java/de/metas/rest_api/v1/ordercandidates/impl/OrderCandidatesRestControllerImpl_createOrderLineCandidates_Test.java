@@ -150,6 +150,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 	private static final String DATA_SOURCE_INTERNALNAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 	private static final String DATA_DEST_INVOICECANDIDATE = "DEST.de.metas.invoicecandidate";
 
+	private BPartnerBL bpartnerBL;
 	private TestMasterdata testMasterdata;
 
 	private static final X12DE355 UOM_CODE = X12DE355.ofCode("MJ");
@@ -186,7 +187,8 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		SystemTime.setFixedTimeSource(FIXED_TIME);
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		bpartnerBL = new BPartnerBL(new UserRepository());
+		//Services.registerService(IBPartnerBL.class, bPartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
@@ -238,7 +240,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
@@ -280,7 +282,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
-		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(new BPartnerBL(new UserRepository()), olCandValidatorService));
+		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(bpartnerBL, olCandValidatorService));
 	}
 
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider

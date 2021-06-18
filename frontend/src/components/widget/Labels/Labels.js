@@ -34,7 +34,6 @@ class Labels extends Component {
   handleClick = async () => {
     const {
       windowType, // windowId
-      docId,
       name,
       entity,
       subentity,
@@ -43,6 +42,7 @@ class Labels extends Component {
       rowId,
       viewId,
       readonly,
+      dataId,
     } = this.props;
 
     if (readonly) return false;
@@ -52,7 +52,7 @@ class Labels extends Component {
 
     const response = await dropdownRequest({
       docType: windowType,
-      docId,
+      docId: dataId,
       entity,
       subentity,
       subentityId,
@@ -106,7 +106,6 @@ class Labels extends Component {
     if (typeAhead !== this.lastTypeAhead) {
       const {
         windowType, // windowId
-        docId,
         name,
         entity,
         subentity,
@@ -114,11 +113,12 @@ class Labels extends Component {
         tabId,
         rowId,
         viewId,
+        dataId,
       } = this.props;
 
       const response = await autocompleteRequest({
         docType: windowType, // windowId
-        docId,
+        docId: dataId,
         entity,
         subentity,
         subentityId,
@@ -420,6 +420,7 @@ Labels.propTypes = {
   rowId: PropTypes.string,
   viewId: PropTypes.any,
   readonly: PropTypes.bool,
+  dataId: PropTypes.string,
 };
 
 Labels.defaultProps = {

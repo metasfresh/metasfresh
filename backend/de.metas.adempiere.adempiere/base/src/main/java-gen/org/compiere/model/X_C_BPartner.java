@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1002168590L;
+	private static final long serialVersionUID = -918060618L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -281,18 +281,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getC_Dunning_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Dunning_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Greeting getC_Greeting()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
-	}
-
-	@Override
-	public void setC_Greeting(final org.compiere.model.I_C_Greeting C_Greeting)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
 	}
 
 	@Override
