@@ -32,6 +32,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -58,6 +59,8 @@ public class AttachmentRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("{{metasfresh.attachments.v2.api.uri}}");
+				.toD("{{metasfresh.attachments.v2.api.uri}}")
+
+				.to(direct(UNPACK_V2_API_RESPONSE));
 	}
 }
