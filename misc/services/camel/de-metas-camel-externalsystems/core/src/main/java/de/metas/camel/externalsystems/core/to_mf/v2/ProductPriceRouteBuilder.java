@@ -35,6 +35,7 @@ import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PRICE_LIST_VERSION_IDENTIFIER;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 /**
@@ -70,6 +71,8 @@ public class ProductPriceRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("{{metasfresh.upsert-product-price-v2.api.uri}}/${header." + HEADER_PRICE_LIST_VERSION_IDENTIFIER + "}/productPrices");
+				.toD("{{metasfresh.upsert-product-price-v2.api.uri}}/${header." + HEADER_PRICE_LIST_VERSION_IDENTIFIER + "}/productPrices")
+
+				.to(direct(UNPACK_V2_API_RESPONSE));
 	}
 }
