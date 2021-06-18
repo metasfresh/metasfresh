@@ -161,9 +161,7 @@ public class GetEbayOrdersProcessor implements Processor
 		}
 		else
 		{
-
-			ProcessorHelper.logProcessMessage(exchange, "Ebay:Failed to aquire access token!" + Instant.now(), request.getAdPInstanceId().getValue());
-			exchange.getIn().setBody(new ArrayList<Order>());
+			throw new RuntimeException("Ebay:Failed to aquire access token! " + Instant.now());
 		}
 
 	}
