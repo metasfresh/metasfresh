@@ -26,11 +26,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.invoice.InvoiceDocBaseType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.Constants;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceTax;
@@ -309,8 +309,8 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		// ** API
 		else if (DOCTYPE_APInvoice.equals(docBaseType)
-				|| Constants.DOCBASETYPE_AEInvoice.equals(docBaseType)  // metas-ts: treating commission/salary invoice like AP invoice
-				|| Constants.DOCBASETYPE_AVIinvoice.equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
+				|| InvoiceDocBaseType.AEInvoice.getDocBaseType().equals(docBaseType)  // metas-ts: treating commission/salary invoice like AP invoice
+				|| InvoiceDocBaseType.AVInvoice.getDocBaseType().equals(docBaseType))   // metas-ts: treating invoice for recurrent payment like AP invoice
 		{
 			return createFacts_PurchaseInvoice(as);
 		}

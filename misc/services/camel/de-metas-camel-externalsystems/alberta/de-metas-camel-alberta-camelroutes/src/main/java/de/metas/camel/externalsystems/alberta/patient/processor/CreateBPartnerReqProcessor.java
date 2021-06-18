@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
-import de.metas.camel.externalsystems.alberta.patient.AlbertaConnectionDetails;
+import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.patient.BPartnerUpsertRequestProducer;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;

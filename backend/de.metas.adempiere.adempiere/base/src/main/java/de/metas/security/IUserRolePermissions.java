@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import de.metas.i18n.BooleanWithReason;
 import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
@@ -163,10 +165,8 @@ public interface IUserRolePermissions
 
 	/**
 	 * Checks if given record can be viewed by this role.
-	 *
-	 * @return error message or <code>null</code> if it's OK and can be viewed
 	 */
-	@Nullable String checkCanView(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
+	BooleanWithReason checkCanView(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 
 	/**
 	 * Checks if given record can be updated by this role.
@@ -188,11 +188,10 @@ public interface IUserRolePermissions
 	 * @param orgId record's AD_Org_ID
 	 * @param AD_Table_ID record table
 	 * @param Record_ID record id
-	 * @return error message or <code>null</code> if it's OK and can be updated
 	 **/
-	@Nullable String checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
+	BooleanWithReason checkCanUpdate(ClientId clientId, OrgId orgId, int AD_Table_ID, int Record_ID);
 
-	@Nullable String checkCanCreateNewRecord(ClientId clientId, OrgId orgId, int AD_Table_ID);
+	BooleanWithReason checkCanCreateNewRecord(ClientId clientId, OrgId orgId, AdTableId adTableId);
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	boolean isColumnAccess(int AD_Table_ID, int AD_Column_ID, Access access);

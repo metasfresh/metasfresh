@@ -48,10 +48,10 @@ import java.util.Optional;
 
 import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.asInstant;
 import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.asJavaLocalDate;
+import static de.metas.camel.externalsystems.alberta.common.DataMapper.mapToAlbertaContact;
 import static de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat.formatBillingAddressExternalId;
 import static de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat.formatDeliveryAddressExternalId;
 import static de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat.formatExternalId;
-import static de.metas.camel.externalsystems.alberta.patient.DataMapper.mapToAlbertaContact;
 
 public class PatientToBPartnerMapper
 {

@@ -1016,3 +1016,8 @@ table {
     z-index: 1001;
     box-sizing: border-box;
 }
+
+.btn-borderless:focus {
+    outline: none;
+    box-shadow: none;
+}

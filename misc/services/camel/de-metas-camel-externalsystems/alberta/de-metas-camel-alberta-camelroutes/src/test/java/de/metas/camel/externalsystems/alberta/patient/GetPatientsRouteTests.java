@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.alberta.patient;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemName;

@@ -30,6 +30,8 @@ import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -81,6 +83,7 @@ public final class QuickInput
 
 	private final Document quickInputDocument;
 
+	@Nullable
 	private transient Document rootDocument;
 
 	// State
@@ -172,11 +175,6 @@ public final class QuickInput
 	public DocumentId getId()
 	{
 		return quickInputDocument.getDocumentId();
-	}
-
-	public String getTargetTableName()
-	{
-		return quickInputDocument.getEntityDescriptor().getTableName();
 	}
 
 	public DetailId getDetailId()

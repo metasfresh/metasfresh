@@ -354,7 +354,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -364,7 +364,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -372,11 +372,6 @@ public interface I_C_BPartner
 	 */
 	int getC_Greeting_ID();
 
-	@Nullable org.compiere.model.I_C_Greeting getC_Greeting();
-
-	void setC_Greeting(@Nullable org.compiere.model.I_C_Greeting C_Greeting);
-
-	ModelColumn<I_C_BPartner, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new ModelColumn<>(I_C_BPartner.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
 	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
 	/**
@@ -946,6 +941,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_EMail = new ModelColumn<>(I_C_BPartner.class, "EMail", null);
 	String COLUMNNAME_EMail = "EMail";
+
+	/**
+	 * Set Exclude From Promotions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExcludeFromPromotions (boolean ExcludeFromPromotions);
+
+	/**
+	 * Get Exclude From Promotions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromPromotions();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_ExcludeFromPromotions = new ModelColumn<>(I_C_BPartner.class, "ExcludeFromPromotions", null);
+	String COLUMNNAME_ExcludeFromPromotions = "ExcludeFromPromotions";
 
 	/**
 	 * Set External ID.
@@ -2587,6 +2603,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_ReferenceNo = new ModelColumn<>(I_C_BPartner.class, "ReferenceNo", null);
 	String COLUMNNAME_ReferenceNo = "ReferenceNo";
+
+	/**
+	 * Set Referrer.
+	 * Referring web address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReferrer (@Nullable java.lang.String Referrer);
+
+	/**
+	 * Get Referrer.
+	 * Referring web address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReferrer();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Referrer = new ModelColumn<>(I_C_BPartner.class, "Referrer", null);
+	String COLUMNNAME_Referrer = "Referrer";
 
 	/**
 	 * Set Wiedervorlage Datum Aussen.

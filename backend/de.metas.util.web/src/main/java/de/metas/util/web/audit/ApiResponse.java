@@ -22,9 +22,13 @@
 
 package de.metas.util.web.audit;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.JsonObjectMapperHolder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
 
@@ -40,8 +44,29 @@ public class ApiResponse
 	Object body;
 
 	@NonNull
-	public static ApiResponse of(final int statusCode, @Nullable final HttpHeaders httpHeaders, @Nullable final Object body)
+	public static ApiResponse of(final int statusCode, @Nullable final HttpHeaders httpHeaders, @Nullable final String bodyCandidate)
 	{
+		final Object body;
+		if (bodyCandidate != null
+				&& httpHeaders != null
+				&& httpHeaders.getContentType() != null
+				&& httpHeaders.getContentType().includes(MediaType.APPLICATION_JSON))
+		{
+			try
+			{
+				body = JsonObjectMapperHolder.sharedJsonObjectMapper()
+						.readValue(bodyCandidate, Object.class);
+			}
+			catch (final JsonProcessingException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e);
+			}
+		}
+		else
+		{
+			body = bodyCandidate;
+		}
+
 		return new ApiResponse(statusCode, httpHeaders, body);
 	}
 }

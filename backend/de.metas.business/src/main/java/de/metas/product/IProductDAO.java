@@ -1,5 +1,6 @@
 package de.metas.product;
 
+import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -62,7 +63,6 @@ public interface IProductDAO extends ISingletonService
 	@NonNull
 	ProductCategoryId getDefaultProductCategoryId();
 
-
 	/**
 	 * @return All the active products with the given product planning schema selector
 	 */
@@ -70,7 +70,7 @@ public interface IProductDAO extends ISingletonService
 
 	/**
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
-	 *         or if there is no pendant in the given <code>org</code>.
+	 * or if there is no pendant in the given <code>org</code>.
 	 * task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
 	@Nullable
@@ -99,6 +99,10 @@ public interface IProductDAO extends ISingletonService
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
+
+	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
+
+	void clearIndividualMasterDataFromProduct(ProductId productId);
 
 	@Value
 	class ProductQuery

@@ -31,7 +31,9 @@ import org.compiere.Adempiere;
 public class TestingGenericZoomIntoTableInfoRepository implements GenericZoomIntoTableInfoRepository
 {
 	@Override
-	public GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final String tableName)
+	public GenericZoomIntoTableInfo retrieveTableInfo(
+			@NonNull final String tableName,
+			final boolean ignoreExcludeFromZoomTargetsFlag)
 	{
 		if (!Adempiere.isUnitTestMode())
 		{

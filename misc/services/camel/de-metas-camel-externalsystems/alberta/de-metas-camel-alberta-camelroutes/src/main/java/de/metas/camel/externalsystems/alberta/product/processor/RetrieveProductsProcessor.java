@@ -22,7 +22,7 @@
 
 package de.metas.camel.externalsystems.alberta.product.processor;
 
-import de.metas.camel.externalsystems.alberta.patient.AlbertaConnectionDetails;
+import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;

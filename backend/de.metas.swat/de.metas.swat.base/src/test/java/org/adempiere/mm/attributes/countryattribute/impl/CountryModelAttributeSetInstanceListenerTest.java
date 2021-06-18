@@ -22,9 +22,14 @@ package org.adempiere.mm.attributes.countryattribute.impl;
  * #L%
  */
 
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.organization.OrgId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTestHelper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
@@ -34,12 +39,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.organization.OrgId;
-import de.metas.user.UserRepository;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * Tests:
@@ -74,9 +74,9 @@ public class CountryModelAttributeSetInstanceListenerTest
 		{
 			attr_Country = helper.createM_Attribute_TypeList("Country");
 			attr_Country.setAD_JavaClass_ID(helper.createAD_JavaClass(CountryAttributeGenerator.class).getAD_JavaClass_ID());
-			InterfaceWrapperHelper.save(attr_Country);
+			save(attr_Country);
 
-			helper.createM_AttributeUse(helper.product_attributeSet, attr_Country);
+			helper.createM_AttributeUse(helper.productCategoryAttributeSet, attr_Country);
 
 			helper.sysConfigBL.setValue(CountryAttributeDAO.SYSCONFIG_CountryAttribute, attr_Country.getM_Attribute_ID(), ClientId.SYSTEM, OrgId.ANY);
 		}

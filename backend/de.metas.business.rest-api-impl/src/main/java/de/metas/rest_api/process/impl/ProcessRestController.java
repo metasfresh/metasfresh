@@ -144,7 +144,7 @@ public class ProcessRestController
 
 		return ResponseEntity
 				.ok()
-				.contentType(MediaType.APPLICATION_JSON_UTF8)
+				.contentType(MediaType.APPLICATION_JSON)
 				.body(response);
 	}
 
@@ -181,7 +181,7 @@ public class ProcessRestController
 
 			return ResponseEntity
 					.ok()
-					.contentType(MediaType.APPLICATION_JSON_UTF8)
+					.contentType(MediaType.APPLICATION_JSON)
 					.body(runProcessResponse);
 		}
 	}

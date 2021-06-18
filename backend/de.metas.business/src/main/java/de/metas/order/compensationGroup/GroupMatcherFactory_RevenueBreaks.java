@@ -1,18 +1,16 @@
 package de.metas.order.compensationGroup;
 
+import com.google.common.collect.Range;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
+import de.metas.order.model.X_C_CompensationGroup_SchemaLine;
+import lombok.NonNull;
+import lombok.ToString;
+import org.springframework.stereotype.Component;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
-
-import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Range;
-
-import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
-import de.metas.order.model.X_C_CompensationGroup_SchemaLine;
-import de.metas.common.util.CoalesceUtil;
-import lombok.NonNull;
-import lombok.ToString;
 
 /*
  * #%L
@@ -39,11 +37,10 @@ import lombok.ToString;
 @Component
 public final class GroupMatcherFactory_RevenueBreaks implements GroupMatcherFactory
 {
-
 	@Override
-	public String getAppliesToLineType()
+	public GroupTemplateCompensationLineType getAppliesToLineType()
 	{
-		return X_C_CompensationGroup_SchemaLine.TYPE_Revenue;
+		return GroupTemplateCompensationLineType.REVENUE_BREAKS;
 	}
 
 	@Override

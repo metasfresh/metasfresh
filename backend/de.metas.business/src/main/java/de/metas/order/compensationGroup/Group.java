@@ -1,33 +1,34 @@
 package de.metas.order.compensationGroup;
 
-import static java.math.BigDecimal.ONE;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-
-import de.metas.currency.CurrencyPrecision;
-import de.metas.product.acct.api.ActivityId;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.ConditionsId;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+
+import static java.math.BigDecimal.ONE;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -70,7 +71,7 @@ public class Group
 	@Getter
 	private final SOTrx soTrx;
 	@Getter
-	private final int flatrateConditionsId;
+	private final ConditionsId contractConditionsId;
 
 	private final ImmutableList<GroupRegularLine> regularLines;
 	private final ArrayList<GroupCompensationLine> compensationLines;
@@ -81,12 +82,12 @@ public class Group
 	private Group(
 			@NonNull final GroupId groupId,
 			@Nullable final GroupTemplateId groupTemplateId,
-			@Nullable ActivityId activityId,
+			@Nullable final ActivityId activityId,
 			@NonNull final CurrencyPrecision pricePrecision,
 			@NonNull final CurrencyPrecision amountPrecision,
 			@Nullable final BPartnerId bpartnerId,
 			@NonNull final SOTrx soTrx,
-			final int flatrateConditionsId,
+			@Nullable final ConditionsId contractConditionsId,
 			@NonNull @Singular final List<GroupRegularLine> regularLines,
 			@NonNull @Singular final List<GroupCompensationLine> compensationLines)
 	{
@@ -97,7 +98,7 @@ public class Group
 		this.amountPrecision = amountPrecision;
 		this.bpartnerId = bpartnerId;
 		this.soTrx = soTrx;
-		this.flatrateConditionsId = flatrateConditionsId > 0 ? flatrateConditionsId : -1;
+		this.contractConditionsId = contractConditionsId;
 
 		if (regularLines.isEmpty())
 		{
@@ -111,22 +112,22 @@ public class Group
 
 	BigDecimal getRegularLinesNetAmt()
 	{
-		if (_regularLinesNetAmt == null)
+		BigDecimal regularLinesNetAmt = _regularLinesNetAmt;
+		if (regularLinesNetAmt == null)
 		{
-			_regularLinesNetAmt = regularLines.stream().map(GroupRegularLine::getLineNetAmt).reduce(BigDecimal.ZERO, BigDecimal::add);
+			regularLinesNetAmt = _regularLinesNetAmt = regularLines.stream().map(GroupRegularLine::getLineNetAmt).reduce(BigDecimal.ZERO, BigDecimal::add);
 		}
-		return _regularLinesNetAmt;
+		return regularLinesNetAmt;
 	}
 
 	BigDecimal getTotalNetAmt()
 	{
 		final BigDecimal regularLinesNetAmt = getRegularLinesNetAmt();
 		final BigDecimal compensationLinesNetAmt = compensationLines.stream().map(GroupCompensationLine::getLineNetAmt).reduce(BigDecimal.ZERO, BigDecimal::add);
-		final BigDecimal totalNetAmt = regularLinesNetAmt.add(compensationLinesNetAmt);
-		return totalNetAmt;
+		return regularLinesNetAmt.add(compensationLinesNetAmt);
 	}
 
-	List<GroupRegularLine> getRegularLines()
+	public ImmutableList<GroupRegularLine> getRegularLines()
 	{
 		return regularLines;
 	}
@@ -141,14 +142,10 @@ public class Group
 		return ImmutableList.copyOf(compensationLines);
 	}
 
-	public GroupCompensationLine getCompensationLineById(final int id)
+	public GroupCompensationLine getCompensationLineById(@NonNull final RepoIdAware id)
 	{
-		if (id <= 0)
-		{
-			throw new AdempiereException("No compensation line found for id=" + id + " in group " + this);
-		}
 		return compensationLines.stream()
-				.filter(line -> line.getRepoId() == id)
+				.filter(line -> Objects.equals(line.getRepoId(), id))
 				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("None or more then one compensation lines found for id=" + id + " in group " + this)));
 	}
 
@@ -207,7 +204,7 @@ public class Group
 		compensationLines.add(compensationLine);
 	}
 
-	void removeAllGeneratedCompensationLines()
+	void removeAllGeneratedLines()
 	{
 		compensationLines.removeIf(GroupCompensationLine::isGeneratedLine);
 	}
@@ -215,7 +212,7 @@ public class Group
 	private void moveAllManualCompensationLinesToEnd()
 	{
 		final ArrayList<GroupCompensationLine> manualCompensationLines = new ArrayList<>();
-		for (final Iterator<GroupCompensationLine> it = compensationLines.iterator(); it.hasNext();)
+		for (final Iterator<GroupCompensationLine> it = compensationLines.iterator(); it.hasNext(); )
 		{
 			final GroupCompensationLine compensationLine = it.next();
 			if (compensationLine.isManualLine())

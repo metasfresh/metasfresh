@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -505276034L;
+	private static final long serialVersionUID = -802046120L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -45,6 +45,33 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getAdditional_produktinfos() 
 	{
 		return get_ValueAsString(COLUMNNAME_Additional_produktinfos);
+	}
+
+	@Override
+	public de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_CompensationGroup_Schema_ID, de.metas.order.model.I_C_CompensationGroup_Schema.class);
+	}
+
+	@Override
+	public void setC_CompensationGroup_Schema(final de.metas.order.model.I_C_CompensationGroup_Schema C_CompensationGroup_Schema)
+	{
+		set_ValueFromPO(COLUMNNAME_C_CompensationGroup_Schema_ID, de.metas.order.model.I_C_CompensationGroup_Schema.class, C_CompensationGroup_Schema);
+	}
+
+	@Override
+	public void setC_CompensationGroup_Schema_ID (final int C_CompensationGroup_Schema_ID)
+	{
+		if (C_CompensationGroup_Schema_ID < 1) 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_CompensationGroup_Schema_ID, C_CompensationGroup_Schema_ID);
+	}
+
+	@Override
+	public int getC_CompensationGroup_Schema_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_CompensationGroup_Schema_ID);
 	}
 
 	@Override
