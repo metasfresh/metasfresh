@@ -50,6 +50,7 @@ import org.apache.camel.test.spring.junit5.UseAdviceWith;
 import org.apache.camel.test.spring.junit5.UseOverridePropertiesWithPropertiesComponent;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -63,6 +64,7 @@ import com.ebay.api.client.auth.oauth2.model.RefreshToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.ebay.api.OrderApi;
 import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -106,6 +108,7 @@ public class EbayOrderProcessingRouteTest
 
 	@Mock
 	public OAuth2Api authApi;
+	
 
 	@UseOverridePropertiesWithPropertiesComponent
 	public static Properties overrideProperties()
@@ -193,7 +196,8 @@ public class EbayOrderProcessingRouteTest
 		@Bean
 		public RouteBuilder route()
 		{
-			return new GetEbayOrdersRouteBuilder();
+			final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
+			return new GetEbayOrdersRouteBuilder(processLogger);
 		}
 	}
 

@@ -35,6 +35,7 @@ import de.metas.camel.ebay.processor.CreateOrderLineCandidateUpsertReqForEbayOrd
 import de.metas.camel.ebay.processor.GetEbayOrdersProcessor;
 import de.metas.camel.ebay.processor.OrderFilterProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 
 /**
@@ -53,6 +54,13 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 	public static final String PROCESS_ORDER_BPARTNER_ROUTE_ID = "Ebay-processOrderBPartner";
 	public static final String PROCESS_ORDER_OLC_ROUTE_ID = "Ebay-processOrderOLC";
 	public static final String FILTER_ORDER_ROUTE_ID = "Ebay-filterOrder";
+	
+	private final ProcessLogger processLogger;
+	
+	public GetEbayOrdersRouteBuilder(final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
 
 	@Override
 	public void configure()
@@ -69,7 +77,7 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 		from(StaticEndpointBuilders.direct(GET_ORDERS_ROUTE_ID))
 			.routeId(GET_ORDERS_ROUTE_ID)
 			.log(LoggingLevel.DEBUG, "Ebay get order route invoked")
-			.process(new GetEbayOrdersProcessor())
+			.process(new GetEbayOrdersProcessor(processLogger))
 			.split(body())
 			.to( direct(PROCESS_ORDERS_ROUTE_ID));
 		

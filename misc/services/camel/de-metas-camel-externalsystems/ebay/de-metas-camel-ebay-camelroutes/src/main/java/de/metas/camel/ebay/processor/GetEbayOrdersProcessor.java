@@ -27,7 +27,6 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.camel.Exchange;
@@ -41,6 +40,7 @@ import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
 
 import de.metas.camel.ebay.EbayConstants;
 import de.metas.camel.ebay.EbayImportOrdersRouteContext;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.ebay.api.OrderApi;
 import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
 import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
@@ -58,6 +58,14 @@ public class GetEbayOrdersProcessor implements Processor
 {
 
 	protected Logger log = LoggerFactory.getLogger(getClass());
+	
+	private final ProcessLogger processLogger;
+	
+	public GetEbayOrdersProcessor(final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
+	
 
 	@Override
 	public void process(Exchange exchange) throws Exception
@@ -72,7 +80,7 @@ public class GetEbayOrdersProcessor implements Processor
 		{
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
 
-			ProcessorHelper.logProcessMessage(exchange, "Ebay:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
+			processLogger.logMessage("Ebay:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
 		}
 
 		final String updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);

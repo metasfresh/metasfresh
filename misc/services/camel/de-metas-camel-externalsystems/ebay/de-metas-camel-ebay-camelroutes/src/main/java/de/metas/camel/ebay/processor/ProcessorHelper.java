@@ -22,14 +22,8 @@
 
 package de.metas.camel.ebay.processor;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
-
-import javax.annotation.Nullable;
-
 import org.apache.camel.Exchange;
 
-import de.metas.camel.externalsystems.common.LogMessageRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 
 public class ProcessorHelper
@@ -43,25 +37,6 @@ public class ProcessorHelper
 		}
 
 		return property;
-	}
-
-	public static void logProcessMessage(
-			@NonNull final Exchange exchange,
-			@NonNull final String message,
-			@Nullable final Integer adPInstanceId)
-	{
-		if (adPInstanceId == null)
-		{
-			return; // nothing to do
-		}
-
-		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
-				.logMessage(message)
-				.pInstanceId(JsonMetasfreshId.of(adPInstanceId))
-				.build();
-
-		exchange.getContext().createProducerTemplate()
-				.sendBody("direct:" + MF_LOG_MESSAGE_ROUTE_ID, logMessageRequest);
 	}
 
 }
