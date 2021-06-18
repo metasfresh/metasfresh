@@ -71,6 +71,8 @@ public class BPartner
 	public static final String CUSTOMER_PRICING_SYSTEM_ID = "customerPricingSystemId";
 	public static final String VENDOR_PAYMENTTERM_ID = "vendorPaymentTermId";
 	public static final String VENDOR_PRICING_SYSTEM_ID = "vendorPricingSystemId";
+	public static final String EXCLUDE_FROM_PROMOTIONS = "excludeFromPromotions";
+	public static final String REFERRER = "referrer";
 
 	/**
 	 * May be null if the bpartner was not yet saved.
@@ -143,6 +145,9 @@ public class BPartner
 	private final PaymentTermId vendorPaymentTermId;
 	private final PricingSystemId vendorPricingSystemId;
 
+	private final boolean excludeFromPromotions;
+	private final String referrer;
+
 
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
@@ -179,7 +184,7 @@ public class BPartner
 			@Nullable final PaymentTermId customerPaymentTermId,
 			@Nullable final PricingSystemId customerPricingSystemId,
 			@Nullable final PaymentTermId vendorPaymentTermId,
-			@Nullable final PricingSystemId vendorPricingSystemId)
+			@Nullable final PricingSystemId vendorPricingSystemId, final boolean excludeFromPromotions, final String referrer)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -215,6 +220,8 @@ public class BPartner
 
 		this.vendorPaymentTermId = vendorPaymentTermId;
 		this.vendorPricingSystemId = vendorPricingSystemId;
+		this.excludeFromPromotions = excludeFromPromotions;
+		this.referrer = referrer;
 	}
 
 	/**

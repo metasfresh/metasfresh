@@ -209,6 +209,9 @@ final class BPartnerCompositeSaver
 			bpartnerRecord.setPO_PaymentTerm_ID(bpartner.getVendorPaymentTermId().getRepoId());
 		}
 
+		bpartnerRecord.setExcludeFromPromotions(bpartner.isExcludeFromPromotions());
+		bpartnerRecord.setReferrer(bpartner.getReferrer());
+
 		assertCanCreateOrUpdate(bpartnerRecord);
 		saveRecord(bpartnerRecord);
 

@@ -96,6 +96,8 @@ class BPartnerCompositeRepositoryTest
 						.vendor(true)
 						.vendorPaymentTermId(PaymentTermId.ofRepoId(21))
 						.vendorPricingSystemId(PricingSystemId.ofRepoId(22))
+						.excludeFromPromotions(true)
+						.referrer("test referrer")
 						.build())
 				.location(BPartnerLocation.builder()
 						.locationType(BPartnerLocationType.builder()
