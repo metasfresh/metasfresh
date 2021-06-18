@@ -4,12 +4,12 @@ DROP VIEW IF EXISTS C_BPartner_Adv_Search_v
 CREATE OR REPLACE VIEW C_BPartner_Adv_Search_v AS
 SELECT p.c_bpartner_id,
        pl.c_bpartner_location_id,
-       COALESCE(u.ad_user_id,-1) as userID,
+       COALESCE(u.ad_user_id, -1)         AS C_BP_Contact_ID, --coalesce with -1 because mf parents cannot be null
        p.value,
        p.iscompany,
        p.name,
-       COALESCE(u.firstname, p.firstname)                   AS firstname,
-       COALESCE(u.lastname, p.lastname)                     AS lastname,
+       COALESCE(u.firstname, p.firstname) AS firstname,
+       COALESCE(u.lastname, p.lastname)   AS lastname,
        l.city,
        p.ad_client_id,
        p.ad_org_id

@@ -92,6 +92,27 @@ public interface I_C_BPartner_Adv_Search_v
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Contact.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Contact_ID (int C_BP_Contact_ID);
+
+	/**
+	 * Get Contact.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Contact_ID();
+
+	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_C_BP_Contact_ID = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "C_BP_Contact_ID", null);
+	String COLUMNNAME_C_BP_Contact_ID = "C_BP_Contact_ID";
+
+	/**
 	 * Set City Name.
 	 *
 	 * <br>Type: String
@@ -199,29 +220,6 @@ public interface I_C_BPartner_Adv_Search_v
 
 	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_Name = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
-
-	/**
-	 * Set User ID.
-	 * User ID or account number
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setUserID (int UserID);
-
-	/**
-	 * Get User ID.
-	 * User ID or account number
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getUserID();
-
-	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_UserID = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "UserID", null);
-	String COLUMNNAME_UserID = "UserID";
 
 	/**
 	 * Set Search Key.

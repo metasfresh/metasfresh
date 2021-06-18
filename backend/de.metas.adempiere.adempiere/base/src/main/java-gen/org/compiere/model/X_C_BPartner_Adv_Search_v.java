@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_Adv_Search_v extends org.compiere.model.PO implements I_C_BPartner_Adv_Search_v, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2047281099L;
+	private static final long serialVersionUID = -1274470975L;
 
     /** Standard Constructor */
     public X_C_BPartner_Adv_Search_v (final Properties ctx, final int C_BPartner_Adv_Search_v_ID, @Nullable final String trxName)
@@ -62,6 +62,21 @@ public class X_C_BPartner_Adv_Search_v extends org.compiere.model.PO implements 
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setC_BP_Contact_ID (final int C_BP_Contact_ID)
+	{
+		if (C_BP_Contact_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_C_BP_Contact_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_BP_Contact_ID, C_BP_Contact_ID);
+	}
+
+	@Override
+	public int getC_BP_Contact_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Contact_ID);
 	}
 
 	@Override
@@ -122,18 +137,6 @@ public class X_C_BPartner_Adv_Search_v extends org.compiere.model.PO implements 
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
-	}
-
-	@Override
-	public void setUserID (final int UserID)
-	{
-		set_ValueNoCheck (COLUMNNAME_UserID, UserID);
-	}
-
-	@Override
-	public int getUserID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_UserID);
 	}
 
 	@Override

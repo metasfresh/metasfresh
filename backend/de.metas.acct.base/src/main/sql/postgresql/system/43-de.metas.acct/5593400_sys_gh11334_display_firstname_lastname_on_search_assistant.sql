@@ -4,12 +4,12 @@ DROP VIEW IF EXISTS C_BPartner_Adv_Search_v
 CREATE OR REPLACE VIEW C_BPartner_Adv_Search_v AS
 SELECT p.c_bpartner_id,
        pl.c_bpartner_location_id,
-       COALESCE(u.ad_user_id,-1) as userID,
+       COALESCE(u.ad_user_id, -1)         AS C_BP_Contact_ID, --coalesce with -1 because mf parents cannot be null
        p.value,
        p.iscompany,
        p.name,
-       COALESCE(u.firstname, p.firstname)                   AS firstname,
-       COALESCE(u.lastname, p.lastname)                     AS lastname,
+       COALESCE(u.firstname, p.firstname) AS firstname,
+       COALESCE(u.lastname, p.lastname)   AS lastname,
        l.city,
        p.ad_client_id,
        p.ad_org_id
@@ -293,3 +293,27 @@ UPDATE AD_Column SET AD_Reference_ID=11, DefaultValue='0', IsMandatory='Y', IsUp
 INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541375,'S',TO_TIMESTAMP('2021-06-18 15:06:59','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','BPartner_Search_Window_ID',TO_TIMESTAMP('2021-06-18 15:06:59','YYYY-MM-DD HH24:MI:SS'),100,'541045')
 ;
 
+-- 2021-06-18T12:50:34.625Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=574479
+;
+
+-- 2021-06-18T12:50:34.629Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Column WHERE AD_Column_ID=574479
+;
+
+-- 2021-06-18T12:52:03.537Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,574481,541208,0,11,541588,'C_BP_Contact_ID',TO_TIMESTAMP('2021-06-18 15:52:03','YYYY-MM-DD HH24:MI:SS'),100,'N','0','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','Y','N','N','N','N','N','N','N','N',0,'Kontakt',0,0,TO_TIMESTAMP('2021-06-18 15:52:03','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-06-18T12:52:03.538Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=574481 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-06-18T12:52:03.562Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_Column_Translation_From_AD_Element(541208)
+;
