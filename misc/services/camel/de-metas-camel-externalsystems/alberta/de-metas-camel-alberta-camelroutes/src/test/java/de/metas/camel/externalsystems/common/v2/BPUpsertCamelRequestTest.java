@@ -45,7 +45,8 @@ class BPUpsertCamelRequestTest
 	void testToString() throws IOException
 	{
 		final ObjectMapper objectMapper = new ObjectMapper();
-		//objectMapper.registerModule(new JavaTimeModule());
+		objectMapper.registerModule(new JavaTimeModule());
+		
 		final InputStream bparnerUpsertRequestExpected = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 		final JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = objectMapper.readValue(bparnerUpsertRequestExpected, JsonRequestBPartnerUpsert.class);
 
