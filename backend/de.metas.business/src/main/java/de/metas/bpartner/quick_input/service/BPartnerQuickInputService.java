@@ -308,6 +308,7 @@ public class BPartnerQuickInputService
 				.companyName(template.getCompanyname())
 				.groupId(groupId)
 				.language(Language.asLanguage(template.getAD_Language()))
+				.phone(StringUtils.trimBlankToNull(template.getPhone()))
 				// Customer:
 				.customer(template.isCustomer())
 				.customerPricingSystemId(PricingSystemId.ofRepoIdOrNull(template.getM_PricingSystem_ID()))
@@ -367,9 +368,8 @@ public class BPartnerQuickInputService
 						.lastName(contactTemplate.getLastname())
 						.name(userBL.buildContactName(contactTemplate.getFirstname(), contactTemplate.getLastname()))
 						.greetingId(GreetingId.ofRepoIdOrNull(contactTemplate.getC_Greeting_ID()))
-						.phone(StringUtils.trimBlankToNull(template.getPhone()))
-						.email(StringUtils.trimBlankToNull(template.getEMail()))
-						// TODO: contact seqNo
+						.phone(StringUtils.trimBlankToNull(contactTemplate.getPhone()))
+						.email(StringUtils.trimBlankToNull(contactTemplate.getEMail()))
 						.build());
 			}
 		}
