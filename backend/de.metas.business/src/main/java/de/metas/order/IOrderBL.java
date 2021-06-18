@@ -32,6 +32,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.project.ProjectId;
 import de.metas.request.RequestTypeId;
+import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
@@ -39,14 +40,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Optional;
-
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 public interface IOrderBL extends ISingletonService
 {
@@ -181,10 +179,10 @@ public interface IOrderBL extends ISingletonService
 	 * Is Tax Included in Amount.
 	 *
 	 * @param tax optional
-	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
+	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
 	 * <code>order</code> the value of {@link I_C_Order#isTaxIncluded()} is returned.
 	 */
-	boolean isTaxIncluded(I_C_Order order, I_C_Tax tax);
+	boolean isTaxIncluded(I_C_Order order, Tax tax);
 
 	/**
 	 * Close given order line by setting the line's <code>QtyOrdered</code> to the current <code>QtyDelviered</code>.

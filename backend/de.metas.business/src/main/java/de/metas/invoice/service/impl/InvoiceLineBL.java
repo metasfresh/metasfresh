@@ -35,9 +35,11 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -69,8 +71,6 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
 import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 
 /*
  * #%L
@@ -163,7 +163,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final boolean isSOTrx)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
@@ -189,18 +188,16 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				return false;
 			}
 
-			final Properties ctx = getCtx(invoice);
+			final Tax tax = taxDAO.getBy(TaxQuery.builder()
+					.fromCountryId(countryFromId)
+					.orgId(orgId)
+					.bPartnerLocationId(partnerLocationId)
+					.dateOfInterest(taxDate)
+					.taxCategoryId(taxCategoryId)
+					.isSoTrx(isSOTrx)
+					.build());
 
-			final TaxId taxId = taxBL.retrieveTaxIdForCategory(ctx,
-					countryFromId,
-					orgId,
-					locationTo,
-					taxDate,
-					taxCategoryId,
-					isSOTrx,
-					false);
-
-			if (taxId == null)
+			if (tax == null)
 			{
 				final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 
@@ -215,16 +212,13 @@ public class InvoiceLineBL implements IInvoiceLineBL
 						.billToC_Location_ID(bPartnerLocationRecord.getC_Location_ID())
 						.build();
 			}
-
+			final TaxId taxId = tax.getTaxId();
 			final boolean taxChange = il.getC_Tax_ID() != taxId.getRepoId();
 			if (taxChange)
 			{
 				logger.info("Changing C_Tax_ID to " + taxId + " for " + il);
 				il.setC_Tax_ID(taxId.getRepoId());
-
-				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(taxId.getRepoId());
-
-				il.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+				il.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 			}
 			return taxChange;
 		}

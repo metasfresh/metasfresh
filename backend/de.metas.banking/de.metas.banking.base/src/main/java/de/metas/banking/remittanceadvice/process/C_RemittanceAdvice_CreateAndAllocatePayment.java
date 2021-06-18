@@ -55,6 +55,7 @@ import de.metas.remittanceadvice.RemittanceAdviceLineServiceFee;
 import de.metas.remittanceadvice.RemittanceAdviceRepository;
 import de.metas.remittanceadvice.RemittanceAdviceService;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -69,7 +70,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_C_RemittanceAdvice;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_RemittanceAdvice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -196,7 +196,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 			serviceFeeTaxId = TaxId.ofRepoId(firstInvoiceLine.getC_Tax_ID());
 			serviceFeeProductId = ProductId.ofRepoIdOrNull(firstInvoiceLine.getM_Product_ID());
 
-			final I_C_Tax serviceFeeTax = taxDAO.getTaxById(serviceFeeTaxId.getRepoId());
+			final Tax serviceFeeTax = taxDAO.getTaxById(serviceFeeTaxId.getRepoId());
 			serviceFeeTaxVATRate = serviceFeeTax.getRate();
 		}
 

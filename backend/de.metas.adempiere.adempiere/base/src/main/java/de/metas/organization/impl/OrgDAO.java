@@ -263,4 +263,15 @@ public class OrgDAO implements IOrgDAO
 		return timeZone != null ? timeZone : SystemTime.zoneId();
 	}
 
+	@Override
+	public boolean isEUOneStopShop(@NonNull final OrgId orgId)
+	{
+		final I_AD_Org org = getById(orgId);
+		if (org == null)
+		{
+			throw new AdempiereException("No Organization found for ID: " + orgId);
+		}
+		return org.isEUOneStopShop();
+	}
+
 }
