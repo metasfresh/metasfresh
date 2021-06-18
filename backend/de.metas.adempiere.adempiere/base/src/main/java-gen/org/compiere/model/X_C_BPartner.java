@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -918060618L;
+	private static final long serialVersionUID = -1789205616L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -646,6 +646,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getEMail() 
 	{
 		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
+	public void setExcludeFromPromotions (final boolean ExcludeFromPromotions)
+	{
+		set_Value (COLUMNNAME_ExcludeFromPromotions, ExcludeFromPromotions);
+	}
+
+	@Override
+	public boolean isExcludeFromPromotions() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_ExcludeFromPromotions);
 	}
 
 	@Override
@@ -1732,6 +1744,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getReferenceNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_ReferenceNo);
+	}
+
+	@Override
+	public void setReferrer (final @Nullable java.lang.String Referrer)
+	{
+		set_Value (COLUMNNAME_Referrer, Referrer);
+	}
+
+	@Override
+	public java.lang.String getReferrer() 
+	{
+		return get_ValueAsString(COLUMNNAME_Referrer);
 	}
 
 	@Override

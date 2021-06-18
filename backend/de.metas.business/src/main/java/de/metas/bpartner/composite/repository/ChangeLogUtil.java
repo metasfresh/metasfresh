@@ -89,6 +89,8 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID, BPartner.CUSTOMER_PRICING_SYSTEM_ID)
 			.put(I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID, BPartner.VENDOR_PAYMENTTERM_ID)
 			.put(I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID, BPartner.VENDOR_PRICING_SYSTEM_ID)
+			.put(I_C_BPartner.COLUMNNAME_ExcludeFromPromotions, BPartner.EXCLUDE_FROM_PROMOTIONS)
+			.put(I_C_BPartner.COLUMNNAME_Referrer, BPartner.REFERRER)
 			.build();
 
 	@VisibleForTesting

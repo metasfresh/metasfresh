@@ -97,7 +97,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -426,7 +427,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -701,7 +703,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -909,7 +912,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -1117,7 +1121,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {

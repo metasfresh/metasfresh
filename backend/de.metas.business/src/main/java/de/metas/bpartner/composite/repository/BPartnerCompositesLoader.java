@@ -297,6 +297,9 @@ final class BPartnerCompositesLoader
 				.vendorPaymentTermId(PaymentTermId.ofRepoIdOrNull(bpartnerRecord.getPO_PaymentTerm_ID()))
 				.vendorPricingSystemId(PricingSystemId.ofRepoIdOrNull(bpartnerRecord.getPO_PricingSystem_ID()))
 				//
+				.excludeFromPromotions(bpartnerRecord.isExcludeFromPromotions())
+				.referrer(bpartnerRecord.getReferrer())
+				//
 				.changeLog(recordChangeLog)
 				//
 				.build();
