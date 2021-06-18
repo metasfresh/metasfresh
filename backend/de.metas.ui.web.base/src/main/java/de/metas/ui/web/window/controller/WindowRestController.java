@@ -22,34 +22,9 @@
 
 package de.metas.ui.web.window.controller;
 
-import java.util.List;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.WebRequest;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
@@ -79,6 +54,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions.JSONDocumentOpt
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPatchResult;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
@@ -105,7 +81,28 @@ import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
-import lombok.NonNull;	
+import lombok.NonNull;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.WebRequest;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 
 @Api
 @RestController
@@ -841,12 +838,12 @@ public class WindowRestController
 			@Nullable final DetailId tabId,
 			@NonNull final DocumentIdsSelection selectedRowIds)
 	{
-		if(selectedRowIds.isEmpty())
+		if (selectedRowIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		if(tabId == null)
+		if (tabId == null)
 		{
 			throw new AdempiereException("selectedTabId shall be specified when selectedRowIds is set");
 		}
@@ -985,7 +982,7 @@ public class WindowRestController
 		documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
 			advancedSearchDescriptorsProvider.getAdvancedSearchDescriptor(windowId)
 					.getProcessor()
-					.processSelection(document, fieldName, selectionIdStr);
+					.processSelection(windowId, document, fieldName, selectionIdStr);
 			return null;
 		});
 		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
