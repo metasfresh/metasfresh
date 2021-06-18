@@ -56,6 +56,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.asInstant;
@@ -233,6 +234,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestContactUpsert requestContactUpsert;
 		{//contact
 			final JsonRequestContact contact = new JsonRequestContact();
+			contact.setName(new StringJoiner(" ").add(careGiver.getFirstName()).add(careGiver.getLastName()).toString());
 			contact.setFirstName(careGiver.getFirstName());
 			contact.setLastName(careGiver.getLastName());
 			contact.setPhone(careGiver.getPhone());
@@ -408,6 +410,7 @@ public class BPartnerUpsertRequestProducer
 		}
 
 		final JsonRequestContact contact = new JsonRequestContact();
+		contact.setName(new StringJoiner(" ").add(users.getFirstName()).add(users.getLastName()).toString());
 		contact.setFirstName(users.getFirstName());
 		contact.setLastName(users.getLastName());
 		contact.setEmail(users.getEmail());
