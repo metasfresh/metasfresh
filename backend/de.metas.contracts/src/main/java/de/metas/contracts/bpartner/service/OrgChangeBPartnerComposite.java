@@ -22,13 +22,18 @@
 
 package de.metas.contracts.bpartner.service;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -40,23 +45,24 @@ import java.util.List;
 public class OrgChangeBPartnerComposite
 {
 	@NonNull
+	@Getter(AccessLevel.MODULE)
 	BPartnerComposite bPartnerComposite;
 
 	@NonNull
 	OrgMappingId bPartnerOrgMappingId;
 
 	@NonNull
-	List<FlatrateTerm> membershipSubscriptions;
+	ImmutableList<FlatrateTerm> membershipSubscriptions;
 
 	@NonNull
-	List<FlatrateTerm> nonMembershipSubscriptions;
+	ImmutableList<FlatrateTerm> nonMembershipSubscriptions;
 
 	@Builder(toBuilder = true)
 	private OrgChangeBPartnerComposite(
 			@NonNull final BPartnerComposite bPartnerComposite,
 			@NonNull final OrgMappingId bPartnerOrgMappingId,
-			@NonNull @Singular final List<FlatrateTerm> membershipSubscriptions,
-			@NonNull @Singular final List<FlatrateTerm> nonMembershipSubscriptions)
+			@NonNull @Singular final ImmutableList<FlatrateTerm> membershipSubscriptions,
+			@NonNull @Singular final ImmutableList<FlatrateTerm> nonMembershipSubscriptions)
 	{
 		this.bPartnerComposite = bPartnerComposite;
 		this.bPartnerOrgMappingId = bPartnerOrgMappingId;
@@ -65,9 +71,19 @@ public class OrgChangeBPartnerComposite
 		this.nonMembershipSubscriptions = nonMembershipSubscriptions;
 	}
 
+	public BPartner getBpartner()
+	{
+		return getBPartnerComposite().getBpartner();
+	}
+
 	public boolean hasMembershipSubscriptions()
 	{
 		return !Check.isEmpty(membershipSubscriptions);
+	}
+
+	public List<BPartnerLocation> getLocations()
+	{
+		return getBPartnerComposite().getLocations();
 	}
 
 	public DefaultLocations getDefaultLocations()
@@ -96,6 +112,11 @@ public class OrgChangeBPartnerComposite
 		return getBPartnerComposite()
 				.extractLocation(l -> l.getLocationType().getIsShipToDefaultOr(false))
 				.orElse(null);
+	}
+
+	public List<BPartnerContact> getContacts()
+	{
+		return getBPartnerComposite().getContacts();
 	}
 
 	@Nullable
@@ -138,4 +159,8 @@ public class OrgChangeBPartnerComposite
 				.orElse(null);
 	}
 
+	public List<BPartnerBankAccount> getBankAccounts()
+	{
+		return getBPartnerComposite().getBankAccounts();
+	}
 }

@@ -25,7 +25,6 @@ package de.metas.contracts.bpartner.service;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
-import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -76,11 +75,13 @@ public class OrgChangeCommand
 	private final AdMessageKey MSG_OrgChangeSummary = AdMessageKey.of("R_Request_OrgChange_Summary");
 
 	@NonNull
-	private final OrgChangeRepository orgChangeRepo;
-	@NonNull
 	private final BPartnerCompositeRepository bpCompositeRepo;
 	@NonNull
 	private final OrgMappingRepository orgMappingRepo;
+	@NonNull
+	private final OrgChangeRepository orgChangeRepo;
+	@NonNull
+	private final OrgChangeHistoryRepository orgChangeHistoryRepo;
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -96,75 +97,69 @@ public class OrgChangeCommand
 
 	@Builder
 	private OrgChangeCommand(
-			@NonNull final OrgChangeRepository orgChangeRepo,
-			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
-			@NonNull final OrgMappingRepository orgMappingRepo,
+			final @NonNull BPartnerCompositeRepository bpCompositeRepo,
+			final @NonNull OrgChangeRepository orgChangeRepo,
+			final @NonNull OrgChangeHistoryRepository orgChangeHistoryRepo,
+			final @NonNull OrgMappingRepository orgMappingRepo,
 			//
-			@NonNull final OrgChangeRequest request)
+			final @NonNull OrgChangeRequest request)
 	{
-		this.orgChangeRepo = orgChangeRepo;
 		this.bpCompositeRepo = bpCompositeRepo;
 		this.orgMappingRepo = orgMappingRepo;
+		this.orgChangeRepo = orgChangeRepo;
+		this.orgChangeHistoryRepo = orgChangeHistoryRepo;
 
 		this.request = request;
 	}
 
 	public void execute()
 	{
-		final OrgChangeBPartnerComposite orgChangeBPartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(
+		final OrgChangeBPartnerComposite bpartnerAndSubscriptions = orgChangeRepo.getByIdAndOrgChangeDate(
 				request.getBpartnerId(),
 				request.getStartDate());
 
-		final OrgMappingId orgMappingId = orgChangeBPartnerComposite.getBPartnerOrgMappingId();
+		final OrgMappingId orgMappingId = bpartnerAndSubscriptions.getBPartnerOrgMappingId();
 
 		final BPartnerId newBPartnerId = orgChangeRepo.getOrCreateCounterpartBPartner(request, orgMappingId);
 
 		// gets the partner with all the active and inactive locations, users and bank accounts
 		BPartnerComposite destinationBPartnerComposite = bpCompositeRepo.getById(newBPartnerId);
+		{
+			destinationBPartnerComposite.getBpartner().setActive(true);
 
-		final BPartner destinationPartner = destinationBPartnerComposite.getBpartner();
+			final List<BPartnerLocation> newLocations = getOrCreateLocations(bpartnerAndSubscriptions, destinationBPartnerComposite);
+			final List<BPartnerContact> newContacts = getOrCreateContacts(bpartnerAndSubscriptions, destinationBPartnerComposite);
+			final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(bpartnerAndSubscriptions, destinationBPartnerComposite);
 
-		destinationPartner.setActive(true);
+			destinationBPartnerComposite = destinationBPartnerComposite.deepCopy()
+					.toBuilder()
+					.locations(newLocations)
+					.contacts(newContacts)
+					.bankAccounts(newBPBankAccounts)
+					.build();
+			bpCompositeRepo.save(destinationBPartnerComposite);
+		}
 
-		final List<BPartnerLocation> newLocations = getOrCreateLocations(orgChangeBPartnerComposite, destinationBPartnerComposite);
-		final List<BPartnerContact> newContacts = getOrCreateContacts(orgChangeBPartnerComposite, destinationBPartnerComposite);
-		final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(orgChangeBPartnerComposite, destinationBPartnerComposite);
+		saveOrgChangeBPartnerComposite(bpartnerAndSubscriptions);
 
-		destinationBPartnerComposite = destinationBPartnerComposite.deepCopy()
-				.toBuilder()
+		createNewSubscriptions(bpartnerAndSubscriptions, destinationBPartnerComposite);
 
-				.locations(newLocations)
-				.contacts(newContacts)
-				.bankAccounts(newBPBankAccounts)
-				.build();
+		cancelCurrentSubscriptions(bpartnerAndSubscriptions);
 
-		bpCompositeRepo.save(destinationBPartnerComposite);
-
-		saveOrgChangeBPartnerComposite(orgChangeBPartnerComposite);
-
-		createFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite);
-
-		cancelSubscriptionsFor(orgChangeBPartnerComposite);
-
-		final OrgChangeHistoryId orgChangeHistoryId = orgChangeRepo.createOrgChangeHistory(request, orgMappingId, destinationBPartnerComposite);
+		final OrgChangeHistoryId orgChangeHistoryId = orgChangeHistoryRepo.createOrgChangeHistory(request, orgMappingId, destinationBPartnerComposite);
 
 		createOrgSwitchRequest(orgChangeHistoryId);
 	}
 
-	private void createFlatrateTerms(
-			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+	private void createNewSubscriptions(
+			@NonNull final OrgChangeBPartnerComposite bpartnerAndSubscriptions,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
-		createMembershipFlatrateTerms(
-				orgChangeBPartnerComposite,
-				destinationBPartnerComposite);
-
-		createNonMembershipFlatrateTerms(
-				orgChangeBPartnerComposite,
-				destinationBPartnerComposite);
+		createMembershipSubscriptionTerm(bpartnerAndSubscriptions, destinationBPartnerComposite);
+		createNonMembershipSubscriptionTerm(bpartnerAndSubscriptions, destinationBPartnerComposite);
 	}
 
-	private void cancelSubscriptionsFor(final OrgChangeBPartnerComposite orgChangeBPartnerComposite)
+	private void cancelCurrentSubscriptions(final OrgChangeBPartnerComposite bpartnerAndSubscriptions)
 	{
 		final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
 				.changeDate(Objects.requireNonNull(TimeUtil.asTimestamp(request.getStartDate())))
@@ -174,13 +169,13 @@ public class OrgChangeCommand
 				.action(IContractChangeBL.ChangeTerm_ACTION_Cancel)
 				.build();
 
-		orgChangeBPartnerComposite.getMembershipSubscriptions()
+		bpartnerAndSubscriptions.getMembershipSubscriptions()
 				.stream()
 				.map(FlatrateTerm::getFlatrateTermId)
 				.map(flatrateDAO::getById)
 				.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
 
-		orgChangeBPartnerComposite.getNonMembershipSubscriptions()
+		bpartnerAndSubscriptions.getNonMembershipSubscriptions()
 				.stream()
 				.map(FlatrateTerm::getFlatrateTermId)
 				.map(flatrateDAO::getById)
@@ -188,14 +183,14 @@ public class OrgChangeCommand
 
 	}
 
-	private void createNonMembershipFlatrateTerms(
+	private void createNonMembershipSubscriptionTerm(
 			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
 		orgChangeRepo.createNonMembershipSubscriptionTerm(orgChangeBPartnerComposite, destinationBPartnerComposite, request);
 	}
 
-	private void createMembershipFlatrateTerms(
+	private void createMembershipSubscriptionTerm(
 			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
@@ -206,9 +201,7 @@ public class OrgChangeCommand
 			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
-		final List<BPartnerLocation> locationsInSourcePartner = orgChangeBPartnerComposite
-				.getBPartnerComposite()
-				.getLocations();
+		final List<BPartnerLocation> locationsInSourcePartner = orgChangeBPartnerComposite.getLocations();
 
 		final DefaultLocations sourceDefaultLocations = orgChangeBPartnerComposite.getDefaultLocations();
 
@@ -262,9 +255,7 @@ public class OrgChangeCommand
 			final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			final BPartnerComposite destinationBPartnerComposite)
 	{
-		final List<BPartnerContact> contactsInSourcePartner = orgChangeBPartnerComposite
-				.getBPartnerComposite()
-				.getContacts();
+		final List<BPartnerContact> contactsInSourcePartner = orgChangeBPartnerComposite.getContacts();
 
 		final DefaultContacts sourceDefaultContacts = getDefaultContacts(orgChangeBPartnerComposite);
 		unmarkDefaultContactsFromDestination(sourceDefaultContacts, destinationBPartnerComposite);
@@ -318,9 +309,7 @@ public class OrgChangeCommand
 			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
-		final List<BPartnerBankAccount> sourceBankAccounts = orgChangeBPartnerComposite
-				.getBPartnerComposite()
-				.getBankAccounts();
+		final List<BPartnerBankAccount> sourceBankAccounts = orgChangeBPartnerComposite.getBankAccounts();
 
 		final List<BPartnerBankAccount> existingBankAccountsInDestinationPartner =
 				destinationBPartnerComposite
@@ -538,19 +527,17 @@ public class OrgChangeCommand
 		}
 	}
 
-	private void saveOrgChangeBPartnerComposite(@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite)
+	private void saveOrgChangeBPartnerComposite(@NonNull final OrgChangeBPartnerComposite bpartnerAndSubscriptions)
 	{
-		final BPartnerComposite bPartnerComposite = orgChangeBPartnerComposite.getBPartnerComposite();
-
-		bPartnerComposite.getBpartner().setOrgMappingId(orgChangeBPartnerComposite.getBPartnerOrgMappingId());
-
+		final BPartnerComposite bPartnerComposite = bpartnerAndSubscriptions.getBPartnerComposite();
+		bPartnerComposite.getBpartner().setOrgMappingId(bpartnerAndSubscriptions.getBPartnerOrgMappingId());
 		bpCompositeRepo.save(bPartnerComposite);
 	}
 
 	private I_R_Request createOrgSwitchRequest(@NonNull OrgChangeHistoryId orgChangeHistoryId)
 	{
 		final RequestTypeId requestTypeId = requestTypeDAO.retrieveOrgChangeRequestTypeId();
-		final I_AD_OrgChange_History orgChangeHistoryRecord = orgChangeRepo.getOrgChangeHistoryById(orgChangeHistoryId);
+		final I_AD_OrgChange_History orgChangeHistoryRecord = orgChangeHistoryRepo.getOrgChangeHistoryById(orgChangeHistoryId);
 
 		final OrgId orgId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_OrgTo_ID());
 

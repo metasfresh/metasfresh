@@ -67,6 +67,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -593,4 +594,39 @@ public class ProductDAO implements IProductDAO
 
 		saveRecord(product);
 	}
+
+	@Override
+	public Optional<de.metas.product.model.I_M_Product> getCounterpartProduct(
+			@NonNull final ProductId productId,
+			@NonNull final OrgId targetOrgId)
+	{
+		final int productMappingId = getProductMappingId(productId).orElse(-1);
+		if(productMappingId < 0)
+		{
+			return Optional.empty();
+		}
+
+		final ProductId targetProductId = queryBL.createQueryBuilder(de.metas.product.model.I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(de.metas.product.model.I_M_Product.COLUMNNAME_AD_Org_ID, targetOrgId)
+				.addEqualsFilter(de.metas.product.model.I_M_Product.COLUMNNAME_M_Product_Mapping_ID, productMappingId)
+				.orderByDescending(de.metas.product.model.I_M_Product.COLUMNNAME_M_Product_ID)
+				.create()
+				.firstId(ProductId::ofRepoIdOrNull);
+		if(productId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(getById(targetProductId, de.metas.product.model.I_M_Product.class));
+	}
+
+	public OptionalInt getProductMappingId(@NonNull final ProductId productId)
+	{
+		final de.metas.product.model.I_M_Product productRecord = getById(productId, de.metas.product.model.I_M_Product.class);
+		final int productMappingId = productRecord.getM_Product_Mapping_ID();
+		return productMappingId > 0 ? OptionalInt.of(productMappingId) : OptionalInt.empty();
+	}
+
+
 }

@@ -31,6 +31,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
@@ -51,9 +52,14 @@ public class OrgMappingId implements RepoIdAware
 	}
 
 	@Nullable
-	public static OrgMappingId ofRepoIdOrNull(@Nullable final int repoId)
+	public static OrgMappingId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new OrgMappingId(repoId) : null;
+	}
+
+	public static Optional<OrgMappingId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(@Nullable final OrgMappingId orgMappingId)
@@ -70,6 +76,7 @@ public class OrgMappingId implements RepoIdAware
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Org_Mapping_ID");
 	}
+
 
 	@JsonValue
 	public int toJson()

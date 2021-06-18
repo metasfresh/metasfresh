@@ -104,6 +104,10 @@ public interface IProductDAO extends ISingletonService
 
 	void clearIndividualMasterDataFromProduct(ProductId productId);
 
+	Optional<de.metas.product.model.I_M_Product> getCounterpartProduct(
+			@NonNull ProductId productId,
+			@NonNull OrgId targetOrgId);
+
 	@Value
 	class ProductQuery
 	{

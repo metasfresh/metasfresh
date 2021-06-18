@@ -38,23 +38,27 @@ public class OrgChangeService
 	private final OrgChangeRepository orgChangeRepo;
 	private final BPartnerCompositeRepository bpCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
+	private final OrgChangeHistoryRepository orgChangeHistoryRepo;
 
 	public OrgChangeService(
 			@NonNull final OrgChangeRepository orgChangeRepo,
 			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
-			@NonNull final OrgMappingRepository orgMappingRepo)
+			@NonNull final OrgMappingRepository orgMappingRepo,
+			@NonNull final OrgChangeHistoryRepository orgChangeHistoryRepo)
 	{
 		this.orgChangeRepo = orgChangeRepo;
 		this.bpCompositeRepo = bpCompositeRepo;
 		this.orgMappingRepo = orgMappingRepo;
+		this.orgChangeHistoryRepo = orgChangeHistoryRepo;
 	}
 
 	public void moveToNewOrg(@NonNull final OrgChangeRequest request)
 	{
 		OrgChangeCommand.builder()
-				.orgChangeRepo(orgChangeRepo)
-				.orgMappingRepo(orgMappingRepo)
 				.bpCompositeRepo(bpCompositeRepo)
+				.orgMappingRepo(orgMappingRepo)
+				.orgChangeRepo(orgChangeRepo)
+				.orgChangeHistoryRepo(orgChangeHistoryRepo)
 				.request(request)
 				.build()
 				.execute();
