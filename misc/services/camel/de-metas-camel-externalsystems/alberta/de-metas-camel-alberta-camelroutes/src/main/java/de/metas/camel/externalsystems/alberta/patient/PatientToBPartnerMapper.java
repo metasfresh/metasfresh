@@ -45,6 +45,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.asInstant;
 import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.asJavaLocalDate;
@@ -68,7 +69,7 @@ public class PatientToBPartnerMapper
 		final String locationIdentifier = formatBillingAddressExternalId(patientId);
 
 		final JsonRequestContact contact = new JsonRequestContact();
-		contact.setFirstName(patientBillingAddress.getName());
+		contact.setName(patientBillingAddress.getName());
 		// contact.setLocationIdentifier(locationIdentifier); todo
 
 		return Optional.of(JsonRequestContactUpsertItem.builder()
@@ -91,7 +92,7 @@ public class PatientToBPartnerMapper
 		final String deliveryLocationIdentifier = formatDeliveryAddressExternalId(patientId);
 
 		final JsonRequestContact contact = new JsonRequestContact();
-		contact.setFirstName(patientDeliveryAddress.getName());
+		contact.setName(patientDeliveryAddress.getName());
 		// contact.setLocationIdentifier(deliveryLocationIdentifier); todo
 
 		return Optional.of(JsonRequestContactUpsertItem.builder()
@@ -287,6 +288,7 @@ public class PatientToBPartnerMapper
 	private static JsonRequestContact patientToContact(@NonNull final Patient patient)
 	{
 		final JsonRequestContact contact = new JsonRequestContact();
+		contact.setName(new StringJoiner(" ").add(patient.getFirstName()).add(patient.getLastName()).toString());
 		contact.setFirstName(patient.getFirstName());
 		contact.setLastName(patient.getLastName());
 		contact.setEmail(patient.getEmail());

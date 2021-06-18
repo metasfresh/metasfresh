@@ -344,31 +344,6 @@ public interface I_AD_User
 	String COLUMNNAME_C_Job_ID = "C_Job_ID";
 
 	/**
-	 * Set Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Title_ID (int C_Title_ID);
-
-	/**
-	 * Get Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Title_ID();
-
-	@Nullable org.compiere.model.I_C_Title getC_Title();
-
-	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
-
-	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
-	String COLUMNNAME_C_Title_ID = "C_Title_ID";
-
-	/**
 	 * Set Comments.
 	 * Comments or additional information
 	 *
@@ -505,6 +480,31 @@ public interface I_AD_User
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Title_ID (int C_Title_ID);
+
+	/**
+	 * Get Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Title_ID();
+
+	@Nullable org.compiere.model.I_C_Title getC_Title();
+
+	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
+	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 
 	/**
 	 * Set Löschdatum.
@@ -909,31 +909,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsBillToContact_Default = new ModelColumn<>(I_AD_User.class, "IsBillToContact_Default", null);
 	String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
-
-	/**
-	 * Set Customer.
-	 * Indicates if this Business Partner is a Customer
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setIsCustomer (boolean IsCustomer);
-
-	/**
-	 * Get Customer.
-	 * Indicates if this Business Partner is a Customer
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	boolean isCustomer();
-
-	ModelColumn<I_AD_User, Object> COLUMN_IsCustomer = new ModelColumn<>(I_AD_User.class, "IsCustomer", null);
-	String COLUMNNAME_IsCustomer = "IsCustomer";
 
 	/**
 	 * Set Default Contact.
@@ -1592,6 +1567,31 @@ public interface I_AD_User
 	String COLUMNNAME_Registry = "Registry";
 
 	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_AD_User, Object> COLUMN_SeqNo = new ModelColumn<>(I_AD_User.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Set Vorgesetzter.
 	 * Supervisor for this user/organization - used for escalation and approval
 	 *
@@ -1706,31 +1706,6 @@ public interface I_AD_User
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	/**
-	 * Set URL.
-	 * Full URL address - e.g. https://www.metasfresh.com
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setURL (@Nullable java.lang.String URL);
-
-	/**
-	 * Get URL.
-	 * Full URL address - e.g. https://www.metasfresh.com
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	@Nullable java.lang.String getURL();
-
-	ModelColumn<I_AD_User, Object> COLUMN_URL = new ModelColumn<>(I_AD_User.class, "URL", null);
-	String COLUMNNAME_URL = "URL";
 
 	/**
 	 * Set User PIN.
