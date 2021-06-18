@@ -92,7 +92,7 @@ public class GetPatientsRouteTests extends CamelTestSupport
 	private static final String JSON_ALBERTA_GET_PHARMACY_RESPONSE = "/de/metas/camel/externalsystems/alberta/patient/35_GetPharmacyAlberta_5ab2390e9d69c74b68cf4f2d_Response.json";
 	private static final String JSON_ALBERTA_GET_USER = "/de/metas/camel/externalsystems/alberta/patient/35_GetUserAlberta_Response.json";
 
-	private static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/alberta/patient/60_UpsertBPartnerMetasfreshRequest.json";
+	public static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/alberta/patient/60_UpsertBPartnerMetasfreshRequest.json";
 	private static final String JSON_UPSERT_BPARTNER_RESPONSE = "/de/metas/camel/externalsystems/alberta/patient/70_UpsertBPartnerMetasfreshResponse.json";
 	private static final String JSON_UPSERT_BPARTNER_RELATIONS_REQUEST = "/de/metas/camel/externalsystems/alberta/patient/80_UpsertBPartnerRelationsMetasfreshRequest.json";
 
