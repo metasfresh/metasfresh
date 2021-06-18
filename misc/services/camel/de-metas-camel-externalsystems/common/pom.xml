@@ -32,7 +32,7 @@
         <version>10.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    
+
     <artifactId>de-metas-camel-externalsystems-common</artifactId>
     <version>10.0.0</version>
     <properties>
@@ -69,6 +69,11 @@
             <groupId>de.metas.common.pricing</groupId>
             <artifactId>de-metas-common-pricing</artifactId>
             <version>${metasfresh-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
     </dependencies>
 

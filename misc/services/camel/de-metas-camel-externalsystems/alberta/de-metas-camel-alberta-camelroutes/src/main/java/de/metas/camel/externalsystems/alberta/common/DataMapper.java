@@ -47,6 +47,7 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.StringJoiner;
 
 import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.asInstant;
 import static de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat.formatExternalId;
@@ -83,6 +84,7 @@ public class DataMapper
 		final JsonRequestContactUpsert jsonRequestContactUpsert;
 		{//contact
 			final JsonRequestContact requestContact = new JsonRequestContact();
+			requestContact.setName(new StringJoiner(" ").add(doctor.getFirstName()).add(doctor.getLastName()).toString());
 			requestContact.setFirstName(doctor.getFirstName());
 			requestContact.setLastName(doctor.getLastName());
 			requestContact.setPhone(doctor.getPhone());
@@ -160,7 +162,7 @@ public class DataMapper
 		final JsonRequestContactUpsert requestContactUpsert;
 		{//contact
 			final JsonRequestContact contact = new JsonRequestContact();
-			contact.setFirstName(pharmacy.getName());
+			contact.setName(pharmacy.getName());
 			contact.setPhone(pharmacy.getPhone());
 			contact.setEmail(pharmacy.getEmail());
 			contact.setFax(pharmacy.getFax());
@@ -306,7 +308,7 @@ public class DataMapper
 		final JsonRequestContactUpsert requestContactUpsert;
 		{//contact
 			final JsonRequestContact contact = new JsonRequestContact();
-			contact.setFirstName(nursingService.getName());
+			contact.setName(nursingService.getName());
 			contact.setPhone(nursingService.getPhone());
 			contact.setEmail(nursingService.getEmail());
 			contact.setFax(nursingService.getFax());
@@ -380,7 +382,7 @@ public class DataMapper
 		final JsonRequestContactUpsert requestContactUpsert;
 		{//contact
 			final JsonRequestContact contact = new JsonRequestContact();
-			contact.setFirstName(nursingHome.getName());
+			contact.setName(nursingHome.getName());
 			contact.setPhone(nursingHome.getPhone());
 			contact.setEmail(nursingHome.getEmail());
 			contact.setFax(nursingHome.getFax());
@@ -458,7 +460,7 @@ public class DataMapper
 		final JsonRequestContactUpsert requestContactUpsert;
 		{//contact
 			final JsonRequestContact contact = new JsonRequestContact();
-			contact.setFirstName(hospital.getName());
+			contact.setName(hospital.getName());
 			contact.setPhone(hospital.getPhone());
 			contact.setEmail(hospital.getEmail());
 			contact.setFax(hospital.getFax());
