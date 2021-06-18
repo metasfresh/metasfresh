@@ -30,6 +30,7 @@ import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.metas.camel.ebay.EbayConstants.OrderFulfillmentStatus;
 import de.metas.camel.ebay.EbayImportOrdersRouteContext;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 
@@ -52,14 +53,11 @@ public class OrderFilterProcessor implements Processor
 		}
 
 		log.debug("Checking order {} for further steps", order.getOrderId());
-
-		importOrdersRouteContext.setOrder(order);
-
-		boolean filtered = false;
-
-		if (!filtered)
-		{
-
+		
+		
+		//only import new orders.
+		if( OrderFulfillmentStatus.NOT_STARTED.name().equalsIgnoreCase(order.getOrderFulfillmentStatus()) ) {
+			
 			importOrdersRouteContext.setOrder(order);
 			exchange.getIn().setBody(order);
 

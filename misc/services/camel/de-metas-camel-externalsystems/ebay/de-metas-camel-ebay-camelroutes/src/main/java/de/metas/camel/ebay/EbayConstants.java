@@ -50,4 +50,19 @@ public interface EbayConstants
 	String DEFAULT_DELIVERY_VIA_RULE = "D"; // FIXME: magic name
 	BigDecimal DEFAULT_ORDER_LINE_DISCOUNT = BigDecimal.ZERO;
 
+	public enum OrderFulfillmentStatus
+	{
+		NOT_STARTED, IN_PROGRESS, FULFILLED;
+	}
+
+	public enum OrderPaymentStatus
+	{
+		FAILED, FULLY_REFUNDED, PAID, PARTIALLY_REFUNDED, PENDING;
+	}
+
+	public enum CancelState
+	{
+		CANCELED, IN_PROGRESS, NONE_REQUESTED;
+	}
+
 }
