@@ -142,7 +142,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 	}
 
 	@Test
-	public void use2MembershipContacts()
+	public void use2MembershipContacts_SameLastName()
 	{
 		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
 		final I_C_BPartner_QuickInput partner = createPartner(group);
@@ -171,10 +171,43 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(lastname + ", " +
-																firstName +
-																" And " +
-																firstName2);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName+" And " + firstName2 + " "+ lastname);
+		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
+	}
+
+	@Test
+	public void use2MembershipContacts_DifferentLastName()
+	{
+		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
+		final I_C_BPartner_QuickInput partner = createPartner(group);
+
+		final String firstName = "FirstName";
+		final String lastname = "LastName";
+
+		final boolean isMembership = true;
+		createUser(
+				partner,
+				firstName,
+				lastname,
+				greeting_MR,
+				isMembership);
+
+		final String firstName2 = "FirstName2";
+		final String lastname2 = "LastName2";
+
+		final boolean isMembership2 = true;
+		createUser(
+				partner,
+				firstName2,
+				lastname,
+				greeting_MRS,
+				isMembership2);
+
+		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
+
+		refresh(partner);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName+ " "
+														+ lastname+" And " + firstName2 + " "+ lastname2);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 

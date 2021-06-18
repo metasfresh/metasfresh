@@ -51,9 +51,9 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
-public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
+public class BPartnerBL_UpdateNameAndGreetingFromContactsTest
 {
 	// taken from de.metas.greeting.GreetingsMapTest
 	private I_C_Greeting greeting_MR;
@@ -97,7 +97,8 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 				firstName,
 				lastname,
 				greeting_MRS,
-				isMembership);
+				isMembership,
+				-1);
 
 		bPartnerBL.updateNameAndGreetingFromContacts(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
 
@@ -105,8 +106,6 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		assertThat(partner.getName()).isEqualTo(lastname + ", " + firstName);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
 	}
-
-
 
 	@Test
 	public void useFirstMembershipContact()
@@ -117,24 +116,24 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		final String firstName = "FirstName";
 		final String lastname = "LastName";
 
-
 		final boolean isMembership = true;
 		createUser(
 				partner,
 				firstName,
 				lastname,
 				greeting_MRS,
-				isMembership);
+				isMembership,
+				-1);
 
 		bPartnerBL.updateNameAndGreetingFromContacts(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
 
 		refresh(partner);
-		assertThat(partner.getName()).isEqualTo(lastname + ", " + firstName);
+		assertThat(partner.getName()).isEqualTo(firstName + " " + lastname);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
 	}
 
 	@Test
-	public void use2MembershipContacts()
+	public void use2MembershipContacts_SameLastname()
 	{
 		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
 		final I_C_BPartner partner = createPartner(group);
@@ -148,7 +147,8 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 				firstName,
 				lastname,
 				greeting_MR,
-				isMembership);
+				isMembership,
+				-1);
 
 		final String firstName2 = "FirstName2";
 
@@ -159,16 +159,94 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 				firstName2,
 				lastname,
 				greeting_MRS,
-				isMembership2);
+				isMembership2,
+				-1);
+
+		bPartnerBL.updateNameAndGreetingFromContacts(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+
+		refresh(partner);
+		assertThat(partner.getName()).isEqualTo(firstName + " And " + firstName2 + " " + lastname);
+		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
+	}
+
+	@Test
+	public void use2MembershipContacts_SameLastnameWithSeq()
+	{
+		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
+		final I_C_BPartner partner = createPartner(group);
+
+
+		final String firstName2 = "FirstName2";
+		final String lastname = "LastName";
+
+		createGreeting(GreetingStandardType.MRS);
+		final boolean isMembership2 = true;
+		createUser(
+				partner,
+				firstName2,
+				lastname,
+				greeting_MRS,
+				isMembership2,
+				2);
+
+
+		final String firstName = "FirstName";
+
+
+		final boolean isMembership = true;
+		createUser(
+				partner,
+				firstName,
+				lastname,
+				greeting_MR,
+				isMembership,
+				1);
+
 
 
 		bPartnerBL.updateNameAndGreetingFromContacts(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
 
 		refresh(partner);
-		assertThat(partner.getName()).isEqualTo(lastname + ", " +
-														firstName+
-														" And " +
-														firstName2);
+		assertThat(partner.getName()).isEqualTo(firstName + " And " + firstName2 + " " + lastname);
+		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
+	}
+
+	@Test
+	public void use2MembershipContacts_DifferentLastname()
+	{
+		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
+		final I_C_BPartner partner = createPartner(group);
+
+		final String firstName = "FirstName";
+		final String lastname = "LastName";
+
+		final boolean isMembership = true;
+		createUser(
+				partner,
+				firstName,
+				lastname,
+				greeting_MR,
+				isMembership,
+				-1);
+
+		final String firstName2 = "FirstName2";
+		final String lastname2 = "LastName2";
+
+		createGreeting(GreetingStandardType.MRS);
+		final boolean isMembership2 = true;
+		createUser(
+				partner,
+				firstName2,
+				lastname2,
+				greeting_MRS,
+				isMembership2,
+				-1);
+
+		bPartnerBL.updateNameAndGreetingFromContacts(BPartnerId.ofRepoId(partner.getC_BPartner_ID()));
+
+		refresh(partner);
+		assertThat(partner.getName()).isEqualTo(firstName + " "
+														+ lastname + " And " + firstName2 + " " + lastname2);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MR_AND_MRS.getC_Greeting_ID());
 	}
 
@@ -196,10 +274,11 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 
 	@SuppressWarnings("SameParameterValue")
 	private void createUser(final I_C_BPartner partner,
-							final String firstName,
-							final String lastname,
-							final I_C_Greeting greeting,
-							final boolean isMembership)
+			final String firstName,
+			final String lastname,
+			final I_C_Greeting greeting,
+			final boolean isMembership,
+			final int seqNo)
 	{
 		final I_AD_User user = newInstance(I_AD_User.class);
 		user.setC_BPartner_ID(partner.getC_BPartner_ID());
@@ -207,11 +286,11 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		user.setLastname(lastname);
 		user.setIsMembershipContact(isMembership);
 		user.setC_Greeting_ID(greeting.getC_Greeting_ID());
+		user.setSeqNo(seqNo);
 
 		save(user);
 
 	}
-
 
 	private I_C_Greeting createGreeting(@NonNull final GreetingStandardType standardType)
 	{
@@ -222,7 +301,6 @@ public class BPartnerBL_UpdateDateNameAndGreetingFromContactsTest
 		greeting.setGreetingStandardType(standardType.getCode());
 
 		save(greeting);
-
 
 		return greeting;
 	}

@@ -23,3 +23,13 @@ UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2021-06-18 13:05:54',
 /* DDL */ SELECT public.db_alter_table('AD_User','ALTER TABLE public.AD_User ADD COLUMN SeqNo NUMERIC(10)')
 ;
 
+-- 2021-06-18T10:59:38.214Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET DefaultValue='',Updated=TO_TIMESTAMP('2021-06-18 13:59:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=181
+;
+
+-- 2021-06-18T10:59:42.706Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('ad_field','SeqNo','NUMERIC(10)',null,null)
+;
+
