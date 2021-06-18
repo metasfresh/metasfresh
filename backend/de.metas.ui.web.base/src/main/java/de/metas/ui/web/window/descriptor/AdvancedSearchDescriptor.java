@@ -35,7 +35,7 @@ public class AdvancedSearchDescriptor
 {
 	public interface AdvancedSearchSelectionProcessor
 	{
-		void processSelection(Document document, final String fieldName, String selectionIdStr);
+		void processSelection(WindowId windowId, Document document, String bpartnerFieldName, String selectionIdStr);
 	}
 
 	@NonNull String tableName;

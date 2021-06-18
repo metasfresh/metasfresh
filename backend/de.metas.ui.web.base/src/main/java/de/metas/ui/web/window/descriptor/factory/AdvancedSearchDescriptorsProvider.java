@@ -1,19 +1,20 @@
 package de.metas.ui.web.window.descriptor.factory;
 
-import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.AdvancedSearchBPartnerProcessor;
 import de.metas.ui.web.window.descriptor.AdvancedSearchDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /*
@@ -42,34 +43,22 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AdvancedSearchDescriptorsProvider
 {
 	private static final Logger logger = LogManager.getLogger(AdvancedSearchDescriptorsProvider.class);
+	private static final String SYSCONFIG_BPARTNER_SEARCH_WINDOW_ID = "BPartner_Search_Window_ID";
+	private static final int DEFAULT_B_PARTNER_SEARCH_WINDOW_ID = 541045;
 
 	private final DocumentDescriptorFactory documentDescriptors;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final ConcurrentHashMap<String, AdvancedSearchDescriptor> advSearchDescriptorsByTableName = new ConcurrentHashMap<>();
 
 	AdvancedSearchDescriptorsProvider(
-			@NonNull final DocumentDescriptorFactory documentDescriptors)
+			@NonNull final DocumentDescriptorFactory documentDescriptors,
+			@NonNull final SqlViewFactory sqlViewFactory)
 	{
 		this.documentDescriptors = documentDescriptors;
-
 		// FIXME: hardcoded AdvancedSearchDescriptor for C_BPartner_Adv_Search_v
-		final WindowId searchAssistentWindowId = getSearchAssistantWindowId().orElse(null);
-		if(searchAssistentWindowId != null)
-		{
-			addAdvancedSearchDescriptor(AdvancedSearchDescriptor.of(I_C_BPartner.Table_Name, searchAssistentWindowId, new AdvancedSearchBPartnerProcessor()));
-		}
-		else
-		{
-			logger.warn("Advanced Search Assistant not registered for C_BPartner because no windows was found");
-		}
-	}
-
-	private Optional<WindowId> getSearchAssistantWindowId()
-	{
-		return RecordWindowFinder.newInstance("I_C_BPartner_Adv_Search_v.Table_Name") // FIXME generate model
-				.ignoreExcludeFromZoomTargetsFlag()
-				.findAdWindowId()
-				.map(WindowId::of);
+		final WindowId searchAssistantId = WindowId.of(sysConfigBL.getIntValue(SYSCONFIG_BPARTNER_SEARCH_WINDOW_ID, DEFAULT_B_PARTNER_SEARCH_WINDOW_ID));
+		addAdvancedSearchDescriptor(AdvancedSearchDescriptor.of(I_C_BPartner.Table_Name, searchAssistantId, new AdvancedSearchBPartnerProcessor(sqlViewFactory)));
 	}
 
 	public void addAdvancedSearchDescriptor(final AdvancedSearchDescriptor searchDescriptor)
