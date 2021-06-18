@@ -1,278 +1,278 @@
 {
-    "href": "http://slrordsvc.qa.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B2020-05-01T15:05:43.026Z..%5D&limit=50&offset=0",
-    "total": 261,
-    "next": "http://slrordsvc.qa.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B2020-05-01T15:05:43.026Z..%5D&limit=50&offset=50",
-    "limit": 50,
-    "offset": 0,
-    "orders": [
-        {
-            "orderId": "23-00011-84349",
-            "legacyOrderId": "6519398010",
-            "creationDate": "2020-06-28T04:34:08.000Z",
-            "lastModifiedDate": "2020-06-29T00:55:11.000Z",
-            "orderFulfillmentStatus": "NOT_STARTED",
-            "orderPaymentStatus": "PAID",
-            "sellerId": "nfc21_ebay",
-            "buyer": {
-                "username": "ebay_test_buyer",
-                "taxAddress": {
-                    "city": "Mülheim",
-                    "stateOrProvince": "NRW",
-                    "postalCode": "45481",
-                    "countryCode": "DE"
-                }
-            },
-            "pricingSummary": {
-                "priceSubtotal": {
-                    "value": "6.0",
-                    "currency": "EUR"
-                },
-                "deliveryCost": {
-                    "value": "6.0",
-                    "currency": "EUR"
-                },
-                "total": {
-                    "value": "12.0",
-                    "currency": "EUR"
-                }
-            },
-            "cancelStatus": {
-                "cancelState": "NONE_REQUESTED",
-                "cancelRequests": []
-            },
-            "paymentSummary": {
-                "totalDueSeller": {
-                    "value": "12.0",
-                    "currency": "EUR"
-                },
-                "refunds": [],
-                "payments": [
-                    {
-                        "paymentMethod": "PAYPAL",
-                        "paymentReferenceId": "58P81106KU4179737",
-                        "amount": {
-                            "value": "12.0",
-                            "currency": "EUR"
-                        },
-                        "paymentStatus": "PAID",
-                        "paymentHolds": [
-                            {
-                                "holdReason": "NEW_SELLER",
-                                "holdAmount": {
-                                    "value": "12.0",
-                                    "currency": "EUR"
-                                },
-                                "holdState": "HELD",
-                                "expectedReleaseDate": "2020-07-19T04:34:13.000Z",
-                                "releaseDate": "2020-06-28T04:34:13.000Z",
-                                "sellerActionsToRelease": [
-                                    {
-                                        "sellerActionToRelease": "MARK_AS_SHIPPED"
-                                    }
-                                ]
-                            }
-                        ]
-                    }
-                ]
-            },
-            "fulfillmentStartInstructions": [
-                {
-                    "fulfillmentInstructionsType": "SHIP_TO",
-                    "minEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
-                    "maxEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
-                    "ebaySupportedFulfillment": false,
-                    "shippingStep": {
-                        "shipTo": {
-                            "fullName": "Karl Käufer",
-                            "contactAddress": {
-                                "addressLine1": "Merziger Str. 6",
-                                "addressLine2": "Hinterhof",
-                                "city": "Mülheim an der Ruhr",
-                                "county": "",
-                                "stateOrProvince": "NRW",
-                                "postalCode": "45481",
-                                "countryCode": "DE"
-                            },
-                            "primaryPhone": {
-                                "phoneNumber": "931 269 2921"
-                            },
-                            "email": "karl@nfc21.de"
-                        },
-                        "shippingServiceCode": "ShippingMethodExpress"
-                    }
-                }
-            ],
-            "fulfillmentHrefs": [],
-            "lineItems": [
-                {
-                    "lineItemId": "10000000002944223",
-                    "legacyItemId": "290019784733",
-                    "legacyVariationId": "590006195628",
-                    "sku": "1000001",
-                    "title": "Aktion: NFC Anhänger ABS - 40 x 32 mm - NTAG215 - 180 Byte - blau",
-                    "lineItemCost": {
-                        "value": "1.0",
-                        "currency": "EUR"
-                    },
-                    "quantity": 1,
-                    "soldFormat": "FIXED_PRICE",
-                    "listingMarketplaceId": "EBAY_US",
-                    "purchaseMarketplaceId": "EBAY_US",
-                    "lineItemFulfillmentStatus": "NOT_STARTED",
-                    "total": {
-                        "value": "2.0",
-                        "currency": "EUR"
-                    },
-                    "deliveryCost": {
-                        "shippingCost": {
-                            "value": "1.0",
-                            "currency": "EUR"
-                        }
-                    },
-                    "appliedPromotions": [],
-                    "taxes": [
-                        {
-                            "amount": {
-                                "value": "0.0",
-                                "currency": "EUR"
-                            }
-                        }
-                    ],
-                    "ebayCollectAndRemitTaxes": [
-                        {
-                            "taxType": "STATE_SALES_TAX",
-                            "amount": {
-                                "value": "0.0",
-                                "currency": "EUR"
-                            },
-                            "collectionMethod": "NET"
-                        }
-                    ],
-                    "properties": {
-                        "buyerProtection": true
-                    },
-                    "lineItemFulfillmentInstructions": {
-                        "minEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
-                        "maxEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
-                        "shipByDate": "2020-07-01T06:59:59.000Z",
-                        "guaranteedDelivery": false
-                    }
-                },
-                {
-                    "lineItemId": "10000000002944323",
-                    "legacyItemId": "290019784734",
-                    "legacyVariationId": "590006195629",
-                    "sku": "1000001",
-                    "title": "Restposten: NFC Anhänger ABS - 40 x 32 mm - NTAG216 - 180 Byte - blau",
-                    "lineItemCost": {
-                        "value": "2.0",
-                        "currency": "EUR"
-                    },
-                    "quantity": 2,
-                    "soldFormat": "FIXED_PRICE",
-                    "listingMarketplaceId": "EBAY_US",
-                    "purchaseMarketplaceId": "EBAY_US",
-                    "lineItemFulfillmentStatus": "NOT_STARTED",
-                    "total": {
-                        "value": "4.0",
-                        "currency": "EUR"
-                    },
-                    "deliveryCost": {
-                        "shippingCost": {
-                            "value": "2.0",
-                            "currency": "EUR"
-                        }
-                    },
-                    "appliedPromotions": [],
-                    "taxes": [
-                        {
-                            "amount": {
-                                "value": "0.0",
-                                "currency": "EUR"
-                            }
-                        }
-                    ],
-                    "ebayCollectAndRemitTaxes": [
-                        {
-                            "taxType": "STATE_SALES_TAX",
-                            "amount": {
-                                "value": "0.0",
-                                "currency": "EUR"
-                            },
-                            "collectionMethod": "NET"
-                        }
-                    ],
-                    "properties": {
-                        "buyerProtection": true
-                    },
-                    "lineItemFulfillmentInstructions": {
-                        "minEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
-                        "maxEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
-                        "shipByDate": "2020-07-01T06:59:59.000Z",
-                        "guaranteedDelivery": false
-                    }
-                },
-                {
-                    "lineItemId": "10000000002944423",
-                    "legacyItemId": "290019784735",
-                    "legacyVariationId": "590006195630",
-                    "sku": "1000001",
-                    "title": "NFC Anhänger ABS - 40 x 32 mm - NTAG213 - 180 Byte - blau",
-                    "lineItemCost": {
-                        "value": "3.0",
-                        "currency": "EUR"
-                    },
-                    "quantity": 3,
-                    "soldFormat": "FIXED_PRICE",
-                    "listingMarketplaceId": "EBAY_US",
-                    "purchaseMarketplaceId": "EBAY_US",
-                    "lineItemFulfillmentStatus": "NOT_STARTED",
-                    "total": {
-                        "value": "6.0",
-                        "currency": "EUR"
-                    },
-                    "deliveryCost": {
-                        "shippingCost": {
-                            "value": "3.0",
-                            "currency": "EUR"
-                        }
-                    },
-                    "appliedPromotions": [],
-                    "taxes": [
-                        {
-                            "amount": {
-                                "value": "0.0",
-                                "currency": "EUR"
-                            }
-                        }
-                    ],
-                    "ebayCollectAndRemitTaxes": [
-                        {
-                            "taxType": "STATE_SALES_TAX",
-                            "amount": {
-                                "value": "0.0",
-                                "currency": "EUR"
-                            },
-                            "collectionMethod": "NET"
-                        }
-                    ],
-                    "properties": {
-                        "buyerProtection": true
-                    },
-                    "lineItemFulfillmentInstructions": {
-                        "minEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
-                        "maxEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
-                        "shipByDate": "2020-07-01T06:59:59.000Z",
-                        "guaranteedDelivery": false
-                    }
-                }
-            ],
-            "ebayCollectAndRemitTax": true,
-            "salesRecordReference": "9322",
-            "totalFeeBasisAmount": {
-                "value": "12.0",
-                "currency": "EUR"
-            }
-        }
-    ]
+	"href": "http://slrordsvc.qa.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B2020-05-01T15:05:43.026Z..%5D&limit=50&offset=0",
+	"total": 261,
+	"next": "http://slrordsvc.qa.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B2020-05-01T15:05:43.026Z..%5D&limit=50&offset=50",
+	"limit": 50,
+	"offset": 0,
+	"orders": [
+		{
+			"orderId": "23-00011-84349",
+			"legacyOrderId": "6519398010",
+			"creationDate": "2020-06-28T04:34:08.000Z",
+			"lastModifiedDate": "2020-06-29T00:55:11.000Z",
+			"orderFulfillmentStatus": "NOT_STARTED",
+			"orderPaymentStatus": "PAID",
+			"sellerId": "nfc21_ebay",
+			"buyer": {
+				"username": "ebay_test_buyer",
+				"taxAddress": {
+					"city": "Mülheim",
+					"stateOrProvince": "NRW",
+					"postalCode": "45481",
+					"countryCode": "DE"
+				}
+			},
+			"pricingSummary": {
+				"priceSubtotal": {
+					"value": "6.0",
+					"currency": "EUR"
+				},
+				"deliveryCost": {
+					"value": "6.0",
+					"currency": "EUR"
+				},
+				"total": {
+					"value": "12.0",
+					"currency": "EUR"
+				}
+			},
+			"cancelStatus": {
+				"cancelState": "NONE_REQUESTED",
+				"cancelRequests": []
+			},
+			"paymentSummary": {
+				"totalDueSeller": {
+					"value": "12.0",
+					"currency": "EUR"
+				},
+				"refunds": [],
+				"payments": [
+					{
+						"paymentMethod": "PAYPAL",
+						"paymentReferenceId": "58P81106KU4179737",
+						"amount": {
+							"value": "12.0",
+							"currency": "EUR"
+						},
+						"paymentStatus": "PAID",
+						"paymentHolds": [
+							{
+								"holdReason": "NEW_SELLER",
+								"holdAmount": {
+									"value": "12.0",
+									"currency": "EUR"
+								},
+								"holdState": "HELD",
+								"expectedReleaseDate": "2020-07-19T04:34:13.000Z",
+								"releaseDate": "2020-06-28T04:34:13.000Z",
+								"sellerActionsToRelease": [
+									{
+										"sellerActionToRelease": "MARK_AS_SHIPPED"
+									}
+								]
+							}
+						]
+					}
+				]
+			},
+			"fulfillmentStartInstructions": [
+				{
+					"fulfillmentInstructionsType": "SHIP_TO",
+					"minEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
+					"maxEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
+					"ebaySupportedFulfillment": false,
+					"shippingStep": {
+						"shipTo": {
+							"fullName": "Karl Käufer",
+							"contactAddress": {
+								"addressLine1": "Merziger Str. 6",
+								"addressLine2": "Hinterhof",
+								"city": "Mülheim an der Ruhr",
+								"county": "",
+								"stateOrProvince": "NRW",
+								"postalCode": "45481",
+								"countryCode": "DE"
+							},
+							"primaryPhone": {
+								"phoneNumber": "931 269 2921"
+							},
+							"email": "karl@nfc21.de"
+						},
+						"shippingServiceCode": "ShippingMethodExpress"
+					}
+				}
+			],
+			"fulfillmentHrefs": [],
+			"lineItems": [
+				{
+					"lineItemId": "10000000002944223",
+					"legacyItemId": "290019784733",
+					"legacyVariationId": "590006195628",
+					"sku": "1000001",
+					"title": "Aktion: NFC Anhänger ABS - 40 x 32 mm - NTAG215 - 180 Byte - blau",
+					"lineItemCost": {
+						"value": "1.0",
+						"currency": "EUR"
+					},
+					"quantity": 1,
+					"soldFormat": "FIXED_PRICE",
+					"listingMarketplaceId": "EBAY_US",
+					"purchaseMarketplaceId": "EBAY_US",
+					"lineItemFulfillmentStatus": "NOT_STARTED",
+					"total": {
+						"value": "2.0",
+						"currency": "EUR"
+					},
+					"deliveryCost": {
+						"shippingCost": {
+							"value": "1.0",
+							"currency": "EUR"
+						}
+					},
+					"appliedPromotions": [],
+					"taxes": [
+						{
+							"amount": {
+								"value": "0.0",
+								"currency": "EUR"
+							}
+						}
+					],
+					"ebayCollectAndRemitTaxes": [
+						{
+							"taxType": "STATE_SALES_TAX",
+							"amount": {
+								"value": "0.0",
+								"currency": "EUR"
+							},
+							"collectionMethod": "NET"
+						}
+					],
+					"properties": {
+						"buyerProtection": true
+					},
+					"lineItemFulfillmentInstructions": {
+						"minEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
+						"maxEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
+						"shipByDate": "2020-07-01T06:59:59.000Z",
+						"guaranteedDelivery": false
+					}
+				},
+				{
+					"lineItemId": "10000000002944323",
+					"legacyItemId": "290019784734",
+					"legacyVariationId": "590006195629",
+					"sku": "1000001",
+					"title": "Restposten: NFC Anhänger ABS - 40 x 32 mm - NTAG216 - 180 Byte - blau",
+					"lineItemCost": {
+						"value": "2.0",
+						"currency": "EUR"
+					},
+					"quantity": 2,
+					"soldFormat": "FIXED_PRICE",
+					"listingMarketplaceId": "EBAY_US",
+					"purchaseMarketplaceId": "EBAY_US",
+					"lineItemFulfillmentStatus": "NOT_STARTED",
+					"total": {
+						"value": "4.0",
+						"currency": "EUR"
+					},
+					"deliveryCost": {
+						"shippingCost": {
+							"value": "2.0",
+							"currency": "EUR"
+						}
+					},
+					"appliedPromotions": [],
+					"taxes": [
+						{
+							"amount": {
+								"value": "0.0",
+								"currency": "EUR"
+							}
+						}
+					],
+					"ebayCollectAndRemitTaxes": [
+						{
+							"taxType": "STATE_SALES_TAX",
+							"amount": {
+								"value": "0.0",
+								"currency": "EUR"
+							},
+							"collectionMethod": "NET"
+						}
+					],
+					"properties": {
+						"buyerProtection": true
+					},
+					"lineItemFulfillmentInstructions": {
+						"minEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
+						"maxEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
+						"shipByDate": "2020-07-01T06:59:59.000Z",
+						"guaranteedDelivery": false
+					}
+				},
+				{
+					"lineItemId": "10000000002944423",
+					"legacyItemId": "290019784735",
+					"legacyVariationId": "590006195630",
+					"sku": "1000001",
+					"title": "NFC Anhänger ABS - 40 x 32 mm - NTAG213 - 180 Byte - blau",
+					"lineItemCost": {
+						"value": "3.0",
+						"currency": "EUR"
+					},
+					"quantity": 3,
+					"soldFormat": "FIXED_PRICE",
+					"listingMarketplaceId": "EBAY_US",
+					"purchaseMarketplaceId": "EBAY_US",
+					"lineItemFulfillmentStatus": "NOT_STARTED",
+					"total": {
+						"value": "6.0",
+						"currency": "EUR"
+					},
+					"deliveryCost": {
+						"shippingCost": {
+							"value": "3.0",
+							"currency": "EUR"
+						}
+					},
+					"appliedPromotions": [],
+					"taxes": [
+						{
+							"amount": {
+								"value": "0.0",
+								"currency": "EUR"
+							}
+						}
+					],
+					"ebayCollectAndRemitTaxes": [
+						{
+							"taxType": "STATE_SALES_TAX",
+							"amount": {
+								"value": "0.0",
+								"currency": "EUR"
+							},
+							"collectionMethod": "NET"
+						}
+					],
+					"properties": {
+						"buyerProtection": true
+					},
+					"lineItemFulfillmentInstructions": {
+						"minEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
+						"maxEstimatedDeliveryDate": "2020-07-07T07:00:00.000Z",
+						"shipByDate": "2020-07-01T06:59:59.000Z",
+						"guaranteedDelivery": false
+					}
+				}
+			],
+			"ebayCollectAndRemitTax": true,
+			"salesRecordReference": "9322",
+			"totalFeeBasisAmount": {
+				"value": "12.0",
+				"currency": "EUR"
+			}
+		}
+	]
 }
