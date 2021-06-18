@@ -62,7 +62,6 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
-@org.junit.jupiter.api.Disabled
 public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 {
 	private static final String JSON_ALBERTA_MOCK_ORDERS = "10_AlbertaSalesOrders.json";
