@@ -3,7 +3,7 @@
   "targets": [
     {
       "externalReferenceType": "UserID",
-      "externalReferenceIdentifier": "ext-ALBERTA-a4adecb6-126a-4fa6-8fac-e80165ac8980"
+      "externalReferenceIdentifier": "ext-ALBERTA-attachment_createdBy"
     }
   ],
   "attachment": {
@@ -12,7 +12,7 @@
     "tags": [
       {
         "name": "alberta_attachment_id",
-        "value": "a4adecb6-126a-4fa6-8fac-e80165ac8980"
+        "value": "attachment_id"
       },
       {
         "name": "alberta_attachment_timestamp",

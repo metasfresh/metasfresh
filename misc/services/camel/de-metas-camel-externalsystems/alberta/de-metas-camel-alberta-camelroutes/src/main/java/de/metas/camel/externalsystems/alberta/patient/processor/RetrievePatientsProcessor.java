@@ -26,9 +26,7 @@ import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
-import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.util.CoalesceUtil;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.PatientApi;
 import io.swagger.client.model.Patient;
@@ -62,11 +60,11 @@ public class RetrievePatientsProcessor implements Processor
 		final GetPatientsRouteContext routeContext = ProcessorHelper
 				.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, GetPatientsRouteContext.class);
 
-		final String updatedAfter = CoalesceUtil.coalesce(
-				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
-				Instant.ofEpochMilli(0).toString());
+		final Instant updatedAfter = routeContext.getUpdatedAfterValue();
 
-		final List<Patient> patientsToImport = getPatientsToImport(routeContext, updatedAfter);
+		final List<Patient> patientsToImport = getPatientsToImport(routeContext, String.valueOf(updatedAfter));
+
+		routeContext.setUpdatedAfterValue(updatedAfter);
 
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
 		exchange.getIn().setBody(patientsToImport);

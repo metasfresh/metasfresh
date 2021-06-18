@@ -43,10 +43,12 @@ import io.swagger.client.model.NursingHome;
 import io.swagger.client.model.NursingService;
 import io.swagger.client.model.Payer;
 import io.swagger.client.model.Pharmacy;
+import io.swagger.client.model.Users;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.asInstant;
@@ -509,5 +511,29 @@ public class DataMapper
 		albertaContact.setGender(genderValue != null ? String.valueOf(genderValue) : null);
 
 		return albertaContact;
+	}
+
+	@NonNull
+	public static Optional<JsonRequestContactUpsertItem> userToBPartnerContact(@Nullable final Users users)
+	{
+		if (users == null)
+		{
+			return Optional.empty();
+		}
+
+		final JsonRequestContact contact = new JsonRequestContact();
+		contact.setName(new StringJoiner(" ").add(users.getFirstName()).add(users.getLastName()).toString());
+		contact.setFirstName(users.getFirstName());
+		contact.setLastName(users.getLastName());
+		contact.setEmail(users.getEmail());
+
+		final JsonAlbertaContact albertaContact = new JsonAlbertaContact();
+		albertaContact.setTimestamp(asInstant(users.getTimestamp()));
+
+		return Optional.of(JsonRequestContactUpsertItem.builder()
+								   .contactIdentifier(formatExternalId(users.getId()))
+								   .contact(contact)
+								   .jsonAlbertaContact(albertaContact)
+								   .build());
 	}
 }

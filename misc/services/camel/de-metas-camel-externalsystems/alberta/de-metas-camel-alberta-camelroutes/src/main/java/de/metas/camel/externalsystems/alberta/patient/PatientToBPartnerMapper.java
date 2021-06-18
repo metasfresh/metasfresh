@@ -36,6 +36,7 @@ import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContact;
 import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaPatient;
 import de.metas.common.bpartner.v2.request.alberta.JsonBPartnerRole;
 import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
+import de.metas.common.util.EmptyUtil;
 import io.swagger.client.model.CareGiver;
 import io.swagger.client.model.Patient;
 import io.swagger.client.model.PatientBillingAddress;
@@ -58,6 +59,7 @@ public class PatientToBPartnerMapper
 	@NonNull
 	public static Optional<JsonRequestContactUpsertItem> billingAddressToContactUpsertItem(
 			@NonNull final String patientId,
+			@NonNull final String patientName,
 			@Nullable final PatientBillingAddress patientBillingAddress)
 	{
 		if (patientBillingAddress == null)
@@ -68,7 +70,12 @@ public class PatientToBPartnerMapper
 		final String locationIdentifier = formatBillingAddressExternalId(patientId);
 
 		final JsonRequestContact contact = new JsonRequestContact();
-		contact.setFirstName(patientBillingAddress.getName());
+
+		final String computedName = EmptyUtil.isEmpty(patientBillingAddress.getName())
+				? patientName : patientBillingAddress.getName();
+
+		contact.setName(computedName);
+		contact.setFirstName(computedName);
 		// contact.setLocationIdentifier(locationIdentifier); todo
 
 		return Optional.of(JsonRequestContactUpsertItem.builder()
@@ -81,6 +88,7 @@ public class PatientToBPartnerMapper
 	@NonNull
 	public static Optional<JsonRequestContactUpsertItem> deliveryAddressToContactUpsertItem(
 			@NonNull final String patientId,
+			@NonNull final String patientName,
 			@Nullable final PatientDeliveryAddress patientDeliveryAddress)
 	{
 		if (patientDeliveryAddress == null)
@@ -91,7 +99,12 @@ public class PatientToBPartnerMapper
 		final String deliveryLocationIdentifier = formatDeliveryAddressExternalId(patientId);
 
 		final JsonRequestContact contact = new JsonRequestContact();
-		contact.setFirstName(patientDeliveryAddress.getName());
+
+		final String computedName = EmptyUtil.isEmpty(patientDeliveryAddress.getName())
+				? patientName : patientDeliveryAddress.getName();
+
+		contact.setName(computedName);
+		contact.setFirstName(computedName);
 		// contact.setLocationIdentifier(deliveryLocationIdentifier); todo
 
 		return Optional.of(JsonRequestContactUpsertItem.builder()

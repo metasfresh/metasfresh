@@ -20,32 +20,32 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.alberta.attachment.processor;
+package de.metas.camel.externalsystems.alberta.patient.processor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
-import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
-import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
+import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATE_AFTER_DOCUMENT;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER;
 
 public class RuntimeParametersProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
-		final GetAttachmentRouteContext routeContext =
-				ProcessorHelper.getPropertyOrThrowError(exchange, GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, GetAttachmentRouteContext.class);
+		final GetPatientsRouteContext routeContext = ProcessorHelper
+				.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, GetPatientsRouteContext.class);
 
 		final JsonRuntimeParameterUpsertItem runtimeParameterUpsertItem = JsonRuntimeParameterUpsertItem.builder()
 				.externalSystemParentConfigId(routeContext.getRequest().getExternalSystemConfigId())
 				.request(routeContext.getRequest().getCommand())
-				.name(PARAM_UPDATE_AFTER_DOCUMENT)
-				.value(String.valueOf(routeContext.getNextAttachmentImportStartDate()))
+				.name(PARAM_UPDATED_AFTER)
+				.value(String.valueOf(routeContext.getUpdatedAfterValue()))
 				.build();
 
 		final JsonESRuntimeParameterUpsertRequest request = JsonESRuntimeParameterUpsertRequest.builder()

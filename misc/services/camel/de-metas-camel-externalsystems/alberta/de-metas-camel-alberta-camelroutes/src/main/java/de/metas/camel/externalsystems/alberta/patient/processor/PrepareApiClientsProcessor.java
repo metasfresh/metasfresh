@@ -29,6 +29,7 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.client.ApiClient;
 import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.HospitalApi;
@@ -41,6 +42,8 @@ import io.swagger.client.api.UserApi;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+
+import java.time.Instant;
 
 /**
  * Prepares the Alberta client API and adds them to the processor.
@@ -67,6 +70,11 @@ public class PrepareApiClientsProcessor implements Processor
 				.tenant(tenant)
 				.build();
 
+		final String updatedAfter = CoalesceUtil.coalesce(
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+				Instant.ofEpochMilli(0).toString());
+
 		final GetPatientsRouteContext context = GetPatientsRouteContext.builder()
 				.doctorApi(new DoctorApi(apiClient))
 				.hospitalApi(new HospitalApi(apiClient))
@@ -79,6 +87,7 @@ public class PrepareApiClientsProcessor implements Processor
 				.albertaConnectionDetails(albertaConnectionDetails)
 				.rootBPartnerIdForUsers(rootBPartnerMFId)
 				.request(request)
+				.updatedAfterValue(Instant.parse(updatedAfter))
 				.build();
 
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, context);

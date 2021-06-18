@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.alberta.patient.processor.CreateBPRelation
 import de.metas.camel.externalsystems.alberta.patient.processor.CreateBPartnerReqProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.PrepareApiClientsProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.RetrievePatientsProcessor;
+import de.metas.camel.externalsystems.alberta.patient.processor.RuntimeParametersProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
@@ -51,12 +52,14 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 	public static final String GET_PATIENTS_ROUTE_ID = "Alberta-getPatients";
 	public static final String PROCESS_PATIENT_ROUTE_ID = "AlbertaPatients-processPatient";
 	public static final String IMPORT_BPARTNER_ROUTE_ID = "AlbertaPatients-importBPartner";
+	public static final String UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Alberta-upsertRuntimeParams";
 
 	public static final String PREPARE_PATIENTS_API_PROCESSOR_ID = "AlbertaPatients-PreparePatientsApiProcessorId";
 	public static final String RETRIEVE_PATIENTS_PROCESSOR_ID = "AlbertaPatients-GetPatientsFromAlbertaProcessorId";
 	public static final String CREATE_UPSERT_BPARTNER_REQUEST_PROCESSOR_ID = "AlbertaPatients-CreateBPartnerUpsertReqProcessorId";
 	public static final String CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID = "Alberta-CreateBPartnerRelationReqProcessorId";
 	public static final String IMPORT_BPARTNER_PROCESSOR_ID = "AlbertaPatients-ImportBPartnerProcessorId";
+	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "Alberta-RuntimeParamsProcessorId";
 
 	@Override
 	public void configure()
@@ -77,6 +80,7 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 					.stopOnException()
 					.to(direct(PROCESS_PATIENT_ROUTE_ID))
 				.end()
+				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.process(this::resetBodyToJsonExternalRequest)
 				.to(direct(GET_DOCUMENTS_ROUTE_ID));
 
@@ -108,6 +112,12 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
 				.process(this::gatherBPartnerResponseItems);
+
+		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
+				.routeId(UPSERT_RUNTIME_PARAMS_ROUTE_ID)
+				.log("Route invoked")
+				.process(new RuntimeParametersProcessor()).id(RUNTIME_PARAMS_PROCESSOR_ID)
+				.to(direct(ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID));
 		//@formatter:on
 	}
 

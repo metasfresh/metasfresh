@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConst
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.CoalesceUtil;
 import io.swagger.client.ApiClient;
 import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.OrderApi;
@@ -37,6 +38,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -61,7 +63,11 @@ public class RetrieveOrdersProcessor implements Processor
 		final String apiKey = request.getParameters().get(ExternalSystemConstants.PARAM_API_KEY);
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 		final String tenant = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT);
-		final String updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);
+
+		final String updatedAfter = CoalesceUtil.coalesce(
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+				Instant.ofEpochMilli(0).toString());
 
 		final AlbertaConnectionDetails albertaConnectionDetails = AlbertaConnectionDetails.builder()
 				.apiKey(apiKey)
@@ -95,6 +101,9 @@ public class RetrieveOrdersProcessor implements Processor
 		}
 
 		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
+		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_UPDATED_AFTER, updatedAfter);
+		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_COMMAND, request.getCommand());
+		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID, request.getExternalSystemConfigId());
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_CONN_DETAILS, albertaConnectionDetails);
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PHARMACY_API, new PharmacyApi(apiClient));
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_DOCTOR_API, new DoctorApi(apiClient));

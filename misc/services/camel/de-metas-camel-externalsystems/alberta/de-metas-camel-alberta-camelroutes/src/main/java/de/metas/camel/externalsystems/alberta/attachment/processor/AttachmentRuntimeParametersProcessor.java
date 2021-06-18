@@ -22,43 +22,36 @@
 
 package de.metas.camel.externalsystems.alberta.attachment.processor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
-import io.swagger.client.ApiException;
-import io.swagger.client.api.DocumentApi;
-import io.swagger.client.model.Document;
-import lombok.NonNull;
+import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import javax.annotation.Nullable;
-import java.util.List;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATE_AFTER_ATTACHMENT;
 
-public class GetDocumentsProcessor implements Processor
+public class AttachmentRuntimeParametersProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
-		final GetAttachmentRouteContext routeContext = ProcessorHelper
-				.getPropertyOrThrowError(exchange, GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, GetAttachmentRouteContext.class);
+		final GetAttachmentRouteContext routeContext =
+				ProcessorHelper.getPropertyOrThrowError(exchange, GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, GetAttachmentRouteContext.class);
 
-		final List<Document> documents = getDocumentsOrNull(routeContext);
+		final JsonRuntimeParameterUpsertItem runtimeParameterUpsertItem = JsonRuntimeParameterUpsertItem.builder()
+				.externalSystemParentConfigId(routeContext.getRequest().getExternalSystemConfigId())
+				.request(routeContext.getRequest().getCommand())
+				.name(PARAM_UPDATE_AFTER_ATTACHMENT)
+				.value(String.valueOf(routeContext.getNextAttachmentImportStartDate()))
+				.build();
 
-		exchange.getIn().setBody(documents);
-	}
+		final JsonESRuntimeParameterUpsertRequest request = JsonESRuntimeParameterUpsertRequest.builder()
+				.runtimeParameterUpsertItems(ImmutableList.of(runtimeParameterUpsertItem))
+				.build();
 
-	@Nullable
-	final List<Document> getDocumentsOrNull(
-			@NonNull final GetAttachmentRouteContext context) throws ApiException
-	{
-		final String apiKey = context.getApiKey();
-		final DocumentApi documentApi = context.getDocumentApi();
-
-		final var documents = documentApi.getAllDocuments(apiKey, context.getCreatedAfterDocument());
-
-		return documents == null || documents.isEmpty()
-				? null
-				: documents;
+		exchange.getIn().setBody(request);
 	}
 }

@@ -3,15 +3,15 @@
   "targets": [
     {
       "externalReferenceType": "BPartner",
-      "externalReferenceIdentifier": "ext-ALBERTA-a4adecb6-126a-4fa6-8fac-e80165ac4264"
+      "externalReferenceIdentifier": "ext-ALBERTA-document_patientId"
     },
     {
       "externalReferenceType": "UserID",
-      "externalReferenceIdentifier": "ext-ALBERTA-5a6ca8b6456c14307cb9ae35"
+      "externalReferenceIdentifier": "ext-ALBERTA-document_createdBy"
     },
     {
       "externalReferenceType": "UserID",
-      "externalReferenceIdentifier": "ext-ALBERTA-5a6ca8b6456c14307cb9ae35"
+      "externalReferenceIdentifier": "ext-ALBERTA-document_updatedBy"
     }
   ],
   "attachment": {
@@ -20,7 +20,7 @@
     "tags": [
       {
         "name": "alberta_document_id",
-        "value": "a4adecb6-126a-4fa6-8fac-e80165ac8980"
+        "value": "document_id"
       },
       {
         "name": "alberta_document_archived",

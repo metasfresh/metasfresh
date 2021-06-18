@@ -25,16 +25,16 @@ package de.metas.camel.externalsystems.alberta.attachment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentRequest;
 import io.swagger.client.ApiException;
 import io.swagger.client.JSON;
 import io.swagger.client.api.AttachmentApi;
 import io.swagger.client.api.DocumentApi;
+import io.swagger.client.api.UserApi;
 import io.swagger.client.model.ArrayOfAttachments;
 import io.swagger.client.model.ArrayOfDocuments;
+import io.swagger.client.model.Users;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -42,7 +42,6 @@ import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
-import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.io.BufferedReader;
@@ -53,21 +52,24 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.time.Instant;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static de.metas.camel.externalsystems.alberta.attachment.GetAlbertaAttachmentRoute.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static org.mockito.ArgumentMatchers.any;
 
 public class GetAttachmentsRouteTests extends CamelTestSupport
 {
 	private static final String MOCK_ATTACHMENT_REQUEST_DOC = "mock:attachmentRequest_Document";
 	private static final String MOCK_ATTACHMENT_REQUEST_ATTACHMENT = "mock:attachmentRequest_Attachment";
+
+	private static final String MOCK_UPSERT_BPARTNER_REQUEST_DOC = "mock:upsertBPartnerRequest_Document";
+	private static final String MOCK_UPSERT_BPARTNER_REQUEST_ATTACHMENT = "mock:upsertBPartnerRequest_Attachment";
+
 	private static final String EXTERNAL_SYSTEM_REQUEST = "/de/metas/camel/externalsystems/alberta/attachment/5_ExternalSystemRequest.json";
 
 	private static final String JSON_ALBERTA_GET_DOCUMENT = "/de/metas/camel/externalsystems/alberta/attachment/10_GetDocumentAlberta_Response.json";
 	private static final String JSON_ALBERTA_GET_ATTACHMENT = "/de/metas/camel/externalsystems/alberta/attachment/20_GetAttachmentAlberta_Response.json";
+	private static final String JSON_ALBERTA_GET_USER = "/de/metas/camel/externalsystems/alberta/patient/35_GetUserAlberta_Response.json";
 	private static final String MOCK_JSON_ALBERTA_DATA_PATH = "src/test/resources/de/metas/camel/externalsystems/alberta/attachment/test.txt";
 
 	private static final String JSON_ATTACHMENT_METASFRESH_REQUEST = "/de/metas/camel/externalsystems/alberta/attachment/40_JsonAttachmentMetasfreshRequest.json";
@@ -108,7 +110,8 @@ public class GetAttachmentsRouteTests extends CamelTestSupport
 		final MockDocumentMetasfreshResponse mockDocumentMetasfreshResponse = new MockDocumentMetasfreshResponse();
 		final MockAttachmentMetasfreshResponse mockAttachmentMetasfreshResponse = new MockAttachmentMetasfreshResponse();
 		final MockRuntimeParametersProcessor mockRuntimeParametersProcessor = new MockRuntimeParametersProcessor();
-		prepareRouteForTesting(mockDocumentMetasfreshResponse, mockAttachmentMetasfreshResponse, mockRuntimeParametersProcessor);
+		final MockBPartnerUpsertResponse mockBPartnerUpsertResponse = new MockBPartnerUpsertResponse();
+		prepareRouteForTesting(mockDocumentMetasfreshResponse, mockAttachmentMetasfreshResponse, mockRuntimeParametersProcessor, mockBPartnerUpsertResponse);
 
 		context.start();
 
@@ -137,12 +140,13 @@ public class GetAttachmentsRouteTests extends CamelTestSupport
 	private void prepareRouteForTesting(
 			final GetAttachmentsRouteTests.MockDocumentMetasfreshResponse mockDocumentMetasfreshResponse,
 			final GetAttachmentsRouteTests.MockAttachmentMetasfreshResponse mockAttachmentMetasfreshResponse,
-			final MockRuntimeParametersProcessor mockRuntimeParametersProcessor) throws Exception
+			final MockRuntimeParametersProcessor mockRuntimeParametersProcessor,
+			final GetAttachmentsRouteTests.MockBPartnerUpsertResponse mockBPartnerUpsertResponse) throws Exception
 	{
 		AdviceWith.adviceWith(context, GetAlbertaAttachmentRoute.GET_DOCUMENTS_ROUTE_ID,
 							  advice -> advice.weaveById(GetAlbertaAttachmentRoute.RETRIEVE_DOCUMENTS_PROCESSOR_ID)
-										  .replace()
-										  .process(new MockPrepareContext()));
+									  .replace()
+									  .process(new MockPrepareContext()));
 
 		AdviceWith.adviceWith(context, GetAlbertaAttachmentRoute.DOCUMENT_PROCESSOR_ID,
 							  advice -> {
@@ -150,22 +154,38 @@ public class GetAttachmentsRouteTests extends CamelTestSupport
 										  .after()
 										  .to(MOCK_ATTACHMENT_REQUEST_DOC);
 
+								  advice.weaveById(GetAlbertaAttachmentRoute.DOCUMENT_TO_USER_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_UPSERT_BPARTNER_REQUEST_DOC);
+
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(mockBPartnerUpsertResponse);
+
 								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID)
 										  .skipSendToOriginalEndpoint()
 										  .process(mockDocumentMetasfreshResponse);
 
-								  advice.interceptSendToEndpoint("direct:" + UPSERT_RUNTIME_PARAMS_ROUTE_ID)
+								 /* advice.interceptSendToEndpoint("direct:" + UPSERT_RUNTIME_PARAMS_ROUTE_ID)
 										  .skipSendToOriginalEndpoint()
-										  .process(mockRuntimeParametersProcessor);
+										  .process(mockRuntimeParametersProcessor);*/
 							  });
 
 		AdviceWith.adviceWith(context, GetAlbertaAttachmentRoute.GET_ATTACHMENTS_ROUTE_ID,
 							  advice -> advice.weaveById(GetAlbertaAttachmentRoute.RETRIEVE_ATTACHMENTS_PROCESSOR_ID)
-											  .replace()
-											  .process(new MockPrepareAttachmentProcessor()));
+									  .replace()
+									  .process(new MockPrepareAttachmentProcessor()));
 
 		AdviceWith.adviceWith(context, GetAlbertaAttachmentRoute.ATTACHMENT_PROCESSOR_ID,
 							  advice -> {
+								  advice.weaveById(GetAlbertaAttachmentRoute.ATTACHMENT_TO_USER_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_UPSERT_BPARTNER_REQUEST_ATTACHMENT);
+
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(mockBPartnerUpsertResponse);
+
 								  advice.weaveById(GetAlbertaAttachmentRoute.PREPARE_ATTACHMENT_API_PROCESSOR_ID)
 										  .after()
 										  .to(MOCK_ATTACHMENT_REQUEST_ATTACHMENT);
@@ -173,10 +193,6 @@ public class GetAttachmentsRouteTests extends CamelTestSupport
 								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID)
 										  .skipSendToOriginalEndpoint()
 										  .process(mockAttachmentMetasfreshResponse);
-
-								  advice.interceptSendToEndpoint("direct:" + UPSERT_RUNTIME_PARAMS_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .process(mockRuntimeParametersProcessor);
 							  });
 	}
 
@@ -197,24 +213,24 @@ public class GetAttachmentsRouteTests extends CamelTestSupport
 	private static class MockPrepareContext implements Processor
 	{
 		@Override
-		public void process(@NonNull final Exchange exchange) throws ApiException
+		public void process(@NonNull final Exchange exchange) throws ApiException, IOException
 		{
 			final JSON json = new JSON();
+			final ObjectMapper objectMapper = new ObjectMapper();
 
-			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest.builder()
-					.externalSystemName(JsonExternalSystemName.of("externalSystem"))
-					.externalSystemConfigId(JsonMetasfreshId.of(1))
-					.orgCode("orgCode")
-					.command("command")
-					.build();
+			final InputStream request = this.getClass().getResourceAsStream(EXTERNAL_SYSTEM_REQUEST);
+			final JsonExternalSystemRequest externalSystemRequest = objectMapper.readValue(request, JsonExternalSystemRequest.class);
 
 			final GetAttachmentRouteContext context = GetAttachmentRouteContext.builder()
 					.orgCode("orgCode")
 					.apiKey("apiKey")
+					.tenant("tenant")
+					.rootBPartnerIdForUsers(JsonMetasfreshId.of(1))
 					.attachmentApi(prepareAttachmentApi(json))
 					.documentApi(prepareDocumentApi(json))
+					.userApi(prepareUserApi(json))
 					.createdAfter("2021-01-01T02:17:20Z")
-					.nextAttachmentImportStartDate(Instant.parse("2021-01-01T02:17:20Z"))
+					.nextAttachmentImportStartDate(String.valueOf(Instant.parse("2021-01-01T02:17:20Z")))
 					.request(externalSystemRequest)
 					.build();
 
@@ -266,6 +282,19 @@ public class GetAttachmentsRouteTests extends CamelTestSupport
 		return documentApi;
 	}
 
+	@NonNull
+	private static UserApi prepareUserApi(@NonNull final JSON json) throws ApiException
+	{
+		final UserApi userApi = Mockito.mock(UserApi.class);
+		final String jsonString = loadAsString(JSON_ALBERTA_GET_USER);
+		final Users users = json.deserialize(jsonString, Users.class);
+
+		Mockito.when(userApi.getUser(any(String.class), any(String.class), any(String.class)))
+				.thenReturn(users);
+
+		return userApi;
+	}
+
 	private static class MockDocumentMetasfreshResponse implements Processor
 	{
 		private int called = 0;
@@ -312,4 +341,14 @@ public class GetAttachmentsRouteTests extends CamelTestSupport
 				.collect(Collectors.joining("\n"));
 	}
 
+	private static class MockBPartnerUpsertResponse implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
 }
