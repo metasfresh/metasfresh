@@ -119,7 +119,6 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 	@Test
 	public void useFirstMembershipContact()
 	{
-
 		final I_C_BP_Group group = createGroup(MembershipContactBPartnerNameAndGreetingStrategy.ID);
 		final I_C_BPartner_QuickInput partner = createPartner(group);
 
@@ -137,7 +136,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		bPartnerQuickInputService.updateNameAndGreeting(BPartnerQuickInputId.ofRepoId(partner.getC_BPartner_QuickInput_ID()));
 
 		refresh(partner);
-		assertThat(partner.getBPartnerName()).isEqualTo(lastname + ", " + firstName);
+		assertThat(partner.getBPartnerName()).isEqualTo(firstName + " " + lastname);
 		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
 	}
 
@@ -199,7 +198,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 		createUser(
 				partner,
 				firstName2,
-				lastname,
+				lastname2,
 				greeting_MRS,
 				isMembership2);
 
