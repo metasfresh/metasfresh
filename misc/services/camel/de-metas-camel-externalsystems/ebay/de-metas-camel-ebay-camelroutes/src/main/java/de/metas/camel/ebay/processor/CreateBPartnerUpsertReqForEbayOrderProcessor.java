@@ -67,7 +67,7 @@ public class CreateBPartnerUpsertReqForEbayOrderProcessor implements Processor
 	{
 
 		final EbayImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, EbayImportOrdersRouteContext.class);
-		log.debug("Create BPartner for ebay order {}", importOrdersRouteContext.getOrder().getOrderId());
+		log.debug("Upsert BPartner for ebay order {}", importOrdersRouteContext.getOrder().getOrderId());
 
 		// prepare identifiers
 		final Order order = importOrdersRouteContext.getOrder();
