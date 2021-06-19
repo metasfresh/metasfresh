@@ -213,16 +213,16 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			if (DocSubType == null || DocSubType.length() == 0)
 			{
-				orderBL.setDocTypeTargetId(this, DocSubType_OnCredit);
+				orderBL.setSODocTypeTargetId(this, DocSubType_OnCredit);
 			}
 			else
 			{
-				orderBL.setDocTypeTargetId(this, DocSubType);
+				orderBL.setSODocTypeTargetId(this, DocSubType);
 			}
 		}
 		else
 		{
-			orderBL.setDocTypeTargetId(this);
+			orderBL.setPODocTypeTargetId(this, null);
 		}
 	}    // MOrder
 
@@ -408,7 +408,7 @@ public class MOrder extends X_C_Order implements IDocument
 	@Deprecated
 	public void setC_DocTypeTarget_ID(final String DocSubType_x)
 	{
-		orderBL.setDocTypeTargetId(this, DocSubType_x);
+		orderBL.setSODocTypeTargetId(this, DocSubType_x);
 	}    // setC_DocTypeTarget_ID
 
 	/**
@@ -978,7 +978,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// Default Document Type
 		if (getC_DocTypeTarget_ID() <= 0)
 		{
-			orderBL.setDocTypeTargetId(this, DocSubType_Standard);
+			orderBL.setSODocTypeTargetId(this, DocSubType_Standard);
 		}
 
 		// Default Payment Term

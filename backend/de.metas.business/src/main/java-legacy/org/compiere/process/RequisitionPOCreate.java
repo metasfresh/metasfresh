@@ -362,7 +362,7 @@ public class RequisitionPOCreate extends JavaProcess
 			m_order = new MOrder(getCtx(), 0, get_TrxName());
 			m_order.setDatePromised(DateRequired);
 			m_order.setIsSOTrx(false);
-			orderBL.setDocTypeTargetId(m_order);
+			orderBL.setPODocTypeTargetId(m_order, null);
 			m_order.setBPartner(m_bpartner);
 			m_order.setM_PriceList_ID(M_PriceList_ID);
 			

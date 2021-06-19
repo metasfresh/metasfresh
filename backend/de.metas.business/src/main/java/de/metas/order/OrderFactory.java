@@ -138,7 +138,7 @@ public class OrderFactory
 
 			if (order.getC_DocTypeTarget_ID() <= 0)
 			{
-				orderBL.setDocTypeTargetId(order);
+				orderBL.setPODocTypeTargetId(order, null);
 			}
 
 			if (order.getBill_BPartner_ID() <= 0)

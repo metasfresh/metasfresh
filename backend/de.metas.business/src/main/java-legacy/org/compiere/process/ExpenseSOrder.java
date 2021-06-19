@@ -211,7 +211,7 @@ public class ExpenseSOrder extends JavaProcess
 			log.info("New Order for " + bp + ", Project=" + tel.getC_Project_ID());
 			m_order = new MOrder(getCtx(), 0, get_TrxName());
 			m_order.setAD_Org_ID(tel.getAD_Org_ID());
-			orderBL.setDocTypeTargetId(m_order, MOrder.DocSubType_OnCredit);
+			orderBL.setSODocTypeTargetId(m_order, MOrder.DocSubType_OnCredit);
 			//
 			m_order.setBPartner(bp);
 			if (m_order.getC_BPartner_Location_ID() == 0)

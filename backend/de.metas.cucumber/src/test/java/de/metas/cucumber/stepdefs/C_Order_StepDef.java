@@ -22,29 +22,44 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
+import de.metas.order.process.C_Order_CreatePOFromSOs;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
-import lombok.Data;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Product;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 
 public class C_Order_StepDef
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final StepDefData<I_C_BPartner> bpartnerTable;
 	private final StepDefData<I_C_Order> orderTable;
 
@@ -84,5 +99,72 @@ public class C_Order_StepDef
 		final I_C_Order order = orderTable.get(orderIdentifier);
 		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	@Given("generate PO from SO is invoked with parameters:")
+	public void generate_PO_from_SO_invoked(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String purchaseType = DataTableUtil.extractStringForColumnName(tableRow, "PurchaseType");
+
+			final I_C_Order order = orderTable.get(orderIdentifier);
+			final I_C_BPartner bpartner = bpartnerTable.get(bpartnerIdentifier);
+
+			final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(C_Order_CreatePOFromSOs.class);
+
+			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
+			processInfoBuilder.setAD_Process_ID(processId.getRepoId());
+			processInfoBuilder.addParameter("DatePromised_From", Timestamp.from(Instant.now()));
+			processInfoBuilder.addParameter("DatePromised_To", Timestamp.from(Instant.now()));
+			processInfoBuilder.addParameter("C_BPartner_ID", bpartner.getC_BPartner_ID());
+			processInfoBuilder.addParameter("C_Order_ID", order.getC_Order_ID());
+			processInfoBuilder.addParameter("TypeOfPurchase", purchaseType);
+
+			processInfoBuilder
+					.buildAndPrepareExecution()
+					.executeSync()
+					.getResult();
+		}
+
+	}
+
+	@Then("the order is created:")
+	public void thePurchaseOrderIsCreated(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String linkedOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Link_Order_ID + ".Identifier");
+
+			final I_C_Order purchaseOrder = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_C_Order.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
+					.create().firstOnly(I_C_Order.class);
+
+			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx);
+			assertThat(purchaseOrder.isSOTrx()).isEqualTo(isSOTrx);
+
+			final I_C_DocType docType =  load(purchaseOrder.getC_DocTypeTarget_ID(), I_C_DocType.class);
+
+			final String docBaseType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocBaseType);
+			assertThat(docType.getDocBaseType()).isEqualTo(docBaseType);
+
+			final String docSubType = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocSubType);
+			assertThat(docType.getDocSubType()).isEqualTo(docSubType);
+		}
+	}
+
+	@Then("the sales order identified by {string} is closed")
+	public void theSalesOrderIdentifiedByO_IsClosed(@NonNull final String orderIdentifier)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		assertThat(salesOrder.getDocStatus()).isEqualTo(IDocument.STATUS_Closed);
 	}
 }

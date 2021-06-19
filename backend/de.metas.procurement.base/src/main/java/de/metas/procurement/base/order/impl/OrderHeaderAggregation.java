@@ -111,7 +111,7 @@ public class OrderHeaderAggregation
 		// Doc type
 		order.setAD_Org_ID(adOrgId);
 		order.setIsSOTrx(false);
-		orderBL.setDocTypeTargetId(order);
+		orderBL.setPODocTypeTargetId(order, null);
 
 		//
 		// Warehouse

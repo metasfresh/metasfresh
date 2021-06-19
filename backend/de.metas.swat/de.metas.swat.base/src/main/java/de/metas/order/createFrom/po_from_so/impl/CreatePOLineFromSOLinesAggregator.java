@@ -5,10 +5,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import de.metas.order.OrderId;
+import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
@@ -61,10 +65,13 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 {
 	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final transient IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
 
 	private final I_C_Order purchaseOrder;
 
 	private final String purchaseQtySource;
+
+	private final PurchaseTypeEnum purchaseType;
 
 	private final Map<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
 
@@ -72,11 +79,13 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	 *
 	 * @param purchaseQtySource column name of the sales order line column to get the qty from. Can be either can be either QtyOrdered or QtyReserved.
 	 */
-	/* package */public CreatePOLineFromSOLinesAggregator(final I_C_Order purchaseOrder, final String purchaseQtySource)
+	/* package */public CreatePOLineFromSOLinesAggregator(final I_C_Order purchaseOrder, final String purchaseQtySource, final PurchaseTypeEnum purchaseType)
 	{
 		this.purchaseOrder = purchaseOrder;
 
 		this.purchaseQtySource = purchaseQtySource;
+
+		this.purchaseType = purchaseType;
 	}
 
 	@Override
@@ -160,11 +169,18 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	@Override
 	protected void closeGroup(final I_C_OrderLine purchaseOrderLine)
 	{
+		final Set<OrderId> salesOrdersToBeClosed = new HashSet<>();
 		InterfaceWrapperHelper.save(purchaseOrderLine);
 		for (final I_C_OrderLine salesOrderLine : purchaseOrderLine2saleOrderLines.get(purchaseOrderLine))
 		{
 			salesOrderLine.setLink_OrderLine(purchaseOrderLine);
 			InterfaceWrapperHelper.save(salesOrderLine);
+			salesOrdersToBeClosed.add(OrderId.ofRepoId(salesOrderLine.getC_Order_ID()));
+		}
+
+		if(PurchaseTypeEnum.MEDIATED.equals(purchaseType))
+		{
+			salesOrdersToBeClosed.forEach(orderCreatePOFromSOsBL::closeOrder);
 		}
 	}
 
@@ -189,7 +205,12 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 			purchaseQty = null; // won't be reached
 		}
 
-		final BigDecimal newQtyEntered = oldQtyEntered.add(purchaseQty);
+		BigDecimal newQtyEntered = oldQtyEntered.add(purchaseQty);
+
+		if(PurchaseTypeEnum.MEDIATED.equals(purchaseType))
+		{
+			newQtyEntered = newQtyEntered.subtract(salesOrderLine.getQtyDelivered());
+		}
 
 		// setting QtyEntered, because qtyOrdered will be set from qtyEntered by a model interceptor
 		purchaseOrderLine.setQtyEntered(newQtyEntered);

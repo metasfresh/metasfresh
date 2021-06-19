@@ -315,17 +315,17 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setDocTypeTargetId(final I_C_Order order)
+	public void setPODocTypeTargetId(final I_C_Order order, @Nullable final String docSubType)
 	{
 		if (order.isSOTrx())
 		{
-			setDocTypeTargetId(order, X_C_DocType.DOCSUBTYPE_StandardOrder);
+			this.setSODocTypeTargetId(order, X_C_DocType.DOCSUBTYPE_StandardOrder);
 		}
 		else
 		{
 			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
-					.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+					.docSubType(coalesce(docSubType, DocTypeQuery.DOCSUBTYPE_Any))
 					.adClientId(order.getAD_Client_ID())
 					.adOrgId(order.getAD_Org_ID())
 					.build();
@@ -343,8 +343,7 @@ public class OrderBL implements IOrderBL
 		}
 	}
 
-	@Override
-	public void setDocTypeTargetId(final I_C_Order order, final String soDocSubType)
+	public void setSODocTypeTargetId(final I_C_Order order, final String soDocSubType)
 	{
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)

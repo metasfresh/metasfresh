@@ -22,20 +22,23 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
-import org.compiere.model.I_C_BPartner;
+import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 public class C_OrderLine_StepDef
 {
@@ -74,6 +77,42 @@ public class C_OrderLine_StepDef
 			saveRecord(orderLine);
 
 			orderLineTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID), orderLine);
+		}
+	}
+
+	@Then("the purchase order linked to order {string} has lines:")
+	public void thePurchaseOrderLinkedToOrderO_HasLines(@NonNull final String linkedOrderIdentifier, @NonNull final DataTable dataTable)
+	{
+
+		final I_C_Order purchaseOrder = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order.COLUMNNAME_Link_Order_ID, orderTable.get(linkedOrderIdentifier).getC_Order_ID())
+				.create().firstOnly(I_C_Order.class);
+
+		final List<I_C_OrderLine> purchaseOrderLines = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, purchaseOrder.getC_Order_ID())
+				.create().list(I_C_OrderLine.class);
+
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_QtyOrdered);
+			final BigDecimal netAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_LineNetAmt);
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
+
+			boolean linePresent = true;
+
+			for(final I_C_OrderLine orderLine : purchaseOrderLines){
+				linePresent = orderLine.getLineNetAmt().compareTo(netAmt) == 0 && linePresent;
+				linePresent = orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0 && linePresent;
+				linePresent = orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID() && linePresent;
+			}
+
+			assertThat(linePresent).isTrue();
+
 		}
 	}
 }

@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -24,6 +25,8 @@ import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
+
+import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
 /*
  * #%L
@@ -58,6 +61,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private static final String MSG_PURCHASE_ORDER_CREATED = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseOrderCreated";
 	private final IContextAware context;
 	private final boolean p_IsDropShip;
+	private final PurchaseTypeEnum p_TypeOfPurchase;
 	private final String purchaseQtySource;
 
 	private final I_C_Order dummyOrder;
@@ -69,11 +73,12 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
 	public CreatePOFromSOsAggregator(final IContextAware context,
-			final boolean p_IsDropShip,
+			final PurchaseTypeEnum p_TypeOfPurchase,
 			final String purchaseQtySource)
 	{
 		this.context = context;
-		this.p_IsDropShip = p_IsDropShip;
+		this.p_IsDropShip = p_TypeOfPurchase.equals(PurchaseTypeEnum.DROPSHIP);
+		this.p_TypeOfPurchase = p_TypeOfPurchase;
 		this.purchaseQtySource = purchaseQtySource;
 
 		dummyOrder = InterfaceWrapperHelper.newInstance(I_C_Order.class, context);
@@ -162,7 +167,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		CreatePOLineFromSOLinesAggregator orderLinesAggregator = orderKey2OrderLineAggregator.get(pruchaseOrder.getDocumentNo());
 		if (orderLinesAggregator == null)
 		{
-			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder, purchaseQtySource);
+			orderLinesAggregator = new CreatePOLineFromSOLinesAggregator(pruchaseOrder, purchaseQtySource, p_TypeOfPurchase);
 			orderLinesAggregator.setItemAggregationKeyBuilder(CreatePOLineFromSOLinesAggregationKeyBuilder.INSTANCE);
 			orderLinesAggregator.setGroupsBufferSize(100);
 
@@ -189,7 +194,16 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		purchaseOrder.setAD_Org_ID(orgId.getRepoId());
 		purchaseOrder.setLink_Order_ID(salesOrder.getC_Order_ID());
 		purchaseOrder.setIsSOTrx(false);
-		orderBL.setDocTypeTargetId(purchaseOrder);
+
+		if(PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase))
+		{
+			orderBL.setPODocTypeTargetId(purchaseOrder, DOCSUBTYPE_Mediated);
+		}
+		else
+		{
+			orderBL.setPODocTypeTargetId(purchaseOrder, null);
+		}
+
 		//
 		purchaseOrder.setDescription(salesOrder.getDescription());
 
