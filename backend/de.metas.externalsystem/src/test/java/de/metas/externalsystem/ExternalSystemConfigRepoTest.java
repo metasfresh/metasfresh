@@ -39,8 +39,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
-import static de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.createExternalConfigParameterRecord;
 import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
+import static de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.createExternalConfigParameterRecord;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -77,7 +77,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Alberta);
 		saveRecord(parentRecord);
@@ -104,7 +103,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Shopware6);
 		saveRecord(parentRecord);
@@ -134,7 +132,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Shopware6);
 		saveRecord(parentRecord);
@@ -166,7 +163,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Alberta);
 		saveRecord(parentRecord);
@@ -195,7 +191,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Alberta);
 		saveRecord(parentRecord);
@@ -221,7 +216,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Alberta);
 		saveRecord(parentRecord);
@@ -252,7 +246,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Shopware6);
 		saveRecord(parentRecord);
@@ -302,7 +295,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Other);
 		saveRecord(parentRecord);

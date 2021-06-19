@@ -75,7 +75,7 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 		final var externalSystem = "myExternalSystem";
 		
 		AdviceWith.adviceWith(context,
-				CallDispatcherRouteBuilder.ROUTE_ID,
+				CallDispatcherRouteBuilder.DISPATCH_ROUTE_ID,
 				a -> a.interceptSendToEndpoint("direct:" + externalSystem + "-" + command)
 						.skipSendToOriginalEndpoint()
 						.process(postEndpoint));
