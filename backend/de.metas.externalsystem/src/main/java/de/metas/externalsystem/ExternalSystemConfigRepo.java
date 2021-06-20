@@ -312,7 +312,6 @@ public class ExternalSystemConfigRepo
 		return ExternalSystemParentConfig.builder()
 				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
-				.camelUrl(externalSystemConfigRecord.getCamelURL())
 				.name(externalSystemConfigRecord.getName());
 	}
 

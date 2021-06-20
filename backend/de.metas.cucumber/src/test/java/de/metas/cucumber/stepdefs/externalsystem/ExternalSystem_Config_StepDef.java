@@ -42,7 +42,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_PInstance;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.testcontainers.shaded.com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.List;
 
@@ -74,7 +73,6 @@ public class ExternalSystem_Config_StepDef
 
 		final I_ExternalSystem_Config externalSystemParentConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config.class);
 		externalSystemParentConfig.setType(externalSystemType.getCode());
-		externalSystemParentConfig.setCamelURL("notImportant");
 		externalSystemParentConfig.setName("notImportant");
 		InterfaceWrapperHelper.save(externalSystemParentConfig);
 

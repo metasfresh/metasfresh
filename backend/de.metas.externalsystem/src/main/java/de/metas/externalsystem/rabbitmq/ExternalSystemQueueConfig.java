@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de.metas.externalsystem
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,19 +20,20 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core;
+package de.metas.externalsystem.rabbitmq;
+
+import org.springframework.amqp.core.Queue;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 
-public interface CoreConstants
+@Configuration
+public class ExternalSystemQueueConfig
 {
-	String AUTHORIZATION = "Authorization";
-
-	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
-
-	String FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES
-			+ "?durable=true"
-			+ "&autoDelete=false"
-			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
-			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
+	@Bean(name = QUEUE_NAME_MF_TO_ES)
+	public Queue metasfreshToProcurementWebQueue()
+	{
+		return new Queue(QUEUE_NAME_MF_TO_ES);
+	}
 }
