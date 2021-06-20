@@ -63,7 +63,7 @@ public class ExternalSystemMessageSender
 		{
 			throw new AdempiereException("Exception serializing externalSystemRequest", e)
 					.appendParametersToMessage()
-					.setParameter("requestToProcurementWeb", externalSystemRequest);
+					.setParameter("externalSystemRequest", externalSystemRequest);
 		}
 
 		final MessageProperties messageProperties = new MessageProperties();

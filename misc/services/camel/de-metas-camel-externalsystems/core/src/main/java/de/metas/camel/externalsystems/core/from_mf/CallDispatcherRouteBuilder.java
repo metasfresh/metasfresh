@@ -23,12 +23,16 @@
 package de.metas.camel.externalsystems.core.from_mf;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import lombok.NonNull;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.core.CoreConstants.FROM_MF_ROUTE;
 
@@ -38,7 +42,15 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 	@VisibleForTesting
 	static final String DISPATCH_ROUTE_ID = "MF-To-ExternalSystem-Dispatcher";
 
+	@NonNull
+	private final ProcessLogger processLogger;
+
 	private final static String FROM_MF_ROUTE_ID = "RabbitMQ_from_MF_ID";
+
+	public CallDispatcherRouteBuilder(final @NonNull ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
 
 	@Override
 	public void configure()
@@ -58,8 +70,31 @@ public class CallDispatcherRouteBuilder extends RouteBuilder
 				.process(exchange -> {
 					final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 					exchange.getIn().setHeader("targetRoute", request.getExternalSystemName().getName() + "-" + request.getCommand());
+
+					if (request.getAdPInstanceId() != null)
+					{
+						exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
+					}
 				})
 				.log("routing request to route ${header.targetRoute}")
-				.toD("direct:${header.targetRoute}", false);
+				.process(this::logRequestRouted)
+				.toD("direct:${header.targetRoute}", false)
+				.process(this::logInvocationDone);
+	}
+
+	private void logRequestRouted(@NonNull final Exchange exchange)
+	{
+		final String targetRoute = exchange.getIn().getHeader("targetRoute", String.class);
+
+		processLogger.logMessage("Routing request to: " + targetRoute,
+								 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
+	}
+
+	private void logInvocationDone(@NonNull final Exchange exchange)
+	{
+		final String targetRoute = exchange.getIn().getHeader("targetRoute", String.class);
+
+		processLogger.logMessage("Invocation done: " + targetRoute,
+								 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
 	}
 }
