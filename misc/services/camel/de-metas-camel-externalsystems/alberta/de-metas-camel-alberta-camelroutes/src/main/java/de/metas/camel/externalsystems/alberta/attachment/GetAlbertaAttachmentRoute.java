@@ -29,25 +29,18 @@ import de.metas.camel.externalsystems.alberta.attachment.processor.DocumentProce
 import de.metas.camel.externalsystems.alberta.attachment.processor.DocumentRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.attachment.processor.GetAttachmentProcessor;
 import de.metas.camel.externalsystems.alberta.attachment.processor.GetDocumentsProcessor;
+import de.metas.camel.externalsystems.alberta.common.AlbertaApiProvider;
 import de.metas.camel.externalsystems.alberta.common.DataMapper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
-import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
-import de.metas.common.bpartner.v2.request.JsonRequestComposite;
-import de.metas.common.bpartner.v2.request.JsonRequestContactUpsert;
-import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
-import io.swagger.client.api.AttachmentApi;
-import io.swagger.client.api.DocumentApi;
 import io.swagger.client.api.UserApi;
 import io.swagger.client.model.Attachment;
 import io.swagger.client.model.Document;
@@ -82,8 +75,16 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 	public static final String DOCUMENT_RUNTIME_PARAMS_PROCESSOR_ID = "Alberta-DocumentRuntimeParamsProcessorId";
 	public static final String ATTACHMENT_RUNTIME_PARAMS_PROCESSOR_ID = "Alberta-AttachmentRuntimeParamsProcessorId";
 
-	public static final String DOCUMENT_PROCESSOR_ID = "Alberta-DocumentProcessor";
-	public static final String ATTACHMENT_PROCESSOR_ID = "Alberta-AttachmentProcessor";
+	public static final String PROCESS_DOCUMENT_ROUTE_ID = "Alberta-ProcessDocument";
+	public static final String PROCESS_ATTACHMENT_ROUTE_ID = "Alberta-ProcessAttachment";
+
+	@NonNull
+	private final AlbertaApiProvider albertaApiProvider;
+
+	public GetAlbertaAttachmentRoute(@NonNull final AlbertaApiProvider albertaApiProvider)
+	{
+		this.albertaApiProvider = albertaApiProvider;
+	}
 
 	@Override
 	public void configure() throws Exception
@@ -101,18 +102,20 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 				.process(new GetDocumentsProcessor()).id(RETRIEVE_DOCUMENTS_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
-						.log(LoggingLevel.DEBUG, "No documents received")
+						.log(LoggingLevel.INFO, "No documents received")
 					.otherwise()
 						.split(body())
 							.stopOnException()
-							.to(direct(DOCUMENT_PROCESSOR_ID))
+							.to(direct(PROCESS_DOCUMENT_ROUTE_ID))
 						.end()
-				.endChoice()
+					.endChoice()
+				.end()
 				.to(direct(UPSERT_DOCUMENT_RUNTIME_PARAMS_ROUTE_ID))
+
 				.to(direct(GET_ATTACHMENTS_ROUTE_ID));
 
-		from(direct(DOCUMENT_PROCESSOR_ID))
-				.routeId(DOCUMENT_PROCESSOR_ID)
+		from(direct(PROCESS_DOCUMENT_ROUTE_ID))
+				.routeId(PROCESS_DOCUMENT_ROUTE_ID)
 				.log("Route invoked!")
 
 				.process(this::documentToUserUpsert).id(DOCUMENT_TO_USER_PROCESSOR_ID)
@@ -121,6 +124,7 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 						.log(LoggingLevel.DEBUG, "No users received")
 					.otherwise()
 						.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+					.endChoice()
 				.end()
 
 				.process(new DocumentProcessor()).id(PREPARE_DOCUMENT_API_PROCESSOR_ID)
@@ -137,13 +141,13 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 					.otherwise()
 						.split(body())
 							.stopOnException()
-							.to(direct(ATTACHMENT_PROCESSOR_ID))
+							.to(direct(PROCESS_ATTACHMENT_ROUTE_ID))
 						.end()
 				.endChoice()
 				.to(direct(UPSERT_ATTACHMENT_RUNTIME_PARAMS_ROUTE_ID));
 
-		from(direct(ATTACHMENT_PROCESSOR_ID))
-				.routeId(ATTACHMENT_PROCESSOR_ID)
+		from(direct(PROCESS_ATTACHMENT_ROUTE_ID))
+				.routeId(PROCESS_ATTACHMENT_ROUTE_ID)
 				.log("Route invoked!")
 
 				.process(this::attachmentToUserUpsert).id(ATTACHMENT_TO_USER_PROCESSOR_ID)
@@ -189,7 +193,7 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 
 		final JsonMetasfreshId rootBPartnerIdForUsers = JsonMetasfreshId.of(Integer.parseInt(rootBPartnerId));
 
-		final var apiClient = new ApiClient().setBasePath(basePath);
+		final ApiClient apiClient = new ApiClient().setBasePath(basePath);
 
 		final String createdAfterDocument = CoalesceUtil.coalesceNotNull(
 				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
@@ -205,9 +209,9 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 				.orgCode(orgCode)
 				.apiKey(apiKey)
 				.tenant(tenant)
-				.attachmentApi(new AttachmentApi(apiClient))
-				.documentApi(new DocumentApi(apiClient))
-				.userApi(new UserApi(apiClient))
+				.attachmentApi(albertaApiProvider.getAttachmentApi(apiClient))
+				.documentApi(albertaApiProvider.getDocumentApi(apiClient))
+				.userApi(albertaApiProvider.getUserApi(apiClient))
 				.rootBPartnerIdForUsers(rootBPartnerIdForUsers)
 				.createdAfterDocument(createdAfterDocument)
 				.createdAfterAttachment(createdAfterAttachment)
@@ -231,27 +235,16 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 		final Users createdBy = getUserOrNull(routeContext.getUserApi(), routeContext.getApiKey(), routeContext.getTenant(), document.getCreatedBy());
 		final Users updatedBy = getUserOrNull(routeContext.getUserApi(), routeContext.getApiKey(), routeContext.getTenant(), document.getUpdatedBy());
 
-		if (createdBy == null && updatedBy == null)
+		final Optional<BPUpsertCamelRequest> contactUpsertRequest = DataMapper
+				.usersToBPartnerUpsert(routeContext.getOrgCode(), routeContext.getRootBPartnerIdForUsers(), createdBy, updatedBy);
+
+		if (contactUpsertRequest.isEmpty())
 		{
 			exchange.getIn().setBody(null);
 			return;
 		}
 
-		final JsonRequestContactUpsert.JsonRequestContactUpsertBuilder usersUpsert = JsonRequestContactUpsert.builder();
-
-		final Optional<JsonRequestContactUpsertItem> createdByUserUpsert = DataMapper.userToBPartnerContact(createdBy);
-		createdByUserUpsert.ifPresent(usersUpsert::requestItem);
-
-		DataMapper.userToBPartnerContact(updatedBy)
-				.filter(updatedByUserUpsert -> createdByUserUpsert.isEmpty() || !updatedByUserUpsert.getContactIdentifier().equals(createdByUserUpsert.get().getContactIdentifier()))
-				.ifPresent(usersUpsert::requestItem);
-
-		final BPUpsertCamelRequest userUpsertCamelRequest = computeUpsertUserCamelRequest(
-				usersUpsert.build(),
-				routeContext.getRootBPartnerIdForUsers(),
-				routeContext.getOrgCode());
-
-		exchange.getIn().setBody(userUpsertCamelRequest);
+		exchange.getIn().setBody(contactUpsertRequest.get());
 	}
 
 	private void attachmentToUserUpsert(@NonNull final Exchange exchange) throws ApiException
@@ -265,23 +258,16 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 
 		final Users createdBy = getUserOrNull(routeContext.getUserApi(), routeContext.getApiKey(), routeContext.getTenant(), attachment.getMetadata().getCreatedBy());
 
-		if (createdBy == null)
+		final Optional<BPUpsertCamelRequest> contactUpsertRequest = DataMapper
+				.usersToBPartnerUpsert(routeContext.getOrgCode(), routeContext.getRootBPartnerIdForUsers(), createdBy);
+
+		if (contactUpsertRequest.isEmpty())
 		{
 			exchange.getIn().setBody(null);
 			return;
 		}
 
-		final JsonRequestContactUpsert.JsonRequestContactUpsertBuilder attachmentUserUpsert = JsonRequestContactUpsert.builder();
-
-		final Optional<JsonRequestContactUpsertItem> createdByUserUpsert = DataMapper.userToBPartnerContact(createdBy);
-		createdByUserUpsert.ifPresent(attachmentUserUpsert::requestItem);
-
-		final BPUpsertCamelRequest userUpsertCamelRequest = computeUpsertUserCamelRequest(
-				attachmentUserUpsert.build(),
-				routeContext.getRootBPartnerIdForUsers(),
-				routeContext.getOrgCode());
-
-		exchange.getIn().setBody(userUpsertCamelRequest);
+		exchange.getIn().setBody(contactUpsertRequest.get());
 	}
 
 	@Nullable
@@ -303,33 +289,5 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 			throw new RuntimeException("No info returned for user: " + userId);
 		}
 		return user;
-	}
-
-	@NonNull
-	private BPUpsertCamelRequest computeUpsertUserCamelRequest(
-			@NonNull final JsonRequestContactUpsert requestContactUpsert,
-			@NonNull final JsonMetasfreshId rootBPartnerIdForUsers,
-			@NonNull final String orgCode)
-	{
-
-		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
-				.contacts(requestContactUpsert)
-				.build();
-
-		final JsonRequestBPartnerUpsertItem upsertItem = JsonRequestBPartnerUpsertItem
-				.builder()
-				.bpartnerIdentifier(String.valueOf(rootBPartnerIdForUsers.getValue()))
-				.bpartnerComposite(jsonRequestComposite)
-				.build();
-
-		final JsonRequestBPartnerUpsert bPartnerUpsert = JsonRequestBPartnerUpsert.builder()
-				.requestItem(upsertItem)
-				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-				.build();
-
-		return BPUpsertCamelRequest.builder()
-				.jsonRequestBPartnerUpsert(bPartnerUpsert)
-				.orgCode(orgCode)
-				.build();
 	}
 }

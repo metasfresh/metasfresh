@@ -402,29 +402,6 @@ public class BPartnerUpsertRequestProducer
 								   .build());
 	}
 
-	private Optional<JsonRequestContactUpsertItem> userToBPartner(@Nullable final Users users)
-	{
-		if (users == null)
-		{
-			return Optional.empty();
-		}
-
-		final JsonRequestContact contact = new JsonRequestContact();
-		contact.setName(new StringJoiner(" ").add(users.getFirstName()).add(users.getLastName()).toString());
-		contact.setFirstName(users.getFirstName());
-		contact.setLastName(users.getLastName());
-		contact.setEmail(users.getEmail());
-
-		final JsonAlbertaContact albertaContact = new JsonAlbertaContact();
-		albertaContact.setTimestamp(asInstant(users.getTimestamp()));
-
-		return Optional.of(JsonRequestContactUpsertItem.builder()
-								   .contactIdentifier(formatExternalId(users.getId()))
-								   .contact(contact)
-								   .jsonAlbertaContact(albertaContact)
-								   .build());
-	}
-
 	@Value
 	@Builder
 	public static class BPartnerRequestProducerResult

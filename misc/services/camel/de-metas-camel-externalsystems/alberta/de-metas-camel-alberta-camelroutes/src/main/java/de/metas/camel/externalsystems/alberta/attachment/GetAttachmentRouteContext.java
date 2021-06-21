@@ -41,7 +41,7 @@ import java.time.Instant;
 public class GetAttachmentRouteContext
 {
 	@NonNull
-	private String orgCode;
+	private final String orgCode;
 
 	@NonNull
 	private final String apiKey;
@@ -65,16 +65,16 @@ public class GetAttachmentRouteContext
 	private final String createdAfterAttachment;
 
 	@NonNull
+	private final JsonMetasfreshId rootBPartnerIdForUsers;
+
+	@NonNull
+	private final JsonExternalSystemRequest request;
+
+	@NonNull
 	private Instant nextDocumentImportStartDate;
 
 	@NonNull
 	private Instant nextAttachmentImportStartDate;
-
-	@NonNull
-	private JsonExternalSystemRequest request;
-
-	@NonNull
-	private final JsonMetasfreshId rootBPartnerIdForUsers;
 
 	@Nullable
 	private Document document;

@@ -64,8 +64,6 @@ public class RetrievePatientsProcessor implements Processor
 
 		final List<Patient> patientsToImport = getPatientsToImport(routeContext, String.valueOf(updatedAfter));
 
-		routeContext.setUpdatedAfterValue(updatedAfter);
-
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
 		exchange.getIn().setBody(patientsToImport);
 	}

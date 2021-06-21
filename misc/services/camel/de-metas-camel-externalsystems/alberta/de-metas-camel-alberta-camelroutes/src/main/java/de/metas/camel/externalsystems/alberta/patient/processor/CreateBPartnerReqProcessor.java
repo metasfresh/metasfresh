@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.alberta.patient.processor;
 
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
+import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.patient.BPartnerUpsertRequestProducer;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
@@ -109,6 +110,8 @@ public class CreateBPartnerReqProcessor implements Processor
 
 		exchange.getIn().setBody(result.getJsonRequestBPartnerUpsert());
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_BP_IDENTIFIER_TO_ROLE, bPartnerRoleInfoProvider);
+
+		routeContext.setUpdatedAfterValue(AlbertaUtil.asInstant(patient.getCreatedAt()));
 	}
 
 	@Nullable

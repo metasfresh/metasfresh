@@ -118,7 +118,8 @@ public class DocumentProcessor implements Processor
 		}
 
 		final String updatedBy = document.getUpdatedBy();
-		if (!EmptyUtil.isBlank(updatedBy))
+		if (!EmptyUtil.isBlank(updatedBy)
+				&& (EmptyUtil.isBlank(createdBy) || !createdBy.equals(updatedBy)))
 		{
 			targets.add(JsonExternalReferenceTarget.ofTypeAndId(GetAttachmentRouteConstants.ESR_TYPE_USERID, formatExternalId(updatedBy)));
 		}
@@ -127,7 +128,7 @@ public class DocumentProcessor implements Processor
 
 		if (EmptyUtil.isEmpty(computedTargets))
 		{
-			throw new RuntimeException("Document targets cannot be null!");
+			throw new RuntimeException("Document targets cannot be null! DocumentId: " + document.getId());
 		}
 
 		return computedTargets;

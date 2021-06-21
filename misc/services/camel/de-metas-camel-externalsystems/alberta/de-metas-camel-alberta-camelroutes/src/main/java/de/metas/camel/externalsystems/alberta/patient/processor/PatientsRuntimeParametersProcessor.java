@@ -33,7 +33,7 @@ import org.apache.camel.Processor;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER;
 
-public class RuntimeParametersProcessor implements Processor
+public class PatientsRuntimeParametersProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange) throws Exception

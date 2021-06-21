@@ -1,14 +1,14 @@
 [
   {
     "_id": "document_id",
-    "name": "Anamnese WV",
+    "name": "Document name",
     "patientId": "document_patientId",
     "therapyId": 1,
     "therapyTypeId": 11,
     "archived": false,
-    "createdBy": "document_createdBy",
-    "updatedBy": "document_updatedBy",
-    "createdAt": "2015-07-20T15:49:04-07:00",
+    "createdBy": "userId",
+    "updatedBy": "userId",
+    "createdAt": "2015-08-20T15:49:04-07:00",
     "updatedAt": "2015-07-20T15:49:04-07:00"
   }
 ]

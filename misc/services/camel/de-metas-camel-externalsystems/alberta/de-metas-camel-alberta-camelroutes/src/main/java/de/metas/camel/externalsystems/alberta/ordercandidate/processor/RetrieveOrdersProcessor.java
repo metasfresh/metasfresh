@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
+import de.metas.camel.externalsystems.alberta.ordercandidate.NextImportSinceTimestamp;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -64,7 +65,7 @@ public class RetrieveOrdersProcessor implements Processor
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 		final String tenant = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT);
 
-		final String updatedAfter = CoalesceUtil.coalesce(
+		final String updatedAfter = CoalesceUtil.coalesceNotNull(
 				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
 				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
 				Instant.ofEpochMilli(0).toString());
@@ -101,12 +102,13 @@ public class RetrieveOrdersProcessor implements Processor
 		}
 
 		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
-		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_UPDATED_AFTER, updatedAfter);
-		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_COMMAND, request.getCommand());
-		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID, request.getExternalSystemConfigId());
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_CONN_DETAILS, albertaConnectionDetails);
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PHARMACY_API, new PharmacyApi(apiClient));
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_DOCTOR_API, new DoctorApi(apiClient));
+
+		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_UPDATED_AFTER, new NextImportSinceTimestamp(Instant.parse(updatedAfter)));
+		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_COMMAND, request.getCommand());
+		exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID, request.getExternalSystemConfigId());
 
 		exchange.getIn().setBody(ordersToImport.isEmpty() ? null : ordersToImport);
 	}

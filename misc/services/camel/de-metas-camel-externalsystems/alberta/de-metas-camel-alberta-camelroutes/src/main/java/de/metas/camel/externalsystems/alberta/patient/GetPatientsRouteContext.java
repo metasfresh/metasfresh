@@ -83,8 +83,13 @@ public class GetPatientsRouteContext
 	@NonNull
 	private Instant updatedAfterValue;
 
-	public void setUpdatedAfterValue(@NonNull final Instant candidate)
+	public void setUpdatedAfterValue(@Nullable final Instant candidate)
 	{
+		if (candidate == null)
+		{
+			return;
+		}
+
 		if (candidate.isAfter(this.updatedAfterValue))
 		{
 			this.updatedAfterValue = candidate;

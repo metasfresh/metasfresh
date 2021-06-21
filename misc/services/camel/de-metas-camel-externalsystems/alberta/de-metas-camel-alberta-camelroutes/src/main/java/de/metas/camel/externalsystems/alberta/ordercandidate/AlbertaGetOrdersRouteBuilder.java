@@ -22,11 +22,11 @@
 
 package de.metas.camel.externalsystems.alberta.ordercandidate;
 
-import de.metas.camel.externalsystems.alberta.attachment.processor.DocumentRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.ordercandidate.processor.CreateMissingBPartnerProcessor;
 import de.metas.camel.externalsystems.alberta.ordercandidate.processor.DeliveryAddressUpsertProcessor;
 import de.metas.camel.externalsystems.alberta.ordercandidate.processor.ExternalReferenceLookupProcessor;
 import de.metas.camel.externalsystems.alberta.ordercandidate.processor.JsonOLCandCreateRequestProcessor;
+import de.metas.camel.externalsystems.alberta.ordercandidate.processor.OrderCandRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.ordercandidate.processor.RetrieveOrdersProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
@@ -47,14 +47,14 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 	public static final String PROCESS_ORDERS_ROUTE_ID = "Alberta-processOrders";
 	public static final String PROCESS_ORDER_ROUTE_ID = "Alberta-processOrder";
 	public static final String IMPORT_MISSING_BP_ROUTE_ID = "Alberta-importMissingBPs";
-	public static final String UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Alberta-upsertRuntimeParams";
+	public static final String SALES_ORDER_UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Alberta-order-upsertRuntimeParams";
 
 	public static final String GET_ORDERS_PROCESSOR_ID = "GetOrdersProcessorId";
 	public static final String CREATE_EXTERNAL_REF_LOOKUP_PROCESSOR_ID = "CreateExternalRefLookupProcessorId";
 	public static final String CREATE_BPARTNER_REQUEST_PROCESSOR_ID = "CreateBPartnerRequestProcessorId";
 	public static final String CREATE_DELIVERY_ADDRESS_PROCESSOR_ID = "CreateDeliveryAddressProcessorId";
 	public static final String CREATE_OLCAND_REQUEST_PROCESSOR_ID = "CreateOLCandRequestProcessorId";
-	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "Alberta-RuntimeParamsProcessorId";
+	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "Alberta-Order-RuntimeParamsProcessorId";
 
 	@Override
 	public void configure()
@@ -74,8 +74,7 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 						.parallelProcessing(false)
 						.to(direct(IMPORT_MISSING_BP_ROUTE_ID),
 							direct(PROCESS_ORDERS_ROUTE_ID))
-					.end()
-					.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID));
+					.end();
 
 			from(direct(PROCESS_ORDERS_ROUTE_ID))
 				.routeId(PROCESS_ORDERS_ROUTE_ID)
@@ -87,7 +86,9 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 							.stopOnException()
 							.to(StaticEndpointBuilders.direct(PROCESS_ORDER_ROUTE_ID))
 						.end()
-				.endChoice();
+					.endChoice()
+				.end()
+				.to(direct(SALES_ORDER_UPSERT_RUNTIME_PARAMS_ROUTE_ID));
 
 			from(direct(PROCESS_ORDER_ROUTE_ID))
 					.routeId(PROCESS_ORDER_ROUTE_ID)
@@ -96,7 +97,7 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 					.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI + "}}")
 					.unmarshal(setupJacksonDataFormatFor(getContext(), JsonResponseUpsert.class))
 
-					.process(new JsonOLCandCreateRequestProcessor()).id(CREATE_OLCAND_REQUEST_PROCESSOR_ID) //todo fp: compute next runtime
+					.process(new JsonOLCandCreateRequestProcessor()).id(CREATE_OLCAND_REQUEST_PROCESSOR_ID)
 
 					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store order candidates!")
 					.to( direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID) );
@@ -122,10 +123,10 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 						.endChoice()
 				.endChoice();
 
-		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
-				.routeId(UPSERT_RUNTIME_PARAMS_ROUTE_ID)
+		from(direct(SALES_ORDER_UPSERT_RUNTIME_PARAMS_ROUTE_ID))
+				.routeId(SALES_ORDER_UPSERT_RUNTIME_PARAMS_ROUTE_ID)
 				.log("Route invoked")
-				.process(new DocumentRuntimeParametersProcessor()).id(RUNTIME_PARAMS_PROCESSOR_ID)
+				.process(new OrderCandRuntimeParametersProcessor()).id(RUNTIME_PARAMS_PROCESSOR_ID)
 				.to(direct(ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID));
 			//@formatter:on
 	}

@@ -4,33 +4,33 @@
     {
       "externalReferenceType": "UserID",
       "externalReferenceIdentifier": "ext-ALBERTA-attachment_createdBy"
+    },
+    {
+      "externalReferenceType": "BPartner",
+      "externalReferenceIdentifier": "ext-ALBERTA-attachment_patientId"
     }
   ],
   "attachment": {
     "fileName": "test.txt",
+    "data": "dGhpcyBpcyBhIGR1bW15IHRlc3QgZmlsZQ==",
     "mimeType": null,
     "tags": [
       {
         "name": "alberta_attachment_id",
-        "value": "attachment_id"
+        "value": "attachmentId"
       },
       {
-        "name": "alberta_attachment_timestamp",
-        "value": "2020-11-18T10:33:08.995Z"
-      },
-      {
-        "name": "alberta_attachment_type",
-        "value": "1.5"
+        "name": "alberta_attachment_uploadDate",
+        "value": "2021-05-25T06:50:24.568Z"
       },
       {
         "name": "alberta_attachment_createdAt",
-        "value": "2015-07-20T15:49:04-07:00"
+        "value": "2021-05-25T06:50:24.561Z"
       },
       {
         "name": "alberta_attachment_endpoint",
         "value": "/attachment"
       }
-    ],
-    "data": "dGhpcyBpcyBhIGR1bW15IHRlc3QgZmlsZQ=="
+    ]
   }
 }

@@ -1,16 +1,17 @@
 {
-  "orgCode": "001",
+  "orgCode": "orgCode",
   "externalSystemName": "Alberta",
   "command": "getDocuments",
-  "adPInstanceId": 10009936,
-  "externalSystemConfigId": 1,
+  "adPInstanceId": 10,
+  "externalSystemConfigId": 100,
   "parameters": {
     "APIKey": "APIKey",
     "Tenant": "Tenant",
     "ChildConfigValue": "ChildConfigValue",
     "BasePath": "https://basePath",
-    "UpdatedAfter": "2021-01-01T02:17:20Z",
-    "CreatedAfter": "2021-01-01T02:17:20Z",
-    "RootBPartnerID": 200
+    "CreatedAfter": "2020-01-01T02:17:20Z",
+    "UpdatedAfterDocument": "2011-01-01T02:17:20Z",
+    "UpdatedAfterAttachment": "2012-01-01T02:17:20Z",
+    "RootBPartnerID": 1000
   }
 }
