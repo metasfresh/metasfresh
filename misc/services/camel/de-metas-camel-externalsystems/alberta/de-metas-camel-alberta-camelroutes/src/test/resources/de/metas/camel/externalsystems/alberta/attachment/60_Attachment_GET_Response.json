@@ -1,0 +1,14 @@
+[
+  {
+    "_id": "attachmentId",
+    "uploadDate": "2021-05-25T06:50:24.568Z",
+    "filename": "attachmentFileName.png",
+    "contentType": "image/png",
+    "metadata": {
+      "patientId": "attachment_patientId",
+      "archived": false,
+      "createdAt": "2021-05-25T06:50:24.561Z",
+      "createdBy": "attachment_createdBy"
+    }
+  }
+]

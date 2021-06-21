@@ -55,7 +55,7 @@ public class DocumentProcessor implements Processor
 	public void process(final Exchange exchange) throws Exception
 	{
 		final GetAttachmentRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, GetAttachmentRouteContext.class);
-		final Document document = exchange.getIn().getBody(Document.class);
+		final Document document = routeContext.getDocument();
 
 		final File file = getFile(routeContext, document.getId());
 
@@ -75,9 +75,9 @@ public class DocumentProcessor implements Processor
 				.attachment(jsonAttachment)
 				.build();
 
-		if(document.getCreatedAt() != null)
+		if (document.getCreatedAt() != null)
 		{
-			routeContext.setNextAttachmentImportStartDate(AlbertaUtil.asInstant(document.getCreatedAt()));
+			routeContext.setNextDocumentImportStartDate(AlbertaUtil.asInstant(document.getCreatedAt()));
 		}
 		exchange.getIn().setBody(jsonRequest);
 	}
@@ -118,12 +118,20 @@ public class DocumentProcessor implements Processor
 		}
 
 		final String updatedBy = document.getUpdatedBy();
-		if (!EmptyUtil.isBlank(updatedBy))
+		if (!EmptyUtil.isBlank(updatedBy)
+				&& (EmptyUtil.isBlank(createdBy) || !createdBy.equals(updatedBy)))
 		{
 			targets.add(JsonExternalReferenceTarget.ofTypeAndId(GetAttachmentRouteConstants.ESR_TYPE_USERID, formatExternalId(updatedBy)));
 		}
 
-		return targets.build();
+		final ImmutableList<JsonExternalReferenceTarget> computedTargets = targets.build();
+
+		if (EmptyUtil.isEmpty(computedTargets))
+		{
+			throw new RuntimeException("Document targets cannot be null! DocumentId: " + document.getId());
+		}
+
+		return computedTargets;
 	}
 
 	@NonNull

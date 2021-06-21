@@ -61,6 +61,7 @@ public class PatientToBPartnerMapper
 	@NonNull
 	public static Optional<JsonRequestContactUpsertItem> billingAddressToContactUpsertItem(
 			@NonNull final String patientId,
+			@NonNull final String patientName,
 			@Nullable final PatientBillingAddress patientBillingAddress)
 	{
 		if (patientBillingAddress == null)
@@ -71,11 +72,15 @@ public class PatientToBPartnerMapper
 		{
 			return Optional.empty();
 		}
-		
+
 		final String locationIdentifier = formatBillingAddressExternalId(patientId);
 
 		final JsonRequestContact contact = new JsonRequestContact();
-		contact.setName(patientBillingAddress.getName());
+
+		final String computedName = EmptyUtil.isEmpty(patientBillingAddress.getName())
+				? patientName : patientBillingAddress.getName();
+
+		contact.setName(computedName);
 		// contact.setLocationIdentifier(locationIdentifier); todo
 
 		return Optional.of(JsonRequestContactUpsertItem.builder()
@@ -88,13 +93,10 @@ public class PatientToBPartnerMapper
 	@NonNull
 	public static Optional<JsonRequestContactUpsertItem> deliveryAddressToContactUpsertItem(
 			@NonNull final String patientId,
+			@NonNull final String patientName,
 			@Nullable final PatientDeliveryAddress patientDeliveryAddress)
 	{
 		if (patientDeliveryAddress == null)
-		{
-			return Optional.empty();
-		}
-		if (EmptyUtil.isBlank(patientDeliveryAddress.getName()))
 		{
 			return Optional.empty();
 		}
@@ -102,7 +104,11 @@ public class PatientToBPartnerMapper
 		final String deliveryLocationIdentifier = formatDeliveryAddressExternalId(patientId);
 
 		final JsonRequestContact contact = new JsonRequestContact();
-		contact.setName(patientDeliveryAddress.getName());
+
+		final String computedName = EmptyUtil.isEmpty(patientDeliveryAddress.getName())
+				? patientName : patientDeliveryAddress.getName();
+
+		contact.setName(computedName);
 		// contact.setLocationIdentifier(deliveryLocationIdentifier); todo
 
 		return Optional.of(JsonRequestContactUpsertItem.builder()

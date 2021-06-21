@@ -23,26 +23,15 @@
 package de.metas.camel.externalsystems.alberta.ordercandidate;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NonNull;
 
-public interface GetOrdersRouteConstants
+import java.time.Instant;
+
+@Data
+@AllArgsConstructor
+public class NextImportSinceTimestamp
 {
-
-	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
-	String ROUTE_PROPERTY_CURRENT_ORDER = "currentOrder";
-	String ROUTE_PROPERTY_UPDATED_AFTER = "updatedAfter";
-	String ROUTE_PROPERTY_COMMAND = "command";
-	String ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID = "externalSystemConfigId";
-
-	String DELIVERY_ADDRESS_PREFIX = "delivery_";
-
-	@AllArgsConstructor
-	@Getter
-	enum OrderStatus
-	{
-		CREATED("created"),
-		UPDATED("updated");
-
-		private final String value;
-	}
+	@NonNull
+	private Instant date;
 }

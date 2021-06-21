@@ -31,9 +31,9 @@ import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATE_AFTER_DOCUMENT;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATE_AFTER_ATTACHMENT;
 
-public class RuntimeParametersProcessor implements Processor
+public class AttachmentRuntimeParametersProcessor implements Processor
 {
 	@Override
 	public void process(final Exchange exchange) throws Exception
@@ -44,7 +44,7 @@ public class RuntimeParametersProcessor implements Processor
 		final JsonRuntimeParameterUpsertItem runtimeParameterUpsertItem = JsonRuntimeParameterUpsertItem.builder()
 				.externalSystemParentConfigId(routeContext.getRequest().getExternalSystemConfigId())
 				.request(routeContext.getRequest().getCommand())
-				.name(PARAM_UPDATE_AFTER_DOCUMENT)
+				.name(PARAM_UPDATE_AFTER_ATTACHMENT)
 				.value(String.valueOf(routeContext.getNextAttachmentImportStartDate()))
 				.build();
 

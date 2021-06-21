@@ -20,29 +20,33 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.alberta.ordercandidate;
+package de.metas.camel.externalsystems.alberta.common;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import io.swagger.client.ApiClient;
+import io.swagger.client.api.AttachmentApi;
+import io.swagger.client.api.DocumentApi;
+import io.swagger.client.api.UserApi;
+import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
-public interface GetOrdersRouteConstants
+@Component
+public class AlbertaApiProvider
 {
-
-	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
-	String ROUTE_PROPERTY_CURRENT_ORDER = "currentOrder";
-	String ROUTE_PROPERTY_UPDATED_AFTER = "updatedAfter";
-	String ROUTE_PROPERTY_COMMAND = "command";
-	String ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID = "externalSystemConfigId";
-
-	String DELIVERY_ADDRESS_PREFIX = "delivery_";
-
-	@AllArgsConstructor
-	@Getter
-	enum OrderStatus
+	@NonNull
+	public AttachmentApi getAttachmentApi(@NonNull final ApiClient apiClient)
 	{
-		CREATED("created"),
-		UPDATED("updated");
+		return new AttachmentApi(apiClient);
+	}
 
-		private final String value;
+	@NonNull
+	public DocumentApi getDocumentApi(@NonNull final ApiClient apiClient)
+	{
+		return new DocumentApi(apiClient);
+	}
+
+	@NonNull
+	public UserApi getUserApi(@NonNull final ApiClient apiClient)
+	{
+		return new UserApi(apiClient);
 	}
 }
