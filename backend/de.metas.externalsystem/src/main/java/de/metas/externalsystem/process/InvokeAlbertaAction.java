@@ -32,6 +32,7 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.process.IProcessPreconditionsContext;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,7 +77,7 @@ public class InvokeAlbertaAction extends InvokeExternalSystemProcess
 
 		if (getSinceParameterValue() != null)
 		{
-			parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE, String.valueOf(getSinceParameterValue()));
+			parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE, String.valueOf(TimeUtil.asInstant(getSinceParameterValue())));
 		}
 
 		parameters.put(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE, albertaConfig.getValue());

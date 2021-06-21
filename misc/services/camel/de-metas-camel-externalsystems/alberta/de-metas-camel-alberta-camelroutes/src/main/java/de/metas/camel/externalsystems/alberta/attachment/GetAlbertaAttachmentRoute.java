@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.alberta.attachment;
 
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.processor.AttachmentProcessor;
+import de.metas.camel.externalsystems.alberta.attachment.processor.AttachmentRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.attachment.processor.DocumentProcessor;
 import de.metas.camel.externalsystems.alberta.attachment.processor.DocumentRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.attachment.processor.GetAttachmentProcessor;
@@ -108,8 +109,7 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 						.end()
 				.endChoice()
 				.to(direct(UPSERT_DOCUMENT_RUNTIME_PARAMS_ROUTE_ID))
-				.to(direct(GET_ATTACHMENTS_ROUTE_ID))
-				.to(direct(UPSERT_ATTACHMENT_RUNTIME_PARAMS_ROUTE_ID));
+				.to(direct(GET_ATTACHMENTS_ROUTE_ID));
 
 		from(direct(DOCUMENT_PROCESSOR_ID))
 				.routeId(DOCUMENT_PROCESSOR_ID)
@@ -139,7 +139,8 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 							.stopOnException()
 							.to(direct(ATTACHMENT_PROCESSOR_ID))
 						.end()
-				.endChoice();
+				.endChoice()
+				.to(direct(UPSERT_ATTACHMENT_RUNTIME_PARAMS_ROUTE_ID));
 
 		from(direct(ATTACHMENT_PROCESSOR_ID))
 				.routeId(ATTACHMENT_PROCESSOR_ID)
@@ -166,7 +167,7 @@ public class GetAlbertaAttachmentRoute extends RouteBuilder
 		from(direct(UPSERT_ATTACHMENT_RUNTIME_PARAMS_ROUTE_ID))
 				.routeId(UPSERT_ATTACHMENT_RUNTIME_PARAMS_ROUTE_ID)
 				.log("Route invoked")
-				.process(new DocumentRuntimeParametersProcessor()).id(ATTACHMENT_RUNTIME_PARAMS_PROCESSOR_ID)
+				.process(new AttachmentRuntimeParametersProcessor()).id(ATTACHMENT_RUNTIME_PARAMS_PROCESSOR_ID)
 				.to(direct(ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID));
 		//@formatter:on
 	}
