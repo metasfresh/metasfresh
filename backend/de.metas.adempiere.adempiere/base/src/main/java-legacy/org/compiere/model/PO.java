@@ -3134,7 +3134,10 @@ public abstract class PO
 
 		final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
 
-		Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), state, get_TrxName());
+		if (get_ID() > 0)
+		{
+			Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), state, get_TrxName());
+		}
 
 		// Return "success"
 		return success;

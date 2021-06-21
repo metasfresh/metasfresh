@@ -52,27 +52,6 @@ public interface I_ExternalSystem_Config
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Camel-URL.
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setCamelURL (String CamelURL);
-
-	/**
-	 * Get Camel-URL.
-	 *
-	 * <br>Type: URL
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getCamelURL();
-
-	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_CamelURL = new ModelColumn<>(I_ExternalSystem_Config.class, "CamelURL", null);
-	String COLUMNNAME_CamelURL = "CamelURL";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

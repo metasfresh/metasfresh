@@ -22,9 +22,6 @@
 
 package de.metas.externalsystem.process;
 
-import ch.qos.logback.classic.Level;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -33,6 +30,7 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParameter;
@@ -42,25 +40,16 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
@@ -128,36 +117,11 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 		final Stream<JsonExternalSystemRequest> requestList = invokeAlbertaService
 				.streamSyncExternalRequestsForBPartnerIds(bPartnerIdSet, albertaConfigId, getPinstanceId(), computedOrgId);
 
-		final AtomicBoolean withError = new AtomicBoolean();
-		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
-		{
-			requestList
-					.forEach(request -> {
-						try
-						{
-							aDefault.execute(toHttpPutRequest(request), response -> {
-								final int statusCode = response.getStatusLine().getStatusCode();
-								if (statusCode != 200)
-								{
-									addLog("Camel request error message: {}", response);
-									withError.set(true);
-								}
-								else
-								{
-									addLog("Status code from camel: {}", statusCode);
-								}
-								return response;
-							});
-						}
-						catch (final IOException e)
-						{
-							Loggables.withLogger(log, Level.ERROR).addLog("Failed to execute request " + request);
-							withError.set(true);
-						}
-					});
-		}
+		final ExternalSystemMessageSender externalSystemMessageSender = SpringContextHolder.instance.getBean(ExternalSystemMessageSender.class);
 
-		return withError.get() ? JavaProcess.MSG_Error : JavaProcess.MSG_OK;
+		requestList.forEach(externalSystemMessageSender::send);
+
+		return JavaProcess.MSG_OK;
 	}
 
 	@NonNull
@@ -189,23 +153,5 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 		return bPartnerQuery.create()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	private HttpPut toHttpPutRequest(
-			@NonNull final JsonExternalSystemRequest jsonExternalSystemRequest) throws UnsupportedEncodingException, JsonProcessingException
-	{
-		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(ExternalSystemAlbertaConfigId.ofRepoId(externalSystemConfigAlbertaId));
-
-		final HttpPut request = new HttpPut(config.getCamelUrl());
-
-		// attempt to encode the request body as UTF-8. Oftherwise camel might fail to deserialize the JSON
-		// by default http-client encodes the content as ISO-8859-1, https://hc.apache.org/httpclient-legacy/charencodings.html
-		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
-
-		final String jsonExternalSystemRequestString = new ObjectMapper().writeValueAsString(jsonExternalSystemRequest);
-
-		request.setEntity(new StringEntity(jsonExternalSystemRequestString));
-
-		return request;
 	}
 }
