@@ -1,18 +1,8 @@
-package de.metas.marketing.base.model;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * marketing-base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +19,17 @@ import javax.annotation.Nullable;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.campaign;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class CampaignId implements RepoIdAware
@@ -49,7 +50,7 @@ public class CampaignId implements RepoIdAware
 
 	private CampaignId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "MKTG_Campaign_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Campaign_ID");
 	}
 
 	@Override
@@ -58,4 +59,8 @@ public class CampaignId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static int toRepoId(@Nullable final CampaignId id) { return id != null ? id.getRepoId() : -1; }
+
+	public static boolean equals(@Nullable final CampaignId id1, @Nullable final CampaignId id2) { return Objects.equals(id1, id2); }
 }

@@ -3199,4 +3199,9 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_VendorCategory = new ModelColumn<>(I_C_BPartner.class, "VendorCategory", null);
 	String COLUMNNAME_VendorCategory = "VendorCategory";
+
+	// FIXME: introduce the actual column
+	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+	default void setC_Campaign_ID(int id) {};
+	default int getC_Campaign_ID() { return -1; }
 }

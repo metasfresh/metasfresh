@@ -651,4 +651,9 @@ public interface I_C_BPartner_QuickInput
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	// FIXME: introduce the actual column
+	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+	default void setC_Campaign_ID(final int id) {}
+	default int getC_Campaign_ID() { return -1; }
 }
