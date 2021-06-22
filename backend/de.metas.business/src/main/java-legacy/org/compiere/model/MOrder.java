@@ -222,7 +222,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		else
 		{
-			orderBL.setDocTypeTargetId(this);
+			orderBL.setDefaultDocTypeTargetId(this);
 		}
 	}    // MOrder
 
@@ -399,17 +399,6 @@ public class MOrder extends X_C_Order implements IDocument
 	 * Sales Order Sub Type - RM
 	 */
 	public static final String DocSubType_RMA = "RM";
-
-	/**
-	 * Set Target Sales Document Type
-	 *
-	 * @param DocSubType_x SO sub type - see DocSubType_*
-	 */
-	@Deprecated
-	public void setC_DocTypeTarget_ID(final String DocSubType_x)
-	{
-		orderBL.setSODocTypeTargetId(this, DocSubType_x);
-	}    // setC_DocTypeTarget_ID
 
 	/**
 	 * Set Business Partner Defaults & Details.
@@ -978,6 +967,7 @@ public class MOrder extends X_C_Order implements IDocument
 		// Default Document Type
 		if (getC_DocTypeTarget_ID() <= 0)
 		{
+			setIsSOTrx(true);
 			orderBL.setSODocTypeTargetId(this, DocSubType_Standard);
 		}
 

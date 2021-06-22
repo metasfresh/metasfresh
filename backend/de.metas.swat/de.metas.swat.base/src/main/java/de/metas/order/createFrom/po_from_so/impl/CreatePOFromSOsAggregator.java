@@ -203,7 +203,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 		else
 		{
-			orderBL.setDocTypeTargetId(purchaseOrder);
+			orderBL.setDefaultDocTypeTargetId(purchaseOrder);
 		}
 
 		//

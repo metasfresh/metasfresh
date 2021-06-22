@@ -78,7 +78,7 @@ public class C_RfQ_CreateSO extends JavaProcess
 		}
 		else
 		{
-			orderBL.setDocTypeTargetId(order);
+			orderBL.setDefaultDocTypeTargetId(order);
 		}
 		order.setBPartner(bp);
 		order.setC_BPartner_Location_ID(rfq.getC_BPartner_Location_ID());

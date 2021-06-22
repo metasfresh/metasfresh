@@ -117,18 +117,18 @@ public interface IOrderBL extends ISingletonService
 
 	PriceListId retrievePriceListId(I_C_Order order, PricingSystemId pricingSystemIdOverride);
 
-	/**
-	 * Set Target Sales Document Type.
-	 * This method is also setting IsSOTrx to true.
-	 */
-	void setDocTypeTargetId(I_C_Order order);
-
-	void setPODocTypeTargetId(I_C_Order order, String soDocSubType);
 
 	/**
 	 * Sets Target Document Type based on {@link I_C_Order#isSOTrx()} (Standard Order or PO)
 	 */
-	void setSODocTypeTargetId(I_C_Order order, final String docSubType);
+	void setDefaultDocTypeTargetId(I_C_Order order);
+
+	void setPODocTypeTargetId(I_C_Order order, String poDocSubType);
+
+	/**
+	 * Set Target Sales Document Type.
+	 */
+	void setSODocTypeTargetId(I_C_Order order, final String soDocSubType);
 
 	void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, DocTypeId docTypeId);
 

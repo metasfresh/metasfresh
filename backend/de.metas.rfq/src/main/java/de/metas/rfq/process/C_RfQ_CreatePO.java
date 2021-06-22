@@ -99,7 +99,7 @@ public class C_RfQ_CreatePO extends JavaProcess
 			}
 			else
 			{
-				orderBL.setDocTypeTargetId(order);
+				orderBL.setDefaultDocTypeTargetId(order);
 			}
 			order.setBPartner(bp);
 			order.setC_BPartner_Location_ID(rfqResponse.getC_BPartner_Location_ID());
@@ -166,7 +166,7 @@ public class C_RfQ_CreatePO extends JavaProcess
 				{
 					order = new MOrder(getCtx(), 0, get_TrxName());
 					order.setIsSOTrx(false);
-					orderBL.setDocTypeTargetId(order);
+					orderBL.setDefaultDocTypeTargetId(order);
 					order.setBPartner(bp);
 					order.setC_BPartner_Location_ID(response.getC_BPartner_Location_ID());
 					order.setSalesRep_ID(rfq.getSalesRep_ID());

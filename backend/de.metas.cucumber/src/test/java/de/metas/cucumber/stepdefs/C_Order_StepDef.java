@@ -160,7 +160,7 @@ public class C_Order_StepDef
 	}
 
 	@Then("the sales order identified by {string} is closed")
-	public void theSalesOrderIdentifiedByO_IsClosed(@NonNull final String orderIdentifier)
+	public void salesOrderIsClosed(@NonNull final String orderIdentifier)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
 		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
