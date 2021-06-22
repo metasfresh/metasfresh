@@ -22,7 +22,7 @@ $BODY$
 DECLARE
     taxnotetext text;
 BEGIN
-    select String_agg(report.textsnippet(t.ad_boilerplate_id), '\n')
+    select String_agg(distinct report.textsnippet(t.ad_boilerplate_id), ''||E'\n')
     into taxnotetext
     from c_invoiceline il
              join C_Tax t on il.c_tax_id = t.c_tax_id
