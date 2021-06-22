@@ -72,7 +72,7 @@ public class PrepareApiClientsProcessor implements Processor
 
 		final String updatedAfter = CoalesceUtil.coalesce(
 				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
-				// request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER), // todo fp-ps discuss cp
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
 				Instant.ofEpochMilli(0).toString());
 
 		final GetPatientsRouteContext context = GetPatientsRouteContext.builder()
