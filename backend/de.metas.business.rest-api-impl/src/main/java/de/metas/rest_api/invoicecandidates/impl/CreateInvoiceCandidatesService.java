@@ -11,7 +11,7 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.i18n.TranslatableStrings;

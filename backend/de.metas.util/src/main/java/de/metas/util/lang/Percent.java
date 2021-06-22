@@ -276,6 +276,11 @@ public class Percent
 
 	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision)
 	{
+		return addToBase(base,precision,RoundingMode.HALF_UP);
+	}
+	
+	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision, final RoundingMode roundingMode)
+	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
 
 		if (base.signum() == 0)
@@ -284,12 +289,12 @@ public class Percent
 		}
 		else if (isZero())
 		{
-			return base.setScale(precision, RoundingMode.HALF_UP);
+			return base.setScale(precision, roundingMode);
 		}
 		else
 		{
 			// make sure the base we work with does not have more digits than we expect from the given precision.
-			final BigDecimal baseToUse = base.setScale(precision, RoundingMode.HALF_UP);
+			final BigDecimal baseToUse = base.setScale(precision, roundingMode);
 
 			return baseToUse
 					.setScale(precision + 2)

@@ -280,7 +280,7 @@ public class ShipmentScheduleWithHUService
 
 		if (qtyToDeliver.signum() <= 0)
 		{
-			loggableWithLogger.addLog("pickHUsOnTheFly - qtyToDeliver={} is <= 0; nothing to do");
+			loggableWithLogger.addLog("pickHUsOnTheFly - qtyToDeliver={} is <= 0; nothing to do", qtyToDeliver);
 			return ImmutableList.of();
 		}
 

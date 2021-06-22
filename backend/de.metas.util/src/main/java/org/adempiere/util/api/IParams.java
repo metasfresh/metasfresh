@@ -52,6 +52,7 @@ public interface IParams
 	Object getParameterAsObject(String parameterName);
 
 	/** @return string value or <code>null</code> if parameter is missing */
+	@Nullable
 	String getParameterAsString(String parameterName);
 
 	/** @return int value or <code>defaultValue</code> if parameter is missing or cannot be converted to integer */

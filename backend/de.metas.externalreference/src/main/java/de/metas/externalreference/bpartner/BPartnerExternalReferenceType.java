@@ -52,6 +52,6 @@ public enum BPartnerExternalReferenceType implements IExternalReferenceType
 		{
 			return BPARTNER_VALUE;
 		}
-		throw new AdempiereException("Unsupported code " + code + " for BPartnerExternalReferenceType. Hint: only 'BPartner' is allowed");
+		throw new AdempiereException("Unsupported code " + code + " for BPartnerExternalReferenceType. Hint: only 'BPartner' and 'BPartnerValue' is allowed");
 	}
 }

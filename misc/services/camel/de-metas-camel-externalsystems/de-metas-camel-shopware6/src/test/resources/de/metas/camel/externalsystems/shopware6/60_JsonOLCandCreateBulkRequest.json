@@ -18,6 +18,12 @@
       },
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode" : "mockSalesRepIdentifier"
+      },
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-paymentTermValue",
       "productIdentifier": "ext-Shopware6-productId",
       "qty": 1,
       "price": 14.8,
@@ -58,6 +64,12 @@
       },
       "dateRequired": "2021-03-03",
       "flatrateConditionsId": 0,
+      "paymentRule": "Paypal",
+      "salesPartner": {
+        "salesPartnerCode" : "mockSalesRepIdentifier"
+      },
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-paymentTermValue",
       "productIdentifier": "ext-Shopware6-productId2",
       "qty": 10,
       "price": 100,

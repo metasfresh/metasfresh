@@ -11,6 +11,7 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonResponseBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.externalreference.ExternalIdentifier;
@@ -19,6 +20,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineGroup;
+import de.metas.order.impl.DocTypeService;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
@@ -27,8 +29,8 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.product.IProductBL;
 import de.metas.rest_api.utils.CurrencyService;
-import de.metas.rest_api.v2.util.DocTypeService;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -47,6 +49,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -80,6 +83,7 @@ public class JsonConverters
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
@@ -103,7 +107,8 @@ public class JsonConverters
 
 		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
 
-		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(request.getProductIdentifier());
+		final String jsonProductIdentifier = request.getProductIdentifier();
+		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(jsonProductIdentifier);
 		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
@@ -126,8 +131,8 @@ public class JsonConverters
 		if (!"DEST.de.metas.invoicecandidate".equals(dataDestInternalName)) // TODO extract constant
 		{
 			Check.assumeNotNull(request.getDateRequired(),
-								"dateRequired may not be null, unless dataDestInternalName={}; this={}",
-								"DEST.de.metas.invoicecandidate", this);
+					"dateRequired may not be null, unless dataDestInternalName={}; this={}",
+					"DEST.de.metas.invoicecandidate", this);
 		}
 
 		final ShipperId shipperId = masterdataProvider.getShipperId(request);
@@ -152,6 +157,19 @@ public class JsonConverters
 		final OrderLineGroup orderLineGroup = jsonOrderLineGroup == null
 				? null
 				: OrderLineGroup.ofOrNull(jsonOrderLineGroup.getGroupKey(), jsonOrderLineGroup.isGroupMainItem());
+		if (orderLineGroup != null && orderLineGroup.isGroupMainItem() && productBL.isStocked(productInfo.getProductId()))
+		{
+			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
+		}
+
+		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+				.map(JsonDocTypeInfo::getDocBaseType)
+				.orElse(null);
+
+		final String subType = Optional.ofNullable(request.getInvoiceDocType())
+				.map(JsonDocTypeInfo::getDocSubType)
+				.orElse(null);
+
 
 		return OLCandCreateRequest.builder()
 				//
@@ -173,7 +191,7 @@ public class JsonConverters
 				.dateRequired(request.getDateRequired())
 				.dateCandidate(request.getDateCandidate())
 				//
-				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(request.getInvoiceDocType(), orgId))
+				.docTypeInvoiceId(docTypeService.getInvoiceDocTypeId(docBaseType, subType, orgId))
 				.docTypeOrderId(docTypeService.getOrderDocTypeId(request.getOrderDocType(), orgId))
 				.presetDateInvoiced(request.getPresetDateInvoiced())
 				//
@@ -258,6 +276,7 @@ public class JsonConverters
 		return dataSourceId;
 	}
 
+	@Nullable
 	private JsonResponseBPartnerLocationAndContact toJson(
 			@Nullable final String orgCode,
 			@Nullable final BPartnerInfo bpartnerInfo,
@@ -284,8 +303,8 @@ public class JsonConverters
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
 		return JsonOLCandCreateBulkResponse.ok(olCands.stream()
-													   .map(olCand -> toJson(olCand, masterdataProvider))
-													   .collect(ImmutableList.toImmutableList()));
+				.map(olCand -> toJson(olCand, masterdataProvider))
+				.collect(ImmutableList.toImmutableList()));
 	}
 
 	private JsonOLCand toJson(
