@@ -61,6 +61,7 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -104,6 +105,35 @@ public class ProductRestService
 			@NonNull final JsonRequestProductUpsert request)
 	{
 		return trxManager.callInNewTrx(() -> upsertProductsWithinTrx(orgCode, request));
+	}
+
+	@NonNull
+	public Optional<ProductId> resolveProductExternalIdentifier(
+			@NonNull final ExternalIdentifier productIdentifier,
+			@NonNull final OrgId orgId)
+	{
+		switch (productIdentifier.getType())
+		{
+			case METASFRESH_ID:
+				return Optional.of(ProductId.ofRepoId(productIdentifier.asMetasfreshId().getValue()));
+
+			case EXTERNAL_REFERENCE:
+				return externalReferenceRestControllerService
+						.getJsonMetasfreshIdFromExternalReference(orgId, productIdentifier, ProductExternalReferenceType.PRODUCT)
+						.map(JsonMetasfreshId::getValue)
+						.map(ProductId::ofRepoId);
+
+			case VALUE:
+				final IProductDAO.ProductQuery query = IProductDAO.ProductQuery.builder()
+						.value(productIdentifier.asValue())
+						.orgId(orgId)
+						.includeAnyOrg(true)
+						.build();
+
+				return Optional.ofNullable(productDAO.retrieveProductIdBy(query));
+			default:
+				throw new InvalidIdentifierException(productIdentifier.getRawValue());
+		}
 	}
 
 	@NonNull
@@ -291,29 +321,7 @@ public class ProductRestService
 			}
 		}
 
-		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(productIdentifier);
-
-		switch (externalIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return Optional.of(ProductId.ofRepoId(externalIdentifier.asMetasfreshId().getValue()));
-
-			case EXTERNAL_REFERENCE:
-
-				final Optional<ProductId> productId = getJsonMetasfreshIdFromExternalReference(org.getValue(), externalIdentifier, ProductExternalReferenceType.PRODUCT)
-						.map(JsonMetasfreshId::getValue)
-						.map(ProductId::ofRepoId);
-
-				if (productId.isPresent())
-				{
-					return productId;
-				}
-				break;
-			default:
-				throw new AdempiereException("Unsupported external identifier: " + productIdentifier);
-		}
-
-		return Optional.empty();
+		return resolveProductExternalIdentifier(ExternalIdentifier.of(productIdentifier), OrgId.ofRepoId(org.getAD_Org_ID()));
 	}
 
 	private void createOrUpdateBpartnerProducts(

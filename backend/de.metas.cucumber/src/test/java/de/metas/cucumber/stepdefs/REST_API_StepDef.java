@@ -22,7 +22,11 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.common.rest_api.common.JsonTestResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -32,6 +36,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class REST_API_StepDef
 {
@@ -101,5 +107,25 @@ public class REST_API_StepDef
 	public void the_metasfresh_REST_API_responds_with(@NonNull final String expectedResponse) throws JSONException
 	{
 		JSONAssert.assertEquals(expectedResponse, apiResponse.getContent(), JSONCompareMode.LENIENT);
+	}
+
+	@When("invoke {string} {string} with response code {string}")
+	public void invoke_httpMethod_with_url(@NonNull final String verb, @NonNull final String endpointPath, @NonNull final String responseCode) throws IOException
+	{
+		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, null, userAuthToken, Integer.parseInt(responseCode));
+		testContext.setApiResponse(apiResponse);
+	}
+
+	@And("the actual response body is")
+	public void validate_response_body(@NonNull final String responseBody) throws JsonProcessingException
+	{
+		final ObjectMapper mapper = new ObjectMapper();
+
+		final String responseJson = testContext.getApiResponse().getContent();
+		final JsonTestResponse apiResponse = mapper.readValue(responseJson, JsonTestResponse.class);
+
+		final JsonTestResponse mappedResponseBody = mapper.readValue(responseBody, JsonTestResponse.class);
+
+		assertThat(apiResponse.getMessageBody()).isEqualTo(mappedResponseBody.getMessageBody());
 	}
 }

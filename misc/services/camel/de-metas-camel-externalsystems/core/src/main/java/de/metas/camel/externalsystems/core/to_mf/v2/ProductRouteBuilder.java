@@ -37,8 +37,8 @@ import org.springframework.util.StringUtils;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_PRODUCTS_ROUTE_ID;
-import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.AD_PINSTANCE_ID;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CHILD_CONFIG_VALUE;
 import static de.metas.common.product.v2.response.ProductsQueryParams.EXTERNAL_SYSTEM_CONFIG_TYPE;
@@ -100,7 +100,9 @@ public class ProductRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("http://{{metasfresh.upsert-product-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}");
+				.toD("{{metasfresh.upsert-product-v2.api.uri}}/${header." + HEADER_ORG_CODE + "}")
+
+				.to(direct(UNPACK_V2_API_RESPONSE));
 	}
 
 	@NonNull

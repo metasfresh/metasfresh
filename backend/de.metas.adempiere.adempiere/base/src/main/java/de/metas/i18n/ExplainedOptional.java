@@ -1,12 +1,14 @@
 package de.metas.i18n;
 
- import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
- import javax.annotation.Nullable;
- import java.util.Objects;
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
+import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /*
@@ -54,7 +56,7 @@ public final class ExplainedOptional<T>
 	private final T value;
 	private final ITranslatableString explanation;
 
-	private ExplainedOptional(@Nullable final T value, final ITranslatableString explanation)
+	private ExplainedOptional(@Nullable final T value, @Nullable final ITranslatableString explanation)
 	{
 		this.value = value;
 		this.explanation = TranslatableStrings.nullToEmpty(explanation);
@@ -94,12 +96,14 @@ public final class ExplainedOptional<T>
 		return explanation != null ? explanation : TranslatableStrings.empty();
 	}
 
+	@Nullable
 	public T orElseNull()
 	{
 		return orElse(null);
 	}
 
-	public T orElse(final T other)
+	@Nullable
+	public T orElse(@Nullable final T other)
 	{
 		return value != null ? value : other;
 	}
@@ -139,5 +143,23 @@ public final class ExplainedOptional<T>
 				return of(newValue);
 			}
 		}
+	}
+
+	public ExplainedOptional<T> ifPresent(@NonNull final Consumer<T> consumer)
+	{
+		if (isPresent())
+		{
+			consumer.accept(value);
+		}
+		return this;
+	}
+
+	public ExplainedOptional<T> ifAbsent(@NonNull final Consumer<ITranslatableString> consumer)
+	{
+		if (!isPresent())
+		{
+			consumer.accept(explanation);
+		}
+		return this;
 	}
 }

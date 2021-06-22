@@ -56,6 +56,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.UUID;
 
 import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.asInstant;
@@ -184,10 +185,10 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestContactUpsert.JsonRequestContactUpsertBuilder upsertContactBuilder = JsonRequestContactUpsert.builder()
 				.requestItem(patientToContactUpsertItem(patient));
 
-		billingAddressToContactUpsertItem(patientId, patient.getBillingAddress())
+		billingAddressToContactUpsertItem(patientId, bPartner.getName(), patient.getBillingAddress())
 				.ifPresent(upsertContactBuilder::requestItem);
 
-		deliveryAddressToContactUpsertItem(patientId, patient.getDeliveryAddress())
+		deliveryAddressToContactUpsertItem(patientId, bPartner.getName(), patient.getDeliveryAddress())
 				.ifPresent(upsertContactBuilder::requestItem);
 
 		final JsonRequestComposite upsertCompositeBPRequest = JsonRequestComposite.builder()
@@ -233,6 +234,7 @@ public class BPartnerUpsertRequestProducer
 		final JsonRequestContactUpsert requestContactUpsert;
 		{//contact
 			final JsonRequestContact contact = new JsonRequestContact();
+			contact.setName(new StringJoiner(" ").add(careGiver.getFirstName()).add(careGiver.getLastName()).toString());
 			contact.setFirstName(careGiver.getFirstName());
 			contact.setLastName(careGiver.getLastName());
 			contact.setPhone(careGiver.getPhone());
@@ -382,10 +384,10 @@ public class BPartnerUpsertRequestProducer
 
 		final JsonRequestContactUpsert.JsonRequestContactUpsertBuilder requestContactUpsert = JsonRequestContactUpsert.builder();
 
-		final Optional<JsonRequestContactUpsertItem> createdByContact = userToBPartner(createdBy);
+		final Optional<JsonRequestContactUpsertItem> createdByContact = DataMapper.userToBPartnerContact(createdBy);
 		createdByContact.ifPresent(requestContactUpsert::requestItem);
 
-		userToBPartner(updatedBy)
+		DataMapper.userToBPartnerContact(updatedBy)
 				.filter(updatedByContact -> createdByContact.isEmpty() || !updatedByContact.getContactIdentifier().equals(createdByContact.get().getContactIdentifier()))
 				.ifPresent(requestContactUpsert::requestItem);
 
@@ -397,28 +399,6 @@ public class BPartnerUpsertRequestProducer
 								   .builder()
 								   .bpartnerIdentifier(String.valueOf(rootBPartnerIdForUsers.getValue()))
 								   .bpartnerComposite(jsonRequestComposite)
-								   .build());
-	}
-
-	private Optional<JsonRequestContactUpsertItem> userToBPartner(@Nullable final Users users)
-	{
-		if (users == null)
-		{
-			return Optional.empty();
-		}
-
-		final JsonRequestContact contact = new JsonRequestContact();
-		contact.setFirstName(users.getFirstName());
-		contact.setLastName(users.getLastName());
-		contact.setEmail(users.getEmail());
-
-		final JsonAlbertaContact albertaContact = new JsonAlbertaContact();
-		albertaContact.setTimestamp(asInstant(users.getTimestamp()));
-
-		return Optional.of(JsonRequestContactUpsertItem.builder()
-								   .contactIdentifier(formatExternalId(users.getId()))
-								   .contact(contact)
-								   .jsonAlbertaContact(albertaContact)
 								   .build());
 	}
 

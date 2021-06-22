@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.Value;
 
@@ -36,4 +37,7 @@ public class APIResponse
 
 	@Nullable
 	String contentType;
+
+	@Nullable
+	JsonMetasfreshId requestId;
 }

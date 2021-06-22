@@ -1,9 +1,9 @@
 package de.metas.ui.web.window.descriptor;
 
-import com.google.common.base.MoreObjects;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
-
-import javax.annotation.concurrent.Immutable;
+import lombok.NonNull;
+import lombok.Value;
 
 /*
  * #%L
@@ -30,52 +30,15 @@ import javax.annotation.concurrent.Immutable;
 /**
  * Describes which window to be used to capture the fields for quickly creating a record for a given table.
  */
-@Immutable
-public final class AdvancedSearchDescriptor
+@Value(staticConstructor = "of")
+public class AdvancedSearchDescriptor
 {
-	public static AdvancedSearchDescriptor of(final String tableName, final int advSearchWindowId, final AdvancedSearchSelectionProcessor processor)
-	{
-		return new AdvancedSearchDescriptor(tableName, advSearchWindowId, processor);
-	}
-
 	public interface AdvancedSearchSelectionProcessor
 	{
-		void processSelection(Document document, final String fieldName, String selectionIdStr);
+		void processSelection(WindowId windowId, Document document, String bpartnerFieldName, String selectionIdStr);
 	}
 
-	private final String tableName;
-	private final int windowId;
-	private final AdvancedSearchSelectionProcessor processor;
-
-	private AdvancedSearchDescriptor(final String tableName, final int windowId, final AdvancedSearchSelectionProcessor processor)
-	{
-		super();
-		this.tableName = tableName;
-		this.windowId = windowId;
-		this.processor = processor;
-	}
-
-	@Override
-	public String toString()
-	{
-		return MoreObjects.toStringHelper(this)
-				.add(tableName, tableName)
-				.add("windowId", windowId)
-				.toString();
-	}
-
-	public String getTableName()
-	{
-		return tableName;
-	}
-
-	public int getWindowId()
-	{
-		return windowId;
-	}
-
-	public AdvancedSearchSelectionProcessor getProcessor()
-	{
-		return processor;
-	}
+	@NonNull String tableName;
+	@NonNull WindowId windowId;
+	@NonNull AdvancedSearchSelectionProcessor processor;
 }

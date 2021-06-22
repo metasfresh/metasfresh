@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.time.SystemTime;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 
 public class SystemTime_StepDef
@@ -31,5 +32,11 @@ public class SystemTime_StepDef
 	public void metasfresh_has_the_local_time(String zonedDateTime)
 	{
 		SystemTime.setFixedTimeSource(zonedDateTime);
+	}
+
+	@And("we wait for {int} ms")
+	public void thread_sleep(final int sleepTime) throws InterruptedException
+	{
+		Thread.sleep(sleepTime);
 	}
 }

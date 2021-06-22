@@ -30,6 +30,9 @@ public interface GetOrdersRouteConstants
 
 	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
 	String ROUTE_PROPERTY_CURRENT_ORDER = "currentOrder";
+	String ROUTE_PROPERTY_UPDATED_AFTER = "updatedAfter";
+	String ROUTE_PROPERTY_COMMAND = "command";
+	String ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID = "externalSystemConfigId";
 
 	String DELIVERY_ADDRESS_PREFIX = "delivery_";
 

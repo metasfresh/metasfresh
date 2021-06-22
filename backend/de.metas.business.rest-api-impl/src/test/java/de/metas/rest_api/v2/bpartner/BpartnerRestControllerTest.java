@@ -168,9 +168,10 @@ class BpartnerRestControllerTest
 
 		externalReferenceRestControllerService = new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+		//Services.registerService(IBPartnerBL.class, partnerBL);
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository());
 		currencyRepository = new CurrencyRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(

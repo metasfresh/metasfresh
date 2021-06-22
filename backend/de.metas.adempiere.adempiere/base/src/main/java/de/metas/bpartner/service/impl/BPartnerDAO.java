@@ -579,7 +579,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_AD_User.class, ctx, trxName)
 				.addEqualsFilter(org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.orderBy(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
+				.orderBy()
+				.addColumn(org.compiere.model.I_AD_User.COLUMNNAME_SeqNo)
+				.addColumn(org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID)
+				.endOrderBy()
 				.create()
 				.listImmutable(I_AD_User.class);
 	}

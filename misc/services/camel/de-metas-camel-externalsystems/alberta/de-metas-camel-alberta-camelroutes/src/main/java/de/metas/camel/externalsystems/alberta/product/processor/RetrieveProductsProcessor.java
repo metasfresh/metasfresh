@@ -27,13 +27,17 @@ import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import java.time.Instant;
+
 import static de.metas.camel.externalsystems.alberta.product.PushProductsRouteConstants.ALBERTA_EXTERNAL_SYSTEM_CONFIG_TYPE;
 import static de.metas.camel.externalsystems.alberta.product.PushProductsRouteConstants.ROUTE_PROPERTY_ALBERTA_PRODUCT_API;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER;
 
 /**
  * Prepares the exchange so that we can retrieve products from metasfresh and create them in Alberta.
@@ -69,11 +73,15 @@ public class RetrieveProductsProcessor implements Processor
 
 	private GetProductsCamelRequest buildGetProductsCamelRequest(@NonNull final JsonExternalSystemRequest request)
 	{
+		final String updatedAfter = CoalesceUtil.coalesce(
+				request.getParameters().get(PARAM_UPDATED_AFTER),
+				Instant.ofEpochSecond(0).toString());
+
 		return GetProductsCamelRequest.builder()
 				.pInstanceId(request.getAdPInstanceId())
 				.externalSystemType(ALBERTA_EXTERNAL_SYSTEM_CONFIG_TYPE)
 				.externalSystemChildConfigValue(request.getParameters().get(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE))
-				.since(request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER))
+				.since(updatedAfter)
 				.build();
 	}
 }

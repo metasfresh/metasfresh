@@ -48,6 +48,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.BILL_TO_SUFFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.EXTERNAL_ID_PREFIX;
@@ -156,6 +157,7 @@ public class BPartnerUpsertRequestProducer
 	private JsonRequestContactUpsert getUpsertContactRequest()
 	{
 		final JsonRequestContact contactRequest = new JsonRequestContact();
+		contactRequest.setName(new StringJoiner(" ").add(orderCustomer.getFirstName()).add(orderCustomer.getLastName()).toString());
 		contactRequest.setFirstName(orderCustomer.getFirstName());
 		contactRequest.setLastName(orderCustomer.getLastName());
 		contactRequest.setEmail(orderCustomer.getEmail());
