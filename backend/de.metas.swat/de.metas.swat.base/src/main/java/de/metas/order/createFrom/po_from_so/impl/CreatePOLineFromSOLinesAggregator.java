@@ -199,7 +199,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(purchaseQtySource))
 		{
 			purchaseQty = PurchaseTypeEnum.MEDIATED.equals(purchaseType)
-					? salesOrderLine.getQtyDelivered().subtract(salesOrderLine.getQtyOrdered())
+					? salesOrderLine.getQtyOrdered().subtract(salesOrderLine.getQtyDelivered())
 					: salesOrderLine.getQtyOrdered();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_QtyReserved.equals(purchaseQtySource))
