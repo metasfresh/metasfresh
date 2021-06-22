@@ -34,6 +34,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
@@ -86,7 +87,8 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final List<SqlViewCustomizer> viewCustomizersList,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final Optional<List<ViewHeaderPropertiesProvider>> headerPropertiesProvider,
-			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators,
+			@NonNull final Optional<List<SqlDocumentFilterConverter>> filterConverters,
+			@NonNull final Optional<List<SqlDocumentFilterConverterDecorator>> filterConverterDecorators,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
 			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
 	{
@@ -101,7 +103,8 @@ public class SqlViewFactory implements IViewFactory
 		final SqlViewBindingFactory viewBindingsFactory = SqlViewBindingFactory.builder()
 				.documentDescriptorFactory(documentDescriptorFactory)
 				.viewCustomizers(viewCustomizers)
-				.converterDecorators(converterDecorators)
+				.filterConverters(filterConverters.orElseGet(ImmutableList::of))
+				.filterConverterDecorators(filterConverterDecorators.orElseGet(ImmutableList::of))
 				.viewInvalidationAdvisors(viewInvalidationAdvisors)
 				.build();
 
@@ -262,7 +265,7 @@ public class SqlViewFactory implements IViewFactory
 				value = de.metas.common.util.time.SystemTime.asZonedDateTime();
 			}
 		}
-		else if(filterParamDescriptor.isAutoFilterInitialValueIsCurrentLoggedUser())
+		else if (filterParamDescriptor.isAutoFilterInitialValueIsCurrentLoggedUser())
 		{
 			// FIXME: we shall get the current logged user or context as parameter
 			final UserId loggedUserId = Env.getLoggedUserId();
