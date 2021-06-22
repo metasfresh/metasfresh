@@ -54,7 +54,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
             './', // workDir
             '', // additionalBuildArgs
             'Dockerfile', // dockerFile
-            'registry.hub.docker.com', // pullRegistry
+            '', // pullRegistry - empty string means "use dockerhub!"
             'dockerhub_metasfresh' // pullRegistryCredentialsId
     ) 
     final String publishedDockerImageName = dockerBuildAndPush(dockerConf)
