@@ -139,7 +139,7 @@ public class DistributionCreate extends JavaProcess
 			//
 			m_singleOrder = new MOrder (getCtx(), 0, get_TrxName());
 			m_singleOrder.setIsSOTrx(true);
-			orderBL.setDocTypeTargetId(m_singleOrder, MOrder.DocSubType_Standard);
+			orderBL.setSODocTypeTargetId(m_singleOrder, MOrder.DocSubType_Standard);
 			m_singleOrder.setBPartner(bp);
 			if (p_Bill_Location_ID != 0)
 				m_singleOrder.setC_BPartner_Location_ID(p_Bill_Location_ID);
@@ -181,7 +181,7 @@ public class DistributionCreate extends JavaProcess
 		{
 			order = new MOrder (getCtx(), 0, get_TrxName());
 			order.setIsSOTrx(true);
-			orderBL.setDocTypeTargetId(order, MOrder.DocSubType_Standard);
+			orderBL.setSODocTypeTargetId(order, MOrder.DocSubType_Standard);
 			order.setBPartner(bp);
 			if (dll.getC_BPartner_Location_ID() != 0)
 				order.setC_BPartner_Location_ID(dll.getC_BPartner_Location_ID());
