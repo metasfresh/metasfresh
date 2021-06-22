@@ -167,6 +167,7 @@ public class TextEditorContextMenuAction extends AbstractContextMenuAction
 			//	Start it
 			HTMLEditor ed = new HTMLEditor (frame, title, text, editable);
 			textNew = ed.getHtmlText();
+			ed = null;
 		}
 		else
 		{

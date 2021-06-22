@@ -1,33 +1,34 @@
 package de.metas.document.archive.spi.impl;
 
-import static de.metas.i18n.Language.AD_Language_en_AU;
-import static de.metas.i18n.Language.AD_Language_en_GB;
-import static de.metas.i18n.Language.AD_Language_en_US;
-import static de.metas.i18n.Language.asLanguage;
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Invoice;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.document.archive.mailrecipient.impl.InvoiceDocOutboundLogMailRecipientProvider;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Invoice;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Optional;
+
+import static de.metas.i18n.Language.AD_Language_en_AU;
+import static de.metas.i18n.Language.AD_Language_en_GB;
+import static de.metas.i18n.Language.AD_Language_en_US;
+import static de.metas.i18n.Language.asLanguage;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -53,11 +54,11 @@ import de.metas.util.Services;
 
 public class InvoiceDocOutboundLogMailRecipientProviderTest
 {
-	private I_C_Doc_Outbound_Log docOutboundLogRecord;
 	private InvoiceDocOutboundLogMailRecipientProvider invoiceDocOutboundLogMailRecipientProvider;
 	private I_C_BPartner bPartnerRecord;
+	private I_C_Invoice invoiceRecord;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -70,24 +71,17 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		bPartnerLocationRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		save(bPartnerLocationRecord);
 
-		final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
+		invoiceRecord = newInstance(I_C_Invoice.class);
 		invoiceRecord.setC_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		invoiceRecord.setC_BPartner_Location_ID(bPartnerLocationRecord.getC_BPartner_Location_ID());
 		saveRecord(invoiceRecord);
 
-		docOutboundLogRecord = newInstance(I_C_Doc_Outbound_Log.class);
-		docOutboundLogRecord.setAD_Table_ID(getTableId(I_C_Invoice.class));
-		docOutboundLogRecord.setRecord_ID(invoiceRecord.getC_Invoice_ID());
-		saveRecord(docOutboundLogRecord);
-
-		final UserRepository userRepository = new UserRepository();
-
-		final BPartnerBL bPartnerBL = new BPartnerBL(userRepository);
-		Services.registerService(IBPartnerBL.class, bPartnerBL);
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, bpartnerBL);
 
 		invoiceDocOutboundLogMailRecipientProvider = new InvoiceDocOutboundLogMailRecipientProvider(
-				new DocOutBoundRecipientRepository(bPartnerBL),
-				bPartnerBL);
+				new DocOutBoundRecipientRepository(bpartnerBL),
+				bpartnerBL);
 	}
 
 	@Test
@@ -108,7 +102,12 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 		saveRecord(userRecord);
 
 		// invoke the method under test
-		final Optional<DocOutBoundRecipient> result = invoiceDocOutboundLogMailRecipientProvider.provideMailRecipient(docOutboundLogRecord);
+		final Optional<DocOutBoundRecipient> result = invoiceDocOutboundLogMailRecipientProvider.provideMailRecipient(
+				DocOutboundLogMailRecipientRequest.builder()
+						.recordRef(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceRecord.getC_Invoice_ID()))
+						.clientId(ClientId.ofRepoId(invoiceRecord.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()))
+						.build());
 		assertThat(result).isPresent();
 		assertThat(result.get().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
 		assertThat(result.get().getEmailAddress()).isEqualTo("userRecord.EMail");

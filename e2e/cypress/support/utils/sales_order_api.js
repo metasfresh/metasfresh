@@ -70,7 +70,10 @@ export class SalesOrder {
         },
       })
       .then(newResponse => {
-        salesOrder.id = newResponse.body[0].id;
+        if (!newResponse.body.documents) {
+          newResponse.body.documents = newResponse.body;
+        }
+        salesOrder.id = newResponse.body.documents[0].id;
 
         SalesOrder.getData(basicUri, salesOrder).then(data => {
           const dataObject = [

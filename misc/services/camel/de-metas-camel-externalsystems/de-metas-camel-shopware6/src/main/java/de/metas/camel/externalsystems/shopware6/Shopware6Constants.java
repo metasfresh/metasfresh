@@ -47,6 +47,7 @@ public interface Shopware6Constants
 
 	//external identifier
 	String EXTERNAL_ID_PREFIX = "ext";
+	String VALUE_PREFIX = "val";
 	String BILL_TO_SUFFIX = "-billTo";
 	String SHIP_TO_SUFFIX = "-shipTo";
 

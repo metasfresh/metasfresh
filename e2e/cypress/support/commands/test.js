@@ -133,7 +133,10 @@ Cypress.Commands.add('pressAddNewButton', (includedDocumentIdAliasName = 'newInc
     .click()
     .wait('@patchNewIncludedDocument')
     .then(xhr => {
-      return { documentId: xhr.response.body[0].rowId };
+      if (!xhr.response.body.documents) {
+        xhr.response.body.documents = xhr.response.body;
+      }
+      return { documentId: xhr.response.body.documents[0].rowId };
     })
     .as(includedDocumentIdAliasName);
 

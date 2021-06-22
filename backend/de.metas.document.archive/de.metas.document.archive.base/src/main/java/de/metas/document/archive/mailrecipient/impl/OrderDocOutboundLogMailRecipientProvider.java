@@ -29,11 +29,10 @@ import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvider;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.user.User;
 import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
@@ -67,10 +66,9 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 
 	@Override
 	public Optional<DocOutBoundRecipient> provideMailRecipient(
-			@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+			@NonNull final DocOutboundLogMailRecipientRequest request)
 	{
-		final I_C_Order orderRecord = TableRecordReference
-				.ofReferenced(docOutboundLogRecord)
+		final I_C_Order orderRecord = request.getRecordRef()
 				.getModel(I_C_Order.class);
 
 		final int orderUserRecordId = orderRecord.getAD_User_ID();
@@ -85,15 +83,14 @@ public class OrderDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
 
-		final IBPartnerBL.RetrieveContactRequest request = IBPartnerBL.RetrieveContactRequest
-				.builder()
-				.bpartnerId(bpartnerId)
-				.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, orderRecord.getC_BPartner_Location_ID()))
-				.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
-				.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
-				.build();
-
-		final User billContact = bpartnerBL.retrieveContactOrNull(request);
+		final User billContact = bpartnerBL.retrieveContactOrNull(
+				IBPartnerBL.RetrieveContactRequest
+						.builder()
+						.bpartnerId(bpartnerId)
+						.bPartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, orderRecord.getC_BPartner_Location_ID()))
+						.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
+						.filter(user -> !Check.isEmpty(user.getEmailAddress(), true))
+						.build());
 		if (billContact != null)
 		{
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());

@@ -23,8 +23,11 @@
 package de.metas.camel.externalsystems.shopware6.order;
 
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
+import de.metas.camel.externalsystems.shopware6.order.processor.DateAndImportStatus;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -33,8 +36,10 @@ import lombok.NonNull;
 import lombok.Setter;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Data
@@ -48,12 +53,19 @@ public class ImportOrdersRouteContext
 	@NonNull
 	private CurrencyInfoProvider currencyInfoProvider;
 	@NonNull
+	private JsonExternalSystemRequest externalSystemRequest;
+
+	@NonNull
 	@Builder.Default
 	@Setter(AccessLevel.NONE)
 	private Set<String> importedExternalHeaderIds = new HashSet<>();
 
 	@Nullable
-	private JsonOrderAndCustomId order;
+	private JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private OrderCompositeInfo order;
 
 	@Nullable
 	private String bpLocationCustomJsonPath;
@@ -71,15 +83,20 @@ public class ImportOrdersRouteContext
 
 	private boolean isMultipleShippingAddresses;
 
+	@Nullable
+	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
+	private DateAndImportStatus nextImportStartingTimestamp;
+
 	@NonNull
-	public JsonOrderAndCustomId getOrderNotNull()
+	public OrderCandidate getOrderNotNull()
 	{
 		if (order == null)
 		{
 			throw new RuntimeException("order cannot be null at this stage!");
 		}
 
-		return order;
+		return order.getOrderAndCustomId();
 	}
 
 	@NonNull
@@ -104,9 +121,63 @@ public class ImportOrdersRouteContext
 		return shippingBPLocationExternalId;
 	}
 
-	public void setOrder(@NonNull final JsonOrderAndCustomId order)
+	public void setOrderCompositeInfo(@NonNull final OrderCompositeInfo order)
 	{
 		this.order = order;
-		importedExternalHeaderIds.add(order.getJsonOrder().getId());
+		importedExternalHeaderIds.add(order.getOrderAndCustomId().getJsonOrder().getId());
+	}
+
+	public void setNextImportStartingTimestamp(@NonNull final DateAndImportStatus dateAndImportStatus)
+	{
+		if (this.nextImportStartingTimestamp == null)
+		{
+			this.nextImportStartingTimestamp = dateAndImportStatus;
+			return;
+		}
+
+		if (this.nextImportStartingTimestamp.isOkToImport())
+		{
+			if (dateAndImportStatus.isOkToImport()
+					&& dateAndImportStatus.getTimestamp().isAfter(this.nextImportStartingTimestamp.getTimestamp()))
+			{
+				this.nextImportStartingTimestamp = dateAndImportStatus;
+				return;
+			}
+
+			if (!dateAndImportStatus.isOkToImport())
+			{
+				this.nextImportStartingTimestamp = dateAndImportStatus;
+				return;
+			}
+		}
+
+		if (!this.nextImportStartingTimestamp.isOkToImport()
+				&& !dateAndImportStatus.isOkToImport()
+				&& dateAndImportStatus.getTimestamp().isBefore(this.nextImportStartingTimestamp.getTimestamp()))
+		{
+			this.nextImportStartingTimestamp = dateAndImportStatus;
+		}
+	}
+
+	@NonNull
+	public OrderCompositeInfo getCompositeOrderNotNull()
+	{
+		if (order == null)
+		{
+			throw new RuntimeException("OrderCompositeInfo cannot be null at this stage!");
+		}
+
+		return order;
+	}
+
+	@NonNull
+	public Optional<Instant> getNextImportStartingTimestamp()
+	{
+		if (nextImportStartingTimestamp == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(nextImportStartingTimestamp.getTimestamp());
 	}
 }

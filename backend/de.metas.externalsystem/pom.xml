@@ -34,6 +34,11 @@
             <artifactId>de-metas-common-externalsystem</artifactId>
             <version>${metasfresh-common.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metas.common.ordercandidates</groupId>
+            <artifactId>de-metas-common-ordercandidates</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.util</groupId>
@@ -63,7 +68,6 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
-
     </dependencies>
 
     <build>

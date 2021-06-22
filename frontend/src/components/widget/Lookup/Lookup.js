@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
-import { connect } from 'react-redux';
 import classnames from 'classnames';
 import * as _ from 'lodash';
 
+import { withForwardedRef } from '../../hoc/WithRouterAndRef';
 import { getItemsByProperty } from '../../../utils';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
 import List from '../List/List';
@@ -303,6 +303,10 @@ class Lookup extends Component {
     );
   };
 
+  setRef = (refNode) => {
+    this.dropdown = refNode;
+  };
+
   render() {
     const {
       rank,
@@ -339,6 +343,7 @@ class Lookup extends Component {
       advSearchWindowId,
       isFilterActive,
       updateItems,
+      forwardedRef,
     } = this.props;
 
     const {
@@ -360,8 +365,6 @@ class Lookup extends Component {
     const classRank = rank || 'primary';
     let showBarcodeScannerBtn = false;
 
-    this.linkedList = [];
-
     if (scanning) {
       return (
         <div className="overlay-field js-not-unselect">{scannerElement}</div>
@@ -370,7 +373,7 @@ class Lookup extends Component {
 
     return (
       <div
-        ref={(c) => (this.dropdown = c)}
+        ref={this.setRef}
         className={classnames(
           'input-dropdown-container lookup-wrapper',
           `input-${classRank}`,
@@ -446,6 +449,7 @@ class Lookup extends Component {
 
               return (
                 <RawLookup
+                  ref={index === 0 && forwardedRef}
                   key={index}
                   idValue={idValue}
                   defaultValue={defaultValue}
@@ -524,11 +528,7 @@ class Lookup extends Component {
                   )}
                 >
                   <List
-                    ref={(c) => {
-                      if (c) {
-                        this.linkedList.push(c);
-                      }
-                    }}
+                    ref={forwardedRef}
                     field={item.field}
                     clearable={false}
                     readonly={disabled || widgetData[index].readonly}
@@ -621,6 +621,7 @@ Lookup.propTypes = {
   advSearchWindowId: PropTypes.string,
   isFilterActive: PropTypes.bool,
   updateItems: PropTypes.func,
+  forwardedRef: PropTypes.any,
 };
 
-export default connect()(BarcodeScanner(onClickOutside(Lookup)));
+export default withForwardedRef(BarcodeScanner(onClickOutside(Lookup)));

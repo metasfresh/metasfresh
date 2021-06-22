@@ -1,0 +1,22 @@
+{
+  "mappings": [
+    {
+      "description": "this one will be ignored due to sw6PaymentMethod not matching",
+      "docTypeOrder": "ON",
+      "paymentRule": "L",
+      "paymentTermValue": "paymentTermValue",
+      "seqNo": 10,
+      "sw6CustomerGroup": "test_group",
+      "sw6PaymentMethod": "sw6PaymentMethod"
+    },
+    {
+      "description": "this one should be considered",
+      "docTypeOrder": "SO",
+      "paymentRule": "L",
+      "paymentTermValue": "paymentTermValue",
+      "seqNo": 20,
+      "sw6CustomerGroup": "test_group",
+      "sw6PaymentMethod": "pay_pal_payment_handler"
+    }
+  ]
+}
