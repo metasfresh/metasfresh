@@ -22,26 +22,10 @@
 
 package de.metas.ui.web.view.descriptor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.ui.web.accounting.filters.FactAcctFilterConverter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
@@ -53,7 +37,6 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConvertersList;
 import de.metas.ui.web.document.geo_location.GeoLocationFilterConverter;
 import de.metas.ui.web.view.DefaultViewInvalidationAdvisor;
 import de.metas.ui.web.view.IViewInvalidationAdvisor;
-import de.metas.ui.web.view.ViewEvaluationCtx;
 import de.metas.ui.web.view.ViewRowCustomizer;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -66,7 +49,21 @@ import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class SqlViewBinding implements SqlEntityBinding
 {
 	private final String _tableName;
@@ -97,7 +94,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	private final IViewInvalidationAdvisor viewInvalidationAdvisor;
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -218,11 +215,6 @@ public class SqlViewBinding implements SqlEntityBinding
 		return sqlWhereClause;
 	}
 
-	public List<SqlViewRowFieldLoader> getRowFieldLoaders()
-	{
-		return rowFieldLoaders;
-	}
-
 	public ViewRowCustomizer getRowCustomizer()
 	{
 		return rowCustomizer;
@@ -264,24 +256,6 @@ public class SqlViewBinding implements SqlEntityBinding
 	public final Stream<DocumentQueryOrderBy> flatMapEffectiveFieldNames(final DocumentQueryOrderBy orderBy)
 	{
 		return orderByFieldNameAliasMap.flatMapEffectiveFieldNames(orderBy);
-	}
-
-	public Map<String, String> getSqlOrderBysIndexedByFieldName(final ViewEvaluationCtx viewEvalCtx)
-	{
-		final ImmutableMap.Builder<String, String> sqlOrderBysIndexedByFieldName = ImmutableMap.builder();
-		for (final SqlViewRowFieldBinding fieldBinding : getFields())
-		{
-			final String fieldOrderBy = fieldBinding.getSqlOrderBy().toSqlString(viewEvalCtx.toEvaluatee());
-			if (Check.isEmpty(fieldOrderBy, true))
-			{
-				continue;
-			}
-
-			final String fieldName = fieldBinding.getFieldName();
-			sqlOrderBysIndexedByFieldName.put(fieldName, fieldOrderBy);
-		}
-
-		return sqlOrderBysIndexedByFieldName.build();
 	}
 
 	public Set<String> getGroupByFieldNames()
@@ -328,9 +302,9 @@ public class SqlViewBinding implements SqlEntityBinding
 	}
 
 	@lombok.Value
-	private static final class OrderByFieldNameAliasMap
+	private static class OrderByFieldNameAliasMap
 	{
-		private final ImmutableMap<String, ImmutableList<String>> orderByAliasFieldNames;
+		ImmutableMap<String, ImmutableList<String>> orderByAliasFieldNames;
 
 		@lombok.Builder
 		private OrderByFieldNameAliasMap(@NonNull @Singular final Map<String, List<String>> orderByAliasFieldNames)
@@ -369,10 +343,10 @@ public class SqlViewBinding implements SqlEntityBinding
 		private final Map<String, SqlViewRowFieldBinding> _fieldsByFieldName = new LinkedHashMap<>();
 		private ViewRowCustomizer rowCustomizer;
 
-		private ArrayList<DocumentQueryOrderBy> defaultOrderBys;
-		private OrderByFieldNameAliasMap.OrderByFieldNameAliasMapBuilder orderByFieldNameAliasMap = OrderByFieldNameAliasMap.builder();
+		@Nullable private ArrayList<DocumentQueryOrderBy> defaultOrderBys;
+		private final OrderByFieldNameAliasMap.OrderByFieldNameAliasMapBuilder orderByFieldNameAliasMap = OrderByFieldNameAliasMap.builder();
 		private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
-		private SqlDocumentFilterConvertersList.Builder filterConverters = SqlDocumentFilterConverters.listBuilder();
+		private final SqlDocumentFilterConvertersList.Builder filterConverters = SqlDocumentFilterConverters.listBuilder();
 		private boolean refreshViewOnChangeEvents;
 
 		private SqlViewRowIdsConverter rowIdsConverter = null;
@@ -565,7 +539,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			return this;
 		}
 
-		public Builder rowIdsConverter(@NonNull SqlViewRowIdsConverter rowIdsConverter)
+		public Builder rowIdsConverter(@NonNull final SqlViewRowIdsConverter rowIdsConverter)
 		{
 			this.rowIdsConverter = rowIdsConverter;
 			return this;
@@ -584,7 +558,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			return SqlViewRowIdsConverters.TO_INT_STRICT;
 		}
 
-		public Builder groupingBinding(SqlViewGroupingBinding groupingBinding)
+		public Builder groupingBinding(final SqlViewGroupingBinding groupingBinding)
 		{
 			this.groupingBinding = groupingBinding;
 			return this;
@@ -596,7 +570,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			return this;
 		}
 
-		public Builder rowCustomizer(ViewRowCustomizer rowCustomizer)
+		public Builder rowCustomizer(final ViewRowCustomizer rowCustomizer)
 		{
 			this.rowCustomizer = rowCustomizer;
 			return this;
@@ -618,7 +592,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			return viewInvalidationAdvisor;
 		}
 
-		public Builder refreshViewOnChangeEvents(boolean refreshViewOnChangeEvents)
+		public Builder refreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
 		{
 			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
 			return this;
