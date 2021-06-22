@@ -80,4 +80,4 @@ Feature: sales order
       | QtyOrdered | LineNetAmt | M_Product_ID.Identifier |
       | 10         | 100        | p_2                     |
     And the sales order identified by 'o_2' is closed
-    And the shipment schedule identified by s_ol_2 is processed
+    And the shipment schedule identified by s_ol_2 is processed after not more than '10' seconds

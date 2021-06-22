@@ -93,9 +93,11 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(shipmentScheduleQueries.isAllDone()).as("Not all M_ShipmentSchedules were created within the %s second timout", timeoutSec).isTrue();
 	}
 
-	@And("^the shipment schedule identified by (.*) is processed$")
-	public void processedShipmentScheduleByIdentifier(final String identifier)
+	@And("^the shipment schedule identified by (.*) is processed after not more than (.*) seconds$")
+	public void processedShipmentScheduleByIdentifier(@NonNull final String identifier, final int waitTime) throws InterruptedException
 	{
+		Thread.sleep(waitTime);
+
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(identifier);
 
 		final I_M_ShipmentSchedule shipmentScheduleRecord = queryBL
