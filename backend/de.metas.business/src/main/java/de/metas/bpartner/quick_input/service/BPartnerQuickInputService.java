@@ -284,7 +284,7 @@ public class BPartnerQuickInputService
 		return BPartnerQuickInputId.ofRepoId(template.getC_BPartner_QuickInput_ID());
 	}
 
-	private BPartnerComposite toBPartnerComposite(final I_C_BPartner_QuickInput template)
+	private BPartnerComposite toBPartnerComposite(@NonNull final I_C_BPartner_QuickInput template)
 	{
 		final BPGroupId groupId = BPGroupId.ofRepoIdOrNull(template.getC_BP_Group_ID());
 		if (groupId == null)
@@ -303,6 +303,7 @@ public class BPartnerQuickInputService
 		final BPartner bpartner = BPartner.builder()
 				.value(null) // to be generated
 				.name(template.getBPartnerName())
+				.greetingId(GreetingId.ofRepoIdOrNull(template.getC_Greeting_ID()))
 				.name2(template.getName2())
 				.company(template.isCompany())
 				.companyName(template.getCompanyname())
