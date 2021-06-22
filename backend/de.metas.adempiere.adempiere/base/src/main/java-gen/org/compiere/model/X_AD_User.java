@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 172078929L;
+	private static final long serialVersionUID = 966411405L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -294,33 +294,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Title getC_Title()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
-	}
-
-	@Override
-	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
-	}
-
-	@Override
-	public void setC_Title_ID (final int C_Title_ID)
-	{
-		if (C_Title_ID < 1) 
-			set_Value (COLUMNNAME_C_Title_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
-	}
-
-	@Override
-	public int getC_Title_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
-	}
-
-	@Override
 	public void setComments (final @Nullable java.lang.String Comments)
 	{
 		set_Value (COLUMNNAME_Comments, Comments);
@@ -403,6 +376,33 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getContactLimitationReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_ContactLimitationReason);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Title getC_Title()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
+	}
+
+	@Override
+	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
+	}
+
+	@Override
+	public void setC_Title_ID (final int C_Title_ID)
+	{
+		if (C_Title_ID < 1) 
+			set_Value (COLUMNNAME_C_Title_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
+	}
+
+	@Override
+	public int getC_Title_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
 
 	@Override
@@ -627,17 +627,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isBillToContact_Default() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBillToContact_Default);
-	}
-
-	@Override
-	public void setIsCustomer (final boolean IsCustomer)
-	{
-		throw new IllegalArgumentException ("IsCustomer is virtual column");	}
-
-	@Override
-	public boolean isCustomer() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsCustomer);
 	}
 
 	@Override
@@ -1025,6 +1014,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
 	public void setSupervisor_ID (final int Supervisor_ID)
 	{
 		if (Supervisor_ID < 1) 
@@ -1072,17 +1073,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getUnlockAccount() 
 	{
 		return get_ValueAsString(COLUMNNAME_UnlockAccount);
-	}
-
-	@Override
-	public void setURL (final @Nullable java.lang.String URL)
-	{
-		throw new IllegalArgumentException ("URL is virtual column");	}
-
-	@Override
-	public java.lang.String getURL() 
-	{
-		return get_ValueAsString(COLUMNNAME_URL);
 	}
 
 	@Override

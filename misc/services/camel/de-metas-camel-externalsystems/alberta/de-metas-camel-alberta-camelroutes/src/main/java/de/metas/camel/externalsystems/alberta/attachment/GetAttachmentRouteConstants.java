@@ -39,7 +39,7 @@ public interface GetAttachmentRouteConstants
 	String ALBERTA_DOCUMENT_ENDPOINT_VALUE = "/document";
 
 	String ALBERTA_ATTACHMENT_ID = "alberta_attachment_id";
-	String ALBERTA_ATTACHMENT_TIMESTAMP = "alberta_attachment_timestamp";
+	String ALBERTA_ATTACHMENT_UPLOAD_DATE = "alberta_attachment_uploadDate";
 	String ALBERTA_ATTACHMENT_TYPE = "alberta_attachment_type";
 	String ALBERTA_ATTACHMENT_CREATEDAT = "alberta_attachment_createdAt";
 	String ALBERTA_ATTACHMENT_ENDPOINT = "alberta_attachment_endpoint";

@@ -40,3 +40,9 @@ export const SET_INLINE_TAB_SHOW_MORE = 'SET_INLINE_TAB_SHOW_MORE';
  * @type {string} update a property in the inlineTab item
  */
 export const SET_INLINE_TAB_ITEM_PROP = 'SET_INLINE_TAB_ITEM_PROP';
+
+/**
+ * @constant
+ * @type {string} update data of inline tab
+ */
+export const UPDATE_INLINE_TAB_DATA = 'UPDATE_INLINE_TAB_DATA';

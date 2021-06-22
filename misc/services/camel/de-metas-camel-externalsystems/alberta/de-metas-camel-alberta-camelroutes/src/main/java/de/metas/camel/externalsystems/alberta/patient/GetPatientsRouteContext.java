@@ -39,6 +39,7 @@ import lombok.Data;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,6 +79,22 @@ public class GetPatientsRouteContext
 
 	@Nullable
 	private final JsonMetasfreshId rootBPartnerIdForUsers;
+
+	@NonNull
+	private Instant updatedAfterValue;
+
+	public void setUpdatedAfterValue(@Nullable final Instant candidate)
+	{
+		if (candidate == null)
+		{
+			return;
+		}
+
+		if (candidate.isAfter(this.updatedAfterValue))
+		{
+			this.updatedAfterValue = candidate;
+		}
+	}
 
 	private final List<JsonResponseBPartnerCompositeUpsertItem> importedBPartnerResponseList = new ArrayList<>();
 

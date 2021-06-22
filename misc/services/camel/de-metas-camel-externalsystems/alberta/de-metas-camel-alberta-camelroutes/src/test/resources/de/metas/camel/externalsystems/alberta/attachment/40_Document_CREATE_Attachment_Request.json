@@ -3,24 +3,21 @@
   "targets": [
     {
       "externalReferenceType": "BPartner",
-      "externalReferenceIdentifier": "ext-ALBERTA-a4adecb6-126a-4fa6-8fac-e80165ac4264"
+      "externalReferenceIdentifier": "ext-ALBERTA-document_patientId"
     },
     {
       "externalReferenceType": "UserID",
-      "externalReferenceIdentifier": "ext-ALBERTA-5a6ca8b6456c14307cb9ae35"
-    },
-    {
-      "externalReferenceType": "UserID",
-      "externalReferenceIdentifier": "ext-ALBERTA-5a6ca8b6456c14307cb9ae35"
+      "externalReferenceIdentifier": "ext-ALBERTA-userId"
     }
   ],
   "attachment": {
-    "fileName": "Anamnese WV",
+    "fileName": "Document name",
+    "data": "dGhpcyBpcyBhIGR1bW15IHRlc3QgZmlsZQ==",
     "mimeType": null,
     "tags": [
       {
         "name": "alberta_document_id",
-        "value": "a4adecb6-126a-4fa6-8fac-e80165ac8980"
+        "value": "document_id"
       },
       {
         "name": "alberta_document_archived",
@@ -36,7 +33,7 @@
       },
       {
         "name": "alberta_document_createdAt",
-        "value": "2015-07-20T22:49:04Z"
+        "value": "2015-08-20T22:49:04Z"
       },
       {
         "name": "alberta_document_updatedAt",
@@ -46,7 +43,6 @@
         "name": "alberta_document_endpoint",
         "value": "/document"
       }
-    ],
-    "data": "dGhpcyBpcyBhIGR1bW15IHRlc3QgZmlsZQ=="
+    ]
   }
 }
