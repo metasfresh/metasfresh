@@ -16,6 +16,7 @@ junit.xml
 
 # Dynamic storybook configuration file
 .storybook/foundStories.js
+storybook-static/favicon.ico 
 
 # Coverage report
 .nyc_output

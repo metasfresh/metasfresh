@@ -119,10 +119,6 @@ class TableQuickInput extends PureComponent {
           if (callback) {
             callback();
           }
-
-          // otherwise this promise will stay resolved until we won't get another patch
-          // which potentially can lead to unwanted behaviour
-          this.patchPromise = null;
           resolve();
         }
       );

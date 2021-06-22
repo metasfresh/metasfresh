@@ -31,6 +31,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+ import java.util.Optional;
 
 @Value
 public class PostalId implements RepoIdAware
@@ -48,7 +49,12 @@ public class PostalId implements RepoIdAware
 		return repoId > 0 ? new PostalId(repoId) : null;
 	}
 
-	public static int toRepoId(final PostalId id)
+	public static Optional<PostalId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	public static int toRepoId(@Nullable final PostalId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

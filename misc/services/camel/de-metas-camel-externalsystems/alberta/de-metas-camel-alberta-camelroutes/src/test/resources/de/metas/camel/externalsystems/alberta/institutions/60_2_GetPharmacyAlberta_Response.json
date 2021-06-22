@@ -1,0 +1,12 @@
+{
+  "_id": "pharmacyId",
+  "name": "pharmacyName",
+  "address": "pharmacyAddr",
+  "postalCode": "1",
+  "city": "pharmacyCity",
+  "phone": "2",
+  "fax": "3",
+  "email": "test@test.com",
+  "website": "www.pharmacy.com",
+  "timestamp": "2018-07-11T09:52:55.235Z"
+}

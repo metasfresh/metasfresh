@@ -42,6 +42,10 @@ if (!fs.existsSync(path.join(__dirname, 'dist/plugins.js'))) {
 
 module.exports = {
   mode: 'production',
+  bail: true,
+  stats: {
+    errorDetails: true,
+  },
   devtool: 'cheap-module-source-map',
   entry: ['@babel/polyfill', './src/index.jsx', './favicon.png'],
   output: {

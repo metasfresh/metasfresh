@@ -43,13 +43,12 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-
-import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
 
 @Repository
 public class ExternalSystemConfigRepo
@@ -117,6 +116,22 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
 
 		return externalSystemConfigRecord.getType();
+	}
+
+	@NonNull
+	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType) {
+		switch (externalSystemType)
+		{
+			case Alberta:
+				return getAllByTypeAlberta();
+			case Shopware6:
+			case Other:
+				throw new AdempiereException("Method not supported")
+						.appendParametersToMessage()
+						.setParameter("externalSystemType", externalSystemType);
+			default:
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+		}
 	}
 
 	@NonNull
@@ -297,7 +312,6 @@ public class ExternalSystemConfigRepo
 		return ExternalSystemParentConfig.builder()
 				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
-				.camelUrl(externalSystemConfigRecord.getCamelURL())
 				.name(externalSystemConfigRecord.getName());
 	}
 
@@ -308,5 +322,16 @@ public class ExternalSystemConfigRepo
 		return getById(id.getParentConfigId())
 				.childConfig(childConfig)
 				.build();
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeAlberta()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

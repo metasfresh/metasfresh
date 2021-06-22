@@ -120,12 +120,13 @@ class ContactRestControllerTest
 		AdempiereTestHelper.get().init();
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+		//Services.registerService(IBPartnerBL.class, partnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		recordChangeLogRepository = new MockLogEntriesRepository();
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(recordChangeLogRepository);
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository);
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),

@@ -52,7 +52,7 @@ public class GetAttachmentProcessor implements Processor
 		final String apiKey = context.getApiKey();
 		final AttachmentApi attachmentApi = context.getAttachmentApi();
 
-		final var attachments = attachmentApi.getAllAttachments(apiKey, context.getCreatedAfter(), null);
+		final var attachments = attachmentApi.getAllAttachments(apiKey, context.getCreatedAfterAttachment(), null);
 
 		return attachments == null || attachments.isEmpty()
 				? null

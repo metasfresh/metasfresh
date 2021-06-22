@@ -38,7 +38,6 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -50,10 +49,10 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.quantity.Quantity;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.warehouse.WarehouseService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -67,8 +66,6 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -89,17 +86,20 @@ public class CreatePurchaseCandidatesService
 	private final JsonRetrieverService jsonRetrieverService;
 	private final CurrencyRepository currencyRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final WarehouseService warehouseService;
 
 	public CreatePurchaseCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final WarehouseService warehouseService)
 	{
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.currencyRepository = currencyRepository;
 		this.externalReferenceService = externalReferenceService;
+		this.warehouseService = warehouseService;
 	}
 
 	public Optional<JsonPurchaseCandidate> createCandidate(@RequestBody final JsonPurchaseCandidateCreateItem request)
@@ -149,7 +149,7 @@ public class CreatePurchaseCandidatesService
 				.externalLineId(ExternalId.of(request.getExternalLineId()))
 				.externalPurchaseOrderUrl(request.getExternalPurchaseOrderUrl())
 				.productId(productId)
-				.warehouseId(getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
+				.warehouseId(warehouseService.getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
 				.purchaseDatePromised(datePromised)
 				.purchaseDateOrdered(request.getPurchaseDateOrdered())
 				.vendorId(vendorId)
@@ -275,83 +275,5 @@ public class CreatePurchaseCandidatesService
 			default:
 				throw new InvalidIdentifierException(productExternalIdentifier.getRawValue());
 		}
-	}
-
-	@NonNull
-	private WarehouseId getWarehouseByIdentifier(
-			@NonNull final OrgId orgId,
-			@NonNull final String warehouseIdentifier)
-	{
-		final Optional<ExternalIdentifier> optionalExternalIdentifier = ExternalIdentifier.ofOptional(warehouseIdentifier);
-
-		if (!optionalExternalIdentifier.isPresent())
-		{
-			return getWarehouseByIdentifierString(orgId, warehouseIdentifier);
-		}
-
-		final ExternalIdentifier warehouseExternalIdentifier = optionalExternalIdentifier.get();
-
-		switch (warehouseExternalIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return WarehouseId.ofRepoId(warehouseExternalIdentifier.asMetasfreshId().getValue());
-			case EXTERNAL_REFERENCE:
-				return externalReferenceService.resolveExternalReference(orgId, warehouseExternalIdentifier, WarehouseExternalReferenceType.WAREHOUSE)
-						.map(metasfreshId -> WarehouseId.ofRepoId(metasfreshId.getValue()))
-						.orElseThrow(() -> MissingResourceException.builder()
-								.resourceName("warehouseIdentifier")
-								.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
-								.build());
-			case VALUE:
-				final WarehouseId warehouseId = Services.get(IWarehouseDAO.class).getWarehouseIdByValue(warehouseExternalIdentifier.asValue());
-				if (warehouseId == null)
-				{
-					throw MissingResourceException.builder()
-							.resourceName("warehouseIdentifier")
-							.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
-							.build();
-				}
-				return warehouseId;
-			default:
-				throw new InvalidIdentifierException(warehouseIdentifier);
-		}
-	}
-
-	@NonNull
-	private WarehouseId getWarehouseByIdentifierString(
-			@NonNull final OrgId orgId,
-			@NonNull final String warehouseIdentifier)
-	{
-		final IdentifierString warehouseString = IdentifierString.of(warehouseIdentifier);
-		final IWarehouseDAO.WarehouseQuery.WarehouseQueryBuilder builder = IWarehouseDAO.WarehouseQuery.builder().orgId(orgId);
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
-		final WarehouseId result;
-		if (warehouseString.getType().equals(IdentifierString.Type.METASFRESH_ID))
-		{
-			result = WarehouseId.ofRepoId(warehouseString.asMetasfreshId().getValue());
-		}
-		else
-		{
-			if (warehouseString.getType().equals(IdentifierString.Type.EXTERNAL_ID))
-			{
-				builder.externalId(warehouseString.asExternalId());
-			}
-			else if (warehouseString.getType().equals(IdentifierString.Type.VALUE))
-			{
-				builder.value(warehouseString.asValue());
-			}
-			else
-			{
-				throw new InvalidIdentifierException(warehouseIdentifier);
-			}
-			result = warehouseDAO.retrieveWarehouseIdBy(builder.build());
-		}
-		if (result == null)
-		{
-			throw new InvalidIdentifierException(warehouseIdentifier);
-		}
-
-		return result;
 	}
 }

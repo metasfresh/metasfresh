@@ -12,37 +12,30 @@
 
 package io.swagger.client.model;
 
-import java.util.Objects;
-import java.util.Arrays;
-import com.google.gson.TypeAdapter;
-import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.io.IOException;
-import java.math.BigDecimal;
-import org.threeten.bp.OffsetDateTime;
+
+import java.util.Objects;
 /**
  * Attachment
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-05-29T06:37:55.685Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-06-17T14:20:17.484Z[GMT]")
 public class Attachment {
   @SerializedName("_id")
   private String _id = null;
 
-  @SerializedName("timestamp")
-  private String timestamp = null;
+  @SerializedName("filename")
+  private String filename = null;
 
-  @SerializedName("type")
-  private BigDecimal type = null;
+  @SerializedName("contentType")
+  private String contentType = null;
 
-  @SerializedName("createdBy")
-  private String createdBy = null;
+  @SerializedName("uploadDate")
+  private String uploadDate = null;
 
-  @SerializedName("createdAt")
-  private OffsetDateTime createdAt = null;
+  @SerializedName("metadata")
+  private AttachmentMetadata metadata = null;
 
   public Attachment _id(String _id) {
     this._id = _id;
@@ -62,76 +55,76 @@ public class Attachment {
     this._id = _id;
   }
 
-  public Attachment timestamp(String timestamp) {
-    this.timestamp = timestamp;
+  public Attachment filename(String filename) {
+    this.filename = filename;
     return this;
   }
 
    /**
-   * Der Zeitstempel der letzten Änderung
-   * @return timestamp
+   * in Alberta beim Upload erzeugter Dateiname
+   * @return filename
   **/
-  @Schema(example = "2020-11-18T10:33:08.995Z", description = "Der Zeitstempel der letzten Änderung")
-  public String getTimestamp() {
-    return timestamp;
+  @Schema(example = "Zuzahlungsbefreiung_Susi_Meier_2021-05-25.png", description = "in Alberta beim Upload erzeugter Dateiname")
+  public String getFilename() {
+    return filename;
   }
 
-  public void setTimestamp(String timestamp) {
-    this.timestamp = timestamp;
+  public void setFilename(String filename) {
+    this.filename = filename;
   }
 
-  public Attachment type(BigDecimal type) {
-    this.type = type;
+  public Attachment contentType(String contentType) {
+    this.contentType = contentType;
     return this;
   }
 
    /**
-   * Art der Anlage
-   * @return type
+   * MIME type der Datei
+   * @return contentType
   **/
-  @Schema(description = "Art der Anlage")
-  public BigDecimal getType() {
-    return type;
+  @Schema(example = "image/png", description = "MIME type der Datei")
+  public String getContentType() {
+    return contentType;
   }
 
-  public void setType(BigDecimal type) {
-    this.type = type;
+  public void setContentType(String contentType) {
+    this.contentType = contentType;
   }
 
-  public Attachment createdBy(String createdBy) {
-    this.createdBy = createdBy;
+  public Attachment uploadDate(String uploadDate) {
+    this.uploadDate = uploadDate;
     return this;
   }
 
    /**
-   * Id des erstellenden Benutzers (Voraussetzung, Alberta-Id ist bereits durch initialen Abgleich der Benutzer in WaWi vorhanden)
-   * @return createdBy
+   * Der Zeitstempel des Hochladens
+   * @return uploadDate
   **/
-  @Schema(example = "5a6ca8b6456c14307cb9ae35", description = "Id des erstellenden Benutzers (Voraussetzung, Alberta-Id ist bereits durch initialen Abgleich der Benutzer in WaWi vorhanden)")
-  public String getCreatedBy() {
-    return createdBy;
+  @Schema(example = "2020-11-18T10:33:08.995Z", description = "Der Zeitstempel des Hochladens")
+  public String getUploadDate() {
+    return uploadDate;
   }
 
-  public void setCreatedBy(String createdBy) {
-    this.createdBy = createdBy;
+  public void setUploadDate(String uploadDate) {
+    this.uploadDate = uploadDate;
   }
 
-  public Attachment createdAt(OffsetDateTime createdAt) {
-    this.createdAt = createdAt;
+  public Attachment metadata(AttachmentMetadata metadata) {
+    this.metadata = metadata;
     return this;
   }
 
    /**
-   * Der Zeitstempel des Erstellens
-   * @return createdAt
+   * Get metadata
+   * @return metadata
   **/
-  @Schema(description = "Der Zeitstempel des Erstellens")
-  public OffsetDateTime getCreatedAt() {
-    return createdAt;
+  @Schema(description = "")
+  public AttachmentMetadata getMetadata() {
+    return metadata;
   }
 
-  public void setCreatedAt(OffsetDateTime createdAt) {
-    this.createdAt = createdAt;
+  public void setMetadata(AttachmentMetadata metadata) {
+    this.metadata = metadata;
   }
 
 
@@ -145,15 +138,15 @@ public class Attachment {
     }
     Attachment attachment = (Attachment) o;
     return Objects.equals(this._id, attachment._id) &&
-        Objects.equals(this.timestamp, attachment.timestamp) &&
-        Objects.equals(this.type, attachment.type) &&
-        Objects.equals(this.createdBy, attachment.createdBy) &&
-        Objects.equals(this.createdAt, attachment.createdAt);
+        Objects.equals(this.filename, attachment.filename) &&
+        Objects.equals(this.contentType, attachment.contentType) &&
+        Objects.equals(this.uploadDate, attachment.uploadDate) &&
+        Objects.equals(this.metadata, attachment.metadata);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_id, timestamp, type, createdBy, createdAt);
+    return Objects.hash(_id, filename, contentType, uploadDate, metadata);
   }
 
 
@@ -163,10 +156,10 @@ public class Attachment {
     sb.append("class Attachment {\n");
     
     sb.append("    _id: ").append(toIndentedString(_id)).append("\n");
-    sb.append("    timestamp: ").append(toIndentedString(timestamp)).append("\n");
-    sb.append("    type: ").append(toIndentedString(type)).append("\n");
-    sb.append("    createdBy: ").append(toIndentedString(createdBy)).append("\n");
-    sb.append("    createdAt: ").append(toIndentedString(createdAt)).append("\n");
+    sb.append("    filename: ").append(toIndentedString(filename)).append("\n");
+    sb.append("    contentType: ").append(toIndentedString(contentType)).append("\n");
+    sb.append("    uploadDate: ").append(toIndentedString(uploadDate)).append("\n");
+    sb.append("    metadata: ").append(toIndentedString(metadata)).append("\n");
     sb.append("}");
     return sb.toString();
   }

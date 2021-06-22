@@ -24,9 +24,11 @@ package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
-import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
+import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
 import de.metas.camel.externalsystems.alberta.common.CommonAlbertaConstants;
+import de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.alberta.ordercandidate.GetOrdersRouteConstants;
+import de.metas.camel.externalsystems.alberta.ordercandidate.NextImportSinceTimestamp;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
@@ -72,6 +74,8 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 
 		final JsonOLCandCreateBulkRequest olCandCreateBulkRequest =
 				buildJsonCandCreateBulkRequest(orgCode, order, deliveryAddressId);
+
+		computeNextImportDate(exchange, order);
 
 		exchange.getIn().setBody(olCandCreateBulkRequest);
 	}
@@ -235,5 +239,23 @@ public class JsonOLCandCreateRequestProcessor implements Processor
 		}
 
 		return responseUpsertItem.getMetasfreshId();
+	}
+
+	private void computeNextImportDate(@NonNull final Exchange exchange, @NonNull final Order orderCandidate)
+	{
+		final Instant nextImportSinceDateCandidate = AlbertaUtil.asInstant(orderCandidate.getCreationDate());
+
+		if (nextImportSinceDateCandidate == null)
+		{
+			return;
+		}
+
+		final NextImportSinceTimestamp currentNextImportSinceDate =
+				ProcessorHelper.getPropertyOrThrowError(exchange, GetOrdersRouteConstants.ROUTE_PROPERTY_UPDATED_AFTER, NextImportSinceTimestamp.class);
+
+		if (nextImportSinceDateCandidate.isAfter(currentNextImportSinceDate.getDate()))
+		{
+			currentNextImportSinceDate.setDate(nextImportSinceDateCandidate);
+		}
 	}
 }
