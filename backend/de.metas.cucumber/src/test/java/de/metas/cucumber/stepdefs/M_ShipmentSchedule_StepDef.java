@@ -39,14 +39,13 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -54,19 +53,13 @@ public class M_ShipmentSchedule_StepDef
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_Order> orderTable;
 	private final StepDefData<I_C_OrderLine> orderLineTable;
 	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
 
 	public M_ShipmentSchedule_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_Order> orderTable,
 			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
 			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
 	{
-		this.productTable = productTable;
-		this.orderTable = orderTable;
 		this.orderLineTable = orderLineTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
 	}
@@ -81,34 +74,43 @@ public class M_ShipmentSchedule_StepDef
 		// if they succeed, put them into shipmentScheduleTable
 		final ShipmentScheduleQueries shipmentScheduleQueries = createShipmentScheduleQueries(dataTable);
 
-		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
-		final long deadLineMillis = nowMillis + (timeoutSec * 1000L);
+		final Supplier<Boolean> shipmentScheduleQueryExecutor = () -> {
+			if (shipmentScheduleQueries.isAllDone())
+			{
+				return true;
+			}
 
-		while (System.currentTimeMillis() < deadLineMillis && !shipmentScheduleQueries.isAllDone())
-		{
-			Thread.sleep(500);
 			shipmentScheduleTable.putAll(shipmentScheduleQueries.executeAllRemaining());
-		}
+			return shipmentScheduleQueries.isAllDone();
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, shipmentScheduleQueryExecutor);
 
 		assertThat(shipmentScheduleQueries.isAllDone()).as("Not all M_ShipmentSchedules were created within the %s second timout", timeoutSec).isTrue();
 	}
 
 	@And("^the shipment schedule identified by (.*) is processed after not more than (.*) seconds$")
-	public void processedShipmentScheduleByIdentifier(@NonNull final String identifier, final int waitTime) throws InterruptedException
+	public void processedShipmentScheduleByIdentifier(@NonNull final String identifier, final int timeoutSec) throws InterruptedException
 	{
-		Thread.sleep(waitTime);
-
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(identifier);
 
-		final I_M_ShipmentSchedule shipmentScheduleRecord = queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
-				.create()
-				.firstOnlyNotNull(I_M_ShipmentSchedule.class);
+		final Supplier<Boolean> isShipmentScheduleProcessed = () -> {
 
-		assertThat(shipmentScheduleRecord).isNotNull();
-		assertThat(shipmentScheduleRecord.isProcessed()).isTrue();
+			final I_M_ShipmentSchedule record = queryBL
+					.createQueryBuilder(I_M_ShipmentSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.create()
+					.firstOnlyNotNull(I_M_ShipmentSchedule.class);
+
+			return record.isProcessed();
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentScheduleProcessed);
+
+		assertThat(isShipmentScheduleProcessed.get())
+				.as("M_ShipmentSchedules with identifier %s was not processed within the %s second timout", identifier, timeoutSec)
+				.isTrue();
 	}
 
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
