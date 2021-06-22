@@ -58,7 +58,7 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 	private static final String PARAMETERNAME_SearchText = "searchText";
 	private static final String BPARTNER_SEARCH_SQL_TEMPLATE = ".C_Bpartner_ID IN (SELECT p.C_Bpartner_ID "
 			+ "FROM C_Bpartner p "
-			+ "LEFT OUTER JOIN C_Bpartner_Location pl ON p.C_Bpartner_ID = pl.C_Bpartner_ID AND pl.IsActive='Y' "
+			+ "LEFT OUTER JOIN C_Bpartner_Location pl ON p.C_Bpartner_ID = pl.C_Bpartner_ID AND pl.IsActive='Y' AND pl.IsShipToDefault = 'Y' "
 			+ "LEFT OUTER JOIN C_Location l ON pl.C_Location_ID = l.C_Location_ID AND pl.IsActive='Y' "
 			+ "WHERE unaccent_string(p.Name,1) ILIKE unaccent_string(?,1) "
 			+ "OR unaccent_string(p.Value,1) ILIKE unaccent_string(?,1) "
