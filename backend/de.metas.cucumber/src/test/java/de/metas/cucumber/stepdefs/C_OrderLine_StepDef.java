@@ -83,7 +83,6 @@ public class C_OrderLine_StepDef
 	@Then("the purchase order linked to order {string} has lines:")
 	public void thePurchaseOrderLinkedToOrderO_HasLines(@NonNull final String linkedOrderIdentifier, @NonNull final DataTable dataTable)
 	{
-
 		final I_C_Order purchaseOrder = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order.class)
 				.addOnlyActiveRecordsFilter()

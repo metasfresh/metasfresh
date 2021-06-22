@@ -22,6 +22,7 @@
 
 package de.metas.order.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -36,6 +37,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -91,6 +93,7 @@ import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -108,6 +111,7 @@ import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
 public class OrderBL implements IOrderBL
 {
@@ -131,6 +135,7 @@ public class OrderBL implements IOrderBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -315,7 +320,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public void setPODocTypeTargetId(final I_C_Order order, @Nullable final String docSubType)
+	public void setDocTypeTargetId(@NonNull final I_C_Order order)
 	{
 		if (order.isSOTrx())
 		{
@@ -325,7 +330,8 @@ public class OrderBL implements IOrderBL
 		{
 			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
-					.docSubType(coalesce(docSubType, DocTypeQuery.DOCSUBTYPE_Any))
+					.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
+					.docSubTypeNotIn(ImmutableSet.of(DOCSUBTYPE_Mediated))
 					.adClientId(order.getAD_Client_ID())
 					.adOrgId(order.getAD_Org_ID())
 					.build();
@@ -340,6 +346,35 @@ public class OrderBL implements IOrderBL
 				logger.debug("(PO) - {}", docTypeId);
 				setDocTypeTargetIdAndUpdateDescription(order, docTypeId);
 			}
+		}
+	}
+
+	public void setPODocTypeTargetId(@NonNull final I_C_Order order, @NonNull final String docSubType)
+	{
+		if (order.isSOTrx())
+		{
+			throw new AdempiereException("Expecting C_Order to have isSOTrx equal to false!")
+					.appendParametersToMessage()
+					.setParameter("C_Order_ID", order.getC_Order_ID())
+					.setParameter("C_Order.isSOTrx", order.isSOTrx());
+		}
+
+		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+				.docSubType(docSubType)
+				.adClientId(order.getAD_Client_ID())
+				.adOrgId(order.getAD_Org_ID())
+				.build();
+
+		final DocTypeId docTypeId = docTypeBL.getDocTypeIdOrNull(docTypeQuery);
+		if (docTypeId == null)
+		{
+			logger.error("No POO found for {}", docTypeQuery);
+		}
+		else
+		{
+			logger.debug("(PO) - {}", docTypeId);
+			setDocTypeTargetIdAndUpdateDescription(order, docTypeId);
 		}
 	}
 
@@ -1145,5 +1180,11 @@ public class OrderBL implements IOrderBL
 			return months;
 		}
 		return Integer.MAX_VALUE;
+	}
+
+	public void closeOrder(final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+		documentBL.processEx(order, X_C_Order.DOCACTION_Close);
 	}
 }

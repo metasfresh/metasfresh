@@ -120,9 +120,9 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Set Target Sales Document Type.
 	 * This method is also setting IsSOTrx to true.
-	 *
-	 * @param soDocSubType sales DocSubType
 	 */
+	void setDocTypeTargetId(I_C_Order order);
+
 	void setPODocTypeTargetId(I_C_Order order, String soDocSubType);
 
 	/**
@@ -256,4 +256,6 @@ public interface IOrderBL extends ISingletonService
 	void validateHaddexDate(I_C_Order order);
 
 	boolean isHaddexOrder(I_C_Order order);
+
+	void closeOrder(final OrderId orderId);
 }

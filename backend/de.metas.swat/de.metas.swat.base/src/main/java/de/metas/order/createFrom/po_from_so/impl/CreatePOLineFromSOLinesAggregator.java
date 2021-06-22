@@ -1,6 +1,27 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderId;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
+import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.collections.MapReduceAggregator;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_AttributeSetInstance;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -11,28 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import de.metas.order.OrderId;
-import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeSetInstance;
-
-import de.metas.order.IOrderLineBL;
-import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.collections.MapReduceAggregator;
-import de.metas.common.util.CoalesceUtil;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /*
  * #%L
@@ -65,12 +65,13 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 {
 	private final transient IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-	private final transient IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
+	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	private final I_C_Order purchaseOrder;
 
 	private final String purchaseQtySource;
 
+	@NonNull
 	private final PurchaseTypeEnum purchaseType;
 
 	private final Map<I_C_OrderLine, List<I_C_OrderLine>> purchaseOrderLine2saleOrderLines = new IdentityHashMap<>();
@@ -79,7 +80,11 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 	 *
 	 * @param purchaseQtySource column name of the sales order line column to get the qty from. Can be either can be either QtyOrdered or QtyReserved.
 	 */
-	/* package */public CreatePOLineFromSOLinesAggregator(final I_C_Order purchaseOrder, final String purchaseQtySource, final PurchaseTypeEnum purchaseType)
+	/* package */public CreatePOLineFromSOLinesAggregator(
+			final I_C_Order purchaseOrder,
+			final String purchaseQtySource,
+			@NonNull final PurchaseTypeEnum purchaseType)
+
 	{
 		this.purchaseOrder = purchaseOrder;
 
@@ -143,7 +148,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		purchaseOrderLine.setDescription(salesOrderLine.getDescription());
 
 		final Timestamp datePromised = CoalesceUtil.coalesceSuppliers(
-				() -> salesOrderLine.getDatePromised(),
+				salesOrderLine::getDatePromised,
 				() -> salesOrderLine.getC_Order().getDatePromised());
 		purchaseOrderLine.setDatePromised(datePromised);
 
@@ -180,7 +185,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 
 		if(PurchaseTypeEnum.MEDIATED.equals(purchaseType))
 		{
-			salesOrdersToBeClosed.forEach(orderCreatePOFromSOsBL::closeOrder);
+			salesOrdersToBeClosed.forEach(orderBL::closeOrder);
 		}
 	}
 
@@ -193,7 +198,9 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		final BigDecimal purchaseQty;
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(purchaseQtySource))
 		{
-			purchaseQty = salesOrderLine.getQtyOrdered();
+			purchaseQty = PurchaseTypeEnum.MEDIATED.equals(purchaseType)
+					? salesOrderLine.getQtyDelivered().subtract(salesOrderLine.getQtyOrdered())
+					: salesOrderLine.getQtyOrdered();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_QtyReserved.equals(purchaseQtySource))
 		{
@@ -205,12 +212,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 			purchaseQty = null; // won't be reached
 		}
 
-		BigDecimal newQtyEntered = oldQtyEntered.add(purchaseQty);
-
-		if(PurchaseTypeEnum.MEDIATED.equals(purchaseType))
-		{
-			newQtyEntered = newQtyEntered.subtract(salesOrderLine.getQtyDelivered());
-		}
+		final BigDecimal newQtyEntered = oldQtyEntered.add(purchaseQty);
 
 		// setting QtyEntered, because qtyOrdered will be set from qtyEntered by a model interceptor
 		purchaseOrderLine.setQtyEntered(newQtyEntered);

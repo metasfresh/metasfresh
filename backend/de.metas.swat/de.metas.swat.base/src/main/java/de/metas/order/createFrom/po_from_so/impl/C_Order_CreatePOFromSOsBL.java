@@ -2,16 +2,13 @@ package de.metas.order.createFrom.po_from_so.impl;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.IOrderBL;
-import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.spi.IC_Order_CreatePOFromSOsListener;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.ToString;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_Order;
 
 import java.util.ArrayList;
 
@@ -82,11 +79,5 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 			return SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT;
 		}
 		return purchaseQtySource;
-	}
-
-	public void closeOrder(final OrderId orderId)
-	{
-		final I_C_Order order = orderBL.getById(orderId);
-		documentBL.processEx(order, X_C_Order.DOCACTION_Close);
 	}
 }

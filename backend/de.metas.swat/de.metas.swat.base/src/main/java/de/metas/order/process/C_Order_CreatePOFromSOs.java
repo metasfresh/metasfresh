@@ -104,8 +104,8 @@ public class C_Order_CreatePOFromSOs
 
 		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
 		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
-				p_TypeOfPurchase,
-				purchaseQtySource);
+																							  purchaseQtySource,
+																							  p_TypeOfPurchase);
 
 		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this));
 		workpackageAggregator.setGroupsBufferSize(100);

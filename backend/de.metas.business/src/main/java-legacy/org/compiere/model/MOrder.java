@@ -60,6 +60,7 @@ import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
+import de.metas.report.StandardDocumentReportType;
 import de.metas.tax.api.ITaxBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -75,7 +76,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
-import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -222,7 +222,7 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		else
 		{
-			orderBL.setPODocTypeTargetId(this, null);
+			orderBL.setDocTypeTargetId(this);
 		}
 	}    // MOrder
 

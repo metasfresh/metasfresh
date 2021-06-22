@@ -22,7 +22,6 @@
 
 package de.metas.order.createFrom.po_from_so;
 
-import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.spi.IC_Order_CreatePOFromSOsListener;
 import de.metas.util.ISingletonService;
 
@@ -50,6 +49,4 @@ public interface IC_Order_CreatePOFromSOsBL extends ISingletonService
 	 * @return <code>QtyOrdered</code> or <code>QtyReserved</code>. Never anything else.
 	 */
 	String getConfigPurchaseQtySource();
-
-	void closeOrder(final OrderId orderId);
 }

@@ -1,10 +1,15 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.engine.IDocument;
+import de.metas.i18n.IMsgBL;
+import de.metas.order.IOrderBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.collections.MapReduceAggregator;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -16,15 +21,9 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.engine.IDocument;
-import de.metas.i18n.IMsgBL;
-import de.metas.order.IOrderBL;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.collections.MapReduceAggregator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
@@ -61,6 +60,8 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 	private static final String MSG_PURCHASE_ORDER_CREATED = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseOrderCreated";
 	private final IContextAware context;
 	private final boolean p_IsDropShip;
+
+	@NonNull
 	private final PurchaseTypeEnum p_TypeOfPurchase;
 	private final String purchaseQtySource;
 
@@ -72,9 +73,10 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 	final Map<String, CreatePOLineFromSOLinesAggregator> orderKey2OrderLineAggregator = new HashMap<>();
 
-	public CreatePOFromSOsAggregator(final IContextAware context,
-			final PurchaseTypeEnum p_TypeOfPurchase,
-			final String purchaseQtySource)
+	public CreatePOFromSOsAggregator(
+			final IContextAware context,
+			final String purchaseQtySource,
+			@NonNull final PurchaseTypeEnum p_TypeOfPurchase)
 	{
 		this.context = context;
 		this.p_IsDropShip = p_TypeOfPurchase.equals(PurchaseTypeEnum.DROPSHIP);
@@ -201,7 +203,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 		}
 		else
 		{
-			orderBL.setPODocTypeTargetId(purchaseOrder, null);
+			orderBL.setDocTypeTargetId(purchaseOrder);
 		}
 
 		//
