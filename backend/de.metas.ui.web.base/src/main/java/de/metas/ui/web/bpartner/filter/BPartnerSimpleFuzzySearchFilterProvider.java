@@ -25,7 +25,9 @@ package de.metas.ui.web.bpartner.filter;
 import de.metas.i18n.AdMessageKey;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
+import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstants;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
@@ -37,6 +39,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.service.ISysConfigBL;
@@ -53,11 +56,20 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 
 	private static final String FILTER_ID = "BPartnerSimpleFuzzySearchFilterProvider";
 	private static final String PARAMETERNAME_SearchText = "searchText";
-	private static final AdMessageKey MSG_Caption = AdMessageKey.of("Search");
+	private static final String BPARTNER_SEARCH_SQL_TEMPLATE = "C_Bpartner_ID IN (SELECT p.C_Bpartner_ID "
+			+ "FROM C_Bpartner p "
+			+ "LEFT OUTER JOIN C_Bpartner_Location pl ON p.C_Bpartner_ID = pl.C_Bpartner_ID AND pl.IsShipToDefault = 'Y' "
+			+ "LEFT OUTER JOIN C_Location l ON pl.C_Location_ID = l.C_Location_ID "
+			+ "WHERE p.Name ILIKE {} "
+			+ "OR p.Value ILIKE {} "
+			+ "OR l.City ILIKE {})";
+	private static final AdMessageKey MSG_Caption = AdMessageKey.of("Filter");
 	public static final DocumentFilterDescriptor FILTER_DESCRIPTOR = DocumentFilterDescriptor.builder()
 			.setFilterId(FILTER_ID)
 			.setFrequentUsed(true)
 			.setDisplayName(MSG_Caption)
+			.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
+			.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_INLINE_FILTERS)
 			.addParameter(DocumentFilterParamDescriptor.builder()
 					.setMandatory(true)
 					.setFieldName(PARAMETERNAME_SearchText)
@@ -111,11 +123,14 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			return null;
 		}
 
-		// TODO: implement
-		// filter by: C_BPartner.Value, C_BPartner.Name, C_BPartner->C_BPartner_Location->C_Location.City etc (check the task description)
-		// use org.adempiere.db.DBConstants.FUNC_unaccent_string
+		return sqlOpts.getTableNameOrAlias() + "." + getSqlCriteria(sqlParamsOut, searchText);
 
-		throw new UnsupportedOperationException();
+	}
+
+	private String getSqlCriteria(final SqlParamsCollector sqlParamsOut, final String searchText)
+	{
+		final String searchLikeValue = convertSearchTextToSqlLikeString(searchText);
+		return StringUtils.formatMessage(BPARTNER_SEARCH_SQL_TEMPLATE, sqlParamsOut.placeholder(searchLikeValue), sqlParamsOut.placeholder(searchLikeValue), sqlParamsOut.placeholder(searchLikeValue));
 	}
 
 	// converts user entered strings like ' john    doe  ' to '%john%doe%'
