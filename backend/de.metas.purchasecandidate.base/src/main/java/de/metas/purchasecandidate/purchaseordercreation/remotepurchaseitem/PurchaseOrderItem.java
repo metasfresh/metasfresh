@@ -242,4 +242,8 @@ public class PurchaseOrderItem implements PurchaseItem
 	{
 		return purchaseCandidate.getDiscountEff();
 	}
+
+	public String getExternalPurchaseOrderUrl()	{
+		return purchaseCandidate.getExternalPurchaseOrderUrl();
+	}
 }

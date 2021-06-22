@@ -15,6 +15,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
+import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -105,6 +106,8 @@ import java.util.Set;
 
 	public void addCandidate(final PurchaseOrderItem purchaseOrderItem)
 	{
+		orderFactory.externalPurchaseOrderUrl(purchaseOrderItem.getExternalPurchaseOrderUrl());
+
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
 						purchaseOrderItem.getProductId(),

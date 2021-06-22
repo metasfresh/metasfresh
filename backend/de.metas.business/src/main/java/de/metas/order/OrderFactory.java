@@ -20,6 +20,7 @@ import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -194,6 +195,21 @@ public class OrderFactory
 		return this;
 	}
 
+	public OrderFactory externalPurchaseOrderUrl(@Nullable final String url)
+	{
+		if (order.getExternalPurchaseOrderURL() != null && !order.getExternalPurchaseOrderURL().equals(url))
+		{
+			Loggables.addLog("** Warning multiple externalURLs found on lines, purchaseOrderId : {}", order.getC_Order_ID());
+		}
+		else
+		{
+			order.setExternalPurchaseOrderURL(url);
+		}
+
+		assertNotBuilt();
+		return this;
+	}
+
 	public OrderFactory shipperId(@Nullable final ShipperId shipperId)
 	{
 		assertNotBuilt();
@@ -260,7 +276,6 @@ public class OrderFactory
 	{
 		return OrgId.ofRepoId(order.getAD_Org_ID());
 	}
-
 
 	public OrderFactory dateOrdered(final LocalDate dateOrdered)
 	{

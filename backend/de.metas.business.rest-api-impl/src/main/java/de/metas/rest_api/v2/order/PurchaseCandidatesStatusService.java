@@ -149,6 +149,7 @@ public class PurchaseCandidatesStatusService
 				.externalHeaderId(JsonExternalId.of(candidate.getExternalHeaderId().getValue()))
 				.externalLineId(JsonExternalId.of(candidate.getExternalLineId().getValue()))
 				.metasfreshId(JsonMetasfreshId.of(candidate.getId().getRepoId()))
+				.externalPurchaseOrderUrl(candidate.getExternalPurchaseOrderUrl())
 				.processed(candidate.isProcessed());
 	}
 

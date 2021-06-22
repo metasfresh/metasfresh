@@ -6,8 +6,8 @@ Feature: create or update Purchase Candidate
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
     Given the user adds a purchase candidate
-      | ExternalLineId | ExternalHeaderId | orgCode | warehouse        | isManualPrice | isManualDiscount | product     | vendor.id | qty | qty.uom | OPT.price | OPT.currency | OPT.priceUom | OPT.discount | OPT.purchaseDatePromised | OPT.purchaseDateOrdered |
-      | L1             | H1               | 001     | val-StdWarehouse | false         | false            | val-P002737 | val-G0002 | 3   | PCE     |           |              |              |              |                          |                         |
+      | ExternalLineId | ExternalHeaderId | orgCode | warehouse        | isManualPrice | isManualDiscount | product     | vendor.id | qty | qty.uom | OPT.price | OPT.currency | OPT.priceUom | OPT.discount | OPT.purchaseDatePromised | OPT.purchaseDateOrdered | OPT.ExternalPurchaseOrderURL |
+      | L1             | H1               | 001     | val-StdWarehouse | false         | false            | val-P002737 | val-G0002 | 3   | PCE     |           |              |              |              |                          |                         | www.ExternalReferenceURL.com |
 
     And the user adds a purchase candidate price
       | value | OPT.currencyCode | OPT.priceUomCode |

@@ -27,12 +27,19 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.common.JsonExternalId;
-import de.metas.common.rest_api.v2.JsonPrice;
-import de.metas.common.rest_api.v2.JsonQuantity;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
+import de.metas.common.rest_api.v2.JsonPrice;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateRequest;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateReference;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateRequest;
+import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
+import de.metas.common.rest_api.v2.JsonQuantity;
+import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -40,13 +47,6 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateRequest;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateReference;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateRequest;
-import de.metas.common.rest_api.v2.JsonPurchaseCandidateResponse;
-import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -68,7 +68,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class CreatePurchaseCandidate_StepDef
 {
@@ -205,6 +205,7 @@ public class CreatePurchaseCandidate_StepDef
 		final String currency = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.currency");
 		final String priceUom = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.priceUom");
 		final BigDecimal discount = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableEntries, "OPT.discount");
+		final String externalPurchaseOrderUrl = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.ExternalPurchaseOrderURL");
 
 		final JsonQuantity quantity = JsonQuantity.builder()
 				.qty(qty)
@@ -229,7 +230,8 @@ public class CreatePurchaseCandidate_StepDef
 				.isManualPrice(isManualPrice)
 				.isManualDiscount(isManualDiscount)
 				.price(price)
-				.discount(discount);
+				.discount(discount)
+				.externalPurchaseOrderUrl(externalPurchaseOrderUrl);
 	}
 
 	private void validatePurchaseCandidate(@NonNull final PurchaseCandidate persistedResult,
@@ -244,9 +246,11 @@ public class CreatePurchaseCandidate_StepDef
 		{
 			assertThat(candidate.getWorkPackages()).hasSizeGreaterThan(0);
 		}
-		else {
+		else
+		{
 			assertThat(candidate.getWorkPackages()).hasSize(0);
 		}
+		assertThat(persistedResult.getExternalPurchaseOrderUrl()).isEqualTo(candidate.getExternalPurchaseOrderUrl());
 	}
 
 	private Collection<JsonPurchaseCandidateReference> mapEnqueueRequest(final List<Map<String, String>> dataTable)
@@ -277,7 +281,6 @@ public class CreatePurchaseCandidate_StepDef
 				.attributeInstances(attributes)
 				.build();
 	}
-
 
 	public static com.fasterxml.jackson.databind.ObjectMapper newJsonObjectMapper()
 	{
