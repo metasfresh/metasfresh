@@ -34,12 +34,12 @@ import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescripto
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.service.ISysConfigBL;
@@ -56,13 +56,13 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 
 	private static final String FILTER_ID = "BPartnerSimpleFuzzySearchFilterProvider";
 	private static final String PARAMETERNAME_SearchText = "searchText";
-	private static final String BPARTNER_SEARCH_SQL_TEMPLATE = "C_Bpartner_ID IN (SELECT p.C_Bpartner_ID "
+	private static final String BPARTNER_SEARCH_SQL_TEMPLATE = ".C_Bpartner_ID IN (SELECT p.C_Bpartner_ID "
 			+ "FROM C_Bpartner p "
 			+ "LEFT OUTER JOIN C_Bpartner_Location pl ON p.C_Bpartner_ID = pl.C_Bpartner_ID AND pl.IsShipToDefault = 'Y' "
 			+ "LEFT OUTER JOIN C_Location l ON pl.C_Location_ID = l.C_Location_ID "
-			+ "WHERE p.Name ILIKE {} "
-			+ "OR p.Value ILIKE {} "
-			+ "OR l.City ILIKE {})";
+			+ "WHERE unaccent_string(p.Name,1) ILIKE unaccent_string(?,1) "
+			+ "OR unaccent_string(p.Value,1) ILIKE unaccent_string(?,1) "
+			+ "OR unaccent_string(l.City,1) ILIKE unaccent_string(?,1))";
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("Filter");
 	public static final DocumentFilterDescriptor FILTER_DESCRIPTOR = DocumentFilterDescriptor.builder()
 			.setFilterId(FILTER_ID)
@@ -122,15 +122,17 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 		{
 			return null;
 		}
-
-		return sqlOpts.getTableNameOrAlias() + "." + getSqlCriteria(sqlParamsOut, searchText);
-
+		return SqlAndParams.builder()
+				.append(sqlOpts.getTableNameOrAlias())
+				.append(getSqlCriteria(searchText))
+				.build()
+				.toSqlStringInlineParams();
 	}
 
-	private String getSqlCriteria(final SqlParamsCollector sqlParamsOut, final String searchText)
+	private SqlAndParams getSqlCriteria(final String searchText)
 	{
 		final String searchLikeValue = convertSearchTextToSqlLikeString(searchText);
-		return StringUtils.formatMessage(BPARTNER_SEARCH_SQL_TEMPLATE, sqlParamsOut.placeholder(searchLikeValue), sqlParamsOut.placeholder(searchLikeValue), sqlParamsOut.placeholder(searchLikeValue));
+		return SqlAndParams.of(BPARTNER_SEARCH_SQL_TEMPLATE, searchLikeValue, searchLikeValue, searchLikeValue);
 	}
 
 	// converts user entered strings like ' john    doe  ' to '%john%doe%'
