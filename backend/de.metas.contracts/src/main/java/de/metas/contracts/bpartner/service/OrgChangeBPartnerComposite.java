@@ -30,6 +30,7 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.contracts.FlatrateTerm;
+import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -55,20 +56,25 @@ public class OrgChangeBPartnerComposite
 	ImmutableList<FlatrateTerm> membershipSubscriptions;
 
 	@NonNull
-	ImmutableList<FlatrateTerm> nonMembershipSubscriptions;
+	ImmutableList<FlatrateTerm> allRunningSubscriptions;
+
+	@Nullable
+	GroupCategoryId groupCategoryId;
 
 	@Builder(toBuilder = true)
 	private OrgChangeBPartnerComposite(
 			@NonNull final BPartnerComposite bPartnerComposite,
 			@NonNull final OrgMappingId bPartnerOrgMappingId,
+			@Nullable final GroupCategoryId groupCategoryId,
 			@NonNull @Singular final ImmutableList<FlatrateTerm> membershipSubscriptions,
-			@NonNull @Singular final ImmutableList<FlatrateTerm> nonMembershipSubscriptions)
+			@NonNull @Singular final ImmutableList<FlatrateTerm> allRunningSubscriptions)
 	{
 		this.bPartnerComposite = bPartnerComposite;
 		this.bPartnerOrgMappingId = bPartnerOrgMappingId;
+		this.groupCategoryId = groupCategoryId;
 
 		this.membershipSubscriptions = membershipSubscriptions;
-		this.nonMembershipSubscriptions = nonMembershipSubscriptions;
+		this.allRunningSubscriptions = allRunningSubscriptions;
 	}
 
 	public BPartner getBpartner()

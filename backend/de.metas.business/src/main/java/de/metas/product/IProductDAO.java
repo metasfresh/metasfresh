@@ -1,5 +1,6 @@
 package de.metas.product;
 
+import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -104,8 +105,8 @@ public interface IProductDAO extends ISingletonService
 
 	void clearIndividualMasterDataFromProduct(ProductId productId);
 
-	Optional<de.metas.product.model.I_M_Product> getCounterpartProduct(
-			@NonNull ProductId productId,
+	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
+			@NonNull GroupCategoryId groupCategoryId,
 			@NonNull OrgId targetOrgId);
 
 	@Value

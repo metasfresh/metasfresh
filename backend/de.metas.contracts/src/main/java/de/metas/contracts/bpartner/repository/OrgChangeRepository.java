@@ -43,12 +43,18 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.lang.SOTrx;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
+import de.metas.order.compensationGroup.GroupCategoryId;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.GroupTemplateRegularLine;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
@@ -67,14 +73,12 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
@@ -85,13 +89,13 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Repository
@@ -114,14 +118,15 @@ public class OrgChangeRepository
 
 	private final BPartnerCompositeRepository bPartnerCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
-
-	private static final String PRODUCT_CATEGORY_VALUE_Membership = "Membership"; // FIXME hardcoded
+	private final GroupTemplateRepository groupTemplateRepo;
 
 	public OrgChangeRepository(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepo,
-							   @NonNull final OrgMappingRepository orgMappingRepo)
+			@NonNull final OrgMappingRepository orgMappingRepo,
+			@NonNull final GroupTemplateRepository groupTemplateRepo)
 	{
 		this.bPartnerCompositeRepo = bPartnerCompositeRepo;
 		this.orgMappingRepo = orgMappingRepo;
+		this.groupTemplateRepo = groupTemplateRepo;
 	}
 
 	public OrgChangeBPartnerComposite getByIdAndOrgChangeDate(
@@ -135,15 +140,27 @@ public class OrgChangeRepository
 				.bPartnerComposite(bPartnerComposite)
 				.bPartnerOrgMappingId(orgMappingId)
 				.membershipSubscriptions(getMembershipSubscriptions(bpartnerId, orgChangeDate, bPartnerComposite.getOrgId()))
-				.nonMembershipSubscriptions(getNonMembershipSubscriptions(bpartnerId, orgChangeDate, bPartnerComposite.getOrgId()))
+				.allRunningSubscriptions(getAllRunningSubscriptions(bpartnerId, orgChangeDate, bPartnerComposite.getOrgId()))
+				.groupCategoryId(getGroupCategoryId(bpartnerId, orgChangeDate, bPartnerComposite.getOrgId()).orElse(null))
 				.build();
 	}
 
-	private Collection<FlatrateTerm> getNonMembershipSubscriptions(@NonNull final BPartnerId bpartnerId,
-																   @NonNull final Instant orgChangeDate,
-																   @NonNull final OrgId orgId)
+	private Optional<GroupCategoryId> getGroupCategoryId(@NonNull final BPartnerId bpartnerId, final Instant orgChangeDate, final OrgId orgId)
 	{
-		final Set<FlatrateTermId> flatrateTermIds = retrieveNonMembershipSubscriptionIds(bpartnerId, orgChangeDate, orgId);
+		return queryMembershipRunningSubscription(bpartnerId, orgChangeDate, orgId)
+				.stream()
+				.map(term -> productDAO.getById(term.getM_Product_ID()))
+				.filter(product -> product.getC_CompensationGroup_Schema_Category_ID() > 0)
+				.map(product -> GroupCategoryId.ofRepoId(product.getC_CompensationGroup_Schema_Category_ID()))
+				.findFirst();
+
+	}
+
+	private Collection<FlatrateTerm> getAllRunningSubscriptions(@NonNull final BPartnerId bpartnerId,
+			@NonNull final Instant orgChangeDate,
+			@NonNull final OrgId orgId)
+	{
+		final Set<FlatrateTermId> flatrateTermIds = retrieveAllRunningSubscriptionIds(bpartnerId, orgChangeDate, orgId);
 		return flatrateTermIds.stream()
 				.map(this::createFlatrateTerm)
 				.collect(ImmutableList.toImmutableList());
@@ -196,12 +213,9 @@ public class OrgChangeRepository
 
 	private IQuery<I_M_Product> queryMembershipProducts(@NonNull final OrgId orgId)
 	{
-		final ProductCategoryId membershipProductCategoryId = productDAO.retrieveProductCategoryIdByCategoryValue(PRODUCT_CATEGORY_VALUE_Membership)
-				.orElseThrow(() -> new AdempiereException("No `" + PRODUCT_CATEGORY_VALUE_Membership + "` product category defined"));
-
 		return queryBL.createQueryBuilder(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Category_ID, membershipProductCategoryId)
+				.addNotEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID, null)
 				.create();
 	}
 
@@ -215,8 +229,8 @@ public class OrgChangeRepository
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
 				.addInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID,
-						I_M_Product.COLUMNNAME_M_Product_ID,
-						membershipProductQuery)
+									 I_M_Product.COLUMNNAME_M_Product_ID,
+									 membershipProductQuery)
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
@@ -228,10 +242,10 @@ public class OrgChangeRepository
 		final OrgId targetOrgId = orgChangeRequest.getOrgToId();
 		return bpartnerDAO.getCounterpartBPartnerId(orgMappingId, targetOrgId)
 				.orElseGet(() -> bpartnerDAO.cloneBPartnerRecord(CloneBPartnerRequest.builder()
-						.fromBPartnerId(orgChangeRequest.getBpartnerId())
-						.orgId(targetOrgId)
-						.orgMappingId(orgMappingId)
-						.build()));
+																		 .fromBPartnerId(orgChangeRequest.getBpartnerId())
+																		 .orgId(targetOrgId)
+																		 .orgMappingId(orgMappingId)
+																		 .build()));
 	}
 
 	private Set<FlatrateTermId> retrieveMembershipSubscriptionIds(
@@ -243,16 +257,14 @@ public class OrgChangeRepository
 				.listIds(FlatrateTermId::ofRepoId);
 	}
 
-	private Set<FlatrateTermId> retrieveNonMembershipSubscriptionIds(
+	private Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final Instant orgChangeDate,
 			@NonNull final OrgId orgId)
 	{
 		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
-				.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID,
-						I_M_Product.COLUMNNAME_M_Product_ID,
-						queryMembershipProducts(orgId))
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
@@ -265,79 +277,48 @@ public class OrgChangeRepository
 			final BPartnerComposite destinationBPartnerComposite,
 			final OrgChangeRequest orgChangeRequest)
 	{
-		final ProductId membershipProductId = orgChangeRequest.getMembershipProductId();
-		if (membershipProductId == null)
+		final GroupCategoryId groupCategoryId = orgChangeRequest.getGroupCategoryId();
+		if (groupCategoryId == null)
 		{
-			loggable.addLog("No membership subscription will be created for partner {} because there was no membership product ID "
-					+ "selected as paramteres", destinationBPartnerComposite.getBpartner());
+			loggable.addLog("No membership subscription will be created for partner {} because there was no group category Id "
+									+ "selected as paramteres", destinationBPartnerComposite.getBpartner());
 			return;
 		}
 
-		final I_M_Product newOrgMembershipProduct = productDAO.getCounterpartProduct(membershipProductId, destinationBPartnerComposite.getOrgId()).orElse(null);
+		final I_M_Product newOrgMembershipProduct = productDAO.getProductOfGroupCategory(groupCategoryId, destinationBPartnerComposite.getOrgId()).orElse(null);
 		if (newOrgMembershipProduct == null)
 		{
-			loggable.addLog("No counterpart membership product for {} was found in org {}",
-					membershipProductId,
-					destinationBPartnerComposite.getOrgId());
+			loggable.addLog("No product for the group category {} was found in org {}",
+							groupCategoryId,
+							destinationBPartnerComposite.getOrgId());
 			return;
 		}
 
-		if (orgChangeBPartnerComposite.hasMembershipSubscriptions())
+		if (newOrgMembershipProduct.getC_CompensationGroup_Schema_ID() <= 0)
+		{
+			loggable.addLog("The product {} doesn't have a group template",
+							newOrgMembershipProduct);
+			return;
+		}
+
+		if (!orgChangeBPartnerComposite.hasMembershipSubscriptions())
 		{
 			loggable.addLog("No membership subscription will be created for partner {} because there is no running membership "
-							+ "subscription in the initial partner {}",
-					destinationBPartnerComposite.getBpartner(),
-					orgChangeBPartnerComposite.getBpartner());
+									+ "subscription in the initial partner {}",
+							destinationBPartnerComposite.getBpartner(),
+							orgChangeBPartnerComposite.getBpartner());
 			return;
 		}
 		final FlatrateTerm sourceMembershipSubscription = orgChangeBPartnerComposite.getMembershipSubscriptions().get(0);
 
-		createTerm(destinationBPartnerComposite, orgChangeRequest, newOrgMembershipProduct, sourceMembershipSubscription);
+		final GroupTemplateId groupTemplateId = GroupTemplateId.ofRepoId(newOrgMembershipProduct.getC_CompensationGroup_Schema_ID());
+		createTerms(destinationBPartnerComposite, orgChangeRequest, groupTemplateId, sourceMembershipSubscription);
 	}
 
-	public void createNonMembershipSubscriptionTerm(final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
-													final BPartnerComposite destinationBPartnerComposite,
-													final OrgChangeRequest orgChangeRequest)
-	{
-		final List<FlatrateTerm> nonMembershipSubscriptions = orgChangeBPartnerComposite.getNonMembershipSubscriptions();
-
-		if (Check.isEmpty(nonMembershipSubscriptions))
-		{
-			loggable.addLog("No subscription for non-membership products will be created for the partner {} "
-							+ "because no such subscriptions were found in the initial partner {}.",
-					destinationBPartnerComposite.getBpartner(),
-					orgChangeBPartnerComposite.getBpartner());
-			return;
-		}
-
-		for (final FlatrateTerm subscription : nonMembershipSubscriptions)
-		{
-			final I_M_Product counterpartProduct = retrieveCounterpartProductOrNull(
-					subscription.getProductId(),
-					orgChangeRequest.getOrgToId());
-
-			if (counterpartProduct == null)
-			{
-				loggable.addLog("No counterpart product was found for the product {}. This means no counterpart subscription of {} will be"
-								+ "created for the parnter {}",
-						subscription.getProductId(),
-						subscription,
-						destinationBPartnerComposite.getBpartner());
-			}
-			else
-			{
-				createTerm(destinationBPartnerComposite,
-						orgChangeRequest,
-						counterpartProduct,
-						subscription);
-			}
-		}
-	}
-
-	private void createTerm(
+	private void createTerms(
 			@NonNull final BPartnerComposite destinationBPartnerComposite,
 			@NonNull final OrgChangeRequest orgChangeRequest,
-			@NonNull final I_M_Product newProduct,
+			@NonNull final GroupTemplateId groupTemplateId,
 			@NonNull final FlatrateTerm sourceSubscription)
 	{
 		final I_C_BPartner partner = bpartnerDAO.getById(destinationBPartnerComposite.getBpartner().getId());
@@ -360,49 +341,74 @@ public class OrgChangeRepository
 
 		final Timestamp startDate = TimeUtil.asTimestamp(orgChangeRequest.getStartDate());
 
-		final CreateFlatrateTermRequest flatrateTermRequest = CreateFlatrateTermRequest.builder()
-				.context(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()))
-				.orgId(orgChangeRequest.getOrgToId())
-				.bPartner(partner)
-				.startDate(startDate)
-				.isSimulation(false)
-				.conditions(flatrateDAO.getConditionsById(sourceSubscription.getFlatrateConditionsId()))
-				.productAndCategoryId(ProductAndCategoryId.of(newProduct.getM_Product_ID(), newProduct.getM_Product_Category_ID()))
-				.userInCharge(user)
-				.build();
+		final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
 
-		final I_C_Flatrate_Term term = flatrateBL.createTerm(flatrateTermRequest);
+		final ImmutableList<GroupTemplateRegularLine> regularLinesToAdd = groupTemplate.getRegularLinesToAdd();
 
-		final Quantity plannedQtyPerUnit = sourceSubscription.getPlannedQtyPerUnit();
+		final I_C_Flatrate_Conditions fallbackConditions = flatrateDAO.getConditionsById(sourceSubscription.getFlatrateConditionsId());
 
-		term.setPlannedQtyPerUnit(plannedQtyPerUnit == null ? BigDecimal.ZERO : plannedQtyPerUnit.toBigDecimal());
-		term.setC_UOM_ID(plannedQtyPerUnit == null ? -1 : plannedQtyPerUnit.getUomId().getRepoId());
+		for (final GroupTemplateRegularLine line : regularLinesToAdd)
+		{
+			final ProductId productId = line.getProductId();
+			final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
 
-		term.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
+			final ProductAndCategoryId productAndCategoryId = ProductAndCategoryId.of(productId, productCategoryId);
 
-		term.setDeliveryRule(sourceSubscription.getDeliveryRule() == null ? null : sourceSubscription.getDeliveryRule().getCode());
-		term.setDeliveryViaRule(sourceSubscription.getDeliveryViaRule() == null ? null : sourceSubscription.getDeliveryViaRule().getCode());
+			final ConditionsId contractConditionsId = line.getContractConditionsId();
+			final I_C_Flatrate_Conditions conditionsToUse;
+			if (contractConditionsId != null)
+			{
+				conditionsToUse = flatrateDAO.getConditionsById(contractConditionsId);
+			}
+			else
+			{
+				conditionsToUse = fallbackConditions;
+			}
 
-		final IEditablePricingContext initialContext = pricingBL
-				.createInitialContext(orgChangeRequest.getOrgToId(),
-						ProductId.ofRepoId(newProduct.getM_Product_ID()),
-						destinationBPartnerComposite.getBpartner().getId(),
-						plannedQtyPerUnit,
-						SOTrx.SALES);
-		initialContext.setPriceDate(TimeUtil.asLocalDate(orgChangeRequest.getStartDate()));
-		initialContext.setCountryId(countryDAO.getCountryIdByCountryCode(billBPartnerLocation.getCountryCode()));
-		final IPricingResult pricingResult = pricingBL.calculatePrice(initialContext);
-		term.setPriceActual(pricingResult.getPriceStd());
-		term.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingResult.getPricingSystemId()));
-		term.setC_Currency_ID(pricingResult.getCurrencyRepoId());
+			final CreateFlatrateTermRequest flatrateTermRequest = CreateFlatrateTermRequest.builder()
+					.context(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()))
+					.orgId(orgChangeRequest.getOrgToId())
+					.bPartner(partner)
+					.startDate(startDate)
+					.isSimulation(false)
+					.conditions(conditionsToUse)
+					.productAndCategoryId(productAndCategoryId)
+					.userInCharge(user)
+					.build();
 
-		final IPricingResult flatratePrice = calculateFlatrateTermPrice(term);
-		term.setC_TaxCategory_ID(TaxCategoryId.toRepoId(flatratePrice.getTaxCategoryId()));
-		term.setIsTaxIncluded(flatratePrice.isTaxIncluded());
+			final I_C_Flatrate_Term term = flatrateBL.createTerm(flatrateTermRequest);
 
-		flatrateDAO.save(term);
+			final Quantity plannedQtyPerUnit = sourceSubscription.getPlannedQtyPerUnit();
 
-		flatrateBL.complete(term);
+			term.setPlannedQtyPerUnit(plannedQtyPerUnit == null ? BigDecimal.ZERO : plannedQtyPerUnit.toBigDecimal());
+			term.setC_UOM_ID(plannedQtyPerUnit == null ? -1 : plannedQtyPerUnit.getUomId().getRepoId());
+
+			term.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
+
+			term.setDeliveryRule(sourceSubscription.getDeliveryRule() == null ? null : sourceSubscription.getDeliveryRule().getCode());
+			term.setDeliveryViaRule(sourceSubscription.getDeliveryViaRule() == null ? null : sourceSubscription.getDeliveryViaRule().getCode());
+
+			final IEditablePricingContext initialContext = pricingBL
+					.createInitialContext(orgChangeRequest.getOrgToId(),
+										  productId,
+										  destinationBPartnerComposite.getBpartner().getId(),
+										  plannedQtyPerUnit,
+										  SOTrx.SALES);
+			initialContext.setPriceDate(TimeUtil.asLocalDate(orgChangeRequest.getStartDate()));
+			initialContext.setCountryId(countryDAO.getCountryIdByCountryCode(billBPartnerLocation.getCountryCode()));
+			final IPricingResult pricingResult = pricingBL.calculatePrice(initialContext);
+			term.setPriceActual(pricingResult.getPriceStd());
+			term.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingResult.getPricingSystemId()));
+			term.setC_Currency_ID(pricingResult.getCurrencyRepoId());
+
+			final IPricingResult flatratePrice = calculateFlatrateTermPrice(term);
+			term.setC_TaxCategory_ID(TaxCategoryId.toRepoId(flatratePrice.getTaxCategoryId()));
+			term.setIsTaxIncluded(flatratePrice.isTaxIncluded());
+
+			flatrateDAO.save(term);
+
+			flatrateBL.complete(term);
+		}
 	}
 
 	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_Flatrate_Term newTerm)
@@ -418,27 +424,4 @@ public class OrgChangeRepository
 				.computeOrThrowEx();
 	}
 
-	@Nullable
-	private I_M_Product retrieveCounterpartProductOrNull(final ProductId sourceProductId, final OrgId orgId)
-	{
-		final I_M_Product sourceProductRecord = productDAO.getById(sourceProductId, de.metas.product.model.I_M_Product.class);
-
-		final I_M_Product counterpartProduct = queryBL.createQueryBuilder(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_Mapping_ID, sourceProductRecord.getM_Product_Mapping_ID())
-				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId)
-				.orderByDescending(I_M_Product.COLUMNNAME_M_Product_ID)
-				.create()
-				.first(I_M_Product.class);
-
-		if (counterpartProduct == null)
-		{
-			loggable.addLog("No counterpart product was found for {}.", sourceProductRecord);
-		}
-		else
-		{
-			loggable.addLog("The counterpart of the product {} is the product {} ", sourceProductRecord, counterpartProduct);
-		}
-
-		return counterpartProduct;
-	}
 }

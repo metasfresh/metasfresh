@@ -156,7 +156,6 @@ public class OrgChangeCommand
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
 		createMembershipSubscriptionTerm(bpartnerAndSubscriptions, destinationBPartnerComposite);
-		createNonMembershipSubscriptionTerm(bpartnerAndSubscriptions, destinationBPartnerComposite);
 	}
 
 	private void cancelCurrentSubscriptions(final OrgChangeBPartnerComposite bpartnerAndSubscriptions)
@@ -169,25 +168,12 @@ public class OrgChangeCommand
 				.action(IContractChangeBL.ChangeTerm_ACTION_Cancel)
 				.build();
 
-		bpartnerAndSubscriptions.getMembershipSubscriptions()
+		bpartnerAndSubscriptions.getAllRunningSubscriptions()
 				.stream()
 				.map(FlatrateTerm::getFlatrateTermId)
 				.map(flatrateDAO::getById)
 				.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
 
-		bpartnerAndSubscriptions.getNonMembershipSubscriptions()
-				.stream()
-				.map(FlatrateTerm::getFlatrateTermId)
-				.map(flatrateDAO::getById)
-				.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
-
-	}
-
-	private void createNonMembershipSubscriptionTerm(
-			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
-			@NonNull final BPartnerComposite destinationBPartnerComposite)
-	{
-		orgChangeRepo.createNonMembershipSubscriptionTerm(orgChangeBPartnerComposite, destinationBPartnerComposite, request);
 	}
 
 	private void createMembershipSubscriptionTerm(

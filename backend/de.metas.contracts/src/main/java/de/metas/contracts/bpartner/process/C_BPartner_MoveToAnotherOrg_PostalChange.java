@@ -52,15 +52,17 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
+		final BPartnerId partnerId = BPartnerId.ofRepoId(getRecord_ID());
+		final Instant orgChangeDate = CoalesceUtil.coalesce(p_startDate, SystemTime.asInstant());
+
 		if (PARAM_DATE_ORG_CHANGE.equals(parameter.getColumnName()))
 		{
 			return SystemTime.asLocalDate().plusDays(1);
 		}
 		else if (PARAM_AD_ORG_TARGET_ID.equals(parameter.getColumnName()))
 		{
-			final BPartnerId bpartnerId = BPartnerId.ofRepoId(getRecord_ID());
 
-			final BPartnerLocationId bpLocationId = bpartnerDAO.retrieveLastUpdatedLocation(bpartnerId);
+			final BPartnerLocationId bpLocationId = bpartnerDAO.retrieveLastUpdatedLocation(partnerId);
 
 			final I_C_BPartner_Location bpLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bpLocationId);
 
@@ -80,9 +82,6 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 			{
 				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 			}
-			final BPartnerId partnerId = BPartnerId.ofRepoId(getRecord_ID());
-
-			final Instant orgChangeDate = CoalesceUtil.coalesce(p_startDate, SystemTime.asInstant());
 
 			final OrgChangeBPartnerComposite orgChangePartnerComposite = service.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
 
@@ -90,6 +89,23 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 					&& service.hasAnyMembershipProduct(p_orgTargetId);
 
 			return isShowMembershipParameter;
+		}
+		else if (PARAM_GroupTemplate_ID.equals(parameter.getColumnName()))
+		{
+			if (p_orgTargetId == null)
+			{
+				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+			}
+
+			if (!isShowMembershipParameter)
+			{
+				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
+			}
+
+			final OrgChangeBPartnerComposite orgChangePartnerComposite = service.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
+
+			return orgChangePartnerComposite.getGroupCategoryId() == null? -1 : orgChangePartnerComposite.getGroupCategoryId().getRepoId();
+
 		}
 
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
