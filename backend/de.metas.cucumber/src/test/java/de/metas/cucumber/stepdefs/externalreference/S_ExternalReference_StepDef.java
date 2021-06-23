@@ -42,8 +42,8 @@ public class S_ExternalReference_StepDef
 	@Then("verify that S_ExternalReference was created")
 	public void verifyExists(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> contactsTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : contactsTableList)
+		final List<Map<String, String>> externalReferencesTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : externalReferencesTableList)
 		{
 			final String externalSystem = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalSystem");
 			final String type = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "Type");

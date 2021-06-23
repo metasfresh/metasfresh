@@ -20,8 +20,8 @@ import de.metas.project.ProjectId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -197,14 +197,15 @@ public class OrderFactory
 
 	public OrderFactory externalPurchaseOrderUrl(@Nullable final String url)
 	{
-		if (order.getExternalPurchaseOrderURL() != null && !order.getExternalPurchaseOrderURL().equals(url))
-		{
-			Loggables.addLog("** Warning multiple externalURLs found on lines, purchaseOrderId : {}", order.getC_Order_ID());
-		}
-		else
-		{
-			order.setExternalPurchaseOrderURL(url);
-		}
+		order.setExternalPurchaseOrderURL(url);
+
+		assertNotBuilt();
+		return this;
+	}
+
+	public OrderFactory externalHeaderId(@Nullable final ExternalId externalId)
+	{
+		order.setExternalId(externalId.getValue());
 
 		assertNotBuilt();
 		return this;

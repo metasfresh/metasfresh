@@ -138,7 +138,11 @@ public class CreatePurchaseCandidate_StepDef
 		final JsonMetasfreshId metasfreshId = candidate.getMetasfreshId();
 
 		final PurchaseCandidate persistedResult = purchaseCandidateRepo.getById(PurchaseCandidateId.ofRepoId(metasfreshId.getValue()));
-		validatePurchaseCandidate(persistedResult, candidate, false);
+		validatePurchaseCandidate(persistedResult, candidate);
+
+		assertThat(candidate.isProcessed()).isFalse();
+		assertThat(candidate.getPurchaseOrders()).hasSize(0);
+		assertThat(candidate.getWorkPackages()).hasSize(0);
 	}
 
 	@Then("verify purchase candidate status")
@@ -155,7 +159,11 @@ public class CreatePurchaseCandidate_StepDef
 		final JsonMetasfreshId metasfreshId = candidate.getMetasfreshId();
 
 		final PurchaseCandidate persistedResult = purchaseCandidateRepo.getById(PurchaseCandidateId.ofRepoId(metasfreshId.getValue()));
-		validatePurchaseCandidate(persistedResult, candidate, true);
+		validatePurchaseCandidate(persistedResult, candidate);
+
+		assertThat(candidate.isProcessed()).isTrue();
+		assertThat(candidate.getPurchaseOrders()).hasSize(1);
+		assertThat(candidate.getWorkPackages()).hasSizeGreaterThan(0);
 	}
 
 	private JsonPrice mapPrice(final Map<String, String> map)
@@ -234,22 +242,10 @@ public class CreatePurchaseCandidate_StepDef
 				.externalPurchaseOrderUrl(externalPurchaseOrderUrl);
 	}
 
-	private void validatePurchaseCandidate(@NonNull final PurchaseCandidate persistedResult,
-			@NonNull final JsonPurchaseCandidate candidate,
-			final boolean expectToHaveWorkPackages)
+	private void validatePurchaseCandidate(@NonNull final PurchaseCandidate persistedResult, @NonNull final JsonPurchaseCandidate candidate)
 	{
 		assertThat(persistedResult.getExternalHeaderId().getValue()).isEqualTo(candidate.getExternalHeaderId().getValue());
 		assertThat(persistedResult.getExternalLineId().getValue()).isEqualTo(candidate.getExternalLineId().getValue());
-		assertThat(candidate.isProcessed()).isFalse();
-		assertThat(candidate.getPurchaseOrders()).hasSize(0);
-		if (expectToHaveWorkPackages)
-		{
-			assertThat(candidate.getWorkPackages()).hasSizeGreaterThan(0);
-		}
-		else
-		{
-			assertThat(candidate.getWorkPackages()).hasSize(0);
-		}
 		assertThat(persistedResult.getExternalPurchaseOrderUrl()).isEqualTo(candidate.getExternalPurchaseOrderUrl());
 	}
 
