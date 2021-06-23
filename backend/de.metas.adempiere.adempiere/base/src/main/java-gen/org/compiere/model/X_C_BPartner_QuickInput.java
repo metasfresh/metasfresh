@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_QuickInput
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_C_BPartner_QuickInput, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -949135302L;
+	private static final long serialVersionUID = -931610420L;
 
     /** Standard Constructor */
     public X_C_BPartner_QuickInput (final Properties ctx, final int C_BPartner_QuickInput_ID, @Nullable final String trxName)
@@ -79,33 +79,6 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public org.compiere.model.I_C_BP_Group getC_BP_Group()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
-	}
-
-	@Override
-	public void setC_BP_Group(final org.compiere.model.I_C_BP_Group C_BP_Group)
-	{
-		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
-	}
-
-	@Override
-	public void setC_BP_Group_ID (final int C_BP_Group_ID)
-	{
-		if (C_BP_Group_ID < 1) 
-			set_Value (COLUMNNAME_C_BP_Group_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BP_Group_ID, C_BP_Group_ID);
-	}
-
-	@Override
-	public int getC_BP_Group_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BP_Group_ID);
-	}
-
-	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -151,6 +124,60 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public org.compiere.model.I_C_BP_Group getC_BP_Group()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class);
+	}
+
+	@Override
+	public void setC_BP_Group(final org.compiere.model.I_C_BP_Group C_BP_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Group_ID, org.compiere.model.I_C_BP_Group.class, C_BP_Group);
+	}
+
+	@Override
+	public void setC_BP_Group_ID (final int C_BP_Group_ID)
+	{
+		if (C_BP_Group_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Group_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Group_ID, C_BP_Group_ID);
+	}
+
+	@Override
+	public int getC_BP_Group_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Group_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Campaign getC_Campaign()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
+	}
+
+	@Override
+	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
+	}
+
+	@Override
+	public void setC_Campaign_ID (final int C_Campaign_ID)
+	{
+		if (C_Campaign_ID < 1) 
+			set_Value (COLUMNNAME_C_Campaign_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
+	}
+
+	@Override
+	public int getC_Campaign_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
+	}
+
+	@Override
 	public void setC_Greeting_ID (final int C_Greeting_ID)
 	{
 		if (C_Greeting_ID < 1) 
@@ -193,6 +220,18 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setCompanyname (final @Nullable java.lang.String Companyname)
+	{
+		set_Value (COLUMNNAME_Companyname, Companyname);
+	}
+
+	@Override
+	public java.lang.String getCompanyname() 
+	{
+		return get_ValueAsString(COLUMNNAME_Companyname);
+	}
+
+	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
@@ -205,18 +244,6 @@ public class X_C_BPartner_QuickInput extends org.compiere.model.PO implements I_
 	public int getC_PaymentTerm_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PaymentTerm_ID);
-	}
-
-	@Override
-	public void setCompanyname (final @Nullable java.lang.String Companyname)
-	{
-		set_Value (COLUMNNAME_Companyname, Companyname);
-	}
-
-	@Override
-	public java.lang.String getCompanyname() 
-	{
-		return get_ValueAsString(COLUMNNAME_Companyname);
 	}
 
 	@Override
