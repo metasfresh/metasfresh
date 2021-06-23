@@ -23,11 +23,12 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- 2021-06-23T10:21:54.488Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */  select update_Column_Translation_From_AD_Element(544034)
+;
 
 -- Delete C_Campaign_ID From C_BPartner_QuickInput
 -- 2021-06-23T10:23:39.849Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-                      DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=574547
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=574547
 ;
 
 -- 2021-06-23T10:23:39.864Z
