@@ -22,7 +22,50 @@
 
 package de.metas.order.compensationGroup;
 
-public class GroupCategoryId
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+
+public class GroupCategoryId implements RepoIdAware
 {
-	// TODO: C_CompensationGroup_Schema_Category_ID
+	int repoId;
+
+	@JsonCreator
+	public static GroupCategoryId ofRepoId(final int repoId)
+	{
+		return new GroupCategoryId(repoId);
+	}
+
+	@Nullable
+	public static GroupCategoryId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new GroupCategoryId(repoId) : null;
+	}
+
+	public static Optional<GroupCategoryId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	public static int toRepoId(@Nullable final GroupCategoryId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	private GroupCategoryId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_CompensationGroup_Schema_Category_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
 }
