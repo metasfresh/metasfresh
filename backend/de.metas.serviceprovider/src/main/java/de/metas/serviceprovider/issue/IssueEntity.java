@@ -145,14 +145,6 @@ public class IssueEntity
 		}
 	}
 
-	public void setBudgetedEffortIfNotSet(@Nullable final BigDecimal budgetedEffort)
-	{
-		if (this.budgetedEffort == null || this.budgetedEffort.signum() == 0)
-		{
-			this.budgetedEffort = budgetedEffort;
-		}
-	}
-
 	public void addAggregatedEffort(@Nullable final Effort effort)
 	{
 		this.aggregatedEffort = aggregatedEffort.addNullSafe(effort);
