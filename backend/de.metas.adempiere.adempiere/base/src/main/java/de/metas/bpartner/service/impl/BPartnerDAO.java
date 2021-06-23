@@ -1761,8 +1761,11 @@ public class BPartnerDAO implements IBPartnerDAO
 		final I_C_BPartner fromBpartner = getById(request.getFromBPartnerId());
 
 		final I_C_BPartner newBPartner = copy()
+				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
+				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID)
 				.setFrom(fromBpartner)
-				.copyToNew(I_C_BPartner.class);
+				.copyToNew(I_C_BPartner.class)
+				;
 
 		if (request.getOrgId() != null)
 		{

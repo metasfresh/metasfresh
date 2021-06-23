@@ -71,8 +71,6 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 	@Param(parameterName = PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, mandatory = true)
 	protected boolean isShowMembershipParameter;
 
-
-
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -103,6 +101,7 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 
 		return ProcessPreconditionsResolution.accept();
 	}
+
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
@@ -120,6 +119,8 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 
 			isShowMembershipParameter = orgChangePartnerComposite.hasMembershipSubscriptions()
 					&& service.hasAnyMembershipProduct(p_orgTargetId);
+
+			p_groupTemplateId = orgChangePartnerComposite.getGroupCategoryId() == null ? null : orgChangePartnerComposite.getGroupCategoryId();
 
 		}
 	}
