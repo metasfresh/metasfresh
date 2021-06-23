@@ -1,18 +1,8 @@
-package de.metas.ui.web.dashboard;
-
-import com.google.common.collect.ImmutableList;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +19,16 @@ import java.util.Map;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.kpi.data;
+
+import com.google.common.collect.ImmutableList;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Value
 public class KPIDataSet
@@ -82,7 +82,7 @@ public class KPIDataSet
 			return this;
 		}
 
-		private KPIDataSetValuesMap.KPIDataSetValuesMapBuilder dataSetValue(final KPIDataSetValuesAggregationKey dataSetValueKey)
+		public KPIDataSetValuesMap.KPIDataSetValuesMapBuilder dataSetValue(final KPIDataSetValuesAggregationKey dataSetValueKey)
 		{
 			return valuesByKey.computeIfAbsent(dataSetValueKey, KPIDataSetValuesMap::builder);
 		}

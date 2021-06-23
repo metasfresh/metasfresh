@@ -14,6 +14,8 @@ import de.metas.ui.web.dashboard.json.JsonKPIDataResult;
 import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
 import de.metas.ui.web.dashboard.json.KPIJsonOptions;
 import de.metas.ui.web.dashboard.websocket.UserDashboardWebsocketSender;
+import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;

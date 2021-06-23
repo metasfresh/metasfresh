@@ -23,8 +23,9 @@
 package de.metas.ui.web.dashboard;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.WebuiError;
+import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.kpi.data.KPIDataSet;
 import lombok.NonNull;
 import lombok.Value;
 

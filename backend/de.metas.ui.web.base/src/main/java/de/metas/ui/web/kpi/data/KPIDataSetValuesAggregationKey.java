@@ -20,8 +20,31 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.data;
 
-public class KPIDataSetValue
+import de.metas.ui.web.dashboard.json.KPIJsonOptions;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+public class KPIDataSetValuesAggregationKey
 {
+	public static final KPIDataSetValuesAggregationKey NO_KEY = new KPIDataSetValuesAggregationKey(KPIDataValue.ofUnknownType(null));
+
+	public static KPIDataSetValuesAggregationKey of(@NonNull final KPIDataValue value)
+	{
+		return new KPIDataSetValuesAggregationKey(value);
+	}
+
+	@NonNull KPIDataValue value;
+
+	private KPIDataSetValuesAggregationKey(@NonNull final KPIDataValue value)
+	{
+		this.value = value;
+	}
+
+	public Object toJsonValue(@NonNull final KPIJsonOptions jsonOpts)
+	{
+		return value.toJsonValue(jsonOpts);
+	}
 }

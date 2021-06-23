@@ -20,16 +20,23 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.data;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.TimeRange;
+import de.metas.ui.web.kpi.descriptor.KPI;
+import de.metas.ui.web.kpi.descriptor.KPIDatasourceType;
+import de.metas.ui.web.kpi.descriptor.KPIId;
+import de.metas.ui.web.kpi.descriptor.KPIRepository;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -113,9 +120,27 @@ public class KPIDataProvider
 		final TimeRange timeRange = timeRangeDefaults.createTimeRange(cacheKey.getFrom(), cacheKey.getTo());
 		final KPI kpi = kpiRepository.getKPI(cacheKey.getKpiId());
 
-		final KPIDataResult data = KPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
-				.setTimeRange(timeRange)
-				.retrieveData();
+		final KPIDatasourceType dataSourceType = kpi.getDatasourceType();
+		final KPIDataResult data;
+		if (dataSourceType == KPIDatasourceType.ELASTICSEARCH)
+		{
+			data = ElasticsearchKPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
+					.setTimeRange(timeRange)
+					.retrieveData();
+		}
+		else if (dataSourceType == KPIDatasourceType.SQL)
+		{
+			data = SQLKPIDataLoader.builder()
+					.kpi(kpi)
+					.timeRange(timeRange)
+					.build()
+					.execute();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown KPI's data source type: " + dataSourceType)
+					.setParameter("kpi", kpi);
+		}
 
 		final KPIDataCacheValue cacheValue = new KPIDataCacheValue(data);
 

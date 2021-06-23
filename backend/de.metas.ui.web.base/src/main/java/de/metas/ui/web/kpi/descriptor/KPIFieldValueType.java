@@ -1,12 +1,8 @@
-package de.metas.ui.web.dashboard;
-
-import org.compiere.util.DisplayType;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +19,10 @@ import org.compiere.util.DisplayType;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.kpi.descriptor;
+
+import org.compiere.util.DisplayType;
 
 public enum KPIFieldValueType
 {

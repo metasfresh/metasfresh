@@ -20,31 +20,48 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.descriptor;
 
-import de.metas.ui.web.dashboard.json.KPIJsonOptions;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
-public class KPIDataSetValuesAggregationKey
+public class KPIId implements RepoIdAware
 {
-	public static final KPIDataSetValuesAggregationKey NO_KEY = new KPIDataSetValuesAggregationKey(KPIDataValue.ofUnknownType(null));
-
-	public static KPIDataSetValuesAggregationKey of(@NonNull final KPIDataValue value)
+	@JsonCreator
+	public static KPIId ofRepoId(final int repoId)
 	{
-		return new KPIDataSetValuesAggregationKey(value);
+		return new KPIId(repoId);
 	}
 
-	@NonNull KPIDataValue value;
-
-	private KPIDataSetValuesAggregationKey(@NonNull final KPIDataValue value)
+	@Nullable
+	public static KPIId ofRepoIdOrNull(final int repoId)
 	{
-		this.value = value;
+		return repoId > 0 ? new KPIId(repoId) : null;
 	}
 
-	public Object toJsonValue(@NonNull final KPIJsonOptions jsonOpts)
+	int repoId;
+
+	private KPIId(final int repoId)
 	{
-		return value.toJsonValue(jsonOpts);
+		this.repoId = Check.assumeGreaterThanZero(repoId, "WEBUI_KPI_ID");
 	}
+
+	@JsonValue
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
+	public static int toRepoId(@Nullable final KPIId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
 }

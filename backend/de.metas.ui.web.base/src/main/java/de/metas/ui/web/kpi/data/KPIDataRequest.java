@@ -20,48 +20,26 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.data;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
+import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.descriptor.KPIId;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.Instant;
 
 @Value
-public class KPIId implements RepoIdAware
+@Builder
+public class KPIDataRequest
 {
-	@JsonCreator
-	public static KPIId ofRepoId(final int repoId)
-	{
-		return new KPIId(repoId);
-	}
+	@NonNull KPIId kpiId;
 
-	@Nullable
-	public static KPIId ofRepoIdOrNull(final int repoId)
-	{
-		return repoId > 0 ? new KPIId(repoId) : null;
-	}
-
-	int repoId;
-
-	private KPIId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "WEBUI_KPI_ID");
-	}
-
-	@JsonValue
-	@Override
-	public int getRepoId()
-	{
-		return repoId;
-	}
-
-	public static int toRepoId(@Nullable final KPIId id)
-	{
-		return id != null ? id.getRepoId() : -1;
-	}
-
+	@NonNull KPITimeRangeDefaults timeRangeDefaults;
+	@Nullable Instant from;
+	@Nullable Instant to;
+	@NonNull Duration maxStaleAccepted;
 }

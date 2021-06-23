@@ -20,11 +20,13 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.data;
 
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.dashboard.json.KPIJsonOptions;
+import de.metas.ui.web.kpi.descriptor.KPIField;
+import de.metas.ui.web.kpi.descriptor.KPIFieldValueType;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import lombok.Builder;

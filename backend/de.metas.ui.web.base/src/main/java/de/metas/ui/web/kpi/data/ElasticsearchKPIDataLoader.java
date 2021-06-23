@@ -1,9 +1,36 @@
-package de.metas.ui.web.dashboard;
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.ui.web.kpi.data;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.elasticsearch.impl.ESSystem;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.kpi.TimeRange;
+import de.metas.ui.web.kpi.descriptor.KPI;
+import de.metas.ui.web.kpi.descriptor.KPIField;
+import de.metas.ui.web.kpi.descriptor.elasticsearch.ElasticsearchDatasourceDescriptor;
+import de.metas.ui.web.kpi.descriptor.elasticsearch.ElasticsearchDatasourceFieldDescriptor;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -38,19 +65,20 @@ import java.time.Instant;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public class KPIDataLoader
+public class ElasticsearchKPIDataLoader
 {
-	public static KPIDataLoader newInstance(
+	public static ElasticsearchKPIDataLoader newInstance(
 			@NonNull final RestHighLevelClient elasticsearchClient,
 			@NonNull final KPI kpi)
 	{
-		return new KPIDataLoader(elasticsearchClient, kpi);
+		return new ElasticsearchKPIDataLoader(elasticsearchClient, kpi);
 	}
 
-	private static final Logger logger = LogManager.getLogger(KPIDataLoader.class);
+	private static final Logger logger = LogManager.getLogger(ElasticsearchKPIDataLoader.class);
 
 	private final RestHighLevelClient elasticsearchClient;
 	private final KPI kpi;
+	private final ElasticsearchDatasourceDescriptor datasourceDescriptor;
 
 	private TimeRange mainTimeRange;
 	private List<TimeRange> timeRanges;
@@ -84,15 +112,16 @@ public class KPIDataLoader
 
 	private DataSetValueKeyExtractor dataSetValueKeyExtractor = new KeyDataSetValueKeyExtractor();
 
-	private KPIDataLoader(
+	private ElasticsearchKPIDataLoader(
 			@NonNull final RestHighLevelClient elasticsearchClient,
 			@NonNull final KPI kpi)
 	{
 		this.elasticsearchClient = elasticsearchClient;
 		this.kpi = kpi;
+		this.datasourceDescriptor = kpi.getElasticsearchDatasource();
 	}
 
-	public KPIDataLoader setTimeRange(final TimeRange mainTimeRange)
+	public ElasticsearchKPIDataLoader setTimeRange(final TimeRange mainTimeRange)
 	{
 		this.mainTimeRange = mainTimeRange;
 
@@ -153,9 +182,9 @@ public class KPIDataLoader
 		return this;
 	}
 
-	public KPIDataLoader assertESIndexExists()
+	public ElasticsearchKPIDataLoader assertESIndexExists()
 	{
-		final String esSearchIndex = kpi.getEsSearchIndex();
+		final String esSearchIndex = datasourceDescriptor.getEsSearchIndex();
 		final GetIndexRequest request = new GetIndexRequest(esSearchIndex);
 		try
 		{
@@ -205,7 +234,7 @@ public class KPIDataLoader
 
 		//
 		// Resolve esQuery's variables
-		final IStringExpression esQuery = kpi.getEsQuery();
+		final IStringExpression esQuery = datasourceDescriptor.getEsQuery();
 		final String esQueryParsed = esQuery.evaluate(evalCtx, OnVariableNotFound.Preserve);
 
 		//
@@ -216,8 +245,8 @@ public class KPIDataLoader
 			logger.trace("Executing: \n{}", esQueryParsed);
 
 			final SearchRequest searchRequest = new SearchRequest()
-					.indices(kpi.getEsSearchIndex())
-					.searchType(kpi.getEsSearchTypes())
+					.indices(datasourceDescriptor.getEsSearchIndex())
+					.searchType(datasourceDescriptor.getEsSearchTypes())
 					.source(toSearchSourceBuilder(esQueryParsed));
 
 			response = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
@@ -292,7 +321,9 @@ public class KPIDataLoader
 
 			for (final KPIField field : kpi.getFields())
 			{
-				final KPIDataValue value = field.getBucketValueExtractor().extractValue(aggName, bucket);
+				final ElasticsearchDatasourceFieldDescriptor fieldDatasourceDescriptor = datasourceDescriptor.getFieldByName(field.getFieldName());
+
+				final KPIDataValue value = fieldDatasourceDescriptor.getBucketValueExtractor().extractValue(aggName, bucket);
 				if (value == null || value.isNull())
 				{
 					continue;
@@ -319,8 +350,10 @@ public class KPIDataLoader
 	{
 		for (final KPIField field : kpi.getFields())
 		{
+			final ElasticsearchDatasourceFieldDescriptor fieldDatasourceDescriptor = datasourceDescriptor.getFieldByName(field.getFieldName());
+
 			final Object value;
-			if ("value".equals(field.getESPathAsString()))
+			if ("value".equals(fieldDatasourceDescriptor.getEsPathAsString()))
 			{
 				value = aggregation.value();
 			}

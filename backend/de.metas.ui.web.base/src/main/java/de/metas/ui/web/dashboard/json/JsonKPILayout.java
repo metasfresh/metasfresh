@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import de.metas.ui.web.dashboard.KPI;
-import de.metas.ui.web.dashboard.KPIField;
+import de.metas.ui.web.kpi.descriptor.KPI;
+import de.metas.ui.web.kpi.descriptor.KPIField;
 
 import javax.annotation.Nullable;
 import java.util.List;

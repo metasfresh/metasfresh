@@ -20,24 +20,28 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.descriptor.sql;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.time.Instant;
-
 @Value
-@Builder
-public class KPIDataRequest
+public class SQLDatasourceFieldDescriptor
 {
-	@NonNull KPIId kpiId;
+	@NonNull String fieldName;
+	@NonNull String sqlSelect;
 
-	@NonNull KPITimeRangeDefaults timeRangeDefaults;
-	@Nullable Instant from;
-	@Nullable Instant to;
-	@NonNull Duration maxStaleAccepted;
+	@Builder
+	private SQLDatasourceFieldDescriptor(
+			@NonNull final String fieldName,
+			@NonNull final String sqlSelect)
+	{
+		Check.assumeNotEmpty(fieldName, "fieldName shall be set");
+		Check.assumeNotEmpty(sqlSelect, "sqlSelect shall be set");
+
+		this.fieldName = fieldName;
+		this.sqlSelect = sqlSelect;
+	}
 }

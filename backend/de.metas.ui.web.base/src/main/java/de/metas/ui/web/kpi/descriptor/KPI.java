@@ -1,31 +1,8 @@
-package de.metas.ui.web.dashboard;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import de.metas.i18n.ITranslatableString;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.adempiere.exceptions.AdempiereException;
-import org.elasticsearch.action.search.SearchType;
-
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.util.List;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -43,6 +20,30 @@ import java.util.List;
  * #L%
  */
 
+package de.metas.ui.web.kpi.descriptor;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.ITranslatableString;
+import de.metas.ui.web.dashboard.DashboardWidgetType;
+import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.descriptor.elasticsearch.ElasticsearchDatasourceDescriptor;
+import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceDescriptor;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.util.List;
+
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
 @EqualsAndHashCode(doNotUseGetters = true)
@@ -55,16 +56,14 @@ public class KPI
 	@NonNull ImmutableSet<DashboardWidgetType> supportedWidgetTypes;
 	@Nullable Duration compareOffset;
 
-	@NonNull List<KPIField> fields;
+	@NonNull ImmutableList<KPIField> fields;
 	@Nullable KPIField groupByField;
 
 	@NonNull KPITimeRangeDefaults timeRangeDefaults;
 
-	@NonNull String esSearchIndex;
-	@NonNull SearchType esSearchTypes;
-	@NonNull IStringExpression esQuery;
-
-	int pollIntervalSec;
+	@NonNull KPIDatasourceType datasourceType;
+	@Nullable ElasticsearchDatasourceDescriptor elasticsearchDatasource;
+	@Nullable SQLDatasourceDescriptor sqlDatasource;
 
 	@Builder
 	private KPI(
@@ -75,14 +74,11 @@ public class KPI
 			@Nullable final Duration compareOffset,
 			@NonNull final List<KPIField> fields,
 			@NonNull final KPITimeRangeDefaults timeRangeDefaults,
-			@NonNull final String esSearchIndex,
-			@NonNull final SearchType esSearchTypes,
-			@NonNull final String esQuery,
-			final int pollIntervalSec)
+			@NonNull final KPIDatasourceType datasourceType,
+			@Nullable final ElasticsearchDatasourceDescriptor elasticsearchDatasource,
+			@Nullable final SQLDatasourceDescriptor sqlDatasource)
 	{
 		Check.assumeNotEmpty(fields, "fields is not empty");
-		Check.assumeNotEmpty(esSearchIndex, "esSearchIndex is not empty");
-		Check.assumeNotEmpty(esQuery, "esQuery is not empty");
 
 		this.id = id;
 
@@ -97,27 +93,45 @@ public class KPI
 		this.timeRangeDefaults = timeRangeDefaults;
 
 		this.fields = ImmutableList.copyOf(fields);
+		groupByField = extractGroupByField(fields);
+
+		this.datasourceType = datasourceType;
+		if (datasourceType == KPIDatasourceType.ELASTICSEARCH)
+		{
+			Check.assumeNotNull(elasticsearchDatasource, "elasticsearchDatasource shall be set");
+			this.elasticsearchDatasource = elasticsearchDatasource;
+			this.sqlDatasource = null;
+		}
+		else if (datasourceType == KPIDatasourceType.SQL)
+		{
+			Check.assumeNotNull(sqlDatasource, "sqlDatasource shall be set");
+			this.elasticsearchDatasource = null;
+			this.sqlDatasource = sqlDatasource;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown datasource type: " + datasourceType);
+		}
+	}
+
+	@Nullable
+	private static KPIField extractGroupByField(final @NonNull List<KPIField> fields)
+	{
 		final List<KPIField> groupByFieldsList = fields.stream()
 				.filter(KPIField::isGroupBy)
 				.collect(GuavaCollectors.toImmutableList());
 		if (groupByFieldsList.isEmpty())
 		{
-			this.groupByField = null;
+			return null;
 		}
 		else if (groupByFieldsList.size() == 1)
 		{
-			this.groupByField = groupByFieldsList.get(0);
+			return groupByFieldsList.get(0);
 		}
 		else
 		{
 			throw new AdempiereException("Only one group by field allowed but we found: " + groupByFieldsList);
 		}
-
-		this.esSearchIndex = esSearchIndex;
-		this.esSearchTypes = esSearchTypes;
-		this.esQuery = StringExpressionCompiler.instance.compile(esQuery);
-
-		this.pollIntervalSec = pollIntervalSec;
 	}
 
 	@Override
