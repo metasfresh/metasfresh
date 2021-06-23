@@ -1881,6 +1881,11 @@ public class DB
 		return Database.TO_DATE(zdt);
 	}
 
+	public String TO_DATE(@NonNull final Instant instant)
+	{
+		return Database.TO_DATE(instant);
+	}
+
 	/**
 	 * Create SQL TO Date String from LocalDate (without time zone)
 	 *
