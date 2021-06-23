@@ -195,9 +195,9 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory externalPurchaseOrderUrl(@Nullable final String url)
+	public OrderFactory externalPurchaseOrderUrl(@Nullable final String externalPurchaseOrderUrl)
 	{
-		order.setExternalPurchaseOrderURL(url);
+		order.setExternalPurchaseOrderURL(externalPurchaseOrderUrl);
 
 		assertNotBuilt();
 		return this;
@@ -205,7 +205,7 @@ public class OrderFactory
 
 	public OrderFactory externalHeaderId(@Nullable final ExternalId externalId)
 	{
-		order.setExternalId(externalId.getValue());
+		order.setExternalId(externalId != null ? externalId.getValue() : null);
 
 		assertNotBuilt();
 		return this;
