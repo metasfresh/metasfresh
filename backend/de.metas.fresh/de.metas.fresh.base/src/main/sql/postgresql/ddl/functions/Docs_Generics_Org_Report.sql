@@ -12,6 +12,7 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report
 	Fax Character Varying,
 	Postal Character Varying(10),
 	City Character Varying(60),
+	gln varchar,
 	Email Character Varying(60),
 	URL Character Varying
 );
@@ -31,6 +32,7 @@ SELECT
 	COALESCE(us.fax, org_bpl.fax, '-') AS fax,
 	loc.postal,
 	loc.city,
+	org_bpl.gln,
 	COALESCE($1, us.email) as email,
 	org_bp.URL
 FROM
