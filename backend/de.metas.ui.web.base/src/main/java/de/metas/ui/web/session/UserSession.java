@@ -9,7 +9,6 @@ import de.metas.organization.OrgInfo;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.RoleId;
 import de.metas.security.UserRolePermissionsKey;
-import de.metas.ui.web.exceptions.DeprecatedRestAPINotAllowedException;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
@@ -32,6 +31,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Locale;
@@ -77,6 +77,7 @@ public class UserSession
 	 *
 	 * @return {@link UserSession} or null
 	 */
+	@Nullable
 	public static UserSession getCurrentOrNull()
 	{
 		//
@@ -102,6 +103,7 @@ public class UserSession
 		return userSession;
 	}
 
+	@Nullable
 	public static UserSession getCurrentIfMatchingOrNull(@NonNull final UserId adUserId)
 	{
 		final UserSession userSession = getCurrentOrNull();
@@ -125,7 +127,6 @@ public class UserSession
 	 * NOTE: please use this method only if there is no other way to get the {@link UserSession}
 	 *
 	 * @return user session; never returns null
-	 * @throws NotLoggedInException
 	 */
 	public static UserSession getCurrent() throws NotLoggedInException
 	{
@@ -141,7 +142,6 @@ public class UserSession
 	 * Gets current permissions.
 	 *
 	 * @return permissions; never returns null
-	 * @throws NotLoggedInException
 	 */
 	public static IUserRolePermissions getCurrentPermissions()
 	{
@@ -262,7 +262,6 @@ public class UserSession
 	 * <p>
 	 * Fires {@link LanguagedChangedEvent}.
 	 *
-	 * @param adLanguage
 	 * @return old AD_Language
 	 */
 	public String setAD_Language(final String adLanguage)
@@ -421,15 +420,7 @@ public class UserSession
 		return WebsocketTopicNames.buildUserSessionTopicName(getLoggedUserId());
 	}
 
-	public void assertDeprecatedRestAPIAllowed()
-	{
-		if (!getData().isAllowDeprecatedRestAPI())
-		{
-			throw new DeprecatedRestAPINotAllowedException();
-		}
-	}
-
-	private static final void logSettingChanged(final String name, final Object value, final Object valueOld)
+	private static void logSettingChanged(final String name, final Object value, final Object valueOld)
 	{
 		UserSession.logger.warn("/*********************************************************************************************\\");
 		UserSession.logger.warn("Setting changed: {} = {} (Old: {})", name, value, valueOld);
@@ -517,8 +508,7 @@ public class UserSession
 	@lombok.Value
 	public static class LanguagedChangedEvent
 	{
-		@NonNull
-		private final String adLanguage;
-		private final UserId adUserId;
+		@NonNull String adLanguage;
+		UserId adUserId;
 	}
 }
