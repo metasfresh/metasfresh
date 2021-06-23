@@ -325,33 +325,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
-	 * Set Campaign.
-	 * Marketing Campaign
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Campaign_ID (int C_Campaign_ID);
-
-	/**
-	 * Get Campaign.
-	 * Marketing Campaign
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Campaign_ID();
-
-	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
-
-	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
-
-	ModelColumn<I_C_BPartner, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_C_BPartner.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
-	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
-
-	/**
 	 * Set Mahnung.
 	 * Dunning Rules for overdue invoices
 	 *
@@ -1999,6 +1972,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_M_FreightCost_ID = new ModelColumn<>(I_C_BPartner.class, "M_FreightCost_ID", null);
 	String COLUMNNAME_M_FreightCost_ID = "M_FreightCost_ID";
+
+	/**
+	 * Set Marketing Campaign.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMKTG_Campaign_ID (int MKTG_Campaign_ID);
+
+	/**
+	 * Get Marketing Campaign.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMKTG_Campaign_ID();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_MKTG_Campaign_ID = new ModelColumn<>(I_C_BPartner.class, "MKTG_Campaign_ID", null);
+	String COLUMNNAME_MKTG_Campaign_ID = "MKTG_Campaign_ID";
 
 	/**
 	 * Set Preisliste.

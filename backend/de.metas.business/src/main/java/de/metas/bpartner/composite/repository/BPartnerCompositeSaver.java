@@ -212,7 +212,7 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setExcludeFromPromotions(bpartner.isExcludeFromPromotions());
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
-		bpartnerRecord.setC_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
+		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
 
 		assertCanCreateOrUpdate(bpartnerRecord);
 		saveRecord(bpartnerRecord);

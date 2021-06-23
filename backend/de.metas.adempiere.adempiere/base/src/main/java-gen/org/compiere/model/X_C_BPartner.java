@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1923666774L;
+	private static final long serialVersionUID = 1005357324L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -254,33 +254,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getC_BP_Group_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Group_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Campaign getC_Campaign()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
-	}
-
-	@Override
-	public void setC_Campaign(final org.compiere.model.I_C_Campaign C_Campaign)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class, C_Campaign);
-	}
-
-	@Override
-	public void setC_Campaign_ID (final int C_Campaign_ID)
-	{
-		if (C_Campaign_ID < 1) 
-			set_Value (COLUMNNAME_C_Campaign_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Campaign_ID, C_Campaign_ID);
-	}
-
-	@Override
-	public int getC_Campaign_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Campaign_ID);
 	}
 
 	@Override
@@ -1290,6 +1263,21 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getM_FreightCost_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_FreightCost_ID);
+	}
+
+	@Override
+	public void setMKTG_Campaign_ID (final int MKTG_Campaign_ID)
+	{
+		if (MKTG_Campaign_ID < 1) 
+			set_Value (COLUMNNAME_MKTG_Campaign_ID, null);
+		else 
+			set_Value (COLUMNNAME_MKTG_Campaign_ID, MKTG_Campaign_ID);
+	}
+
+	@Override
+	public int getMKTG_Campaign_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MKTG_Campaign_ID);
 	}
 
 	@Override

@@ -322,7 +322,7 @@ public class BPartnerQuickInputService
 				//
 				.excludeFromPromotions(template.isExcludeFromPromotions())
 				.referrer(template.getReferrer())
-				.campaignId(CampaignId.ofRepoIdOrNull(template.getC_Campaign_ID()))
+				.campaignId(CampaignId.ofRepoIdOrNull(template.getMKTG_Campaign_ID()))
 				//
 				.build();
 

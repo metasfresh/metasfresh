@@ -300,7 +300,7 @@ final class BPartnerCompositesLoader
 				//
 				.excludeFromPromotions(bpartnerRecord.isExcludeFromPromotions())
 				.referrer(bpartnerRecord.getReferrer())
-				.campaignId(CampaignId.ofRepoIdOrNull(bpartnerRecord.getC_Campaign_ID()))
+				.campaignId(CampaignId.ofRepoIdOrNull(bpartnerRecord.getMKTG_Campaign_ID()))
 				//
 				.changeLog(recordChangeLog)
 				//

@@ -205,33 +205,6 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
 
 	/**
-	 * Set Campaign.
-	 * Marketing Campaign
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Campaign_ID (int C_Campaign_ID);
-
-	/**
-	 * Get Campaign.
-	 * Marketing Campaign
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Campaign_ID();
-
-	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
-
-	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
-
-	ModelColumn<I_C_BPartner_QuickInput, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
-	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
-
-	/**
 	 * Set Greeting (ID).
 	 * Greeting to print on correspondence
 	 *
@@ -500,6 +473,27 @@ public interface I_C_BPartner_QuickInput
 
 	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_IsVendor = new ModelColumn<>(I_C_BPartner_QuickInput.class, "IsVendor", null);
 	String COLUMNNAME_IsVendor = "IsVendor";
+
+	/**
+	 * Set Marketing Campaign.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMKTG_Campaign_ID (int MKTG_Campaign_ID);
+
+	/**
+	 * Get Marketing Campaign.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMKTG_Campaign_ID();
+
+	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_MKTG_Campaign_ID = new ModelColumn<>(I_C_BPartner_QuickInput.class, "MKTG_Campaign_ID", null);
+	String COLUMNNAME_MKTG_Campaign_ID = "MKTG_Campaign_ID";
 
 	/**
 	 * Set Pricing System.
