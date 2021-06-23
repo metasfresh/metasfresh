@@ -31,8 +31,8 @@
     "mocha-junit-reporter": "^1.18.0",
     "mocha-multi-reporters": "^1.1.7",
     "prettier": "1.16.4",
-    "react-hot-loader": "4.6.3",
-    "webpack": "^4.46.0",
+    "react-hot-loader": "4.13.0",
+    "webpack": "^4.5.2",
     "webpack-git-hash": "^1.0.2"
   },
   "devDependenciesComments": {
