@@ -48,6 +48,11 @@ public class JsonRequestProductUpsertItem
 			value = "The version of the product." + EXTERNAL_VERSION_DOC)
 	String externalVersion;
 
+	@ApiModelProperty(position = 25, //
+			value = "URL of the resource in the target external system.")
+	@Nullable
+	String externalReferenceUrl;
+
 	@ApiModelProperty(position = 30)
 	@NonNull
 	JsonRequestProduct requestProduct;
@@ -56,10 +61,12 @@ public class JsonRequestProductUpsertItem
 	public JsonRequestProductUpsertItem(
 			@NonNull @JsonProperty("productIdentifier") final String productIdentifier,
 			@Nullable @JsonProperty("externalVersion") final String externalVersion,
+			@Nullable @JsonProperty("externalReferenceUrl") final String externalReferenceUrl,
 			@NonNull @JsonProperty("requestProduct") final JsonRequestProduct requestProduct)
 	{
 		this.productIdentifier = productIdentifier;
 		this.externalVersion = externalVersion;
 		this.requestProduct = requestProduct;
+		this.externalReferenceUrl = externalReferenceUrl;
 	}
 }

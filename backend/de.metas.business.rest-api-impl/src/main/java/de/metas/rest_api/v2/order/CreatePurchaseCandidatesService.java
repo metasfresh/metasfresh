@@ -116,6 +116,7 @@ public class CreatePurchaseCandidatesService
 								   .metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
 								   .externalHeaderId(JsonExternalId.of(purchaseCandidate.getExternalHeaderId().getValue()))
 								   .externalLineId(JsonExternalId.of(purchaseCandidate.getExternalLineId().getValue()))
+								   .externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
 								   .processed(false)
 								   .build());
 	}
@@ -146,6 +147,7 @@ public class CreatePurchaseCandidatesService
 				.orgId(orgId)
 				.externalHeaderId(ExternalId.of(request.getExternalHeaderId()))
 				.externalLineId(ExternalId.of(request.getExternalLineId()))
+				.externalPurchaseOrderUrl(request.getExternalPurchaseOrderUrl())
 				.productId(productId)
 				.warehouseId(warehouseService.getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
 				.purchaseDatePromised(datePromised)
