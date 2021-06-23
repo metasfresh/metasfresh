@@ -1,5 +1,7 @@
+@from:cucumber
 Feature: sales order
 
+  @from:cucumber
   Scenario: we can create and complete a sales order
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:

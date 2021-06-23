@@ -1,3 +1,4 @@
+@from:cucumber
 Feature: create or update BPartner v2
   As a user
   I want create or update a BPartner record
@@ -5,6 +6,7 @@ Feature: create or update BPartner v2
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
+  @from:cucumber
   Scenario: create a BPartner record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """

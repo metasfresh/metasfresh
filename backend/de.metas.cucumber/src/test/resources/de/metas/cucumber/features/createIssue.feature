@@ -1,3 +1,4 @@
+@from:cucumber
 Feature: issue creation using metasfresh api
   As a REST-API invoker
   I want want to be able to create issues
@@ -6,6 +7,7 @@ Feature: issue creation using metasfresh api
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And I_AD_PInstance with id 123123 is created
 
+  @from:cucumber
   Scenario: The request is good and the issue is created
     When the metasfresh REST-API endpoint path 'api/externalsystem/123123/externalstatus/error' receives a 'POST' request with the payload
 """

@@ -1,3 +1,4 @@
+@from:cucumber
 Feature:product create/update using metasfresh api
   As a REST-API invoker
   I want want to be able to upsert products
@@ -9,6 +10,7 @@ Feature:product create/update using metasfresh api
     And no bpartner external reference with value '456' exists
     And no product with value 'code345' exists
 
+  @from:cucumber
   Scenario: create Product request
 
     Given metasfresh contains S_ExternalReferences
@@ -30,5 +32,4 @@ Feature:product create/update using metasfresh api
     When the metasfresh REST-API endpoint path 'api/v2/products/001' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then verify if data is persisted correctly for each product
     And verify if data is persisted correctly for type 'product' and external reference 'ext-ALBERTA-345'
-
-
+    

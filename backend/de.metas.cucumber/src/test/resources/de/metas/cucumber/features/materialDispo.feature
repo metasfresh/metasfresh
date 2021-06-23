@@ -1,8 +1,12 @@
+@from:cucumber
+@topic:materialdispo
 Feature: material-dispo updates on shipment-schedule events
   As a user
   I want material dispo to be updated properly if shipment-schedules are created
   So that the ATP is always correct
 
+  @from:cucumber
+  @topic:materialdispo
   Scenario: shipment-schedule without stock or ATP
     Given metasfresh initially has no MD_Candidate data
     When metasfresh receives a ShipmentScheduleCreatedEvent
@@ -16,6 +20,8 @@ Feature: material-dispo updates on shipment-schedule events
       | MD_Candidate_ID.Identifier | M_ShipmentSchedule_ID |
       | c_1                        | 123                   |
 
+  @from:cucumber
+  @topic:materialdispo
   Scenario: shipment-schedule with stock
     Given metasfresh initially has this MD_Candidate data
       | Type         | BusinessCase | M_Product_ID | Time                    | Qty | ATP |
