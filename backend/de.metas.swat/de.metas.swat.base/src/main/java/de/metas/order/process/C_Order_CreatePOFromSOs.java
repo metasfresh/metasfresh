@@ -2,9 +2,10 @@ package de.metas.order.process;
 
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
-import de.metas.order.model.I_C_Order;
+import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder;
 import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
+import de.metas.order.model.I_C_Order;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -59,7 +60,7 @@ public class C_Order_CreatePOFromSOs
 
 	private int p_C_Order_ID;
 
-	private boolean p_IsDropShip;
+	private PurchaseTypeEnum p_TypeOfPurchase;
 
 	private String p_poReference;
 
@@ -82,7 +83,7 @@ public class C_Order_CreatePOFromSOs
 		p_C_BPartner_ID = params.getParameterAsInt("C_BPartner_ID", -1);
 		p_Vendor_ID = params.getParameterAsInt("Vendor_ID", -1);
 		p_C_Order_ID = params.getParameterAsInt("C_Order_ID", -1);
-		p_IsDropShip = params.getParameterAsBool("IsDropShip");
+		p_TypeOfPurchase = PurchaseTypeEnum.ofCode(params.getParameterAsString("TypeOfPurchase"));
 		p_poReference = params.getParameterAsString("POReference");
 	}
 
@@ -103,8 +104,8 @@ public class C_Order_CreatePOFromSOs
 
 		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
 		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
-				p_IsDropShip,
-				purchaseQtySource);
+																							  purchaseQtySource,
+																							  p_TypeOfPurchase);
 
 		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this));
 		workpackageAggregator.setGroupsBufferSize(100);

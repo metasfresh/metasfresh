@@ -401,6 +401,8 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_FrameAgrement = "FA";
 	/** Order Call = OC */
 	public static final String DOCSUBTYPE_OrderCall = "OC";
+	/** Mediated = MED */
+	public static final String DOCSUBTYPE_Mediated = "MED";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{

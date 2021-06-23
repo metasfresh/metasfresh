@@ -1,7 +1,8 @@
+@from:cucumber
 Feature: create or update Purchase Candidate
   As a user
   I want create a Purchase Candidate record
-
+  
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
@@ -20,6 +21,7 @@ Feature: create or update Purchase Candidate
       | ExternalHeaderId | ExternalLineId |
       | H1               | L1             |
 
+  @from:cucumber
   Scenario:  The purchase candidate request is set in context, enqueued and validated
     And the purchase candidate request is set in context
     When the metasfresh REST-API endpoint path 'api/v2/order/purchase/createCandidates' receives a 'POST' request with the payload from context and responds with '200' status code

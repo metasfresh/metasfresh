@@ -1,15 +1,5 @@
 package de.metas.rfq.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.MOrder;
-
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.process.JavaProcess;
@@ -24,6 +14,15 @@ import de.metas.rfq.model.I_C_RfQResponseLine;
 import de.metas.rfq.model.I_C_RfQResponseLineQty;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.MOrder;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -100,7 +99,7 @@ public class C_RfQ_CreatePO extends JavaProcess
 			}
 			else
 			{
-				orderBL.setDocTypeTargetId(order);
+				orderBL.setDefaultDocTypeTargetId(order);
 			}
 			order.setBPartner(bp);
 			order.setC_BPartner_Location_ID(rfqResponse.getC_BPartner_Location_ID());
@@ -167,7 +166,7 @@ public class C_RfQ_CreatePO extends JavaProcess
 				{
 					order = new MOrder(getCtx(), 0, get_TrxName());
 					order.setIsSOTrx(false);
-					orderBL.setDocTypeTargetId(order);
+					orderBL.setDefaultDocTypeTargetId(order);
 					order.setBPartner(bp);
 					order.setC_BPartner_Location_ID(response.getC_BPartner_Location_ID());
 					order.setSalesRep_ID(rfq.getSalesRep_ID());

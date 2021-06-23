@@ -1,3 +1,4 @@
+@from:cucumber
 Feature:product create/update using metasfresh api
   As a REST-API invoker
   I want want to be able to upsert products
@@ -9,6 +10,7 @@ Feature:product create/update using metasfresh api
     And no bpartner external reference with value '456' exists
     And no product with value 'code345' exists
 
+  @from:cucumber
   Scenario: create Product request
 
     Given metasfresh contains S_ExternalReferences
