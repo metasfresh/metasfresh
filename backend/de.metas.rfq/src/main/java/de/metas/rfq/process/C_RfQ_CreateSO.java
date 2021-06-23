@@ -1,14 +1,5 @@
 package de.metas.rfq.process;
 
-import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
-import org.compiere.util.Env;
-
 import de.metas.order.IOrderBL;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
@@ -17,6 +8,14 @@ import de.metas.rfq.model.I_C_RfQ;
 import de.metas.rfq.model.I_C_RfQLine;
 import de.metas.rfq.model.I_C_RfQLineQty;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -79,7 +78,7 @@ public class C_RfQ_CreateSO extends JavaProcess
 		}
 		else
 		{
-			orderBL.setDocTypeTargetId(order);
+			orderBL.setDefaultDocTypeTargetId(order);
 		}
 		order.setBPartner(bp);
 		order.setC_BPartner_Location_ID(rfq.getC_BPartner_Location_ID());

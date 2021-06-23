@@ -55,7 +55,7 @@ public class GetDocumentsProcessor implements Processor
 		final String apiKey = context.getApiKey();
 		final DocumentApi documentApi = context.getDocumentApi();
 
-		final var documents = documentApi.getAllDocuments(apiKey, context.getCreatedAfter());
+		final var documents = documentApi.getAllDocuments(apiKey, context.getCreatedAfterDocument());
 
 		return documents == null || documents.isEmpty()
 				? null

@@ -35,6 +35,7 @@ import de.metas.common.util.EmptyUtil;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.AttachmentApi;
 import io.swagger.client.model.Attachment;
+import io.swagger.client.model.AttachmentMetadata;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -55,7 +56,12 @@ public class AttachmentProcessor implements Processor
 	{
 		final GetAttachmentRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GetAttachmentRouteConstants.ROUTE_PROPERTY_GET_ATTACHMENT_CONTEXT, GetAttachmentRouteContext.class);
 
-		final Attachment attachment = exchange.getIn().getBody(Attachment.class);
+		final Attachment attachment = routeContext.getAttachment();
+
+		if(attachment.getMetadata() == null)
+		{
+			throw new RuntimeException("No attachment metadata received for attachment id" + attachment.getId());
+		}
 
 		final File file = getFile(routeContext, attachment.getId());
 
@@ -71,13 +77,14 @@ public class AttachmentProcessor implements Processor
 
 		final JsonAttachmentRequest jsonRequest = JsonAttachmentRequest.builder()
 				.orgCode(routeContext.getOrgCode())
-				.targets(computeTargets(attachment))
+				.targets(computeTargets(attachment.getMetadata()))
 				.attachment(jsonAttachment)
 				.build();
 
-		if(attachment.getCreatedAt() != null)
+
+		if (attachment.getMetadata().getCreatedAt() != null)
 		{
-			routeContext.setNextAttachmentImportStartDate(AlbertaUtil.asInstant(attachment.getCreatedAt()));
+			routeContext.setNextAttachmentImportStartDate(AlbertaUtil.asInstant(attachment.getMetadata().getCreatedAt()));
 		}
 
 		exchange.getIn().setBody(jsonRequest);
@@ -102,13 +109,29 @@ public class AttachmentProcessor implements Processor
 	}
 
 	@NonNull
-	final List<JsonExternalReferenceTarget> computeTargets(@NonNull final Attachment attachment)
+	final List<JsonExternalReferenceTarget> computeTargets(@NonNull final AttachmentMetadata metadata)
 	{
 		final ImmutableList.Builder<JsonExternalReferenceTarget> targets = ImmutableList.builder();
 
-		targets.add(JsonExternalReferenceTarget.ofTypeAndId(GetAttachmentRouteConstants.ESR_TYPE_USERID, formatExternalId(attachment.getId())));
+		final String createdBy = metadata.getCreatedBy();
+		if (!EmptyUtil.isEmpty(createdBy))
+		{
+			targets.add(JsonExternalReferenceTarget.ofTypeAndId(GetAttachmentRouteConstants.ESR_TYPE_USERID, formatExternalId(createdBy)));
+		}
 
-		return targets.build();
+		final String patientId = metadata.getPatientId();
+		if (!EmptyUtil.isEmpty(patientId))
+		{
+			targets.add(JsonExternalReferenceTarget.ofTypeAndId(GetAttachmentRouteConstants.ESR_TYPE_BPARTNER, formatExternalId(patientId)));
+		}
+
+		final ImmutableList<JsonExternalReferenceTarget> computedTargets = targets.build();
+		if (EmptyUtil.isEmpty(computedTargets))
+		{
+			throw new RuntimeException("Attachment targets cannot be null!");
+		}
+
+		return computedTargets;
 	}
 
 	@NonNull
@@ -116,26 +139,28 @@ public class AttachmentProcessor implements Processor
 	{
 		final ImmutableList.Builder<JsonTag> tags = ImmutableList.builder();
 
+		final AttachmentMetadata metadata = attachment.getMetadata();
+
 		final String id = attachment.getId();
 		if (!EmptyUtil.isEmpty(id))
 		{
 			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_ID, id));
 		}
 
-		final String timestamp = attachment.getTimestamp();
-		if (!EmptyUtil.isEmpty(timestamp))
+		final String uploadDate = attachment.getUploadDate();
+		if (!EmptyUtil.isEmpty(uploadDate))
 		{
-			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_TIMESTAMP, timestamp));
+			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_UPLOAD_DATE, uploadDate));
 		}
 
-		final BigDecimal type = attachment.getType();
-		if (!EmptyUtil.isEmpty(type))
+		final BigDecimal type = metadata.getType();
+		if (type != null)
 		{
 			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_TYPE, String.valueOf(type)));
 		}
 
-		final OffsetDateTime createdAt = attachment.getCreatedAt();
-		if (!EmptyUtil.isEmpty(createdAt))
+		final OffsetDateTime createdAt = metadata.getCreatedAt();
+		if (createdAt != null)
 		{
 			tags.add(JsonTag.of(GetAttachmentRouteConstants.ALBERTA_ATTACHMENT_CREATEDAT, String.valueOf(createdAt)));
 		}

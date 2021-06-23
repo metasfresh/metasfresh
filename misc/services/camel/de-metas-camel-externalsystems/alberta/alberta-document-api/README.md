@@ -2,7 +2,7 @@
 
 Dokumente - Warenwirtschaft (Basis)
 - API version: 1.0.0
-  - Build date: 2021-05-29T06:37:55.685Z[GMT]
+  - Build date: 2021-06-17T14:20:17.484Z[GMT]
 
 Synchronisation der Dokumente aus Alberta
 
@@ -138,6 +138,7 @@ Class | Method | HTTP request | Description
  - [ArrayOfAttachments](docs/ArrayOfAttachments.md)
  - [ArrayOfDocuments](docs/ArrayOfDocuments.md)
  - [Attachment](docs/Attachment.md)
+ - [AttachmentMetadata](docs/AttachmentMetadata.md)
  - [Document](docs/Document.md)
 
 ## Documentation for Authorization

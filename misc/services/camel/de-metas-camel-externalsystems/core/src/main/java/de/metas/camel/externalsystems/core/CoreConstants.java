@@ -22,9 +22,17 @@
 
 package de.metas.camel.externalsystems.core;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+
 public interface CoreConstants
 {
 	String AUTHORIZATION = "Authorization";
 
 	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
+
+	String FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES
+			+ "?durable=true"
+			+ "&autoDelete=false"
+			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
+			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
 }

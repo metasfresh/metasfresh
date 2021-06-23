@@ -23,7 +23,9 @@
 package de.metas.camel.externalsystems.alberta.common;
 
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.request.JsonRequestContact;
@@ -36,6 +38,9 @@ import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaBPartner;
 import de.metas.common.bpartner.v2.request.alberta.JsonAlbertaContact;
 import de.metas.common.bpartner.v2.request.alberta.JsonBPartnerRole;
 import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.SyncAdvise;
+import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import io.swagger.client.model.Doctor;
 import io.swagger.client.model.Hospital;
@@ -43,10 +48,13 @@ import io.swagger.client.model.NursingHome;
 import io.swagger.client.model.NursingService;
 import io.swagger.client.model.Payer;
 import io.swagger.client.model.Pharmacy;
+import io.swagger.client.model.Users;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.StringJoiner;
 
 import static de.metas.camel.externalsystems.alberta.common.AlbertaUtil.asInstant;
@@ -509,5 +517,97 @@ public class DataMapper
 		albertaContact.setGender(genderValue != null ? String.valueOf(genderValue) : null);
 
 		return albertaContact;
+	}
+
+	@NonNull
+	public static Optional<JsonRequestContactUpsertItem> userToBPartnerContact(@Nullable final Users users)
+	{
+		if (users == null)
+		{
+			return Optional.empty();
+		}
+
+		final JsonRequestContact contact = new JsonRequestContact();
+		contact.setName(new StringJoiner(" ").add(users.getFirstName()).add(users.getLastName()).toString());
+		contact.setFirstName(users.getFirstName());
+		contact.setLastName(users.getLastName());
+		contact.setEmail(users.getEmail());
+
+		final JsonAlbertaContact albertaContact = new JsonAlbertaContact();
+		albertaContact.setTimestamp(asInstant(users.getTimestamp()));
+
+		return Optional.of(JsonRequestContactUpsertItem.builder()
+								   .contactIdentifier(formatExternalId(users.getId()))
+								   .contact(contact)
+								   .jsonAlbertaContact(albertaContact)
+								   .build());
+	}
+
+	@NonNull
+	public static Optional<BPUpsertCamelRequest> contactToBPartnerUpsert(
+			@NonNull final JsonRequestContactUpsert requestContactUpsert,
+			@NonNull final JsonMetasfreshId rootBPartnerIdForUsers,
+			@NonNull final String orgCode)
+	{
+		if (Check.isEmpty(requestContactUpsert.getRequestItems()))
+		{
+			return Optional.empty();
+		}
+
+		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
+				.contacts(requestContactUpsert)
+				.build();
+
+		final JsonRequestBPartnerUpsertItem upsertItem = JsonRequestBPartnerUpsertItem
+				.builder()
+				.bpartnerIdentifier(String.valueOf(rootBPartnerIdForUsers.getValue()))
+				.bpartnerComposite(jsonRequestComposite)
+				.build();
+
+		final JsonRequestBPartnerUpsert bPartnerUpsert = JsonRequestBPartnerUpsert.builder()
+				.requestItem(upsertItem)
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.build();
+
+		return Optional.of(BPUpsertCamelRequest.builder()
+								   .jsonRequestBPartnerUpsert(bPartnerUpsert)
+								   .orgCode(orgCode)
+								   .build());
+	}
+
+	@NonNull
+	public static Optional<BPUpsertCamelRequest> usersToBPartnerUpsert(
+			@NonNull final String orgCode,
+			@NonNull final JsonMetasfreshId bPartnerId,
+			@Nullable final Users... users)
+	{
+		if (users == null)
+		{
+			return Optional.empty();
+		}
+
+		final JsonRequestContactUpsert.JsonRequestContactUpsertBuilder usersUpsertBuilder = JsonRequestContactUpsert.builder();
+
+		final HashSet<String> seenUserIds = new HashSet<>();
+
+		for (final Users user : users)
+		{
+			DataMapper.userToBPartnerContact(user)
+					.filter(contactUpsertItem -> !seenUserIds.contains(contactUpsertItem.getContactIdentifier()))
+					.ifPresent(contactUpsertItem -> {
+						seenUserIds.add(contactUpsertItem.getContactIdentifier());
+
+						usersUpsertBuilder.requestItem(contactUpsertItem);
+					});
+		}
+
+		final JsonRequestContactUpsert usersUpsert = usersUpsertBuilder.build();
+
+		if (Check.isEmpty(usersUpsert.getRequestItems()))
+		{
+			return Optional.empty();
+		}
+
+		return contactToBPartnerUpsert(usersUpsert, bPartnerId, orgCode);
 	}
 }
