@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.product.CreateProductRequest;
@@ -606,6 +607,8 @@ public class ProductDAO implements IProductDAO
 			return Optional.empty();
 		}
 
+		// TODO: use GroupCategoryId instead
+
 		final ProductId targetProductId = queryBL.createQueryBuilder(de.metas.product.model.I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(de.metas.product.model.I_M_Product.COLUMNNAME_AD_Org_ID, targetOrgId)
@@ -628,5 +631,11 @@ public class ProductDAO implements IProductDAO
 		return productMappingId > 0 ? OptionalInt.of(productMappingId) : OptionalInt.empty();
 	}
 
+
+	public Optional<GroupCategoryId> getGroupCategoryId(@NonNull final ProductId productId)
+	{
+		// TODO
+		throw new UnsupportedOperationException();
+	}
 
 }
