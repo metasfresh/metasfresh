@@ -309,6 +309,13 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 		return packingHUsViewsCollection.computeIfAbsent(PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId), packingHUsViewFactory);
 	}
 
+	public void setPackingHUsView(@NonNull final HUEditorView packingHUsView)
+	{
+		final ViewId packingHUsViewId = packingHUsView.getViewId();
+		packingHUsViewsCollection.put(PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId), packingHUsView);
+	}
+
+
 	void closePackingHUsView(final ViewId packingHUsViewId, final ViewCloseAction closeAction)
 	{
 		final PackingHUsViewKey key = PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId);
