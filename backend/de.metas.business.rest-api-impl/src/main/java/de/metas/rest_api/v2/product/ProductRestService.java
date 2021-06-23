@@ -206,7 +206,8 @@ public class ProductRestService
 		handleProductExternalReference(org,
 									   jsonRequestProductUpsertItem.getProductIdentifier(),
 									   JsonMetasfreshId.of(productId.getRepoId()),
-									   jsonRequestProductUpsertItem.getExternalVersion());
+									   jsonRequestProductUpsertItem.getExternalVersion(),
+									   jsonRequestProductUpsertItem.getExternalReferenceUrl());
 
 		return JsonResponseUpsertItem.builder()
 				.syncOutcome(syncOutcome)
@@ -219,7 +220,8 @@ public class ProductRestService
 			@NonNull final I_AD_Org org,
 			@NonNull final String identifier,
 			@NonNull final JsonMetasfreshId metasfreshId,
-			@Nullable final String externalVersion)
+			@Nullable final String externalVersion,
+			@Nullable final String externalReferenceUrl)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(identifier);
 
@@ -240,6 +242,7 @@ public class ProductRestService
 				.lookupItem(externalReferenceLookupItem)
 				.metasfreshId(metasfreshId)
 				.version(externalVersion)
+				.externalReferenceUrl(externalReferenceUrl)
 				.build();
 
 		final JsonRequestExternalReferenceUpsert externalReferenceCreateRequest = JsonRequestExternalReferenceUpsert.builder()

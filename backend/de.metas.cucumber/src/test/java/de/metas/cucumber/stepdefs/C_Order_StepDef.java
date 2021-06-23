@@ -44,6 +44,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -58,6 +59,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 public class C_Order_StepDef
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final StepDefData<I_C_BPartner> bpartnerTable;
@@ -166,5 +168,32 @@ public class C_Order_StepDef
 		final I_C_Order salesOrder = orderBL.getById(OrderId.ofRepoId(order.getC_Order_ID()));
 
 		assertThat(salesOrder.getDocStatus()).isEqualTo(IDocument.STATUS_Closed);
+	}
+
+	@Then("a PurchaseOrder with externalId: {string} is created after not more than {int} seconds and has values")
+	public void verifyOrder(final String externalId, final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
+
+		final Supplier<Boolean> purchaseOrderQueryExecutor = () -> {
+
+			final I_C_Order purchaseOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+					.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId)
+					.create()
+					.firstOnly(I_C_Order.class);
+
+			return purchaseOrderRecord != null;
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, purchaseOrderQueryExecutor);
+
+		final I_C_Order purchaseOrderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+				.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId)
+				.create()
+				.firstOnlyNotNull(I_C_Order.class);
+
+		final String externalPurchaseOrderUrl = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_ExternalPurchaseOrderURL);
+
+		assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl);
 	}
 }

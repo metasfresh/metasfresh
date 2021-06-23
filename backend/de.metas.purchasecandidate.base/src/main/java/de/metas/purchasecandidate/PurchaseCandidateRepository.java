@@ -410,6 +410,8 @@ public class PurchaseCandidateRepository
 		{
 			record.setC_Currency_ID(purchaseCandidate.getCurrencyId().getRepoId());
 		}
+		record.setExternalPurchaseOrderURL(purchaseCandidate.getExternalPurchaseOrderUrl());
+
 		saveRecord(record);
 		purchaseCandidate.markSaved(PurchaseCandidateId.ofRepoId(record.getC_PurchaseCandidate_ID()));
 
@@ -525,6 +527,7 @@ public class PurchaseCandidateRepository
 				.prepared(record.isPrepared())
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(record.getC_TaxCategory_ID()))
 				.currencyId(CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID()))
+				.externalPurchaseOrderUrl(record.getExternalPurchaseOrderURL())
 				//
 				.build();
 

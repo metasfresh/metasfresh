@@ -94,7 +94,10 @@ import java.util.Set;
 				.orgId(orderAggregationKey.getOrgId())
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
-				.datePromised(orderAggregationKey.getDatePromised());
+				.datePromised(orderAggregationKey.getDatePromised())
+				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
+				.externalHeaderId(orderAggregationKey.getExternalId());
+
 		if (docType != null)
 		{
 			orderFactory.docType(docType);
