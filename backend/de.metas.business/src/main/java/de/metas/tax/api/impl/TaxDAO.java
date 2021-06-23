@@ -268,10 +268,11 @@ public class TaxDAO implements ITaxDAO
 			final boolean multipleTaxesWithSameSeq = Objects.equals(firstTax.getSeqNo(), secondTax.getSeqNo());
 			if (multipleTaxesWithSameSeq)
 			{
-				throw new AdempiereException("Multiple taxes have the same seqNo: " + firstTax.getTaxId() + " and " + secondTax.getTaxId());
+				throw new AdempiereException("Multiple taxes have the same seqNo: " + firstTax.getTaxId() + " and " + secondTax.getTaxId())
+						.appendParametersToMessage()
+						.setParameter("taxQuery", taxQuery);
 			}
-
-			Loggables.withLogger(logger, Level.WARN).addLog("Multiple C_Tax records {} match the search criteria. Returning the first record based on seqNo.", getTaxIds(taxes));
+			Loggables.withLogger(logger, Level.INFO).addLog("Multiple C_Tax records {} match the search criteria. Returning the first record based on seqNo.", getTaxIds(taxes));
 		}
 		else if (taxes.size() == 1)
 		{
@@ -291,7 +292,7 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@NonNull
-	private String getTaxIds(final List<Tax> taxes)
+	private String getTaxIds(@NonNull final List<Tax> taxes)
 	{
 		return taxes.stream()
 				.map(Tax::getTaxId)
@@ -313,31 +314,39 @@ public class TaxDAO implements ITaxDAO
 
 		if (countryId != null)
 		{
-			loggable.addLog("Country ID provided in query: {}", countryId);
+			loggable.addLog("C_Country_ID={} provided in query", countryId.getRepoId());
 		}
 		else
 		{
 			final WarehouseId warehouseId = taxQuery.getWarehouseId();
 			if (warehouseId != null)
 			{
+				final OrgId warehouseOrgId = warehouseBL.getWarehouseOrgId(warehouseId);
+				if (!Objects.equals(orgId, warehouseOrgId))
+				{
+					loggable.addLog("AD_Org_ID={} based on warehouse", warehouseOrgId.getRepoId());
+					orgId = warehouseOrgId;
+				}
+				
 				final CountryId warehouseCountryId = warehouseBL.getCountryId(warehouseId);
-				orgId = warehouseBL.getWarehouseOrgId(warehouseId);
-				loggable.addLog("Country ID based on warehouse: {}", warehouseCountryId);
 				if (warehouseCountryId != null)
 				{
+					loggable.addLog("C_Country_ID={} based on warehouse", warehouseCountryId.getRepoId());
 					countryId = warehouseCountryId;
 				}
 			}
 			else if (orgId != null)
 			{
-				loggable.addLog("Org ID: {} or any", orgId);
+				loggable.addLog("Effective AD_Org_ID={} (or any)", orgId);
 				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
 				countryId = bPartnerOrgBL.getOrgCountryId(orgId);
-				loggable.addLog("Country ID based on organization: {}", countryId);
+				loggable.addLog("C_Country_ID={} based on organization", countryId.getRepoId());
 			}
 			if (countryId == null)
 			{
-				throw new AdempiereException("No country could be identified for the given orgId: " + orgId + " and warehouse: " + warehouseId);
+				throw new AdempiereException("No country could be identified for AD_Org_ID=" + OrgId.toRepoId(orgId) + " and M_Warehouse_ID=" + WarehouseId.toRepoId(warehouseId))
+						.appendParametersToMessage()
+						.setParameter("taxQuery", taxQuery);
 			}
 		}
 
@@ -348,7 +357,7 @@ public class TaxDAO implements ITaxDAO
 		}
 		else
 		{
-			loggable.addLog("Is EU OneStopShop");
+			loggable.addLog(" AD_Org_ID={} has IsEUOneStopShop=Y; -> don't filter by C_Country_ID", orgId.getRepoId());
 		}
 
 		final Timestamp dateOfInterest = taxQuery.getDateOfInterest();
@@ -360,7 +369,7 @@ public class TaxDAO implements ITaxDAO
 		if (taxCategoryId != null)
 		{
 			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategoryId);
-			loggable.addLog("Tax Category ID: {}", taxCategoryId.getRepoId());
+			loggable.addLog("C_TaxCategory_ID={}", taxCategoryId.getRepoId());
 		}
 
 		if (taxQuery.getIsSoTrx() != null)
@@ -437,9 +446,9 @@ public class TaxDAO implements ITaxDAO
 		{
 			final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(toCountryId);
 			final boolean isEULocation = countryAreaBL.isMemberOf(Env.getCtx(),
-					ICountryAreaBL.COUNTRYAREAKEY_EU,
-					countryCode,
-					Env.getDate());
+																  ICountryAreaBL.COUNTRYAREAKEY_EU,
+																  countryCode,
+																  Env.getDate());
 			typeOfDestCountry = isEULocation ? WITHIN_COUNTRY_AREA : OUTSIDE_COUNTRY_AREA;
 		}
 		return typeOfDestCountry;
