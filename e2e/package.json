@@ -30,7 +30,7 @@
     "mocha": "^8.3.2",
     "mocha-junit-reporter": "^1.18.0",
     "mocha-multi-reporters": "^1.1.7",
-    "prettier": "1.16.4",
+    "prettier": "2.3.1",
     "react-hot-loader": "4.13.0",
     "webpack": "^4.5.2",
     "webpack-git-hash": "^1.0.2"
