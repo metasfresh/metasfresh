@@ -20,10 +20,10 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor;
+package de.metas.camel.ebay.processor.bpartner;
 
 import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.ebay.processor.ProcessorHelper.getPropertyOrThrowError;
+import static de.metas.camel.ebay.ProcessorHelper.getPropertyOrThrowError;
 
 import java.util.ArrayList;
 import java.util.List;

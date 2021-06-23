@@ -20,14 +20,14 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor;
+package de.metas.camel.ebay.processor.order;
 
 import static de.metas.camel.ebay.EbayConstants.DATA_SOURCE_INT_EBAY;
 import static de.metas.camel.ebay.EbayConstants.DEFAULT_DELIVERY_RULE;
 import static de.metas.camel.ebay.EbayConstants.DEFAULT_DELIVERY_VIA_RULE;
 import static de.metas.camel.ebay.EbayConstants.DEFAULT_ORDER_LINE_DISCOUNT;
 import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.ebay.processor.ProcessorHelper.getPropertyOrThrowError;
+import static de.metas.camel.ebay.ProcessorHelper.getPropertyOrThrowError;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

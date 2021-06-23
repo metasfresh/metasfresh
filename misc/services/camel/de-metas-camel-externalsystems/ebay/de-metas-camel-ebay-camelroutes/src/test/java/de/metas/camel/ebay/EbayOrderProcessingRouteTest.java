@@ -168,7 +168,7 @@ public class EbayOrderProcessingRouteTest
 
 		// prepare order api
 		ObjectMapper mapper = new ObjectMapper();
-		InputStream is = EbayOrderProcessingRouteTest.class.getResourceAsStream("/examples/01_ebay-order-new-of-consumer.json");
+		InputStream is = EbayOrderProcessingRouteTest.class.getResourceAsStream("/examples/01_ebay-new-order-single-item-of-consumer.json");
 		OrderSearchPagedCollection mockResult = mapper.readValue(is, OrderSearchPagedCollection.class);
 
 		when(orderApi.getOrders(any(), any(), any(), any(), any())).thenReturn(mockResult);

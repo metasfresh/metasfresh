@@ -49,6 +49,7 @@ public interface EbayConstants
 	String DEFAULT_DELIVERY_RULE = "A"; // FIXME: magic name
 	String DEFAULT_DELIVERY_VIA_RULE = "D"; // FIXME: magic name
 	BigDecimal DEFAULT_ORDER_LINE_DISCOUNT = BigDecimal.ZERO;
+	String DEFAULT_PRODUCT_UOM = "PCE";
 
 	public enum OrderFulfillmentStatus
 	{

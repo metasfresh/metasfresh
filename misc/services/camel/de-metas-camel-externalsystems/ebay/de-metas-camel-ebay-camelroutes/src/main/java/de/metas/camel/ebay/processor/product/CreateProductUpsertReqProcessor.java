@@ -20,51 +20,51 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor;
+package de.metas.camel.ebay.processor.product;
 
 import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.ebay.processor.ProcessorHelper.getPropertyOrThrowError;
+import static de.metas.camel.ebay.ProcessorHelper.getPropertyOrThrowError;
+
+import java.util.Optional;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.metas.camel.ebay.EbayConstants.OrderFulfillmentStatus;
 import de.metas.camel.ebay.EbayImportOrdersRouteContext;
+import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 
-public class OrderFilterProcessor implements Processor
+public class CreateProductUpsertReqProcessor implements Processor
 {
-
 	protected Logger log = LoggerFactory.getLogger(getClass());
 
 	@Override
-	public void process(Exchange exchange) throws Exception
+	public void process(final Exchange exchange) throws Exception
 	{
-		log.info("Filter order by state !!! NOT IMPLEMENTED!!!");
-
 		final EbayImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, EbayImportOrdersRouteContext.class);
+		
+		final Order ebayOrder = importOrdersRouteContext.getOrderNotNull();
 
-		final Order order = exchange.getIn().getBody(Order.class);
-		if (order == null)
+		final ProductUpsertRequestProducer productUpsertRequestProducer = ProductUpsertRequestProducer.builder()
+				.orgCode(importOrdersRouteContext.getOrgCode())
+				.articles(ebayOrder.getLineItems())
+				.build();
+
+		final Optional<ProductRequestProducerResult> productRequestProducerResult = productUpsertRequestProducer.run();
+
+		if (productRequestProducerResult.isPresent())
 		{
-			throw new RuntimeException("Empty body!");
-		}
+			final ProductUpsertCamelRequest productUpsertCamelRequest = ProductUpsertCamelRequest.builder()
+					.jsonRequestProductUpsert(productRequestProducerResult.get().getJsonRequestProductUpsert())
+					.orgCode(importOrdersRouteContext.getOrgCode())
+					.build();
 
-		log.debug("Checking order {} for further steps", order.getOrderId());
-		
-		
-		//only import new orders.
-		if( OrderFulfillmentStatus.NOT_STARTED.name().equalsIgnoreCase(order.getOrderFulfillmentStatus()) ) {
-			
-			importOrdersRouteContext.setOrder(order);
-			exchange.getIn().setBody(order);
-
+			exchange.getIn().setBody(productUpsertCamelRequest);
 		}
 		else
 		{
-			// order was filtered
 			exchange.getIn().setBody(null);
 		}
 

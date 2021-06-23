@@ -20,23 +20,17 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor;
+package de.metas.camel.ebay.processor.product;
 
-import org.apache.camel.Exchange;
-
+import de.metas.common.product.v2.request.JsonRequestProductUpsert;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
-public class ProcessorHelper
+@Value
+@Builder
+public class ProductRequestProducerResult
 {
-	public static <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
-	{
-		final T property = exchange.getProperty(propertyName, propertyClass);
-		if (property == null)
-		{
-			throw new RuntimeException("Missing route property: " + propertyName + " !");
-		}
-
-		return property;
-	}
-
+	@NonNull
+	JsonRequestProductUpsert jsonRequestProductUpsert;
 }

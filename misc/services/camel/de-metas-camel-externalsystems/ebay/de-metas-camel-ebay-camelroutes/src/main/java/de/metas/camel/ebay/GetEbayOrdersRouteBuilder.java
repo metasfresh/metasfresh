@@ -23,6 +23,7 @@
 package de.metas.camel.ebay;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 import org.apache.camel.LoggingLevel;
@@ -30,10 +31,11 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
 import org.springframework.stereotype.Component;
 
-import de.metas.camel.ebay.processor.CreateBPartnerUpsertReqForEbayOrderProcessor;
-import de.metas.camel.ebay.processor.CreateOrderLineCandidateUpsertReqForEbayOrderProcessor;
-import de.metas.camel.ebay.processor.GetEbayOrdersProcessor;
-import de.metas.camel.ebay.processor.OrderFilterProcessor;
+import de.metas.camel.ebay.processor.bpartner.CreateBPartnerUpsertReqForEbayOrderProcessor;
+import de.metas.camel.ebay.processor.order.CreateOrderLineCandidateUpsertReqForEbayOrderProcessor;
+import de.metas.camel.ebay.processor.order.GetEbayOrdersProcessor;
+import de.metas.camel.ebay.processor.order.OrderFilterProcessor;
+import de.metas.camel.ebay.processor.product.CreateProductUpsertReqProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
@@ -52,6 +54,7 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 	public static final String GET_ORDERS_ROUTE_ID = "Ebay-getOrders";
 	public static final String PROCESS_ORDERS_ROUTE_ID = "Ebay-processOrders";
 	public static final String PROCESS_ORDER_BPARTNER_ROUTE_ID = "Ebay-processOrderBPartner";
+	public static final String PROCESS_ORDER_PRODUCTS_ROUTE_ID = "Ebay-processOrderProducts";
 	public static final String PROCESS_ORDER_OLC_ROUTE_ID = "Ebay-processOrderOLC";
 	public static final String FILTER_ORDER_ROUTE_ID = "Ebay-filterOrder";
 	
@@ -73,7 +76,7 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 				.to(StaticEndpointBuilders.direct(MF_ERROR_ROUTE_ID));
 
 		//@formatter:off
-		//first, get orders from ebay and split them.
+		//1) get orders from ebay and split them.
 		from(StaticEndpointBuilders.direct(GET_ORDERS_ROUTE_ID))
 			.routeId(GET_ORDERS_ROUTE_ID)
 			.log(LoggingLevel.DEBUG, "Ebay get order route invoked")
@@ -81,34 +84,41 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 			.split(body())
 			.to( direct(PROCESS_ORDERS_ROUTE_ID));
 		
-		//second, hand over individual orders for further processing.
+		//2) process order by
 		from( direct(PROCESS_ORDERS_ROUTE_ID))
 			.routeId(PROCESS_ORDERS_ROUTE_ID)
 			.log("Ebay process orders route invoked")
 			.doTry()
+				// a: filter fulfilled orders  
 				.process(new OrderFilterProcessor()).id(FILTER_ORDER_ROUTE_ID)
 				.choice()
 					.when(body().isNull())
 						.log(LoggingLevel.INFO, "Nothing to do! The order was filtered out!")
 					.otherwise()
-				
-						//create bparners and put them in bparner import pipeline.
+					
+						//a) create products
+						.process(new CreateProductUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_ROUTE_ID)
+						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Products: ${body}")
+						.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
+						
+						//b) create bparners and put them in bparner import pipeline.
 						.process(new CreateBPartnerUpsertReqForEbayOrderProcessor()).id(PROCESS_ORDER_BPARTNER_ROUTE_ID)
 						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store business partners!")
 						.to( "{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}" )
 					
-						//unmarshal bparner upsert 
 						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
 						
-						//create order line candidates.
+						//c) create order line candidates.
 						.process(new CreateOrderLineCandidateUpsertReqForEbayOrderProcessor()).id(PROCESS_ORDER_OLC_ROUTE_ID)
 						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store order candidates!")
 						.to( direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID) )
 						
 					.end()
 			.endDoTry()
-				.doCatch(Exception.class)
+			
+			.doCatch(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID))
+		
 		.end();
 		//@formatter:on
 	}
