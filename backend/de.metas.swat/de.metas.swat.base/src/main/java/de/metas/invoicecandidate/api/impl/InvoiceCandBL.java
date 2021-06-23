@@ -40,8 +40,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.util.time.SystemTime;
 import de.metas.cache.CCache;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
@@ -1456,7 +1456,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='Y'; ignoring overlap, because credit memo";
 				}
 
-				else if (creditMemo && !creditedInvoiceReinvoicable && creditedInvoiceIsReversed)
+				else if (creditMemo && !creditedInvoiceReinvoicable)
 				{
 					// the original credit memo's ila also has QtyInvoiced=0
 					qtyInvoicedForIla = StockQtyAndUOMQtys.createZero(productId, uomId);
