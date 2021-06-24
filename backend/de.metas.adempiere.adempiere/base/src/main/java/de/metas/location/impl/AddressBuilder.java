@@ -370,7 +370,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals(Addressvars.BPartner.getName()))
+			else if (token.equals(Addressvars.BPartner.getName()) || token.equals(Addressvars.BPartnerName.getName()))
 			{
 				if (!Check.isEmpty(bPartnerBlock, true))
 				{
@@ -766,6 +766,16 @@ public class AddressBuilder
 	 */
 	private String buildUserBlock(@NonNull final org.compiere.model.I_C_BPartner bPartner, final String displaySequence, final I_AD_User user, final String bPartnerBlock, final String trxName)
 	{
+		
+		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBPGreeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
+		
+		if (existsBPName || existsBPGreeting)
+		{
+			return "";
+		}
+		
+		
 		final boolean isPartnerCompany = bPartner.isCompany();
 		final Language language = Language.optionalOfNullable(bPartner.getAD_Language())
 				.orElseGet(Language::getBaseLanguage);
