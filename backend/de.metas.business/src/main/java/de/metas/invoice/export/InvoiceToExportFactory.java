@@ -260,7 +260,7 @@ public class InvoiceToExportFactory
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoiceRecord.getC_BPartner_ID(), invoiceRecord.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoiceRecord.getC_BPartner_ID(), invoiceRecord.getC_BPartner_Location_ID()));
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
 

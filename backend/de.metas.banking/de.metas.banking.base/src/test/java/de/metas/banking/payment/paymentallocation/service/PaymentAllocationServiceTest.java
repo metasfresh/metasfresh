@@ -344,8 +344,10 @@ public class PaymentAllocationServiceTest
 		final I_C_Invoice firstInvoice = invoice().type(CustomerInvoice).open("25").currency(euroCurrencyId).build();
 		final I_C_Invoice secondInvoice = invoice().type(CustomerInvoice).open("75").currency(euroCurrencyId).build();
 
-		final PaymentAllocationPayableItem firstPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(25)).openAmt(new BigDecimal(25)).invoice(firstInvoice).isSOTrx(true).build();
-		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(75)).openAmt(new BigDecimal(75)).invoice(secondInvoice).isSOTrx(true).build();
+		final PaymentAllocationPayableItem firstPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(25)).openAmt(new BigDecimal(25))
+				.invoice(firstInvoice).isSOTrx(true).build();
+		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(75)).openAmt(new BigDecimal(75))
+				.invoice(secondInvoice).isSOTrx(true).build();
 
 		return getPaymentAllocationCriteria(payment, Arrays.asList(firstPaymentAllocationPayableItem, secondPaymentAllocationPayableItem));
 
@@ -390,16 +392,15 @@ public class PaymentAllocationServiceTest
 			@Nullable final BigDecimal serviceFeeAmt,
 			@Nullable final BigDecimal discountAmt,
 			@NonNull final I_C_Invoice invoice,
-			final boolean isSOTrx
-	)
+			final boolean isSOTrx)
 	{
-
 		return PaymentAllocationPayableItem.builder()
 				.payAmt(Amount.of(payAmt, CurrencyCode.EUR))
 				.openAmt(Amount.of(openAmt, CurrencyCode.EUR))
 				.serviceFeeAmt(serviceFeeAmt == null ? null : Amount.of(serviceFeeAmt, CurrencyCode.EUR))
 				.discountAmt(discountAmt == null ? Amount.of(0, CurrencyCode.EUR) : Amount.of(discountAmt, CurrencyCode.EUR))
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.invoiceBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.orgId(adOrgId)
 				.clientId(clientId)
 				.paymentDate(Instant.now())
@@ -551,6 +552,6 @@ public class PaymentAllocationServiceTest
 	@Test(expected = PaymentDocumentNotAllocatedException.class)
 	public void paymentValid_MultiplePayableItems_NoServiceFee_OverAllocated()
 	{
-		final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithMultiplePayable_OverAllocated());
+		paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithMultiplePayable_OverAllocated());
 	}
 }

@@ -1,16 +1,16 @@
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getById=[
   {
-    "id": 100001,
-    "type": "Alberta",
-    "camelUrl": "camelUrl",
-    "name": "name",
-    "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "value": "testAlbertaValue",
-      "apiKey": "apiKey",
-      "baseUrl": "baseUrl",
-      "tenant": "tenant"
+    "id" : 100001,
+    "type" : "Alberta",
+    "camelUrl" : "camelUrl",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testAlbertaValue",
+      "apiKey" : "apiKey",
+      "baseUrl" : "baseUrl",
+      "tenant" : "tenant"
     }
   }
 ]
@@ -18,29 +18,29 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndParent=[
   {
-    "id": 100002,
-    "parentId": 100001,
-    "value": "testAlbertaValue",
-    "apiKey": "apiKey",
-    "baseUrl": "baseUrl",
-    "tenant": "tenant"
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testAlbertaValue",
+    "apiKey" : "apiKey",
+    "baseUrl" : "baseUrl",
+    "tenant" : "tenant"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alberta_getByTypeAndValue=[
   {
-    "id": 100001,
-    "type": "Alberta",
-    "camelUrl": "camelUrl",
-    "name": "name",
-    "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "value": "testAlbertaValue",
-      "apiKey": "apiKey",
-      "baseUrl": "baseUrl",
-      "tenant": "tenant"
+    "id" : 100001,
+    "type" : "Alberta",
+    "camelUrl" : "camelUrl",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testAlbertaValue",
+      "apiKey" : "apiKey",
+      "baseUrl" : "baseUrl",
+      "tenant" : "tenant"
     }
   }
 ]
@@ -48,16 +48,20 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
   {
-    "id": 100001,
-    "type": "Shopware6",
-    "camelUrl": "camelUrl",
-    "name": "name",
-    "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "baseUrl": "baseUrl",
-      "clientId": "id",
-      "clientSecret": "secret"
+    "id" : 100001,
+    "type" : "Shopware6",
+    "camelUrl" : "camelUrl",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "baseUrl" : "baseUrl",
+      "clientId" : "id",
+      "clientSecret" : "secret",
+      "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerIdJSONPath" : "/test/bp",
+      "bPartnerLocationIdJSONPath" : "/test/bpl",
+      "salesRepJSONPath" : "/test/salesrep"
     }
   }
 ]
@@ -65,27 +69,72 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getByTypeAndParent=[
   {
-    "id": 100002,
-    "parentId": 100001,
-    "baseUrl": "baseUrl",
-    "clientId": "id",
-    "clientSecret": "secret"
+    "id" : 100002,
+    "parentId" : 100001,
+    "baseUrl" : "baseUrl",
+    "clientId" : "id",
+    "clientSecret" : "secret",
+    "externalSystemShopware6ConfigMappingList" : [
+      {
+        "seqNo" : 10,
+        "docTypeOrderId" : 10000,
+        "paymentRule" : "K",
+        "paymentTermId" : 10000,
+        "sw6CustomerGroup" : "testWithAnä",
+        "sw6PaymentMethod" : "test",
+        "description" : "test"
+      }
+    ],
+    "bPartnerIdJSONPath" : "/test/bp",
+    "bPartnerLocationIdJSONPath" : "/test/bpl",
+    "salesRepJSONPath" : "/test/salesrep"
   }
 ]
 
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getTypeAndValue=[
   {
-    "id": 100001,
-    "type": "Shopware6",
-    "camelUrl": "camelUrl",
-    "name": "name",
-    "childConfig": {
-      "id": 100002,
-      "parentId": 100001,
-      "baseUrl": "baseUrl",
-      "clientId": "id",
-      "clientSecret": "secret"
+    "id" : 100001,
+    "type" : "Shopware6",
+    "camelUrl" : "camelUrl",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "baseUrl" : "baseUrl",
+      "clientId" : "id",
+      "clientSecret" : "secret",
+      "externalSystemShopware6ConfigMappingList" : [ ],
+      "bPartnerIdJSONPath" : "/test/bp",
+      "bPartnerLocationIdJSONPath" : "/test/bpl",
+      "salesRepJSONPath" : "/test/salesrep"
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config_getById=[
+  {
+    "id" : 100001,
+    "type" : "Other",
+    "camelUrl" : "camelUrl",
+    "name" : "name",
+    "childConfig" : {
+      "id" : {
+        "externalSystemParentConfigId" : 100001
+      },
+      "parameters" : [
+        {
+          "id" : 100002,
+          "name" : "name1",
+          "value" : "value1"
+        },
+        {
+          "id" : 100003,
+          "name" : "name2",
+          "value" : "value2"
+        }
+      ]
     }
   }
 ]

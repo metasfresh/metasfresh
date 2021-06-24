@@ -1,5 +1,5 @@
 import React, { createRef, PureComponent } from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
@@ -21,19 +21,7 @@ export class RawWidget extends PureComponent {
   constructor(props) {
     super(props);
 
-    const { widgetData } = props;
-    let cachedValue = undefined;
-
-    if (widgetData && widgetData[0]) {
-      if (widgetData[0].value !== undefined) {
-        cachedValue = widgetData[0].value;
-      } else if (
-        widgetData[0].status &&
-        widgetData[0].status.value !== undefined
-      ) {
-        cachedValue = widgetData[0].status.value;
-      }
-    }
+    const cachedValue = RawWidget.getCachedValue(props);
 
     this.rawWidget = createRef(null);
 
@@ -67,28 +55,93 @@ export class RawWidget extends PureComponent {
   // (Selection attributes) so we have to update the `cachedValue` to the
   // value from widgetData, once it's available
   static getDerivedStateFromProps(props, state) {
-    if (
-      typeof state.cachedValue === 'undefined' &&
-      props.widgetData &&
-      props.widgetData[0]
-    ) {
-      let cachedValue = undefined;
-      if (props.widgetData[0].value !== undefined) {
-        cachedValue = props.widgetData[0].value;
-      } else if (
-        props.widgetData[0].status &&
-        props.widgetData[0].status.value !== undefined
-      ) {
-        cachedValue = props.widgetData[0].status.value;
-      }
+    if (typeof state.cachedValue === 'undefined') {
+      const cachedValue = RawWidget.getCachedValue(props);
 
-      return {
-        cachedValue,
-      };
+      if (cachedValue) {
+        return {
+          cachedValue,
+        };
+      }
     }
 
     return null;
   }
+
+  /**
+   * @method getCachedValue
+   * @summary extract cached value from widget props
+   *
+   * @param {object} props
+   */
+  static getCachedValue(props) {
+    const { widgetData } = props;
+    let cachedValue = undefined;
+
+    if (widgetData && widgetData[0]) {
+      if (widgetData[0].value !== undefined) {
+        cachedValue = widgetData[0].value;
+      } else if (
+        widgetData[0].status &&
+        widgetData[0].status.value !== undefined
+      ) {
+        cachedValue = widgetData[0].status.value;
+      }
+    }
+
+    return cachedValue;
+  }
+
+  /**
+   * @method resetCachedValue
+   * @summary used by parent components to force resetting cached value in case
+   * there's new data but widget is reused
+   */
+  resetCachedValue = () => {
+    const cachedValue = RawWidget.getCachedValue(this.props);
+
+    this.setState({ cachedValue });
+  };
+
+  /**
+   * @method setWidgetType
+   * @summary used for password fields, when user wants to reveal the typed password
+   *
+   * @param {string} type - toggles between text/password
+   */
+  setWidgetType = (type) => (this.rawWidget.type = type);
+
+  /**
+   * @method showErrorPopup
+   * @summary shows error message on mouse over
+   */
+  showErrorPopup = () => this.setState({ errorPopup: true });
+
+  /**
+   * @method hideErrorPopup
+   * @summary hides error message on mouse out
+   */
+  hideErrorPopup = () => this.setState({ errorPopup: false });
+
+  /**
+   * @method clearFieldWarning
+   * @summary Suppress showing the error message, as user already acknowledged it
+   * @param {*} warning
+   */
+  clearFieldWarning = (warning) => {
+    if (warning) {
+      this.setState({
+        clearedFieldWarning: true,
+      });
+    }
+  };
+
+  /**
+   * @method toggleTooltip
+   * @summary toggle tooltip (if it's available)
+   * @param {bool} show
+   */
+  toggleTooltip = (show) => this.setState({ tooltipToggled: show });
 
   /**
    * @method handleListFocus
@@ -340,46 +393,6 @@ export class RawWidget extends PureComponent {
   };
 
   /**
-   * @method setWidgetType
-   * @summary used for password fields, when user wants to reveal the typed password
-   *
-   * @param {string} type - toggles between text/password
-   */
-  setWidgetType = (type) => (this.rawWidget.type = type);
-
-  /**
-   * @method showErrorPopup
-   * @summary shows error message on mouse over
-   */
-  showErrorPopup = () => this.setState({ errorPopup: true });
-
-  /**
-   * @method hideErrorPopup
-   * @summary hides error message on mouse out
-   */
-  hideErrorPopup = () => this.setState({ errorPopup: false });
-
-  /**
-   * @method clearFieldWarning
-   * @summary Suppress showing the error message, as user already acknowledged it
-   * @param {*} warning
-   */
-  clearFieldWarning = (warning) => {
-    if (warning) {
-      this.setState({
-        clearedFieldWarning: true,
-      });
-    }
-  };
-
-  /**
-   * @method toggleTooltip
-   * @summary toggle tooltip (if it's available)
-   * @param {bool} show
-   */
-  toggleTooltip = (show) => this.setState({ tooltipToggled: show });
-
-  /**
    * @method renderErrorPopup
    * @summary this is self explanatory
    * @param {string} reason - the cause of error
@@ -407,6 +420,7 @@ export class RawWidget extends PureComponent {
       defaultValue,
       fieldName,
       maxLength,
+      isFilterActive,
     } = this.props;
     let tabIndex = this.props.tabIndex;
     const { isFocused, charsTyped } = this.state;
@@ -464,6 +478,7 @@ export class RawWidget extends PureComponent {
           widgetProperties,
           showErrorBorder,
           isFocused,
+          isFilterActive,
         }}
         ref={this.rawWidget}
         charsTyped={charsTypedCount}
@@ -633,17 +648,19 @@ export class RawWidget extends PureComponent {
               })}
               title={valueDescription}
             >
-              <ReactCSSTransitionGroup
-                transitionName="fade"
-                transitionEnterTimeout={200}
-                transitionLeaveTimeout={200}
+              <CSSTransition
+                key={`trans_${fields[0].fieldName}`}
+                className="fade"
+                timeout={{ enter: 200, exit: 200 }}
               >
-                {errorPopup &&
-                  validStatus &&
-                  !validStatus.valid &&
-                  !validStatus.initialValue &&
-                  this.renderErrorPopup(validStatus.reason)}
-              </ReactCSSTransitionGroup>
+                <div>
+                  {errorPopup &&
+                    validStatus &&
+                    !validStatus.valid &&
+                    !validStatus.initialValue &&
+                    this.renderErrorPopup(validStatus.reason)}
+                </div>
+              </CSSTransition>
               {widgetBody}
             </div>
             {fields[0].devices && !widgetData[0].readonly && (

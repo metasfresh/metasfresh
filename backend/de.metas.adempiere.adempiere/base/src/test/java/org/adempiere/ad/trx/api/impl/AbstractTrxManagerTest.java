@@ -1,11 +1,7 @@
 package org.adempiere.ad.trx.api.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
@@ -14,16 +10,16 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.Mutable;
-import org.apache.log4j.MDC;
-import org.assertj.core.api.AbstractObjectAssert;
-import org.compiere.util.TrxRunnable;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
 
-import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
+import java.util.List;
 
-import lombok.NonNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class AbstractTrxManagerTest
 {
@@ -215,7 +211,7 @@ public class AbstractTrxManagerTest
 		assertThatThrownBy(() -> trxManager.run(
 				trxNamePrefix,
 				trxRunConfig,
-				(TrxRunnable)trxName_IGNORED -> {
+				trxName_IGNORED -> {
 					throw new RuntimeException("something went wrong");
 				}))
 						.hasMessage("RuntimeException: something went wrong");
@@ -300,30 +296,25 @@ public class AbstractTrxManagerTest
 	@Nested
 	public class MDC_TrxName
 	{
-		private AbstractObjectAssert<?, Object> assertMDCTrxName()
-		{
-			return assertThat(MDC.get("TrxName")).as("MDC TrxName");
-		}
-
 		@Test
 		public void setThreadInheritedTrxName()
 		{
 			final MockedTrxManager trxManager = new MockedTrxManager();
 
 			assertThat(trxManager.getThreadInheritedTrxName()).isNull();
-			assertMDCTrxName().isNull();
+			assertThat(MDC.get("TrxName")).isNull();
 
 			trxManager.setThreadInheritedTrxName("trx1");
 			assertThat(trxManager.getThreadInheritedTrxName()).isEqualTo("trx1");
-			assertMDCTrxName().isEqualTo("trx1");
+			assertThat(MDC.get("TrxName")).isEqualTo("trx1");
 
 			trxManager.setThreadInheritedTrxName("trx2");
 			assertThat(trxManager.getThreadInheritedTrxName()).isEqualTo("trx2");
-			assertMDCTrxName().isEqualTo("trx2");
+			assertThat(MDC.get("TrxName")).isEqualTo("trx2");
 
 			trxManager.setThreadInheritedTrxName(null);
 			assertThat(trxManager.getThreadInheritedTrxName()).isNull();
-			assertMDCTrxName().isNull();
+			assertThat(MDC.get("TrxName")).isNull();
 		}
 
 		@Test
@@ -331,11 +322,11 @@ public class AbstractTrxManagerTest
 		{
 			final MockedTrxManager trxManager = new MockedTrxManager();
 
-			assertMDCTrxName().isNull();
+			assertThat(MDC.get("TrxName")).isNull();
 
-			trxManager.runInNewTrx((TrxRunnable)localTrxName -> assertMDCTrxName().isEqualTo(localTrxName));
+			trxManager.runInNewTrx(localTrxName -> assertThat(MDC.get("TrxName")).isEqualTo(localTrxName));
 
-			assertMDCTrxName().isNull();
+			assertThat(MDC.get("TrxName")).isNull();
 		}
 	}
 }

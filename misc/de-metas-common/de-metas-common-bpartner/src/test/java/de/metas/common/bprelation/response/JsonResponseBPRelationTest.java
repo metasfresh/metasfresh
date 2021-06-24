@@ -22,9 +22,8 @@
 
 package de.metas.common.bprelation.response;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.rest_api.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.bprelation.JsonBPRelationRole;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

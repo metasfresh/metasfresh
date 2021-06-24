@@ -59,12 +59,13 @@
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
+            <version>3.21.0-GA</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-collections4</artifactId>
-            <version>4.1</version>
+            <version>4.4</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -95,11 +96,18 @@
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
         </dependency>
+
         <dependency>
-            <groupId>commons-collections</groupId>
-            <artifactId>commons-collections</artifactId>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
         </dependency>
 
+         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+        
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

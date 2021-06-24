@@ -570,6 +570,15 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(1384) 
 ;
 
+DO
+$$
+    BEGIN
+        IF exists(SELECT 1 from ad_reference where ad_reference_id=541252)
+        THEN
+            RAISE NOTICE 'AD_Reference_ID=541252 already exists. Skip creating it!';
+        ELSE
+
+
 -- 2021-01-28T12:01:52.823Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType) VALUES (0,0,541252,TO_TIMESTAMP('2021-01-28 14:01:52','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','C_BPartner',TO_TIMESTAMP('2021-01-28 14:01:52','YYYY-MM-DD HH24:MI:SS'),100,'T')
@@ -590,6 +599,12 @@ INSERT INTO AD_Ref_Table (AD_Client_ID,AD_Key,AD_Org_ID,AD_Reference_ID,AD_Table
 UPDATE AD_Ref_Table SET WhereClause='C_BPartner.isActive=''Y''',Updated=TO_TIMESTAMP('2021-01-28 14:05:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Reference_ID=541252
 ;
 
+        END IF;
+    END
+$$
+;
+
+    
 -- 2021-01-28T12:05:21.122Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=541252,Updated=TO_TIMESTAMP('2021-01-28 14:05:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=572574

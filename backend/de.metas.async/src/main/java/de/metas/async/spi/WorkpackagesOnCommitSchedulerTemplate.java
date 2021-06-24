@@ -142,9 +142,8 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 * <p>
 	 * <b>Important:</b> this method is called for each item and the parameter names for different items need have different names! Otherwise, there will be an exception.
 	 *
-	 * @param item
 	 * @return an empty map. Overwrite as required
-	 * @task https://github.com/metasfresh/metasfresh/issues/409
+	 * task https://github.com/metasfresh/metasfresh/issues/409
 	 */
 	protected Map<String, Object> extractParametersFromItem(final ItemType item)
 	{
@@ -156,7 +155,6 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	 *
 	 * The context is used to create the internal {@link IWorkPackageBuilder}.
 	 *
-	 * @param item
 	 * @return ctx; shall never be <code>null</code>
 	 */
 	protected abstract Properties extractCtxFromItem(final ItemType item);
@@ -164,7 +162,6 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	/**
 	 * Extracts and returns the trxName to be used from given item
 	 *
-	 * @param item
 	 * @return transaction name or {@link ITrx#TRXNAME_None}
 	 */
 	protected abstract String extractTrxNameFromItem(final ItemType item);
@@ -172,8 +169,6 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	/**
 	 * Extracts the model to be enqueued to internal {@link IWorkPackageBuilder}.
 	 *
-	 * @param collector
-	 * @param item
 	 * @return model to be enqueued or <code>null</code> if no model shall be enqueued.
 	 */
 	protected abstract Object extractModelToEnqueueFromItem(final Collector collector, final ItemType item);

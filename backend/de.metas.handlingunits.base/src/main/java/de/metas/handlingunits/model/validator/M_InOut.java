@@ -144,6 +144,18 @@ public class M_InOut
 
 	private void updateAttributes(@NonNull final I_M_InOut shipment)
 	{
+		// Make sure we deal with a shipment
+		if(!shipment.isSOTrx())
+		{
+			return;
+		}
+
+		// make sure we are not dealing with a customer return
+		if (returnsServiceFacade.isCustomerReturn(shipment))
+		{
+			return;
+		}
+
 		final List<I_M_HU> hus = inOutDAO.retrieveHandlingUnits(shipment);
 		for (final I_M_HU hu : hus)
 		{
@@ -201,7 +213,6 @@ public class M_InOut
 		}
 
 		// task #1306: Do not genertate empties movements for customer returns
-
 		if (returnsServiceFacade.isCustomerReturn(inout))
 		{
 			return;
@@ -310,16 +321,19 @@ public class M_InOut
 	{
 		if (!returnsServiceFacade.isCustomerReturn(customerReturn))
 		{
-			// do nothing if the inout is not a customer return
-			return;
+			return; // do nothing if the inout is not a customer return
 		}
 
 		if (inOutBL.isReversal(customerReturn))
 		{
-			// nothing to do
-			return;
+			return; // nothing to do
 		}
 
+		if(returnsServiceFacade.isEmptiesReturn(customerReturn))
+		{
+			return; // no HUs to generate if the whole InOut is about HUs
+		}
+		
 		final List<I_M_HU> existingHandlingUnits = inOutDAO.retrieveHandlingUnits(customerReturn);
 
 		// the handling units are already created

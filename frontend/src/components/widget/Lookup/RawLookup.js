@@ -10,7 +10,7 @@ import {
   autocompleteRequest,
   autocompleteModalRequest,
 } from '../../../actions/GenericActions';
-import { getViewAttributeTypeahead } from '../../../actions/ViewAttributesActions';
+import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
 
@@ -482,6 +482,14 @@ export class RawLookup extends Component {
     this.setState({ selected });
   };
 
+  /**
+   * @method focus
+   * @summary this is a method called from a top level component to focus the widget field
+   */
+  focus = () => {
+    this.inputSearch && this.inputSearch.focus();
+  };
+
   render() {
     const { align, readonly, disabled, tabIndex, isOpen, idValue } = this.props;
     const {
@@ -631,4 +639,9 @@ RawLookup.propTypes = {
   advSearchWindowId: PropTypes.string,
 };
 
-export default connect(mapStateToProps)(RawLookup);
+export default connect(
+  mapStateToProps,
+  null,
+  null,
+  { forwardRef: true }
+)(RawLookup);

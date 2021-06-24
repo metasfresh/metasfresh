@@ -8,11 +8,6 @@ import App from './containers/App';
 //   whyDidYouRender(React, { include: [/RawWidget/] });
 // }
 
-// if (process.env.NODE_ENV !== 'production') {
-//   const { whyDidYouUpdate } = require('why-did-you-update');
-//   whyDidYouUpdate(React, { include: [/RawWidget/] });
-// }
-
 /* eslint-disable */
 console.info(`%c
     metasfresh-webui-frontend build ${COMMIT_HASH}

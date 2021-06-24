@@ -1,34 +1,18 @@
 package de.metas.ordercandidate.modelvalidator;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.ordercandidate.AbstractOLCandTestSupport;
+import de.metas.ordercandidate.api.OLCandRegistry;
+import de.metas.ordercandidate.api.OLCandValidatorService;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.IContextAware;
@@ -38,18 +22,17 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.ordercandidate.AbstractOLCandTestSupport;
-import de.metas.ordercandidate.api.OLCandRegistry;
-import de.metas.ordercandidate.api.OLCandValidatorService;
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.util.Services;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { StartupListener.class, ShutdownListener.class,
@@ -80,6 +63,8 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 	@Override
 	protected void initModelValidators()
 	{
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		final OLCandRegistry olCandRegistry = new OLCandRegistry(
 				Optional.empty(),
 				Optional.empty(),
@@ -87,7 +72,7 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
 
 		// Initialize C_OLCand MV Only!
-		final C_OLCand orderCandidateMV = new C_OLCand(olCandValidatorService);
+		final C_OLCand orderCandidateMV = new C_OLCand(bpartnerBL, olCandValidatorService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(orderCandidateMV, null);
 	}
 
@@ -188,5 +173,16 @@ public class C_OLCandMVTest extends AbstractOLCandTestSupport
 		InterfaceWrapperHelper.save(olCand);
 
 		assertThat(olCand.getProductDescription()).isNull();
+	}
+
+
+	@Test
+	public void testSalesRepSameIdAsBPartner()
+	{
+		final I_C_OLCand olCand = newInstance(I_C_OLCand.class);
+		olCand.setC_BPartner_ID(bpartner1.getC_BPartner_ID());
+		olCand.setC_BPartner_SalesRep_ID(bpartner1.getC_BPartner_ID());
+
+		Assertions.assertThrows(AdempiereException.class, () -> save(olCand));
 	}
 }

@@ -3,6 +3,8 @@ package de.metas.contracts;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
 
@@ -53,7 +55,6 @@ import lombok.Value;
  * It does not care about special contract related pricing rules that might or might not be applied by the pricing engine.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
 @Builder
@@ -84,20 +85,31 @@ public class FlatrateTermPricing
 
 	private PriceListId retrievePriceListForTerm()
 	{
-		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
-		final I_C_BPartner_Location bpLocationToUse = CoalesceUtil.coalesceSuppliers(term::getDropShip_Location, term::getBill_Location);
-
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+		final PricingSystemId pricingSystemIdToUse = PricingSystemId.ofRepoIdOrNull(CoalesceUtil.firstGreaterThanZero(term.getM_PricingSystem_ID(), term.getC_Flatrate_Conditions().getM_PricingSystem_ID()));
+
+		final BPartnerId dropShipBPartnerId = BPartnerId.ofRepoIdOrNull(term.getDropShip_BPartner_ID());
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(term.getBill_BPartner_ID());
+
+		final BPartnerLocationId dropShipLocationId = BPartnerLocationId.ofRepoIdOrNull(dropShipBPartnerId, term.getDropShip_Location_ID());
+		final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, term.getBill_Location_ID());
+
+		final BPartnerLocationId bpLocationIdToUse = dropShipLocationId != null ? dropShipLocationId : billLocationId;
+
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(
 				pricingSystemIdToUse,
-				BPartnerLocationId.ofRepoId(bpLocationToUse.getC_BPartner_ID(), bpLocationToUse.getC_BPartner_Location_ID()),
+				bpLocationIdToUse,
 				SOTrx.SALES);
 		if (priceListId == null)
 		{
+			final I_C_BPartner_Location billLocationRecord = bpartnerDAO.getBPartnerLocationById(billLocationId);
+
 			throw new AdempiereException(MSG_FLATRATEBL_PRICE_LIST_MISSING_2P,
-					new Object[] {
-							priceListDAO.getPricingSystemName(pricingSystemIdToUse),
-							term.getBill_Location().getName() });
+										 new Object[] {
+												 priceListDAO.getPricingSystemName(pricingSystemIdToUse),
+												 billLocationRecord.getName() });
 		}
 		return priceListId;
 	}

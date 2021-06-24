@@ -1,0 +1,207 @@
+de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retrieveBPartnerComposite_byBPartnerCompositeLookupKeys=[
+  {
+    "bankAccounts" : [
+      {
+        "active" : true,
+        "changeLog" : {
+          "tableName" : "C_BP_BankAccount",
+          "recordId" : {
+            "keyColumnNames" : [
+              "C_BP_BankAccount_ID"
+            ],
+            "keysByColumnName" : {
+              "C_BP_BankAccount_ID" : 50
+            }
+          },
+          "createdByUserId" : 30,
+          "createdTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
+          },
+          "lastChangedByUserId" : 30,
+          "lastChangedTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
+          },
+          "entries" : [ ]
+        },
+        "currencyId" : 100009,
+        "iban" : "INITIAL-IBAN-1",
+        "id" : {
+          "repoId" : 50,
+          "bpartnerId" : 20
+        }
+      }
+    ],
+    "bpartner" : {
+      "id" : 20,
+      "externalId" : "fghij",
+      "active" : true,
+      "value" : "bpartnerRecord.value",
+      "name" : "bpartnerRecord.name",
+      "groupId" : 15,
+      "vendor" : true,
+      "customer" : true,
+      "company" : false,
+      "vatId" : "VATaxID",
+      "changeLog" : {
+        "tableName" : "C_BPartner",
+        "recordId" : {
+          "keyColumnNames" : [
+            "C_BPartner_ID"
+          ],
+          "keysByColumnName" : {
+            "C_BPartner_ID" : 20
+          }
+        },
+        "createdByUserId" : 30,
+        "createdTimestamp" : {
+          "seconds" : 1561133,
+          "nanos" : 544000000
+        },
+        "lastChangedByUserId" : 30,
+        "lastChangedTimestamp" : {
+          "seconds" : 1561133,
+          "nanos" : 544000000
+        },
+        "entries" : [ ]
+      },
+      "identifiedByExternalReference" : false
+    },
+    "contacts" : [
+      {
+        "active" : true,
+        "changeLog" : {
+          "tableName" : "AD_User",
+          "recordId" : {
+            "keyColumnNames" : [
+              "AD_User_ID"
+            ],
+            "keysByColumnName" : {
+              "AD_User_ID" : 30
+            }
+          },
+          "createdByUserId" : 30,
+          "createdTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
+          },
+          "lastChangedByUserId" : 30,
+          "lastChangedTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
+          },
+          "entries" : [ ]
+        },
+        "contactType" : {
+          "billToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "defaultContact" : {
+            "value" : false,
+            "present" : true
+          },
+          "purchase" : {
+            "value" : false,
+            "present" : true
+          },
+          "purchaseDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "sales" : {
+            "value" : false,
+            "present" : true
+          },
+          "salesDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "subjectMatter" : {
+            "value" : false,
+            "present" : true
+          }
+        },
+        "email" : "contactRecord.email",
+        "externalId" : "contactRecord.externalId",
+        "firstName" : "contactRecord.firstName",
+        "handles" : [ ],
+        "id" : {
+          "bpartnerId" : 20,
+          "userId" : 30
+        },
+        "lastName" : "contactRecord.lastName",
+        "name" : "contactRecord.name",
+        "newsletter" : false,
+        "phone" : "contactRecord.phone",
+        "value" : "contactRecord.value"
+      }
+    ],
+    "locations" : [
+      {
+        "active" : true,
+        "address1" : "locationRecord.address1",
+        "address2" : "locationRecord.address2",
+        "changeLog" : {
+          "tableName" : "C_BPartner_Location",
+          "recordId" : {
+            "keyColumnNames" : [
+              "C_BPartner_Location_ID"
+            ],
+            "keysByColumnName" : {
+              "C_BPartner_Location_ID" : 40
+            }
+          },
+          "createdByUserId" : 30,
+          "createdTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
+          },
+          "lastChangedByUserId" : 30,
+          "lastChangedTimestamp" : {
+            "seconds" : 1561133,
+            "nanos" : 544000000
+          },
+          "entries" : [ ]
+        },
+        "city" : "locationRecord.city",
+        "countryCode" : "countryRecord.countryCode",
+        "district" : "postalRecord.district",
+        "externalId" : "bpartnerLocation.externalId",
+        "gln" : "bpartnerLocationRecord.gln",
+        "handles" : [ ],
+        "id" : {
+          "repoId" : 40,
+          "bpartnerId" : 20
+        },
+        "locationType" : {
+          "billTo" : {
+            "value" : false,
+            "present" : true
+          },
+          "billToDefault" : {
+            "value" : false,
+            "present" : true
+          },
+          "shipTo" : {
+            "value" : false,
+            "present" : true
+          },
+          "shipToDefault" : {
+            "value" : false,
+            "present" : true
+          }
+        },
+        "poBox" : "locationRecord.poBox",
+        "postal" : "locationRecord.postal",
+        "region" : "locationRecord.regionName"
+      }
+    ],
+    "orgId" : 10
+  }
+]

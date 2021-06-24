@@ -578,8 +578,10 @@ export function createWindow({
       if (!response || !response.data) {
         return Promise.resolve(null);
       }
-
-      const data = response.data[0];
+      // Note: this `documents` key comes only as a result of a PATCH, this is the reason this check is needed
+      const data = response.data.documents
+        ? response.data.documents[0]
+        : response.data[0];
       const tabs = data.includedTabsInfo;
       let docId = data.id;
 
@@ -606,7 +608,11 @@ export function createWindow({
 
       let elem = 0;
 
-      response.data.forEach((value, index) => {
+      let responseDocuments = response.data.documents
+        ? response.data.documents
+        : response.data;
+
+      responseDocuments.forEach((value, index) => {
         if (value.rowId === rowId) {
           elem = index;
         }
@@ -617,10 +623,10 @@ export function createWindow({
       }
 
       // TODO: Is `elem` ever different than 0 ?
-      docId = response.data[elem].id;
+      docId = responseDocuments[elem].id;
       dispatch(
         initDataSuccess({
-          data: parseToDisplay(response.data[elem].fieldsByName),
+          data: parseToDisplay(responseDocuments[elem].fieldsByName),
           docId,
           saveStatus: data.saveStatus,
           scope: getScope(isModal),
@@ -637,11 +643,11 @@ export function createWindow({
           dispatch(
             mapDataToState(response.data, false, 'NEW', docId, windowType)
           );
-          dispatch(updateStatus(response.data));
+          dispatch(updateStatus(responseDocuments));
           dispatch(updateModal(data.rowId));
           /** special case of inlineTab - disconnectedData will be used for data feed */
           if (disconnected === 'inlineTab') {
-            disconnectedData = response.data[0];
+            disconnectedData = responseDocuments[0];
           }
         }
       } else {
@@ -836,8 +842,15 @@ export function patch(
     try {
       const response = await patchRequest(options);
       const data =
-        response.data instanceof Array ? response.data : [response.data];
+        response.data.documents instanceof Array
+          ? response.data.documents
+          : response.data;
       const dataItem = data[0];
+
+      // prevent recursion in merge
+      data.documents &&
+        data.documents.documents &&
+        delete data.documents.documents;
 
       await dispatch(
         mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
@@ -867,7 +880,7 @@ export function patch(
         await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
-        return data;
+        return response.data;
       }
     } catch (error) {
       await dispatch(indicatorState('error'));

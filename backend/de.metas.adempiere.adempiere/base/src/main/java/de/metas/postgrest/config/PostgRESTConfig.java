@@ -25,6 +25,7 @@ package de.metas.postgrest.config;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import java.time.Duration;
 
 @Value
 @Builder
@@ -33,7 +34,7 @@ public class PostgRESTConfig
 	@NonNull
 	String baseURL;
 
-	int connectionTimeout;
+	Duration connectionTimeout;
 
-	int readTimeout;
+	Duration readTimeout;
 }

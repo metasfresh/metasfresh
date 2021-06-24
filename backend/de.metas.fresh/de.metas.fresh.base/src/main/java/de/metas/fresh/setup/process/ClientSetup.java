@@ -134,7 +134,7 @@ class ClientSetup
 					.orgId(OrgId.ofRepoId(adOrg.getAD_Org_ID()));
 			//
 			orgBPartner = partnerOrgBL.retrieveLinkedBPartner(adOrg);
-			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationById(adOrgInfo.getOrgBPartnerLocationId());
+			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(adOrgInfo.getOrgBPartnerLocationId());
 			orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 			Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
 			

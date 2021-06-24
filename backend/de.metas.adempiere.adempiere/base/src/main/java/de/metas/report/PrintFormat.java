@@ -22,12 +22,12 @@
 
 package de.metas.report;
 
+import javax.annotation.Nullable;
+
 import de.metas.process.AdProcessId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder

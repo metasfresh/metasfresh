@@ -18,6 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
@@ -92,21 +93,24 @@ class CommissionInstanceRepositoryTest
 	private long currentTimestamp = START_TIMESTAMP;
 
 	private static final InvoiceCandidateId C_INVOICE_CANDIDATE_ID = InvoiceCandidateId.ofRepoId(10);
-	private static final OrgId AD_ORG_ID = OrgId.ofRepoId(20);
-
+	
 	private static final BigDecimal ELEVEN = new BigDecimal("11");
 	private static final BigDecimal TWELVE = new BigDecimal("12");
 
 	private CommissionInstanceRepository commissionInstanceRepository;
 
+	private OrgId orgId = OrgId.ofRepoId(20);
 	private ProductId commissionProductId;
-
+	
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
+		orgId = AdempiereTestHelper.createOrgWithTimeZone();
+
 		final I_M_Product commissionProductRecord = newInstance(I_M_Product.class);
+		commissionProductRecord.setAD_Org_ID(0); /* set org to * */
 		saveRecord(commissionProductRecord);
 		commissionProductId = ProductId.ofRepoId(commissionProductRecord.getM_Product_ID());
 
@@ -133,7 +137,7 @@ class CommissionInstanceRepositoryTest
 	@Test
 	void getByDocumentId_InvoiceCandidateId()
 	{
-		createCommissionData_InvoiceCandidateId();
+		createCommissionData_InvoiceCandidateId(orgId);
 
 		// invoke the method under test
 		final Optional<CommissionInstance> result = commissionInstanceRepository.getByDocumentId(new SalesInvoiceCandidateDocumentId(C_INVOICE_CANDIDATE_ID));
@@ -142,9 +146,10 @@ class CommissionInstanceRepositoryTest
 		SnapshotMatcher.expect(result.get()).toMatchSnapshot();
 	}
 
-	private void createCommissionData_InvoiceCandidateId()
+	private void createCommissionData_InvoiceCandidateId(@NonNull final OrgId orgId)
 	{
 		final ConfigData configData = TestCommissionConfig.builder()
+				.orgId(orgId)
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.commissionProductId(commissionProductId)
@@ -159,7 +164,7 @@ class CommissionInstanceRepositoryTest
 		final BPartnerId C_BPartner_SalesRep_2_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_2_ID");
 
 		TestCommissionInstance.builder()
-				.orgId(AD_ORG_ID)
+				.orgId(orgId)
 				.invoiceCandidateId(C_INVOICE_CANDIDATE_ID)
 				.triggerType(CommissionTriggerType.InvoiceCandidate)
 				.triggerDocumentDate(TimeUtil.parseTimestamp("2020-03-21"))
@@ -239,6 +244,7 @@ class CommissionInstanceRepositoryTest
 		final InvoiceLineId invoiceLineId = InvoiceLineId.ofRepoId(10, 15);
 
 		final ConfigData configData = TestCommissionConfig.builder()
+				.orgId(orgId)
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.commissionProductId(commissionProductId)
@@ -251,7 +257,7 @@ class CommissionInstanceRepositoryTest
 		final BPartnerId C_BPartner_SalesRep_1_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_1_ID");
 
 		TestCommissionInstance.builder()
-				.orgId(AD_ORG_ID)
+				.orgId(orgId)
 				.invoiceLineId(invoiceLineId)
 				.pointsBase_Forecasted("0")
 				.pointsBase_Invoiceable("0")
@@ -286,6 +292,7 @@ class CommissionInstanceRepositoryTest
 	{
 		// the actual contract data is not saved
 		final ConfigData configData = TestCommissionConfig.builder()
+				.orgId(orgId)
 				.subtractLowerLevelCommissionFromBase(true)
 				.commissionProductId(commissionProductId)
 				.pointsPrecision(2)
@@ -300,14 +307,17 @@ class CommissionInstanceRepositoryTest
 		final BPartnerId C_BPartner_SalesRep_2_ID = configData.getName2BPartnerId().get("C_BPartner_SalesRep_2_ID");
 
 		final I_M_Product salesProduct = newInstance(I_M_Product.class);
+		salesProduct.setAD_Org_ID(OrgId.toRepoId(orgId));
 		salesProduct.setM_Product_Category_ID(20);
 		saveRecord(salesProduct);
 
 		final I_C_BPartner customer = newInstance(I_C_BPartner.class);
+		customer.setAD_Org_ID(OrgId.toRepoId(orgId));
 		customer.setC_BP_Group_ID(30);
 		saveRecord(customer);
 
 		final I_C_Invoice_Candidate salesInvoiceCandidate = newInstance(I_C_Invoice_Candidate.class);
+		salesInvoiceCandidate.setAD_Org_ID(OrgId.toRepoId(orgId));
 		salesInvoiceCandidate.setBill_BPartner_ID(customer.getC_BPartner_ID());
 		salesInvoiceCandidate.setM_Product_ID(salesProduct.getM_Product_ID());
 		saveRecord(salesInvoiceCandidate);
@@ -336,7 +346,7 @@ class CommissionInstanceRepositoryTest
 		final CommissionInstance commissionInstance = CommissionInstance.builder()
 				.id(null) // not yet persisted
 				.currentTriggerData(CommissionTriggerData.builder()
-						.orgId(AD_ORG_ID)
+						.orgId(orgId)
 						.triggerType(CommissionTriggerType.InvoiceCandidate)
 						.triggerDocumentId(new SalesInvoiceCandidateDocumentId(InvoiceCandidateId.ofRepoId(salesInvoiceCandidate.getC_Invoice_Candidate_ID())))
 						.triggerDocumentDate(LocalDate.of(2020, 03, 21))

@@ -11,8 +11,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 import java.util.List;
 
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.user.UserRepository;
+import de.metas.organization.OrgId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -88,6 +87,7 @@ import de.metas.util.Services;
 class C_InvoiceFacadeServiceTest
 {
 	private C_InvoiceFacadeService invoiceFacadeService;
+	private OrgId orgId;
 	private BPartnerId customerId;
 	private BPartnerId salesRepPartnerId;
 	private CurrencyId currencyId;
@@ -95,7 +95,7 @@ class C_InvoiceFacadeServiceTest
 	private DocTypeId creditMemoDocTypeId;
 	private ProductId commissionProductId;
 	private I_C_UOM commissionUOMRecord;
-
+	
 	@BeforeEach
 	void beforeEach()
 	{
@@ -125,6 +125,8 @@ class C_InvoiceFacadeServiceTest
 
 		LogManager.setLoggerLevel("de.metas.contracts.commission", Level.DEBUG);
 
+		orgId = AdempiereTestHelper.createOrgWithTimeZone();
+
 		commissionUOMRecord = BusinessTestHelper.createUOM("commissionPoint");
 		final I_M_Product commissionProductRecord = BusinessTestHelper.createProduct("commissionProduct", commissionUOMRecord);
 		commissionProductId = ProductId.ofRepoId(commissionProductRecord.getM_Product_ID());
@@ -133,12 +135,14 @@ class C_InvoiceFacadeServiceTest
 		currencyId = CurrencyId.ofRepoId(currencyRecord.getC_Currency_ID());
 
 		final I_M_Product salesProductRecord = BusinessTestHelper.createProduct("salesProduct", BusinessTestHelper.createUomEach());
+		salesProductRecord.setAD_Org_ID(OrgId.toRepoId(orgId));
 		salesProductRecord.setM_Product_Category_ID(20);
 		salesProductRecord.setIsCommissioned(true);
 		saveRecord(salesProductRecord);
 		salesProductId = ProductId.ofRepoId(salesProductRecord.getM_Product_ID());
 
 		final ConfigData configData = TestCommissionConfig.builder()
+				.orgId(orgId)
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.commissionProductId(commissionProductId)
@@ -151,6 +155,7 @@ class C_InvoiceFacadeServiceTest
 		salesRepPartnerId = configData.getName2BPartnerId().get("salesRep");
 
 		final I_C_BPartner customerBPartner = BusinessTestHelper.createBPartner("customerBPartner");
+		customerBPartner.setAD_Org_ID(OrgId.toRepoId(orgId));
 		customerBPartner.setC_BP_Group_ID(10);
 		customerBPartner.setC_BPartner_SalesRep_ID(salesRepPartnerId.getRepoId());
 		saveRecord(customerBPartner);
@@ -174,6 +179,7 @@ class C_InvoiceFacadeServiceTest
 	{
 		// given
 		final TestInvoice testInvoice = TestInvoice.builder()
+				.orgId(orgId)
 				.customerId(customerId)
 				.docTypeId(creditMemoDocTypeId)
 				.salesRepPartnerId(salesRepPartnerId)
@@ -218,6 +224,7 @@ class C_InvoiceFacadeServiceTest
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(1); // guard
 
 		TestCommissionConfig.builder()
+				.orgId(orgId)
 				.subtractLowerLevelCommissionFromBase(true)
 				.pointsPrecision(2)
 				.commissionProductId(commissionProduct2Id)

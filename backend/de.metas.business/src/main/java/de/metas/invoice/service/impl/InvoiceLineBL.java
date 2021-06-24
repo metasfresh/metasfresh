@@ -1,17 +1,49 @@
 package de.metas.invoice.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.Properties;
-
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.conditions.service.PricingConditionsResult;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.pricing.service.ProductPrices;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,47 +63,14 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IInvoiceLineBL;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.organization.OrgId;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.conditions.service.PricingConditionsResult;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.pricing.service.ProductPrices;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxNotFoundException;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Optional;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 
 /*
  * #%L
@@ -99,12 +98,15 @@ public class InvoiceLineBL implements IInvoiceLineBL
 {
 	private static final Logger logger = LogManager.getLogger(InvoiceLineBL.class);
 
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+
 	@Override
 	public void setTaxAmtInfo(final Properties ctx, final I_C_InvoiceLine il, final String getTrxName)
 	{
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
-
 		final int taxId = il.getC_Tax_ID();
 
 		final boolean taxIncluded = invoiceBL.isTaxIncluded(il);
@@ -168,7 +170,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
-		final I_C_BPartner_Location locationTo = bpartnerDAO.getBPartnerLocationById(partnerLocationId);
+		final I_C_BPartner_Location locationTo = bpartnerDAO.getBPartnerLocationByIdEvenInactive(partnerLocationId);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(il))
 		{
@@ -200,7 +202,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 			if (taxId == null)
 			{
-				final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+				final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 
 				throw TaxNotFoundException.builder()
 						.taxCategoryId(taxCategoryId)
@@ -316,10 +318,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
 
 		final I_M_PriceList priceList = priceListDAO.getById(order.getM_PriceList_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceList,
-				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 
@@ -402,8 +405,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			@NonNull final PriceListId priceListId,
 			@NonNull final Quantity priceQty)
 	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		final SOTrx isSOTrx = SOTrx.ofBoolean(invoice.isSOTrx());
@@ -411,8 +412,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final ProductId productId = ProductId.ofRepoId(invoiceLine.getM_Product_ID()); // without a product-id, this method is not called
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-
-		final LocalDate date = TimeUtil.asLocalDate(invoice.getDateInvoiced());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoiceLine.getAD_Org_ID()));
+		final LocalDate date = TimeUtil.asLocalDate(invoice.getDateInvoiced(), timeZone);
 
 		final IEditablePricingContext pricingCtx = pricingBL
 				.createInitialContext(
@@ -454,7 +455,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return null;
 		}
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
 
 		return CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID());
 	}
@@ -462,8 +463,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@Override
 	public void updateLineNetAmt(final I_C_InvoiceLine line, final BigDecimal qtyEntered)
 	{
-		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(line))
 		{
 			if (qtyEntered != null)
@@ -479,7 +478,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				// org.compiere.model.CalloutOrder.amt
 				final CurrencyPrecision netPrecision = priceListBL.getAmountPrecision(priceListId);
 
-				BigDecimal lineNetAmt = netPrecision.roundIfNeeded(convertedQty.toBigDecimal().multiply(line.getPriceActual()));
+				final BigDecimal lineNetAmt = netPrecision.roundIfNeeded(convertedQty.toBigDecimal().multiply(line.getPriceActual()));
 				logger.debug("LineNetAmt={}", lineNetAmt);
 				line.setLineNetAmt(lineNetAmt);
 			}
@@ -487,7 +486,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	}
 
 	@Override
-	public void updatePrices(final I_C_InvoiceLine invoiceLine)
+	public void updatePrices(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
@@ -537,40 +536,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		//
 		// Calculate PriceActual from PriceEntered and Discount
-		calculatePriceActual(invoiceLine, pricingResult.getPrecision());
+		InvoiceLinePriceAndDiscount.of(invoiceLine, pricingResult.getPrecision())
+				.withUpdatedPriceActual()
+				.applyTo(invoiceLine);
 
 		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); //
-	}
-
-	private static void calculatePriceActual(final I_C_InvoiceLine invoiceLine, final CurrencyPrecision precision)
-	{
-		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
-
-		final Percent discount = Percent.of(invoiceLine.getDiscount());
-		final BigDecimal priceEntered = invoiceLine.getPriceEntered();
-
-		BigDecimal priceActual;
-		if (priceEntered.signum() == 0)
-		{
-			priceActual = priceEntered;
-		}
-		else
-		{
-			final CurrencyPrecision pricePrecision;
-			if (precision != null)
-			{
-				pricePrecision = precision;
-			}
-			else
-			{
-
-				final I_C_Invoice invoice = invoiceLine.getC_Invoice();
-				pricePrecision = priceListBL.getPricePrecision(PriceListId.ofRepoId(invoice.getM_PriceList_ID()));
-			}
-
-			priceActual = discount.subtractFromBase(priceEntered, pricePrecision.toInt(), pricePrecision.getRoundingMode());
-		}
-
-		invoiceLine.setPriceActual(priceActual);
 	}
 }

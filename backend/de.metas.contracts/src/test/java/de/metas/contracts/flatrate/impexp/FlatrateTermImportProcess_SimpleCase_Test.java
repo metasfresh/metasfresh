@@ -7,9 +7,11 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
+import de.metas.bpartner.service.IBPartnerDAO;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -297,15 +299,22 @@ public class FlatrateTermImportProcess_SimpleCase_Test extends AbstractFlatrateT
 
 	private void assertPartnerData(final I_I_Flatrate_Term iflatrateTerm)
 	{
+
+		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+
+
 		final I_C_Flatrate_Term flatrateTerm = iflatrateTerm.getC_Flatrate_Term();
-		assertThat(flatrateTerm.getBill_BPartner()).isNotNull();
-		assertThat(flatrateTerm.getBill_BPartner()).isEqualToComparingFieldByField(iflatrateTerm.getDropShip_BPartner());
-		assertThat(flatrateTerm.getBill_Location()).isNotNull();
-		assertThat(flatrateTerm.getDropShip_BPartner()).isNotNull();
+
+		final I_C_BPartner billBPartnerRecord = bpartnerDAO.getById(flatrateTerm.getBill_BPartner_ID());
+
+		assertThat(billBPartnerRecord).isNotNull();
+		assertThat(billBPartnerRecord).isEqualToComparingFieldByField(iflatrateTerm.getDropShip_BPartner());
+		assertThat(flatrateTerm.getBill_Location_ID()).isGreaterThan(0);
+		assertThat(flatrateTerm.getDropShip_BPartner_ID()).isGreaterThan(0);
 		assertThat(flatrateTerm.getDropShip_BPartner_ID()).isEqualByComparingTo(iflatrateTerm.getDropShip_BPartner_ID());
-		assertThat(flatrateTerm.getDropShip_Location()).isNotNull();
-		assertThat(flatrateTerm.getBill_User()).isNotNull();
-		assertThat(flatrateTerm.getDropShip_User()).isNotNull();
+		assertThat(flatrateTerm.getDropShip_Location_ID()).isGreaterThan(0);
+		assertThat(flatrateTerm.getBill_User_ID()).isGreaterThan(0);
+		assertThat(flatrateTerm.getDropShip_User_ID()).isGreaterThan(0);
 	}
 
 	private void assertInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)

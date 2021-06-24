@@ -1075,8 +1075,8 @@ public abstract class PO
 						|| sysConfigBL.getBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
 
 				return new AdempiereException("Column not updateable: " + ColumnName + " - NewValue=" + valueToUse + " - OldValue=" + oldValue + "; "
-						+ "Note to developer: to bypass this checking you can"
-						+ "1. Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE)"
+						+ "Note to developer: to bypass this checking you can:\n"
+						+ "1. Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE)\n"
 						+ "2. Set dynamic attribute " + InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled + " = true (no errors will be logged in this case)")
 								.throwOrLogSevere(throwException, log);
 			}

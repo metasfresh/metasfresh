@@ -2,8 +2,9 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
-import de.metas.elasticsearch.indexer.IESModelIndexer;
-import de.metas.elasticsearch.indexer.IESModelIndexersRegistry;
+import de.metas.elasticsearch.IESSystem;
+import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
+import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -47,6 +48,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -104,8 +106,10 @@ import java.util.Set;
 	//
 	// State
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+    private final IESSystem esSystem = Services.get(IESSystem.class);
 
-	@lombok.Builder
+    @lombok.Builder
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTabVO,
@@ -352,7 +356,7 @@ import java.util.Set;
 			{
 				final int displayType = gridFieldVO.getDisplayType();
 				widgetType = DescriptorsFactoryHelper.extractWidgetType(sqlColumnName, displayType);
-				final String ctxTableName = Services.get(IADTableDAO.class).retrieveTableName(gridFieldVO.getAD_Table_ID());
+				final String ctxTableName = tableDAO.retrieveTableName(gridFieldVO.getAD_Table_ID());
 				lookupDescriptorProvider = wrapFullTextSeachFilterDescriptorProvider(
 						SqlLookupDescriptor.builder()
 								.setCtxTableName(ctxTableName)
@@ -509,8 +513,13 @@ import java.util.Set;
 			return databaseLookupDescriptorProvider;
 		}
 
-		final IESModelIndexersRegistry esModelIndexersRegistry = Services.get(IESModelIndexersRegistry.class);
-		final IESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
+		if(esSystem.getEnabled().isFalse())
+        {
+            return databaseLookupDescriptorProvider;
+	    }
+        
+		final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
+		final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
 				.orElse(null);
 		if (modelIndexer == null)
 		{

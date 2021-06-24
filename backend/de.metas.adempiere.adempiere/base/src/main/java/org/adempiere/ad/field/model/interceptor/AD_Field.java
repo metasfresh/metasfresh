@@ -1,8 +1,15 @@
 package org.adempiere.ad.field.model.interceptor;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.logging.LogManager;
+import de.metas.translation.api.IElementTranslationBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.column.model.interceptor.AD_Column;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.IADElementDAO;
@@ -11,16 +18,17 @@ import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
+import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupInfo;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-
-import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -48,6 +56,9 @@ import de.metas.util.Services;
 @Component
 public class AD_Field
 {
+	private static final Logger logger = LogManager.getLogger(AD_Field.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+
 	@Init
 	public void init()
 	{
@@ -67,6 +78,45 @@ public class AD_Field
 		if (!Check.isEmpty(field.getDisplayLogic(), true))
 		{
 			LogicExpressionCompiler.instance.compile(field.getDisplayLogic());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = {
+					I_AD_Field.COLUMNNAME_AD_Column_ID,
+					I_AD_Field.COLUMNNAME_AD_Reference_ID,
+					I_AD_Field.COLUMNNAME_AD_Reference_Value_ID })
+	public void onBeforeSave_ValidateReference(final I_AD_Field field)
+	{
+		final AdColumnId adColumnId = AdColumnId.ofRepoIdOrNull(field.getAD_Column_ID());
+		final int adReferenceId = field.getAD_Reference_ID();
+		if (adColumnId != null && DisplayType.isAnyLookup(adReferenceId))
+		{
+			final MLookupInfo lookupInfo;
+			try
+			{
+				final I_AD_Column column = tableDAO.retrieveColumnById(adColumnId);
+				final String ctxTableName = tableDAO.retrieveTableName(column.getAD_Table_ID());
+				lookupInfo = MLookupFactory.getLookupInfo(
+						Integer.MAX_VALUE, // WindowNo
+						adReferenceId,
+						ctxTableName, // ctxTableName
+						column.getColumnName(), // ctxColumnName
+						field.getAD_Reference_Value_ID(),
+						column.isParent(), // IsParent,
+						CoalesceUtil.firstGreaterThanZero(field.getAD_Val_Rule_ID(), column.getAD_Val_Rule_ID(), -1) //AD_Val_Rule_ID
+				);
+			}
+			catch (final Exception ex)
+			{
+				AD_Column.fireExceptionInvalidLookup(logger, ex);
+				return;
+			}
+
+			if (lookupInfo == null)
+			{
+				AD_Column.fireExceptionInvalidLookup(logger, null);
+			}
 		}
 	}
 

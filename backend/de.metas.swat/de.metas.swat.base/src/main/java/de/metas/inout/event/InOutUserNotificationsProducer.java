@@ -196,5 +196,4 @@ public final class InOutUserNotificationsProducer
 	{
 		Services.get(INotificationBL.class).sendAfterCommit(notifications);
 	}
-
 }

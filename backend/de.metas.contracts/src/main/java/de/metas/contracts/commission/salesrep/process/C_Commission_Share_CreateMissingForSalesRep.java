@@ -577,7 +577,7 @@ public class C_Commission_Share_CreateMissingForSalesRep extends JavaProcess
 		invoices.forEach(invoice -> {
 			try
 			{
-				if (salesRepAsCustomer && invoice.getC_BPartner_SalesRep_ID() != bpartnerSalesRepIdInt)
+				if (salesRepAsCustomer && invoice.getC_BPartner_SalesRep_ID() != bpartnerSalesRepIdInt && bpartnerSalesRepIdInt != invoice.getC_BPartner_ID())
 				{
 					loggableDebug.addLog("*** DEBUG: C_Invoice_ID={} has C_BPartner_SalesRep_ID={}; -> fix it to C_BPartner_SalesRep_ID={}",
 							invoice.getC_Invoice_ID(), invoice.getC_BPartner_SalesRep_ID(), bpartnerSalesRepIdInt);

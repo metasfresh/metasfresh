@@ -51,13 +51,15 @@ const wrapRequest = req => {
 const findByName = (dataArray, name) => {
   let dataObject = null;
 
-  for (let i = 0; i < dataArray.length; i += 1) {
-    const obj = dataArray[i];
+  if (dataArray) {
+    for (let i = 0; i < dataArray.length; i += 1) {
+      const obj = dataArray[i];
 
-    if (obj.caption.includes(name)) {
-      dataObject = obj;
+      if (obj.caption.includes(name)) {
+        dataObject = obj;
 
-      break;
+        break;
+      }
     }
   }
 

@@ -2,6 +2,8 @@ package de.metas.elasticsearch.trigger;
 
 import org.adempiere.ad.dao.IQueryFilter;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.elasticsearch
@@ -26,7 +28,7 @@ import org.adempiere.ad.dao.IQueryFilter;
 
 public interface IESModelIndexerTrigger
 {
-
+	@Nullable
 	IQueryFilter<Object> getMatchingModelsFilter();
 
 	/**

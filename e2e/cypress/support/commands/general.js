@@ -24,7 +24,7 @@
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 
-import 'cypress-plugin-snapshots/commands';
+// import 'cypress-plugin-snapshots/commands';
 
 import { List } from 'immutable';
 import { goBack, push } from 'react-router-redux';
@@ -219,11 +219,9 @@ function visitTableWindow(windowId) {
 
 function visitDetailWindow(windowId, recordId) {
   describe('Open metasfresh single-record window and wait for layout and data', function() {
-    performDocumentViewAction(
-      windowId,
-      function() {
-        cy.visit(`/window/${windowId}/${recordId}`);
-      });
+    performDocumentViewAction(windowId, function() {
+      cy.visit(`/window/${windowId}/${recordId}`);
+    });
   });
 }
 
@@ -292,9 +290,11 @@ Cypress.Commands.add('expectNumberOfDOMNotifications', expectedNumber => {
     .get('.header-item-badge', timeout)
     .find('.notification-number', timeout)
     .then(el => {
-      const val = el[0].textContent;
+      if (el[0]) {
+        const val = el[0].textContent;
 
-      return cy.wrap(parseInt(val, 10));
+        return cy.wrap(parseInt(val, 10));
+      }
     })
     .should('eq', expectedNumber);
 });
@@ -373,26 +373,24 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
   cy.wait(alias).then(function(xhr) {
     const responseBody = xhr.responseBody;
 
+    if (!responseBody.documents) {
+      responseBody.documents = responseBody;
+    }
+
     if (!expectEmptyRequest) {
-      if (responseBody.length <= 0) {
-        cy.log(
-          `1 waitForFieldValue - waited for alias=${alias} and ${fieldName}=${expectedFieldValue}, but the current response-body is empty; waiting once more`
-        );
+      if (responseBody.documents.length <= 0) {
+        cy.log(`1 waitForFieldValue - waited for alias=${alias} and ${fieldName}=${expectedFieldValue}, but the current response-body is empty; waiting once more`);
         return cy.waitForFieldValue(alias, fieldName, expectedFieldValue); //<---- this is the hacky bit
       }
 
-      if (!responseBody[0].fieldsByName) {
-        cy.log(
-          `2 waitForFieldValue - waited for alias=${alias} and ${fieldName}=${expectedFieldValue}, but the current response-body has no fieldsByName property; waiting once more`
-        );
+      if (!responseBody.documents[0].fieldsByName) {
+        cy.log(`2 waitForFieldValue - waited for alias=${alias} and ${fieldName}=${expectedFieldValue}, but the current response-body has no fieldsByName property; waiting once more`);
         return cy.waitForFieldValue(alias, fieldName, expectedFieldValue); //<---- this is the hacky bit
       }
 
-      const fieldsByName = responseBody[0].fieldsByName;
+      const fieldsByName = responseBody.documents[0].fieldsByName;
       if (!fieldsByName.hasOwnProperty(fieldName)) {
-        cy.log(
-          `3 waitForFieldValue - waited for alias=${alias} and ${fieldName}=${expectedFieldValue}, but the current response has no ${fieldName} property; waiting once more`
-        );
+        cy.log(`3 waitForFieldValue - waited for alias=${alias} and ${fieldName}=${expectedFieldValue}, but the current response has no ${fieldName} property; waiting once more`);
         return cy.waitForFieldValue(alias, fieldName, expectedFieldValue); //<---- this is the hacky bit
       }
 

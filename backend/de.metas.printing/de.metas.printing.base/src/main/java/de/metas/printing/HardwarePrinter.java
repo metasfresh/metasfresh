@@ -29,6 +29,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 @Value
 public class HardwarePrinter
@@ -54,8 +55,16 @@ public class HardwarePrinter
 		this.trays = Maps.uniqueIndex(trays, HardwareTray::getId);
 	}
 
-	public HardwareTray getTray(final HardwareTrayId trayId)
+	@NonNull
+	public HardwareTray getTray(@NonNull final HardwareTrayId trayId)
 	{
-		return trays.get(trayId);
+		final HardwareTray hardwareTray = trays.get(trayId);
+		if (hardwareTray == null)
+		{
+			throw new AdempiereException("This hardwarePrinter does not have a tray with AD_PrinterHW_MediaTray=" + trayId.getRepoId())
+					.setParameter("this", this);
+		}
+
+		return hardwareTray;
 	}
 }

@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import de.metas.order.OrderId;
 import de.metas.product.ProductCategoryId;
+import de.metas.product.acct.api.ActivityId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,6 +40,8 @@ public class GroupCreateRequest
 
 	@NonNull
 	String name;
+
+	@Nullable ActivityId activityId;
 	
 	@Nullable
 	ProductCategoryId productCategoryId;

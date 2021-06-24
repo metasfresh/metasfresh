@@ -147,6 +147,31 @@ public interface I_C_BPartner
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_Mapping_ID (int AD_Org_Mapping_ID);
+
+	/**
+	 * Get Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_Mapping_ID();
+
+	@Nullable org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping();
+
+	void setAD_Org_Mapping(@Nullable org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_AD_Org_Mapping> COLUMN_AD_Org_Mapping_ID = new ModelColumn<>(I_C_BPartner.class, "AD_Org_Mapping_ID", org.compiere.model.I_AD_Org_Mapping.class);
+	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
+
+	/**
 	 * Set Consolidate Shipments allowed.
 	 *
 	 * <br>Type: YesNo
@@ -669,6 +694,56 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_DebtorId = new ModelColumn<>(I_C_BPartner.class, "DebtorId", null);
 	String COLUMNNAME_DebtorId = "DebtorId";
+
+	/**
+	 * Set Default Ship To City.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDefaultShipTo_City (@Nullable java.lang.String DefaultShipTo_City);
+
+	/**
+	 * Get Default Ship To City.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDefaultShipTo_City();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_DefaultShipTo_City = new ModelColumn<>(I_C_BPartner.class, "DefaultShipTo_City", null);
+	String COLUMNNAME_DefaultShipTo_City = "DefaultShipTo_City";
+
+	/**
+	 * Set Default Ship To Postal.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDefaultShipTo_Postal (@Nullable java.lang.String DefaultShipTo_Postal);
+
+	/**
+	 * Get Default Ship To Postal.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDefaultShipTo_Postal();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_DefaultShipTo_Postal = new ModelColumn<>(I_C_BPartner.class, "DefaultShipTo_Postal", null);
+	String COLUMNNAME_DefaultShipTo_Postal = "DefaultShipTo_Postal";
 
 	/**
 	 * Set Lieferart.
@@ -1278,7 +1353,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsEmployee = "IsEmployee";
 
 	/**
-	 * Set Haddex Check.
+	 * Set Haddex Prüfung erforderlich.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1287,7 +1362,7 @@ public interface I_C_BPartner
 	void setIsHaddexCheck (boolean IsHaddexCheck);
 
 	/**
-	 * Get Haddex Check.
+	 * Get Haddex Prüfung erforderlich.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1655,8 +1730,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_Logo_ID = "Logo_ID";
 
 	/**
-	 * Set Rabatt-Schema.
-	 * Schema um den prozentualen Rabatt zu berechnen
+	 * Set Discount Schema.
+	 * Schema to calculate the trade discount percentage
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1665,8 +1740,8 @@ public interface I_C_BPartner
 	void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
 
 	/**
-	 * Get Rabatt-Schema.
-	 * Schema um den prozentualen Rabatt zu berechnen
+	 * Get Discount Schema.
+	 * Schema to calculate the trade discount percentage
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false

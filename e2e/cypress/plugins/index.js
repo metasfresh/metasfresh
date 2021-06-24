@@ -13,7 +13,7 @@
 
 const webpackPre = require('@cypress/webpack-preprocessor');
 const webpack = require('webpack');
-const { initPlugin } = require('cypress-plugin-snapshots/plugin');
+// const { initPlugin } = require('cypress-plugin-snapshots/plugin');
 const task = require('cypress-skip-and-only-ui/task');
 const ourConfig = require('../config.js');
 
@@ -36,7 +36,7 @@ module.exports = (on, config) => {
   on('file:preprocessor', webpackPre(options));
   on('task', task);
 
-  initPlugin(on, config);
+  // initPlugin(on, config);
 
   // Uncomment for disabling CORS protection in chrome
   // on('before:browser:launch', (browser = {}, args) => {

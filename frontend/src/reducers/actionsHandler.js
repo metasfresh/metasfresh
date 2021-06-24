@@ -48,6 +48,9 @@ const reducer = produce((draftState, action) => {
     }
     case FETCH_QUICK_ACTIONS_SUCCESS: {
       const { id, actions } = action.payload;
+
+      if (!draftState[id]) return; // safety check for immer
+
       const current = original(draftState[id]);
 
       if (current.toDelete) {
@@ -64,6 +67,8 @@ const reducer = produce((draftState, action) => {
     case FETCH_QUICK_ACTIONS_FAILURE: {
       const { id } = action.payload;
 
+      if (!draftState[id]) return; // safety check for immer
+
       draftState[id].pending = false;
       draftState[id].error = true;
 
@@ -71,9 +76,9 @@ const reducer = produce((draftState, action) => {
     }
     case DELETE_QUICK_ACTIONS: {
       const { id } = action.payload;
-      const current = original(draftState[id]);
 
       if (draftState[id]) {
+        const current = original(draftState[id]);
         // we don't want to delete a pending request, because
         // on success a new entry in the actions list will be created. So instead
         // we store this information and remove it when needed

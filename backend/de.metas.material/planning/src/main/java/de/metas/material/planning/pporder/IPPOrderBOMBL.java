@@ -124,7 +124,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 	 */
 	Quantity computeQtyToIssueBasedOnFinishedGoodReceipt(
 			@NonNull I_PP_Order_BOMLine orderBOMLine,
-			@NonNull I_C_UOM targetUOM);
+			@NonNull I_C_UOM targetUOM,
+			@NonNull DraftPPOrderQuantities draftQuantities);
 
 	void voidBOMLine(I_PP_Order_BOMLine line);
 

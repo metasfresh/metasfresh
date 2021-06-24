@@ -48,11 +48,14 @@ public class C_BPartner
 	public void deleteLinkedExternalReferences(@NonNull final I_C_BPartner record)
 	{
 		externalReferenceRepository.deleteByRecordIdAndType(record.getC_BPartner_ID(), BPartnerExternalReferenceType.BPARTNER);
+		externalReferenceRepository.deleteByRecordIdAndType(record.getC_BPartner_ID(), BPartnerExternalReferenceType.BPARTNER_VALUE);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_BPartner.COLUMNNAME_AD_Org_ID)
 	public void updateLinkedExternalReferencesOrgId(@NonNull final I_C_BPartner record)
 	{
 		externalReferenceRepository.updateOrgIdByRecordIdAndType(record.getC_BPartner_ID(), BPartnerExternalReferenceType.BPARTNER, OrgId.ofRepoId(record.getAD_Org_ID()));
+		externalReferenceRepository.updateOrgIdByRecordIdAndType(record.getC_BPartner_ID(), BPartnerExternalReferenceType.BPARTNER_VALUE, OrgId.ofRepoId(record.getAD_Org_ID()));
+
 	}
 }

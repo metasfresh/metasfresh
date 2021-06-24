@@ -20,7 +20,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.PriceAndDiscount;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.conditions.PriceSpecification;
 import de.metas.pricing.conditions.PriceSpecificationType;
@@ -228,7 +228,7 @@ public class PricingConditionsView extends AbstractCustomView<PricingConditionsR
 			final BigDecimal priceActualEffective = limitPrice(priceActual, orderLineRecord);
 			if (priceActualEffective.compareTo(priceActual) != 0)
 			{
-				discountEffective = PriceAndDiscount.calculateDiscountFromPrices(
+				discountEffective = OrderLinePriceAndDiscount.calculateDiscountFromPrices(
 						orderLineRecord.getPriceEntered(),
 						priceActualEffective,
 						CurrencyPrecision.TWO);

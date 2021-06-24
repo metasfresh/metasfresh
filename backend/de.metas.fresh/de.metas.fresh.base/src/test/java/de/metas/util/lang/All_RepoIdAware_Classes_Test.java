@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import org.junit.jupiter.api.Assumptions;
@@ -71,13 +72,16 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.shipment.ShipmentDeclarationLineId.class)
 			//
 			.skip(org.eevolution.api.PPOrderRoutingActivityId.class)
+			.skip(org.eevolution.api.PPOrderRoutingProductId.class)
 			.skip(de.metas.material.planning.pporder.PPRoutingActivityId.class)
+			.skip(de.metas.material.planning.pporder.PPRoutingProductId.class)
 			//
 			.skip(de.metas.printing.HardwareTrayId.class)
 			//
 			.skip(ServiceRepairProjectCostCollectorId.class)
 			.skip(ServiceRepairProjectTaskId.class)
 			//
+			.skip(ExternalSystemOtherConfigId.class)
 			;
 
 	private static ObjectMapper jsonMapper;

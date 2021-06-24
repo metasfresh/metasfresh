@@ -24,10 +24,19 @@
             <artifactId>de.metas.adempiere.adempiere.base</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>de.metas.business</groupId>
+            <artifactId>de.metas.business</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
         <dependency>
             <groupId>de.metas.common.externalsystem</groupId>
             <artifactId>de-metas-common-externalsystem</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.ordercandidates</groupId>
+            <artifactId>de-metas-common-ordercandidates</artifactId>
             <version>${metasfresh-common.version}</version>
         </dependency>
 
@@ -55,7 +64,10 @@
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
