@@ -286,10 +286,10 @@ public class ProductDAO implements IProductDAO
 	{
 		final I_M_Product product = getById(productId);
 		final IProductMappingAware productMappingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(product, IProductMappingAware.class);
-		// if (productMappingAware.getM_Product_Mapping_ID() <= 0)
-		// {
-		// 	return null;
-		// } TODO CLEANUP
+		if (productMappingAware.getM_Product_Mapping_ID() <= 0)
+		{
+			return null;
+		}
 		if (!productMappingAware.getM_Product_Mapping().isActive())
 		{
 			return null;
@@ -297,7 +297,7 @@ public class ProductDAO implements IProductDAO
 
 		return queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
-				//.addEqualsFilter(IProductMappingAware.COLUMNNAME_M_Product_Mapping_ID, productMappingAware.getM_Product_Mapping_ID())
+				.addEqualsFilter(IProductMappingAware.COLUMNNAME_M_Product_Mapping_ID, productMappingAware.getM_Product_Mapping_ID())
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
@@ -307,10 +307,10 @@ public class ProductDAO implements IProductDAO
 	public List<de.metas.product.model.I_M_Product> retrieveAllMappedProducts(final I_M_Product product)
 	{
 		final IProductMappingAware productMappingAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(product, IProductMappingAware.class);
-		// if (productMappingAware.getM_Product_Mapping_ID() <= 0)
-		// {
-		// 	return Collections.emptyList();
-		// }
+		if (productMappingAware.getM_Product_Mapping_ID() <= 0)
+		{
+			return Collections.emptyList();
+		}
 		if (!productMappingAware.getM_Product_Mapping().isActive())
 		{
 			return Collections.emptyList();
@@ -318,7 +318,7 @@ public class ProductDAO implements IProductDAO
 
 		return queryBL.createQueryBuilder(de.metas.product.model.I_M_Product.class, product)
 				.addOnlyActiveRecordsFilter()
-			//	.addEqualsFilter(IProductMappingAware.COLUMNNAME_M_Product_Mapping_ID, productMappingAware.getM_Product_Mapping_ID())
+				.addEqualsFilter(IProductMappingAware.COLUMNNAME_M_Product_Mapping_ID, productMappingAware.getM_Product_Mapping_ID())
 				.addNotEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
 				.create()
 				.list(de.metas.product.model.I_M_Product.class);
@@ -600,8 +600,6 @@ public class ProductDAO implements IProductDAO
 			@NonNull final GroupCategoryId groupCategoryId,
 			@NonNull final OrgId targetOrgId)
 	{
-
-
 
 		final ProductId targetProductId = queryBL.createQueryBuilder(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()

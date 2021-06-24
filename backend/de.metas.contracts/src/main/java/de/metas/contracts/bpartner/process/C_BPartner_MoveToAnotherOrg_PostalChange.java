@@ -90,24 +90,6 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 
 			return isShowMembershipParameter;
 		}
-		else if (PARAM_GroupTemplate_ID.equals(parameter.getColumnName()))
-		{
-			if (p_orgTargetId == null)
-			{
-				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
-			}
-
-			if (!isShowMembershipParameter)
-			{
-				return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
-			}
-
-			final OrgChangeBPartnerComposite orgChangePartnerComposite = service.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
-
-			return orgChangePartnerComposite.getGroupCategoryId() == null? -1 : orgChangePartnerComposite.getGroupCategoryId().getRepoId();
-
-		}
-
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 

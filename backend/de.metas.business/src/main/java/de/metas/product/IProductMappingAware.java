@@ -34,10 +34,10 @@ import de.metas.product.model.I_M_Product_Mapping;
 public interface IProductMappingAware
 {
 	// @formatter:off
-	// String COLUMNNAME_M_Product_Mapping_ID = "M_Product_Mapping_ID";
-	//
-	// void setM_Product_Mapping_ID (int _M_Product_Mapping_ID);
-	// int getM_Product_Mapping_ID();
+	String COLUMNNAME_M_Product_Mapping_ID = "M_Product_Mapping_ID";
+
+	void setM_Product_Mapping_ID (int _M_Product_Mapping_ID);
+	int getM_Product_Mapping_ID();
 
 	void setM_Product_Mapping (I_M_Product_Mapping M_Product_Mapping);
 	I_M_Product_Mapping getM_Product_Mapping();
