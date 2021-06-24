@@ -112,8 +112,8 @@ public class UserDashboardWebsocketSender
 	private ImmutableSet<WebsocketTopicName> getWebsocketTopicNamesByDashboardId(@NonNull final UserDashboardId dashboardId)
 	{
 		return websocketProducersRegistry.streamActiveProducersOfType(UserDashboardWebsocketProducer.class)
-				.filter(producer -> UserDashboardId.equals(dashboardId, producer.getUserDashboardId()))
-				.map(producer -> producer.getWebsocketTopicName())
+				.filter(producer -> producer.isMatchingDashboardId(dashboardId))
+				.map(UserDashboardWebsocketProducer::getWebsocketTopicName)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }

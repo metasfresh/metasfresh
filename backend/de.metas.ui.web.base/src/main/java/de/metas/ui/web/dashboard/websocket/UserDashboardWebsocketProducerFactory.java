@@ -23,8 +23,6 @@
 package de.metas.ui.web.dashboard.websocket;
 
 import de.metas.ui.web.dashboard.UserDashboardDataService;
-import de.metas.ui.web.dashboard.UserDashboardId;
-import de.metas.ui.web.dashboard.UserDashboardRepository;
 import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
 import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.session.json.WebuiSessionId;
@@ -68,14 +66,9 @@ public class UserDashboardWebsocketProducerFactory implements WebSocketProducerF
 
 		final KPIDataContext kpiDataContext = contextHolder.getSessionContext(sessionId);
 
-		final UserDashboardId userDashboardId = dashboardDataService
-				.getUserDashboardId(UserDashboardRepository.UserDashboardKey.of(kpiDataContext.getClientId()))
-				.orElseThrow(() -> new AdempiereException("No user dashboard defined"));
-
 		return UserDashboardWebsocketProducer.builder()
 				.dashboardDataService(dashboardDataService)
 				.websocketTopicName(topicName)
-				.userDashboardId(userDashboardId)
 				.kpiDataContext(kpiDataContext)
 				.build();
 	}

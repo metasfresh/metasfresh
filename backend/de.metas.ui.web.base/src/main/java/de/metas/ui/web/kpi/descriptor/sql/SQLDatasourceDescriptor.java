@@ -121,7 +121,7 @@ public class SQLDatasourceDescriptor
 		{
 			if (!sqlFrom.trim().toUpperCase().startsWith("FROM"))
 			{
-				sql.append("FROM ").append(sqlFrom.trim());
+				sql.append("FROM ");
 			}
 
 			sql.append(sqlFrom.trim());
@@ -138,7 +138,7 @@ public class SQLDatasourceDescriptor
 			sql.append("\n");
 			if (!sqlWhereClause.trim().toUpperCase().startsWith("WHERE"))
 			{
-				sql.append("WHERE ").append(sqlWhereClause.trim());
+				sql.append("WHERE ");
 			}
 
 			sql.append(sqlWhereClause.trim());

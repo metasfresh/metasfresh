@@ -26,12 +26,14 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.dashboard.UserDashboardDataProvider;
 import de.metas.ui.web.dashboard.UserDashboardDataRequest;
 import de.metas.ui.web.dashboard.UserDashboardDataResponse;
 import de.metas.ui.web.dashboard.UserDashboardDataService;
 import de.metas.ui.web.dashboard.UserDashboardId;
 import de.metas.ui.web.dashboard.UserDashboardItemDataResponse;
 import de.metas.ui.web.dashboard.UserDashboardItemId;
+import de.metas.ui.web.dashboard.UserDashboardRepository;
 import de.metas.ui.web.dashboard.json.JsonKPIDataResult;
 import de.metas.ui.web.dashboard.json.KPIJsonOptions;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardChangedEventsList;
@@ -63,10 +65,6 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 	@ToString.Include
 	private final WebsocketTopicName websocketTopicName;
 
-	@Getter
-	@ToString.Include
-	private final UserDashboardId userDashboardId;
-
 	@ToString.Include
 	private final KPIDataContext kpiDataContext;
 
@@ -76,13 +74,24 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 	private UserDashboardWebsocketProducer(
 			@NonNull final UserDashboardDataService dashboardDataService,
 			@NonNull final WebsocketTopicName websocketTopicName,
-			@NonNull final UserDashboardId userDashboardId,
 			@NonNull final KPIDataContext kpiDataContext)
 	{
 		this.dashboardDataService = dashboardDataService;
 		this.websocketTopicName = websocketTopicName;
-		this.userDashboardId = userDashboardId;
 		this.kpiDataContext = kpiDataContext;
+	}
+
+	public boolean isMatchingDashboardId(@NonNull final UserDashboardId userDashboardIdToMatch)
+	{
+		return dashboardDataService
+				.getUserDashboardId(getUserDashboardKey())
+				.filter(userDashboardId -> UserDashboardId.equals(userDashboardId, userDashboardIdToMatch))
+				.isPresent();
+	}
+
+	private UserDashboardRepository.UserDashboardKey getUserDashboardKey()
+	{
+		return UserDashboardRepository.UserDashboardKey.of(kpiDataContext.getClientId());
 	}
 
 	@Override
@@ -130,13 +139,23 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 	private JSONDashboardItemDataChangedEvent toJson(final UserDashboardItemDataResponse itemData, final KPIJsonOptions jsonOpts)
 	{
 		final JsonKPIDataResult jsonData = JsonKPIDataResult.of(itemData, jsonOpts);
-		return JSONDashboardItemDataChangedEvent.of(userDashboardId, itemData.getItemId(), jsonData);
+		return JSONDashboardItemDataChangedEvent.of(itemData.getDashboardId(), itemData.getItemId(), jsonData);
 	}
 
 	private Result computeNewResult()
 	{
-		final UserDashboardDataResponse data = dashboardDataService
-				.getData(userDashboardId)
+		final UserDashboardDataProvider dataProvider = dashboardDataService
+				.getData(getUserDashboardKey())
+				.orElse(null);
+
+		// no user dashboard was found.
+		// might be that the user dashboard was deactived in meantime.
+		if (dataProvider == null)
+		{
+			return Result.EMPTY;
+		}
+
+		final UserDashboardDataResponse data = dataProvider
 				.getAllItems(UserDashboardDataRequest.builder()
 						.context(kpiDataContext)
 						.build());

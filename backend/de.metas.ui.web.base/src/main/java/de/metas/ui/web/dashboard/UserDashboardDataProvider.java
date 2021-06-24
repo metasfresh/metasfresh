@@ -112,7 +112,7 @@ public class UserDashboardDataProvider
 		try
 		{
 			final KPIDataResult kpiData = kpiDataProvider.getKPIData(request);
-			return UserDashboardItemDataResponse.ok(item.getId(), kpiData);
+			return UserDashboardItemDataResponse.ok(dashboardId, item.getId(), kpiData);
 		}
 		catch (@NonNull final Exception ex)
 		{
@@ -121,7 +121,7 @@ public class UserDashboardDataProvider
 					? AdempiereException.extractMessageTrl(ex)
 					: msgBL.getTranslatableMsgText(MSG_FailedLoadingKPI);
 
-			return UserDashboardItemDataResponse.error(item.getId(), WebuiError.of(ex, errorMessage));
+			return UserDashboardItemDataResponse.error(dashboardId, item.getId(), WebuiError.of(ex, errorMessage));
 		}
 	}
 
