@@ -7,7 +7,6 @@ import lombok.Value;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
-import java.util.Set;
 
 /*
  * #%L
@@ -62,9 +61,6 @@ public class DocTypeQuery
 
 	@Nullable
 	String name;
-
-	@Nullable
-	Set<String> docSubTypeNotIn;
 
 	//
 	//
