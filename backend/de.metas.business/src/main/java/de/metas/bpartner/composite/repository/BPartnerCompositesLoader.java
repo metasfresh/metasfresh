@@ -22,6 +22,7 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.greeting.GreetingId;
@@ -299,6 +300,7 @@ final class BPartnerCompositesLoader
 				//
 				.excludeFromPromotions(bpartnerRecord.isExcludeFromPromotions())
 				.referrer(bpartnerRecord.getReferrer())
+				.campaignId(CampaignId.ofRepoIdOrNull(bpartnerRecord.getMKTG_Campaign_ID()))
 				//
 				.changeLog(recordChangeLog)
 				//

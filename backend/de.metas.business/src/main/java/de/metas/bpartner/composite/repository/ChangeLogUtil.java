@@ -91,6 +91,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID, BPartner.VENDOR_PRICING_SYSTEM_ID)
 			.put(I_C_BPartner.COLUMNNAME_ExcludeFromPromotions, BPartner.EXCLUDE_FROM_PROMOTIONS)
 			.put(I_C_BPartner.COLUMNNAME_Referrer, BPartner.REFERRER)
+			.put(I_C_BPartner.COLUMNNAME_MKTG_Campaign_ID, BPartner.CAMPAIGN_ID)
 			.build();
 
 	@VisibleForTesting
