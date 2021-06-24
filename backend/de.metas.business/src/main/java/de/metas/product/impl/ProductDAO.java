@@ -616,12 +616,4 @@ public class ProductDAO implements IProductDAO
 
 		return Optional.of(getById(targetProductId, de.metas.product.model.I_M_Product.class));
 	}
-
-	public Optional<GroupCategoryId> getGroupCategoryId(@NonNull final ProductId productId)
-	{
-		final de.metas.product.model.I_M_Product productRecord = getById(productId, de.metas.product.model.I_M_Product.class);
-		final int groupCategoryId = productRecord.getC_CompensationGroup_Schema_Category_ID();
-		return Optional.of(GroupCategoryId.ofRepoIdOrNull(groupCategoryId));
-	}
-
 }
