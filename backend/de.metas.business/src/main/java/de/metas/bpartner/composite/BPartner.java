@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -73,6 +74,7 @@ public class BPartner
 	public static final String VENDOR_PRICING_SYSTEM_ID = "vendorPricingSystemId";
 	public static final String EXCLUDE_FROM_PROMOTIONS = "excludeFromPromotions";
 	public static final String REFERRER = "referrer";
+	public static final String CAMPAIGN_ID = "campaignId";
 
 	/**
 	 * May be null if the bpartner was not yet saved.
@@ -147,7 +149,7 @@ public class BPartner
 
 	private final boolean excludeFromPromotions;
 	private final String referrer;
-
+	@Nullable private final CampaignId campaignId;
 
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
@@ -184,7 +186,10 @@ public class BPartner
 			@Nullable final PaymentTermId customerPaymentTermId,
 			@Nullable final PricingSystemId customerPricingSystemId,
 			@Nullable final PaymentTermId vendorPaymentTermId,
-			@Nullable final PricingSystemId vendorPricingSystemId, final boolean excludeFromPromotions, final String referrer)
+			@Nullable final PricingSystemId vendorPricingSystemId,
+			final boolean excludeFromPromotions,
+			@Nullable final String referrer,
+			@Nullable final CampaignId campaignId)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -222,6 +227,7 @@ public class BPartner
 		this.vendorPricingSystemId = vendorPricingSystemId;
 		this.excludeFromPromotions = excludeFromPromotions;
 		this.referrer = referrer;
+		this.campaignId = campaignId;
 	}
 
 	/**

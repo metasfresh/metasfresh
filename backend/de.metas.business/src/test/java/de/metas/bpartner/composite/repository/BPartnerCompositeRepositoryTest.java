@@ -33,6 +33,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
@@ -98,6 +99,7 @@ class BPartnerCompositeRepositoryTest
 						.vendorPricingSystemId(PricingSystemId.ofRepoId(22))
 						.excludeFromPromotions(true)
 						.referrer("test referrer")
+						.campaignId(CampaignId.ofRepoId(1111))
 						.build())
 				.location(BPartnerLocation.builder()
 						.locationType(BPartnerLocationType.builder()
