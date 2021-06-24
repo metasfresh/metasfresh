@@ -94,30 +94,16 @@ public class OrgChangeBPartnerComposite
 
 	public DefaultLocations getDefaultLocations()
 	{
-		final BPartnerLocation billToDefaultLocation = getBillToDefaultLocationOrNull();
-		final BPartnerLocation shipTpDefaultLocation = getShipToDefaultLocationOrNull();
+		final BPartnerLocation billToDefaultLocation = getBPartnerComposite()
+				.extractBillToLocation().orElse(null);
+
+		final BPartnerLocation shipTpDefaultLocation = getBPartnerComposite()
+				.extractShipToLocation().orElse(null);
 
 		return DefaultLocations.builder()
 				.billToDefaultLocation(billToDefaultLocation)
 				.shipToDefaultLocation(shipTpDefaultLocation)
 				.build();
-	}
-
-	@Nullable
-	public BPartnerLocation getBillToDefaultLocationOrNull()
-	{
-		return getBPartnerComposite()
-				.extractLocation(l -> l.getLocationType().getIsBillToDefaultOr(false))
-				.orElse(null);
-
-	}
-
-	@Nullable
-	public BPartnerLocation getShipToDefaultLocationOrNull()
-	{
-		return getBPartnerComposite()
-				.extractLocation(l -> l.getLocationType().getIsShipToDefaultOr(false))
-				.orElse(null);
 	}
 
 	public List<BPartnerContact> getContacts()
@@ -129,7 +115,8 @@ public class OrgChangeBPartnerComposite
 	public BPartnerContact getDefaultContactOrNull()
 	{
 		return getBPartnerComposite()
-				.extractContact(c -> c.getContactType().getIsDefaultContactOr(false))
+
+				.extractContact(c -> c.getContactType().getIsBillToDefaultOr(false))
 				.orElse(null);
 	}
 
@@ -160,6 +147,7 @@ public class OrgChangeBPartnerComposite
 	@Nullable
 	public BPartnerContact getSalesDefaultContactOrNull()
 	{
+
 		return getBPartnerComposite()
 				.extractContact(c -> c.getContactType().getIsSalesDefaultOr(false))
 				.orElse(null);

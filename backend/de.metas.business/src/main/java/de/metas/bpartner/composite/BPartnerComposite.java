@@ -118,7 +118,9 @@ public final class BPartnerComposite
 		return result.build();
 	}
 
-	/** Only active instances are actually validated. Empty list means "valid" */
+	/**
+	 * Only active instances are actually validated. Empty list means "valid"
+	 */
 	public ImmutableList<ITranslatableString> validate()
 	{
 		final ImmutableList.Builder<ITranslatableString> result = ImmutableList.builder();
@@ -250,7 +252,9 @@ public final class BPartnerComposite
 				.filter(filter);
 	}
 
-	/** Changes this instance by removing all contacts whose IDs are not in the given set */
+	/**
+	 * Changes this instance by removing all contacts whose IDs are not in the given set
+	 */
 	public void retainContacts(@NonNull final Set<BPartnerContactId> contactIdsToRetain)
 	{
 		contacts.removeIf(contact -> !contactIdsToRetain.contains(contact.getId()));
