@@ -34,6 +34,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.CloneBPartnerRequest;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
@@ -126,6 +127,7 @@ public class OrgChangeCommand
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
@@ -182,6 +184,7 @@ public class OrgChangeCommand
 			bpCompositeRepo.save(destinationBPartnerComposite);
 		}
 
+		bpartnerBL.updateNameAndGreetingFromContacts(newBPartnerId);
 		saveOrgChangeBPartnerComposite(bpartnerAndSubscriptions);
 
 		createNewSubscriptions(bpartnerAndSubscriptions, destinationBPartnerComposite);
@@ -452,6 +455,10 @@ public class OrgChangeCommand
 						matchingContact);
 
 				matchingContact.setContactType(newContactType);
+				matchingContact.setGreetingId(sourceContact.getGreetingId());
+				matchingContact.setFirstName(sourceContact.getFirstName());
+				matchingContact.setLastName(sourceContact.getLastName());
+				matchingContact.setMembershipContact(sourceContact.isMembershipContact());
 				matchingContact.setActive(true);
 
 				loggable.addLog("Contact {} from the existing partner {} was preserved.",
