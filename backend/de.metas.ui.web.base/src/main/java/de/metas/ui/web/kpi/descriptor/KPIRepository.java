@@ -260,6 +260,8 @@ public class KPIRepository
 			@NonNull final KPILoadingContext loadingCtx)
 	{
 		final String sourceTableName = adTableDAO.retrieveTableName(kpiDef.getSource_Table_ID());
+		assert sourceTableName != null;
+
 		final AdWindowId targetWindowId = AdWindowId.ofRepoIdOrNull(kpiDef.getAD_Window_ID());
 
 		return SQLDatasourceDescriptor.builder()
@@ -267,6 +269,7 @@ public class KPIRepository
 				.sourceTableName(sourceTableName)
 				.sqlFrom(kpiDef.getSQL_From())
 				.sqlWhereClause(kpiDef.getSQL_WhereClause())
+				.applySecuritySettings(kpiDef.isApplySecuritySettings())
 				.sqlGroupAndOrderBy(kpiDef.getSQL_GroupAndOrderBy())
 				.fields(loadingCtx
 						.getFields(KPIId.ofRepoId(kpiDef.getWEBUI_KPI_ID()))

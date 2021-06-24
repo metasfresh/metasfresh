@@ -24,6 +24,7 @@ package de.metas.ui.web.kpi.descriptor.sql;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
@@ -35,6 +36,7 @@ import lombok.Value;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -43,19 +45,26 @@ import java.util.Set;
 @Value
 public class SQLDatasourceDescriptor
 {
-
 	@Getter(AccessLevel.NONE)
 	ImmutableMap<String, SQLDatasourceFieldDescriptor> fields;
 
 	@NonNull String sourceTableName;
 	@NonNull IStringExpression sqlWhereClause;
+	boolean applySecuritySettings;
 	@Nullable WindowId targetWindowId;
 
 	@NonNull IStringExpression sqlSelect;
 
+	private static final ImmutableSet<CtxName> PERMISSION_REQUIRED_PARAMS = ImmutableSet.<CtxName>builder()
+			.add(CtxNames.parse("AD_User_ID"))
+			.add(CtxNames.parse("AD_Role_ID"))
+			.add(CtxNames.parse("AD_Client_ID"))
+			.build();
+
 	@Builder
 	private SQLDatasourceDescriptor(
 			@NonNull final List<SQLDatasourceFieldDescriptor> fields,
+			final boolean applySecuritySettings,
 			@Nullable final WindowId targetWindowId,
 			@NonNull final String sourceTableName,
 			@Nullable final String sqlFrom,
@@ -74,6 +83,8 @@ public class SQLDatasourceDescriptor
 		this.sqlWhereClause = sqlWhereClause != null
 				? StringExpressionCompiler.instance.compile(sqlWhereClause)
 				: IStringExpression.NULL;
+
+		this.applySecuritySettings = applySecuritySettings;
 
 		this.sqlSelect = buildSqlSelect(
 				fields,
@@ -156,6 +167,9 @@ public class SQLDatasourceDescriptor
 
 	public Set<CtxName> getRequiredContextParameters()
 	{
-		return sqlSelect.getParameters();
+		return ImmutableSet.<CtxName>builder()
+				.addAll(sqlSelect.getParameters())
+				.addAll(isApplySecuritySettings() ? PERMISSION_REQUIRED_PARAMS : ImmutableSet.of())
+				.build();
 	}
 }

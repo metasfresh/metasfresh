@@ -280,6 +280,27 @@ public interface I_WEBUI_KPI
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Apply Security Settings.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsApplySecuritySettings (boolean IsApplySecuritySettings);
+
+	/**
+	 * Get Apply Security Settings.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isApplySecuritySettings();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_IsApplySecuritySettings = new ModelColumn<>(I_WEBUI_KPI.class, "IsApplySecuritySettings", null);
+	String COLUMNNAME_IsApplySecuritySettings = "IsApplySecuritySettings";
+
+	/**
 	 * Set Compare.
 	 *
 	 * <br>Type: YesNo

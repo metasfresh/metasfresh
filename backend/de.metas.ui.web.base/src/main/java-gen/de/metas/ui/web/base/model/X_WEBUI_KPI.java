@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1702448937L;
+	private static final long serialVersionUID = -846963521L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (final Properties ctx, final int WEBUI_KPI_ID, @Nullable final String trxName)
@@ -156,6 +156,18 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public java.lang.String getES_TimeRange_End() 
 	{
 		return get_ValueAsString(COLUMNNAME_ES_TimeRange_End);
+	}
+
+	@Override
+	public void setIsApplySecuritySettings (final boolean IsApplySecuritySettings)
+	{
+		set_Value (COLUMNNAME_IsApplySecuritySettings, IsApplySecuritySettings);
+	}
+
+	@Override
+	public boolean isApplySecuritySettings() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsApplySecuritySettings);
 	}
 
 	@Override

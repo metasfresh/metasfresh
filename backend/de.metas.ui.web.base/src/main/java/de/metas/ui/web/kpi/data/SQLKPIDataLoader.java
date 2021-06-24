@@ -26,7 +26,10 @@ import com.google.common.base.Stopwatch;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
 import de.metas.ui.web.kpi.TimeRange;
 import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.kpi.descriptor.KPIField;
@@ -34,6 +37,7 @@ import de.metas.ui.web.kpi.descriptor.KPIFieldValueType;
 import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceDescriptor;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
@@ -55,6 +59,8 @@ import java.sql.Timestamp;
 class SQLKPIDataLoader
 {
 	private static final Logger logger = LogManager.getLogger(SQLKPIDataLoader.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+
 	@NonNull private final KPI kpi;
 	@NonNull private final TimeRange timeRange;
 	@NonNull final KPIDataContext context;
@@ -83,10 +89,8 @@ class SQLKPIDataLoader
 		final KPIDataResult.Builder data = KPIDataResult.builder()
 				.setRange(timeRange);
 
-		final Evaluatee evalCtx = createEvaluateeContext();
-		final String sql = sqlDatasource
-				.getSqlSelect()
-				.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
+		final String sql = createSelectSql();
+		logger.trace("Running SQL: {}", sql);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -114,7 +118,42 @@ class SQLKPIDataLoader
 				.build();
 	}
 
-	private Evaluatee createEvaluateeContext()
+	private String createSelectSql()
+	{
+		final Evaluatee evalCtx = createEvaluationContext();
+		String sql = sqlDatasource
+				.getSqlSelect()
+				.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
+
+		if (sqlDatasource.isApplySecuritySettings())
+		{
+			final IUserRolePermissions permissions = getUserRolePermissions();
+			sql = permissions.addAccessSQL(sql, sqlDatasource.getSourceTableName(), true, Access.READ);
+		}
+
+		return sql;
+	}
+
+	private IUserRolePermissions getUserRolePermissions()
+	{
+		// assume all these context values are set
+		// see de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceDescriptor.PERMISSION_REQUIRED_PARAMS
+		final RoleId roleId = context.getRoleId();
+		final UserId userId = context.getUserId();
+		final ClientId clientId = context.getClientId();
+		if (roleId == null || userId == null || clientId == null)
+		{
+			throw new AdempiereException("Cannot extract role permissions from context: " + context);
+		}
+
+		return userRolePermissionsDAO.getUserRolePermissions(
+				roleId,
+				userId,
+				clientId,
+				SystemTime.asLocalDate());
+	}
+
+	private Evaluatee createEvaluationContext()
 	{
 		return Evaluatees.mapBuilder()
 				.put("MainFromMillis", DB.TO_DATE(timeRange.getFrom()))
@@ -172,7 +211,7 @@ class SQLKPIDataLoader
 	{
 		final String sqlWhereClause = sqlDatasource
 				.getSqlWhereClause()
-				.evaluate(createEvaluateeContext(), IExpressionEvaluator.OnVariableNotFound.Fail);
+				.evaluate(createEvaluationContext(), IExpressionEvaluator.OnVariableNotFound.Fail);
 
 		return KPIZoomIntoDetailsInfo.builder()
 				.filterCaption(kpi.getCaption())
