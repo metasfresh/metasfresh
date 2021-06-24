@@ -1,3 +1,18 @@
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id numeric, p_doctype text, p_bp_loc_id numeric, p_record_id numeric);
+DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report;
+
+CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_BPartner_Report
+(
+  org_name        text,
+  Org_AddressLine text,
+  address1        text,
+  postal          text,
+  city            text,
+  country         text,
+  gln             text,
+  AddressBlock    text
+);
+
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.docs_generics_bpartner_report(p_org_id numeric,
                                                                                             p_doctype text,
                                                                                             p_bp_loc_id numeric,
