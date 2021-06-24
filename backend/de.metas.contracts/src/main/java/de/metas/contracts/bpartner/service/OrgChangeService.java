@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.contracts.bpartner.repository.OrgMappingRepository;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -39,17 +40,20 @@ public class OrgChangeService
 	private final BPartnerCompositeRepository bpCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
 	private final OrgChangeHistoryRepository orgChangeHistoryRepo;
+	private final GroupTemplateRepository groupTemplateRepo;
 
 	public OrgChangeService(
 			@NonNull final OrgChangeRepository orgChangeRepo,
 			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
 			@NonNull final OrgMappingRepository orgMappingRepo,
-			@NonNull final OrgChangeHistoryRepository orgChangeHistoryRepo)
+			@NonNull final OrgChangeHistoryRepository orgChangeHistoryRepo,
+			@NonNull GroupTemplateRepository groupTemplateRepo)
 	{
 		this.orgChangeRepo = orgChangeRepo;
 		this.bpCompositeRepo = bpCompositeRepo;
 		this.orgMappingRepo = orgMappingRepo;
 		this.orgChangeHistoryRepo = orgChangeHistoryRepo;
+		this.groupTemplateRepo = groupTemplateRepo;
 	}
 
 	public void moveToNewOrg(@NonNull final OrgChangeRequest request)
@@ -59,6 +63,7 @@ public class OrgChangeService
 				.orgMappingRepo(orgMappingRepo)
 				.orgChangeRepo(orgChangeRepo)
 				.orgChangeHistoryRepo(orgChangeHistoryRepo)
+				.groupTemplateRepo(groupTemplateRepo)
 				.request(request)
 				.build()
 				.execute();
