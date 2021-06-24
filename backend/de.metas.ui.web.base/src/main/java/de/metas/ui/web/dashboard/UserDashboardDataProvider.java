@@ -85,8 +85,15 @@ public class UserDashboardDataProvider
 		{
 			for (final UserDashboardItem dashboardItem : dashboard.getItems(widgetType))
 			{
-				final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, context, maxStaleAccepted);
-				itemDataById.put(dashboardItem.getId(), itemData);
+				try
+				{
+					final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, context, maxStaleAccepted);
+					itemDataById.put(dashboardItem.getId(), itemData);
+				}
+				catch (final Exception ex)
+				{
+					logger.warn("Failed computing data for {}. Ignored.", dashboardItem, ex);
+				}
 			}
 		}
 

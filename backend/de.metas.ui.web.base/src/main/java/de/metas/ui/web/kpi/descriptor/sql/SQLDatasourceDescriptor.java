@@ -62,7 +62,7 @@ public class SQLDatasourceDescriptor
 			@Nullable final String sqlWhereClause,
 			@Nullable final String sqlGroupAndOrderBy)
 	{
-		Check.assumeNotEmpty(sqlFrom, "sqlFrom shall not be empty");
+		Check.assumeNotEmpty(sourceTableName, "sourceTableName shall not be empty");
 		Check.assumeNotEmpty(fields, "fields shall not be empty");
 
 		this.fields = Maps.uniqueIndex(fields, SQLDatasourceFieldDescriptor::getFieldName);
