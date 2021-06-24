@@ -56,7 +56,7 @@ FROM
 		LIMIT 1
 	)
 WHERE
-	ad_org.ad_org_id = p_IsSOTrx 
+	ad_org.ad_org_id = p_AD_Org_ID 
 )
 $$
 LANGUAGE sql STABLE 
