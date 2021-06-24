@@ -1,18 +1,8 @@
-package de.metas.marketing.base.model;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * marketing-base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +19,16 @@ import javax.annotation.Nullable;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.marketing.base.model;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 public class CampaignId implements RepoIdAware
@@ -58,4 +58,6 @@ public class CampaignId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static int toRepoId(@Nullable final de.metas.marketing.base.model.CampaignId id) { return id != null ? id.getRepoId() : -1; }
 }
