@@ -159,7 +159,9 @@ public interface ICompositeQueryFilter<T> extends IQueryFilter<T>
 	 * @param columnName
 	 * @param values
 	 * @return this
+	 * @deprecated  dev note: if the target column (i.e. column identified by @param columnName) has value null the query won't match
 	 */
+	@Deprecated
 	<V> ICompositeQueryFilter<T> addNotInArrayFilter(String columnName, Collection<V> values);
 
 	/**
