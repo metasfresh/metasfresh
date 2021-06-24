@@ -1,6 +1,5 @@
 .indicators-wrapper {
     border-radius: 3px;
-    overflow: hidden;
     margin: 1rem 0;
 }
 
@@ -36,6 +35,9 @@
     height: 130px;
     padding: 20px;
     overflow: hidden;
+    border-radius: 5px;
+    box-shadow: 0 2px 7px 0 rgba(0,0,0,0.2);
+    margin-right: 10px;
 }
 
 .indicator-draggable {
