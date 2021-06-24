@@ -42,6 +42,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -139,7 +140,7 @@ public class KPIDataProvider
 					.timeRange(timeRange)
 					.context(context)
 					.build()
-					.execute();
+					.retrieveData();
 		}
 		else
 		{
@@ -167,6 +168,36 @@ public class KPIDataProvider
 
 		logger.trace("cacheCleanupNow: {} entries after cleanup", cache.size());
 	}
+
+	public Optional<KPIZoomIntoDetailsInfo> getZoomIntoDetailsInfo(@NonNull final KPIDataRequest request)
+	{
+		final KPIDataContext context = request.getContext();
+		final KPITimeRangeDefaults timeRangeDefaults = request.getTimeRangeDefaults();
+		final TimeRange timeRange = timeRangeDefaults.createTimeRange(context.getFrom(), context.getTo());
+		final KPI kpi = kpiRepository.getKPI(request.getKpiId());
+
+		final KPIDatasourceType dataSourceType = kpi.getDatasourceType();
+		if (dataSourceType == KPIDatasourceType.SQL)
+		{
+			return Optional.of(
+					SQLKPIDataLoader.builder()
+							.kpi(kpi)
+							.timeRange(timeRange)
+							.context(context)
+							.build()
+							.getKPIZoomIntoDetailsInfo());
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
+	//
+	//
+	// -----------------------------------------
+	//
+	//
 
 	@Value
 	@Builder

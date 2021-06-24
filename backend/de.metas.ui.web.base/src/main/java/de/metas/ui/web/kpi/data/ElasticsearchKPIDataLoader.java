@@ -42,7 +42,6 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.client.transport.NoNodeAvailableException;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.LoggingDeprecationHandler;
@@ -182,26 +181,6 @@ class ElasticsearchKPIDataLoader
 		return this;
 	}
 
-	public ElasticsearchKPIDataLoader assertESIndexExists()
-	{
-		final String esSearchIndex = datasourceDescriptor.getEsSearchIndex();
-		final GetIndexRequest request = new GetIndexRequest(esSearchIndex);
-		try
-		{
-			final boolean indexExists = elasticsearchClient.indices().exists(request, RequestOptions.DEFAULT);
-			if (!indexExists)
-			{
-				throw new AdempiereException("ES index '" + esSearchIndex + "' not found");
-			}
-
-			return this;
-		}
-		catch (final java.io.IOException ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
-	}
-
 	public KPIDataResult retrieveData()
 	{
 		final Stopwatch duration = Stopwatch.createStarted();
@@ -213,7 +192,7 @@ class ElasticsearchKPIDataLoader
 		timeRanges.forEach(timeRange -> loadData(data, timeRange));
 
 		return data
-				.setTook(duration.stop())
+				.setTook(duration.elapsed())
 				.build();
 	}
 

@@ -61,6 +61,9 @@ public class JsonKPILayout
 	@JsonProperty("fields")
 	private final List<JsonKPIFieldLayout> fields;
 
+	@JsonProperty("zoomToDetailsAvailable")
+	private final boolean zoomToDetailsAvailable;
+
 	public JsonKPILayout(final KPI kpi, final KPIJsonOptions jsonOpts)
 	{
 		// id = kpi.getId();
@@ -69,6 +72,7 @@ public class JsonKPILayout
 		chartType = kpi.getChartType().toJson();
 		groupByField = extractGroupByField(kpi, jsonOpts);
 		fields = extractFields(kpi, jsonOpts);
+		zoomToDetailsAvailable = kpi.isZoomToDetailsAvailable();
 	}
 
 	@Nullable

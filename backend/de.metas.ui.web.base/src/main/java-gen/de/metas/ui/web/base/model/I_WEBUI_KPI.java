@@ -52,6 +52,33 @@ public interface I_WEBUI_KPI
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Window.
+	 * Data entry or display window
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Window_ID (int AD_Window_ID);
+
+	/**
+	 * Get Window.
+	 * Data entry or display window
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Window_ID();
+
+	@Nullable org.compiere.model.I_AD_Window getAD_Window();
+
+	void setAD_Window(@Nullable org.compiere.model.I_AD_Window AD_Window);
+
+	ModelColumn<I_WEBUI_KPI, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new ModelColumn<>(I_WEBUI_KPI.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
+	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
+
+	/**
 	 * Set Chart Type.
 	 * Type fo chart to render
 	 *
@@ -316,6 +343,26 @@ public interface I_WEBUI_KPI
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Source Table.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSource_Table_ID (int Source_Table_ID);
+
+	/**
+	 * Get Source Table.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSource_Table_ID();
+
+	String COLUMNNAME_Source_Table_ID = "Source_Table_ID";
+
+	/**
 	 * Set SQL From Clause.
 	 *
 	 * <br>Type: TextLong
@@ -335,6 +382,48 @@ public interface I_WEBUI_KPI
 
 	ModelColumn<I_WEBUI_KPI, Object> COLUMN_SQL_From = new ModelColumn<>(I_WEBUI_KPI.class, "SQL_From", null);
 	String COLUMNNAME_SQL_From = "SQL_From";
+
+	/**
+	 * Set SQL Group and Order By.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSQL_GroupAndOrderBy (@Nullable java.lang.String SQL_GroupAndOrderBy);
+
+	/**
+	 * Get SQL Group and Order By.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSQL_GroupAndOrderBy();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_SQL_GroupAndOrderBy = new ModelColumn<>(I_WEBUI_KPI.class, "SQL_GroupAndOrderBy", null);
+	String COLUMNNAME_SQL_GroupAndOrderBy = "SQL_GroupAndOrderBy";
+
+	/**
+	 * Set SQL Where Clause.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSQL_WhereClause (@Nullable java.lang.String SQL_WhereClause);
+
+	/**
+	 * Get SQL Where Clause.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSQL_WhereClause();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_SQL_WhereClause = new ModelColumn<>(I_WEBUI_KPI.class, "SQL_WhereClause", null);
+	String COLUMNNAME_SQL_WhereClause = "SQL_WhereClause";
 
 	/**
 	 * Get Updated.

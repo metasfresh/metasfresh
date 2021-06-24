@@ -34,6 +34,7 @@ import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.kpi.data.KPIDataProvider;
 import de.metas.ui.web.kpi.data.KPIDataRequest;
 import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.kpi.data.KPIZoomIntoDetailsInfo;
 import de.metas.ui.web.kpi.descriptor.KPIId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -44,6 +45,7 @@ import org.slf4j.Logger;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class UserDashboardDataProvider
 {
@@ -105,15 +107,7 @@ public class UserDashboardDataProvider
 			@NonNull final KPIDataContext context,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		final KPIId kpiId = item.getKPIId();
-		final KPITimeRangeDefaults timeRangeDefaults = item.getTimeRangeDefaults();
-
-		final KPIDataRequest request = KPIDataRequest.builder()
-				.kpiId(kpiId)
-				.timeRangeDefaults(timeRangeDefaults)
-				.context(context)
-				.maxStaleAccepted(maxStaleAccepted)
-				.build();
+		final KPIDataRequest request = toKPIDataRequest(item, context, maxStaleAccepted);
 
 		try
 		{
@@ -127,12 +121,37 @@ public class UserDashboardDataProvider
 					? AdempiereException.extractMessageTrl(ex)
 					: msgBL.getTranslatableMsgText(MSG_FailedLoadingKPI);
 
- 			return UserDashboardItemDataResponse.error(item.getId(), WebuiError.of(ex, errorMessage));
+			return UserDashboardItemDataResponse.error(item.getId(), WebuiError.of(ex, errorMessage));
 		}
+	}
+
+	private static KPIDataRequest toKPIDataRequest(
+			final @NonNull UserDashboardItem item,
+			final @NonNull KPIDataContext context,
+			final @NonNull Duration maxStaleAccepted)
+	{
+		final KPIId kpiId = item.getKPIId();
+		final KPITimeRangeDefaults timeRangeDefaults = item.getTimeRangeDefaults();
+		return KPIDataRequest.builder()
+				.kpiId(kpiId)
+				.timeRangeDefaults(timeRangeDefaults)
+				.context(context)
+				.maxStaleAccepted(maxStaleAccepted)
+				.build();
 	}
 
 	private UserDashboard getDashboard()
 	{
 		return userDashboardRepository.getUserDashboardById(dashboardId);
+	}
+
+	public Optional<KPIZoomIntoDetailsInfo> getZoomIntoDetailsInfo(@NonNull final UserDashboardItemDataRequest request)
+	{
+		final UserDashboard dashboard = getDashboard();
+		final UserDashboardItem dashboardItem = dashboard.getItemById(request.getWidgetType(), request.getItemId());
+		final KPIDataContext context = request.getContext();
+		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
+
+		return kpiDataProvider.getZoomIntoDetailsInfo(toKPIDataRequest(dashboardItem, context, maxStaleAccepted));
 	}
 }

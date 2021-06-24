@@ -40,6 +40,7 @@ import de.metas.ui.web.kpi.descriptor.elasticsearch.ElasticsearchDatasourceDescr
 import de.metas.ui.web.kpi.descriptor.elasticsearch.ElasticsearchDatasourceFieldDescriptor;
 import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceDescriptor;
 import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceFieldDescriptor;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -47,7 +48,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.element.api.IADElementDAO;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Element;
@@ -71,6 +74,7 @@ public class KPIRepository
 	private static final Logger logger = LogManager.getLogger(KPIRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADElementDAO adElementDAO = Services.get(IADElementDAO.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	private final CCache<Integer, KPIsMap> cache = CCache.<Integer, KPIsMap>builder()
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
@@ -255,8 +259,15 @@ public class KPIRepository
 			@NonNull final I_WEBUI_KPI kpiDef,
 			@NonNull final KPILoadingContext loadingCtx)
 	{
+		final String sourceTableName = adTableDAO.retrieveTableName(kpiDef.getSource_Table_ID());
+		final AdWindowId targetWindowId = AdWindowId.ofRepoIdOrNull(kpiDef.getAD_Window_ID());
+
 		return SQLDatasourceDescriptor.builder()
+				.targetWindowId(WindowId.ofNullable(targetWindowId))
+				.sourceTableName(sourceTableName)
 				.sqlFrom(kpiDef.getSQL_From())
+				.sqlWhereClause(kpiDef.getSQL_WhereClause())
+				.sqlGroupAndOrderBy(kpiDef.getSQL_GroupAndOrderBy())
 				.fields(loadingCtx
 						.getFields(KPIId.ofRepoId(kpiDef.getWEBUI_KPI_ID()))
 						.stream()
@@ -330,7 +341,9 @@ public class KPIRepository
 				.build();
 	}
 
-	private String extractFieldName(@NonNull final I_WEBUI_KPI_Field kpiFieldDef, @NonNull KPILoadingContext loadingCtx)
+	private String extractFieldName(
+			@NonNull final I_WEBUI_KPI_Field kpiFieldDef,
+			@NonNull final KPILoadingContext loadingCtx)
 	{
 		final I_AD_Element adElement = loadingCtx.getAdElementById(kpiFieldDef.getAD_Element_ID(), adElementDAO);
 		final String fieldName = adElement.getColumnName();

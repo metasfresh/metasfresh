@@ -22,13 +22,14 @@
 
 package de.metas.ui.web.kpi.data;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.ui.web.kpi.TimeRange;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 
@@ -40,27 +41,30 @@ public class KPIDataResult
 		return new Builder();
 	}
 
-	Instant createdTime = SystemTime.asInstant();
-	String took;
 	TimeRange range;
 	ImmutableList<KPIDataSet> datasets;
 
+	@NonNull Instant createdTime = SystemTime.asInstant();
+	@Nullable Duration took;
+
 	private KPIDataResult(final Builder builder)
 	{
-		took = builder.took;
 		range = builder.range;
 		datasets = builder.datasets
 				.values()
 				.stream()
 				.map(KPIDataSet.KPIDataSetBuilder::build)
 				.collect(ImmutableList.toImmutableList());
+
+		took = builder.took;
 	}
 
 	public static final class Builder
 	{
 		private final LinkedHashMap<String, KPIDataSet.KPIDataSetBuilder> datasets = new LinkedHashMap<>();
 		private TimeRange range;
-		private String took;
+
+		private Duration took;
 
 		private Builder() { }
 
@@ -85,9 +89,9 @@ public class KPIDataResult
 			return range;
 		}
 
-		public Builder setTook(final Stopwatch took)
+		public Builder setTook(@NonNull final Duration took)
 		{
-			this.took = took.toString();
+			this.took = took;
 			return this;
 		}
 

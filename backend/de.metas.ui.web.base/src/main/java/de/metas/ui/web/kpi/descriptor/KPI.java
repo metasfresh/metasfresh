@@ -192,4 +192,9 @@ public class KPI
 			throw new AdempiereException("Unknown datasource type: " + datasourceType);
 		}
 	}
+
+	public boolean isZoomToDetailsAvailable()
+	{
+		return sqlDatasource != null;
+	}
 }

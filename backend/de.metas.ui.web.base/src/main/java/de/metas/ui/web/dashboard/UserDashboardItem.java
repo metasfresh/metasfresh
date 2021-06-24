@@ -71,7 +71,7 @@ public class UserDashboardItem
 
 	public KPIId getKPIId()
 	{
-		if(kpiSupplier == null)
+		if (kpiSupplier == null)
 		{
 			throw new EntityNotFoundException("No KPI defined for " + this);
 		}

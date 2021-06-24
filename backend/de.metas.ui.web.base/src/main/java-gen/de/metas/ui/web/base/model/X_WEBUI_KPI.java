@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1955191773L;
+	private static final long serialVersionUID = 1702448937L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (final Properties ctx, final int WEBUI_KPI_ID, @Nullable final String trxName)
@@ -32,6 +32,33 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Window getAD_Window()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class);
+	}
+
+	@Override
+	public void setAD_Window(final org.compiere.model.I_AD_Window AD_Window)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Window_ID, org.compiere.model.I_AD_Window.class, AD_Window);
+	}
+
+	@Override
+	public void setAD_Window_ID (final int AD_Window_ID)
+	{
+		if (AD_Window_ID < 1) 
+			set_Value (COLUMNNAME_AD_Window_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Window_ID, AD_Window_ID);
+	}
+
+	@Override
+	public int getAD_Window_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Window_ID);
 	}
 
 	/** 
@@ -177,6 +204,21 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	}
 
 	@Override
+	public void setSource_Table_ID (final int Source_Table_ID)
+	{
+		if (Source_Table_ID < 1) 
+			set_Value (COLUMNNAME_Source_Table_ID, null);
+		else 
+			set_Value (COLUMNNAME_Source_Table_ID, Source_Table_ID);
+	}
+
+	@Override
+	public int getSource_Table_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Source_Table_ID);
+	}
+
+	@Override
 	public void setSQL_From (final @Nullable java.lang.String SQL_From)
 	{
 		set_Value (COLUMNNAME_SQL_From, SQL_From);
@@ -186,6 +228,30 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public java.lang.String getSQL_From() 
 	{
 		return get_ValueAsString(COLUMNNAME_SQL_From);
+	}
+
+	@Override
+	public void setSQL_GroupAndOrderBy (final @Nullable java.lang.String SQL_GroupAndOrderBy)
+	{
+		set_Value (COLUMNNAME_SQL_GroupAndOrderBy, SQL_GroupAndOrderBy);
+	}
+
+	@Override
+	public java.lang.String getSQL_GroupAndOrderBy() 
+	{
+		return get_ValueAsString(COLUMNNAME_SQL_GroupAndOrderBy);
+	}
+
+	@Override
+	public void setSQL_WhereClause (final @Nullable java.lang.String SQL_WhereClause)
+	{
+		set_Value (COLUMNNAME_SQL_WhereClause, SQL_WhereClause);
+	}
+
+	@Override
+	public java.lang.String getSQL_WhereClause() 
+	{
+		return get_ValueAsString(COLUMNNAME_SQL_WhereClause);
 	}
 
 	@Override

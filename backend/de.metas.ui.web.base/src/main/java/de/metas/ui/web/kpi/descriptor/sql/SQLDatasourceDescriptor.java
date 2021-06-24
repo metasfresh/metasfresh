@@ -25,6 +25,7 @@ package de.metas.ui.web.kpi.descriptor.sql;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -33,30 +34,53 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.CtxName;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 
 @Value
 public class SQLDatasourceDescriptor
 {
+
 	@Getter(AccessLevel.NONE)
 	ImmutableMap<String, SQLDatasourceFieldDescriptor> fields;
+
+	@NonNull String sourceTableName;
+	@NonNull IStringExpression sqlWhereClause;
+	@Nullable WindowId targetWindowId;
 
 	@NonNull IStringExpression sqlSelect;
 
 	@Builder
 	private SQLDatasourceDescriptor(
-			@NonNull final String sqlFrom,
-			@NonNull final List<SQLDatasourceFieldDescriptor> fields)
+			@NonNull final List<SQLDatasourceFieldDescriptor> fields,
+			@Nullable final WindowId targetWindowId,
+			@NonNull final String sourceTableName,
+			@Nullable final String sqlFrom,
+			@Nullable final String sqlWhereClause,
+			@Nullable final String sqlGroupAndOrderBy)
 	{
 		Check.assumeNotEmpty(sqlFrom, "sqlFrom shall not be empty");
 		Check.assumeNotEmpty(fields, "fields shall not be empty");
 
 		this.fields = Maps.uniqueIndex(fields, SQLDatasourceFieldDescriptor::getFieldName);
-		this.sqlSelect = buildSqlSelect(fields, sqlFrom);
+
+		this.targetWindowId = targetWindowId;
+
+		this.sourceTableName = sourceTableName;
+
+		this.sqlWhereClause = sqlWhereClause != null
+				? StringExpressionCompiler.instance.compile(sqlWhereClause)
+				: IStringExpression.NULL;
+
+		this.sqlSelect = buildSqlSelect(
+				fields,
+				sourceTableName,
+				sqlFrom,
+				sqlWhereClause,
+				sqlGroupAndOrderBy);
 	}
 
 	public ImmutableCollection<SQLDatasourceFieldDescriptor> getFields()
@@ -64,20 +88,15 @@ public class SQLDatasourceDescriptor
 		return fields.values();
 	}
 
-	public SQLDatasourceFieldDescriptor getFieldByName(@NonNull final String fieldName)
-	{
-		final SQLDatasourceFieldDescriptor field = fields.get(fieldName);
-		if (field == null)
-		{
-			throw new AdempiereException("Field `" + fieldName + "` was not found in " + this);
-		}
-		return field;
-	}
-
 	private static IStringExpression buildSqlSelect(
 			@NonNull final List<SQLDatasourceFieldDescriptor> fields,
-			@NonNull final String sqlFrom)
+			@NonNull final String sourceTableName,
+			@Nullable final String sqlFrom,
+			@Nullable final String sqlWhereClause,
+			@Nullable final String sqlGroupAndOrderBy)
 	{
+		Check.assumeNotEmpty(fields, "fields shall not be empty");
+
 		final StringBuilder sqlFields = new StringBuilder();
 		for (final SQLDatasourceFieldDescriptor field : fields)
 		{
@@ -91,10 +110,48 @@ public class SQLDatasourceDescriptor
 			sqlFields.append("(").append(sqlField).append(") AS ").append(fieldName);
 		}
 
-		return StringExpressionCompiler.instance.compile(
-				"SELECT \n"
-						+ sqlFields
-						+ "\n" + sqlFrom);
+		final StringBuilder sql = new StringBuilder();
+
+		sql.append("SELECT \n").append(sqlFields);
+
+		//
+		// FROM ....
+		sql.append("\n");
+		if (sqlFrom != null && !Check.isBlank(sqlFrom))
+		{
+			if (!sqlFrom.trim().toUpperCase().startsWith("FROM"))
+			{
+				sql.append("FROM ").append(sqlFrom.trim());
+			}
+
+			sql.append(sqlFrom.trim());
+		}
+		else
+		{
+			sql.append("FROM ").append(sourceTableName);
+		}
+
+		//
+		// WHERE
+		if (sqlWhereClause != null && !Check.isBlank(sqlWhereClause))
+		{
+			sql.append("\n");
+			if (!sqlWhereClause.trim().toUpperCase().startsWith("WHERE"))
+			{
+				sql.append("WHERE ").append(sqlWhereClause.trim());
+			}
+
+			sql.append(sqlWhereClause.trim());
+		}
+
+		//
+		// GROUP BY / ORDER BY
+		if (sqlGroupAndOrderBy != null && !Check.isBlank(sqlGroupAndOrderBy))
+		{
+			sql.append("\n").append(sqlGroupAndOrderBy.trim());
+		}
+
+		return StringExpressionCompiler.instance.compile(sql.toString());
 	}
 
 	public Set<CtxName> getRequiredContextParameters()

@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.kpi.data;
 
+import com.google.common.base.Stopwatch;
 import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -30,17 +31,17 @@ import de.metas.ui.web.kpi.TimeRange;
 import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.kpi.descriptor.KPIField;
 import de.metas.ui.web.kpi.descriptor.KPIFieldValueType;
+import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceDescriptor;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
-import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
@@ -58,6 +59,8 @@ class SQLKPIDataLoader
 	@NonNull private final TimeRange timeRange;
 	@NonNull final KPIDataContext context;
 
+	@NonNull private final SQLDatasourceDescriptor sqlDatasource;
+
 	@Builder
 	private SQLKPIDataLoader(
 			@NonNull final KPI kpi,
@@ -66,34 +69,24 @@ class SQLKPIDataLoader
 	{
 		this.kpi = kpi;
 		this.timeRange = timeRange;
-		this.context = context;
+		this.context = context.retainOnlyRequiredParameters(kpi.getRequiredContextParameters());
+
+		this.sqlDatasource = Check.assumeNotNull(kpi.getSqlDatasource(), "Not an SQL data source: {}", kpi);
 	}
 
-	public KPIDataResult execute()
+	public KPIDataResult retrieveData()
 	{
+		final Stopwatch duration = Stopwatch.createStarted();
+
 		logger.trace("Loading data for {}", timeRange);
 
 		final KPIDataResult.Builder data = KPIDataResult.builder()
 				.setRange(timeRange);
 
-		//
-		// Create query evaluation context
-		final Evaluatee evalCtx = Evaluatees.mapBuilder()
-				.put("MainFromMillis", DB.TO_DATE(data.getRange().getFrom()))
-				.put("MainToMillis", DB.TO_DATE(data.getRange().getTo()))
-				.put("FromMillis", DB.TO_DATE(timeRange.getFrom()))
-				.put("ToMillis", DB.TO_DATE(timeRange.getTo()))
-				.put("AD_User_ID", UserId.toRepoId(context.getUserId()))
-				.put("AD_Role_ID", RoleId.toRepoId(context.getRoleId()))
-				.put("AD_Client_ID", ClientId.toRepoId(context.getClientId()))
-				.put("AD_Org_ID", OrgId.toRepoId(context.getOrgId()))
-				.put("#Date", DB.TO_DATE(SystemTime.asZonedDateTime()))
-				.build()
-				// Fallback to user context
-				.andComposeWith(Evaluatees.ofCtx(Env.getCtx()));
-
-		final IStringExpression sqlExpr = kpi.getSqlDatasource().getSqlSelect();
-		final String sql = sqlExpr.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
+		final Evaluatee evalCtx = createEvaluateeContext();
+		final String sql = sqlDatasource
+				.getSqlSelect()
+				.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Preserve);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -116,7 +109,24 @@ class SQLKPIDataLoader
 			DB.close(rs, pstmt);
 		}
 
-		return data.build();
+		return data
+				.setTook(duration.elapsed())
+				.build();
+	}
+
+	private Evaluatee createEvaluateeContext()
+	{
+		return Evaluatees.mapBuilder()
+				.put("MainFromMillis", DB.TO_DATE(timeRange.getFrom()))
+				.put("MainToMillis", DB.TO_DATE(timeRange.getTo()))
+				.put("FromMillis", DB.TO_DATE(timeRange.getFrom()))
+				.put("ToMillis", DB.TO_DATE(timeRange.getTo()))
+				.put("AD_User_ID", UserId.toRepoId(context.getUserId()))
+				.put("AD_Role_ID", RoleId.toRepoId(context.getRoleId()))
+				.put("AD_Client_ID", ClientId.toRepoId(context.getClientId()))
+				.put("AD_Org_ID", OrgId.toRepoId(context.getOrgId()))
+				.put("#Date", DB.TO_DATE(SystemTime.asZonedDateTime()))
+				.build();
 	}
 
 	private void loadKPIDataSetValuesMap(final KPIDataResult.Builder data, final ResultSet rs) throws SQLException
@@ -158,5 +168,18 @@ class SQLKPIDataLoader
 		}
 	}
 
+	public KPIZoomIntoDetailsInfo getKPIZoomIntoDetailsInfo()
+	{
+		final String sqlWhereClause = sqlDatasource
+				.getSqlWhereClause()
+				.evaluate(createEvaluateeContext(), IExpressionEvaluator.OnVariableNotFound.Fail);
+
+		return KPIZoomIntoDetailsInfo.builder()
+				.filterCaption(kpi.getCaption())
+				.targetWindowId(sqlDatasource.getTargetWindowId())
+				.tableName(sqlDatasource.getSourceTableName())
+				.sqlWhereClause(sqlWhereClause)
+				.build();
+	}
 }
 
