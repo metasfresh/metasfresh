@@ -14,6 +14,7 @@ Feature: create or update BPartner v2
    "requestItems":[
       {
          "bpartnerIdentifier":"ext-ALBERTA-001",
+         "externalReferenceUrl":"www.ExternalReferenceURL.com",
          "bpartnerComposite":{
             "bpartner":{
                "code":"test_code",
@@ -102,6 +103,9 @@ Feature: create or update BPartner v2
       | bpartnerIdentifier | contactIdentifier | Name          | OPT.Email  | OPT.Fax  | Code | OPT.InvoiceEmailEnabled |
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  | false                   |
       | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  | true                    |
+    And verify that S_ExternalReference was created
+      | ExternalSystem | Type     | ExternalReference | ExternalReferenceURL         |
+      | ALBERTA        | BPartner | 001               | www.ExternalReferenceURL.com |
 
   Scenario: Update a BPartner record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code

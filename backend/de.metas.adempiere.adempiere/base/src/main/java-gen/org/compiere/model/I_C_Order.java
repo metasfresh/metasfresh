@@ -1186,6 +1186,29 @@ public interface I_C_Order
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set URL of the purchase order in an external system.
+	 * If a purchase order was synched from an external system, this field can be used to store its URL
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalPurchaseOrderURL (@Nullable java.lang.String ExternalPurchaseOrderURL);
+
+	/**
+	 * Get URL of the purchase order in an external system.
+	 * If a purchase order was synched from an external system, this field can be used to store its URL
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalPurchaseOrderURL();
+
+	ModelColumn<I_C_Order, Object> COLUMN_ExternalPurchaseOrderURL = new ModelColumn<>(I_C_Order.class, "ExternalPurchaseOrderURL", null);
+	String COLUMNNAME_ExternalPurchaseOrderURL = "ExternalPurchaseOrderURL";
+
+	/**
 	 * Set Frachtbetrag.
 	 * Freight Amount
 	 *
@@ -1662,7 +1685,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Preis inklusive Steuern.
+	 * Set Price incl. Tax.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo
@@ -1672,7 +1695,7 @@ public interface I_C_Order
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Preis inklusive Steuern.
+	 * Get Price incl. Tax.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: YesNo

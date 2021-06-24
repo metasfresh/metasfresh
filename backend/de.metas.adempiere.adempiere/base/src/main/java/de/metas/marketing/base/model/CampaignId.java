@@ -1,17 +1,8 @@
-package de.metas.marketing.base.model;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
-
 /*
  * #%L
- * marketing-base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,6 +20,16 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.marketing.base.model;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
 @Value
 public class CampaignId implements RepoIdAware
 {
@@ -40,6 +41,7 @@ public class CampaignId implements RepoIdAware
 		return new CampaignId(repoId);
 	}
 
+	@Nullable
 	public static CampaignId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
@@ -47,7 +49,7 @@ public class CampaignId implements RepoIdAware
 
 	private CampaignId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "MKTG_Campaign_ID");
 	}
 
 	@Override
@@ -56,4 +58,6 @@ public class CampaignId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static int toRepoId(@Nullable final de.metas.marketing.base.model.CampaignId id) { return id != null ? id.getRepoId() : -1; }
 }

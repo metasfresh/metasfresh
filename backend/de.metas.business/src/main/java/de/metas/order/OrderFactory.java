@@ -21,6 +21,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -194,6 +195,22 @@ public class OrderFactory
 		return this;
 	}
 
+	public OrderFactory externalPurchaseOrderUrl(@Nullable final String externalPurchaseOrderUrl)
+	{
+		order.setExternalPurchaseOrderURL(externalPurchaseOrderUrl);
+
+		assertNotBuilt();
+		return this;
+	}
+
+	public OrderFactory externalHeaderId(@Nullable final ExternalId externalId)
+	{
+		order.setExternalId(externalId != null ? externalId.getValue() : null);
+
+		assertNotBuilt();
+		return this;
+	}
+
 	public OrderFactory shipperId(@Nullable final ShipperId shipperId)
 	{
 		assertNotBuilt();
@@ -260,7 +277,6 @@ public class OrderFactory
 	{
 		return OrgId.ofRepoId(order.getAD_Org_ID());
 	}
-
 
 	public OrderFactory dateOrdered(final LocalDate dateOrdered)
 	{
