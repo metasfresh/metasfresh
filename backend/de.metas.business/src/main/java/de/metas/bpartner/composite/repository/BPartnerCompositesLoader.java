@@ -22,7 +22,7 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
-import de.metas.campaign.CampaignId;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.common.util.StringUtils;
 import de.metas.common.util.time.SystemTime;
 import de.metas.greeting.GreetingId;

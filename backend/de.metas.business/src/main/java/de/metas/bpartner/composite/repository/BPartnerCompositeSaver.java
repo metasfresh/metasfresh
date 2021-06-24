@@ -17,7 +17,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.campaign.CampaignId;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;

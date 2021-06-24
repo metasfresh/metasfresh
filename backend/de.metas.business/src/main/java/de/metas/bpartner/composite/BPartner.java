@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
-import de.metas.campaign.CampaignId;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
