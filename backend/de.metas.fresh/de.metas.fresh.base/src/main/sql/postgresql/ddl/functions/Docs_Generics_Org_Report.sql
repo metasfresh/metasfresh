@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( IN Email Character Varying(60), IN IsSOTrx Character Varying(1), IN AD_Org_ID Numeric );
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( IN p_Email Character Varying(60), IN p_IsSOTrx Character Varying(1), IN p_AD_Org_ID Numeric );
 DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report;
 
 CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report 
