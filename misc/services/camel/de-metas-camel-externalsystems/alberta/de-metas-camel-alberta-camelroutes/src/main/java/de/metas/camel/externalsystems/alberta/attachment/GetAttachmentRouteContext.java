@@ -23,12 +23,17 @@
 package de.metas.camel.externalsystems.alberta.attachment;
 
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.client.api.AttachmentApi;
 import io.swagger.client.api.DocumentApi;
+import io.swagger.client.api.UserApi;
+import io.swagger.client.model.Attachment;
+import io.swagger.client.model.Document;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Data
@@ -36,10 +41,13 @@ import java.time.Instant;
 public class GetAttachmentRouteContext
 {
 	@NonNull
-	private String orgCode;
+	private final String orgCode;
 
 	@NonNull
 	private final String apiKey;
+
+	@NonNull
+	private final String tenant;
 
 	@NonNull
 	private final DocumentApi documentApi;
@@ -48,18 +56,45 @@ public class GetAttachmentRouteContext
 	private final AttachmentApi attachmentApi;
 
 	@NonNull
-	private final String createdAfter;
+	private final UserApi userApi;
+
+	@NonNull
+	private final String createdAfterDocument;
+
+	@NonNull
+	private final String createdAfterAttachment;
+
+	@NonNull
+	private final JsonMetasfreshId rootBPartnerIdForUsers;
+
+	@NonNull
+	private final JsonExternalSystemRequest request;
+
+	@NonNull
+	private Instant nextDocumentImportStartDate;
 
 	@NonNull
 	private Instant nextAttachmentImportStartDate;
 
-	@NonNull
-	private JsonExternalSystemRequest request;
+	@Nullable
+	private Document document;
 
-	public void setNextAttachmentImportStartDate(@NonNull final Instant nextAttachmentImportStartDate)
+	@Nullable
+	private Attachment attachment;
+
+	public void setNextDocumentImportStartDate(@NonNull final Instant candidate)
 	{
-		if(nextAttachmentImportStartDate.compareTo(this.nextAttachmentImportStartDate) >= 0) {
-			this.nextAttachmentImportStartDate = nextAttachmentImportStartDate;
+		if (candidate.isAfter(this.nextDocumentImportStartDate))
+		{
+			this.nextDocumentImportStartDate = candidate;
+		}
+	}
+
+	public void setNextAttachmentImportStartDate(@NonNull final Instant candidate)
+	{
+		if (candidate.isAfter(this.nextAttachmentImportStartDate))
+		{
+			this.nextAttachmentImportStartDate = candidate;
 		}
 	}
 }

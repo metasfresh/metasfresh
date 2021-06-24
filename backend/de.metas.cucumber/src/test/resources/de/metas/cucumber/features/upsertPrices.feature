@@ -1,9 +1,11 @@
+@from:cucumber
 Feature: Create or update using prices API
   Using default ad_orgId 1000000
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
+  @from:cucumber
   Scenario: Create price list version from external ref
     Given metasfresh contains M_PricingSystems
       | M_PricingSystem_ID | Name                | Value                | OPT.Description            | IsActive |
@@ -18,6 +20,7 @@ Feature: Create or update using prices API
     And the metasfresh REST-API endpoint path 'api/v2/prices/priceListVersions' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then price list version is persisted correctly
 
+  @from:cucumber
   Scenario: Update price list version
     When the user adds price list version data
       | Identifier  | OrgCode | M_PriceList_ID | OPT.Description            | ValidFrom            | OPT.IsActive |
@@ -26,6 +29,7 @@ Feature: Create or update using prices API
     When the metasfresh REST-API endpoint path 'api/v2/prices/priceListVersions' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then price list version is persisted correctly
 
+  @from:cucumber
   Scenario: Create product prices by price list version identifier
     And metasfresh contains M_Product with M_Product_ID '123'
     And the user adds product prices data
@@ -35,6 +39,7 @@ Feature: Create or update using prices API
     When the metasfresh REST-API endpoint path 'api/v2/prices/priceListVersions/ext-Other-3/productPrices' receives a 'PUT' request with the payload from context and responds with '200' status code
     Then product price is persisted correctly
 
+  @from:cucumber
   Scenario: Update product prices by price list version identifier
     When the user adds product prices data
       | Identifier  | OrgCode | M_Product_ID | PriceStd | OPT.PriceLimit | OPT.PriceList | SeqNo | OPT.IsActive | TaxCategory.InternalName |

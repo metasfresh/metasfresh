@@ -22,7 +22,7 @@ import java.util.Objects;
  * Document
  */
 
-@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-05-29T06:37:55.685Z[GMT]")
+@javax.annotation.Generated(value = "io.swagger.codegen.v3.generators.java.JavaClientCodegen", date = "2021-06-17T14:20:17.484Z[GMT]")
 public class Document {
   @SerializedName("_id")
   private String _id = null;

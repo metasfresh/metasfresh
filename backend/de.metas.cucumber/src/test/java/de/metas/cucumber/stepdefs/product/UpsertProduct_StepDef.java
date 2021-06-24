@@ -290,6 +290,7 @@ public class UpsertProduct_StepDef
 		final String gtin = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.GTIN");
 		final String description = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.Description");
 		final boolean isActive = DataTableUtil.extractBooleanForColumnName(dataTableEntries, "OPT.isActive");
+		final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableEntries, "OPT.ExternalReferenceURL");
 
 		final JsonRequestProduct requestProduct = new JsonRequestProduct();
 		requestProduct.setCode(code);
@@ -306,6 +307,7 @@ public class UpsertProduct_StepDef
 
 		return JsonRequestProductUpsertItem.builder()
 				.productIdentifier(productIdentifier)
+				.externalReferenceUrl(externalReferenceURL)
 				.requestProduct(requestProduct)
 				.build();
 

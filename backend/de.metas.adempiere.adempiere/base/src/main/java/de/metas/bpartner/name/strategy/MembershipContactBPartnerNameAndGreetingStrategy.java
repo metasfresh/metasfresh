@@ -94,8 +94,13 @@ public class MembershipContactBPartnerNameAndGreetingStrategy implements BPartne
 	@NonNull
 	private ExplainedOptional<NameAndGreeting> computeForSingleContact(final ComputeNameAndGreetingRequest.Contact contact)
 	{
+		final String nameComposite =
+				contact.getFirstName()
+				+" "+
+				contact.getLastName();
+
 		return ExplainedOptional.of(NameAndGreeting.builder()
-				.name(userBL.buildContactName(contact.getFirstName(), contact.getLastName()))
+				.name(nameComposite)
 				.greetingId(contact.getGreetingId())
 				.build());
 	}
@@ -106,28 +111,45 @@ public class MembershipContactBPartnerNameAndGreetingStrategy implements BPartne
 			@NonNull final ComputeNameAndGreetingRequest.Contact person2,
 			@NonNull final String adLanguage)
 	{
+		final GreetingId greetingId = greetingRepo.getComposite(person1.getGreetingId(), person2.getGreetingId())
+				.map(Greeting::getId)
+				.orElse(null);
+
 		if (!Objects.equals(person1.getLastName(), person2.getLastName()))
 		{
-			// TODO: clarify what shall we do with person2, if we shall do something
-			return computeForSingleContact(person1);
+			final String nameComposite = TranslatableStrings.builder()
+					.append(person1.getFirstName())
+					.append(" ")
+					.append(person1.getLastName())
+					.append(" ")
+					.appendADMessage(MSG_And)
+					.append(" ")
+					.append(person2.getFirstName())
+					.append(" ")
+					.append(person2.getLastName())
+					.build()
+					.translate(adLanguage);
+
+			return ExplainedOptional.of(NameAndGreeting.builder()
+												.name(nameComposite)
+												.greetingId(greetingId)
+												.build());
 		}
 		else
 		{
-			final GreetingId greetingId = greetingRepo.getComposite(person1.getGreetingId(), person2.getGreetingId())
-					.map(Greeting::getId)
-					.orElse(null);
-
 			final String nameComposite = TranslatableStrings.builder()
 					.append(person1.getFirstName())
 					.append(" ")
 					.appendADMessage(MSG_And)
 					.append(" ")
 					.append(person2.getFirstName())
+					.append(" ")
+					.append(person1.getLastName())
 					.build()
 					.translate(adLanguage);
 
 			return ExplainedOptional.of(NameAndGreeting.builder()
-					.name(userBL.buildContactName(nameComposite, person1.getLastName()))
+					.name(nameComposite)
 					.greetingId(greetingId)
 					.build());
 		}

@@ -1697,40 +1697,43 @@ public class JsonPersisterService
 		return locationType.build();
 	}
 
-	private Optional<JsonRequestExternalReferenceUpsert> mapToJsonSingleExternalReferenceCreateReq(
+	private Optional<JsonRequestExternalReferenceUpsert> mapToJsonRequestExternalReferenceUpsert(
 			@NonNull final JsonResponseUpsertItem responseUpsertItem,
 			@NonNull final IExternalReferenceType externalReferenceType,
-			@Nullable final String externalVersion)
+			@Nullable final String externalVersion,
+			@Nullable final String externalReferenceURL)
 	{
-		if (SyncOutcome.CREATED.equals(responseUpsertItem.getSyncOutcome()))
+		if (SyncOutcome.NOTHING_DONE.equals(responseUpsertItem.getSyncOutcome()))
 		{
-			final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(responseUpsertItem.getIdentifier());
-			if (externalIdentifier.getType().equals(EXTERNAL_REFERENCE))
-			{
-
-				final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
-						.id(externalIdentifier.asExternalValueAndSystem().getValue())
-						.type(externalReferenceType.getCode())
-						.build();
-
-				final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
-						.lookupItem(externalReferenceLookupItem)
-						.metasfreshId(responseUpsertItem.getMetasfreshId())
-						.version(externalVersion)
-						.build();
-
-				final JsonRequestExternalReferenceUpsert jsonRequestExternalReferenceUpsert = JsonRequestExternalReferenceUpsert
-						.builder()
-						.systemName(JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem()))
-						.externalReferenceItem(externalReferenceItem)
-						.build();
-
-				return Optional.of(jsonRequestExternalReferenceUpsert);
-			}
-
+			return Optional.empty();
 		}
 
-		return Optional.empty();
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(responseUpsertItem.getIdentifier());
+		if (!externalIdentifier.getType().equals(EXTERNAL_REFERENCE))
+		{
+			return Optional.empty();
+		}
+
+		final JsonExternalReferenceLookupItem externalReferenceLookupItem = JsonExternalReferenceLookupItem.builder()
+				.id(externalIdentifier.asExternalValueAndSystem().getValue())
+				.type(externalReferenceType.getCode())
+				.build();
+
+		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
+				.lookupItem(externalReferenceLookupItem)
+				.metasfreshId(responseUpsertItem.getMetasfreshId())
+				.version(externalVersion)
+				.externalReferenceUrl(externalReferenceURL)
+				.build();
+
+		final JsonRequestExternalReferenceUpsert jsonRequestExternalReferenceUpsert = JsonRequestExternalReferenceUpsert
+				.builder()
+				.systemName(JsonExternalSystemName.of(externalIdentifier.asExternalValueAndSystem().getExternalSystem()))
+				.externalReferenceItem(externalReferenceItem)
+				.build();
+
+		return Optional.of(jsonRequestExternalReferenceUpsert);
+
 	}
 
 	private void handleExternalReferenceRecords(
@@ -1741,10 +1744,13 @@ public class JsonPersisterService
 		final Set<JsonRequestExternalReferenceUpsert> externalReferenceCreateReqs = new HashSet<>();
 
 		final JsonResponseUpsertItem bPartnerResult = result.getResponseBPartnerItem();
-		final Optional<JsonRequestExternalReferenceUpsert> singleExternalReferenceCreateReq =
-				mapToJsonSingleExternalReferenceCreateReq(bPartnerResult, BPartnerExternalReferenceType.BPARTNER, requestItem.getExternalVersion());
+		final Optional<JsonRequestExternalReferenceUpsert> upsertExternalRefRequest =
+				mapToJsonRequestExternalReferenceUpsert(bPartnerResult,
+														BPartnerExternalReferenceType.BPARTNER,
+														requestItem.getExternalVersion(),
+														requestItem.getExternalReferenceUrl());
 
-		singleExternalReferenceCreateReq.ifPresent(externalReferenceCreateReqs::add);
+		upsertExternalRefRequest.ifPresent(externalReferenceCreateReqs::add);
 
 		final List<JsonResponseUpsertItem> bPartnerLocationsResult = result.getResponseLocationItems();
 		if (!CollectionUtils.isEmpty(bPartnerLocationsResult))
@@ -1760,9 +1766,10 @@ public class JsonPersisterService
 
 			externalReferenceCreateReqs.addAll(bPartnerLocationsResult
 													   .stream()
-													   .map(bPartnerLocation -> mapToJsonSingleExternalReferenceCreateReq(bPartnerLocation,
-																														  BPLocationExternalReferenceType.BPARTNER_LOCATION,
-																														  bpartnerLocationIdentifier2externalVersion.get(bPartnerLocation.getIdentifier())))
+													   .map(bPartnerLocation -> mapToJsonRequestExternalReferenceUpsert(bPartnerLocation,
+																														BPLocationExternalReferenceType.BPARTNER_LOCATION,
+																														bpartnerLocationIdentifier2externalVersion.get(bPartnerLocation.getIdentifier()),
+																														null))
 													   .filter(Optional::isPresent)
 													   .map(Optional::get)
 													   .collect(Collectors.toSet()));
@@ -1773,15 +1780,16 @@ public class JsonPersisterService
 		{
 			externalReferenceCreateReqs.addAll(bPartnerContactItems
 													   .stream()
-													   .map(bPartnerContact -> mapToJsonSingleExternalReferenceCreateReq(bPartnerContact,
-																														 ExternalUserReferenceType.USER_ID,
-																														 null))
+													   .map(bPartnerContact -> mapToJsonRequestExternalReferenceUpsert(bPartnerContact,
+																													   ExternalUserReferenceType.USER_ID,
+																													   null,
+																													   null))
 													   .filter(Optional::isPresent)
 													   .map(Optional::get)
 													   .collect(Collectors.toSet()));
 		}
 
-		externalReferenceCreateReqs.forEach(externalReferenceCreateReq -> externalReferenceRestControllerService.performUpsert(externalReferenceCreateReq, orgCode));
+		externalReferenceCreateReqs.forEach(request -> externalReferenceRestControllerService.performUpsert(request, orgCode));
 
 	}
 

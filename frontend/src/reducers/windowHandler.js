@@ -43,6 +43,7 @@ import {
   UPDATE_DATA_PROPERTY,
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
+  UPDATE_INLINE_TAB_DATA,
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
@@ -799,6 +800,23 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     }
+
+    case UPDATE_INLINE_TAB_DATA: {
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${action.payload.inlineTabId}`]: {
+            ...state.inlineTab[`${action.payload.inlineTabId}`],
+            data: {
+              ...state.inlineTab[`${action.payload.inlineTabId}`].data,
+              ...action.payload.data,
+            },
+          },
+        },
+      };
+    }
+
     case SET_INLINE_TAB_WRAPPER_DATA: {
       return {
         ...state,

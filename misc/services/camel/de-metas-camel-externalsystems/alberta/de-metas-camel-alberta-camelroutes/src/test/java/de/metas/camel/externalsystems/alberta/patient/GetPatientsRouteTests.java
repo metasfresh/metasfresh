@@ -27,6 +27,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -62,6 +63,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -71,8 +73,11 @@ import static de.metas.camel.externalsystems.alberta.patient.GetAlbertaPatientsR
 import static de.metas.camel.externalsystems.alberta.patient.GetAlbertaPatientsRoute.GET_PATIENTS_ROUTE_ID;
 import static de.metas.camel.externalsystems.alberta.patient.GetAlbertaPatientsRoute.PREPARE_PATIENTS_API_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.alberta.patient.GetAlbertaPatientsRoute.PROCESS_PATIENT_ROUTE_ID;
+import static de.metas.camel.externalsystems.alberta.patient.GetAlbertaPatientsRoute.RUNTIME_PARAMS_PROCESSOR_ID;
+import static de.metas.camel.externalsystems.alberta.patient.GetAlbertaPatientsRoute.UPSERT_RUNTIME_PARAMS_ROUTE_ID;
 import static de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants.PatientStatus.UPDATED;
 import static de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -92,9 +97,12 @@ public class GetPatientsRouteTests extends CamelTestSupport
 	private static final String JSON_ALBERTA_GET_PHARMACY_RESPONSE = "/de/metas/camel/externalsystems/alberta/patient/35_GetPharmacyAlberta_5ab2390e9d69c74b68cf4f2d_Response.json";
 	private static final String JSON_ALBERTA_GET_USER = "/de/metas/camel/externalsystems/alberta/patient/35_GetUserAlberta_Response.json";
 
-	private static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/alberta/patient/60_UpsertBPartnerMetasfreshRequest.json";
+	public static final String JSON_UPSERT_BPARTNER_REQUEST = "/de/metas/camel/externalsystems/alberta/patient/60_UpsertBPartnerMetasfreshRequest.json";
 	private static final String JSON_UPSERT_BPARTNER_RESPONSE = "/de/metas/camel/externalsystems/alberta/patient/70_UpsertBPartnerMetasfreshResponse.json";
 	private static final String JSON_UPSERT_BPARTNER_RELATIONS_REQUEST = "/de/metas/camel/externalsystems/alberta/patient/80_UpsertBPartnerRelationsMetasfreshRequest.json";
+
+	private static final String JSON_UPSERT_RUNTIME_PARAM_REQUEST = "100_UpsertRuntimeParamRequest.json";
+	private static final String MOCK_UPSERT_RUNTIME_PRAMS = "mock:patient-upsertRuntimeParam";
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
@@ -148,6 +156,12 @@ public class GetPatientsRouteTests extends CamelTestSupport
 		final InputStream bparnerUpsertRequestExpected = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 		final JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = objectMapper.readValue(bparnerUpsertRequestExpected, JsonRequestBPartnerUpsert.class);
 		bpartnerUpsertMockEndpoint.expectedBodiesReceived(jsonRequestBPartnerUpsert);
+
+		final MockEndpoint mockUpsertRuntimeParamEP = getMockEndpoint(MOCK_UPSERT_RUNTIME_PRAMS);
+		final InputStream expectedRuntimeParamIS = this.getClass().getResourceAsStream(JSON_UPSERT_RUNTIME_PARAM_REQUEST);
+		final JsonESRuntimeParameterUpsertRequest expectedRuntimeParamRequest = objectMapper.readValue(expectedRuntimeParamIS, JsonESRuntimeParameterUpsertRequest.class);
+
+		mockUpsertRuntimeParamEP.expectedBodiesReceived(expectedRuntimeParamRequest);
 
 		//validate the upsert-bpartner-relation-request that is done towards metasfresh
 		// final MockEndpoint bpartnerRelationUpsertMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER_RELATION_REQUEST);
@@ -204,6 +218,17 @@ public class GetPatientsRouteTests extends CamelTestSupport
 							.skipSendToOriginalEndpoint()
 							.process(mockBPartnerRelationUpsertResponse);
 				});
+
+		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
+							  advice -> {
+								  advice.weaveById(RUNTIME_PARAMS_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_UPSERT_RUNTIME_PRAMS);
+
+								  advice.interceptSendToEndpoint("direct:" + MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .process((exchange -> System.out.println("Do nothing")));
+							  });
 	}
 
 	private static class MockPreparePatientsApiProcessor implements Processor
@@ -238,6 +263,7 @@ public class GetPatientsRouteTests extends CamelTestSupport
 					.albertaConnectionDetails(albertaConnectionDetails)
 					.rootBPartnerIdForUsers(JsonMetasfreshId.of(200))
 					.request(externalSystemRequest)
+					.updatedAfterValue(Instant.ofEpochSecond(0))
 					.build();
 
 			exchange.setProperty(ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, context);

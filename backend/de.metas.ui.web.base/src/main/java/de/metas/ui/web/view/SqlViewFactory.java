@@ -22,22 +22,8 @@
 
 package de.metas.ui.web.view;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.user.UserId;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -48,6 +34,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
@@ -55,6 +42,7 @@ import de.metas.ui.web.document.references.service.WebuiDocumentReferencesServic
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
+import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayoutFactory;
 import de.metas.ui.web.view.json.JSONFilterViewRequest;
@@ -62,9 +50,21 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
+import de.metas.user.UserId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * View factory which is based on {@link DocumentEntityDescriptor} having SQL repository.<br>
@@ -87,7 +87,8 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final List<SqlViewCustomizer> viewCustomizersList,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final Optional<List<ViewHeaderPropertiesProvider>> headerPropertiesProvider,
-			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators,
+			@NonNull final Optional<List<SqlDocumentFilterConverter>> filterConverters,
+			@NonNull final Optional<List<SqlDocumentFilterConverterDecorator>> filterConverterDecorators,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
 			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
 	{
@@ -102,7 +103,8 @@ public class SqlViewFactory implements IViewFactory
 		final SqlViewBindingFactory viewBindingsFactory = SqlViewBindingFactory.builder()
 				.documentDescriptorFactory(documentDescriptorFactory)
 				.viewCustomizers(viewCustomizers)
-				.converterDecorators(converterDecorators)
+				.filterConverters(filterConverters.orElseGet(ImmutableList::of))
+				.filterConverterDecorators(filterConverterDecorators.orElseGet(ImmutableList::of))
 				.viewInvalidationAdvisors(viewInvalidationAdvisors)
 				.build();
 
@@ -263,7 +265,7 @@ public class SqlViewFactory implements IViewFactory
 				value = de.metas.common.util.time.SystemTime.asZonedDateTime();
 			}
 		}
-		else if(filterParamDescriptor.isAutoFilterInitialValueIsCurrentLoggedUser())
+		else if (filterParamDescriptor.isAutoFilterInitialValueIsCurrentLoggedUser())
 		{
 			// FIXME: we shall get the current logged user or context as parameter
 			final UserId loggedUserId = Env.getLoggedUserId();
@@ -314,6 +316,12 @@ public class SqlViewFactory implements IViewFactory
 					.setFilters(newFilters)
 					.build());
 		}
+	}
+
+	public SqlViewKeyColumnNamesMap getKeyColumnNamesMap(@NonNull final WindowId windowId)
+	{
+		final SqlViewBinding sqlBindings = viewLayouts.getViewBinding(windowId, DocumentFieldDescriptor.Characteristic.PublicField, ViewProfileId.NULL);
+		return sqlBindings.getSqlViewKeyColumnNamesMap();
 	}
 
 }
