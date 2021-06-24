@@ -28,7 +28,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.CloneBPartnerRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
@@ -37,7 +36,6 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
-import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
@@ -71,7 +69,6 @@ import java.util.Set;
 @Repository
 public class OrgChangeRepository
 {
-	private static final Logger logger = LogManager.getLogger(OrgChangeRepository.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -196,17 +193,6 @@ public class OrgChangeRepository
 				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
 				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
 				.create();
-	}
-
-	public BPartnerId getOrCreateCounterpartBPartner(@NonNull final OrgChangeRequest orgChangeRequest, @NonNull final OrgMappingId orgMappingId)
-	{
-		final OrgId targetOrgId = orgChangeRequest.getOrgToId();
-		return bpartnerDAO.getCounterpartBPartnerId(orgMappingId, targetOrgId)
-				.orElseGet(() -> bpartnerDAO.cloneBPartnerRecord(CloneBPartnerRequest.builder()
-																		 .fromBPartnerId(orgChangeRequest.getBpartnerId())
-																		 .orgId(targetOrgId)
-																		 .orgMappingId(orgMappingId)
-																		 .build()));
 	}
 
 	private Set<FlatrateTermId> retrieveMembershipSubscriptionIds(

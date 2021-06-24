@@ -33,6 +33,7 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.CloneBPartnerRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
@@ -161,7 +162,7 @@ public class OrgChangeCommand
 
 		final OrgMappingId orgMappingId = bpartnerAndSubscriptions.getBPartnerOrgMappingId();
 
-		final BPartnerId newBPartnerId = orgChangeRepo.getOrCreateCounterpartBPartner(request, orgMappingId);
+		final BPartnerId newBPartnerId = getOrCreateCounterpartBPartner(request, orgMappingId);
 
 		// gets the partner with all the active and inactive locations, users and bank accounts
 		BPartnerComposite destinationBPartnerComposite = bpCompositeRepo.getById(newBPartnerId);
@@ -192,6 +193,16 @@ public class OrgChangeCommand
 		createOrgSwitchRequest(orgChangeHistoryId);
 	}
 
+	private BPartnerId getOrCreateCounterpartBPartner(@NonNull final OrgChangeRequest orgChangeRequest, @NonNull final OrgMappingId orgMappingId)
+	{
+		final OrgId targetOrgId = orgChangeRequest.getOrgToId();
+		return bpartnerDAO.getCounterpartBPartnerId(orgMappingId, targetOrgId)
+				.orElseGet(() -> bpartnerDAO.cloneBPartnerRecord(CloneBPartnerRequest.builder()
+																		 .fromBPartnerId(orgChangeRequest.getBpartnerId())
+																		 .orgId(targetOrgId)
+																		 .orgMappingId(orgMappingId)
+																		 .build()));
+	}
 	private void createNewSubscriptions(
 			@NonNull final OrgChangeBPartnerComposite bpartnerAndSubscriptions,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
