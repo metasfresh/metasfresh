@@ -9,7 +9,8 @@ class Indicator extends Component {
 
   render() {
     const {
-      value,
+      amount,
+      unit,
       caption,
       loader,
       fullWidth,
@@ -32,7 +33,9 @@ class Indicator extends Component {
         }
         style={fullWidth ? { width: '100%' } : {}}
       >
-        <div className="indicator-value">{value}</div>
+        <div className="indicator-value">
+          {amount} {unit}
+        </div>
         <div className="indicator-kpi-caption">{caption}</div>
       </div>
     );
