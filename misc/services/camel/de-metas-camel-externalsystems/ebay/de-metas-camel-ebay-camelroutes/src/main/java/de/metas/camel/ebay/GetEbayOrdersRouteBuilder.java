@@ -57,6 +57,7 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 	public static final String GET_ORDERS_ROUTE_ID = "Ebay-getOrders";
 	public static final String PROCESS_ORDERS_ROUTE_ID = "Ebay-processOrders";
 	public static final String PROCESS_ORDER_BPARTNER_ROUTE_ID = "Ebay-processOrderBPartner";
+	public static final String PROCESS_PRODUCTS_ROUTE_ID = "Ebay-processProducts";
 	public static final String PROCESS_ORDER_PRODUCTS_ROUTE_ID = "Ebay-processOrderProducts";
 	public static final String PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID = "Ebay-processOrderProductsPrices";
 	public static final String PROCESS_ORDER_OLC_ROUTE_ID = "Ebay-processOrderOLC";
@@ -88,36 +89,29 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 			.split(body())
 			.to( direct(PROCESS_ORDERS_ROUTE_ID));
 		
-		//2) process order by
+		//2) process orders individually
 		from( direct(PROCESS_ORDERS_ROUTE_ID))
 			.routeId(PROCESS_ORDERS_ROUTE_ID)
 			.log("Ebay process orders route invoked")
 			.doTry()
-				// a: filter fulfilled orders  
+				// filter fulfilled orders  
 				.process(new OrderFilterProcessor()).id(FILTER_ORDER_ROUTE_ID)
 				.choice()
 					.when(body().isNull())
 						.log(LoggingLevel.INFO, "Nothing to do! The order was filtered out!")
 					.otherwise()
 					
-						//a) create products
-						.process(new CreateProductUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_ROUTE_ID)
-						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Products: ${body}")
-						.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
+						//i) create products
+						.to(direct(PROCESS_PRODUCTS_ROUTE_ID))
 						
-							// and their prices.
-							.process(new CreateProductPriceUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID)
-							.split(body())
-								.to(direct(MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI))
-						
-						//b) create bparners and put them in bparner import pipeline.
+						//ii) create bparners and put them in bparner import pipeline.
 						.process(new CreateBPartnerUpsertReqForEbayOrderProcessor()).id(PROCESS_ORDER_BPARTNER_ROUTE_ID)
 						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store business partners!")
 						.to( "{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}" )
 					
 						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
 						
-						//c) create order line candidates.
+						//iii) create order line candidates.
 						.process(new CreateOrderLineCandidateUpsertReqForEbayOrderProcessor()).id(PROCESS_ORDER_OLC_ROUTE_ID)
 						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store order candidates!")
 						.to( direct(MF_PUSH_OL_CANDIDATES_ROUTE_ID) )
@@ -128,6 +122,26 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 			.doCatch(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID))
 		
+		.end();
+		
+		//3) process order products ->  i)
+		from(direct(PROCESS_PRODUCTS_ROUTE_ID))
+				.routeId(PROCESS_PRODUCTS_ROUTE_ID)
+		
+				.process(new CreateProductUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_ROUTE_ID)
+		
+				.choice()
+				.when(body().isNull())
+					.log(LoggingLevel.INFO, "Nothing to do! No new or updated Products!")
+				.otherwise()
+					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Products: ${body}")
+					.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
+		
+					// and their prices.
+					.process(new CreateProductPriceUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID)
+					.split(body())
+						.to(direct(MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI))
+				.endChoice()
 		.end();
 		//@formatter:on
 	}
