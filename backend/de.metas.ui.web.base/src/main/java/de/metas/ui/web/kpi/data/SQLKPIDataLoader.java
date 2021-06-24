@@ -22,12 +22,15 @@
 
 package de.metas.ui.web.kpi.data;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.security.RoleId;
 import de.metas.ui.web.kpi.TimeRange;
 import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.kpi.descriptor.KPIField;
 import de.metas.ui.web.kpi.descriptor.KPIFieldValueType;
-import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceDescriptor;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
@@ -35,6 +38,7 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.service.ClientId;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
@@ -47,21 +51,22 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-public class SQLKPIDataLoader
+class SQLKPIDataLoader
 {
 	private static final Logger logger = LogManager.getLogger(SQLKPIDataLoader.class);
-	private final KPI kpi;
-	private final SQLDatasourceDescriptor sqlDataSourceDescriptor;
-	private final TimeRange timeRange;
+	@NonNull private final KPI kpi;
+	@NonNull private final TimeRange timeRange;
+	@NonNull final KPIDataContext context;
 
 	@Builder
 	private SQLKPIDataLoader(
 			@NonNull final KPI kpi,
-			@NonNull final TimeRange timeRange)
+			@NonNull final TimeRange timeRange,
+			@NonNull final KPIDataContext context)
 	{
 		this.kpi = kpi;
-		this.sqlDataSourceDescriptor = kpi.getSqlDatasource();
 		this.timeRange = timeRange;
+		this.context = context;
 	}
 
 	public KPIDataResult execute()
@@ -78,6 +83,11 @@ public class SQLKPIDataLoader
 				.put("MainToMillis", DB.TO_DATE(data.getRange().getTo()))
 				.put("FromMillis", DB.TO_DATE(timeRange.getFrom()))
 				.put("ToMillis", DB.TO_DATE(timeRange.getTo()))
+				.put("AD_User_ID", UserId.toRepoId(context.getUserId()))
+				.put("AD_Role_ID", RoleId.toRepoId(context.getRoleId()))
+				.put("AD_Client_ID", ClientId.toRepoId(context.getClientId()))
+				.put("AD_Org_ID", OrgId.toRepoId(context.getOrgId()))
+				.put("#Date", DB.TO_DATE(SystemTime.asZonedDateTime()))
 				.build()
 				// Fallback to user context
 				.andComposeWith(Evaluatees.ofCtx(Env.getCtx()));

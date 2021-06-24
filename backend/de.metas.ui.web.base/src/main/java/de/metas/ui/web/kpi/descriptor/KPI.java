@@ -39,10 +39,12 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.CtxName;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -173,5 +175,21 @@ public class KPI
 	public boolean hasCompareOffset()
 	{
 		return compareOffset != null;
+	}
+
+	public Set<CtxName> getRequiredContextParameters()
+	{
+		if (elasticsearchDatasource != null)
+		{
+			return elasticsearchDatasource.getRequiredContextParameters();
+		}
+		else if (sqlDatasource != null)
+		{
+			return sqlDatasource.getRequiredContextParameters();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown datasource type: " + datasourceType);
+		}
 	}
 }

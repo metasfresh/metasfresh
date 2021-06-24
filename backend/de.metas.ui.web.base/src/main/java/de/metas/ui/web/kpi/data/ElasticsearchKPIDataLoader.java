@@ -65,7 +65,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.function.BiFunction;
 
-public class ElasticsearchKPIDataLoader
+class ElasticsearchKPIDataLoader
 {
 	public static ElasticsearchKPIDataLoader newInstance(
 			@NonNull final RestHighLevelClient elasticsearchClient,

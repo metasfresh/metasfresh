@@ -61,6 +61,11 @@ public class UserDashboardDataService
 				.build();
 	}
 
+	public Optional<UserDashboardId> getUserDashboardId(@NonNull final UserDashboardKey userDashboardKey)
+	{
+		return userDashboardRepository.getUserDashboardId(userDashboardKey);
+	}
+
 	public Optional<UserDashboardDataProvider> getData(@NonNull final UserDashboardKey userDashboardKey)
 	{
 		return userDashboardRepository.getUserDashboardId(userDashboardKey)

@@ -12,6 +12,7 @@ import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.login.exceptions.AlreadyLoggedInException;
 import de.metas.ui.web.login.exceptions.NotLoggedInAsSysAdminException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
+import de.metas.ui.web.session.json.WebuiSessionId;
 import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
@@ -177,7 +178,7 @@ public class UserSession
 		return _data;
 	}
 
-	public String getSessionId()
+	public WebuiSessionId getSessionId()
 	{
 		return getData().getSessionId();
 	}

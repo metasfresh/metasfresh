@@ -36,10 +36,13 @@ import de.metas.ui.web.dashboard.json.JsonKPIDataResult;
 import de.metas.ui.web.dashboard.json.KPIJsonOptions;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardChangedEventsList;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardItemDataChangedEvent;
+import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.websocket.WebSocketProducer;
 import de.metas.ui.web.websocket.WebsocketSubscriptionId;
+import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.util.lang.SynchronizedMutable;
@@ -56,19 +59,30 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 	private static final Logger logger = LogManager.getLogger(UserDashboardWebsocketProducer.class);
 	private final UserDashboardDataService dashboardDataService;
 
+	@Getter
+	@ToString.Include
+	private final WebsocketTopicName websocketTopicName;
+
+	@Getter
 	@ToString.Include
 	private final UserDashboardId userDashboardId;
+
+	@ToString.Include
+	private final KPIDataContext kpiDataContext;
 
 	private final SynchronizedMutable<Result> lastResultHolder = SynchronizedMutable.of(null);
 
 	@Builder
 	private UserDashboardWebsocketProducer(
 			@NonNull final UserDashboardDataService dashboardDataService,
-			@NonNull final UserDashboardId userDashboardId)
+			@NonNull final WebsocketTopicName websocketTopicName,
+			@NonNull final UserDashboardId userDashboardId,
+			@NonNull final KPIDataContext kpiDataContext)
 	{
 		this.dashboardDataService = dashboardDataService;
-
+		this.websocketTopicName = websocketTopicName;
 		this.userDashboardId = userDashboardId;
+		this.kpiDataContext = kpiDataContext;
 	}
 
 	@Override
@@ -90,9 +104,9 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 		logger.trace("{}.produceEvents: Old Result: {}", this, oldResult);
 		logger.trace("{}.produceEvents: Returning changes from old version: {}", this, events);
 
-		if(events.isEmpty())
+		if (events.isEmpty())
 		{
-			return  ImmutableList.of();
+			return ImmutableList.of();
 		}
 		else
 		{
@@ -123,7 +137,9 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 	{
 		final UserDashboardDataResponse data = dashboardDataService
 				.getData(userDashboardId)
-				.getAllItems(UserDashboardDataRequest.NOW);
+				.getAllItems(UserDashboardDataRequest.builder()
+						.context(kpiDataContext)
+						.build());
 
 		return Result.ofCollection(data.getItems());
 	}

@@ -80,13 +80,16 @@ public class KPIDataProvider
 		return cacheValue.getData();
 	}
 
-	private static KPIDataCacheKey extractCacheKey(@NonNull final KPIDataRequest request)
+	private KPIDataCacheKey extractCacheKey(@NonNull final KPIDataRequest request)
 	{
+		final KPI kpi = kpiRepository.getKPI(request.getKpiId());
+		final KPIDataContext contextReduced = request.getContext()
+				.retainOnlyRequiredParameters(kpi.getRequiredContextParameters());
+
 		return KPIDataCacheKey.builder()
 				.kpiId(request.getKpiId())
 				.timeRangeDefaults(request.getTimeRangeDefaults())
-				.from(request.getFrom())
-				.to(request.getTo())
+				.context(contextReduced)
 				.build();
 	}
 
@@ -116,8 +119,9 @@ public class KPIDataProvider
 
 	private KPIDataCacheValue computeCacheValue(@NonNull final KPIDataCacheKey cacheKey)
 	{
+		final KPIDataContext context = cacheKey.getContext();
 		final KPITimeRangeDefaults timeRangeDefaults = cacheKey.getTimeRangeDefaults();
-		final TimeRange timeRange = timeRangeDefaults.createTimeRange(cacheKey.getFrom(), cacheKey.getTo());
+		final TimeRange timeRange = timeRangeDefaults.createTimeRange(context.getFrom(), context.getTo());
 		final KPI kpi = kpiRepository.getKPI(cacheKey.getKpiId());
 
 		final KPIDatasourceType dataSourceType = kpi.getDatasourceType();
@@ -133,6 +137,7 @@ public class KPIDataProvider
 			data = SQLKPIDataLoader.builder()
 					.kpi(kpi)
 					.timeRange(timeRange)
+					.context(context)
 					.build()
 					.execute();
 		}
@@ -169,8 +174,7 @@ public class KPIDataProvider
 	{
 		@NonNull KPIId kpiId;
 		@NonNull KPITimeRangeDefaults timeRangeDefaults;
-		@Nullable Instant from;
-		@Nullable Instant to;
+		@NonNull KPIDataContext context;
 	}
 
 	@Value

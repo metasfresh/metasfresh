@@ -10,6 +10,7 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.kpi.data.KPIDataProvider;
 import de.metas.ui.web.kpi.data.KPIDataRequest;
 import de.metas.ui.web.kpi.data.KPIDataResult;
@@ -81,8 +82,11 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 				.getKPIData(KPIDataRequest.builder()
 						.kpiId(kpiId)
 						.timeRangeDefaults(kpi.getTimeRangeDefaults())
-						.from(p_DateFrom)
-						.to(p_DateTo)
+						.context(KPIDataContext.ofEnvProperties(getCtx())
+								.toBuilder()
+								.from(p_DateFrom)
+								.to(p_DateTo)
+								.build())
 						.build());
 
 		final String jsonData = jsonObjectMapper.writeValueAsString(kpiData);

@@ -13,10 +13,13 @@ import de.metas.ui.web.dashboard.json.JsonKPI;
 import de.metas.ui.web.dashboard.json.JsonKPIDataResult;
 import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
 import de.metas.ui.web.dashboard.json.KPIJsonOptions;
+import de.metas.ui.web.dashboard.websocket.UserDashboardWebsocketProducerFactory;
 import de.metas.ui.web.dashboard.websocket.UserDashboardWebsocketSender;
+import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.kpi.data.KPIDataResult;
 import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.websocket.WebSocketProducersRegistry;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
 import de.metas.util.Services;
@@ -78,12 +81,13 @@ public class DashboardRestController
 			@NonNull final UserSession userSession,
 			@NonNull final UserDashboardRepository dashboardRepo,
 			@NonNull final UserDashboardDataService dashboardDataService,
+			@NonNull final WebSocketProducersRegistry websocketProducersRegistry,
 			@NonNull final WebsocketSender websocketSender)
 	{
 		this.userSession = userSession;
 		this.dashboardRepo = dashboardRepo;
 		this.dashboardDataService = dashboardDataService;
-		this.websocketSender = new UserDashboardWebsocketSender(websocketSender);
+		this.websocketSender = new UserDashboardWebsocketSender(websocketSender, websocketProducersRegistry);
 	}
 
 	private boolean isElasticSearchEnabled()
@@ -130,10 +134,14 @@ public class DashboardRestController
 		}
 
 		final UserDashboard dashboard = optionalDashboard.get();
+		final KPIDataContext kpiDataContext = KPIDataContext.ofUserSession(userSession);
 
 		final UserDashboardDataResponse data = dashboardDataService
 				.getData(dashboard.getId())
-				.getAllItems(UserDashboardDataRequest.NOW.withWidgetType(widgetType));
+				.getAllItems(UserDashboardDataRequest.builder()
+						.widgetType(widgetType)
+						.context(kpiDataContext)
+						.build());
 
 		return toJSONDashboard(
 				dashboard,
@@ -151,7 +159,7 @@ public class DashboardRestController
 	{
 		return JSONDashboard.builder()
 				.items(toJSONDashboardItemsNoFail(userDashboard.getItems(widgetType), data, jsonOpts))
-				.websocketEndpoint(userDashboard.getWebsocketEndpoint().getAsString())
+				.websocketEndpoint(UserDashboardWebsocketProducerFactory.createWebsocketTopicName(userSession.getSessionId()).getAsString())
 				.build();
 	}
 
@@ -209,7 +217,7 @@ public class DashboardRestController
 		{
 			data = dashboardDataService.getKPIData(kpi.getId());
 		}
-		catch(final Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed fetching sample data for {}", kpi, ex);
 		}
@@ -296,8 +304,10 @@ public class DashboardRestController
 				.getItemData(UserDashboardItemDataRequest.builder()
 						.widgetType(widgetType)
 						.itemId(itemId)
-						.from(from)
-						.to(to)
+						.context(KPIDataContext.builderFromUserSession(userSession)
+								.from(from)
+								.to(to)
+								.build())
 						.maxStaleAccepted(Duration.ofSeconds(2))
 						.build());
 

@@ -30,6 +30,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.WebuiError;
 import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.kpi.data.KPIDataProvider;
 import de.metas.ui.web.kpi.data.KPIDataRequest;
 import de.metas.ui.web.kpi.data.KPIDataResult;
@@ -40,9 +41,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -72,8 +71,7 @@ public class UserDashboardDataProvider
 
 	public UserDashboardDataResponse getAllItems(@NonNull final UserDashboardDataRequest request)
 	{
-		final Instant from = request.getFrom();
-		final Instant to = request.getTo();
+		final KPIDataContext context = request.getContext();
 		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
 		final List<DashboardWidgetType> widgetTypes = request.getWidgetType() != null
 				? ImmutableList.of(request.getWidgetType())
@@ -85,7 +83,7 @@ public class UserDashboardDataProvider
 		{
 			for (final UserDashboardItem dashboardItem : dashboard.getItems(widgetType))
 			{
-				final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, from, to, maxStaleAccepted);
+				final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, context, maxStaleAccepted);
 				itemDataById.put(dashboardItem.getId(), itemData);
 			}
 		}
@@ -96,17 +94,15 @@ public class UserDashboardDataProvider
 	public UserDashboardItemDataResponse getItemData(@NonNull final UserDashboardItemDataRequest request)
 	{
 		final UserDashboard dashboard = getDashboard();
-		final Instant from = request.getFrom();
-		final Instant to = request.getTo();
-		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
 		final UserDashboardItem dashboardItem = dashboard.getItemById(request.getWidgetType(), request.getItemId());
-		return getItemData(dashboardItem, from, to, maxStaleAccepted);
+		final KPIDataContext context = request.getContext();
+		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
+		return getItemData(dashboardItem, context, maxStaleAccepted);
 	}
 
 	private UserDashboardItemDataResponse getItemData(
 			@NonNull final UserDashboardItem item,
-			@Nullable final Instant from,
-			@Nullable final Instant to,
+			@NonNull final KPIDataContext context,
 			@NonNull final Duration maxStaleAccepted)
 	{
 		final KPIId kpiId = item.getKPIId();
@@ -115,8 +111,7 @@ public class UserDashboardDataProvider
 		final KPIDataRequest request = KPIDataRequest.builder()
 				.kpiId(kpiId)
 				.timeRangeDefaults(timeRangeDefaults)
-				.from(from)
-				.to(to)
+				.context(context)
 				.maxStaleAccepted(maxStaleAccepted)
 				.build();
 

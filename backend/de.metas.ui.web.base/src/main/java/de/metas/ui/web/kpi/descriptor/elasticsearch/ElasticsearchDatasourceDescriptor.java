@@ -33,9 +33,11 @@ import lombok.Value;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.CtxName;
 import org.elasticsearch.action.search.SearchType;
 
 import java.util.List;
+import java.util.Set;
 
 @Value
 public class ElasticsearchDatasourceDescriptor
@@ -72,5 +74,10 @@ public class ElasticsearchDatasourceDescriptor
 			throw new AdempiereException("Field `" + fieldName + "` was not found in " + this);
 		}
 		return field;
+	}
+
+	public Set<CtxName> getRequiredContextParameters()
+	{
+		return esQuery.getParameters();
 	}
 }

@@ -34,8 +34,10 @@ import lombok.Value;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.CtxName;
 
 import java.util.List;
+import java.util.Set;
 
 @Value
 public class SQLDatasourceDescriptor
@@ -43,7 +45,7 @@ public class SQLDatasourceDescriptor
 	@Getter(AccessLevel.NONE)
 	ImmutableMap<String, SQLDatasourceFieldDescriptor> fields;
 
-	IStringExpression sqlSelect;
+	@NonNull IStringExpression sqlSelect;
 
 	@Builder
 	private SQLDatasourceDescriptor(
@@ -95,4 +97,8 @@ public class SQLDatasourceDescriptor
 						+ "\n" + sqlFrom);
 	}
 
+	public Set<CtxName> getRequiredContextParameters()
+	{
+		return sqlSelect.getParameters();
+	}
 }
