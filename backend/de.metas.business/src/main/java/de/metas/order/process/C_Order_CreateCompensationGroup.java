@@ -1,10 +1,6 @@
 package de.metas.order.process;
 
-import lombok.NonNull;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-
+import com.google.common.collect.ImmutableList;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.process.IProcessPreconditionsContext;
@@ -13,6 +9,10 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 
 /*
  * #%L
@@ -80,6 +80,7 @@ public class C_Order_CreateCompensationGroup extends OrderCompensationGroupProce
 				.name(groupNameEffective)
 				.productCategoryId(productCategory != null ? ProductCategoryId.ofRepoId(productCategory.getM_Product_Category_ID()) : null)
 				.compensationLine(GroupTemplateCompensationLine.ofProductId(ProductId.ofRepoId(compensationProductId)))
+				.regularLinesToAdd(ImmutableList.of())
 				.build();
 	}
 }
