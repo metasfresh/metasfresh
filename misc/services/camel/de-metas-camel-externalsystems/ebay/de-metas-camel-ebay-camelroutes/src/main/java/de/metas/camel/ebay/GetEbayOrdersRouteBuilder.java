@@ -24,6 +24,9 @@ package de.metas.camel.ebay;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 import org.apache.camel.LoggingLevel;
@@ -36,7 +39,7 @@ import de.metas.camel.ebay.processor.order.CreateOrderLineCandidateUpsertReqForE
 import de.metas.camel.ebay.processor.order.GetEbayOrdersProcessor;
 import de.metas.camel.ebay.processor.order.OrderFilterProcessor;
 import de.metas.camel.ebay.processor.product.CreateProductUpsertReqProcessor;
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.ebay.processor.product.price.CreateProductPriceUpsertReqProcessor;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 
@@ -55,11 +58,12 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 	public static final String PROCESS_ORDERS_ROUTE_ID = "Ebay-processOrders";
 	public static final String PROCESS_ORDER_BPARTNER_ROUTE_ID = "Ebay-processOrderBPartner";
 	public static final String PROCESS_ORDER_PRODUCTS_ROUTE_ID = "Ebay-processOrderProducts";
+	public static final String PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID = "Ebay-processOrderProductsPrices";
 	public static final String PROCESS_ORDER_OLC_ROUTE_ID = "Ebay-processOrderOLC";
 	public static final String FILTER_ORDER_ROUTE_ID = "Ebay-filterOrder";
-	
+
 	private final ProcessLogger processLogger;
-	
+
 	public GetEbayOrdersRouteBuilder(final ProcessLogger processLogger)
 	{
 		this.processLogger = processLogger;
@@ -101,17 +105,22 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Products: ${body}")
 						.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
 						
+							// and their prices.
+							.process(new CreateProductPriceUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID)
+							.split(body())
+								.to(direct(MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI))
+						
 						//b) create bparners and put them in bparner import pipeline.
 						.process(new CreateBPartnerUpsertReqForEbayOrderProcessor()).id(PROCESS_ORDER_BPARTNER_ROUTE_ID)
 						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store business partners!")
-						.to( "{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}" )
+						.to( "{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}" )
 					
 						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
 						
 						//c) create order line candidates.
 						.process(new CreateOrderLineCandidateUpsertReqForEbayOrderProcessor()).id(PROCESS_ORDER_OLC_ROUTE_ID)
 						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to store order candidates!")
-						.to( direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID) )
+						.to( direct(MF_PUSH_OL_CANDIDATES_ROUTE_ID) )
 						
 					.end()
 			.endDoTry()

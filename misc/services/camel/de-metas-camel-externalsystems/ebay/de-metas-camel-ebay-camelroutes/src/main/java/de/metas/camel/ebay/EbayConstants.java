@@ -24,6 +24,8 @@ package de.metas.camel.ebay;
 
 import java.math.BigDecimal;
 
+import de.metas.common.pricing.v2.productprice.TaxCategory;
+
 public interface EbayConstants
 {
 
@@ -50,6 +52,11 @@ public interface EbayConstants
 	String DEFAULT_DELIVERY_VIA_RULE = "D"; // FIXME: magic name
 	BigDecimal DEFAULT_ORDER_LINE_DISCOUNT = BigDecimal.ZERO;
 	String DEFAULT_PRODUCT_UOM = "PCE";
+	
+	// For price upserts
+	TaxCategory DEFAULT_TAX_CATEGORY = TaxCategory.NORMAL;
+	String DEFAULT_PRICELIST_ID = "-1"; //TBD
+	
 
 	public enum OrderFulfillmentStatus
 	{
