@@ -22,6 +22,7 @@ package de.metas.tax.api;
  * #L%
  */
 
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -52,10 +53,10 @@ public interface ITaxBL extends ISingletonService
 			@Nullable TaxCategoryId taxCategoryId,
 			int productId,
 			Timestamp shipDate,
-			OrgId orgId,
+			@NonNull OrgId orgId,
 			@Nullable WarehouseId warehouseId,
 			int shipC_BPartner_Location_ID,
-			boolean isSOTrx);
+			@NonNull SOTrx soTrx);
 
 	/**
 	 * Calculate Tax - no rounding

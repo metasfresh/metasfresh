@@ -236,7 +236,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 				.bpartnerId(bPartnerId)
 				.bPartnerLocationId(commissionToLocationId)
 				.dateOfInterest(icRecord.getDeliveryDate())
-				.isSoTrx(false)
+				.soTrx(SOTrx.PURCHASE)
 				.taxCategoryId(pricingResult.getTaxCategoryId())
 				.build());
 		if (tax == null)

@@ -254,8 +254,10 @@ public class TaxDAO implements ITaxDAO
 		final Timestamp dateOfInterest = taxQuery.getDateOfInterest();
 		final OrgId orgId = taxQuery.getOrgId();
 
-		if (bpartnerId != null && retrieveIsTaxExemptSmallBusiness(bpartnerId, dateOfInterest))
+		if (bpartnerId != null && retrieveIsTaxExemptSmallBusiness(bpartnerId, dateOfInterest) && taxQuery.getSoTrx().isPurchase())
 		{
+			Loggables.withLogger(logger, Level.INFO).addLog("SOTrx=N and C_BPartner_ID={} is small business; => return extempt-tax", bpartnerId.getRepoId());
+
 			final TaxId exemptTax = retrieveExemptTax(orgId);
 			return getTaxById(exemptTax);
 		}
@@ -362,7 +364,7 @@ public class TaxDAO implements ITaxDAO
 
 		loggable.addLog("Effective AD_Org_ID={} (or any)", orgId.getRepoId());
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
-	
+
 		final Timestamp dateOfInterest = taxQuery.getDateOfInterest();
 		queryBuilder.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, dateOfInterest);
 		queryBuilder.addCompareFilter(I_C_Tax.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, dateOfInterest);
@@ -375,18 +377,15 @@ public class TaxDAO implements ITaxDAO
 			loggable.addLog("C_TaxCategory_ID={}", taxCategoryId.getRepoId());
 		}
 
-		if (taxQuery.getIsSoTrx() != null)
+		if (taxQuery.getSoTrx().isSales())
 		{
-			if (taxQuery.getIsSoTrx())
-			{
-				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_SalesTax);
-				loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_SalesTax);
-			}
-			else
-			{
-				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
-				loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
-			}
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_SalesTax);
+			loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_SalesTax);
+		}
+		else
+		{
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_SOPOType, X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
+			loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
 		}
 
 		final BPartnerLocationId bPartnerLocationId = taxQuery.getBPartnerLocationId();

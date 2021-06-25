@@ -28,6 +28,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -685,7 +686,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				.bPartnerLocationId(taxBPartnerLocationId)
 				.dateOfInterest(taxDate)
 				.taxCategoryId(taxCategoryId)
-				.isSoTrx(isSOTrx)
+				.soTrx(SOTrx.ofBoolean(isSOTrx))
 				.build());
 
 		if (tax == null)

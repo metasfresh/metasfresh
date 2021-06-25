@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryAreaBL;
 import de.metas.location.ICountryDAO;
@@ -78,7 +79,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
 			final int shipC_BPartner_Location_ID,
-			final boolean isSOTrx)
+			@NonNull final SOTrx soTrx)
 	{
 		if (taxCategoryId != null)
 		{
@@ -111,7 +112,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					.dateOfInterest(shipDate)
 					.taxCategoryId(taxCategoryId)
 					.warehouseId(warehouseId)
-					.isSoTrx(isSOTrx)
+					.soTrx(soTrx)
 					.build());
 
 			if (tax != null)
@@ -131,7 +132,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				orgId,
 				warehouseId,
 				shipC_BPartner_Location_ID,
-				isSOTrx));
+				soTrx.isSales()));
 		log.warn("getTax - error: ", ex);
 
 		// 07814

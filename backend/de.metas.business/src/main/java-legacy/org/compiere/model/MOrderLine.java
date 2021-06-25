@@ -20,6 +20,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
@@ -337,7 +338,7 @@ public class MOrderLine extends X_C_OrderLine
 				.warehouseId(warehouseId)
 				.dateOfInterest(taxDate)
 				.taxCategoryId(taxCategoryId)
-				.isSoTrx(isSOTrx)
+				.soTrx(SOTrx.ofBoolean(isSOTrx))
 				.build());
 
 		if (tax == null)

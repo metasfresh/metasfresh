@@ -195,7 +195,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 					.bPartnerLocationId(partnerLocationId)
 					.dateOfInterest(taxDate)
 					.taxCategoryId(taxCategoryId)
-					.isSoTrx(isSOTrx)
+					.soTrx(SOTrx.ofBoolean(isSOTrx))
 					.build());
 
 			if (tax == null)

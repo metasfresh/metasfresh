@@ -24,12 +24,12 @@ package de.metas.tax.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.Env;
 
@@ -59,8 +59,8 @@ public class TaxQuery
 	@Nullable
 	BPartnerLocationId bPartnerLocationId;
 
-	@Nullable
-	Boolean isSoTrx;
+	@NonNull
+	SOTrx soTrx;
 
 	@Nullable
 	TaxCategoryId taxCategoryId;
@@ -72,7 +72,7 @@ public class TaxQuery
 			@Nullable final Timestamp dateOfInterest,
 			@Nullable final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bPartnerLocationId,
-			@Nullable final Boolean isSoTrx,
+			@NonNull final SOTrx soTrx,
 			@Nullable final TaxCategoryId taxCategoryId)
 	{
 		this.orgId = orgId;
@@ -88,7 +88,7 @@ public class TaxQuery
 		{
 			this.bpartnerId = bpartnerId;
 		}
-		this.isSoTrx = isSoTrx;
+		this.soTrx = soTrx;
 		this.taxCategoryId = taxCategoryId;
 	}
 }

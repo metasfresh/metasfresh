@@ -35,6 +35,7 @@ import de.metas.invoice.InvoiceVerificationSetLineId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceVerificationBL;
 import de.metas.invoice.service.InvoiceVerificationRunStatus;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -148,7 +149,7 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(bPartnerLocationId)
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(line.getC_TaxCategory_ID()))
-				.isSoTrx(invoice.isSOTrx())
+				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
 				.dateOfInterest(CoalesceUtil.coalesce(dateOfInterestOverride, setLine.getRelevantDate()))
 				.build();
 
