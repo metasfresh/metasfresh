@@ -53,17 +53,11 @@ public class DefaultGenericZoomIntoTableInfoRepository implements GenericZoomInt
 			throw new AdempiereException("No table info found for "+tableName);
 		}
 
-		final String keyColumnName = poInfo.getKeyColumnName();
-		if (keyColumnName == null)
-		{
-			throw new AdempiereException("Table without single key column does not support zoom into: " + tableName);
-		}
-
 		final List<GenericZoomIntoTableWindow> windows = retrieveTableWindows(tableName, ignoreExcludeFromZoomTargetsFlag);
 
 		final GenericZoomIntoTableInfo.GenericZoomIntoTableInfoBuilder builder = GenericZoomIntoTableInfo.builder()
 				.tableName(tableName)
-				.keyColumnName(keyColumnName)
+				.keyColumnNames(poInfo.getKeyColumnNames())
 				.hasIsSOTrxColumn(poInfo.hasColumnName(COLUMNNAME_IsSOTrx))
 				.windows(windows);
 
