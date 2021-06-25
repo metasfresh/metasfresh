@@ -55,6 +55,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
@@ -97,6 +98,13 @@ public class ApiAuditService
 	private static final AdMessageKey MSG_API_INVOCATION_FAILED =
 			AdMessageKey.of("de.metas.util.web.audit.invocation_failed");
 
+	private static final String CFG_INTERNAL_HOST_NAME = "de.metas.util.web.audit.AppServerInternalHostName";
+
+	/**
+	 * this default works if you run both app and webapi locally. In our usual stack, it should be set to {@code "app"}.
+	 */
+	private static final String CFG_INTERNAL_HOST_NAME_DEFAULT = "localhost";
+
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private final ApiAuditConfigRepository apiAuditConfigRepository;
@@ -113,6 +121,7 @@ public class ApiAuditService
 	 * Thx to https://www.baeldung.com/spring-boot-running-port#1-using-servletwebserverapplicationcontext !
 	 */
 	private final ServletWebServerApplicationContext servletWebServerApplicationContext;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public ApiAuditService(
 			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository,
@@ -256,10 +265,11 @@ public class ApiAuditService
 
 		final int ourPort = servletWebServerApplicationContext.getWebServer().getPort();
 
+		final String hostName = computeInternalHostName(apiRequestAudit);
 		final String[] split = apiRequestAudit.getPath().split("\\?");
 		final String queryString = split.length > 1 ? "?" + split[1] : "";
 
-		final URI uri = URI.create("http://localhost:" + ourPort + apiRequestAudit.getRequestURI() + queryString);
+		final URI uri = URI.create("http://" + hostName + ":" + ourPort + apiRequestAudit.getRequestURI() + queryString);
 
 		final WebClient.RequestBodySpec bodySpec = uriSpec.uri(uri);
 
@@ -276,6 +286,20 @@ public class ApiAuditService
 				.defaultIfEmpty(ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
 
 				.block();
+	}
+
+	private String computeInternalHostName(final ApiRequestAudit apiRequestAudit)
+	{
+		final String hostName;
+		if (apiRequestAudit.getPath().startsWith("http://localhost"))
+		{
+			hostName = "localhost";
+		}
+		else
+		{
+			hostName = sysConfigBL.getValue(CFG_INTERNAL_HOST_NAME, CFG_INTERNAL_HOST_NAME_DEFAULT);
+		}
+		return hostName;
 	}
 
 	public void logResponse(
