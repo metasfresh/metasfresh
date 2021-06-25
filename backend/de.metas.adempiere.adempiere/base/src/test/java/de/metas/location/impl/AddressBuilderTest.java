@@ -12,6 +12,7 @@ import de.metas.user.UserRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
@@ -31,6 +32,7 @@ import javax.annotation.Nullable;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AddressBuilderTest
 {
@@ -724,6 +726,62 @@ public class AddressBuilderTest
 				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
 	}
 
+	
+	/**
+	 * check if the tokens BP_Name and BP_GR are taken in consideration
+	 */
+	@Test
+	public void test_buildBPartnerAddressStringBPartnerBlock_0120()
+	{
+
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
+				prepareCountry("Germany", "@BP_GR@ @BP_Name@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+		
+		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
+		final GreetingId greetingId = prepareGreeting("Frau");
+		
+		final I_C_BPartner bPartner = BPartnerBuilder()
+				.name("Name1")
+				.name2("Name2")
+				.greetingId(greetingId)
+				.isCompany(false)
+				.build();
+		
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greetingId);
+
+		assertEquals(
+				"LOCAL:  \nFrau\nName1\naddr2\naddr1\n121212 City1\nGermany",
+				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
+	}
+
+	
+	
+	/**
+	 * check if the tokens BP_Name and BP can not be used together
+	 */
+	@Test
+	public void test_buildBPartnerAddressStringBPartnerBlock_0130()
+	{
+
+		final I_C_Location location = prepareLocation("addr1", "addr2", null, null, "City1", "Region1", "121212", "",
+				prepareCountry("Germany", "@BP@ @BP_Name@ @A2@ @A1@ @A3@ (Postfach @PB@) @P@ @C@ @CO@"));
+		
+		final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
+		final GreetingId greetingId = prepareGreeting("Frau");
+		
+		final I_C_BPartner bPartner = BPartnerBuilder()
+				.name("Name1")
+				.name2("Name2")
+				.greetingId(greetingId)
+				.isCompany(false)
+				.build();
+		
+		final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greetingId);
+
+		assertThrows(AdempiereException.class,  () ->  bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
+	}
+
+	
 	// prepraring methods
 	private I_C_Country prepareCountry(final String countryName, final String displaySequence)
 	{
@@ -798,7 +856,7 @@ public class AddressBuilderTest
 	}
 
 	@Builder(builderMethodName = "BPartnerBuilder")
-	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language)
+	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language, final GreetingId greetingId)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		bpartner.setName(name);
@@ -806,6 +864,7 @@ public class AddressBuilderTest
 		bpartner.setAD_Org_ID(orgId.getRepoId());
 		bpartner.setIsCompany(isCompany);
 		bpartner.setAD_Language(AD_Language);
+		bpartner.setC_Greeting_ID(greetingId != null ? greetingId.getRepoId() :-1);
 		InterfaceWrapperHelper.save(bpartner);
 
 		return bpartner;
