@@ -58,6 +58,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
+import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -107,16 +108,25 @@ public class ApiAuditService
 	private final ConcurrentHashMap<UserId, HttpCallScheduler> callerId2Scheduler;
 	private final ObjectMapper objectMapper;
 
+	/**
+	 * Required by {@link #executeHttpCall(ApiRequestAudit)} to get our own port at runtime. That also works with random ports.
+	 * Thx to https://www.baeldung.com/spring-boot-running-port#1-using-servletwebserverapplicationcontext !
+	 */
+	private final ServletWebServerApplicationContext servletWebServerApplicationContext;
+
 	public ApiAuditService(
 			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository,
 			@NonNull final ApiRequestAuditRepository apiRequestAuditRepository,
 			@NonNull final ApiResponseAuditRepository apiResponseAuditRepository,
-			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO)
+			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO,
+			@NonNull final ServletWebServerApplicationContext servletWebServerApplicationContext)
 	{
 		this.apiAuditConfigRepository = apiAuditConfigRepository;
 		this.apiRequestAuditRepository = apiRequestAuditRepository;
 		this.apiResponseAuditRepository = apiResponseAuditRepository;
 		this.apiAuditRequestLogDAO = apiAuditRequestLogDAO;
+		this.servletWebServerApplicationContext = servletWebServerApplicationContext;
+
 		this.webClient = WebClient.create();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
 		this.objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
@@ -176,7 +186,7 @@ public class ApiAuditService
 
 		final ApiAuditLoggable apiAuditLoggable = createLogger(requestAudit.getIdNotNull(), requestAudit.getUserId());
 
-		try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(apiAuditLoggable))
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
 		{
 			final CompletableFuture<ApiResponse> actualRestApiResponseCF = new CompletableFuture<>();
 
@@ -192,13 +202,13 @@ public class ApiAuditService
 
 			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(requestAudit);
 
-			final ScheduleRequest scheduleRequest = new ScheduleRequest(actualRestApiResponseCF, callEndpointSupplier);
+			final ScheduledRequest scheduledRequest = new ScheduledRequest(actualRestApiResponseCF, callEndpointSupplier);
 
 			final UserId callerUserId = Env.getLoggedUserId();
 
 			final HttpCallScheduler httpCallScheduler = callerId2Scheduler.computeIfAbsent(callerUserId, (userId) -> new HttpCallScheduler());
 
-			httpCallScheduler.schedule(scheduleRequest);
+			httpCallScheduler.schedule(scheduledRequest);
 
 			handleSuccessfulResponse(apiAuditConfig, requestAudit, whenCompleteFuture, response);
 		}
@@ -213,6 +223,14 @@ public class ApiAuditService
 		}
 	}
 
+	/**
+	 * Executes the request that is wrapped in the given {@code apiRequestAudit} using the spring {@link WebClient}.
+	 * <p>
+	 * Note that it makes the call against {@code http://localhost + <our-current-port> + }{@link ApiRequestAudit#getRequestURI()}
+	 * and not to the URL that we are called with from the outside (i.e. {@link ApiRequestAudit#getPath()}).
+	 * <p>
+	 * This is to avoid problems with our reverse proxy that would otherwise be invoked once again, but with an already rewritten URL.
+	 */
 	@NonNull
 	public ApiResponse executeHttpCall(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
@@ -234,10 +252,14 @@ public class ApiAuditService
 
 		httpHeaders.add(API_FILTER_REQUEST_ID_HEADER, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
 
-		httpHeaders
-				.forEach((key, value) -> uriSpec.header(key, value.toArray(new String[0])));
+		httpHeaders.forEach((key, value) -> uriSpec.header(key, value.toArray(new String[0])));
 
-		final URI uri = URI.create(apiRequestAudit.getPath());
+		final int ourPort = servletWebServerApplicationContext.getWebServer().getPort();
+
+		final String[] split = apiRequestAudit.getPath().split("\\?");
+		final String queryString = split.length > 1 ? "?" + split[1] : "";
+
+		final URI uri = URI.create("http://localhost:" + ourPort + apiRequestAudit.getRequestURI() + queryString);
 
 		final WebClient.RequestBodySpec bodySpec = uriSpec.uri(uri);
 
@@ -400,7 +422,7 @@ public class ApiAuditService
 			@Nullable final Throwable throwable,
 			@NonNull final FutureCompletionContext completionContext)
 	{
-		try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(completionContext.getApiAuditLoggable()))
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(completionContext.getApiAuditLoggable()))
 		{
 			if (apiResponse != null)
 			{
