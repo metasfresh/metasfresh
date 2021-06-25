@@ -63,7 +63,7 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			+ "WHERE p.Name ILIKE ? "
 			+ "OR p.Value ILIKE ? "
 			+ "OR l.City ILIKE ? )";
-	private static final AdMessageKey MSG_Caption = AdMessageKey.of("Filter");
+	private static final AdMessageKey MSG_Caption = AdMessageKey.of("Member Search");
 	public static final DocumentFilterDescriptor FILTER_DESCRIPTOR = DocumentFilterDescriptor.builder()
 			.setFilterId(FILTER_ID)
 			.setFrequentUsed(true)
