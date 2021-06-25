@@ -73,6 +73,8 @@ public class ArchiveRequest
 	String archiveName;
 	@Nullable
 	BPartnerId bpartnerId;
+	@Nullable
+	String documentNo;
 
 	@Nullable
 	Language language;
