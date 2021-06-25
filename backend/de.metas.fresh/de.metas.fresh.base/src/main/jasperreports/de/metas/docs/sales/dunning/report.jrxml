@@ -159,10 +159,10 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 	<summary>
 		<band height="310" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<subreport isUsingCache="true">
+			<subreport isUsingCache="false">
 				<reportElement key="subreport-3" mode="Transparent" x="0" y="105" width="595" height="200" uuid="134a28b0-5b42-49bf-a126-ddd31e35c2c0">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode})) && ("Y").equals($F{showesr_qr})
+					<printWhenExpression><![CDATA[("CH").equals($F{countrycode}) && ("Y").equals($F{showesr_qr})
 && ("N").equals($F{showqrbill})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="REPORT_MAX_COUNT">
@@ -185,16 +185,16 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_description_bottom.jasper"]]></subreportExpression>
 			</subreport>
-			<subreport isUsingCache="true">
+			<subreport isUsingCache="false">
 				<reportElement key="subreport-3" mode="Transparent" x="0" y="105" width="595" height="200" uuid="27a5dbcb-32f9-4dc8-9d9f-485e5811b7b5">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean(("CH").equals($F{countrycode})) && ("Y").equals($F{showesr_qr})
+					<printWhenExpression><![CDATA[("CH").equals($F{countrycode}) && ("Y").equals($F{showesr_qr})
 && ("Y").equals($F{showqrbill})]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="REPORT_MAX_COUNT">
 					<subreportParameterExpression><![CDATA[new Integer(1)]]></subreportParameterExpression>
 				</subreportParameter>
-				<subreportParameter name="RECORD_ID">
+				<subreportParameter name="C_DunningDoc_ID">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
