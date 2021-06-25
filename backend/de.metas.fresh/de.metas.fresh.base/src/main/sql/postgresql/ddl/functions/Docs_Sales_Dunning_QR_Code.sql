@@ -1,10 +1,3 @@
-select r.*, showQRBill, showESR_QR
-from report.Docs_Sales_Dunning_Report_Root(1000000, 'de_CH') as r
-         JOIN report.isShowQRBill(1000000, r.ad_org_id) showQRBill on 1 = 1
-         JOIN report.isShowESR_QR(1000000, r.ad_org_id) showESR_QR on 1 = 1
-;
-
-
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Dunning_QR_Code (IN p_C_DunningDoc_ID numeric);
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Dunning_QR_Code(IN p_C_DunningDoc_ID numeric)
     RETURNS TABLE
