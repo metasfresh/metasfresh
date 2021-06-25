@@ -24,7 +24,14 @@ package de.metas.ui.web.dashboard;
 
 import de.metas.cache.CCache;
 import de.metas.elasticsearch.IESSystem;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
+import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.data.KPIDataProvider;
+import de.metas.ui.web.kpi.data.KPIDataRequest;
+import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.kpi.descriptor.KPIId;
+import de.metas.ui.web.kpi.descriptor.KPIRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -55,6 +62,11 @@ public class UserDashboardDataService
 				.build();
 	}
 
+	public Optional<UserDashboardId> getUserDashboardId(@NonNull final UserDashboardKey userDashboardKey)
+	{
+		return userDashboardRepository.getUserDashboardId(userDashboardKey);
+	}
+
 	public Optional<UserDashboardDataProvider> getData(@NonNull final UserDashboardKey userDashboardKey)
 	{
 		return userDashboardRepository.getUserDashboardId(userDashboardKey)
@@ -75,7 +87,7 @@ public class UserDashboardDataService
 				.build();
 	}
 
-	public KPIDataResult getKPIData(@NonNull final KPIId kpiId)
+	public ExplainedOptional<KPIDataResult> getKPIData(@NonNull final KPIId kpiId)
 	{
 		return kpiDataProvider.getKPIData(KPIDataRequest.builder()
 				.kpiId(kpiId)

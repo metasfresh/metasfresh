@@ -23,7 +23,9 @@
 package de.metas.ui.web.dashboard.websocket;
 
 import de.metas.ui.web.dashboard.UserDashboardDataService;
-import de.metas.ui.web.dashboard.UserDashboardId;
+import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
+import de.metas.ui.web.kpi.data.KPIDataContext;
+import de.metas.ui.web.session.json.WebuiSessionId;
 import de.metas.ui.web.websocket.WebSocketProducerFactory;
 import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
@@ -37,37 +39,14 @@ import javax.annotation.Nullable;
 public class UserDashboardWebsocketProducerFactory implements WebSocketProducerFactory
 {
 	private final UserDashboardDataService dashboardDataService;
+	private final UserDashboardSessionContextHolder contextHolder;
 
 	public UserDashboardWebsocketProducerFactory(
-			@NonNull final UserDashboardDataService dashboardDataService)
+			@NonNull final UserDashboardDataService dashboardDataService,
+			@NonNull final UserDashboardSessionContextHolder contextHolder)
 	{
 		this.dashboardDataService = dashboardDataService;
-	}
-
-	public static WebsocketTopicName createWebsocketTopicName(@NonNull final UserDashboardId dashboardId)
-	{
-		return WebsocketTopicName.ofString(WebsocketTopicNames.TOPIC_Dashboard + "/" + dashboardId.getRepoId());
-	}
-
-	@Nullable
-	public static UserDashboardId extractUserDashboardId(@NonNull final WebsocketTopicName topicName)
-	{
-		final String topicNameString = topicName.getAsString();
-
-		if (topicNameString.startsWith(WebsocketTopicNames.TOPIC_Dashboard))
-		{
-			final String idAsString = topicNameString.substring(WebsocketTopicNames.TOPIC_Dashboard.length() + 1).trim();
-			if (idAsString.isEmpty())
-			{
-				return null;
-			}
-
-			return UserDashboardId.ofRepoId(Integer.parseInt(idAsString));
-		}
-		else
-		{
-			return null;
-		}
+		this.contextHolder = contextHolder;
 	}
 
 	@Override
@@ -79,15 +58,39 @@ public class UserDashboardWebsocketProducerFactory implements WebSocketProducerF
 	@Override
 	public UserDashboardWebsocketProducer createProducer(final WebsocketTopicName topicName)
 	{
-		final UserDashboardId userDashboardId = extractUserDashboardId(topicName);
-		if (userDashboardId == null)
+		final WebuiSessionId sessionId = extractSessionId(topicName);
+		if (sessionId == null)
 		{
 			throw new AdempiereException("Invalid websocket topic name: " + topicName);
 		}
 
+		final KPIDataContext kpiDataContext = contextHolder.getSessionContext(sessionId);
+
 		return UserDashboardWebsocketProducer.builder()
 				.dashboardDataService(dashboardDataService)
-				.userDashboardId(userDashboardId)
+				.websocketTopicName(topicName)
+				.kpiDataContext(kpiDataContext)
 				.build();
+	}
+
+	@Nullable
+	public static WebuiSessionId extractSessionId(@NonNull final WebsocketTopicName topicName)
+	{
+		final String topicNameString = topicName.getAsString();
+
+		if (topicNameString.startsWith(WebsocketTopicNames.TOPIC_Dashboard))
+		{
+			final String sessionId = topicNameString.substring(WebsocketTopicNames.TOPIC_Dashboard.length() + 1).trim();
+			return WebuiSessionId.ofNullableString(sessionId);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	public static WebsocketTopicName createWebsocketTopicName(@NonNull final WebuiSessionId sessionId)
+	{
+		return WebsocketTopicName.ofString(WebsocketTopicNames.TOPIC_Dashboard + "/" + sessionId.getAsString());
 	}
 }

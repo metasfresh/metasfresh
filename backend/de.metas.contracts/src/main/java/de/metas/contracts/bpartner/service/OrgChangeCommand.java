@@ -23,9 +23,9 @@
 package de.metas.contracts.bpartner.service;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
-import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -33,35 +33,68 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.CloneBPartnerRequest;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTerm;
+import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IContractChangeBL;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.contracts.bpartner.repository.OrgMappingRepository;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
+import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
+import de.metas.order.compensationGroup.GroupCategoryId;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.GroupTemplateRegularLine;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductAndCategoryId;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
+import de.metas.product.model.I_M_Product;
+import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestBL;
 import de.metas.request.api.IRequestTypeDAO;
 import de.metas.request.api.RequestCandidate;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_OrgChange_History;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_R_Request;
 import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -76,11 +109,15 @@ public class OrgChangeCommand
 	private final AdMessageKey MSG_OrgChangeSummary = AdMessageKey.of("R_Request_OrgChange_Summary");
 
 	@NonNull
-	private final OrgChangeRepository orgChangeRepo;
-	@NonNull
 	private final BPartnerCompositeRepository bpCompositeRepo;
 	@NonNull
 	private final OrgMappingRepository orgMappingRepo;
+	@NonNull
+	private final OrgChangeRepository orgChangeRepo;
+	@NonNull
+	private final OrgChangeHistoryRepository orgChangeHistoryRepo;
+	@NonNull
+	private final GroupTemplateRepository groupTemplateRepo;
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -88,6 +125,13 @@ public class OrgChangeCommand
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
 	private final IRequestBL requestBL = Services.get(IRequestBL.class);
 
@@ -96,75 +140,80 @@ public class OrgChangeCommand
 
 	@Builder
 	private OrgChangeCommand(
-			@NonNull final OrgChangeRepository orgChangeRepo,
-			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
-			@NonNull final OrgMappingRepository orgMappingRepo,
+			final @NonNull BPartnerCompositeRepository bpCompositeRepo,
+			final @NonNull OrgChangeRepository orgChangeRepo,
+			final @NonNull OrgChangeHistoryRepository orgChangeHistoryRepo,
+			final @NonNull OrgMappingRepository orgMappingRepo,
+			final @NonNull GroupTemplateRepository groupTemplateRepo,
 			//
-			@NonNull final OrgChangeRequest request)
+			final @NonNull OrgChangeRequest request)
 	{
-		this.orgChangeRepo = orgChangeRepo;
 		this.bpCompositeRepo = bpCompositeRepo;
 		this.orgMappingRepo = orgMappingRepo;
-
+		this.orgChangeRepo = orgChangeRepo;
+		this.orgChangeHistoryRepo = orgChangeHistoryRepo;
+		this.groupTemplateRepo = groupTemplateRepo;
 		this.request = request;
 	}
 
 	public void execute()
 	{
-		final OrgChangeBPartnerComposite orgChangeBPartnerComposite = orgChangeRepo.getByIdAndOrgChangeDate(
+		final OrgChangeBPartnerComposite bpartnerAndSubscriptions = orgChangeRepo.getByIdAndOrgChangeDate(
 				request.getBpartnerId(),
 				request.getStartDate());
 
-		final OrgMappingId orgMappingId = orgChangeBPartnerComposite.getBPartnerOrgMappingId();
+		final OrgMappingId orgMappingId = bpartnerAndSubscriptions.getBPartnerOrgMappingId();
 
-		final BPartnerId newBPartnerId = orgChangeRepo.getOrCreateCounterpartBPartner(request, orgMappingId);
+		final BPartnerId newBPartnerId = getOrCreateCounterpartBPartner(request, orgMappingId);
 
 		// gets the partner with all the active and inactive locations, users and bank accounts
 		BPartnerComposite destinationBPartnerComposite = bpCompositeRepo.getById(newBPartnerId);
+		{
+			destinationBPartnerComposite.getBpartner().setActive(true);
 
-		final BPartner destinationPartner = destinationBPartnerComposite.getBpartner();
+			final List<BPartnerLocation> newLocations = getOrCreateLocations(bpartnerAndSubscriptions, destinationBPartnerComposite);
+			final List<BPartnerContact> newContacts = getOrCreateContacts(bpartnerAndSubscriptions, destinationBPartnerComposite);
+			final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(bpartnerAndSubscriptions, destinationBPartnerComposite);
 
-		destinationPartner.setActive(true);
+			destinationBPartnerComposite = destinationBPartnerComposite.deepCopy()
+					.toBuilder()
+					.locations(newLocations)
+					.contacts(newContacts)
+					.bankAccounts(newBPBankAccounts)
+					.build();
+			bpCompositeRepo.save(destinationBPartnerComposite);
+		}
 
-		final List<BPartnerLocation> newLocations = getOrCreateLocations(orgChangeBPartnerComposite, destinationBPartnerComposite);
-		final List<BPartnerContact> newContacts = getOrCreateContacts(orgChangeBPartnerComposite, destinationBPartnerComposite);
-		final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(orgChangeBPartnerComposite, destinationBPartnerComposite);
+		bpartnerBL.updateNameAndGreetingFromContacts(newBPartnerId);
+		saveOrgChangeBPartnerComposite(bpartnerAndSubscriptions);
 
-		destinationBPartnerComposite = destinationBPartnerComposite.deepCopy()
-				.toBuilder()
+		createNewSubscriptions(bpartnerAndSubscriptions, destinationBPartnerComposite);
 
-				.locations(newLocations)
-				.contacts(newContacts)
-				.bankAccounts(newBPBankAccounts)
-				.build();
+		cancelCurrentSubscriptions(bpartnerAndSubscriptions);
 
-		bpCompositeRepo.save(destinationBPartnerComposite);
-
-		saveOrgChangeBPartnerComposite(orgChangeBPartnerComposite);
-
-		createFlatrateTerms(orgChangeBPartnerComposite, destinationBPartnerComposite);
-
-		cancelSubscriptionsFor(orgChangeBPartnerComposite);
-
-		final OrgChangeHistoryId orgChangeHistoryId = orgChangeRepo.createOrgChangeHistory(request, orgMappingId, destinationBPartnerComposite);
+		final OrgChangeHistoryId orgChangeHistoryId = orgChangeHistoryRepo.createOrgChangeHistory(request, orgMappingId, destinationBPartnerComposite);
 
 		createOrgSwitchRequest(orgChangeHistoryId);
 	}
 
-	private void createFlatrateTerms(
-			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+	private BPartnerId getOrCreateCounterpartBPartner(@NonNull final OrgChangeRequest orgChangeRequest, @NonNull final OrgMappingId orgMappingId)
+	{
+		final OrgId targetOrgId = orgChangeRequest.getOrgToId();
+		return bpartnerDAO.getCounterpartBPartnerId(orgMappingId, targetOrgId)
+				.orElseGet(() -> bpartnerDAO.cloneBPartnerRecord(CloneBPartnerRequest.builder()
+																		 .fromBPartnerId(orgChangeRequest.getBpartnerId())
+																		 .orgId(targetOrgId)
+																		 .orgMappingId(orgMappingId)
+																		 .build()));
+	}
+	private void createNewSubscriptions(
+			@NonNull final OrgChangeBPartnerComposite bpartnerAndSubscriptions,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
-		createMembershipFlatrateTerms(
-				orgChangeBPartnerComposite,
-				destinationBPartnerComposite);
-
-		createNonMembershipFlatrateTerms(
-				orgChangeBPartnerComposite,
-				destinationBPartnerComposite);
+		createMembershipSubscriptionTerm(bpartnerAndSubscriptions, destinationBPartnerComposite);
 	}
 
-	private void cancelSubscriptionsFor(final OrgChangeBPartnerComposite orgChangeBPartnerComposite)
+	private void cancelCurrentSubscriptions(final OrgChangeBPartnerComposite bpartnerAndSubscriptions)
 	{
 		final IContractChangeBL.ContractChangeParameters contractChangeParameters = IContractChangeBL.ContractChangeParameters.builder()
 				.changeDate(Objects.requireNonNull(TimeUtil.asTimestamp(request.getStartDate())))
@@ -174,13 +223,7 @@ public class OrgChangeCommand
 				.action(IContractChangeBL.ChangeTerm_ACTION_Cancel)
 				.build();
 
-		orgChangeBPartnerComposite.getMembershipSubscriptions()
-				.stream()
-				.map(FlatrateTerm::getFlatrateTermId)
-				.map(flatrateDAO::getById)
-				.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
-
-		orgChangeBPartnerComposite.getNonMembershipSubscriptions()
+		bpartnerAndSubscriptions.getAllRunningSubscriptions()
 				.stream()
 				.map(FlatrateTerm::getFlatrateTermId)
 				.map(flatrateDAO::getById)
@@ -188,27 +231,151 @@ public class OrgChangeCommand
 
 	}
 
-	private void createNonMembershipFlatrateTerms(
+	private void createMembershipSubscriptionTerm(
 			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
-		orgChangeRepo.createNonMembershipSubscriptionTerm(orgChangeBPartnerComposite, destinationBPartnerComposite, request);
+
+		final GroupCategoryId groupCategoryId = request.getGroupCategoryId();
+		if (groupCategoryId == null)
+		{
+			loggable.addLog("No membership subscription will be created for partner {} because there was no group category Id "
+									+ "selected as paramteres", destinationBPartnerComposite.getBpartner());
+			return;
+		}
+
+		final I_M_Product newOrgMembershipProduct = productDAO.getProductOfGroupCategory(groupCategoryId, request.getOrgToId()).orElse(null);
+		if (newOrgMembershipProduct == null)
+		{
+			loggable.addLog("No product for the group category {} was found in org {}",
+							groupCategoryId,
+							destinationBPartnerComposite.getOrgId());
+			return;
+		}
+
+		if (newOrgMembershipProduct.getC_CompensationGroup_Schema_ID() <= 0)
+		{
+			loggable.addLog("The product {} doesn't have a group template",
+							newOrgMembershipProduct);
+			return;
+		}
+
+		if (!orgChangeBPartnerComposite.hasMembershipSubscriptions())
+		{
+			loggable.addLog("No membership subscription will be created for partner {} because there is no running membership "
+									+ "subscription in the initial partner {}",
+							destinationBPartnerComposite.getBpartner(),
+							orgChangeBPartnerComposite.getBpartner());
+			return;
+		}
+		final FlatrateTerm sourceMembershipSubscription = orgChangeBPartnerComposite.getMembershipSubscriptions().get(0);
+
+		final GroupTemplateId groupTemplateId = GroupTemplateId.ofRepoId(newOrgMembershipProduct.getC_CompensationGroup_Schema_ID());
+		createTerms(destinationBPartnerComposite, request, groupTemplateId, sourceMembershipSubscription);
 	}
 
-	private void createMembershipFlatrateTerms(
-			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
-			@NonNull final BPartnerComposite destinationBPartnerComposite)
+	private void createTerms(
+			@NonNull final BPartnerComposite destinationBPartnerComposite,
+			@NonNull final OrgChangeRequest orgChangeRequest,
+			@NonNull final GroupTemplateId groupTemplateId,
+			@NonNull final FlatrateTerm sourceSubscription)
 	{
-		orgChangeRepo.createMembershipSubscriptionTerm(orgChangeBPartnerComposite, destinationBPartnerComposite, request);
+		final I_C_BPartner partner = bpartnerDAO.getById(destinationBPartnerComposite.getBpartner().getId());
+
+		final BPartnerLocation billBPartnerLocation = destinationBPartnerComposite.extractBillToLocation().orElse(null);
+		if (billBPartnerLocation == null)
+		{
+			loggable.addLog("No BillTo Location found in partner {} -> no flatrate term will be created", partner);
+			return;
+		}
+
+		final BPartnerLocation shipBPartnerLocation = destinationBPartnerComposite.extractShipToLocation().orElse(null);
+		if (shipBPartnerLocation == null)
+		{
+			loggable.addLog("No shipTo Location found in partner {} -> no flatrate term will be created", partner);
+			return;
+		}
+
+		final I_AD_User user = sourceSubscription.getUserInChargeId() == null ? null:
+				userDAO.getCounterpartUser(sourceSubscription.getUserInChargeId(), orgChangeRequest.getOrgToId()).orElse(null);
+
+		final Timestamp startDate = TimeUtil.asTimestamp(orgChangeRequest.getStartDate());
+
+		final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
+
+		final ImmutableList<GroupTemplateRegularLine> regularLinesToAdd = groupTemplate.getRegularLinesToAdd();
+
+		final I_C_Flatrate_Conditions fallbackConditions = flatrateDAO.getConditionsById(sourceSubscription.getFlatrateConditionsId());
+
+		for (final GroupTemplateRegularLine line : regularLinesToAdd)
+		{
+			final ProductId productId = line.getProductId();
+			final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
+
+			final ProductAndCategoryId productAndCategoryId = ProductAndCategoryId.of(productId, productCategoryId);
+
+			final ConditionsId contractConditionsId = line.getContractConditionsId();
+			final I_C_Flatrate_Conditions conditionsToUse;
+			if (contractConditionsId != null)
+			{
+				conditionsToUse = flatrateDAO.getConditionsById(contractConditionsId);
+			}
+			else
+			{
+				conditionsToUse = fallbackConditions;
+			}
+
+			final CreateFlatrateTermRequest flatrateTermRequest = CreateFlatrateTermRequest.builder()
+					.context(PlainContextAware.newWithThreadInheritedTrx(Env.getCtx()))
+					.orgId(orgChangeRequest.getOrgToId())
+					.bPartner(partner)
+					.startDate(startDate)
+					.isSimulation(false)
+					.conditions(conditionsToUse)
+					.productAndCategoryId(productAndCategoryId)
+					.userInCharge(user)
+					.build();
+
+			final I_C_Flatrate_Term term = flatrateBL.createTerm(flatrateTermRequest);
+
+			final Quantity plannedQtyPerUnit = sourceSubscription.getPlannedQtyPerUnit();
+
+			term.setPlannedQtyPerUnit(plannedQtyPerUnit == null ? BigDecimal.ZERO : plannedQtyPerUnit.toBigDecimal());
+			term.setC_UOM_ID(plannedQtyPerUnit == null ? -1 : plannedQtyPerUnit.getUomId().getRepoId());
+
+			term.setDropShip_Location_ID(shipBPartnerLocation.getId().getRepoId());
+
+			term.setDeliveryRule(sourceSubscription.getDeliveryRule() == null ? null : sourceSubscription.getDeliveryRule().getCode());
+			term.setDeliveryViaRule(sourceSubscription.getDeliveryViaRule() == null ? null : sourceSubscription.getDeliveryViaRule().getCode());
+
+			final IEditablePricingContext initialContext = pricingBL
+					.createInitialContext(orgChangeRequest.getOrgToId(),
+										  productId,
+										  destinationBPartnerComposite.getBpartner().getId(),
+										  plannedQtyPerUnit,
+										  SOTrx.SALES);
+			initialContext.setPriceDate(TimeUtil.asLocalDate(orgChangeRequest.getStartDate()));
+			initialContext.setCountryId(countryDAO.getCountryIdByCountryCode(billBPartnerLocation.getCountryCode()));
+			final IPricingResult pricingResult = pricingBL.calculatePrice(initialContext);
+			term.setPriceActual(pricingResult.getPriceStd());
+			term.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingResult.getPricingSystemId()));
+			term.setC_Currency_ID(pricingResult.getCurrencyRepoId());
+
+			final IPricingResult flatratePrice = calculateFlatrateTermPrice(term);
+			term.setC_TaxCategory_ID(TaxCategoryId.toRepoId(flatratePrice.getTaxCategoryId()));
+			term.setIsTaxIncluded(flatratePrice.isTaxIncluded());
+
+			flatrateDAO.save(term);
+
+			flatrateBL.complete(term);
+		}
 	}
 
 	private List<BPartnerLocation> getOrCreateLocations(
 			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
-		final List<BPartnerLocation> locationsInSourcePartner = orgChangeBPartnerComposite
-				.getBPartnerComposite()
-				.getLocations();
+		final List<BPartnerLocation> locationsInSourcePartner = orgChangeBPartnerComposite.getLocations();
 
 		final DefaultLocations sourceDefaultLocations = orgChangeBPartnerComposite.getDefaultLocations();
 
@@ -238,8 +405,8 @@ public class OrgChangeCommand
 				matchingLocation.setActive(true);
 
 				loggable.addLog("Location {} from the existing partner {} was preserved.",
-						matchingLocation,
-						destinationBPartnerComposite.getBpartner());
+								matchingLocation,
+								destinationBPartnerComposite.getBpartner());
 			}
 			else
 			{
@@ -250,8 +417,8 @@ public class OrgChangeCommand
 				destinationLocations.add(newLocation);
 
 				loggable.addLog("Location {} was created for the destination partner {}.",
-						newLocation,
-						destinationBPartnerComposite.getBpartner());
+								newLocation,
+								destinationBPartnerComposite.getBpartner());
 			}
 		}
 
@@ -262,9 +429,7 @@ public class OrgChangeCommand
 			final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			final BPartnerComposite destinationBPartnerComposite)
 	{
-		final List<BPartnerContact> contactsInSourcePartner = orgChangeBPartnerComposite
-				.getBPartnerComposite()
-				.getContacts();
+		final List<BPartnerContact> contactsInSourcePartner = orgChangeBPartnerComposite.getContacts();
 
 		final DefaultContacts sourceDefaultContacts = getDefaultContacts(orgChangeBPartnerComposite);
 		unmarkDefaultContactsFromDestination(sourceDefaultContacts, destinationBPartnerComposite);
@@ -290,11 +455,15 @@ public class OrgChangeCommand
 						matchingContact);
 
 				matchingContact.setContactType(newContactType);
+				matchingContact.setGreetingId(sourceContact.getGreetingId());
+				matchingContact.setFirstName(sourceContact.getFirstName());
+				matchingContact.setLastName(sourceContact.getLastName());
+				matchingContact.setMembershipContact(sourceContact.isMembershipContact());
 				matchingContact.setActive(true);
 
 				loggable.addLog("Contact {} from the existing partner {} was preserved.",
-						matchingContact,
-						destinationBPartnerComposite.getBpartner());
+								matchingContact,
+								destinationBPartnerComposite.getBpartner());
 			}
 			else
 			{
@@ -306,8 +475,8 @@ public class OrgChangeCommand
 				newContacts.add(newContact);
 
 				loggable.addLog("Contact {} was created for the destination partner {}.",
-						newContact,
-						destinationBPartnerComposite.getBpartner());
+								newContact,
+								destinationBPartnerComposite.getBpartner());
 			}
 		}
 
@@ -318,9 +487,7 @@ public class OrgChangeCommand
 			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
 			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
-		final List<BPartnerBankAccount> sourceBankAccounts = orgChangeBPartnerComposite
-				.getBPartnerComposite()
-				.getBankAccounts();
+		final List<BPartnerBankAccount> sourceBankAccounts = orgChangeBPartnerComposite.getBankAccounts();
 
 		final List<BPartnerBankAccount> existingBankAccountsInDestinationPartner =
 				destinationBPartnerComposite
@@ -344,8 +511,8 @@ public class OrgChangeCommand
 				matchingBankAccount.setActive(true);
 
 				loggable.addLog("Bank Account {} from the existing partner {} was preserved.",
-						matchingBankAccount,
-						destinationBPartnerComposite.getBpartner());
+								matchingBankAccount,
+								destinationBPartnerComposite.getBpartner());
 			}
 			else
 			{
@@ -357,13 +524,14 @@ public class OrgChangeCommand
 				newBankAccounts.add(newBankAccount);
 
 				loggable.addLog("Bank Account {} was created for the destination partner {}.",
-						newBankAccount,
-						destinationBPartnerComposite.getBpartner());
+								newBankAccount,
+								destinationBPartnerComposite.getBpartner());
 			}
 		}
 		return newBankAccounts;
 	}
 
+	@Nullable
 	private BPartnerContactType updateMatchingContactType(
 			@NonNull final DefaultContacts sourceDefaultContacts,
 			@NonNull final BPartnerContact sourceContact,
@@ -371,27 +539,38 @@ public class OrgChangeCommand
 	{
 		final BPartnerContactType existingContactType = sourceContact.getContactType();
 
+		if (existingContactType == null)
+		{
+			return null;
+		}
 		final BPartnerContactType newContactType = existingContactType.deepCopy();
+
+		final BPartnerContactType matchingContactType = matchingContact.getContactType();
+
+		if (matchingContactType == null)
+		{
+			return newContactType;
+		}
 
 		if (!sourceDefaultContacts.isFoundDefaultContact())
 		{
-			newContactType.setDefaultContact(matchingContact.getContactType().getIsDefaultContactOr(false));
+			newContactType.setDefaultContact(matchingContactType.getIsDefaultContactOr(false));
 		}
 		if (!sourceDefaultContacts.isFoundBillToDefaultContact())
 		{
-			newContactType.setBillToDefault(matchingContact.getContactType().getIsBillToDefaultOr(false));
+			newContactType.setBillToDefault(matchingContactType.getIsBillToDefaultOr(false));
 		}
 		if (!sourceDefaultContacts.isFoundShipToDefaultContact())
 		{
-			newContactType.setShipToDefault(matchingContact.getContactType().getIsShipToDefaultOr(false));
+			newContactType.setShipToDefault(matchingContactType.getIsShipToDefaultOr(false));
 		}
 		if (!sourceDefaultContacts.isFoundSalesDefaultContact())
 		{
-			newContactType.setSalesDefault(matchingContact.getContactType().getIsSalesDefaultOr(false));
+			newContactType.setSalesDefault(matchingContactType.getIsSalesDefaultOr(false));
 		}
 		if (!sourceDefaultContacts.isFoundPurchaseDefaultContact())
 		{
-			newContactType.setPurchaseDefault(matchingContact.getContactType().getIsPurchaseDefaultOr(false));
+			newContactType.setPurchaseDefault(matchingContactType.getIsPurchaseDefaultOr(false));
 		}
 		return newContactType;
 	}
@@ -401,24 +580,39 @@ public class OrgChangeCommand
 			@NonNull final BPartnerLocation sourceLocation,
 			@NonNull final BPartnerLocation matchingLocation)
 	{
-		final BPartnerLocationType existingLocationType = sourceLocation.getLocationType();
+		final BPartnerLocationType sourceLocationType = sourceLocation.getLocationType();
+		final BPartnerLocationType matchingLocationType = matchingLocation.getLocationType();
 
-		final BPartnerLocationType newLocationType = existingLocationType.deepCopy();
+		if (CoalesceUtil.coalesce(sourceLocationType, matchingLocationType) == null)
+		{
+			return null;
+		}
+
+		if (sourceLocationType == null)
+		{
+			return matchingLocationType;
+		}
+		if (matchingLocationType == null)
+		{
+			return sourceLocationType;
+		}
+
+		final BPartnerLocationType destinationLocationType = sourceLocationType.deepCopy();
 
 		if (!sourceDefaultLocations.isFoundBillToDefaultLocation())
 		{
-			newLocationType.setBillToDefault(matchingLocation.getLocationType().getIsBillToDefaultOr(false));
+			destinationLocationType.setBillToDefault(matchingLocationType.getIsBillToDefaultOr(false));
 		}
 		if (!sourceDefaultLocations.isFoundShipToDefaultLocation())
 		{
-			newLocationType.setShipToDefault(matchingLocation.getLocationType().getIsShipToDefaultOr(false));
+			destinationLocationType.setShipToDefault(matchingLocationType.getIsShipToDefaultOr(false));
 		}
 
-		return newLocationType;
+		return destinationLocationType;
 	}
 
 	private void unmarkDefaultContactsFromDestination(@NonNull final DefaultContacts sourceDefaultContacts,
-													  @NonNull final BPartnerComposite destinationBPartnerComposite)
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
 		final List<BPartnerContact> destinationContacts = destinationBPartnerComposite.getContacts();
 
@@ -426,40 +620,40 @@ public class OrgChangeCommand
 		{
 			unmarkDefaultContacts(destinationContacts);
 			loggable.addLog("The default contact will be the counterpart of the initial contact {}."
-							+ " ->  Mark all the remaining contacts in the destination partner {} as non-default",
-					sourceDefaultContacts.getDefaultContact(), destinationBPartnerComposite.getBpartner());
+									+ " ->  Mark all the remaining contacts in the destination partner {} as non-default",
+							sourceDefaultContacts.getDefaultContact(), destinationBPartnerComposite.getBpartner());
 		}
 
 		if (sourceDefaultContacts.isFoundBillToDefaultContact())
 		{
 			unmarkBillToDefaultContacts(destinationContacts);
 			loggable.addLog("The billToDefault contact will be the counterpart of the initial contact {}."
-							+ " ->  Mark all the remaining contacts in the destination partner {} as non-billToDefault",
-					sourceDefaultContacts.getBillToDefaultContact(), destinationBPartnerComposite.getBpartner());
+									+ " ->  Mark all the remaining contacts in the destination partner {} as non-billToDefault",
+							sourceDefaultContacts.getBillToDefaultContact(), destinationBPartnerComposite.getBpartner());
 		}
 
 		if (sourceDefaultContacts.isFoundShipToDefaultContact())
 		{
 			unmarkShipToDefaultContacts(destinationContacts);
 			loggable.addLog("The shipToDefault contact will be the counterpart of the initial contact {}."
-							+ " ->  Mark all the remaining contacts in the destination partner {} as non-shipToDefault",
-					sourceDefaultContacts.getShipToDefaultContact(), destinationBPartnerComposite.getBpartner());
+									+ " ->  Mark all the remaining contacts in the destination partner {} as non-shipToDefault",
+							sourceDefaultContacts.getShipToDefaultContact(), destinationBPartnerComposite.getBpartner());
 		}
 
 		if (sourceDefaultContacts.isFoundSalesDefaultContact())
 		{
 			unmarkSalesDefaultContacts(destinationContacts);
 			loggable.addLog("The salesDefault contact will be the counterpart of the initial contact {}."
-							+ " -> Mark all the remaining contacts in the destination partner {} as non-salesDefault",
-					sourceDefaultContacts.getSalesDefaultContact(), destinationBPartnerComposite.getBpartner());
+									+ " -> Mark all the remaining contacts in the destination partner {} as non-salesDefault",
+							sourceDefaultContacts.getSalesDefaultContact(), destinationBPartnerComposite.getBpartner());
 		}
 
 		if (sourceDefaultContacts.isFoundPurchaseDefaultContact())
 		{
 			unmarkPurchaseDefaultContacts(destinationContacts);
 			loggable.addLog("The purchaseDefault contact will be the counterpart of the initial contact {}."
-							+ " -> Mark all the remaining contacts in the destination partner {} as non-purchaseDefault",
-					sourceDefaultContacts.getPurchaseDefaultContact(), destinationBPartnerComposite.getBpartner());
+									+ " -> Mark all the remaining contacts in the destination partner {} as non-purchaseDefault",
+							sourceDefaultContacts.getPurchaseDefaultContact(), destinationBPartnerComposite.getBpartner());
 		}
 	}
 
@@ -490,7 +684,7 @@ public class OrgChangeCommand
 	}
 
 	private void unmarkDefaultLocationsFromDestination(@NonNull final DefaultLocations sourceDefaultLocations,
-													   @NonNull final BPartnerComposite destinationBPartnerComposite)
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
 	{
 		final List<BPartnerLocation> destinationLocations = destinationBPartnerComposite.getLocations();
 
@@ -498,16 +692,16 @@ public class OrgChangeCommand
 		{
 			unmarkBillToDefaultLocations(destinationLocations);
 			loggable.addLog("The billToDefault location will be the counterpart of the initial location {}."
-							+ " -> Mark all the remaining locations in the destination partner {} as non-billToDefault",
-					sourceDefaultLocations.getBillToDefaultLocation(), destinationBPartnerComposite.getBpartner());
+									+ " -> Mark all the remaining locations in the destination partner {} as non-billToDefault",
+							sourceDefaultLocations.getBillToDefaultLocation(), destinationBPartnerComposite.getBpartner());
 		}
 
 		if (sourceDefaultLocations.isFoundShipToDefaultLocation())
 		{
 			unmarkShipToDefaultLocations(destinationLocations);
 			loggable.addLog("The shipToDefault location will be the counterpart of the initial location {}."
-							+ " -> Mark all the remaining locations in the destination partner {} as non-shipToDefault",
-					sourceDefaultLocations.getShipToDefaultLocation(), destinationBPartnerComposite.getBpartner());
+									+ " -> Mark all the remaining locations in the destination partner {} as non-shipToDefault",
+							sourceDefaultLocations.getShipToDefaultLocation(), destinationBPartnerComposite.getBpartner());
 		}
 	}
 
@@ -516,6 +710,10 @@ public class OrgChangeCommand
 		for (final BPartnerLocation location : locations)
 		{
 			final BPartnerLocationType type = location.getLocationType();
+			if (type == null)
+			{
+				continue;
+			}
 			type.setBillToDefault(false);
 		}
 	}
@@ -525,6 +723,11 @@ public class OrgChangeCommand
 		for (final BPartnerLocation location : locations)
 		{
 			final BPartnerLocationType type = location.getLocationType();
+
+			if (type == null)
+			{
+				continue;
+			}
 			type.setShipToDefault(false);
 		}
 	}
@@ -534,23 +737,26 @@ public class OrgChangeCommand
 		for (final BPartnerContact contact : contacts)
 		{
 			final BPartnerContactType contactType = contact.getContactType();
+
+			if (contactType == null)
+			{
+				continue;
+			}
 			contactType.setDefaultContact(false);
 		}
 	}
 
-	private void saveOrgChangeBPartnerComposite(@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite)
+	private void saveOrgChangeBPartnerComposite(@NonNull final OrgChangeBPartnerComposite bpartnerAndSubscriptions)
 	{
-		final BPartnerComposite bPartnerComposite = orgChangeBPartnerComposite.getBPartnerComposite();
-
-		bPartnerComposite.getBpartner().setOrgMappingId(orgChangeBPartnerComposite.getBPartnerOrgMappingId());
-
+		final BPartnerComposite bPartnerComposite = bpartnerAndSubscriptions.getBPartnerComposite();
+		bPartnerComposite.getBpartner().setOrgMappingId(bpartnerAndSubscriptions.getBPartnerOrgMappingId());
 		bpCompositeRepo.save(bPartnerComposite);
 	}
 
-	private I_R_Request createOrgSwitchRequest(@NonNull OrgChangeHistoryId orgChangeHistoryId)
+	private void createOrgSwitchRequest(@NonNull final OrgChangeHistoryId orgChangeHistoryId)
 	{
 		final RequestTypeId requestTypeId = requestTypeDAO.retrieveOrgChangeRequestTypeId();
-		final I_AD_OrgChange_History orgChangeHistoryRecord = orgChangeRepo.getOrgChangeHistoryById(orgChangeHistoryId);
+		final I_AD_OrgChange_History orgChangeHistoryRecord = orgChangeHistoryRepo.getOrgChangeHistoryById(orgChangeHistoryId);
 
 		final OrgId orgId = OrgId.ofRepoId(orgChangeHistoryRecord.getAD_OrgTo_ID());
 
@@ -575,7 +781,7 @@ public class OrgChangeCommand
 
 				.build();
 
-		return requestBL.createRequest(requestCandidate);
+		requestBL.createRequest(requestCandidate);
 
 	}
 
@@ -584,6 +790,11 @@ public class OrgChangeCommand
 		for (final BPartnerContact contact : contacts)
 		{
 			final BPartnerContactType contactType = contact.getContactType();
+
+			if (contactType == null)
+			{
+				continue;
+			}
 			contactType.setBillToDefault(false);
 		}
 	}
@@ -593,6 +804,11 @@ public class OrgChangeCommand
 		for (final BPartnerContact contact : contacts)
 		{
 			final BPartnerContactType contactType = contact.getContactType();
+
+			if (contactType == null)
+			{
+				continue;
+			}
 			contactType.setPurchaseDefault(false);
 		}
 	}
@@ -602,6 +818,11 @@ public class OrgChangeCommand
 		for (final BPartnerContact contact : contacts)
 		{
 			final BPartnerContactType contactType = contact.getContactType();
+
+			if (contactType == null)
+			{
+				continue;
+			}
 			contactType.setSalesDefault(false);
 		}
 	}
@@ -611,7 +832,25 @@ public class OrgChangeCommand
 		for (final BPartnerContact contact : contacts)
 		{
 			final BPartnerContactType contactType = contact.getContactType();
+
+			if (contactType == null)
+			{
+				continue;
+			}
 			contactType.setShipToDefault(false);
 		}
+	}
+
+	private IPricingResult calculateFlatrateTermPrice(@NonNull final I_C_Flatrate_Term newTerm)
+	{
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(newTerm.getAD_Org_ID()));
+
+		return FlatrateTermPricing.builder()
+				.termRelatedProductId(ProductId.ofRepoId(newTerm.getM_Product_ID()))
+				.qty(newTerm.getPlannedQtyPerUnit())
+				.term(newTerm)
+				.priceDate(TimeUtil.asLocalDate(newTerm.getStartDate(), timeZone))
+				.build()
+				.computeOrThrowEx();
 	}
 }

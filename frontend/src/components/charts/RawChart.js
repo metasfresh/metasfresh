@@ -68,6 +68,7 @@ class RawChart extends Component {
       data,
       noData,
       handleChartOptions,
+      zoomToDetailsAvailable,
     } = this.props;
     const { forceChartReRender } = this.state;
     const dataset0 =
@@ -148,13 +149,15 @@ class RawChart extends Component {
             )}
 
             <Indicator
-              value={
-                noData
-                  ? ''
-                  : dataset0[0][fields[0].fieldName] +
-                    (fields[0].unit ? ' ' + fields[0].unit : '')
-              }
-              {...{ caption, editmode }}
+              id={id}
+              zoomToDetailsAvailable={zoomToDetailsAvailable}
+              amount={noData ? '' : dataset0[0][fields[0].fieldName]}
+              unit={noData ? '' : fields[0].unit}
+              {...{
+                caption:
+                  typeof caption === 'string' ? caption.toUpperCase() : caption,
+                editmode,
+              }}
             />
           </div>
         );
@@ -203,6 +206,7 @@ RawChart.propTypes = {
   handleChartOptions: PropTypes.func,
   editmode: PropTypes.bool,
   chartTitle: PropTypes.string,
+  zoomToDetailsAvailable: PropTypes.bool,
 };
 
 export default connect()(RawChart);

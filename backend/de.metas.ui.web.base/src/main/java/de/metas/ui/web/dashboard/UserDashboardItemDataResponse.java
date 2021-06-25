@@ -23,8 +23,9 @@
 package de.metas.ui.web.dashboard;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.WebuiError;
+import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.kpi.data.KPIDataSet;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,22 +35,25 @@ import java.util.Objects;
 @Value
 public class UserDashboardItemDataResponse
 {
+	@NonNull UserDashboardId dashboardId;
 	@NonNull UserDashboardItemId itemId;
 	@Nullable KPIDataResult kpiData;
 	@Nullable WebuiError error;
 
 	public static UserDashboardItemDataResponse ok(
+			@NonNull final UserDashboardId dashboardId,
 			@NonNull final UserDashboardItemId itemId,
 			@NonNull final KPIDataResult kpiData)
 	{
-		return new UserDashboardItemDataResponse(itemId, kpiData, null);
+		return new UserDashboardItemDataResponse(dashboardId, itemId, kpiData, null);
 	}
 
 	public static UserDashboardItemDataResponse error(
+			@NonNull final UserDashboardId dashboardId,
 			@NonNull final UserDashboardItemId itemId,
 			@NonNull final WebuiError error)
 	{
-		return new UserDashboardItemDataResponse(itemId, null, error);
+		return new UserDashboardItemDataResponse(dashboardId, itemId, null, error);
 	}
 
 	public boolean isSameDataAs(@NonNull final UserDashboardItemDataResponse other)

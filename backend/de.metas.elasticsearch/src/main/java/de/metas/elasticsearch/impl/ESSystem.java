@@ -33,7 +33,6 @@ import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,33 +57,22 @@ public class ESSystem implements IESSystem
 	private RestHighLevelClient elasticsearchClient = null;
 
 	@VisibleForTesting
-	public static final String ESServer_Classname = "de.metas.elasticsearch.server.ESServer";
+	static final String ESServer_Classname = "de.metas.elasticsearch.server.ESServer";
 
-	private static final String SYSTEM_PROPERTY_elastic_enable = "elastic_enable";
-
-	public static final String SYSCONFIG_PostKpiEvents = "de.metas.elasticsearch.PostKpiEvents";
-	private static final boolean SYSCONFIG_PostKpiEvents_Default = true;
-
-	public static final BooleanWithReason DISABLED_BEFORE_JUNIT_MODE = BooleanWithReason.falseBecause("JUnit test mode");
-	public static final BooleanWithReason DISABLED_BECAUSE_SYSTEM_PROPERTY_elastic_enable = BooleanWithReason.falseBecause("Disabled by system property `" + SYSTEM_PROPERTY_elastic_enable + "`");
-	public static final BooleanWithReason DISABLED_BECAUSE_SYSCONFIG = BooleanWithReason.falseBecause("Disabled by sysconfig `" + SYSCONFIG_PostKpiEvents + "`");
+	public static final String SYSCONFIG_elastic_enable = "elastic_enable";
+	private static final BooleanWithReason DISABLED_BECAUSE_JUNIT_MODE = BooleanWithReason.falseBecause("Elasticsearch disabled when running in JUnit test mode");
+	private static final BooleanWithReason DISABLED_BECAUSE_SYSCONFIG = BooleanWithReason.falseBecause("Elasticsearch disabled by sysconfig `" + SYSCONFIG_elastic_enable + "`");
 
 	@Override
 	public BooleanWithReason getEnabled()
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return DISABLED_BEFORE_JUNIT_MODE;
-		}
-
-		// Check if disabled by system property (as documented on sysconfig description)
-		if (!StringUtils.toOptionalBoolean(System.getProperty(SYSTEM_PROPERTY_elastic_enable)).orElseTrue())
-		{
-			return DISABLED_BECAUSE_SYSTEM_PROPERTY_elastic_enable;
+			return DISABLED_BECAUSE_JUNIT_MODE;
 		}
 
 		// Check if it was disabled by sysconfig
-		if (!sysConfigBL.getBooleanValue(SYSCONFIG_PostKpiEvents, SYSCONFIG_PostKpiEvents_Default))
+		if (!sysConfigBL.getBooleanValue(SYSCONFIG_elastic_enable, true))
 		{
 			return DISABLED_BECAUSE_SYSCONFIG;
 		}
