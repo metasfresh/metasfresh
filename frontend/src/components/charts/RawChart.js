@@ -73,6 +73,8 @@ class RawChart extends Component {
     const { forceChartReRender } = this.state;
     const dataset0 =
       data && data.datasets && data.datasets[0] && data.datasets[0].values;
+    const dataset0_unit =
+      data && data.datasets && data.datasets[0] && data.datasets[0].unit;
 
     switch (chartType) {
       case 'BarChart':
@@ -151,8 +153,8 @@ class RawChart extends Component {
             <Indicator
               id={id}
               zoomToDetailsAvailable={zoomToDetailsAvailable}
-              amount={noData ? '' : dataset0[0][fields[0].fieldName]}
-              unit={noData ? '' : fields[0].unit}
+              amount={noData ? '0' : dataset0[0][fields[0].fieldName]}
+              unit={dataset0_unit ? dataset0_unit : fields[0].unit}
               {...{
                 caption:
                   typeof caption === 'string' ? caption.toUpperCase() : caption,

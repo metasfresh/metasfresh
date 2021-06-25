@@ -269,6 +269,7 @@ public class KPIRepository
 				.sourceTableName(sourceTableName)
 				.sqlFrom(kpiDef.getSQL_From())
 				.sqlWhereClause(kpiDef.getSQL_WhereClause())
+				.sqlDetailsWhereClause(kpiDef.getSQL_Details_WhereClause())
 				.applySecuritySettings(kpiDef.isApplySecuritySettings())
 				.sqlGroupAndOrderBy(kpiDef.getSQL_GroupAndOrderBy())
 				.fields(loadingCtx

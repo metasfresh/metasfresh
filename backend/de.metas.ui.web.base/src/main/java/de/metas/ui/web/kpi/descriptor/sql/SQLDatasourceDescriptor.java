@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -50,6 +51,7 @@ public class SQLDatasourceDescriptor
 
 	@NonNull String sourceTableName;
 	@NonNull IStringExpression sqlWhereClause;
+	@NonNull IStringExpression sqlDetailsWhereClause;
 	boolean applySecuritySettings;
 	@Nullable WindowId targetWindowId;
 
@@ -69,6 +71,7 @@ public class SQLDatasourceDescriptor
 			@NonNull final String sourceTableName,
 			@Nullable final String sqlFrom,
 			@Nullable final String sqlWhereClause,
+			@Nullable final String sqlDetailsWhereClause,
 			@Nullable final String sqlGroupAndOrderBy)
 	{
 		Check.assumeNotEmpty(sourceTableName, "sourceTableName shall not be empty");
@@ -80,9 +83,13 @@ public class SQLDatasourceDescriptor
 
 		this.sourceTableName = sourceTableName;
 
-		this.sqlWhereClause = sqlWhereClause != null
-				? StringExpressionCompiler.instance.compile(sqlWhereClause)
-				: IStringExpression.NULL;
+		this.sqlWhereClause = StringUtils.trimBlankToOptional(sqlWhereClause)
+				.map(StringExpressionCompiler.instance::compile)
+				.orElse(IStringExpression.NULL);
+
+		this.sqlDetailsWhereClause = StringUtils.trimBlankToOptional(sqlDetailsWhereClause)
+				.map(StringExpressionCompiler.instance::compile)
+				.orElse(this.sqlWhereClause);
 
 		this.applySecuritySettings = applySecuritySettings;
 
@@ -169,6 +176,7 @@ public class SQLDatasourceDescriptor
 	{
 		return ImmutableSet.<CtxName>builder()
 				.addAll(sqlSelect.getParameters())
+				.addAll(sqlDetailsWhereClause.getParameters())
 				.addAll(isApplySecuritySettings() ? PERMISSION_REQUIRED_PARAMS : ImmutableSet.of())
 				.build();
 	}

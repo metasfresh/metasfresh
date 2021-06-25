@@ -24,6 +24,7 @@ package de.metas.ui.web.kpi.data;
 
 import com.google.common.base.Stopwatch;
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
@@ -50,18 +51,24 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.List;
 
 class SQLKPIDataLoader
 {
 	private static final Logger logger = LogManager.getLogger(SQLKPIDataLoader.class);
 	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
-	@NonNull private final KPI kpi;
+	@NonNull private final KPIField valueField;
+	@Nullable private final KPIField uomField;
+	@NonNull private final ITranslatableString filterCaption;
+
 	@NonNull private final TimeRange timeRange;
 	@NonNull final KPIDataContext context;
 
@@ -73,11 +80,54 @@ class SQLKPIDataLoader
 			@NonNull final TimeRange timeRange,
 			@NonNull final KPIDataContext context)
 	{
-		this.kpi = kpi;
+		uomField = extractUOMField(kpi.getFields());
+		valueField = extractValueField(kpi.getFields(), uomField);
+		filterCaption = kpi.getCaption();
+
 		this.timeRange = timeRange;
 		this.context = context.retainOnlyRequiredParameters(kpi.getRequiredContextParameters());
 
 		this.sqlDatasource = Check.assumeNotNull(kpi.getSqlDatasource(), "Not an SQL data source: {}", kpi);
+	}
+
+	@Nullable
+	private static KPIField extractUOMField(final List<KPIField> fields)
+	{
+		if (fields.size() < 2)
+		{
+			return null;
+		}
+
+		for (final KPIField field : fields)
+		{
+			final String fieldName = field.getFieldName();
+			if ("Currency".equalsIgnoreCase(fieldName)
+					|| "CurrencyCode".equalsIgnoreCase(fieldName)
+					|| "UOMSymbol".equalsIgnoreCase(fieldName)
+					|| "UOM".equalsIgnoreCase(fieldName))
+			{
+				return field;
+			}
+		}
+
+		return null;
+	}
+
+	private static KPIField extractValueField(
+			final List<KPIField> fields,
+			final KPIField... excludeFields)
+	{
+		final List<KPIField> excludeFieldsList = Arrays.asList(excludeFields);
+
+		for (final KPIField field : fields)
+		{
+			if (!excludeFieldsList.contains(field))
+			{
+				return field;
+			}
+		}
+
+		throw new AdempiereException("Cannot determine value field: " + fields);
 	}
 
 	public KPIDataResult retrieveData()
@@ -168,16 +218,22 @@ class SQLKPIDataLoader
 				.build();
 	}
 
-	private void loadKPIDataSetValuesMap(final KPIDataResult.Builder data, final ResultSet rs) throws SQLException
+	private void loadKPIDataSetValuesMap(
+			@NonNull final KPIDataResult.Builder data,
+			@NonNull final ResultSet rs) throws SQLException
 	{
-		for (final KPIField field : kpi.getFields())
+		final KPIDataValue value = retrieveValue(rs, valueField);
+
+		String unit = null;
+		if (uomField != null)
 		{
-			final String fieldName = field.getFieldName();
-			final KPIDataValue value = retrieveValue(rs, field);
-			data.dataSet(fieldName)
-					.dataSetValue(KPIDataSetValuesAggregationKey.NO_KEY)
-					.put(fieldName, value);
+			unit = rs.getString(uomField.getFieldName());
 		}
+
+		data.dataSet(valueField.getFieldName())
+				.unit(unit)
+				.dataSetValue(KPIDataSetValuesAggregationKey.NO_KEY)
+				.put(valueField.getFieldName(), value);
 	}
 
 	private KPIDataValue retrieveValue(final ResultSet rs, final KPIField field) throws SQLException
@@ -210,11 +266,11 @@ class SQLKPIDataLoader
 	public KPIZoomIntoDetailsInfo getKPIZoomIntoDetailsInfo()
 	{
 		final String sqlWhereClause = sqlDatasource
-				.getSqlWhereClause()
+				.getSqlDetailsWhereClause()
 				.evaluate(createEvaluationContext(), IExpressionEvaluator.OnVariableNotFound.Fail);
 
 		return KPIZoomIntoDetailsInfo.builder()
-				.filterCaption(kpi.getCaption())
+				.filterCaption(filterCaption)
 				.targetWindowId(sqlDatasource.getTargetWindowId())
 				.tableName(sqlDatasource.getSourceTableName())
 				.sqlWhereClause(sqlWhereClause)
