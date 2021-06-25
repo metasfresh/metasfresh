@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.contracts
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,32 +20,23 @@
  * #L%
  */
 
-package de.metas.contracts.bpartner.service;
+package de.metas.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.order.compensationGroup.GroupCategoryId;
-import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 
 @Value
 @Builder
-public class OrgChangeRequest
+public class CloneBPartnerRequest
 {
-	@NonNull BPartnerId bpartnerId;
+	@NonNull BPartnerId fromBPartnerId;
 
-	@NonNull OrgId orgFromId;
-
-	@NonNull OrgId orgToId;
-
-	@NonNull Instant startDate;
-
-	@Nullable
-	GroupCategoryId groupCategoryId;
+	@Nullable OrgId orgId;
+	@Nullable OrgMappingId orgMappingId;
 }
