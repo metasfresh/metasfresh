@@ -24,8 +24,8 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.InstantInterval;
 import de.metas.util.lang.ExternalId;
+import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -45,6 +45,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -72,6 +73,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  */
 public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
+
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+
 	@Override
 	public void save(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
@@ -342,6 +346,35 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		}
 
 		return adjustmentCharges.iterator();
+	}
+
+	@Override
+	public boolean isReferencedInvoiceReversed(final I_C_Invoice invoice )
+	{
+		final org.compiere.model.I_C_Invoice referencedInvoice = getReferencedInvoice(invoice);
+		final DocStatus originalInvoiceDocStatus;
+		if (referencedInvoice != null)
+		{
+			originalInvoiceDocStatus = DocStatus.ofCode(referencedInvoice.getDocStatus());
+		}
+		else {
+			originalInvoiceDocStatus = DocStatus.ofCode(invoice.getDocStatus());
+		}
+		return originalInvoiceDocStatus.isReversed();
+	}
+
+	@Nullable
+	private org.compiere.model.I_C_Invoice getReferencedInvoice(final I_C_Invoice invoice)
+	{
+		if (!invoiceBL.isInvoice(invoice))
+		{
+			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
+			if (invoiceId != null)
+			{
+				return getByIdInTrx(invoiceId);
+			}
+		}
+		return null;
 	}
 
 	private Iterator<I_C_Invoice> retrieveReferencesForInvoice(final I_C_Invoice invoice)
