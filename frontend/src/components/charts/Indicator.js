@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Loader from '../app/Loader';
 import { getTargetIndicatorsDetails } from '../../actions/DashboardActions';
+import moment from 'moment';
 
 class Indicator extends Component {
   constructor(props) {
@@ -36,6 +37,7 @@ class Indicator extends Component {
       editmode,
       framework,
       zoomToDetailsAvailable,
+      data: { computedTimestamp },
     } = this.props;
 
     if (loader)
@@ -69,6 +71,9 @@ class Indicator extends Component {
           <div className="indicator-amount">{amount}</div>
           <div className="indicator-unit">{unit}</div>
         </div>
+        <div className="indicator-last-updated">
+          {moment(computedTimestamp).fromNow()}
+        </div>
       </div>
     );
   }
@@ -85,6 +90,7 @@ Indicator.propTypes = {
   amount: PropTypes.number,
   unit: PropTypes.string,
   zoomToDetailsAvailable: PropTypes.bool,
+  data: PropTypes.object,
 };
 
 export default Indicator;
