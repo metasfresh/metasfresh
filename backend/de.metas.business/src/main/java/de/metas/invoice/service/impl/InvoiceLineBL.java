@@ -160,7 +160,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			@NonNull final OrgId orgId,
 			final Timestamp taxDate,
 			final CountryId countryFromId,
-			final BPartnerLocationId partnerLocationId,
+			@NonNull final BPartnerLocationId partnerLocationId,
 			final boolean isSOTrx)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
