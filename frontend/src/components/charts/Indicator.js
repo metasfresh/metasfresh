@@ -1,14 +1,33 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Loader from '../app/Loader';
+import { getTargetIndicatorsDetails } from '../../actions/DashboardActions';
 
 class Indicator extends Component {
   constructor(props) {
     super(props);
   }
 
+  /**
+   * @method showDetails
+   * @summary Calls the getTargetIndicatorsDetails dashboard action to get the windowId and the viewId and
+   *          once those are retrieved it will open the view in a new browser tab
+   * @param {string} indicatorId
+   */
+  showDetails = (indicatorId) => {
+    getTargetIndicatorsDetails(indicatorId).then((detailsResp) => {
+      const { viewId, windowId } = detailsResp.data;
+      let detailsTab = window.open(
+        `${window.location.origin}/window/${windowId}?viewId=${viewId}`,
+        '_blank'
+      );
+      detailsTab.focus();
+    });
+  };
+
   render() {
     const {
+      id,
       amount,
       unit,
       caption,
@@ -38,7 +57,12 @@ class Indicator extends Component {
           <div className="indicator-kpi-caption">{caption}</div>
           {/* TODO: !!! this needs not to be hardcoded and must be provided by the BE */}
           {zoomToDetailsAvailable && (
-            <div className="indicator-details-link">DETAILS</div>
+            <div
+              className="indicator-details-link"
+              onClick={() => this.showDetails(id)}
+            >
+              DETAILS
+            </div>
           )}
         </div>
         <div className="indicator-data">
@@ -51,6 +75,7 @@ class Indicator extends Component {
 }
 
 Indicator.propTypes = {
+  id: PropTypes.number,
   value: PropTypes.any,
   caption: PropTypes.string,
   loader: PropTypes.any,

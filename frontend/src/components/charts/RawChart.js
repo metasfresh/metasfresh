@@ -135,7 +135,6 @@ class RawChart extends Component {
           />
         );
       case 'Indicator':
-        console.log(fields)
         return (
           <div>
             {editmode ? (
@@ -150,6 +149,7 @@ class RawChart extends Component {
             )}
 
             <Indicator
+              id={id}
               zoomToDetailsAvailable={zoomToDetailsAvailable}
               amount={noData ? '' : dataset0[0][fields[0].fieldName]}
               unit={noData ? '' : fields[0].unit}
