@@ -179,4 +179,6 @@ public interface IInvoiceDAO extends ISingletonService
 	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
+
+	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
 }
