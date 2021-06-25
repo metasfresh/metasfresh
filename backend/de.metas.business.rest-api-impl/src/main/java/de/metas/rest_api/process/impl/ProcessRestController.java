@@ -134,7 +134,7 @@ public class ProcessRestController
 	{
 		final List<ProcessBasicInfo> processList = processService.getProcessesByType(ProcessType.getTypesRunnableFromAppRestController());
 
-		Loggables.withLogger(logger, Level.DEBUG).addLog("Retrieved {} process into items", processList.size());
+		Loggables.withLogger(logger, Level.DEBUG).addLog("Retrieved {} process-info items", processList.size());
 				
 		final List<JSONProcessBasicInfo> jsonProcessList = processList
 				.stream()
