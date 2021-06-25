@@ -104,42 +104,6 @@ class TaxDAOTest
 	}
 
 	@Nested
-	@DisplayName("No Org Id & warehouse ID provided")
-	public class NoOrgIdNoWarehouseId
-	{
-		@Test
-		@DisplayName("Domestic")
-		public void domestic()
-		{
-			noOrgIdNoWarehouseIdTestByTypeOfDestCountry(DOMESTIC);
-		}
-
-		@Test
-		@DisplayName("Within EU")
-		public void eu()
-		{
-			noOrgIdNoWarehouseIdTestByTypeOfDestCountry(WITHIN_COUNTRY_AREA);
-		}
-
-		@Test
-		@DisplayName("Outside EU")
-		public void nonEu()
-		{
-			noOrgIdNoWarehouseIdTestByTypeOfDestCountry(OUTSIDE_COUNTRY_AREA);
-		}
-	}
-
-	private void noOrgIdNoWarehouseIdTestByTypeOfDestCountry(final TypeOfDestCountry type)
-	{
-		assertThatExceptionOfType(AdempiereException.class).isThrownBy(() ->
-				taxDAO.getBy(TaxQuery.builder()
-						.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(type))
-						.dateOfInterest(DATE_OF_INTEREST)
-						.build())
-		);
-	}
-
-	@Nested
 	@DisplayName("Org Id provided, Warehouse Id NOT provided")
 	public class OrgIdNoWarehouseId
 	{
