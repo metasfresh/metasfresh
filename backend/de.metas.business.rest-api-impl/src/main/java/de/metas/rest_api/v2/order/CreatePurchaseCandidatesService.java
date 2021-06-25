@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.order;
 
+import ch.qos.logback.classic.Level;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonExternalId;
@@ -38,6 +39,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -54,6 +56,7 @@ import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.warehouse.WarehouseService;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -66,6 +69,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -77,6 +81,8 @@ import java.util.Optional;
 @Service
 public class CreatePurchaseCandidatesService
 {
+	private final static transient Logger logger = LogManager.getLogger(CreatePurchaseCandidatesService.class);
+
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
@@ -104,8 +110,11 @@ public class CreatePurchaseCandidatesService
 
 	public Optional<JsonPurchaseCandidate> createCandidate(@RequestBody final JsonPurchaseCandidateCreateItem request)
 	{
-		if (wasPurchaseCandAlreadyCreated(request))
+		final Optional<PurchaseCandidateId> alreadyCreatedCandId = retrieveAlreadyCreatedCandId(request);
+		if (alreadyCreatedCandId.isPresent())
 		{
+			Loggables.withLogger(logger, Level.INFO).addLog("C_PurchaseCandidate_ID={} with ExternalHeaderId={} and ExternalLineId={} already exists; -> ignore request",
+															alreadyCreatedCandId.get().getRepoId(), request.getExternalHeaderId(), request.getExternalLineId());
 			return Optional.empty();
 		}
 
@@ -173,16 +182,16 @@ public class CreatePurchaseCandidatesService
 		return purchaseCandidate;
 	}
 
-	private boolean wasPurchaseCandAlreadyCreated(@NonNull final JsonPurchaseCandidateCreateItem purchaseCandRequest)
+	private Optional<PurchaseCandidateId> retrieveAlreadyCreatedCandId(@NonNull final JsonPurchaseCandidateCreateItem purchaseCandRequest)
 	{
 		if (Check.isBlank(purchaseCandRequest.getExternalHeaderId())
 				|| Check.isBlank(purchaseCandRequest.getExternalLineId()))
 		{
-			return false;
+			return Optional.empty();
 		}
 
 		return purchaseCandidateRepo.getByExternalHeaderAndLineId(purchaseCandRequest.getExternalHeaderId(),
-																  purchaseCandRequest.getExternalLineId()).isPresent();
+																  purchaseCandRequest.getExternalLineId());
 
 	}
 
