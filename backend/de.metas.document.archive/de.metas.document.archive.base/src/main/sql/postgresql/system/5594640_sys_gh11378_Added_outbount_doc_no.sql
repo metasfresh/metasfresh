@@ -287,3 +287,4 @@ set IsMandatory='Y', Updatedby=99, Updated='2021-06-25 16:52:51.441653 +03:00'
 where ad_column_id in (select ad_column.ad_column_id
                        from ad_column
                        where columnname = 'DocumentNo' and ad_table_id not in (get_table_id('AD_Archive'), get_table_id('C_Doc_Outbound_Log')))
+;                       
