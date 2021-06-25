@@ -29,6 +29,7 @@ import de.metas.organization.IFiscalRepresentationBL;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.compiere.model.I_C_Fiscal_Representation;
@@ -59,7 +60,7 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 
 	public boolean isValidToDate(final I_C_Fiscal_Representation fiscalRep)
 	{
-		return fiscalRep.getValidTo().after(fiscalRep.getValidFrom());
+		return fiscalRep.getValidTo() == null || fiscalRep.getValidTo().after(fiscalRep.getValidFrom());
 	}
 
 	public void updateValidTo(final I_C_Fiscal_Representation fiscalRep)
@@ -73,13 +74,18 @@ public class FiscalRepresentationBL implements IFiscalRepresentationBL
 	}
 
 	@Override
-	public boolean hasFiscalRepresentation(@NonNull final CountryId countryId, @NonNull final  OrgId orgId, @NonNull final Timestamp date)
+	public boolean hasFiscalRepresentation(@NonNull final CountryId countryId, @NonNull final OrgId orgId, @NonNull final Timestamp date)
 	{
+		final ICompositeQueryFilter<I_C_Fiscal_Representation> validToFilter = queryBL.createCompositeQueryFilter(I_C_Fiscal_Representation.class)
+				.setJoinOr()
+				.addCompareFilter(I_C_Fiscal_Representation.COLUMN_ValidTo, CompareQueryFilter.Operator.GREATER_OR_EQUAL, date)
+				.addEqualsFilter(I_C_Fiscal_Representation.COLUMN_ValidTo, null);
+
 		return queryBL.createQueryBuilder(I_C_Fiscal_Representation.class)
 				.addEqualsFilter(I_C_Fiscal_Representation.COLUMNNAME_To_Country_ID, countryId)
 				.addEqualsFilter(I_C_Fiscal_Representation.COLUMNNAME_AD_Org_ID, orgId)
 				.addCompareFilter(I_C_Fiscal_Representation.COLUMN_ValidFrom, CompareQueryFilter.Operator.LESS_OR_EQUAL,date)
-				.addCompareFilter(I_C_Fiscal_Representation.COLUMN_ValidTo, CompareQueryFilter.Operator.GREATER_OR_EQUAL,date)
+				.filter(validToFilter)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
