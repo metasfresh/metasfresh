@@ -19,6 +19,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -47,7 +48,7 @@ import java.util.Optional;
  * #L%
  */
 
-@Component
+@Repository
 public class GroupTemplateRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);

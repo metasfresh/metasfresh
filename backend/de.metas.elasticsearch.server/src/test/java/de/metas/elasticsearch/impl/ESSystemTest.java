@@ -1,6 +1,5 @@
-package de.metas.elasticsearch;
+package de.metas.elasticsearch.impl;
 
-import de.metas.elasticsearch.impl.ESSystem;
 import de.metas.elasticsearch.server.ESServer;
 import org.junit.Assert;
 import org.junit.Test;

@@ -20,31 +20,18 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.dashboard.json;
 
-import de.metas.ui.web.dashboard.json.KPIJsonOptions;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
-public class KPIDataSetValuesAggregationKey
+@Builder
+public class JsonKPIZoomInfoDetails
 {
-	public static final KPIDataSetValuesAggregationKey NO_KEY = new KPIDataSetValuesAggregationKey(KPIDataValue.ofUnknownType(null));
-
-	public static KPIDataSetValuesAggregationKey of(@NonNull final KPIDataValue value)
-	{
-		return new KPIDataSetValuesAggregationKey(value);
-	}
-
-	@NonNull KPIDataValue value;
-
-	private KPIDataSetValuesAggregationKey(@NonNull final KPIDataValue value)
-	{
-		this.value = value;
-	}
-
-	public Object toJsonValue(@NonNull final KPIJsonOptions jsonOpts)
-	{
-		return value.toJsonValue(jsonOpts);
-	}
+	@NonNull String windowId;
+	@NonNull String viewId;
 }

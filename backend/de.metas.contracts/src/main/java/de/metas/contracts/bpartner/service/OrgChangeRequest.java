@@ -23,6 +23,8 @@
 package de.metas.contracts.bpartner.service;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.order.compensationGroup.GroupCategoryId;
+import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -45,5 +47,5 @@ public class OrgChangeRequest
 	@NonNull Instant startDate;
 
 	@Nullable
-	ProductId membershipProductId;
+	GroupCategoryId groupCategoryId;
 }

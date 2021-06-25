@@ -1,8 +1,29 @@
-package de.metas.ui.web.dashboard;
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.ui.web.kpi;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
-import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -68,24 +89,4 @@ public class KPITimeRangeDefaults
 				.defaultTimeRangeEndOffset(CoalesceUtil.coalesce(getDefaultTimeRangeEndOffset(), fallback.getDefaultTimeRangeEndOffset()))
 				.build();
 	}
-
-	public static class KPITimeRangeDefaultsBuilder
-	{
-		public KPITimeRangeDefaultsBuilder defaultTimeRangeFromString(final String defaultTimeRangeStr)
-		{
-			return defaultTimeRange(parseDurationOrNull(defaultTimeRangeStr));
-		}
-
-		public KPITimeRangeDefaultsBuilder defaultTimeRangeEndOffsetFromString(final String defaultTimeRangeEndOffsetStr)
-		{
-			return defaultTimeRangeEndOffset(parseDurationOrNull(defaultTimeRangeEndOffsetStr));
-		}
-
-		@Nullable
-		private static Duration parseDurationOrNull(@Nullable final String durationStr)
-		{
-			return durationStr == null || Check.isBlank(durationStr) ? null : Duration.parse(durationStr);
-		}
-	}
-
 }

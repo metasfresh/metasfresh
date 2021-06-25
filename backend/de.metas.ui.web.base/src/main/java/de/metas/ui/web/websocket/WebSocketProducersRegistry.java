@@ -23,6 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -216,6 +217,16 @@ public final class WebSocketProducersRegistry
 		}
 	}
 
+	public <T extends WebSocketProducer> Stream<T> streamActiveProducersOfType(
+			@NonNull final Class<T> producerType)
+	{
+		return _producersByTopicName.values()
+				.stream()
+				.filter(producerInstance -> producerType.isInstance(producerInstance.producer))
+				.filter(producerInstance -> producerInstance.hasActiveSubscriptions())
+				.map(producerInstance -> producerType.cast(producerInstance.producer));
+	}
+
 	private static final class WebSocketProducerInstance
 	{
 		private final WebsocketTopicName topicName;
@@ -298,9 +309,14 @@ public final class WebSocketProducersRegistry
 			}
 		}
 
+		public synchronized boolean hasActiveSubscriptions()
+		{
+			return !activeSubscriptionIds.isEmpty();
+		}
+
 		private void stopIfNoSubscription()
 		{
-			if (!activeSubscriptionIds.isEmpty())
+			if (hasActiveSubscriptions())
 			{
 				return;
 			}
