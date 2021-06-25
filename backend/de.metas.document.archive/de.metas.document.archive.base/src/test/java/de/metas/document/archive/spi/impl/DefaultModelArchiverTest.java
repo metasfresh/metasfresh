@@ -45,6 +45,8 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
+
 class DefaultModelArchiverTest
 {
 	private DefaultModelArchiverTestHelper helper;
@@ -107,6 +109,7 @@ class DefaultModelArchiverTest
 		Assertions.assertThat(archiveRecord.getAD_Language()).isEqualTo("ro_RO");
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
 		Assertions.assertThat(archiveRecord.getDocumentNo()).isEqualTo(invoice.getDocumentNo());
+		Assertions.assertThat(archiveRecord.getName()).isEqualTo(MOCKED_REPORT_FILENAME);
 	}
 
 	@Test
@@ -131,5 +134,6 @@ class DefaultModelArchiverTest
 		Assertions.assertThat(archiveRecord.getC_BPartner_ID()).isEqualTo(record.getC_BPartner_ID());
 		Assertions.assertThat(archiveRecord.getAD_Language()).isEqualTo("ro_RO");
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
+		Assertions.assertThat(archiveRecord.getName()).isEqualTo(MOCKED_REPORT_FILENAME);
 	}
 }

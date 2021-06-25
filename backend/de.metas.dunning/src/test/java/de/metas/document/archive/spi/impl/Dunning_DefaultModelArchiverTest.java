@@ -45,6 +45,8 @@ import org.compiere.util.Env;
 import org.junit.Before;
 import org.junit.Test;
 
+import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
+
 /**
  * Integration test between {@link DefaultModelArchiver} and dunning project.
  */
@@ -113,6 +115,7 @@ public class Dunning_DefaultModelArchiverTest extends DunningTestBase
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
 		Assertions.assertThat(archiveRecord.getAD_Process_ID()).isEqualTo(printProcessId.getRepoId());
 		Assertions.assertThat(archiveRecord.getAD_PInstance_ID()).isEqualTo(11223344);
+		Assertions.assertThat(archiveRecord.getName()).isEqualTo(MOCKED_REPORT_FILENAME);
 	}
 
 }
