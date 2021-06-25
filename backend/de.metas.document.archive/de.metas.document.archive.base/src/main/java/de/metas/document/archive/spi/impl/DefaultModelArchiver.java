@@ -9,6 +9,8 @@ import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcesso
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
+import de.metas.document.sequence.IDocumentNoBL;
+import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.report.DocumentReportFlavor;
@@ -79,6 +81,7 @@ public class DefaultModelArchiver
 	private final transient IArchiveBL archiveBL = Services.get(org.adempiere.archive.api.IArchiveBL.class);
 	private final transient IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
+	private final transient IDocumentNoBL documentNoBL = Services.get(IDocumentNoBL.class);
 	private DocumentReportService _documentReportService; // lazy
 
 	//
@@ -186,12 +189,15 @@ public class DefaultModelArchiver
 			throw new AdempiereException("Cannot create PDF data for " + this);
 		}
 
+		final String documentNo = documentNoBL.asDocumentNoAware(getRecord()).map(IDocumentNoAware::getDocumentNo).orElse(null);
+
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
 																	  .flavor(report.getFlavor())
 																	  .data(report.getDataAsByteArray())
 																	  .force(true)
 																	  .save(true)
 																	  .trxName(ITrx.TRXNAME_ThreadInherited)
+																	  .documentNo(documentNo)
 																	  .recordRef(report.getDocumentRef())
 																	  .processId(report.getReportProcessId())
 																	  .pinstanceId(report.getReportPInstanceId())
