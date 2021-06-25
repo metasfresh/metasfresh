@@ -38,7 +38,7 @@ public class TaxUtils
 				.taxId(TaxId.ofRepoId(from.getC_Tax_ID()))
 				.orgId(OrgId.ofRepoId(from.getAD_Org_ID()))
 				.validFrom(from.getValidFrom())
-				.countryId(CountryId.ofRepoId(from.getC_Country_ID()))
+				.countryId(CountryId.ofRepoIdOrNull(from.getC_Country_ID()))
 				.toCountryId(CountryId.ofRepoIdOrNull(from.getTo_Country_ID()))
 				.typeOfDestCountry(TypeOfDestCountry.ofNullableCode(from.getTypeOfDestCountry()))
 				.taxCategoryId(TaxCategoryId.ofRepoId(from.getC_TaxCategory_ID()))

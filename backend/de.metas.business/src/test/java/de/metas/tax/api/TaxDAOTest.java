@@ -24,12 +24,12 @@ package de.metas.tax.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.lang.SOTrx;
 import de.metas.location.ICountryAreaBL;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
@@ -59,8 +59,7 @@ import static de.metas.tax.api.TypeOfDestCountry.OUTSIDE_COUNTRY_AREA;
 import static de.metas.tax.api.TypeOfDestCountry.WITHIN_COUNTRY_AREA;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 
 class TaxDAOTest
 {
@@ -135,6 +134,7 @@ class TaxDAOTest
 				.orgId(ORG_ID)
 				.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(type))
 				.dateOfInterest(DATE_OF_INTEREST)
+				.soTrx(SOTrx.SALES)
 				.build());
 		assertThat(tax).isNotNull();
 		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdByOrgIdMap.get(type));
@@ -179,6 +179,7 @@ class TaxDAOTest
 				.warehouseId(WAREHOUSE_ID)
 				.bPartnerLocationId(typeOfDestCountryBPartnerLocationIdMap.get(type))
 				.dateOfInterest(DATE_OF_INTEREST)
+				.soTrx(SOTrx.SALES)
 				.build());
 		assertThat(tax).isNotNull();
 		assertThat(tax.getTaxId()).isEqualTo(typeOfDestCountryTaxIdByWarehouseIdMap.get(type));

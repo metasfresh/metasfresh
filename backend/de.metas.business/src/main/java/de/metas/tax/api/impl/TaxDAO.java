@@ -253,14 +253,7 @@ public class TaxDAO implements ITaxDAO
 		final BPartnerId bpartnerId = taxQuery.getBpartnerId();
 		final Timestamp dateOfInterest = taxQuery.getDateOfInterest();
 		final OrgId orgId = taxQuery.getOrgId();
-
-		if (bpartnerId != null && retrieveIsTaxExemptSmallBusiness(bpartnerId, dateOfInterest) && taxQuery.getSoTrx().isPurchase())
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("SOTrx=N and C_BPartner_ID={} is small business; => return extempt-tax", bpartnerId.getRepoId());
-
-			final TaxId exemptTax = retrieveExemptTax(orgId);
-			return getTaxById(exemptTax);
-		}
+		
 		final List<Tax> taxes = getTaxesFromQuery(taxQuery);
 
 		if (taxes.size() > 1)

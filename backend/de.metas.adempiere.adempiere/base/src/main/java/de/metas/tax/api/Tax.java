@@ -49,7 +49,7 @@ public class Tax
 	@NonNull TaxId taxId;
 	@NonNull OrgId orgId;
 	@NonNull Timestamp validFrom;
-	@NonNull CountryId countryId;
+	@Nullable CountryId countryId;
 	@Nullable
 	CountryId toCountryId;
 	@Nullable
@@ -71,7 +71,7 @@ public class Tax
 	public Tax(final @NonNull TaxId taxId,
 			final @NonNull OrgId orgId,
 			final @NonNull Timestamp validFrom,
-			final @NonNull CountryId countryId,
+			final @Nullable CountryId countryId,
 			final @Nullable CountryId toCountryId,
 			final @Nullable TypeOfDestCountry typeOfDestCountry,
 			final @NonNull TaxCategoryId taxCategoryId,
