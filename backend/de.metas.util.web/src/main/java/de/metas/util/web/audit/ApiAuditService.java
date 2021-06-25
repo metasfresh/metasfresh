@@ -55,9 +55,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
+import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -96,6 +98,13 @@ public class ApiAuditService
 	private static final AdMessageKey MSG_API_INVOCATION_FAILED =
 			AdMessageKey.of("de.metas.util.web.audit.invocation_failed");
 
+	private static final String CFG_INTERNAL_HOST_NAME = "de.metas.util.web.audit.AppServerInternalHostName";
+
+	/**
+	 * this default works if you run both app and webapi locally. In our usual stack, it should be set to {@code "app"}.
+	 */
+	private static final String CFG_INTERNAL_HOST_NAME_DEFAULT = "localhost";
+
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private final ApiAuditConfigRepository apiAuditConfigRepository;
@@ -107,16 +116,26 @@ public class ApiAuditService
 	private final ConcurrentHashMap<UserId, HttpCallScheduler> callerId2Scheduler;
 	private final ObjectMapper objectMapper;
 
+	/**
+	 * Required by {@link #executeHttpCall(ApiRequestAudit)} to get our own port at runtime. That also works with random ports.
+	 * Thx to https://www.baeldung.com/spring-boot-running-port#1-using-servletwebserverapplicationcontext !
+	 */
+	private final ServletWebServerApplicationContext servletWebServerApplicationContext;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	public ApiAuditService(
 			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository,
 			@NonNull final ApiRequestAuditRepository apiRequestAuditRepository,
 			@NonNull final ApiResponseAuditRepository apiResponseAuditRepository,
-			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO)
+			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO,
+			@NonNull final ServletWebServerApplicationContext servletWebServerApplicationContext)
 	{
 		this.apiAuditConfigRepository = apiAuditConfigRepository;
 		this.apiRequestAuditRepository = apiRequestAuditRepository;
 		this.apiResponseAuditRepository = apiResponseAuditRepository;
 		this.apiAuditRequestLogDAO = apiAuditRequestLogDAO;
+		this.servletWebServerApplicationContext = servletWebServerApplicationContext;
+
 		this.webClient = WebClient.create();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
 		this.objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
@@ -176,7 +195,7 @@ public class ApiAuditService
 
 		final ApiAuditLoggable apiAuditLoggable = createLogger(requestAudit.getIdNotNull(), requestAudit.getUserId());
 
-		try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(apiAuditLoggable))
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
 		{
 			final CompletableFuture<ApiResponse> actualRestApiResponseCF = new CompletableFuture<>();
 
@@ -192,13 +211,13 @@ public class ApiAuditService
 
 			final Supplier<ApiResponse> callEndpointSupplier = () -> executeHttpCall(requestAudit);
 
-			final ScheduleRequest scheduleRequest = new ScheduleRequest(actualRestApiResponseCF, callEndpointSupplier);
+			final ScheduledRequest scheduledRequest = new ScheduledRequest(actualRestApiResponseCF, callEndpointSupplier);
 
 			final UserId callerUserId = Env.getLoggedUserId();
 
 			final HttpCallScheduler httpCallScheduler = callerId2Scheduler.computeIfAbsent(callerUserId, (userId) -> new HttpCallScheduler());
 
-			httpCallScheduler.schedule(scheduleRequest);
+			httpCallScheduler.schedule(scheduledRequest);
 
 			handleSuccessfulResponse(apiAuditConfig, requestAudit, whenCompleteFuture, response);
 		}
@@ -213,6 +232,14 @@ public class ApiAuditService
 		}
 	}
 
+	/**
+	 * Executes the request that is wrapped in the given {@code apiRequestAudit} using the spring {@link WebClient}.
+	 * <p>
+	 * Note that it makes the call against {@code http://localhost + <our-current-port> + }{@link ApiRequestAudit#getRequestURI()}
+	 * and not to the URL that we are called with from the outside (i.e. {@link ApiRequestAudit#getPath()}).
+	 * <p>
+	 * This is to avoid problems with our reverse proxy that would otherwise be invoked once again, but with an already rewritten URL.
+	 */
 	@NonNull
 	public ApiResponse executeHttpCall(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
@@ -234,10 +261,15 @@ public class ApiAuditService
 
 		httpHeaders.add(API_FILTER_REQUEST_ID_HEADER, String.valueOf(apiRequestAudit.getIdNotNull().getRepoId()));
 
-		httpHeaders
-				.forEach((key, value) -> uriSpec.header(key, value.toArray(new String[0])));
+		httpHeaders.forEach((key, value) -> uriSpec.header(key, value.toArray(new String[0])));
 
-		final URI uri = URI.create(apiRequestAudit.getPath());
+		final int ourPort = servletWebServerApplicationContext.getWebServer().getPort();
+
+		final String hostName = computeInternalHostName(apiRequestAudit);
+		final String[] split = apiRequestAudit.getPath().split("\\?");
+		final String queryString = split.length > 1 ? "?" + split[1] : "";
+
+		final URI uri = URI.create("http://" + hostName + ":" + ourPort + apiRequestAudit.getRequestURI() + queryString);
 
 		final WebClient.RequestBodySpec bodySpec = uriSpec.uri(uri);
 
@@ -254,6 +286,20 @@ public class ApiAuditService
 				.defaultIfEmpty(ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
 
 				.block();
+	}
+
+	private String computeInternalHostName(@NonNull final ApiRequestAudit apiRequestAudit)
+	{
+		final String hostName;
+		if (apiRequestAudit.getPath().startsWith("http://localhost"))
+		{
+			hostName = "localhost";
+		}
+		else
+		{
+			hostName = sysConfigBL.getValue(CFG_INTERNAL_HOST_NAME, CFG_INTERNAL_HOST_NAME_DEFAULT);
+		}
+		return hostName;
 	}
 
 	public void logResponse(
@@ -400,7 +446,7 @@ public class ApiAuditService
 			@Nullable final Throwable throwable,
 			@NonNull final FutureCompletionContext completionContext)
 	{
-		try (final IAutoCloseable loggableRestorer = Loggables.temporarySetLoggable(completionContext.getApiAuditLoggable()))
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(completionContext.getApiAuditLoggable()))
 		{
 			if (apiResponse != null)
 			{
@@ -446,15 +492,20 @@ public class ApiAuditService
 
 		if (actualAPIResponse.getHttpHeaders() != null)
 		{
-			forwardResponseHttpHeaders(actualAPIResponse.getHttpHeaders(), httpServletResponse);
+			forwardSomeResponseHttpHeaders(actualAPIResponse.getHttpHeaders(), httpServletResponse);
 		}
+
+		final String stringToForward = objectMapper.writeValueAsString(apiResponse);
 
 		httpServletResponse.setContentType(APPLICATION_JSON_VALUE);
 		httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
+		httpServletResponse.setStatus(actualAPIResponse.getStatusCode());
 
 		httpServletResponse.resetBuffer();
-		httpServletResponse.setStatus(actualAPIResponse.getStatusCode());
-		httpServletResponse.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+		if (stringToForward != null)
+		{
+			httpServletResponse.getWriter().write(stringToForward);
+		}
 		httpServletResponse.flushBuffer();
 	}
 
@@ -467,13 +518,14 @@ public class ApiAuditService
 		return ApiResponse.of(HttpStatus.ACCEPTED.value(), httpHeaders, null);
 	}
 
-	private void forwardResponseHttpHeaders(@NonNull final HttpHeaders httpHeaders, @NonNull final HttpServletResponse servletResponse)
+	private void forwardSomeResponseHttpHeaders(@NonNull final HttpHeaders httpHeaders, @NonNull final HttpServletResponse servletResponse)
 	{
 		httpHeaders.keySet()
 				.stream()
 				.filter(key -> !key.equals(HttpHeaders.CONNECTION))
 				.filter(key -> !key.equals(HttpHeaders.CONTENT_LENGTH))
 				.filter(key -> !key.equals(HttpHeaders.CONTENT_TYPE))
+				.filter(key -> !key.equals(HttpHeaders.TRANSFER_ENCODING)) // if we forwarded this without knowing what we do, we would annoy a possible nginx reverse proxy
 				.forEach(key -> {
 					final List<String> values = httpHeaders.get(key);
 					if (values != null)
