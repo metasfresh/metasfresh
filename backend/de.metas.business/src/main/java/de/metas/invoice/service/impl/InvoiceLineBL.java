@@ -102,6 +102,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	@Override
@@ -156,7 +157,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@Override
 	public boolean setTaxForInvoiceLine(
 			final org.compiere.model.I_C_InvoiceLine il,
-			final OrgId orgId,
+			@NonNull final OrgId orgId,
 			final Timestamp taxDate,
 			final CountryId countryFromId,
 			final BPartnerLocationId partnerLocationId,
@@ -276,15 +277,14 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			final org.compiere.model.I_C_InvoiceLine invoiceLine,
 			final I_C_Invoice invoice)
 	{
-		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 
 		final PriceListId priceListId = PriceListId.ofRepoId(invoice.getM_PriceList_ID());
 
 		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(
 				priceListId,
-				TimeUtil.asZonedDateTime(invoice.getDateInvoiced()),
+				TimeUtil.asZonedDateTime(invoice.getDateInvoiced(), timeZone),
 				processedPLVFiltering);
 		Check.errorIf(priceListVersion == null, "Missing PLV for M_PriceList and DateInvoiced of {}", invoice);
 

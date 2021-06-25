@@ -41,7 +41,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 @Value
 public class TaxQuery
 {
-	@Nullable
+	@NonNull
 	OrgId orgId;
 
 	@Nullable
@@ -66,7 +66,7 @@ public class TaxQuery
 	TaxCategoryId taxCategoryId;
 
 	@Builder
-	public TaxQuery(@Nullable final OrgId orgId,
+	public TaxQuery(@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final CountryId fromCountryId,
 			@Nullable final Timestamp dateOfInterest,
@@ -90,14 +90,5 @@ public class TaxQuery
 		}
 		this.isSoTrx = isSoTrx;
 		this.taxCategoryId = taxCategoryId;
-		validate();
-	}
-
-	private void validate()
-	{
-		if (orgId == null && warehouseId == null)
-		{
-			throw new AdempiereException("At least one of the given orgId or warehouseId needs to be non-empty: " + this);
-		}
 	}
 }

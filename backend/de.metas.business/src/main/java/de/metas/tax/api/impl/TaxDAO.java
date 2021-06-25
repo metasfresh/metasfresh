@@ -254,7 +254,7 @@ public class TaxDAO implements ITaxDAO
 		final Timestamp dateOfInterest = taxQuery.getDateOfInterest();
 		final OrgId orgId = taxQuery.getOrgId();
 
-		if (bpartnerId != null && orgId != null && retrieveIsTaxExemptSmallBusiness(bpartnerId, dateOfInterest))
+		if (bpartnerId != null && retrieveIsTaxExemptSmallBusiness(bpartnerId, dateOfInterest))
 		{
 			final TaxId exemptTax = retrieveExemptTax(orgId);
 			return getTaxById(exemptTax);
@@ -268,7 +268,7 @@ public class TaxDAO implements ITaxDAO
 			final boolean multipleTaxesWithSameSeq = Objects.equals(firstTax.getSeqNo(), secondTax.getSeqNo());
 			if (multipleTaxesWithSameSeq)
 			{
-				throw new AdempiereException("Multiple taxes have the same seqNo: " + firstTax.getTaxId() + " and " + secondTax.getTaxId())
+				throw new AdempiereException("Multiple taxes have the same seqNo: C_Tax_ID=" + TaxId.toRepoId(firstTax.getTaxId()) + " and C_Tax_ID=" + TaxId.toRepoId(secondTax.getTaxId()))
 						.appendParametersToMessage()
 						.setParameter("taxQuery", taxQuery);
 			}
@@ -276,7 +276,7 @@ public class TaxDAO implements ITaxDAO
 		}
 		else if (taxes.size() == 1)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("Exact match found: {}", taxes.get(0).getTaxId().getRepoId());
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Exact match found: C_Tax_ID={}", taxes.get(0).getTaxId().getRepoId());
 		}
 		return taxes.isEmpty() ? null : taxes.get(0);
 	}
@@ -327,7 +327,7 @@ public class TaxDAO implements ITaxDAO
 					loggable.addLog("AD_Org_ID={} based on warehouse", warehouseOrgId.getRepoId());
 					orgId = warehouseOrgId;
 				}
-				
+
 				final CountryId warehouseCountryId = warehouseBL.getCountryId(warehouseId);
 				if (warehouseCountryId != null)
 				{
@@ -335,12 +335,12 @@ public class TaxDAO implements ITaxDAO
 					countryId = warehouseCountryId;
 				}
 			}
-			else if (orgId != null)
+			else
 			{
-				loggable.addLog("Effective AD_Org_ID={} (or any)", orgId);
+				loggable.addLog("Effective AD_Org_ID={} (or any)", orgId.getRepoId());
 				queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
 				countryId = bPartnerOrgBL.getOrgCountryId(orgId);
-				loggable.addLog("C_Country_ID={} based on organization", countryId.getRepoId());
+				loggable.addLog("C_Country_ID={} based on AD_Org_ID={}", countryId.getRepoId(), orgId.getRepoId());
 			}
 			if (countryId == null)
 			{
@@ -350,16 +350,19 @@ public class TaxDAO implements ITaxDAO
 			}
 		}
 
-		final boolean euOneStopShop = orgId != null && orgDAO.isEUOneStopShop(orgId);
-		if (orgId == null || !euOneStopShop)
+		final boolean euOneStopShop = orgDAO.isEUOneStopShop(orgId);
+		if (!euOneStopShop)
 		{
 			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Country_ID, countryId);
 		}
 		else
 		{
-			loggable.addLog(" AD_Org_ID={} has IsEUOneStopShop=Y; -> don't filter by C_Country_ID", orgId.getRepoId());
+			loggable.addLog(" AD_Org_ID={} has IsEUOneStopShop=Y; -> don't filter by origin C_Country_ID", orgId.getRepoId());
 		}
 
+		loggable.addLog("Effective AD_Org_ID={} (or any)", orgId.getRepoId());
+		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY);
+	
 		final Timestamp dateOfInterest = taxQuery.getDateOfInterest();
 		queryBuilder.addCompareFilter(I_C_Tax.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, dateOfInterest);
 		queryBuilder.addCompareFilter(I_C_Tax.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, dateOfInterest);
