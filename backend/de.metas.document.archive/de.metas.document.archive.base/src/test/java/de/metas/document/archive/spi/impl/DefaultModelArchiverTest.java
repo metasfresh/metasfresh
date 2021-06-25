@@ -45,6 +45,8 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
+
 class DefaultModelArchiverTest
 {
 	private DefaultModelArchiverTestHelper helper;
@@ -101,12 +103,13 @@ class DefaultModelArchiverTest
 
 		final ArchiveResult archiveResult = archive(invoice);
 		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
-		//Assertions.assertThat(archiveRecord.getName()).isEqualTo("ExpectedDocumentNo");
 		Assertions.assertThat(archiveRecord.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
 		Assertions.assertThat(archiveRecord.getRecord_ID()).isEqualTo(invoice.getC_Invoice_ID());
 		Assertions.assertThat(archiveRecord.getC_BPartner_ID()).isEqualTo(invoice.getC_BPartner_ID());
 		Assertions.assertThat(archiveRecord.getAD_Language()).isEqualTo("ro_RO");
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
+		Assertions.assertThat(archiveRecord.getDocumentNo()).isEqualTo(invoice.getDocumentNo());
+		Assertions.assertThat(archiveRecord.getName()).isEqualTo(MOCKED_REPORT_FILENAME);
 	}
 
 	@Test
@@ -121,17 +124,16 @@ class DefaultModelArchiverTest
 				.build();
 
 		final I_Test record = InterfaceWrapperHelper.newInstance(I_Test.class);
-		record.setName("ExpectedDocumentNo");
 		record.setC_BPartner_ID(bpartnerId.getRepoId());
 		InterfaceWrapperHelper.save(record);
 
 		final ArchiveResult archiveResult = archive(record);
 		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
-		//Assertions.assertThat(archiveRecord.getName()).isEqualTo("ExpectedDocumentNo");
 		Assertions.assertThat(archiveRecord.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_Test.class));
 		Assertions.assertThat(archiveRecord.getRecord_ID()).isEqualTo(record.getTest_ID());
 		Assertions.assertThat(archiveRecord.getC_BPartner_ID()).isEqualTo(record.getC_BPartner_ID());
 		Assertions.assertThat(archiveRecord.getAD_Language()).isEqualTo("ro_RO");
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
+		Assertions.assertThat(archiveRecord.getName()).isEqualTo(MOCKED_REPORT_FILENAME);
 	}
 }

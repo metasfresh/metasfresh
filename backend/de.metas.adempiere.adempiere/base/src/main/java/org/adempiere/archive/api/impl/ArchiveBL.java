@@ -126,6 +126,7 @@ public class ArchiveBL implements IArchiveBL
 		final String language = getLanguageFromReport(ctxToUse, request);
 		archive.setAD_Language(language);
 
+		archive.setDocumentNo(request.getDocumentNo());
 		archive.setName(request.getArchiveName());
 		archive.setIsReport(request.isReport());
 		//

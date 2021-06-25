@@ -2,6 +2,7 @@ package de.metas.document.sequence.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -58,13 +59,21 @@ public class DocumentNoBL implements IDocumentNoBL
 			return;
 		}
 
-		final IDocumentNoAware documentNoAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IDocumentNoAware.class);
-		if (documentNoAware == null)
+		final Optional<IDocumentNoAware> documentNoAware = asDocumentNoAware(model);
+		if (!documentNoAware.isPresent())
 		{
 			return;
 		}
 
-		documentNoListener.onDocumentNoChange(documentNoAware, newDocumentNo);
+		documentNoListener.onDocumentNoChange(documentNoAware.get(), newDocumentNo);
+	}
+
+	@Override
+	public Optional<IDocumentNoAware> asDocumentNoAware(final Object model)
+	{
+		final IDocumentNoAware documentNoAware = InterfaceWrapperHelper.asColumnReferenceAwareOrNull(model, IDocumentNoAware.class);
+
+		return Optional.of(documentNoAware);
 	}
 
 }
