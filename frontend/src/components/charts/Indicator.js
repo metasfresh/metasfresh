@@ -16,6 +16,7 @@ class Indicator extends Component {
       fullWidth,
       editmode,
       framework,
+      zoomToDetailsAvailable,
     } = this.props;
 
     if (loader)
@@ -33,7 +34,13 @@ class Indicator extends Component {
         }
         style={fullWidth ? { width: '100%' } : {}}
       >
-        <div className="indicator-kpi-caption">{caption}</div>
+        <div>
+          <div className="indicator-kpi-caption">{caption}</div>
+          {/* TODO: !!! this needs not to be hardcoded and must be provided by the BE */}
+          {zoomToDetailsAvailable && (
+            <div className="indicator-details-link">DETAILS</div>
+          )}
+        </div>
         <div className="indicator-data">
           <div className="indicator-amount">{amount}</div>
           <div className="indicator-unit">{unit}</div>
@@ -52,6 +59,7 @@ Indicator.propTypes = {
   framework: PropTypes.any,
   amount: PropTypes.number,
   unit: PropTypes.string,
+  zoomToDetailsAvailable: PropTypes.bool,
 };
 
 export default Indicator;

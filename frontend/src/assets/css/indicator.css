@@ -88,6 +88,15 @@
     font-weight: bold;
     text-align: left;
     color: $brand-color-primary;
+    width: 70%;
+    float: left;
+}
+.indicator-details-link {
+    width: 30%;
+    float: right;
+    text-align: right;
+    font-size: 0.9rem;
+    font-weight: bold;
 }
 
 
