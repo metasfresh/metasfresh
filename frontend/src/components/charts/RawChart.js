@@ -148,13 +148,13 @@ class RawChart extends Component {
             )}
 
             <Indicator
-              value={
-                noData
-                  ? ''
-                  : dataset0[0][fields[0].fieldName] +
-                    (fields[0].unit ? ' ' + fields[0].unit : '')
-              }
-              {...{ caption, editmode }}
+              amount={noData ? '' : dataset0[0][fields[0].fieldName]}
+              unit={noData ? '' : fields[0].unit}
+              {...{
+                caption:
+                  typeof caption === 'string' ? caption.toUpperCase() : caption,
+                editmode,
+              }}
             />
           </div>
         );

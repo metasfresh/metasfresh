@@ -165,11 +165,6 @@ public class DocTypeDAO implements IDocTypeDAO
 			filters.addEqualsFilter(I_C_DocType.COLUMN_Name, query.getName());
 		}
 
-		if (!Check.isEmpty(query.getDocSubTypeNotIn()))
-		{
-			filters.addNotInArrayFilter(I_C_DocType.COLUMNNAME_DocBaseType, query.getDocSubTypeNotIn());
-		}
-
 		queryBuilder.orderBy()
 				.addColumn(I_C_DocType.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last)
 				.addColumn(I_C_DocType.COLUMNNAME_AD_Org_ID, Direction.Descending, Nulls.Last)

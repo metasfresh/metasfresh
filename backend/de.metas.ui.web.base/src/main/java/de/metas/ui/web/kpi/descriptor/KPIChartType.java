@@ -1,15 +1,8 @@
-package de.metas.ui.web.dashboard;
-
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.ui.web.base.model.X_WEBUI_KPI;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,14 +20,20 @@ import de.metas.ui.web.base.model.X_WEBUI_KPI;
  * #L%
  */
 
+package de.metas.ui.web.kpi.descriptor;
+
+import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableMap;
+import de.metas.ui.web.base.model.X_WEBUI_KPI;
+
 public enum KPIChartType
 {
-	AreaChart(X_WEBUI_KPI.CHARTTYPE_AreaChart) //
-	, BarChart(X_WEBUI_KPI.CHARTTYPE_BarChart) //
-	, PieChart(X_WEBUI_KPI.CHARTTYPE_PieChart) //
-	, Metric(X_WEBUI_KPI.CHARTTYPE_Metric) //
-	;
-	private String code;
+	AreaChart(X_WEBUI_KPI.CHARTTYPE_AreaChart),
+	BarChart(X_WEBUI_KPI.CHARTTYPE_BarChart),
+	PieChart(X_WEBUI_KPI.CHARTTYPE_PieChart),
+	Metric(X_WEBUI_KPI.CHARTTYPE_Metric);
+
+	private final String code;
 
 	KPIChartType(final String code)
 	{
@@ -62,7 +61,7 @@ public enum KPIChartType
 		return type;
 	}
 
-	private static final ImmutableMap<String, KPIChartType> code2type = ImmutableMap.<String, KPIChartType> builder()
+	private static final ImmutableMap<String, KPIChartType> code2type = ImmutableMap.<String, KPIChartType>builder()
 			.put(AreaChart.getCode(), AreaChart)
 			.put(BarChart.getCode(), BarChart)
 			.put(PieChart.getCode(), PieChart)

@@ -1,6 +1,5 @@
 .indicators-wrapper {
     border-radius: 3px;
-    overflow: hidden;
     margin: 1rem 0;
 }
 
@@ -32,10 +31,13 @@
     border-right: none;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: left;
     height: 130px;
-    padding: 10px;
+    padding: 20px;
     overflow: hidden;
+    border-radius: 5px;
+    box-shadow: 0 2px 7px 0 rgba(0,0,0,0.2);
+    margin-right: 10px;
 }
 
 .indicator-draggable {
@@ -46,16 +48,31 @@
     border-right: 1px solid $brand-border-color;
 }
 
-.indicator-value {
+.indicator-data {
+    padding-top: 0;
+    margin-top: -0.3rem;
+}
+
+.indicator-amount {
     font-size: 2.2rem;
     font-weight: bold;
-    text-align: center;
-    flex: 2;
-    display: flex;
-    align-items: flex-end;
+    text-align: left;
+    float: left;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding-right: 0.3rem
+}
+
+.indicator-unit {
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: left;
+  float: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-top: 1.3rem;
 }
 
 .indicator-caption {
@@ -63,15 +80,14 @@
     font-weight: bold;
     font-size: 0.8rem;
     background: $brand-super-light-color;
-    padding: 5px;
+    padding: 0.2rem;
 }
 
 .indicator-kpi-caption {
     font-size: 0.8rem;
-    text-align: center;
-    flex: 1;
-    vertical-align: middle;
-    display: flex;
+    font-weight: bold;
+    text-align: left;
+    color: $brand-color-primary;
 }
 
 

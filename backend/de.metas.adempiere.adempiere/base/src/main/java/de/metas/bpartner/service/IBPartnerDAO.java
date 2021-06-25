@@ -22,23 +22,7 @@
 
 package de.metas.bpartner.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_Relation;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -46,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -59,7 +44,19 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.I_C_BPartner_Stats;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -310,6 +307,12 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
+
+	Optional<BPartnerId> getCounterpartBPartnerId(
+			@NonNull OrgMappingId orgMappingId,
+			@NonNull OrgId targetOrgId);
+
+	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
 
 	@Value
 	@Builder

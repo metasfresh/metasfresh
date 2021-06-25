@@ -13,7 +13,13 @@ import de.metas.ui.web.base.model.I_WEBUI_Dashboard;
 import de.metas.ui.web.base.model.I_WEBUI_DashboardItem;
 import de.metas.ui.web.base.model.I_WEBUI_KPI;
 import de.metas.ui.web.dashboard.UserDashboardItemChangeResult.UserDashboardItemChangeResultBuilder;
+import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.descriptor.KPI;
+import de.metas.ui.web.kpi.descriptor.KPIId;
+import de.metas.ui.web.kpi.descriptor.KPIRepository;
+import de.metas.ui.web.kpi.descriptor.KPISupplier;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,6 +42,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,7 +63,7 @@ public class UserDashboardRepository
 
 	private final CCache<UserDashboardKey, Optional<UserDashboardId>> key2dashboardId = CCache.newLRUCache(I_WEBUI_Dashboard.Table_Name + "#key2DashboardId", Integer.MAX_VALUE, 0);
 
-	private final CCache<UserDashboardId, UserDashboard> dashboadsCache = CCache.<UserDashboardId, UserDashboard> builder()
+	private final CCache<UserDashboardId, UserDashboard> dashboadsCache = CCache.<UserDashboardId, UserDashboard>builder()
 			.cacheName(I_WEBUI_Dashboard.Table_Name + "#UserDashboard")
 			.tableName(I_WEBUI_Dashboard.Table_Name)
 			.additionalTableNameToResetFor(I_WEBUI_DashboardItem.Table_Name)
@@ -102,11 +109,11 @@ public class UserDashboardRepository
 		final UserDashboardId dashboardId = queryBL
 				.createQueryBuilder(I_WEBUI_Dashboard.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_WEBUI_Dashboard.COLUMN_AD_Client_ID, ClientId.SYSTEM, adClientId)
+				.addInArrayFilter(I_WEBUI_Dashboard.COLUMNNAME_AD_Client_ID, ClientId.SYSTEM, adClientId)
 				//
 				.orderBy()
-				.addColumn(I_WEBUI_Dashboard.COLUMN_AD_Client_ID, Direction.Descending, Nulls.Last)
-				.addColumn(I_WEBUI_Dashboard.COLUMN_IsDefault, Direction.Descending, Nulls.Last)
+				.addColumn(I_WEBUI_Dashboard.COLUMNNAME_AD_Client_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_WEBUI_Dashboard.COLUMNNAME_IsDefault, Direction.Descending, Nulls.Last)
 				.addColumn(I_WEBUI_Dashboard.COLUMN_WEBUI_Dashboard_ID)
 				.endOrderBy()
 				//
@@ -146,8 +153,8 @@ public class UserDashboardRepository
 				.addColumn(I_WEBUI_DashboardItem.COLUMN_SeqNo, Direction.Ascending, Nulls.First)
 				.addColumn(I_WEBUI_DashboardItem.COLUMN_WEBUI_DashboardItem_ID)
 				.endOrderBy()
-		//
-		;
+				//
+				;
 
 	}
 
@@ -169,11 +176,16 @@ public class UserDashboardRepository
 				.kpiSupplier(kpiSupplier)
 				//
 				.timeRangeDefaults(KPITimeRangeDefaults.builder()
-						.defaultTimeRangeFromString(itemPO.getES_TimeRange())
-						.defaultTimeRangeEndOffsetFromString(itemPO.getES_TimeRange_End())
+						.defaultTimeRange(parseDuration(itemPO.getES_TimeRange()).orElse(null))
+						.defaultTimeRangeEndOffset(parseDuration(itemPO.getES_TimeRange_End()).orElse(null))
 						.build())
 				//
 				.build();
+	}
+
+	private static Optional<Duration> parseDuration(@Nullable final String durationStr)
+	{
+		return StringUtils.trimBlankToOptional(durationStr).map(Duration::parse);
 	}
 
 	private void changeUserDashboardItemAndSave(@NonNull final I_WEBUI_DashboardItem itemPO, @NonNull final UserDashboardItemChangeRequest request)
@@ -341,7 +353,9 @@ public class UserDashboardRepository
 		}
 	}
 
-	/** @return new itemId */
+	/**
+	 * @return new itemId
+	 */
 	public UserDashboardItemId addUserDashboardItem(final UserDashboard userDashboard, @NonNull final UserDashboardItemAddRequest request)
 	{
 		final UserDashboardId dashboardId = userDashboard.getId();

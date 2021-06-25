@@ -20,21 +20,33 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.data;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.elasticsearch.IESSystem;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.TimeRange;
+import de.metas.ui.web.kpi.descriptor.KPI;
+import de.metas.ui.web.kpi.descriptor.KPIDatasourceType;
+import de.metas.ui.web.kpi.descriptor.KPIId;
+import de.metas.ui.web.kpi.descriptor.KPIRepository;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -58,7 +70,7 @@ public class KPIDataProvider
 		this.kpiRepository = kpiRepository;
 	}
 
-	public KPIDataResult getKPIData(@NonNull final KPIDataRequest request)
+	public ExplainedOptional<KPIDataResult> getKPIData(@NonNull final KPIDataRequest request)
 	{
 		if (isCacheCleanupRandomHit())
 		{
@@ -70,16 +82,19 @@ public class KPIDataProvider
 				extractCacheKey(request),
 				(cacheKey, existingCacheValue) -> computeCacheValueIfNeeded(cacheKey, existingCacheValue, maxStaleAccepted));
 
-		return cacheValue.getData();
+		return cacheValue.toExplainedOptional();
 	}
 
-	private static KPIDataCacheKey extractCacheKey(@NonNull final KPIDataRequest request)
+	private KPIDataCacheKey extractCacheKey(@NonNull final KPIDataRequest request)
 	{
+		final KPI kpi = kpiRepository.getKPI(request.getKpiId());
+		final KPIDataContext contextReduced = request.getContext()
+				.retainOnlyRequiredParameters(kpi.getRequiredContextParameters());
+
 		return KPIDataCacheKey.builder()
 				.kpiId(request.getKpiId())
 				.timeRangeDefaults(request.getTimeRangeDefaults())
-				.from(request.getFrom())
-				.to(request.getTo())
+				.context(contextReduced)
 				.build();
 	}
 
@@ -109,18 +124,51 @@ public class KPIDataProvider
 
 	private KPIDataCacheValue computeCacheValue(@NonNull final KPIDataCacheKey cacheKey)
 	{
+		final KPIDataContext context = cacheKey.getContext();
 		final KPITimeRangeDefaults timeRangeDefaults = cacheKey.getTimeRangeDefaults();
-		final TimeRange timeRange = timeRangeDefaults.createTimeRange(cacheKey.getFrom(), cacheKey.getTo());
+		final TimeRange timeRange = timeRangeDefaults.createTimeRange(context.getFrom(), context.getTo());
 		final KPI kpi = kpiRepository.getKPI(cacheKey.getKpiId());
 
-		final KPIDataResult data = KPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
-				.setTimeRange(timeRange)
-				.retrieveData();
-
-		final KPIDataCacheValue cacheValue = new KPIDataCacheValue(data);
-
-		logger.trace("computeCacheValue: {} => {}", cacheKey, cacheValue);
-		return cacheValue;
+		try
+		{
+			final KPIDatasourceType dataSourceType = kpi.getDatasourceType();
+			if (dataSourceType == KPIDatasourceType.ELASTICSEARCH)
+			{
+				final BooleanWithReason elasticsearchEnabled = esSystem.getEnabled();
+				if (elasticsearchEnabled.isTrue())
+				{
+					final KPIDataResult data = ElasticsearchKPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
+							.setTimeRange(timeRange)
+							.retrieveData();
+					return KPIDataCacheValue.ok(data);
+				}
+				else
+				{
+					return KPIDataCacheValue.error(elasticsearchEnabled.getReason());
+				}
+			}
+			else if (dataSourceType == KPIDatasourceType.SQL)
+			{
+				final KPIDataResult data = SQLKPIDataLoader.builder()
+						.kpi(kpi)
+						.timeRange(timeRange)
+						.context(context)
+						.build()
+						.retrieveData();
+				return KPIDataCacheValue.ok(data);
+			}
+			else
+			{
+				// shall not happen
+				throw new AdempiereException("Unknown KPI's data source type: " + dataSourceType)
+						.setParameter("kpi", kpi);
+			}
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed computing KPI for {}. Returning error.", cacheKey, ex);
+			return KPIDataCacheValue.error(ex);
+		}
 	}
 
 	private boolean isCacheCleanupRandomHit()
@@ -138,22 +186,73 @@ public class KPIDataProvider
 		logger.trace("cacheCleanupNow: {} entries after cleanup", cache.size());
 	}
 
+	public Optional<KPIZoomIntoDetailsInfo> getZoomIntoDetailsInfo(@NonNull final KPIDataRequest request)
+	{
+		final KPIDataContext context = request.getContext();
+		final KPITimeRangeDefaults timeRangeDefaults = request.getTimeRangeDefaults();
+		final TimeRange timeRange = timeRangeDefaults.createTimeRange(context.getFrom(), context.getTo());
+		final KPI kpi = kpiRepository.getKPI(request.getKpiId());
+
+		final KPIDatasourceType dataSourceType = kpi.getDatasourceType();
+		if (dataSourceType == KPIDatasourceType.SQL)
+		{
+			return Optional.of(
+					SQLKPIDataLoader.builder()
+							.kpi(kpi)
+							.timeRange(timeRange)
+							.context(context)
+							.build()
+							.getKPIZoomIntoDetailsInfo());
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
+	//
+	//
+	// -----------------------------------------
+	//
+	//
+
 	@Value
 	@Builder
 	private static class KPIDataCacheKey
 	{
 		@NonNull KPIId kpiId;
 		@NonNull KPITimeRangeDefaults timeRangeDefaults;
-		@Nullable Instant from;
-		@Nullable Instant to;
+		@NonNull KPIDataContext context;
 	}
 
 	@Value
 	@ToString(exclude = "data" /* because it's too big */)
 	private static class KPIDataCacheValue
 	{
+		public static KPIDataCacheValue ok(@NonNull final KPIDataResult data)
+		{
+			return new KPIDataCacheValue(data, false, null);
+		}
+
+		public static KPIDataCacheValue error(@Nullable final ITranslatableString errorMessage)
+		{
+			return new KPIDataCacheValue(
+					null,
+					true,
+					errorMessage != null ? errorMessage : TranslatableStrings.anyLanguage("Unknown internal error"));
+		}
+
+		public static KPIDataCacheValue error(@NonNull final Exception exception)
+		{
+			return error(AdempiereException.extractMessageTrl(exception));
+		}
+
 		@NonNull Instant created = SystemTime.asInstant();
-		@NonNull KPIDataResult data;
+
+		KPIDataResult data;
+
+		boolean error;
+		ITranslatableString errorMessage;
 
 		public boolean isExpired(@NonNull final Duration maxStaleAccepted)
 		{
@@ -162,6 +261,13 @@ public class KPIDataProvider
 			final boolean expired = staleActual.compareTo(maxStaleAccepted) > 0;
 			logger.trace("cacheValue={}: expired={}, now={}, maxStaleAccepted={}, staleActual={}", this, expired, now, maxStaleAccepted, staleActual);
 			return expired;
+		}
+
+		public ExplainedOptional<KPIDataResult> toExplainedOptional()
+		{
+			return !error
+					? ExplainedOptional.of(data)
+					: ExplainedOptional.emptyBecause(errorMessage);
 		}
 	}
 }

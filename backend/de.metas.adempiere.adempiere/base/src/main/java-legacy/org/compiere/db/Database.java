@@ -1,38 +1,21 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.db;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
+import de.metas.common.util.time.SystemTime;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.compiere.util.DisplayType;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.DisplayType;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-
-import de.metas.util.Check;
-import lombok.NonNull;
 
 /**
  * General Database Constants and Utilities
@@ -73,6 +56,12 @@ public class Database
 				+ " " + zdt.getZone().getId()
 				+ "'::timestamptz";
 	}
+
+	public static String TO_DATE(@NonNull final Instant instant)
+	{
+		return TO_DATE(instant.atZone(SystemTime.zoneId()));
+	}
+
 
 	/**
 	 * Create SQL TO Date String from LocalDate (without time zone)
@@ -148,7 +137,6 @@ public class Database
 	 *
 	 * @param columnName    the column name in the SQL
 	 * @param displayType   Display Type
-	 * @param AD_Language   6 character language setting (from Env.LANG_*)
 	 * @param formatPattern formatting pattern to be used ( {@link DecimalFormat} pattern, {@link SimpleDateFormat} pattern etc). In case the formatting pattern is not supported or is not valid, the
 	 *                      implementation method can ignore it silently.
 	 * @return SQL code
@@ -181,13 +169,15 @@ public class Database
 	/**
 	 * Convert {@link DecimalFormat} pattern to PostgreSQL's number formatting pattern
 	 *
+	 * See http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE.
+	 *
 	 * @param formatPattern
 	 * @return PostgreSQL's number formatting pattern or <code>null</code> if it could not be converted
 	 * @see DecimalFormat
-	 * @see http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE
 	 */
 	@VisibleForTesting
-	/* package */ static final String convertDecimalPatternToPG(final String formatPattern)
+	@Nullable
+	/* package */ static String convertDecimalPatternToPG(final String formatPattern)
 	{
 		if (formatPattern == null || formatPattern.isEmpty())
 		{

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.ui.web.base
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.order.compensationGroup;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -29,39 +29,45 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
-public class KPIId implements RepoIdAware
+public class GroupCategoryId implements RepoIdAware
 {
+	int repoId;
+
 	@JsonCreator
-	public static KPIId ofRepoId(final int repoId)
+	public static GroupCategoryId ofRepoId(final int repoId)
 	{
-		return new KPIId(repoId);
+		return new GroupCategoryId(repoId);
 	}
 
 	@Nullable
-	public static KPIId ofRepoIdOrNull(final int repoId)
+	public static GroupCategoryId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new KPIId(repoId) : null;
+		return repoId > 0 ? new GroupCategoryId(repoId) : null;
 	}
 
-	int repoId;
-
-	private KPIId(final int repoId)
+	public static Optional<GroupCategoryId> optionalOfRepoId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "WEBUI_KPI_ID");
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	@JsonValue
+	public static int toRepoId(@Nullable final GroupCategoryId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	private GroupCategoryId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_CompensationGroup_Schema_Category_ID");
+	}
+
 	@Override
+	@JsonValue
 	public int getRepoId()
 	{
 		return repoId;
-	}
-
-	public static int toRepoId(@Nullable final KPIId id)
-	{
-		return id != null ? id.getRepoId() : -1;
 	}
 
 }

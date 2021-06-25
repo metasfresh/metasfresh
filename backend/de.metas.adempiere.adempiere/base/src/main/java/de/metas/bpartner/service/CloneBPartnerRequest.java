@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.ui.web.base
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,8 +20,23 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.bpartner.service;
 
-public class KPIDataSetValue
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.OrgMappingId;
+import de.metas.organization.OrgId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class CloneBPartnerRequest
 {
+	@NonNull BPartnerId fromBPartnerId;
+
+	@Nullable OrgId orgId;
+	@Nullable OrgMappingId orgMappingId;
 }
