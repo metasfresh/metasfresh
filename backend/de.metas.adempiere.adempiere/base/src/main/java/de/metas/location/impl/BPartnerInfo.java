@@ -37,7 +37,7 @@ import lombok.NonNull;
  */
 @Data
 @Builder
-public class BPartnerRequest
+class BPartnerInfo
 {
 	@NonNull
 	final String bpName ;

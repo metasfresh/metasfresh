@@ -125,7 +125,26 @@ public class AddressBuilder
 
 		BPartnerName("BP_Name"),
 
-		BPartnerGreeting("BP_GR");
+		BPartnerGreeting("BP_GR"),
+		
+		City("C"),
+		
+		Region("R"),
+		
+		Country("CO"),
+		
+		Postal_Add("A"),
+		
+		Postal("P"),
+		
+		Address1("A1"),
+		
+		Address2("A2"),
+		
+		Address3("A3"),
+		
+		Address4("A4");
+		
 
 		private final String name;
 
@@ -275,7 +294,7 @@ public class AddressBuilder
 				token = inStr.substring(0, j);
 			}
 			// Tokens
-			if (token.equals("C"))
+			if (token.equals(Addressvars.City.getName()))
 			{
 				if (location.getCity() != null)
 				{
@@ -286,7 +305,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("R"))
+			else if (token.equals(Addressvars.Region.getName()))
 			{
 				if (location.getC_Region() != null)
 				{
@@ -298,14 +317,14 @@ public class AddressBuilder
 					outStr.append(location.getRegionName()); // local region name
 				}
 			}
-			else if (token.equals("P"))
+			else if (token.equals(Addressvars.Postal.getName()))
 			{
 				if (location.getPostal() != null)
 				{
 					outStr.append(location.getPostal());
 				}
 			}
-			else if (token.equals("A"))
+			else if (token.equals(Addressvars.Postal_Add.getName()))
 			{
 				final String add = location.getPostal_Add();
 				if (add != null && add.length() > 0)
@@ -313,7 +332,7 @@ public class AddressBuilder
 					outStr.append("-").append(add);
 				}
 			}
-			else if (token.equals("CO"))
+			else if (token.equals(Addressvars.Country.getName()))
 			{
 				String language = adLanguage == null ? Language.getBaseAD_Language() : adLanguage;
 				final String countryName = countriesRepo.getCountryNameById(countryId).translate(language);
@@ -322,7 +341,7 @@ public class AddressBuilder
 					outStr.append(countryName);
 				}
 			}
-			else if (token.equals("A1"))
+			else if (token.equals(Addressvars.Address1.getName()))
 			{
 				final String address1 = location.getAddress1();
 				if (address1 != null && address1.length() > 0)
@@ -334,7 +353,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("A2"))
+			else if (token.equals(Addressvars.Address2.getName()))
 			{
 				final String address2 = location.getAddress2();
 				if (address2 != null && address2.length() > 0)
@@ -346,7 +365,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("A3"))
+			else if (token.equals(Addressvars.Address3.getName()))
 			{
 				final String address3 = location.getAddress3();
 				if (address3 != null && address3.length() > 0)
@@ -358,7 +377,7 @@ public class AddressBuilder
 					}
 				}
 			}
-			else if (token.equals("A4"))
+			else if (token.equals(Addressvars.Address4.getName()))
 			{
 				final String address4 = location.getAddress4();
 				if (address4 != null && address4.length() > 0)
@@ -467,16 +486,13 @@ public class AddressBuilder
 		}
 
 		final boolean isLocal = isLocalCountry(location);
-		final String ds = getDisplaySequence(isLocal, trxName);
-		prescanDisplaySequence(ds);
+		final String displaySequence = getDisplaySequence(isLocal, trxName);
+		assertValidDisplaySequence(displaySequence);
 
-		// Bpartner blocks
-		final String bPartnerBlock = buildBPartnerBlock(bPartner, user, location, ds);
+		final String bPartnerBlock = buildBPartnerBlock(bPartner, user, location, displaySequence);
 
-		// User Anschriftenblock
-		final String userBlock = buildUserBlock(bPartner, ds, user, bPartnerBlock, trxName);
+		final String userBlock = buildUserBlock(bPartner, displaySequence, user, bPartnerBlock, trxName);
 
-		// Addressblock
 		final String fullAddressBlock = Services.get(ILocationBL.class)
 				.mkAddress(
 						location.getC_Location(),
@@ -499,21 +515,21 @@ public class AddressBuilder
 	{
 		final Properties ctx = Env.getCtx();
 		final CountryCustomInfo userInfo = countriesRepo.retriveCountryCustomInfo(ctx, trxName);
-		String ds = userInfo == null ? "" : userInfo.getCaptureSequence();
-		if (ds == null || ds.length() == 0)
+		String displaySequence = userInfo == null ? "" : userInfo.getCaptureSequence();
+		if (displaySequence == null || displaySequence.isEmpty())
 		{
 			final I_C_Country country = countriesRepo.getDefault(ctx);
-			ds = getDisplaySequence(country, isLocal);
+			displaySequence = getDisplaySequence(country, isLocal);
 		}
-		return ds;
+		return displaySequence;
 	}
 
-	private void prescanDisplaySequence(String ds)
+	private void assertValidDisplaySequence(@NonNull final String displaySequence)
 	{
-		final boolean existsBPName = isTokenFound(ds, Addressvars.BPartnerName.getName());
-		final boolean existsBP = isTokenFound(ds, Addressvars.BPartner.getName());
-		final boolean existsCON = isTokenFound(ds, Addressvars.Contact.getName());
-		final boolean existsBPGReeting = isTokenFound(ds, Addressvars.BPartnerGreeting.getName());
+		final boolean existsBPName = isTokenFound(displaySequence, Addressvars.BPartnerName.getName());
+		final boolean existsBP = isTokenFound(displaySequence, Addressvars.BPartner.getName());
+		final boolean existsCON = isTokenFound(displaySequence, Addressvars.Contact.getName());
+		final boolean existsBPGReeting = isTokenFound(displaySequence, Addressvars.BPartnerGreeting.getName());
 		
 		if ((existsBP && existsBPName) || (existsBP && existsBPGReeting) 
 				|| (existsCON && existsBPName) || (existsCON && existsBPGReeting))
@@ -533,7 +549,7 @@ public class AddressBuilder
 			@NonNull final I_C_BPartner_Location bplocation, @NonNull final String displaySequence)
 	{
 
-		final BPartnerRequest bpInfos = extractBPartnerInfos(bPartner, user, bplocation, displaySequence);
+		final BPartnerInfo bpInfos = extractBPartnerInfos(bPartner, user, bplocation, displaySequence);
 		final StringBuilder sbBPartner = new StringBuilder();
 		
 		final String bpGreeting = bpInfos.getBpGreeting();
@@ -564,7 +580,7 @@ public class AddressBuilder
 
 	}
 
-	private BPartnerRequest extractBPartnerInfos(@NonNull final org.compiere.model.I_C_BPartner bPartner, @Nullable final I_AD_User user,
+	private BPartnerInfo extractBPartnerInfos(@NonNull final org.compiere.model.I_C_BPartner bPartner, @Nullable final I_AD_User user,
 			@NonNull final I_C_BPartner_Location bplocation, @NonNull final String displaySequence)
 	{
 		// Name, Name2, bp greeting
@@ -618,7 +634,7 @@ public class AddressBuilder
 			}
 		}
 
-		return BPartnerRequest.builder()
+		return BPartnerInfo.builder()
 				.bpName(bpName)
 				.bpName2(bpName2)
 				.bpGreeting(bpGreeting)
