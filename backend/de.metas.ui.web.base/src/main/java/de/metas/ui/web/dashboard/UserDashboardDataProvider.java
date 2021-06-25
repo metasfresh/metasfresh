@@ -25,6 +25,7 @@ package de.metas.ui.web.dashboard;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
@@ -85,15 +86,8 @@ public class UserDashboardDataProvider
 		{
 			for (final UserDashboardItem dashboardItem : dashboard.getItems(widgetType))
 			{
-				try
-				{
-					final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, context, maxStaleAccepted);
-					itemDataById.put(dashboardItem.getId(), itemData);
-				}
-				catch (final Exception ex)
-				{
-					logger.warn("Failed computing data for {}. Ignored.", dashboardItem, ex);
-				}
+				final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, context, maxStaleAccepted);
+				itemDataById.put(dashboardItem.getId(), itemData);
 			}
 		}
 
@@ -118,12 +112,19 @@ public class UserDashboardDataProvider
 
 		try
 		{
-			final KPIDataResult kpiData = kpiDataProvider.getKPIData(request);
-			return UserDashboardItemDataResponse.ok(dashboardId, item.getId(), kpiData);
+			final ExplainedOptional<KPIDataResult> optionalKPIData = kpiDataProvider.getKPIData(request);
+			if (optionalKPIData.isPresent())
+			{
+				return UserDashboardItemDataResponse.ok(dashboardId, item.getId(), optionalKPIData.get());
+			}
+			else
+			{
+				return UserDashboardItemDataResponse.error(dashboardId, item.getId(), WebuiError.of(optionalKPIData.getExplanation()));
+			}
 		}
 		catch (@NonNull final Exception ex)
 		{
-			logger.warn("Failed computing KPI data for {}.", request, ex);
+			logger.warn("Failed computing KPI data for request={}.", request, ex);
 			final ITranslatableString errorMessage = AdempiereException.isUserValidationError(ex)
 					? AdempiereException.extractMessageTrl(ex)
 					: msgBL.getTranslatableMsgText(MSG_FailedLoadingKPI);

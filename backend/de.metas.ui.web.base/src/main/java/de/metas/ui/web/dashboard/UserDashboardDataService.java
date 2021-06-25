@@ -24,6 +24,7 @@ package de.metas.ui.web.dashboard;
 
 import de.metas.cache.CCache;
 import de.metas.elasticsearch.IESSystem;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
 import de.metas.ui.web.kpi.KPITimeRangeDefaults;
 import de.metas.ui.web.kpi.data.KPIDataProvider;
@@ -86,7 +87,7 @@ public class UserDashboardDataService
 				.build();
 	}
 
-	public KPIDataResult getKPIData(@NonNull final KPIId kpiId)
+	public ExplainedOptional<KPIDataResult> getKPIData(@NonNull final KPIId kpiId)
 	{
 		return kpiDataProvider.getKPIData(KPIDataRequest.builder()
 				.kpiId(kpiId)

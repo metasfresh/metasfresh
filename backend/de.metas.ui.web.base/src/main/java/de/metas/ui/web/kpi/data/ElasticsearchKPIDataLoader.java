@@ -236,7 +236,7 @@ class ElasticsearchKPIDataLoader
 		{
 			// elastic search transport error => nothing to do about it
 			throw new AdempiereException("Cannot connect to elasticsearch node."
-					+ "\nIf you want to disable the elasticsearch system then you can set sysconfig `" + ESSystem.SYSCONFIG_PostKpiEvents + "` to `N`.",
+					+ "\nIf you want to disable the elasticsearch system then you can set system property or sysconfig `" + ESSystem.SYSCONFIG_elastic_enable + "` to `N`.",
 					e);
 		}
 		catch (final Exception e)

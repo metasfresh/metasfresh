@@ -109,22 +109,15 @@ public class DashboardRestController
 
 	private ExplainedOptional<UserDashboard> getUserDashboard()
 	{
-		if (!isElasticSearchEnabled())
+		// TODO: assert readable by current user
+		final UserDashboard userDashboard = dashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId())).orElse(null);
+		if (userDashboard == null)
 		{
-			return ExplainedOptional.emptyBecause("Elasticsearch feature is not active");
+			return ExplainedOptional.emptyBecause("User has no dashboard");
 		}
 		else
 		{
-			// TODO: assert readable by current user
-			final UserDashboard userDashboard = dashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId())).orElse(null);
-			if (userDashboard == null)
-			{
-				return ExplainedOptional.emptyBecause("User has no dashboard");
-			}
-			else
-			{
-				return ExplainedOptional.of(userDashboard);
-			}
+			return ExplainedOptional.of(userDashboard);
 		}
 	}
 
@@ -227,7 +220,7 @@ public class DashboardRestController
 		KPIDataResult data = null;
 		try
 		{
-			data = dashboardDataService.getKPIData(kpi.getId());
+			data = dashboardDataService.getKPIData(kpi.getId()).orElse(null);
 		}
 		catch (final Exception ex)
 		{
