@@ -3,6 +3,7 @@ package de.metas.document.sequence.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.document.sequence.IDocumentNoBL;
@@ -37,9 +38,8 @@ public class DocumentNoBL implements IDocumentNoBL
 	private final Map<String, IDocumentNoListener> listeners = new HashMap<>();
 
 	@Override
-	public void registerDocumentNoListener(final IDocumentNoListener listener)
+	public void registerDocumentNoListener(@NonNull final IDocumentNoListener listener)
 	{
-		Check.assumeNotNull(listener, "Param 'listener' is not null");
 		listeners.put(listener.getTableName(), listener);
 	}
 
