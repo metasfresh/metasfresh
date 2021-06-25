@@ -268,6 +268,11 @@ export class DraggableWrapper extends Component {
               index={id}
               caption={indicator.caption}
               fields={indicator.kpi.fields}
+              zoomToDetailsAvailable={
+                indicator.kpi.zoomToDetailsAvailable
+                  ? indicator.kpi.zoomToDetailsAvailable
+                  : false
+              }
               chartType={'Indicator'}
               kpi={false}
               data={indicator.data}
