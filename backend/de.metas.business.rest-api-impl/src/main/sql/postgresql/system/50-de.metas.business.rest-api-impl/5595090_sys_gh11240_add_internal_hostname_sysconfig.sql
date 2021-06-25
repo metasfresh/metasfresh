@@ -9,6 +9,5 @@ Should be reachable for both app itself and webapi.',0,'app','D')
 UPDATE AD_SysConfig SET Description='Hostname which the API Audit''s internal http-client can use to invoke the app server''s REST endpoints.
 Should be reachable for both app itself and webapi.
 
-NOTE: to ease the developers'' lifes, if the API Audit framework receives a call hot http://localhost, it will ignore this sysconfig and keep going with localhost.',Updated=TO_TIMESTAMP('2021-06-25 18:13:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541379
+NOTE: to ease the developers'' lifes, if the API Audit framework receives a call to http://localhost, it will ignore this sysconfig and keep going with localhost.',Updated=TO_TIMESTAMP('2021-06-25 18:13:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_SysConfig_ID=541379
 ;
-
