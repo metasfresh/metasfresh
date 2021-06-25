@@ -288,7 +288,7 @@ public class ApiAuditService
 				.block();
 	}
 
-	private String computeInternalHostName(final ApiRequestAudit apiRequestAudit)
+	private String computeInternalHostName(@NonNull final ApiRequestAudit apiRequestAudit)
 	{
 		final String hostName;
 		if (apiRequestAudit.getPath().startsWith("http://localhost"))
@@ -492,15 +492,20 @@ public class ApiAuditService
 
 		if (actualAPIResponse.getHttpHeaders() != null)
 		{
-			forwardResponseHttpHeaders(actualAPIResponse.getHttpHeaders(), httpServletResponse);
+			forwardSomeResponseHttpHeaders(actualAPIResponse.getHttpHeaders(), httpServletResponse);
 		}
+
+		final String stringToForward = objectMapper.writeValueAsString(apiResponse);
 
 		httpServletResponse.setContentType(APPLICATION_JSON_VALUE);
 		httpServletResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
+		httpServletResponse.setStatus(actualAPIResponse.getStatusCode());
 
 		httpServletResponse.resetBuffer();
-		httpServletResponse.setStatus(actualAPIResponse.getStatusCode());
-		httpServletResponse.getWriter().write(objectMapper.writeValueAsString(apiResponse));
+		if (stringToForward != null)
+		{
+			httpServletResponse.getWriter().write(stringToForward);
+		}
 		httpServletResponse.flushBuffer();
 	}
 
@@ -513,13 +518,14 @@ public class ApiAuditService
 		return ApiResponse.of(HttpStatus.ACCEPTED.value(), httpHeaders, null);
 	}
 
-	private void forwardResponseHttpHeaders(@NonNull final HttpHeaders httpHeaders, @NonNull final HttpServletResponse servletResponse)
+	private void forwardSomeResponseHttpHeaders(@NonNull final HttpHeaders httpHeaders, @NonNull final HttpServletResponse servletResponse)
 	{
 		httpHeaders.keySet()
 				.stream()
 				.filter(key -> !key.equals(HttpHeaders.CONNECTION))
 				.filter(key -> !key.equals(HttpHeaders.CONTENT_LENGTH))
 				.filter(key -> !key.equals(HttpHeaders.CONTENT_TYPE))
+				.filter(key -> !key.equals(HttpHeaders.TRANSFER_ENCODING)) // if we forwarded this without knowing what we do, we would annoy a possible nginx reverse proxy
 				.forEach(key -> {
 					final List<String> values = httpHeaders.get(key);
 					if (values != null)
