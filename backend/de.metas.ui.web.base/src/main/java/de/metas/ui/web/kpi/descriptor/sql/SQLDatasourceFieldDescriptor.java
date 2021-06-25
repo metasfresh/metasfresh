@@ -20,8 +20,28 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.descriptor.sql;
 
-public class KPIDataSetValue
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+public class SQLDatasourceFieldDescriptor
 {
+	@NonNull String fieldName;
+	@NonNull String sqlSelect;
+
+	@Builder
+	private SQLDatasourceFieldDescriptor(
+			@NonNull final String fieldName,
+			@NonNull final String sqlSelect)
+	{
+		Check.assumeNotEmpty(fieldName, "fieldName shall be set");
+		Check.assumeNotEmpty(sqlSelect, "sqlSelect shall be set");
+
+		this.fieldName = fieldName;
+		this.sqlSelect = sqlSelect;
+	}
 }

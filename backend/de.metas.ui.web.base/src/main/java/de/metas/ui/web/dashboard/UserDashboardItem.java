@@ -2,14 +2,15 @@ package de.metas.ui.web.dashboard;
 
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.descriptor.KPI;
+import de.metas.ui.web.kpi.descriptor.KPIId;
+import de.metas.ui.web.kpi.descriptor.KPISupplier;
 import lombok.Builder;
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 
 /*
  * #%L
@@ -70,7 +71,7 @@ public class UserDashboardItem
 
 	public KPIId getKPIId()
 	{
-		if(kpiSupplier == null)
+		if (kpiSupplier == null)
 		{
 			throw new EntityNotFoundException("No KPI defined for " + this);
 		}

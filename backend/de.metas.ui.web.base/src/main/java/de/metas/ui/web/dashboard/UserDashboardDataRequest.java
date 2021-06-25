@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.dashboard;
 
+import de.metas.ui.web.kpi.data.KPIDataContext;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -29,17 +30,13 @@ import lombok.With;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
-import java.time.Instant;
 
 @Value
 @Builder
 public class UserDashboardDataRequest
 {
-	public static UserDashboardDataRequest NOW = UserDashboardDataRequest.builder().build();
-
 	@With
 	@Nullable DashboardWidgetType widgetType;
-	@Nullable Instant from;
-	@Nullable Instant to;
+	@NonNull KPIDataContext context;
 	@NonNull @Builder.Default Duration maxStaleAccepted = Duration.ofSeconds(2);
 }

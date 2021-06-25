@@ -1,8 +1,14 @@
+package de.metas.elasticsearch.impl;
+
+import de.metas.elasticsearch.server.ESServer;
+import org.junit.Assert;
+import org.junit.Test;
+
 /*
  * #%L
- * de.metas.ui.web.base
+ * de.metas.elasticsearch.server
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2016 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -11,33 +17,20 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.time.Instant;
-
-@Value
-@Builder
-public class KPIDataRequest
+public class ESSystemTest
 {
-	@NonNull KPIId kpiId;
-
-	@NonNull KPITimeRangeDefaults timeRangeDefaults;
-	@Nullable Instant from;
-	@Nullable Instant to;
-	@NonNull Duration maxStaleAccepted;
+	@Test
+	public void assert_ESServer_Classname()
+	{
+		Assert.assertEquals(ESSystem.ESServer_Classname, ESServer.class.getName());
+	}
 }

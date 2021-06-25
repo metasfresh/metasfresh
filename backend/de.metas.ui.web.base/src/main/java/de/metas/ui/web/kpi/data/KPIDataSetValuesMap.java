@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.data;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.NonNull;

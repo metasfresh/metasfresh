@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.descriptor;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

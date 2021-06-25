@@ -1,11 +1,35 @@
-package de.metas.ui.web.dashboard;
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
-import com.google.common.base.Stopwatch;
+package de.metas.ui.web.kpi.data;
+
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.ui.web.kpi.TimeRange;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 
@@ -17,27 +41,30 @@ public class KPIDataResult
 		return new Builder();
 	}
 
-	Instant createdTime = SystemTime.asInstant();
-	String took;
 	TimeRange range;
 	ImmutableList<KPIDataSet> datasets;
 
+	@NonNull Instant createdTime = SystemTime.asInstant();
+	@Nullable Duration took;
+
 	private KPIDataResult(final Builder builder)
 	{
-		took = builder.took;
 		range = builder.range;
 		datasets = builder.datasets
 				.values()
 				.stream()
 				.map(KPIDataSet.KPIDataSetBuilder::build)
 				.collect(ImmutableList.toImmutableList());
+
+		took = builder.took;
 	}
 
 	public static final class Builder
 	{
 		private final LinkedHashMap<String, KPIDataSet.KPIDataSetBuilder> datasets = new LinkedHashMap<>();
 		private TimeRange range;
-		private String took;
+
+		private Duration took;
 
 		private Builder() { }
 
@@ -62,9 +89,9 @@ public class KPIDataResult
 			return range;
 		}
 
-		public Builder setTook(final Stopwatch took)
+		public Builder setTook(@NonNull final Duration took)
 		{
-			this.took = took.toString();
+			this.took = took;
 			return this;
 		}
 

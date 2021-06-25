@@ -20,32 +20,35 @@
  * #L%
  */
 
-package de.metas.ui.web.dashboard;
+package de.metas.ui.web.kpi.descriptor;
 
+import de.metas.ui.web.base.model.X_WEBUI_KPI;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 
-import java.util.function.Supplier;
+import javax.annotation.Nullable;
 
-@ToString
-public class KPISupplier implements Supplier<KPI>
+@AllArgsConstructor
+public enum KPIDatasourceType implements ReferenceListAwareEnum
 {
-	@Getter
-	private final KPIId kpiId;
-	private final KPIRepository kpiRepository;
+	ELASTICSEARCH(X_WEBUI_KPI.KPI_DATASOURCE_TYPE_Elasticsearch),
+	SQL(X_WEBUI_KPI.KPI_DATASOURCE_TYPE_SQL);
 
-	KPISupplier(
-			@NonNull final KPIId kpiId,
-			@NonNull final KPIRepository kpiRepository)
+	@Getter
+	private final String code;
+
+	private static final ReferenceListAwareEnums.ValuesIndex<KPIDatasourceType> index = ReferenceListAwareEnums.index(values());
+
+	public static KPIDatasourceType ofCode(@NonNull final String code)
 	{
-		this.kpiId = kpiId;
-		this.kpiRepository = kpiRepository;
+		return index.ofCode(code);
 	}
 
-	@Override
-	public KPI get()
+	public static KPIDatasourceType ofNullableCode(@Nullable final String code)
 	{
-		return kpiRepository.getKPI(kpiId);
+		return index.ofNullableCode(code);
 	}
 }
