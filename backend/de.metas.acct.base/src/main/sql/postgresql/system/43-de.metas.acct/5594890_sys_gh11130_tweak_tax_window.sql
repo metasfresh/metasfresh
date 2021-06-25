@@ -210,4 +210,4 @@ INSERT INTO t_alter_column values('c_tax','SeqNo','NUMERIC(10)',null,'0')
 UPDATE C_Tax SET SeqNo=0 WHERE SeqNo IS NULL
 ;
 
-select migrationscript_ignore('43-de.metas.acct/5594890_sys_gh11130_tweak_tax_window.sql');
+--select migrationscript_ignore('43-de.metas.acct/5594890_sys_gh11130_tweak_tax_window.sql');
