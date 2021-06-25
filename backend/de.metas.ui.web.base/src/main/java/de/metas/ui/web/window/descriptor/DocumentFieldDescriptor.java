@@ -1007,12 +1007,6 @@ public final class DocumentFieldDescriptor
 				return ConstantLogicExpression.FALSE;
 			}
 
-			// Case: DocumentNo special field shall always be mandatory
-			if (hasCharacteristic(Characteristic.SpecialField_DocumentNo))
-			{
-				return ConstantLogicExpression.TRUE;
-			}
-
 			if (mandatory)
 			{
 				return ConstantLogicExpression.TRUE;

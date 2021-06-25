@@ -282,3 +282,8 @@ UPDATE AD_Field SET IsDisplayed='Y',Updated=TO_TIMESTAMP('2021-06-24 17:45:25','
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,649784,0,540474,586857,541071,'F',TO_TIMESTAMP('2021-06-24 17:46:53','YYYY-MM-DD HH24:MI:SS'),100,'Name of the local file or URL','Name of a file in the local directory space - or URL (file://.., http://.., ftp://..)','Y','N','N','Y','N','N','N',0,'File Name',25,0,0,TO_TIMESTAMP('2021-06-24 17:46:53','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+update AD_Field
+set IsMandatory='Y', Updatedby=99, Updated='2021-06-25 16:52:51.441653 +03:00'
+where ad_column_id in (select ad_column.ad_column_id
+                       from ad_column
+                       where columnname = 'DocumentNo' and ad_table_id not in (get_table_id('AD_Archive'), get_table_id('C_Doc_Outbound_Log')))
