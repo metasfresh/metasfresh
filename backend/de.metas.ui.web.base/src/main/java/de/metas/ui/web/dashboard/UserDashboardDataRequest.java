@@ -29,7 +29,6 @@ import lombok.Value;
 import lombok.With;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 
 @Value
 @Builder
@@ -38,5 +37,4 @@ public class UserDashboardDataRequest
 	@With
 	@Nullable DashboardWidgetType widgetType;
 	@NonNull KPIDataContext context;
-	@NonNull @Builder.Default Duration maxStaleAccepted = Duration.ofSeconds(2);
 }

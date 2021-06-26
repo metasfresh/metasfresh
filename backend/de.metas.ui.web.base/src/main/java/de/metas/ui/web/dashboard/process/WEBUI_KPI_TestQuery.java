@@ -18,6 +18,7 @@ import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.kpi.descriptor.KPIId;
 import de.metas.ui.web.kpi.descriptor.KPIRepository;
 import de.metas.util.Services;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
 
@@ -49,6 +50,7 @@ import java.time.Instant;
 public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondition
 {
 	private final IESSystem esSystem = Services.get(IESSystem.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final KPIRepository kpisRepo = SpringContextHolder.instance.getBean(KPIRepository.class);
 	private final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
@@ -76,8 +78,9 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 		final KPI kpi = kpisRepo.getKPI(kpiId);
 
 		final KPIDataResult kpiData = KPIDataProvider.builder()
-				.esSystem(esSystem)
 				.kpiRepository(kpisRepo)
+				.esSystem(esSystem)
+				.sysConfigBL(sysConfigBL)
 				.build()
 				.getKPIData(KPIDataRequest.builder()
 						.kpiId(kpiId)

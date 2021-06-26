@@ -34,6 +34,7 @@ import de.metas.ui.web.kpi.descriptor.KPIId;
 import de.metas.ui.web.kpi.descriptor.KPIRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -55,10 +56,12 @@ public class UserDashboardDataService
 	{
 		this.userDashboardRepository = userDashboardRepository;
 
-		final IESSystem esSystem = Services.get(IESSystem.class);
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 		this.kpiDataProvider = KPIDataProvider.builder()
-				.esSystem(esSystem)
 				.kpiRepository(kpiRepository)
+				.esSystem(Services.get(IESSystem.class))
+				.sysConfigBL(Services.get(ISysConfigBL.class))
 				.build();
 	}
 

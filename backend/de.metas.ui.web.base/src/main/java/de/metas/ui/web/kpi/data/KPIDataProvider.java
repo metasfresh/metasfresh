@@ -42,6 +42,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -60,17 +61,40 @@ public class KPIDataProvider
 	private final KPIRepository kpiRepository;
 
 	private final ConcurrentHashMap<KPIDataCacheKey, KPIDataCacheValue> cache = new ConcurrentHashMap<>();
-	private final Duration CACHE_EXPIRE_AFTER = Duration.ofSeconds(10);
-	private final Percent CACHE_CLEANUP_HIT_RATE = Percent.of(20);
 	private final Random random = new Random();
+
+	private static final String SYSCONFIG_CacheCleanupHitRate = "webui.kpi.cacheCleanupHitRate";
+	private static final Percent DEFAULT_CacheCleanupHitRate = Percent.of(20);
+	private final Percent cacheCleanupHitRate;
 
 	@Builder
 	private KPIDataProvider(
+			@NonNull final KPIRepository kpiRepository,
 			@NonNull final IESSystem esSystem,
-			@NonNull final KPIRepository kpiRepository)
+			@NonNull final ISysConfigBL sysConfigBL)
 	{
 		this.esSystem = esSystem;
 		this.kpiRepository = kpiRepository;
+
+		this.cacheCleanupHitRate = getCacheCleanupHitRate(sysConfigBL);
+		logger.info("cacheCleanupHitRate={}", cacheCleanupHitRate);
+	}
+
+	private static Percent getCacheCleanupHitRate(final ISysConfigBL sysConfigBL)
+	{
+		final int rateInt = sysConfigBL.getIntValue(SYSCONFIG_CacheCleanupHitRate, -1);
+		if (rateInt <= 0)
+		{
+			return DEFAULT_CacheCleanupHitRate;
+		}
+		else if (rateInt > 100)
+		{
+			return Percent.ONE_HUNDRED;
+		}
+		else
+		{
+			return Percent.of(rateInt);
+		}
 	}
 
 	public ExplainedOptional<KPIDataResult> getKPIData(@NonNull final KPIDataRequest request)
@@ -104,7 +128,7 @@ public class KPIDataProvider
 	private KPIDataCacheValue computeCacheValueIfNeeded(
 			@NonNull final KPIDataCacheKey cacheKey,
 			@Nullable final KPIDataCacheValue existingValue,
-			@NonNull final Duration maxStaleAccepted)
+			@Nullable final Duration maxStaleAccepted)
 	{
 		logger.trace("computeCacheValueIfNeeded: cacheKey={}, maxStaleAccepted={}, existingValue={}", cacheKey, maxStaleAccepted, existingValue);
 
@@ -131,6 +155,7 @@ public class KPIDataProvider
 		final KPITimeRangeDefaults timeRangeDefaults = cacheKey.getTimeRangeDefaults();
 		final TimeRange timeRange = timeRangeDefaults.createTimeRange(context.getFrom(), context.getTo());
 		final KPI kpi = kpiRepository.getKPI(cacheKey.getKpiId());
+		final Duration defaultMaxStaleAccepted = kpi.getAllowedStaleDuration();
 
 		try
 		{
@@ -143,11 +168,11 @@ public class KPIDataProvider
 					final KPIDataResult data = ElasticsearchKPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
 							.setTimeRange(timeRange)
 							.retrieveData();
-					return KPIDataCacheValue.ok(data);
+					return KPIDataCacheValue.ok(data, defaultMaxStaleAccepted);
 				}
 				else
 				{
-					return KPIDataCacheValue.error(elasticsearchEnabled.getReason());
+					return KPIDataCacheValue.error(elasticsearchEnabled.getReason(), defaultMaxStaleAccepted);
 				}
 			}
 			else if (dataSourceType == KPIDatasourceType.SQL)
@@ -158,7 +183,7 @@ public class KPIDataProvider
 						.context(context)
 						.build()
 						.retrieveData();
-				return KPIDataCacheValue.ok(data);
+				return KPIDataCacheValue.ok(data, defaultMaxStaleAccepted);
 			}
 			else
 			{
@@ -175,21 +200,21 @@ public class KPIDataProvider
 					? AdempiereException.extractMessageTrl(ex)
 					: TranslatableStrings.adMessage(MSG_FailedLoadingKPI);
 
-			return KPIDataCacheValue.error(errorMessage);
+			return KPIDataCacheValue.error(errorMessage, defaultMaxStaleAccepted);
 		}
 	}
 
 	private boolean isCacheCleanupRandomHit()
 	{
 		final int randomValue = random.nextInt(100);
-		return randomValue <= CACHE_CLEANUP_HIT_RATE.toInt();
+		return randomValue <= cacheCleanupHitRate.toInt();
 	}
 
 	private void cleanupCacheNow()
 	{
 		logger.trace("cacheCleanupNow: {} entries before cleanup", cache.size());
 
-		cache.values().removeIf(cacheValue -> cacheValue.isExpired(CACHE_EXPIRE_AFTER));
+		cache.values().removeIf(cacheValue -> cacheValue.isExpired());
 
 		logger.trace("cacheCleanupNow: {} entries after cleanup", cache.size());
 	}
@@ -237,37 +262,60 @@ public class KPIDataProvider
 	@ToString(exclude = "data" /* because it's too big */)
 	private static class KPIDataCacheValue
 	{
-		public static KPIDataCacheValue ok(@NonNull final KPIDataResult data)
+		public static KPIDataCacheValue ok(@NonNull final KPIDataResult data, @NonNull final Duration defaultMaxStaleAccepted)
 		{
-			return new KPIDataCacheValue(data, false, null);
+			return new KPIDataCacheValue(data, defaultMaxStaleAccepted);
 		}
 
-		public static KPIDataCacheValue error(@Nullable final ITranslatableString errorMessage)
+		public static KPIDataCacheValue error(@Nullable final ITranslatableString errorMessage, @NonNull final Duration defaultMaxStaleAccepted)
 		{
-			return new KPIDataCacheValue(
-					null,
-					true,
-					errorMessage != null ? errorMessage : TranslatableStrings.anyLanguage("Unknown internal error"));
+			return new KPIDataCacheValue(errorMessage, defaultMaxStaleAccepted);
 		}
 
-		public static KPIDataCacheValue error(@NonNull final Exception exception)
+		public static KPIDataCacheValue error(@NonNull final Exception exception, @NonNull final Duration defaultMaxStaleAccepted)
 		{
-			return error(AdempiereException.extractMessageTrl(exception));
+			return new KPIDataCacheValue(AdempiereException.extractMessageTrl(exception), defaultMaxStaleAccepted);
 		}
 
 		@NonNull Instant created = SystemTime.asInstant();
+		@NonNull Duration defaultMaxStaleAccepted;
 
 		KPIDataResult data;
 
 		boolean error;
 		ITranslatableString errorMessage;
 
-		public boolean isExpired(@NonNull final Duration maxStaleAccepted)
+		public KPIDataCacheValue(@NonNull final KPIDataResult data, @NonNull final Duration defaultMaxStaleAccepted)
 		{
+			this.data = data;
+			this.error = false;
+			this.errorMessage = null;
+			this.defaultMaxStaleAccepted = defaultMaxStaleAccepted;
+		}
+
+		public KPIDataCacheValue(@Nullable final ITranslatableString errorMessage, @NonNull final Duration defaultMaxStaleAccepted)
+		{
+			this.data = null;
+			this.error = true;
+			this.errorMessage = errorMessage != null ? errorMessage : TranslatableStrings.anyLanguage("Unknown internal error");
+			this.defaultMaxStaleAccepted = defaultMaxStaleAccepted;
+		}
+
+		public boolean isExpired()
+		{
+			return isExpired(null);
+		}
+
+		public boolean isExpired(@Nullable final Duration maxStaleAccepted)
+		{
+			final Duration maxStaleAcceptedEffective = maxStaleAccepted != null
+					? maxStaleAccepted
+					: defaultMaxStaleAccepted;
+
 			final Instant now = SystemTime.asInstant();
 			final Duration staleActual = Duration.between(created, now);
-			final boolean expired = staleActual.compareTo(maxStaleAccepted) > 0;
-			logger.trace("cacheValue={}: expired={}, now={}, maxStaleAccepted={}, staleActual={}", this, expired, now, maxStaleAccepted, staleActual);
+			final boolean expired = staleActual.compareTo(maxStaleAcceptedEffective) > 0;
+			logger.trace("isExpired={}, now={}, maxStaleAcceptedEffective={}, staleActual={}, cacheValue={}", expired, now, maxStaleAcceptedEffective, staleActual, this);
 			return expired;
 		}
 

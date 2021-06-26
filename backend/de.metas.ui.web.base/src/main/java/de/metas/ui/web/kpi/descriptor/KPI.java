@@ -67,6 +67,9 @@ public class KPI
 	@Nullable ElasticsearchDatasourceDescriptor elasticsearchDatasource;
 	@Nullable SQLDatasourceDescriptor sqlDatasource;
 
+	// Performance tunning
+	@NonNull Duration allowedStaleDuration;
+
 	@Builder
 	private KPI(
 			@NonNull final KPIId id,
@@ -78,8 +81,10 @@ public class KPI
 			@NonNull final KPITimeRangeDefaults timeRangeDefaults,
 			@NonNull final KPIDatasourceType datasourceType,
 			@Nullable final ElasticsearchDatasourceDescriptor elasticsearchDatasource,
-			@Nullable final SQLDatasourceDescriptor sqlDatasource)
+			@Nullable final SQLDatasourceDescriptor sqlDatasource,
+			@NonNull final Duration allowedStaleDuration)
 	{
+		this.allowedStaleDuration = allowedStaleDuration;
 		Check.assumeNotEmpty(fields, "fields is not empty");
 
 		this.id = id;

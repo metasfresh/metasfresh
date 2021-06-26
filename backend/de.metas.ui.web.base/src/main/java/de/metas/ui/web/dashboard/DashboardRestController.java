@@ -2,7 +2,6 @@ package de.metas.ui.web.dashboard;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
-import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.config.WebConfig;
@@ -31,7 +30,6 @@ import de.metas.ui.web.websocket.WebSocketProducersRegistry;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
-import de.metas.util.Services;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -47,7 +45,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Comparator;
@@ -81,7 +78,6 @@ import java.util.Objects;
 public class DashboardRestController
 {
 	private static final Logger logger = LogManager.getLogger(DashboardRestController.class);
-	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final UserSession userSession;
 	private final UserDashboardRepository dashboardRepo;
 	private final UserDashboardDataService dashboardDataService;
@@ -309,7 +305,6 @@ public class DashboardRestController
 								.from(from)
 								.to(to)
 								.build())
-						.maxStaleAccepted(Duration.ofSeconds(2))
 						.build());
 
 		return JsonKPIDataResult.of(

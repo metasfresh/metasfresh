@@ -215,6 +215,10 @@ public class KPIRepository
 				.elasticsearchDatasource(elasticsearchDatasource)
 				.sqlDatasource(sqlDatasource)
 				//
+				.allowedStaleDuration(kpiDef.getKPI_AllowedStaledTimeInSec() > 0
+						? Duration.ofSeconds(kpiDef.getKPI_AllowedStaledTimeInSec())
+						: Duration.ofSeconds(0))
+				//
 				.build();
 	}
 
