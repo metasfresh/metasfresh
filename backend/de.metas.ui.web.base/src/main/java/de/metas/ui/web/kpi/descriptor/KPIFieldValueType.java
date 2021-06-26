@@ -26,11 +26,10 @@ import org.compiere.util.DisplayType;
 
 public enum KPIFieldValueType
 {
-	String //
-	, Number //
-	, Date //
-	, DateTime //
-	;
+	String,
+	Number,
+	Date,
+	DateTime;
 
 	public static KPIFieldValueType fromDisplayType(final int displayType)
 	{

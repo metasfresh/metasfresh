@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -846963521L;
+	private static final long serialVersionUID = -2019079765L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (final Properties ctx, final int WEBUI_KPI_ID, @Nullable final String trxName)
@@ -228,6 +228,18 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public int getSource_Table_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Source_Table_ID);
+	}
+
+	@Override
+	public void setSQL_Details_WhereClause (final @Nullable java.lang.String SQL_Details_WhereClause)
+	{
+		set_Value (COLUMNNAME_SQL_Details_WhereClause, SQL_Details_WhereClause);
+	}
+
+	@Override
+	public java.lang.String getSQL_Details_WhereClause() 
+	{
+		return get_ValueAsString(COLUMNNAME_SQL_Details_WhereClause);
 	}
 
 	@Override

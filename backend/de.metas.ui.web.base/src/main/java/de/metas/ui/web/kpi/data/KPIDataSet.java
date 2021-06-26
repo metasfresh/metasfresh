@@ -27,6 +27,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -62,7 +63,7 @@ public class KPIDataSet
 	{
 		private String name;
 		@Getter
-		private String unit;
+		@Nullable private String unit;
 		private final Map<KPIDataSetValuesAggregationKey, KPIDataSetValuesMap.KPIDataSetValuesMapBuilder> valuesByKey = new LinkedHashMap<>();
 
 		public KPIDataSet build()
@@ -76,7 +77,7 @@ public class KPIDataSet
 			return this;
 		}
 
-		public KPIDataSetBuilder unit(final String unit)
+		public KPIDataSetBuilder unit(@Nullable final String unit)
 		{
 			this.unit = unit;
 			return this;

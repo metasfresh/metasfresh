@@ -24,10 +24,9 @@ package de.metas.ui.web.dashboard;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.WebuiError;
 import de.metas.ui.web.kpi.KPITimeRangeDefaults;
@@ -37,7 +36,6 @@ import de.metas.ui.web.kpi.data.KPIDataRequest;
 import de.metas.ui.web.kpi.data.KPIDataResult;
 import de.metas.ui.web.kpi.data.KPIZoomIntoDetailsInfo;
 import de.metas.ui.web.kpi.descriptor.KPIId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -51,9 +49,6 @@ import java.util.Optional;
 public class UserDashboardDataProvider
 {
 	private final Logger logger = LogManager.getLogger(UserDashboardDataProvider.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-	private static final AdMessageKey MSG_FailedLoadingKPI = AdMessageKey.of("webui.dashboard.KPILoadError");
 
 	private final UserDashboardRepository userDashboardRepository;
 	private final KPIDataProvider kpiDataProvider;
@@ -108,10 +103,10 @@ public class UserDashboardDataProvider
 			@NonNull final KPIDataContext context,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		final KPIDataRequest request = toKPIDataRequest(item, context, maxStaleAccepted);
-
+		KPIDataRequest request = null;
 		try
 		{
+			request = toKPIDataRequest(item, context, maxStaleAccepted);
 			final ExplainedOptional<KPIDataResult> optionalKPIData = kpiDataProvider.getKPIData(request);
 			if (optionalKPIData.isPresent())
 			{
@@ -124,10 +119,12 @@ public class UserDashboardDataProvider
 		}
 		catch (@NonNull final Exception ex)
 		{
-			logger.warn("Failed computing KPI data for request={}.", request, ex);
+			logger.warn("Failed computing KPI data for request={}, item={}, context={}, maxStaleAccepted={}.",
+					request, item, context, maxStaleAccepted, ex);
+
 			final ITranslatableString errorMessage = AdempiereException.isUserValidationError(ex)
 					? AdempiereException.extractMessageTrl(ex)
-					: msgBL.getTranslatableMsgText(MSG_FailedLoadingKPI);
+					: TranslatableStrings.adMessage(KPIDataProvider.MSG_FailedLoadingKPI);
 
 			return UserDashboardItemDataResponse.error(dashboardId, item.getId(), WebuiError.of(ex, errorMessage));
 		}

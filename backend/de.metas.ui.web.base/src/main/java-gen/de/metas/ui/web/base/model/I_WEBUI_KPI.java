@@ -384,6 +384,29 @@ public interface I_WEBUI_KPI
 	String COLUMNNAME_Source_Table_ID = "Source_Table_ID";
 
 	/**
+	 * Set Details SQL Where Clause.
+	 * Where clause to be used to filter details, i.e. records used as a source to calculate the aggregated value
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSQL_Details_WhereClause (@Nullable java.lang.String SQL_Details_WhereClause);
+
+	/**
+	 * Get Details SQL Where Clause.
+	 * Where clause to be used to filter details, i.e. records used as a source to calculate the aggregated value
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSQL_Details_WhereClause();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_SQL_Details_WhereClause = new ModelColumn<>(I_WEBUI_KPI.class, "SQL_Details_WhereClause", null);
+	String COLUMNNAME_SQL_Details_WhereClause = "SQL_Details_WhereClause";
+
+	/**
 	 * Set SQL From Clause.
 	 *
 	 * <br>Type: TextLong

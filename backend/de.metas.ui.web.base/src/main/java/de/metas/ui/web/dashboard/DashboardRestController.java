@@ -102,11 +102,6 @@ public class DashboardRestController
 		this.websocketSender = new UserDashboardWebsocketSender(websocketSender, websocketProducersRegistry);
 	}
 
-	private boolean isElasticSearchEnabled()
-	{
-		return esSystem.getEnabled().isTrue();
-	}
-
 	private ExplainedOptional<UserDashboard> getUserDashboard()
 	{
 		// TODO: assert readable by current user
@@ -260,6 +255,7 @@ public class DashboardRestController
 				.getItemData(UserDashboardItemDataRequest.builder()
 						.itemId(item.getId())
 						.widgetType(widgetType)
+						.context(KPIDataContext.ofUserSession(userSession))
 						.build());
 		return JSONDashboardItem.of(item, data, newKPIJsonOptions());
 	}
@@ -448,6 +444,7 @@ public class DashboardRestController
 					.getItemData(UserDashboardItemDataRequest.builder()
 							.itemId(item.getId())
 							.widgetType(widgetType)
+							.context(KPIDataContext.ofUserSession(userSession))
 							.build());
 			return JSONDashboardItem.of(item, data, newKPIJsonOptions());
 		}

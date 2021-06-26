@@ -24,6 +24,7 @@ package de.metas.ui.web.kpi.data;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.elasticsearch.IESSystem;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
@@ -52,6 +53,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class KPIDataProvider
 {
+	public static final AdMessageKey MSG_FailedLoadingKPI = AdMessageKey.of("webui.dashboard.KPILoadError");
+
 	private static final Logger logger = LogManager.getLogger(KPIDataProvider.class);
 	private final IESSystem esSystem;
 	private final KPIRepository kpiRepository;
@@ -167,7 +170,12 @@ public class KPIDataProvider
 		catch (final Exception ex)
 		{
 			logger.warn("Failed computing KPI for {}. Returning error.", cacheKey, ex);
-			return KPIDataCacheValue.error(ex);
+
+			final ITranslatableString errorMessage = AdempiereException.isUserValidationError(ex)
+					? AdempiereException.extractMessageTrl(ex)
+					: TranslatableStrings.adMessage(MSG_FailedLoadingKPI);
+
+			return KPIDataCacheValue.error(errorMessage);
 		}
 	}
 
