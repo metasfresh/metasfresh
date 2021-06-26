@@ -1,7 +1,5 @@
 package de.metas.ui.web.base.model;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
 
 /*
@@ -14,12 +12,12 @@ import com.google.common.collect.ImmutableList;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -32,7 +30,9 @@ public interface I_T_WEBUI_ViewSelection
 
 	String COLUMNNAME_UUID = "UUID";
 
-	/** i.e. the sequence number for ordering */
+	/**
+	 * i.e. the sequence number for ordering
+	 */
 	String COLUMNNAME_Line = "Line";
 
 	//
@@ -40,8 +40,8 @@ public interface I_T_WEBUI_ViewSelection
 	// IMPORTANT: keep in sync with I_T_WEBUI_ViewSelectionLine !!!
 	String COLUMNNAME_IntKey1 = "IntKey1";
 	String COLUMNNAME_IntKey2 = "IntKey2";
-	List<String> COLUMNNAME_IntKeys = ImmutableList.of(COLUMNNAME_IntKey1, COLUMNNAME_IntKey2);
+	ImmutableList<String> COLUMNNAME_IntKeys = ImmutableList.of(COLUMNNAME_IntKey1, COLUMNNAME_IntKey2);
 
 	String COLUMNNAME_StringKey1 = "StringKey1";
-	List<String> COLUMNNAME_StringKeys = ImmutableList.of(COLUMNNAME_StringKey1);
+	ImmutableList<String> COLUMNNAME_StringKeys = ImmutableList.of(COLUMNNAME_StringKey1);
 }

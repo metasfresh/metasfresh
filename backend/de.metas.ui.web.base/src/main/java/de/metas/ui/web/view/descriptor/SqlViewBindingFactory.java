@@ -201,6 +201,7 @@ public class SqlViewBindingFactory
 				.keyColumn(documentField.isKeyColumn())
 				.widgetType(documentField.getWidgetType())
 				.virtualColumn(documentField.isVirtualColumn())
+				.mandatory(documentField.isMandatory())
 				//
 				.sqlValueClass(documentField.getSqlValueClass())
 				.sqlSelectValue(documentField.getSqlSelectValue())
