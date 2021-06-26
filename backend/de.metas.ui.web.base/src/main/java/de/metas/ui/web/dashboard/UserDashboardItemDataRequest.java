@@ -27,8 +27,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.time.Duration;
-
 @Value
 @Builder
 public class UserDashboardItemDataRequest
@@ -37,5 +35,4 @@ public class UserDashboardItemDataRequest
 	@NonNull UserDashboardItemId itemId;
 	boolean prettyValues;
 	@NonNull KPIDataContext context;
-	@NonNull @Builder.Default Duration maxStaleAccepted = Duration.ofSeconds(1);
 }

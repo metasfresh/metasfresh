@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2019079765L;
+	private static final long serialVersionUID = -95761224L;
 
     /** Standard Constructor */
     public X_WEBUI_KPI (final Properties ctx, final int WEBUI_KPI_ID, @Nullable final String trxName)
@@ -180,6 +180,18 @@ public class X_WEBUI_KPI extends org.compiere.model.PO implements I_WEBUI_KPI, o
 	public boolean isGenerateComparation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsGenerateComparation);
+	}
+
+	@Override
+	public void setKPI_AllowedStaledTimeInSec (final int KPI_AllowedStaledTimeInSec)
+	{
+		set_Value (COLUMNNAME_KPI_AllowedStaledTimeInSec, KPI_AllowedStaledTimeInSec);
+	}
+
+	@Override
+	public int getKPI_AllowedStaledTimeInSec() 
+	{
+		return get_ValueAsInt(COLUMNNAME_KPI_AllowedStaledTimeInSec);
 	}
 
 	/** 

@@ -322,6 +322,29 @@ public interface I_WEBUI_KPI
 	String COLUMNNAME_IsGenerateComparation = "IsGenerateComparation";
 
 	/**
+	 * Set Allow to be staled time (sec).
+	 * For how long time this KPI is allowed to be staled so no computation is needed
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setKPI_AllowedStaledTimeInSec (int KPI_AllowedStaledTimeInSec);
+
+	/**
+	 * Get Allow to be staled time (sec).
+	 * For how long time this KPI is allowed to be staled so no computation is needed
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getKPI_AllowedStaledTimeInSec();
+
+	ModelColumn<I_WEBUI_KPI, Object> COLUMN_KPI_AllowedStaledTimeInSec = new ModelColumn<>(I_WEBUI_KPI.class, "KPI_AllowedStaledTimeInSec", null);
+	String COLUMNNAME_KPI_AllowedStaledTimeInSec = "KPI_AllowedStaledTimeInSec";
+
+	/**
 	 * Set Datasource.
 	 *
 	 * <br>Type: List

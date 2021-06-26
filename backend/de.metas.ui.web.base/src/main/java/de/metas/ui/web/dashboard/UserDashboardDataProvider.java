@@ -41,7 +41,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -70,7 +69,6 @@ public class UserDashboardDataProvider
 	public UserDashboardDataResponse getAllItems(@NonNull final UserDashboardDataRequest request)
 	{
 		final KPIDataContext context = request.getContext();
-		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
 		final List<DashboardWidgetType> widgetTypes = request.getWidgetType() != null
 				? ImmutableList.of(request.getWidgetType())
 				: Arrays.asList(DashboardWidgetType.values());
@@ -81,7 +79,7 @@ public class UserDashboardDataProvider
 		{
 			for (final UserDashboardItem dashboardItem : dashboard.getItems(widgetType))
 			{
-				final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, context, maxStaleAccepted);
+				final UserDashboardItemDataResponse itemData = getItemData(dashboardItem, context);
 				itemDataById.put(dashboardItem.getId(), itemData);
 			}
 		}
@@ -94,19 +92,17 @@ public class UserDashboardDataProvider
 		final UserDashboard dashboard = getDashboard();
 		final UserDashboardItem dashboardItem = dashboard.getItemById(request.getWidgetType(), request.getItemId());
 		final KPIDataContext context = request.getContext();
-		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
-		return getItemData(dashboardItem, context, maxStaleAccepted);
+		return getItemData(dashboardItem, context);
 	}
 
 	private UserDashboardItemDataResponse getItemData(
 			@NonNull final UserDashboardItem item,
-			@NonNull final KPIDataContext context,
-			@NonNull final Duration maxStaleAccepted)
+			@NonNull final KPIDataContext context)
 	{
 		KPIDataRequest request = null;
 		try
 		{
-			request = toKPIDataRequest(item, context, maxStaleAccepted);
+			request = toKPIDataRequest(item, context);
 			final ExplainedOptional<KPIDataResult> optionalKPIData = kpiDataProvider.getKPIData(request);
 			if (optionalKPIData.isPresent())
 			{
@@ -119,8 +115,8 @@ public class UserDashboardDataProvider
 		}
 		catch (@NonNull final Exception ex)
 		{
-			logger.warn("Failed computing KPI data for request={}, item={}, context={}, maxStaleAccepted={}.",
-					request, item, context, maxStaleAccepted, ex);
+			logger.warn("Failed computing KPI data for request={}, item={}, context={}.",
+					request, item, context, ex);
 
 			final ITranslatableString errorMessage = AdempiereException.isUserValidationError(ex)
 					? AdempiereException.extractMessageTrl(ex)
@@ -132,8 +128,7 @@ public class UserDashboardDataProvider
 
 	private static KPIDataRequest toKPIDataRequest(
 			final @NonNull UserDashboardItem item,
-			final @NonNull KPIDataContext context,
-			final @NonNull Duration maxStaleAccepted)
+			final @NonNull KPIDataContext context)
 	{
 		final KPIId kpiId = item.getKPIId();
 		final KPITimeRangeDefaults timeRangeDefaults = item.getTimeRangeDefaults();
@@ -141,7 +136,6 @@ public class UserDashboardDataProvider
 				.kpiId(kpiId)
 				.timeRangeDefaults(timeRangeDefaults)
 				.context(context)
-				.maxStaleAccepted(maxStaleAccepted)
 				.build();
 	}
 
@@ -155,8 +149,7 @@ public class UserDashboardDataProvider
 		final UserDashboard dashboard = getDashboard();
 		final UserDashboardItem dashboardItem = dashboard.getItemById(request.getWidgetType(), request.getItemId());
 		final KPIDataContext context = request.getContext();
-		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
 
-		return kpiDataProvider.getZoomIntoDetailsInfo(toKPIDataRequest(dashboardItem, context, maxStaleAccepted));
+		return kpiDataProvider.getZoomIntoDetailsInfo(toKPIDataRequest(dashboardItem, context));
 	}
 }

@@ -65,7 +65,6 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 	@ToString.Include
 	private final WebsocketTopicName websocketTopicName;
 
-	@ToString.Include
 	private final KPIDataContext kpiDataContext;
 
 	private final SynchronizedMutable<Result> lastResultHolder = SynchronizedMutable.of(null);
