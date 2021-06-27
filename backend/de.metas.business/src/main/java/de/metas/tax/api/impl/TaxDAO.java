@@ -253,7 +253,7 @@ public class TaxDAO implements ITaxDAO
 		final BPartnerId bpartnerId = taxQuery.getBpartnerId();
 		final Timestamp dateOfInterest = taxQuery.getDateOfInterest();
 		final OrgId orgId = taxQuery.getOrgId();
-		
+
 		final List<Tax> taxes = getTaxesFromQuery(taxQuery);
 
 		if (taxes.size() > 1)
@@ -302,7 +302,8 @@ public class TaxDAO implements ITaxDAO
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		loggable.addLog("Using query {}", taxQuery);
-		final IQueryBuilder<I_C_Tax> queryBuilder = queryBL.createQueryBuilder(I_C_Tax.class);
+		final IQueryBuilder<I_C_Tax> queryBuilder = queryBL.createQueryBuilder(I_C_Tax.class)
+				.addOnlyActiveRecordsFilter();
 
 		OrgId orgId = taxQuery.getOrgId();
 		CountryId countryId = taxQuery.getFromCountryId();
@@ -386,9 +387,18 @@ public class TaxDAO implements ITaxDAO
 		if (bpartnerId != null)
 		{
 			final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
-			final boolean requiresTaxCertificate = !Check.isBlank(bpartner.getVATaxID());
-			loggable.addLog("RequiresTaxCertificate: {}", requiresTaxCertificate);
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, requiresTaxCertificate);
+			final boolean hasTaxCertificate = !Check.isBlank(bpartner.getVATaxID());
+			if (hasTaxCertificate)
+			{
+				// we can match records with both RequiresTaxCertificate Y and N
+				loggable.addLog("BPartner has tax certificate");
+			}
+			else
+			{
+				// we can *only* match records with RequiresTaxCertificate N
+				loggable.addLog("BPartner has no tax certificate; -> RequiresTaxCertificate=N");
+				queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, false);
+			}
 		}
 		if (bPartnerLocationId != null)
 		{
