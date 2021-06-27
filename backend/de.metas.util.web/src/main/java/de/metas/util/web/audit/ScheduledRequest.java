@@ -29,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 @Value
-public class ScheduleRequest
+public class ScheduledRequest
 {
 	@NonNull
 	CompletableFuture<ApiResponse> completableFuture;

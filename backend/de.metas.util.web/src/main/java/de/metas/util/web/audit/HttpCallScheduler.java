@@ -33,7 +33,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class HttpCallScheduler
 {
 	private CompletableFuture<Void> executorFuture;
-	private final LinkedBlockingQueue<ScheduleRequest> requestsQueue;
+	private final LinkedBlockingQueue<ScheduledRequest> requestsQueue;
 	private final Executor executor;
 
 	public HttpCallScheduler()
@@ -45,7 +45,7 @@ public class HttpCallScheduler
 		this.executorFuture.complete(null);
 	}
 
-	public synchronized void schedule(final ScheduleRequest request)
+	public synchronized void schedule(final ScheduledRequest request)
 	{
 		this.requestsQueue.add(request);
 
@@ -61,7 +61,7 @@ public class HttpCallScheduler
 		{
 			while (!requestsQueue.isEmpty())
 			{
-				final ScheduleRequest scheduleRequest = requestsQueue.poll();
+				final ScheduledRequest scheduleRequest = requestsQueue.poll();
 				try
 				{
 					final ApiResponse response = scheduleRequest.getHttpResponseSupplier().get();
