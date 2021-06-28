@@ -400,3 +400,19 @@ INSERT INTO t_alter_column values('c_tax','RequiresTaxCertificate','CHAR(1)',nul
 INSERT INTO t_alter_column values('c_tax','IsFiscalRepresentation','CHAR(1)',null,null)
 ;
 
+-- 2021-06-28T13:59:49.387Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2021-06-28 15:59:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=3695
+;
+
+-- 2021-06-28T13:59:52.784Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_tax','RequiresTaxCertificate','CHAR(1)',null,null)
+;
+
+-- 2021-06-28T13:59:53.081Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_tax','RequiresTaxCertificate',null,'NULL',null)
+;
+
+
