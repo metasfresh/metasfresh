@@ -10,18 +10,29 @@ class Indicator extends Component {
     this.state = { localComputedTimestamp: null };
   }
 
+  /**
+   * Updates the local computed timestamp with the one received from the props. Case when it comes from a query via xhr or via WS
+   * @param {props} param0
+   * @returns
+   */
   static getDerivedStateFromProps({ data: { computedTimestamp } }) {
     return { localComputedTimestamp: computedTimestamp };
   }
 
+  /**
+   * @summary sets the local timestamp + 1 second, called on one second interval after the component mounts
+   */
   updateTimestamp = () => {
     const { localComputedTimestamp } = this.state;
     const newTime = moment(localComputedTimestamp)
       .add(1, 'seconds')
       .format('hh:mm A');
-    return this.setState({ computedTimestamp: newTime });
+    return this.setState({ localComputedTimestamp: newTime });
   };
 
+  /**
+   * @summary lifecycle in which we are calling the funtion that updates the local timestamp on one second
+   */
   componentDidMount() {
     this.interval = setInterval(() => this.updateTimestamp(), 1000);
   }
@@ -43,6 +54,9 @@ class Indicator extends Component {
     });
   };
 
+  /**
+   * @summary Clean up the interval used to prevent it from leaving errors and leaking memory
+   */
   componentWillUnmount() {
     clearInterval(this.interval);
   }
