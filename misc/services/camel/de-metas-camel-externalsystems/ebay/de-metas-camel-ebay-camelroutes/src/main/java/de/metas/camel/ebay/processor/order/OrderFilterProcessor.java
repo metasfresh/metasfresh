@@ -47,7 +47,7 @@ public class OrderFilterProcessor implements Processor
 	@Override
 	public void process(Exchange exchange) throws Exception
 	{
-		log.info("Filter order by state !!! NOT IMPLEMENTED!!!");
+		log.info("Filter order by state");
 
 		final EbayImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, EbayImportOrdersRouteContext.class);
 
