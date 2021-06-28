@@ -174,6 +174,7 @@ public class OrgChangeRepository
 		return queryBL.createQueryBuilder(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId)
 				.addNotEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID, null)
+				.addNotEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_Category_ID, null)
 				.create();
 	}
 
