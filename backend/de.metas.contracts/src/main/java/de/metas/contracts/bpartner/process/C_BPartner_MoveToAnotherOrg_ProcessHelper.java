@@ -120,7 +120,8 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 			isShowMembershipParameter = orgChangePartnerComposite.hasMembershipSubscriptions()
 					&& service.hasAnyMembershipProduct(p_orgTargetId);
 
-			p_groupTemplateId = orgChangePartnerComposite.getGroupCategoryId();
+			p_groupTemplateId = service.getTargetGroupCategoryId(orgChangePartnerComposite.getGroupCategoryId(), p_orgTargetId);
 		}
 	}
+
 }

@@ -104,8 +104,9 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 
 			final OrgChangeBPartnerComposite orgChangePartnerComposite = service.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
 
-			return orgChangePartnerComposite.getGroupCategoryId() == null? -1 : orgChangePartnerComposite.getGroupCategoryId().getRepoId();
+			p_groupTemplateId = service.getTargetGroupCategoryId(orgChangePartnerComposite.getGroupCategoryId(), p_orgTargetId);
 
+			return p_groupTemplateId == null ? -1 : p_groupTemplateId.getRepoId();
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}

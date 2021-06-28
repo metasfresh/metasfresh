@@ -26,12 +26,17 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.contracts.bpartner.repository.OrgMappingRepository;
+import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
+import de.metas.product.model.I_M_Product;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class OrgChangeService
@@ -41,6 +46,8 @@ public class OrgChangeService
 	private final OrgMappingRepository orgMappingRepo;
 	private final OrgChangeHistoryRepository orgChangeHistoryRepo;
 	private final GroupTemplateRepository groupTemplateRepo;
+
+	final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	public OrgChangeService(
 			@NonNull final OrgChangeRepository orgChangeRepo,
@@ -78,4 +85,21 @@ public class OrgChangeService
 	{
 		return orgChangeRepo.hasAnyMembershipProduct(orgId);
 	}
+
+	public GroupCategoryId getTargetGroupCategoryId(final GroupCategoryId sourceGroupTemplateId, final OrgId targetOrgId)
+	{
+		if (sourceGroupTemplateId == null)
+		{
+			return null;
+		}
+
+		final Optional<I_M_Product> productOfGroupCategory = productDAO.getProductOfGroupCategory(sourceGroupTemplateId, targetOrgId);
+		if (!productOfGroupCategory.isPresent())
+		{
+			return null;
+		}
+
+		return sourceGroupTemplateId;
+	}
+
 }
