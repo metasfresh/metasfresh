@@ -107,7 +107,7 @@
 }
 
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 901px) {
     .indicator {
         border-right: 1px solid $brand-border-color;
         width: calc(50% - 1rem);
