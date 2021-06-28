@@ -20,21 +20,21 @@ class Indicator extends Component {
   }
 
   /**
-   * @summary sets the local timestamp + 1 second, called on one second interval after the component mounts
+   * @summary sets the local timestamp + 1 min, called on one min interval after the component mounts
    */
   updateTimestamp = () => {
     const { localComputedTimestamp } = this.state;
     const newTime = moment(localComputedTimestamp)
-      .add(1, 'seconds')
+      .add(1, 'minutes')
       .format('hh:mm A');
     return this.setState({ localComputedTimestamp: newTime });
   };
 
   /**
-   * @summary lifecycle in which we are calling the funtion that updates the local timestamp on one second
+   * @summary lifecycle in which we are calling the funtion that updates the local timestamp on one min
    */
   componentDidMount() {
-    this.interval = setInterval(() => this.updateTimestamp(), 1000);
+    this.interval = setInterval(() => this.updateTimestamp(), 60000);
   }
 
   /**
