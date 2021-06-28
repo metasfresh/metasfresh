@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.Objects;
 
 @Value
@@ -59,6 +60,8 @@ public class UserDashboardItemDataResponse
 	public boolean isSameDataAs(@NonNull final UserDashboardItemDataResponse other)
 	{
 		return Objects.equals(getDatasetsOrNull(), other.getDatasetsOrNull())
+				// Consider CreatedTime because it's important to let the user know that we calculated it but same result.
+				&& Objects.equals(getCreatedTime(), other.getCreatedTime())
 				&& Objects.equals(error, other.error);
 	}
 
@@ -66,5 +69,11 @@ public class UserDashboardItemDataResponse
 	private ImmutableList<KPIDataSet> getDatasetsOrNull()
 	{
 		return kpiData != null ? kpiData.getDatasets() : null;
+	}
+
+	@Nullable
+	private Instant getCreatedTime()
+	{
+		return kpiData != null ? kpiData.getCreatedTime() : null;
 	}
 }
