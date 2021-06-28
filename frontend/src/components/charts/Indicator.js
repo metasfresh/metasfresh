@@ -14,6 +14,18 @@ class Indicator extends Component {
     return { localComputedTimestamp: computedTimestamp };
   }
 
+  updateTimestamp = () => {
+    const { localComputedTimestamp } = this.state;
+    const newTime = moment(localComputedTimestamp)
+      .add(1, 'seconds')
+      .format('hh:mm A');
+    return this.setState({ computedTimestamp: newTime });
+  };
+
+  componentDidMount() {
+    this.interval = setInterval(() => this.updateTimestamp(), 1000);
+  }
+
   /**
    * @method showDetails
    * @summary Calls the getTargetIndicatorsDetails dashboard action to get the windowId and the viewId and
@@ -30,6 +42,10 @@ class Indicator extends Component {
       detailsTab.focus();
     });
   };
+
+  componentWillUnmount() {
+    clearInterval(this.interval);
+  }
 
   render() {
     const {
