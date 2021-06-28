@@ -7,6 +7,11 @@ import moment from 'moment';
 class Indicator extends Component {
   constructor(props) {
     super(props);
+    this.state = { localComputedTimestamp: null };
+  }
+
+  static getDerivedStateFromProps({ data: { computedTimestamp } }) {
+    return { localComputedTimestamp: computedTimestamp };
   }
 
   /**
@@ -37,8 +42,8 @@ class Indicator extends Component {
       editmode,
       framework,
       zoomToDetailsAvailable,
-      data: { computedTimestamp },
     } = this.props;
+    const { localComputedTimestamp } = this.state;
 
     if (loader)
       return (
@@ -71,9 +76,11 @@ class Indicator extends Component {
           <div className="indicator-amount">{amount}</div>
           <div className="indicator-unit">{unit}</div>
         </div>
-        <div className="indicator-last-updated">
-          {moment(computedTimestamp).fromNow()}
-        </div>
+        {localComputedTimestamp && (
+          <div className="indicator-last-updated">
+            {moment(localComputedTimestamp).fromNow()}
+          </div>
+        )}
       </div>
     );
   }
