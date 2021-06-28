@@ -31,6 +31,7 @@ import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.PostalId;
+import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.util.Check;
@@ -104,9 +105,13 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 
 			final OrgChangeBPartnerComposite orgChangePartnerComposite = service.getByIdAndOrgChangeDate(partnerId, orgChangeDate);
 
-			p_groupTemplateId = service.getTargetGroupCategoryId(orgChangePartnerComposite.getGroupCategoryId(), p_orgTargetId);
+			final GroupCategoryId groupCategoryId = orgChangePartnerComposite.getGroupCategoryId();
 
-			return p_groupTemplateId == null ? -1 : p_groupTemplateId.getRepoId();
+			if(groupCategoryId != null && service.isGroupCategoryContainsProductsInTargetOrg(groupCategoryId, p_orgTargetId))
+			{
+				return groupCategoryId.getRepoId();
+			}
+
 		}
 		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}

@@ -54,7 +54,7 @@ public class OrgChangeService
 			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
 			@NonNull final OrgMappingRepository orgMappingRepo,
 			@NonNull final OrgChangeHistoryRepository orgChangeHistoryRepo,
-			@NonNull GroupTemplateRepository groupTemplateRepo)
+			@NonNull final GroupTemplateRepository groupTemplateRepo)
 	{
 		this.orgChangeRepo = orgChangeRepo;
 		this.bpCompositeRepo = bpCompositeRepo;
@@ -86,20 +86,11 @@ public class OrgChangeService
 		return orgChangeRepo.hasAnyMembershipProduct(orgId);
 	}
 
-	public GroupCategoryId getTargetGroupCategoryId(final GroupCategoryId sourceGroupTemplateId, final OrgId targetOrgId)
+	public boolean isGroupCategoryContainsProductsInTargetOrg(@NonNull final GroupCategoryId groupCategoryId,
+			@NonNull final OrgId targetOrgId)
 	{
-		if (sourceGroupTemplateId == null)
-		{
-			return null;
-		}
+		final Optional<I_M_Product> productOfGroupCategory = productDAO.getProductOfGroupCategory(groupCategoryId, targetOrgId);
 
-		final Optional<I_M_Product> productOfGroupCategory = productDAO.getProductOfGroupCategory(sourceGroupTemplateId, targetOrgId);
-		if (!productOfGroupCategory.isPresent())
-		{
-			return null;
-		}
-
-		return sourceGroupTemplateId;
+		return productOfGroupCategory.isPresent();
 	}
-
 }
