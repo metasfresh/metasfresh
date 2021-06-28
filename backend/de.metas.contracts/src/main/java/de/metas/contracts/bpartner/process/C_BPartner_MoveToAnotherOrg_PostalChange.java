@@ -91,7 +91,7 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 
 			return isShowMembershipParameter;
 		}
-		else if (PARAM_GroupTemplate_ID.equals(parameter.getColumnName()))
+		else if (PARAM_GroupCategory_ID.equals(parameter.getColumnName()))
 		{
 			if (p_orgTargetId == null)
 			{
@@ -107,7 +107,7 @@ public class C_BPartner_MoveToAnotherOrg_PostalChange extends C_BPartner_MoveToA
 
 			final GroupCategoryId groupCategoryId = orgChangePartnerComposite.getGroupCategoryId();
 
-			if(groupCategoryId != null && service.isGroupCategoryContainsProductsInTargetOrg(groupCategoryId, p_orgTargetId))
+			if (groupCategoryId != null && service.isGroupCategoryContainsProductsInTargetOrg(groupCategoryId, p_orgTargetId))
 			{
 				return groupCategoryId.getRepoId();
 			}
