@@ -101,7 +101,7 @@ public class KPIDataProvider
 	{
 		if (isCacheCleanupRandomHit())
 		{
-			cleanupCacheNow();
+			cacheRemoveExpiredEntries();
 		}
 
 		final Duration maxStaleAccepted = request.getMaxStaleAccepted();
@@ -210,13 +210,22 @@ public class KPIDataProvider
 		return randomValue <= cacheCleanupHitRate.toInt();
 	}
 
-	private void cleanupCacheNow()
+	private void cacheRemoveExpiredEntries()
 	{
-		logger.trace("cacheCleanupNow: {} entries before cleanup", cache.size());
+		logger.trace("cacheRemoveExpiredEntries: {} entries before cleanup", cache.size());
 
-		cache.values().removeIf(cacheValue -> cacheValue.isExpired());
+		cache.values().removeIf(KPIDataCacheValue::isExpired);
 
-		logger.trace("cacheCleanupNow: {} entries after cleanup", cache.size());
+		logger.trace("cacheRemoveExpiredEntries: {} entries after cleanup", cache.size());
+	}
+
+	public void cacheReset()
+	{
+		final int size = cache.size();
+
+		cache.clear();
+
+		logger.trace("cacheReset: {} entries after cleanup", size);
 	}
 
 	public Optional<KPIZoomIntoDetailsInfo> getZoomIntoDetailsInfo(@NonNull final KPIDataRequest request)
