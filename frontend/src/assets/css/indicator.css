@@ -99,7 +99,10 @@
     font-weight: bold;
     cursor: pointer;
 }
-
+.indicator-last-updated {
+    text-align: left;
+    color: $brand-color-primary;
+}
 
 
 @media screen and (max-width: 991px) {

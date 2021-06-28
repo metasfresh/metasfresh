@@ -159,6 +159,7 @@ class RawChart extends Component {
                 caption:
                   typeof caption === 'string' ? caption.toUpperCase() : caption,
                 editmode,
+                data,
               }}
             />
           </div>
