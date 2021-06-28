@@ -651,3 +651,8 @@ UPDATE AD_Column SET ReadOnlyLogic='@Status/''P''@!''P''',Updated=TO_TIMESTAMP('
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Column SET ReadOnlyLogic='@Status/''P''@!''P''',Updated=TO_TIMESTAMP('2021-06-25 17:57:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574067
 ;
+
+-- 2021-06-28T05:52:46.631Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsUpdateable='Y',Updated=TO_TIMESTAMP('2021-06-28 08:52:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574059
+;
