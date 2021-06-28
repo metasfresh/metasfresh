@@ -146,7 +146,6 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 		final TaxQuery query = TaxQuery.builder()
 				.orgId(orgId)
 				.warehouseId(WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID()))
-				.bpartnerId(bpartnerId)
 				.bPartnerLocationId(bPartnerLocationId)
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(line.getC_TaxCategory_ID()))
 				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))

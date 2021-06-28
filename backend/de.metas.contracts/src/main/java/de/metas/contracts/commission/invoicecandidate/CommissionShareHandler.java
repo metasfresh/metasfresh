@@ -233,7 +233,6 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 		final Tax tax = taxDAO.getBy(TaxQuery.builder()
 				.orgId(orgId)
-				.bpartnerId(bPartnerId)
 				.bPartnerLocationId(commissionToLocationId)
 				.dateOfInterest(icRecord.getDeliveryDate())
 				.soTrx(SOTrx.PURCHASE)

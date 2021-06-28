@@ -53,10 +53,7 @@ public class TaxQuery
 	@NonNull
 	Timestamp dateOfInterest;
 
-	@Nullable
-	BPartnerId bpartnerId;
-
-	@Nullable
+	@NonNull
 	BPartnerLocationId bPartnerLocationId;
 
 	@NonNull
@@ -70,8 +67,7 @@ public class TaxQuery
 			@Nullable final WarehouseId warehouseId,
 			@Nullable final CountryId fromCountryId,
 			@Nullable final Timestamp dateOfInterest,
-			@Nullable final BPartnerId bpartnerId,
-			@Nullable final BPartnerLocationId bPartnerLocationId,
+			@NonNull final BPartnerLocationId bPartnerLocationId,
 			@NonNull final SOTrx soTrx,
 			@Nullable final TaxCategoryId taxCategoryId)
 	{
@@ -80,14 +76,6 @@ public class TaxQuery
 		this.fromCountryId = fromCountryId;
 		this.dateOfInterest = coalesce(dateOfInterest, Env.getDate());
 		this.bPartnerLocationId = bPartnerLocationId;
-		if (bpartnerId == null && bPartnerLocationId != null)
-		{
-			this.bpartnerId = this.bPartnerLocationId.getBpartnerId();
-		}
-		else
-		{
-			this.bpartnerId = bpartnerId;
-		}
 		this.soTrx = soTrx;
 		this.taxCategoryId = taxCategoryId;
 	}
