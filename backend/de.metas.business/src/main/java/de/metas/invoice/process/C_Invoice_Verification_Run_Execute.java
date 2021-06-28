@@ -22,6 +22,7 @@
 
 package de.metas.invoice.process;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.invoice.service.IInvoiceVerificationBL;
 import de.metas.invoice.service.InvoiceVerificationRunStatus;
@@ -35,7 +36,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice_Verification_Run;
-import org.compiere.util.Env;
 
 public class C_Invoice_Verification_Run_Execute extends JavaProcess implements IProcessPrecondition
 {
@@ -81,7 +81,7 @@ public class C_Invoice_Verification_Run_Execute extends JavaProcess implements I
 	private void setAsRunning(final I_C_Invoice_Verification_Run run)
 	{
 		run.setStatus(InvoiceVerificationRunStatus.Running.getCode());
-		run.setDateStart(Env.getDate());
+		run.setDateStart(SystemTime.asTimestamp());
 		run.setAD_PInstance_ID(getPinstanceId().getRepoId());
 		InterfaceWrapperHelper.save(run);
 	}
@@ -89,7 +89,7 @@ public class C_Invoice_Verification_Run_Execute extends JavaProcess implements I
 	private void setCompleted(final I_C_Invoice_Verification_Run run)
 	{
 		run.setStatus(InvoiceVerificationRunStatus.Finished.getCode());
-		run.setDateEnd(Env.getDate());
+		run.setDateEnd(SystemTime.asTimestamp());
 		InterfaceWrapperHelper.save(run);
 	}
 
