@@ -49,7 +49,8 @@ public class Tax
 	@NonNull TaxId taxId;
 	@NonNull OrgId orgId;
 	@NonNull Timestamp validFrom;
-	@Nullable CountryId countryId;
+	@Nullable
+	CountryId countryId;
 	@Nullable
 	CountryId toCountryId;
 	@Nullable
@@ -57,15 +58,17 @@ public class Tax
 	@NonNull TaxCategoryId taxCategoryId;
 	boolean requiresTaxCertificate;
 	SOPOType sopoType;
-	boolean isTaxExempt;
-	boolean isFiscalRepresentation;
-	boolean isSmallBusiness;
+	@Nullable
+	Boolean isTaxExempt;
+	@Nullable
+	Boolean isFiscalRepresentation;
+	@Nullable
+	Boolean isSmallBusiness;
 	boolean isWholeTax;
 	boolean isDocumentLevel;
 	BigDecimal rate;
 	BoilerPlateId boilerPlateId;
 	@NonNull Integer seqNo;
-
 
 	@Builder
 	public Tax(final @NonNull TaxId taxId,
@@ -75,11 +78,11 @@ public class Tax
 			final @Nullable CountryId toCountryId,
 			final @Nullable TypeOfDestCountry typeOfDestCountry,
 			final @NonNull TaxCategoryId taxCategoryId,
-			final boolean requiresTaxCertificate,
+			@Nullable final Boolean requiresTaxCertificate,
 			final SOPOType sopoType,
 			final boolean isTaxExempt,
-			final boolean isFiscalRepresentation,
-			final boolean isSmallBusiness,
+			@Nullable final Boolean isFiscalRepresentation,
+			@Nullable final Boolean isSmallBusiness,
 			final boolean isWholeTax,
 			final boolean isDocumentLevel,
 			final BigDecimal rate,

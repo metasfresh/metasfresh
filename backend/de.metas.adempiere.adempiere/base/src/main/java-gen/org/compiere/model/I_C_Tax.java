@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Tax
  *  @author metasfresh (generated) 
@@ -339,21 +338,21 @@ public interface I_C_Tax
 	 * Set Fiscal representation.
 	 * Matches only if the respective org has a fiscal representation in the destination country.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsFiscalRepresentation (boolean IsFiscalRepresentation);
+	void setIsFiscalRepresentation (@Nullable java.lang.String IsFiscalRepresentation);
 
 	/**
 	 * Get Fiscal representation.
 	 * Matches only if the respective org has a fiscal representation in the destination country.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isFiscalRepresentation();
+	@Nullable java.lang.String getIsFiscalRepresentation();
 
 	ModelColumn<I_C_Tax, Object> COLUMN_IsFiscalRepresentation = new ModelColumn<>(I_C_Tax.class, "IsFiscalRepresentation", null);
 	String COLUMNNAME_IsFiscalRepresentation = "IsFiscalRepresentation";
@@ -383,23 +382,23 @@ public interface I_C_Tax
 
 	/**
 	 * Set Small business.
-	 * Matches only if the respective business partner has a small business tax exemption
+	 * If set to "yes", then the respective business partner needs to have a small business tax exemption in order for the tax record to match. If set to "No", then there may be no such exception.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setIsSmallbusiness (boolean IsSmallbusiness);
+	void setIsSmallbusiness (@Nullable java.lang.String IsSmallbusiness);
 
 	/**
 	 * Get Small business.
-	 * Matches only if the respective business partner has a small business tax exemption
+	 * If set to "yes", then the respective business partner needs to have a small business tax exemption in order for the tax record to match. If set to "No", then there may be no such exception.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isSmallbusiness();
+	@Nullable java.lang.String getIsSmallbusiness();
 
 	ModelColumn<I_C_Tax, Object> COLUMN_IsSmallbusiness = new ModelColumn<>(I_C_Tax.class, "IsSmallbusiness", null);
 	String COLUMNNAME_IsSmallbusiness = "IsSmallbusiness";
@@ -543,21 +542,21 @@ public interface I_C_Tax
 	 * Set erfordert Steuer-ID.
 	 * Dieser Steuersatz erfordert eine Steuer-ID beim Geschäftspartner,.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setRequiresTaxCertificate (boolean RequiresTaxCertificate);
+	void setRequiresTaxCertificate (java.lang.String RequiresTaxCertificate);
 
 	/**
 	 * Get erfordert Steuer-ID.
 	 * Dieser Steuersatz erfordert eine Steuer-ID beim Geschäftspartner,.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isRequiresTaxCertificate();
+	java.lang.String getRequiresTaxCertificate();
 
 	ModelColumn<I_C_Tax, Object> COLUMN_RequiresTaxCertificate = new ModelColumn<>(I_C_Tax.class, "RequiresTaxCertificate", null);
 	String COLUMNNAME_RequiresTaxCertificate = "RequiresTaxCertificate";

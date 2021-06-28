@@ -22,6 +22,7 @@
 
 package de.metas.tax.api;
 
+import de.metas.common.util.StringUtils;
 import de.metas.letter.BoilerPlateId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
@@ -42,13 +43,13 @@ public class TaxUtils
 				.toCountryId(CountryId.ofRepoIdOrNull(from.getTo_Country_ID()))
 				.typeOfDestCountry(TypeOfDestCountry.ofNullableCode(from.getTypeOfDestCountry()))
 				.taxCategoryId(TaxCategoryId.ofRepoId(from.getC_TaxCategory_ID()))
-				.requiresTaxCertificate(from.isRequiresTaxCertificate())
 				.sopoType(SOPOType.ofNullableCode(from.getSOPOType()))
-				.isTaxExempt(from.isTaxExempt())
-				.isSmallBusiness(from.isSmallbusiness())
-				.isFiscalRepresentation(from.isFiscalRepresentation())
+				.requiresTaxCertificate(StringUtils.toBoolean(from.getRequiresTaxCertificate()))
+				.isSmallBusiness(StringUtils.toBoolean(from.getIsSmallbusiness(), null))
+				.isFiscalRepresentation(StringUtils.toBoolean(from.getIsFiscalRepresentation(), null))
 				.isWholeTax(from.isWholeTax())
 				.isDocumentLevel(from.isDocumentLevel())
+				.isTaxExempt(from.isTaxExempt())
 				.rate(from.getRate())
 				.boilerPlateId(BoilerPlateId.ofRepoIdOrNull(from.getAD_BoilerPlate_ID()))
 				.seqNo(from.getSeqNo())

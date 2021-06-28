@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Tax
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1466536554L;
+	private static final long serialVersionUID = -935528783L;
 
     /** Standard Constructor */
     public X_C_Tax (final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
@@ -209,16 +209,25 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 		return get_ValueAsBoolean(COLUMNNAME_IsDocumentLevel);
 	}
 
+	/** 
+	 * IsFiscalRepresentation AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISFISCALREPRESENTATION_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISFISCALREPRESENTATION_Yes = "Y";
+	/** No = N */
+	public static final String ISFISCALREPRESENTATION_No = "N";
 	@Override
-	public void setIsFiscalRepresentation (final boolean IsFiscalRepresentation)
+	public void setIsFiscalRepresentation (final @Nullable java.lang.String IsFiscalRepresentation)
 	{
 		set_Value (COLUMNNAME_IsFiscalRepresentation, IsFiscalRepresentation);
 	}
 
 	@Override
-	public boolean isFiscalRepresentation() 
+	public java.lang.String getIsFiscalRepresentation() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsFiscalRepresentation);
+		return get_ValueAsString(COLUMNNAME_IsFiscalRepresentation);
 	}
 
 	@Override
@@ -233,16 +242,25 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 		return get_ValueAsBoolean(COLUMNNAME_IsSalesTax);
 	}
 
+	/** 
+	 * IsSmallbusiness AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int ISSMALLBUSINESS_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String ISSMALLBUSINESS_Yes = "Y";
+	/** No = N */
+	public static final String ISSMALLBUSINESS_No = "N";
 	@Override
-	public void setIsSmallbusiness (final boolean IsSmallbusiness)
+	public void setIsSmallbusiness (final @Nullable java.lang.String IsSmallbusiness)
 	{
 		set_Value (COLUMNNAME_IsSmallbusiness, IsSmallbusiness);
 	}
 
 	@Override
-	public boolean isSmallbusiness() 
+	public java.lang.String getIsSmallbusiness() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSmallbusiness);
+		return get_ValueAsString(COLUMNNAME_IsSmallbusiness);
 	}
 
 	@Override
@@ -321,16 +339,25 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+	/** 
+	 * RequiresTaxCertificate AD_Reference_ID=540528
+	 * Reference name: Yes_No
+	 */
+	public static final int REQUIRESTAXCERTIFICATE_AD_Reference_ID=540528;
+	/** Yes = Y */
+	public static final String REQUIRESTAXCERTIFICATE_Yes = "Y";
+	/** No = N */
+	public static final String REQUIRESTAXCERTIFICATE_No = "N";
 	@Override
-	public void setRequiresTaxCertificate (final boolean RequiresTaxCertificate)
+	public void setRequiresTaxCertificate (final java.lang.String RequiresTaxCertificate)
 	{
 		set_Value (COLUMNNAME_RequiresTaxCertificate, RequiresTaxCertificate);
 	}
 
 	@Override
-	public boolean isRequiresTaxCertificate() 
+	public java.lang.String getRequiresTaxCertificate() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_RequiresTaxCertificate);
+		return get_ValueAsString(COLUMNNAME_RequiresTaxCertificate);
 	}
 
 	@Override

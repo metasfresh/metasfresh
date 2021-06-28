@@ -306,8 +306,8 @@ class TaxDAOTest
 		tax.setC_Country_ID(countryId);
 		tax.setTo_Country_ID(toCountryId);
 		tax.setTypeOfDestCountry(typeOfDestCountry.getCode());
-		tax.setRequiresTaxCertificate(false);
-		tax.setIsSmallbusiness(false);
+		tax.setRequiresTaxCertificate(null);
+		tax.setIsSmallbusiness(null);
 		tax.setValidFrom(VALID_FROM);
 		tax.setSOPOType(SOPOType.BOTH.getCode());
 		tax.setC_TaxCategory_ID(C_TAX_CATEGORY_ID);

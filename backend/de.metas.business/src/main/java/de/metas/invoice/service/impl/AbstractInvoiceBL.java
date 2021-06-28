@@ -1338,7 +1338,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			tax.setIsSummary(false);
 			tax.setIsTaxExempt(false);
 			tax.setRate(BigDecimal.ZERO);
-			tax.setRequiresTaxCertificate(false);
+			tax.setRequiresTaxCertificate(null);
 			tax.setSOPOType(X_C_Tax.SOPOTYPE_Both);
 			tax.setValidFrom(TimeUtil.getDay(1990, 1, 1));
 			tax.setIsSalesTax(false);
