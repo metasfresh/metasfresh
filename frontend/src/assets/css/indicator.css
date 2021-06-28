@@ -95,9 +95,10 @@
     width: 30%;
     float: right;
     text-align: right;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: bold;
     cursor: pointer;
+    color: $brand-color-primary;
 }
 .indicator-last-updated {
     clear:both;
@@ -114,6 +115,7 @@
         display: inline-block;
         text-align: center;
         padding: 20px;
+        float: left;
     }
     .indicators-wrapper {
         margin: 0;
