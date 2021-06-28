@@ -108,6 +108,7 @@ class Indicator extends Component {
         </div>
         {localComputedTimestamp && (
           <div className="indicator-last-updated">
+            <i className="meta-icon-reload" />
             {moment(localComputedTimestamp).fromNow()}
           </div>
         )}
