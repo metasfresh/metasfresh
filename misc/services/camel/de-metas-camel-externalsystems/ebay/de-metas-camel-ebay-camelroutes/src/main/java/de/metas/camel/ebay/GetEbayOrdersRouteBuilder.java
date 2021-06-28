@@ -23,10 +23,11 @@
 package de.metas.camel.ebay;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 import org.apache.camel.LoggingLevel;
@@ -37,6 +38,7 @@ import org.springframework.stereotype.Component;
 import de.metas.camel.ebay.processor.bpartner.CreateBPartnerUpsertReqForEbayOrderProcessor;
 import de.metas.camel.ebay.processor.order.CreateOrderLineCandidateUpsertReqForEbayOrderProcessor;
 import de.metas.camel.ebay.processor.order.GetEbayOrdersProcessor;
+import de.metas.camel.ebay.processor.order.NextOrderImportRuntimeParameterUpsert;
 import de.metas.camel.ebay.processor.order.OrderFilterProcessor;
 import de.metas.camel.ebay.processor.product.CreateProductUpsertReqProcessor;
 import de.metas.camel.ebay.processor.product.price.CreateProductPriceUpsertReqProcessor;
@@ -61,6 +63,8 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 	public static final String PROCESS_ORDER_PRODUCTS_ROUTE_ID = "Ebay-processOrderProducts";
 	public static final String PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID = "Ebay-processOrderProductsPrices";
 	public static final String PROCESS_ORDER_OLC_ROUTE_ID = "Ebay-processOrderOLC";
+	public static final String PROCESS_NEXT_ORDER_IMPORT_RUNTIME_PARAMS_ROUTE_ID = "Ebay-nextOrderImportRuntimeParams";
+	public static final String PROCESS_NEXT_ORDER_IMPORT_RUNTIME_PARAMS_PROCESSOR_ID = "Ebay-nextOrderImportRuntimeParamsProcessor";
 	public static final String FILTER_ORDER_ROUTE_ID = "Ebay-filterOrder";
 
 	private final ProcessLogger processLogger;
@@ -131,16 +135,30 @@ public class GetEbayOrdersRouteBuilder extends RouteBuilder
 				.process(new CreateProductUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_ROUTE_ID)
 		
 				.choice()
-				.when(body().isNull())
-					.log(LoggingLevel.INFO, "Nothing to do! No new or updated Products!")
-				.otherwise()
-					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Products: ${body}")
-					.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
+					.when(body().isNull())
+						.log(LoggingLevel.INFO, "Nothing to do! No new or updated Products!")
+					.otherwise()
+						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Products: ${body}")
+						.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI))
+			
+						// and their prices.
+						.process(new CreateProductPriceUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID)
+						.split(body())
+							.to(direct(MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI))
+				.endChoice()
+		.end();
 		
-					// and their prices.
-					.process(new CreateProductPriceUpsertReqProcessor()).id(PROCESS_ORDER_PRODUCTS_PRICES_ROUTE_ID)
-					.split(body())
-						.to(direct(MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI))
+		//4) upsert params for future calls.
+		from(direct(PROCESS_NEXT_ORDER_IMPORT_RUNTIME_PARAMS_ROUTE_ID))
+				.routeId(PROCESS_NEXT_ORDER_IMPORT_RUNTIME_PARAMS_ROUTE_ID)
+				.log("Route invoked")
+		
+				.process(new NextOrderImportRuntimeParameterUpsert()).id(PROCESS_NEXT_ORDER_IMPORT_RUNTIME_PARAMS_PROCESSOR_ID)
+				.choice()
+					.when(body().isNull())
+						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert runtime parameters: ${body}")
+					.otherwise()
+						.to(direct(MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID))
 				.endChoice()
 		.end();
 		//@formatter:on

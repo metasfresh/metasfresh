@@ -25,6 +25,9 @@ package de.metas.camel.ebay.processor.order;
 import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.ebay.ProcessorHelper.getPropertyOrThrowError;
 
+import java.time.Instant;
+import java.time.LocalDate;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
@@ -32,6 +35,8 @@ import org.slf4j.LoggerFactory;
 
 import de.metas.camel.ebay.EbayConstants.OrderFulfillmentStatus;
 import de.metas.camel.ebay.EbayImportOrdersRouteContext;
+import de.metas.camel.ebay.EbayUtils;
+import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 
 public class OrderFilterProcessor implements Processor
@@ -54,18 +59,29 @@ public class OrderFilterProcessor implements Processor
 
 		log.debug("Checking order {} for further steps", order.getOrderId());
 		
-		
+
 		//only import new orders.
 		if( OrderFulfillmentStatus.NOT_STARTED.name().equalsIgnoreCase(order.getOrderFulfillmentStatus()) ) {
 			
 			importOrdersRouteContext.setOrder(order);
 			exchange.getIn().setBody(order);
-
+			
+			//remember order TS for future calls.
+			LocalDate created = order.getCreationDate() != null ? EbayUtils.toLocalDate(order.getCreationDate()) : null;
+			if(created != null) {
+				importOrdersRouteContext.setNextImportStartingTimestamp(DateAndImportStatus.of(true, Instant.from(created)));
+			}
 		}
 		else
 		{
 			// order was filtered
 			exchange.getIn().setBody(null);
+			
+			//remember order TS for future calls.
+			LocalDate created = order.getCreationDate() != null ? EbayUtils.toLocalDate(order.getCreationDate()) : null;
+			if(created != null) {
+				importOrdersRouteContext.setNextImportStartingTimestamp(DateAndImportStatus.of(true, Instant.from(created)));
+			}
 		}
 
 	}

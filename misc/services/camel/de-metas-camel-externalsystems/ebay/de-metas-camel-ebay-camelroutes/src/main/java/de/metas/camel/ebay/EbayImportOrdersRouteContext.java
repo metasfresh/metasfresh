@@ -22,13 +22,16 @@
 
 package de.metas.camel.ebay;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -49,29 +52,41 @@ public class EbayImportOrdersRouteContext
 {
 
 	@NonNull
+	@Setter(AccessLevel.NONE)
+	private final String orgCode;
+
+	/** Para, */
+	@NonNull
+	@Setter(AccessLevel.NONE)
+	private JsonExternalSystemRequest externalSystemRequest;
+
+	@NonNull
 	@Builder.Default
 	@Setter(AccessLevel.NONE)
 	private Set<String> importedExternalHeaderIds = new HashSet<>();
-
-	@NonNull
-	private final String orgCode;
-
+	
+	/** Current processed order after splitting. */
 	@Nullable
 	private Order order;
 
 	@Nullable
 	private String bpLocationCustomJsonPath;
 
+	/** Shipping BPID after generation / query. */
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String shippingBPLocationExternalId;
 
+	/** Billling BIPD after generation / query. */
 	@Nullable
 	@Getter(AccessLevel.NONE)
 	private String billingBPLocationExternalId;
 
+	/** Next TS for import based on processed orders. */
 	@Nullable
-	private LocalDate dateRequired;
+	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
+	private DateAndImportStatus nextImportStartingTimestamp;
 	
 
 	@NonNull
@@ -111,6 +126,52 @@ public class EbayImportOrdersRouteContext
 	{
 		this.order = order;
 		importedExternalHeaderIds.add(order.getOrderId());
+	}
+	
+	@NonNull
+	public Optional<Instant> getNextImportStartingTimestamp()
+	{
+		if (nextImportStartingTimestamp == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(nextImportStartingTimestamp.getTimestamp());
+	}
+	
+	/**
+	 * Update next import timestamp to the most current one.
+	 */
+	public void setNextImportStartingTimestamp(@NonNull final DateAndImportStatus dateAndImportStatus)
+	{
+		if (this.nextImportStartingTimestamp == null)
+		{
+			this.nextImportStartingTimestamp = dateAndImportStatus;
+			return;
+		}
+
+		if (this.nextImportStartingTimestamp.isOkToImport())
+		{
+			if (dateAndImportStatus.isOkToImport()
+					&& dateAndImportStatus.getTimestamp().isAfter(this.nextImportStartingTimestamp.getTimestamp()))
+			{
+				this.nextImportStartingTimestamp = dateAndImportStatus;
+				return;
+			}
+
+			if (!dateAndImportStatus.isOkToImport())
+			{
+				this.nextImportStartingTimestamp = dateAndImportStatus;
+				return;
+			}
+		}
+
+		if (!this.nextImportStartingTimestamp.isOkToImport()
+				&& !dateAndImportStatus.isOkToImport()
+				&& dateAndImportStatus.getTimestamp().isBefore(this.nextImportStartingTimestamp.getTimestamp()))
+		{
+			this.nextImportStartingTimestamp = dateAndImportStatus;
+		}
 	}
 
 }

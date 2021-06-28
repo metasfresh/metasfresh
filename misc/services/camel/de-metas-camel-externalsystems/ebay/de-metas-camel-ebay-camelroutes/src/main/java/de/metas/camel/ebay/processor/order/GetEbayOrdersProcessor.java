@@ -146,7 +146,6 @@ public class GetEbayOrdersProcessor implements Processor
 				orderApi = (OrderApi)exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_CLIENT);
 			}
 
-			// prepare call TODO: config parameters
 			String fieldGroups = null;
 			String filter = "lastmodifieddate:".concat(updatedAfter);
 			String limit = "50";
@@ -162,6 +161,7 @@ public class GetEbayOrdersProcessor implements Processor
 			// add order context to exchange.
 			final EbayImportOrdersRouteContext ordersContext = EbayImportOrdersRouteContext.builder()
 					.orgCode(request.getOrgCode())
+					.externalSystemRequest(request)
 					.build();
 
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
