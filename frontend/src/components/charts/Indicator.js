@@ -4,7 +4,7 @@ import Loader from '../app/Loader';
 import { getTargetIndicatorsDetails } from '../../actions/DashboardActions';
 import moment from 'moment';
 
-const ELAPSED_TIME_REFRESH_INTERVAL_MILLIS = 2000;
+const ELAPSED_TIME_REFRESH_INTERVAL_MILLIS = 60000;
 
 /**
  * @returns renders a string like "a minute ago" for a given timestamp
