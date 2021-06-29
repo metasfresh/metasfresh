@@ -187,12 +187,12 @@ class ElasticsearchKPIDataLoader
 
 		logger.trace("Retrieving data for {}, range={}", kpi, mainTimeRange);
 		final KPIDataResult.Builder data = KPIDataResult.builder()
-				.setRange(mainTimeRange);
+				.range(mainTimeRange);
 
 		timeRanges.forEach(timeRange -> loadData(data, timeRange));
 
 		return data
-				.setTook(duration.elapsed())
+				.datasetsComputeDuration(duration.elapsed())
 				.build();
 	}
 
