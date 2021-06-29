@@ -38,6 +38,7 @@ public class CopyAttributesFromBOMLineGenerator implements IComponentGenerator
 		for (final AttributeCode attributeCode : bomLineAttributes.getAttributeCodes())
 		{
 			if (context.isOverrideExistingValues()
+					|| !existingAttributes.hasAttribute(attributeCode)
 					|| Check.isBlank(existingAttributes.getValueAsString(attributeCode)))
 			{
 				result.attributeValue(attributeCode, bomLineAttributes.getValue(attributeCode));
