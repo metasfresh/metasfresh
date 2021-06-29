@@ -24,14 +24,20 @@ package de.metas.ui.web.kpi.data;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.ui.web.exceptions.WebuiError;
 import de.metas.ui.web.kpi.TimeRange;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.Objects;
 
 @Value
 public class KPIDataResult
@@ -41,30 +47,47 @@ public class KPIDataResult
 		return new Builder();
 	}
 
-	TimeRange range;
-	ImmutableList<KPIDataSet> datasets;
+	@Nullable TimeRange range;
+	@NonNull ImmutableList<KPIDataSet> datasets;
+	@NonNull Instant datasetsComputedTime;
+	@Nullable Duration datasetsComputeDuration;
 
-	@NonNull Instant createdTime = SystemTime.asInstant();
-	@Nullable Duration took;
+	@Nullable WebuiError error;
 
 	private KPIDataResult(final Builder builder)
 	{
-		range = builder.range;
-		datasets = builder.datasets
-				.values()
-				.stream()
-				.map(KPIDataSet.KPIDataSetBuilder::build)
-				.collect(ImmutableList.toImmutableList());
+		final Instant now = SystemTime.asInstant();
 
-		took = builder.took;
+		range = builder.range;
+		datasets = builder.getBuiltDatasets();
+		datasetsComputedTime = builder.datasetsComputedTime != null ? builder.datasetsComputedTime : now;
+		datasetsComputeDuration = builder.datasetsComputeDuration;
+
+		error = builder.error;
+
 	}
+
+	public static boolean equals(@Nullable final KPIDataResult o1, @Nullable final KPIDataResult o2)
+	{
+		return Objects.equals(o1, o2);
+	}
+
+	//
+	//
+	//
+	//
+	//
 
 	public static final class Builder
 	{
-		private final LinkedHashMap<String, KPIDataSet.KPIDataSetBuilder> datasets = new LinkedHashMap<>();
-		private TimeRange range;
+		private ImmutableList<KPIDataSet> builtDatasets = null;
+		private LinkedHashMap<String, KPIDataSet.KPIDataSetBuilder> datasets = null;
+		@Nullable private TimeRange range;
+		@Nullable private Instant datasetsComputedTime;
+		@Nullable private Duration datasetsComputeDuration;
 
-		private Duration took;
+		public static final AdMessageKey MSG_FailedLoadingKPI = AdMessageKey.of("webui.dashboard.KPILoadError");
+		@Nullable WebuiError error;
 
 		private Builder() { }
 
@@ -73,25 +96,89 @@ public class KPIDataResult
 			return new KPIDataResult(this);
 		}
 
-		public KPIDataSet.KPIDataSetBuilder dataSet(final String name)
+		private ImmutableList<KPIDataSet> getBuiltDatasets()
 		{
-			return datasets.computeIfAbsent(name, KPIDataSet::builder);
+			if (builtDatasets == null)
+			{
+				if (datasets == null)
+				{
+					builtDatasets = ImmutableList.of();
+				}
+				else
+				{
+					builtDatasets = datasets
+							.values()
+							.stream()
+							.map(KPIDataSet.KPIDataSetBuilder::build)
+							.collect(ImmutableList.toImmutableList());
+				}
+			}
+			return builtDatasets;
 		}
 
-		public Builder setRange(final TimeRange timeRange)
+		public Builder setFromPreviousResult(@Nullable final KPIDataResult previousResult)
 		{
-			range = timeRange;
+			if (previousResult == null)
+			{
+				builtDatasets(ImmutableList.of());
+				range(null);
+			}
+			else
+			{
+				builtDatasets(previousResult.getDatasets());
+				range(previousResult.getRange());
+				datasetsComputedTime(previousResult.getDatasetsComputedTime());
+				datasetsComputeDuration(previousResult.getDatasetsComputeDuration());
+			}
+
 			return this;
 		}
 
+		public KPIDataSet.KPIDataSetBuilder dataSet(final String name)
+		{
+			if (builtDatasets != null)
+			{
+				throw new AdempiereException("datasets were already built");
+			}
+
+			if (datasets == null)
+			{
+				datasets = new LinkedHashMap<>();
+			}
+
+			return datasets.computeIfAbsent(name, KPIDataSet::builder);
+		}
+
+		private void datasetsComputedTime(@Nullable final Instant datasetsComputedTime)
+		{
+			this.datasetsComputedTime = datasetsComputedTime;
+		}
+
+		private void builtDatasets(final ImmutableList<KPIDataSet> builtDatasets)
+		{
+			if (datasets != null && !datasets.isEmpty())
+			{
+				throw new AdempiereException("Setting builtDatasets not allowed when some datasets builder were previously set");
+			}
+
+			this.builtDatasets = builtDatasets;
+		}
+
+		public Builder range(@Nullable final TimeRange range)
+		{
+			this.range = range;
+			return this;
+		}
+
+		@Nullable
 		public TimeRange getRange()
 		{
 			return range;
 		}
 
-		public Builder setTook(@NonNull final Duration took)
+		public Builder datasetsComputeDuration(@Nullable final Duration datasetsComputeDuration)
 		{
-			this.took = took;
+			this.datasetsComputeDuration = datasetsComputeDuration;
 			return this;
 		}
 
@@ -111,6 +198,22 @@ public class KPIDataResult
 				@NonNull final KPIDataValue value)
 		{
 			dataSet(dataSetName).putValueIfAbsent(dataSetValueKey, fieldName, value);
+		}
+
+		public Builder error(@NonNull final Exception exception)
+		{
+			final ITranslatableString errorMessage = AdempiereException.isUserValidationError(exception)
+					? AdempiereException.extractMessageTrl(exception)
+					: TranslatableStrings.adMessage(MSG_FailedLoadingKPI);
+
+			this.error = WebuiError.of(exception, errorMessage);
+			return this;
+		}
+
+		public Builder error(@NonNull final ITranslatableString errorMessage)
+		{
+			this.error = WebuiError.of(errorMessage);
+			return this;
 		}
 
 	}

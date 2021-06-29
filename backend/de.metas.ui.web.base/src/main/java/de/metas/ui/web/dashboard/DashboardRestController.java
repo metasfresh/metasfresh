@@ -211,7 +211,7 @@ public class DashboardRestController
 		KPIDataResult data = null;
 		try
 		{
-			data = dashboardDataService.getKPIData(kpi.getId()).orElse(null);
+			data = dashboardDataService.getKPIData(kpi.getId());
 		}
 		catch (final Exception ex)
 		{

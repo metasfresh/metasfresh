@@ -26,9 +26,6 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
-import de.metas.i18n.ExplainedOptional;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.kpi.KPITimeRangeDefaults;
 import de.metas.ui.web.kpi.TimeRange;
@@ -36,7 +33,6 @@ import de.metas.ui.web.kpi.descriptor.KPI;
 import de.metas.ui.web.kpi.descriptor.KPIDatasourceType;
 import de.metas.ui.web.kpi.descriptor.KPIId;
 import de.metas.ui.web.kpi.descriptor.KPIRepository;
-import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -49,7 +45,6 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class KPIDataProvider
@@ -60,12 +55,11 @@ public class KPIDataProvider
 	private final IESSystem esSystem;
 	private final KPIRepository kpiRepository;
 
-	private final ConcurrentHashMap<KPIDataCacheKey, KPIDataCacheValue> cache = new ConcurrentHashMap<>();
-	private final Random random = new Random();
+	private final int cacheSize;
+	private final ConcurrentHashMap<KPIDataCacheKey, KPIDataCacheValue> cache;
 
-	private static final String SYSCONFIG_CacheCleanupHitRate = "webui.kpi.cacheCleanupHitRate";
-	private static final Percent DEFAULT_CacheCleanupHitRate = Percent.of(20);
-	private final Percent cacheCleanupHitRate;
+	private static final String SYSCONFIG_CacheSize = "webui.kpi.cache.size";
+	private static final int DEFAULT_CacheSize = 500;
 
 	@Builder
 	private KPIDataProvider(
@@ -76,30 +70,21 @@ public class KPIDataProvider
 		this.esSystem = esSystem;
 		this.kpiRepository = kpiRepository;
 
-		this.cacheCleanupHitRate = getCacheCleanupHitRate(sysConfigBL);
-		logger.info("cacheCleanupHitRate={}", cacheCleanupHitRate);
+		this.cacheSize = getCacheSize(sysConfigBL);
+		logger.info("cacheSize={} (sysconfig: {})", cacheSize, SYSCONFIG_CacheSize);
+
+		this.cache = new ConcurrentHashMap<>(cacheSize);
 	}
 
-	private static Percent getCacheCleanupHitRate(final ISysConfigBL sysConfigBL)
+	private static int getCacheSize(final ISysConfigBL sysConfigBL)
 	{
-		final int rateInt = sysConfigBL.getIntValue(SYSCONFIG_CacheCleanupHitRate, -1);
-		if (rateInt <= 0)
-		{
-			return DEFAULT_CacheCleanupHitRate;
-		}
-		else if (rateInt > 100)
-		{
-			return Percent.ONE_HUNDRED;
-		}
-		else
-		{
-			return Percent.of(rateInt);
-		}
+		final int cacheSize = sysConfigBL.getIntValue(SYSCONFIG_CacheSize, -1);
+		return cacheSize > 0 ? cacheSize : DEFAULT_CacheSize;
 	}
 
-	public ExplainedOptional<KPIDataResult> getKPIData(@NonNull final KPIDataRequest request)
+	public KPIDataResult getKPIData(@NonNull final KPIDataRequest request)
 	{
-		if (isCacheCleanupRandomHit())
+		if (isCacheCleanupThresholdHit())
 		{
 			cacheRemoveExpiredEntries();
 		}
@@ -109,7 +94,7 @@ public class KPIDataProvider
 				extractCacheKey(request),
 				(cacheKey, existingCacheValue) -> computeCacheValueIfNeeded(cacheKey, existingCacheValue, maxStaleAccepted));
 
-		return cacheValue.toExplainedOptional();
+		return cacheValue.getData();
 	}
 
 	private KPIDataCacheKey extractCacheKey(@NonNull final KPIDataRequest request)
@@ -135,12 +120,12 @@ public class KPIDataProvider
 		if (existingValue == null)
 		{
 			logger.trace("computeCacheValueIfNeeded: no existingValue. Computing and returning a new value");
-			return computeCacheValue(cacheKey);
+			return computeCacheValue(cacheKey, null);
 		}
 		else if (existingValue.isExpired(maxStaleAccepted))
 		{
 			logger.trace("computeCacheValueIfNeeded: existingValue expired. Computing and returning a new value");
-			return computeCacheValue(cacheKey);
+			return computeCacheValue(cacheKey, existingValue.getData());
 		}
 		else
 		{
@@ -149,7 +134,9 @@ public class KPIDataProvider
 		}
 	}
 
-	private KPIDataCacheValue computeCacheValue(@NonNull final KPIDataCacheKey cacheKey)
+	private KPIDataCacheValue computeCacheValue(
+			@NonNull final KPIDataCacheKey cacheKey,
+			@Nullable final KPIDataResult previousResult)
 	{
 		final KPIDataContext context = cacheKey.getContext();
 		final KPITimeRangeDefaults timeRangeDefaults = cacheKey.getTimeRangeDefaults();
@@ -163,17 +150,21 @@ public class KPIDataProvider
 			if (dataSourceType == KPIDatasourceType.ELASTICSEARCH)
 			{
 				final BooleanWithReason elasticsearchEnabled = esSystem.getEnabled();
+				final KPIDataResult data;
 				if (elasticsearchEnabled.isTrue())
 				{
-					final KPIDataResult data = ElasticsearchKPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
+					data = ElasticsearchKPIDataLoader.newInstance(esSystem.elasticsearchClient(), kpi)
 							.setTimeRange(timeRange)
 							.retrieveData();
-					return KPIDataCacheValue.ok(data, defaultMaxStaleAccepted);
 				}
 				else
 				{
-					return KPIDataCacheValue.error(elasticsearchEnabled.getReason(), defaultMaxStaleAccepted);
+					data = KPIDataResult.builder()
+							.setFromPreviousResult(previousResult)
+							.error(elasticsearchEnabled.getReason())
+							.build();
 				}
+				return KPIDataCacheValue.ok(data, defaultMaxStaleAccepted);
 			}
 			else if (dataSourceType == KPIDatasourceType.SQL)
 			{
@@ -195,19 +186,17 @@ public class KPIDataProvider
 		catch (final Exception ex)
 		{
 			logger.warn("Failed computing KPI for {}. Returning error.", cacheKey, ex);
-
-			final ITranslatableString errorMessage = AdempiereException.isUserValidationError(ex)
-					? AdempiereException.extractMessageTrl(ex)
-					: TranslatableStrings.adMessage(MSG_FailedLoadingKPI);
-
-			return KPIDataCacheValue.error(errorMessage, defaultMaxStaleAccepted);
+			final KPIDataResult data = KPIDataResult.builder()
+					.setFromPreviousResult(previousResult)
+					.error(ex)
+					.build();
+			return KPIDataCacheValue.ok(data, defaultMaxStaleAccepted);
 		}
 	}
 
-	private boolean isCacheCleanupRandomHit()
+	private boolean isCacheCleanupThresholdHit()
 	{
-		final int randomValue = random.nextInt(100);
-		return randomValue <= cacheCleanupHitRate.toInt();
+		return cache.size() >= cacheSize;
 	}
 
 	private void cacheRemoveExpiredEntries()
@@ -276,37 +265,14 @@ public class KPIDataProvider
 			return new KPIDataCacheValue(data, defaultMaxStaleAccepted);
 		}
 
-		public static KPIDataCacheValue error(@Nullable final ITranslatableString errorMessage, @NonNull final Duration defaultMaxStaleAccepted)
-		{
-			return new KPIDataCacheValue(errorMessage, defaultMaxStaleAccepted);
-		}
-
-		public static KPIDataCacheValue error(@NonNull final Exception exception, @NonNull final Duration defaultMaxStaleAccepted)
-		{
-			return new KPIDataCacheValue(AdempiereException.extractMessageTrl(exception), defaultMaxStaleAccepted);
-		}
-
 		@NonNull Instant created = SystemTime.asInstant();
 		@NonNull Duration defaultMaxStaleAccepted;
 
 		KPIDataResult data;
 
-		boolean error;
-		ITranslatableString errorMessage;
-
 		public KPIDataCacheValue(@NonNull final KPIDataResult data, @NonNull final Duration defaultMaxStaleAccepted)
 		{
 			this.data = data;
-			this.error = false;
-			this.errorMessage = null;
-			this.defaultMaxStaleAccepted = defaultMaxStaleAccepted;
-		}
-
-		public KPIDataCacheValue(@Nullable final ITranslatableString errorMessage, @NonNull final Duration defaultMaxStaleAccepted)
-		{
-			this.data = null;
-			this.error = true;
-			this.errorMessage = errorMessage != null ? errorMessage : TranslatableStrings.anyLanguage("Unknown internal error");
 			this.defaultMaxStaleAccepted = defaultMaxStaleAccepted;
 		}
 
@@ -326,13 +292,6 @@ public class KPIDataProvider
 			final boolean expired = staleActual.compareTo(maxStaleAcceptedEffective) > 0;
 			logger.trace("isExpired={}, now={}, maxStaleAcceptedEffective={}, staleActual={}, cacheValue={}", expired, now, maxStaleAcceptedEffective, staleActual, this);
 			return expired;
-		}
-
-		public ExplainedOptional<KPIDataResult> toExplainedOptional()
-		{
-			return !error
-					? ExplainedOptional.of(data)
-					: ExplainedOptional.emptyBecause(errorMessage);
 		}
 	}
 }
