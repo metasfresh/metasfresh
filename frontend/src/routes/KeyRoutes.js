@@ -60,7 +60,7 @@ function BoardRoute({ location, match }) {
  */
 const RawMasterWindowRoute = (props) => {
   const dispatch = useDispatch();
-  const { match, location } = props;
+  const { match } = props;
 
   useEffect(() => {
     const {
