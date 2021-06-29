@@ -4,10 +4,19 @@ import Loader from '../app/Loader';
 import { getTargetIndicatorsDetails } from '../../actions/DashboardActions';
 import moment from 'moment';
 
+const ELAPSED_TIME_REFRESH_INTERVAL_MILLIS = 2000;
+
+/**
+ * @returns renders a string like "a minute ago" for a given timestamp
+ */
+function computeRenderedLastComputedString(computedTimestamp) {
+  return moment(computedTimestamp).fromNow();
+}
+
 class Indicator extends Component {
   constructor(props) {
     super(props);
-    this.state = { localComputedTimestamp: null };
+    this.state = { renderedLastComputedString: null };
   }
 
   /**
@@ -16,26 +25,28 @@ class Indicator extends Component {
    * @returns
    */
   static getDerivedStateFromProps({ data: { computedTimestamp } }) {
-    return { localComputedTimestamp: computedTimestamp };
+    return {
+      renderedLastComputedString: computeRenderedLastComputedString(
+        computedTimestamp
+      ),
+    };
   }
 
-  /**
-   * @summary sets the local timestamp + 1 min, called on one min interval after the component mounts
-   */
-  updateTimestamp = () => {
-    const { localComputedTimestamp } = this.state;
-    const newTime = moment(localComputedTimestamp)
-      .add(1, 'minutes')
-      .format('hh:mm A');
-    return this.setState({ localComputedTimestamp: newTime });
-  };
-
-  /**
-   * @summary lifecycle in which we are calling the funtion that updates the local timestamp on one min
-   */
   componentDidMount() {
-    this.interval = setInterval(() => this.updateTimestamp(), 60000);
+    this.interval = setInterval(
+      () => this.updateRenderedLastComputedString(),
+      ELAPSED_TIME_REFRESH_INTERVAL_MILLIS
+    );
   }
+
+  updateRenderedLastComputedString = () => {
+    const { data } = this.props;
+    const { computedTimestamp } = data;
+    const renderedLastComputedString = computeRenderedLastComputedString(
+      computedTimestamp
+    );
+    return this.setState({ renderedLastComputedString });
+  };
 
   /**
    * @method showDetails
@@ -73,7 +84,7 @@ class Indicator extends Component {
       framework,
       zoomToDetailsAvailable,
     } = this.props;
-    const { localComputedTimestamp } = this.state;
+    const { renderedLastComputedString } = this.state;
 
     if (loader)
       return (
@@ -92,7 +103,6 @@ class Indicator extends Component {
       >
         <div>
           <div className="indicator-kpi-caption">{caption}</div>
-          {/* TODO: !!! this needs not to be hardcoded and must be provided by the BE */}
           {zoomToDetailsAvailable && (
             <div
               className="indicator-details-link"
@@ -106,10 +116,10 @@ class Indicator extends Component {
           <div className="indicator-amount">{amount}</div>
           <div className="indicator-unit">{unit}</div>
         </div>
-        {localComputedTimestamp && (
+        {renderedLastComputedString && (
           <div className="indicator-last-updated">
             <i className="meta-icon-reload" />
-            {moment(localComputedTimestamp).fromNow()}
+            {renderedLastComputedString}
           </div>
         )}
       </div>
