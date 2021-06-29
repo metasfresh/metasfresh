@@ -52,6 +52,8 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
@@ -78,6 +80,7 @@ class PPOrderIssueServiceProductCommand
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService;
 
 	// Params
@@ -89,6 +92,7 @@ class PPOrderIssueServiceProductCommand
 	private IMutableHUContext huContext;
 	private I_PP_Order _ppOrderRecord = null; // lazy
 	private I_PP_Order_BOMLine _bomLineRecord = null; // lazy
+	private ImmutableAttributeSet _bomLineAttributes = null; // lazy
 	private Quantity _qtyToIssueForOneFinishedGood = null; // lazy
 
 	@Builder
@@ -133,7 +137,8 @@ class PPOrderIssueServiceProductCommand
 		final ImmutableAttributeSet attributesToChange = manufacturingComponentGeneratorService.generate(GeneratedComponentRequest.builder()
 				.productId(getComponentId())
 				.qty(qtyToIssueForOneFinishedGood.intValueExact())
-				.attributes(ImmutableAttributeSet.copyOf(attributes))
+				.targetHUAttributes(ImmutableAttributeSet.copyOf(attributes))
+				.bomLineAttributes(getBOMLineAttributes())
 				.clientId(ClientId.ofRepoId(singleItemHU.getAD_Client_ID()))
 				.overrideExistingValues(request.isOverrideExistingValues())
 				.build());
@@ -145,6 +150,13 @@ class PPOrderIssueServiceProductCommand
 
 		for (final AttributeCode attributeCode : attributesToChange.getAttributeCodes())
 		{
+			// Skip attribute it does not exist in our HU attributes.
+			// If we would not skip it then it would fail.
+			if (!attributes.hasAttribute(attributeCode))
+			{
+				continue;
+			}
+
 			attributes.setValue(attributeCode, attributesToChange.getValue(attributeCode));
 		}
 		attributes.saveChangesIfNeeded();
@@ -175,6 +187,17 @@ class PPOrderIssueServiceProductCommand
 	private ProductId getComponentId()
 	{
 		return ProductId.ofRepoId(getBOMLineRecord().getM_Product_ID());
+	}
+
+	private ImmutableAttributeSet getBOMLineAttributes()
+	{
+		ImmutableAttributeSet bomLineAttributes = _bomLineAttributes;
+		if (bomLineAttributes == null)
+		{
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(getBOMLineRecord().getM_AttributeSetInstance_ID());
+			bomLineAttributes = _bomLineAttributes = attributeDAO.getImmutableAttributeSetById(asiId);
+		}
+		return bomLineAttributes;
 	}
 
 	private Quantity getQtyToIssueForOneFinishedGood()
