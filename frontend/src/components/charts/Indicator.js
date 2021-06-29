@@ -121,7 +121,6 @@ class Indicator extends Component {
           <div className="indicator-last-updated">
             <span
               className="indicator-fuzzy"
-              href="#"
               data-toggle="tooltip"
               data-placement="top"
               title={moment(computedTimestamp).format('LLL z')}
