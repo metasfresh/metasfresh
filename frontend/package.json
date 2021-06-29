@@ -187,7 +187,6 @@
     "redux-actions": "2.3.0",
     "redux-dynamic-reducer": "2.0.2",
     "redux-promise": "0.6.0",
-    "redux-test-utils": "0.3.0",
     "redux-thunk": "2.3.0",
     "reselect": "4.0.0",
     "sockjs-client": "1.4.0",
