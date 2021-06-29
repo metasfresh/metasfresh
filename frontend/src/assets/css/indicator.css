@@ -49,6 +49,7 @@
 }
 
 .indicator-data {
+    clear: both;
     padding-top: 0;
     margin-top: -0.3rem;
 }
