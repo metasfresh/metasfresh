@@ -343,14 +343,19 @@ public class TaxDAO implements ITaxDAO
 			}
 		}
 
+		final BPartnerLocationId bPartnerLocationId = taxQuery.getBPartnerLocationId();
+		
+		final CountryId destCountryId = getCountryId(bPartnerLocationId);
+		final TypeOfDestCountry typeOfDestCountry = getTypeOfDestCountry(countryId, destCountryId);
+		
 		final boolean euOneStopShop = orgDAO.isEUOneStopShop(orgId);
-		if (!euOneStopShop)
+		if (euOneStopShop && WITHIN_COUNTRY_AREA.equals(typeOfDestCountry))
 		{
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Country_ID, countryId);
+			loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=Y and typeOfDestCountry=WITHIN_COUNTRY_AREA; -> don't filter by origin C_Country_ID", orgId.getRepoId());
 		}
 		else
 		{
-			loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=Y; -> don't filter by origin C_Country_ID", orgId.getRepoId());
+			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_C_Country_ID, countryId);
 		}
 
 		loggable.addLog("Effective AD_Org_ID={} (or any)", orgId.getRepoId());
@@ -379,9 +384,7 @@ public class TaxDAO implements ITaxDAO
 			loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
 		}
 
-		final BPartnerLocationId bPartnerLocationId = taxQuery.getBPartnerLocationId();
 		final BPartnerId bpartnerId = bPartnerLocationId.getBpartnerId();
-
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 
 		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpartner.getVATaxID());
@@ -391,22 +394,21 @@ public class TaxDAO implements ITaxDAO
 		final boolean bpartnerIsSmallbusiness = retrieveIsTaxExemptSmallBusiness(bpartnerId, dateOfInterest);
 		loggable.addLog("BPartner is a small business={}", bpartnerIsSmallbusiness);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsSmallbusiness, StringUtils.ofBoolean(bpartnerIsSmallbusiness), null);
-
-		final CountryId toCountryId = getCountryId(bPartnerLocationId);
-		if (euOneStopShop && !bPartnerHasTaxCertificate)
-		{
-			loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=Y and C_BPartner_ID={} has no tax certificate; -> filter by To_Country_ID={}",
-							orgId.getRepoId(), toCountryId.getRepoId(), bpartnerId.getRepoId());
-			queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_To_Country_ID, toCountryId);
-		}
-		else
-		{
-			loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=N OR C_BPartner_ID={} has a tax certificate; -> filter by To_Country_ID={} or NULL",
-							orgId.getRepoId(), toCountryId.getRepoId(), bpartnerId.getRepoId());
-			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, toCountryId, null);
-		}
-
-		final TypeOfDestCountry typeOfDestCountry = getTypeOfDestCountry(countryId, toCountryId);
+		
+		// if (euOneStopShop && WITHIN_COUNTRY_AREA.equals(typeOfDestCountry) && !bPartnerHasTaxCertificate)
+		// {
+		// 	loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=Y, typeOfDestCountry=WITHIN_COUNTRY_AREA and C_BPartner_ID={} has no tax certificate; -> filter by To_Country_ID={}",
+		// 					orgId.getRepoId(), destCountryId.getRepoId(), bpartnerId.getRepoId());
+		// 	queryBuilder.addEqualsFilter(I_C_Tax.COLUMNNAME_To_Country_ID, destCountryId);
+		// }
+		// else
+		// {
+		// 	loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=N OR typeOfDestCountry!=WITHIN_COUNTRY_AREA OR C_BPartner_ID={} has a tax certificate; -> filter by To_Country_ID={} or NULL",
+		// 					orgId.getRepoId(), destCountryId.getRepoId(), bpartnerId.getRepoId());
+		loggable.addLog("Filter by To_Country_ID={} or NULL", destCountryId.getRepoId());
+		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, destCountryId, null);
+		//}
+		
 		loggable.addLog("Type of dest country: {} or NULL", typeOfDestCountry);
 		if (typeOfDestCountry != null)
 		{
@@ -414,7 +416,7 @@ public class TaxDAO implements ITaxDAO
 		}
 
 		final Timestamp fiscalRepresentationFromDate = coalesce(taxQuery.getDateOfInterest(), Env.getDate());
-		final boolean hasFiscalRepresentation = fiscalRepresentationBL.hasFiscalRepresentation(toCountryId, orgId, fiscalRepresentationFromDate);
+		final boolean hasFiscalRepresentation = fiscalRepresentationBL.hasFiscalRepresentation(destCountryId, orgId, fiscalRepresentationFromDate);
 		loggable.addLog("BPartner has fiscal Representation = {}", hasFiscalRepresentation);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsFiscalRepresentation, StringUtils.ofBoolean(hasFiscalRepresentation), null);
 
@@ -423,7 +425,7 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Nullable
-	private TypeOfDestCountry getTypeOfDestCountry(final CountryId countryId, @Nullable final CountryId toCountryId)
+	private TypeOfDestCountry getTypeOfDestCountry(@NonNull final CountryId countryId, @Nullable final CountryId toCountryId)
 	{
 		final TypeOfDestCountry typeOfDestCountry;
 		if (countryId.equals(toCountryId))
