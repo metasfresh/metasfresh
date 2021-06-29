@@ -181,8 +181,13 @@ public class CoalesceUtil
 	 * @return the first non-empty string or {@code null}.
 	 */
 	@Nullable
-	public String firstNotEmptyTrimmed(@NonNull final String... values)
+	public String firstNotEmptyTrimmed(@Nullable final String... values)
 	{
+		if (values == null || values.length == 0)
+		{
+			return null;
+		}
+
 		for (final String value : values)
 		{
 			if (EmptyUtil.isNotBlank(value))
