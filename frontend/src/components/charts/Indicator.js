@@ -124,7 +124,7 @@ class Indicator extends Component {
               href="#"
               data-toggle="tooltip"
               data-placement="top"
-              title={moment(computedTimestamp).format('LLL')}
+              title={moment(computedTimestamp).format('LLL z')}
             >
               <i className="meta-icon-reload" />
               {renderedLastComputedString}
