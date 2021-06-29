@@ -5,7 +5,12 @@ import PropTypes from 'prop-types';
 import _ from 'lodash';
 import queryString from 'query-string';
 
-import { clearNotifications, enableTutorial } from '../actions/AppActions';
+import {
+  clearNotifications,
+  enableTutorial,
+  getNotifications,
+  getNotificationsEndpoint,
+} from '../actions/AppActions';
 import { setBreadcrumb } from '../actions/MenuActions';
 import { useAuth } from '../hooks/useAuth';
 import ChildRoutes from './ChildRoutes';
@@ -53,6 +58,8 @@ const PrivateRoute = (props) => {
 
       if (location.pathname !== '/logout') {
         dispatch(clearNotifications());
+        dispatch(getNotificationsEndpoint(auth));
+        dispatch(getNotifications());
       }
     }
 
