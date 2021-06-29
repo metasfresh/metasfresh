@@ -342,7 +342,7 @@ public class KPIRepository
 				.caption(caption)
 				.offsetCaption(offsetCaption)
 				.description(description)
-				.unit(kpiFieldDef.getUOMSymbol())
+				.unit(kpiFieldDefTrl.getColumnTrl(I_WEBUI_KPI_Field.COLUMNNAME_UOMSymbol, kpiFieldDef.getUOMSymbol()))
 				.valueType(KPIFieldValueType.fromDisplayType(kpiFieldDef.getAD_Reference_ID()))
 				.numberPrecision(extractNumberPrecision(kpiFieldDef.getAD_Reference_ID()).orElse(null))
 				.color(kpiFieldDef.getColor())
