@@ -119,7 +119,7 @@ class Indicator extends Component {
         </div>
         {renderedLastComputedString && (
           <div className="indicator-last-updated">
-            <a
+            <span
               className="indicator-fuzzy"
               href="#"
               data-toggle="tooltip"
@@ -128,7 +128,7 @@ class Indicator extends Component {
             >
               <i className="meta-icon-reload" />
               {renderedLastComputedString}
-            </a>
+            </span>
           </div>
         )}
       </div>
