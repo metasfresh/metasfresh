@@ -147,6 +147,7 @@ public class JsonRetrieverService
 			.put(BPartnerContact.FAX, JsonResponseContact.FAX)
 			.put(BPartnerContact.DESCRIPTION, JsonResponseContact.DESCRIPTION)
 			.put(BPartnerContact.NEWSLETTER, JsonResponseContact.NEWSLETTER)
+			.put(BPartnerContact.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
 
 			.put(BPartnerContactType.SHIP_TO_DEFAULT, JsonResponseContact.SHIP_TO_DEFAULT)
 			.put(BPartnerContactType.BILL_TO_DEFAULT, JsonResponseContact.BILL_TO_DEFAULT)
@@ -155,7 +156,6 @@ public class JsonRetrieverService
 			.put(BPartnerContactType.SALES_DEFAULT, JsonResponseContact.SALES_DEFAULT)
 			.put(BPartnerContactType.PURCHASE, JsonResponseContact.PURCHASE)
 			.put(BPartnerContactType.PURCHASE_DEFAULT, JsonResponseContact.PURCHASE_DEFAULT)
-			.put(BPartnerContactType.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
 
 			.build();
 
@@ -253,8 +253,8 @@ public class JsonRetrieverService
 	{
 		final BPartner bpartner = bpartnerComposite.getBpartner();
 
-		try (final MDCCloseable methodMDC = MDC.putCloseable("method", "JsonRetrieverService.toJson(BPartnerComposite)");
-				final MDCCloseable bpartnerMDC = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner != null ? bpartner.getId() : null))
+		try (final MDCCloseable ignored = MDC.putCloseable("method", "JsonRetrieverService.toJson(BPartnerComposite)");
+				final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, bpartner != null ? bpartner.getId() : null))
 		{
 			final JsonResponseCompositeBuilder result = JsonResponseComposite.builder();
 
@@ -367,9 +367,10 @@ public class JsonRetrieverService
 			String greetingTrl = null;
 			if (contact.getGreetingId() != null)
 			{
-				final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
-				greetingTrl = greeting.getGreeting();
+				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
+				greetingTrl = greeting.getGreeting(language.getAD_Language());
 			}
+
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
 					.email(contact.getEmail())
@@ -380,6 +381,7 @@ public class JsonRetrieverService
 					.name(contact.getName())
 					.greeting(greetingTrl)
 					.newsletter(contact.isNewsletter())
+					.invoiceEmailEnabled(contact.getInvoiceEmailEnabled())
 					.phone(contact.getPhone())
 					.mobilePhone(contact.getMobilePhone())
 					.fax(contact.getFax())
@@ -391,7 +393,7 @@ public class JsonRetrieverService
 					.salesDefault(contactType.getIsSalesDefaultOr(false))
 					.purchase(contactType.getIsPurchaseOr(false))
 					.purchaseDefault(contactType.getIsPurchaseDefaultOr(false))
-					.subjectMatter(contactType.getIsSubjectMatterOr(false))
+					.subjectMatter(contact.isSubjectMatterContact())
 					.changeInfo(jsonChangeInfo)
 					.build();
 		}

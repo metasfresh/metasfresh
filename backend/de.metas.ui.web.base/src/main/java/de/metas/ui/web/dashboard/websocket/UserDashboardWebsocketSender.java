@@ -22,27 +22,35 @@
 
 package de.metas.ui.web.dashboard.websocket;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.dashboard.DashboardWidgetType;
 import de.metas.ui.web.dashboard.UserDashboard;
+import de.metas.ui.web.dashboard.UserDashboardId;
 import de.metas.ui.web.dashboard.UserDashboardItemChangeResult;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardChangedEventsList;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardItemChangedEvent;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardOrderChangedEvent;
+import de.metas.ui.web.websocket.WebSocketProducersRegistry;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.websocket.WebsocketTopicName;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
+import java.util.Set;
+
 public class UserDashboardWebsocketSender
 {
 	private static final Logger logger = LogManager.getLogger(UserDashboardWebsocketSender.class);
 	private final WebsocketSender websocketSender;
+	private final WebSocketProducersRegistry websocketProducersRegistry;
 
 	public UserDashboardWebsocketSender(
-			@NonNull final WebsocketSender websocketSender)
+			@NonNull final WebsocketSender websocketSender,
+			@NonNull final WebSocketProducersRegistry websocketProducersRegistry)
 	{
 		this.websocketSender = websocketSender;
+		this.websocketProducersRegistry = websocketProducersRegistry;
 	}
 
 	public void sendDashboardItemsOrderChangedEvent(
@@ -50,7 +58,7 @@ public class UserDashboardWebsocketSender
 			@NonNull final DashboardWidgetType widgetType)
 	{
 		sendEvents(
-				dashboard.getWebsocketEndpoint(),
+				getWebsocketTopicNamesByDashboardId(dashboard.getId()),
 				JSONDashboardChangedEventsList.of(
 						JSONDashboardOrderChangedEvent.of(
 								dashboard.getId(),
@@ -63,7 +71,7 @@ public class UserDashboardWebsocketSender
 			@NonNull final UserDashboardItemChangeResult changeResult)
 	{
 		sendEvents(
-				dashboard.getWebsocketEndpoint(),
+				getWebsocketTopicNamesByDashboardId(dashboard.getId()),
 				toJSONDashboardChangedEventsList(changeResult));
 	}
 
@@ -86,15 +94,26 @@ public class UserDashboardWebsocketSender
 	}
 
 	private void sendEvents(
-			@NonNull final WebsocketTopicName websocketEndpoint,
+			@NonNull final Set<WebsocketTopicName> websocketEndpoints,
 			@NonNull final JSONDashboardChangedEventsList events)
 	{
-		if (events.isEmpty())
+		if (websocketEndpoints.isEmpty() || events.isEmpty())
 		{
 			return;
 		}
 
-		websocketSender.convertAndSend(websocketEndpoint, events);
-		logger.trace("Notified WS {}: {}", websocketEndpoint, events);
+		for (final WebsocketTopicName websocketEndpoint : websocketEndpoints)
+		{
+			websocketSender.convertAndSend(websocketEndpoint, events);
+			logger.trace("Notified WS {}: {}", websocketEndpoint, events);
+		}
+	}
+
+	private ImmutableSet<WebsocketTopicName> getWebsocketTopicNamesByDashboardId(@NonNull final UserDashboardId dashboardId)
+	{
+		return websocketProducersRegistry.streamActiveProducersOfType(UserDashboardWebsocketProducer.class)
+				.filter(producer -> producer.isMatchingDashboardId(dashboardId))
+				.map(UserDashboardWebsocketProducer::getWebsocketTopicName)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

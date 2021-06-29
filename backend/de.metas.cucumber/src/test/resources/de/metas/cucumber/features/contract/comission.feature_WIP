@@ -1,5 +1,7 @@
+@from:cucumber
 Feature: commission-shares and commission-facts are updated in accordance to a changed commission hierarchy
 
+  @from:cucumber
   Scenario: existing commission facts are updated after the commission hierarchy was changed
     Given metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:

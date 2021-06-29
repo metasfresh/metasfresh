@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.tax.api.TaxId;
@@ -41,6 +43,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_InOut;
 import org.compiere.util.Env;
 
@@ -89,6 +92,7 @@ import lombok.NonNull;
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -232,7 +236,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				order.isSOTrx());
 		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 
-		// set Quality Issue Percentage Override
+		//DocType
+		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
+				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
+				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
+		final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
+		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
+		if (invoiceDocTypeId != null)
+		{
+			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
@@ -465,10 +478,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
 	}
 
-	/**
-	 * Invalidates the candidate(s) referencing the given order line. If {@link IInvoiceCandBL#isChangedByUpdateProcess(I_C_Invoice_Candidate)} returns <code>false</code> for any given candidate, this
-	 * method additionally invalidates all candidates with the same header aggregation key and (depending on invoice schedule) even more dependent candidates.
-	 */
 	@Override
 	public final void invalidateCandidatesFor(final Object model)
 	{

@@ -24,18 +24,17 @@ package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.externalreference.ExternalId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
@@ -115,7 +114,7 @@ class IssueImporterServiceTest
 		{
 			final I_C_UOM mockUOMRecord = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 			InterfaceWrapperHelper.saveRecord(mockUOMRecord);
-			
+
 			initialImportIssueInfo = ImportIssueInfo.builder()
 					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(1))
 					.status(Status.PENDING)
@@ -167,8 +166,14 @@ class IssueImporterServiceTest
 			final IssueId issueId;
 			{
 				final List<IssueId> importedIdsCollector = new ArrayList<>();
-				issueImporterService.importIssue(initialImportIssueInfo, importedIdsCollector);
+				issueImporterService.importIssue(initialImportIssueInfo.toBuilder()
+														 .budget(BigDecimal.TEN)
+														 .build(),
+												 importedIdsCollector);
+
 				issueId = CollectionUtils.singleElement(importedIdsCollector);
+
+				Assertions.assertThat(issueRepository.getById(issueId).getBudgetedEffort()).isEqualTo(BigDecimal.TEN);
 			}
 
 			// Update
@@ -176,7 +181,8 @@ class IssueImporterServiceTest
 				final List<IssueId> importedIdsCollector = new ArrayList<>();
 				issueImporterService.importIssue(
 						initialImportIssueInfo.toBuilder()
-								.roughEstimation(new BigDecimal("123"))
+								.roughEstimation(BigDecimal.valueOf(123))
+								.budget(BigDecimal.valueOf(8))
 								.build(),
 						importedIdsCollector);
 				Assertions.assertThat(importedIdsCollector).containsExactly(issueId);
@@ -185,7 +191,8 @@ class IssueImporterServiceTest
 						.usingRecursiveComparison()
 						.isEqualTo(expectedIssue.toBuilder()
 										   .issueId(issueId)
-										   .roughEstimation(new BigDecimal("123"))
+										   .roughEstimation(BigDecimal.valueOf(123))
+										   .budgetedEffort(BigDecimal.valueOf(8))
 										   .build());
 			}
 		}

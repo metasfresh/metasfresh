@@ -592,7 +592,6 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.listImmutable(I_M_ShipmentSchedule.class);
 	}
 
-
 	@Override
 	public ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(@NonNull final OrderId orderId)
 	{

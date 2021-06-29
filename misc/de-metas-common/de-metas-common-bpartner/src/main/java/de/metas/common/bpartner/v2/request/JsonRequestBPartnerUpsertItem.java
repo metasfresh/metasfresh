@@ -49,6 +49,12 @@ public class JsonRequestBPartnerUpsertItem
 			value = "The version of the business partner." + EXTERNAL_VERSION_DOC)
 	String externalVersion;
 
+
+	@ApiModelProperty(position = 25, //
+			value = "URL of the resource in the target external system.")
+	@Nullable
+	String externalReferenceUrl;
+
 	@ApiModelProperty(position = 30,
 			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
@@ -58,10 +64,12 @@ public class JsonRequestBPartnerUpsertItem
 	public JsonRequestBPartnerUpsertItem(
 			@NonNull @JsonProperty("bpartnerIdentifier") final String bpartnerIdentifier,
 			@Nullable @JsonProperty("externalVersion") final String externalVersion,
+			@Nullable @JsonProperty("externalReferenceUrl") final String externalReferenceUrl,
 			@NonNull @JsonProperty("bpartnerComposite") final JsonRequestComposite bpartnerComposite)
 	{
 		this.bpartnerIdentifier = bpartnerIdentifier;
 		this.externalVersion = externalVersion;
 		this.bpartnerComposite = bpartnerComposite;
+		this.externalReferenceUrl = externalReferenceUrl;
 	}
 }

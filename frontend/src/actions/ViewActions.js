@@ -189,17 +189,6 @@ function filterViewSuccess(id, data, isModal) {
 }
 
 /**
- * @method filterViewError
- * @summary
- */
-function filterViewError(id, error, isModal) {
-  return {
-    type: FILTER_VIEW_ERROR,
-    payload: { id, error, isModal },
-  };
-}
-
-/**
  * @method fetchLocationConfigSuccess
  * @summary
  */
@@ -519,6 +508,17 @@ export function fetchLayout(
 
         return Promise.reject(error);
       });
+  };
+}
+
+/**
+ * @method filterViewError
+ * @summary
+ */
+function filterViewError(id, error, isModal) {
+  return {
+    type: FILTER_VIEW_ERROR,
+    payload: { id, error, isModal },
   };
 }
 

@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.shipping;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.JsonRequestCandidateResult;
@@ -42,6 +43,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.location.CountryId;
 import de.metas.product.ProductRepository;
+import de.metas.user.UserRepository;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -125,10 +127,12 @@ class ShipmentCandidateAPIServiceTest
 		final ShipmentCandidateExportSequenceNumberProvider exportSequenceNumberProvider = Mockito.mock(ShipmentCandidateExportSequenceNumberProvider.class);
 		Mockito.doReturn(1).when(exportSequenceNumberProvider).provideNextShipmentCandidateSeqNo();
 
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+
 		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
 				new ShipmentScheduleAuditRepository(),
 				new ShipmentScheduleRepository(),
-				new BPartnerCompositeRepository(new MockLogEntriesRepository()),
+				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}

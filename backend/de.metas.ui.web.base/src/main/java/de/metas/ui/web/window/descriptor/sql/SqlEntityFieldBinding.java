@@ -37,4 +37,6 @@ public interface SqlEntityFieldBinding
 	SqlOrderByValue getSqlOrderBy();
 
 	boolean isVirtualColumn();
+
+	boolean isMandatory();
 }

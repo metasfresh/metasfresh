@@ -55,10 +55,14 @@ public final class DocumentFilterParam
 		NOT_EQUAL, //
 		IN_ARRAY, //
 		LIKE, //
-		/** Like (case-insensitive) */
+		/**
+		 * Like (case-insensitive)
+		 */
 		LIKE_I, //
 		NOT_LIKE, //
-		/** Not Like (case-insensitive) */
+		/**
+		 * Not Like (case-insensitive)
+		 */
 		NOT_LIKE_I, //
 		GREATER, //
 		GREATER_OR_EQUAL, //
@@ -85,6 +89,11 @@ public final class DocumentFilterParam
 	public static Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static DocumentFilterParam ofSqlWhereClause(final String sqlWhereClause)
+	{
+		return ofSqlWhereClause(true, sqlWhereClause);
 	}
 
 	public static DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
@@ -126,7 +135,9 @@ public final class DocumentFilterParam
 		sqlWhereClause = null;
 	}
 
-	/** Hardcoded SQL WHERE clause builder */
+	/**
+	 * Hardcoded SQL WHERE clause builder
+	 */
 	private DocumentFilterParam(final boolean joinAnd, @NonNull final SqlAndParams sqlWhereClause)
 	{
 		this.joinAnd = joinAnd;
@@ -144,7 +155,8 @@ public final class DocumentFilterParam
 		return getSqlWhereClause() != null;
 	}
 
-	@Nullable public String getValueAsString()
+	@Nullable
+	public String getValueAsString()
 	{
 		return value != null ? value.toString() : null;
 	}

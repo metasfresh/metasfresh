@@ -1,30 +1,10 @@
 package de.metas.ui.web.view;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.PlainContextAware;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -54,6 +34,25 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.PlainContextAware;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /*
  * #%L
@@ -252,7 +251,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
-	private final ImmutableList<IViewRow> loadViewRows(
+	private ImmutableList<IViewRow> loadViewRows(
 			@NonNull final ResultSet rs,
 			final ViewEvaluationCtx viewEvalCtx,
 			final ViewId viewId,
@@ -307,6 +306,7 @@ class SqlViewDataRepository implements IViewDataRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Nullable
 	private ViewRow.Builder loadViewRow(
 			@NonNull final ResultSet rs,
 			final WindowId windowId,
@@ -355,6 +355,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		return viewRowBuilder;
 	}
 
+	@Nullable
 	private DocumentId retrieveRowId(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 	{
 		if (keyColumnNamesMap.isSingleKey())
@@ -367,6 +368,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
+	@Nullable
 	private DocumentId retrieveRowId_SingleKey(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 	{
 		final String keyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
@@ -375,6 +377,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		return convertToRowId(rowIdObj);
 	}
 
+	@Nullable
 	private static DocumentId convertToRowId(final Object rowIdObj)
 	{
 		if (JSONNullValue.isNull(rowIdObj))
@@ -396,8 +399,8 @@ class SqlViewDataRepository implements IViewDataRepository
 		else if (rowIdObj instanceof LookupValue)
 		{
 			// case: usually this is happening when a view's column which is Lookup is also marked as KEY.
-			final JSONLookupValue jsonLookupValue = (JSONLookupValue)rowIdObj;
-			return DocumentId.of(jsonLookupValue.getKey());
+			final LookupValue lookupValue = (LookupValue)rowIdObj;
+			return DocumentId.of(lookupValue.getIdAsString());
 		}
 		else if (rowIdObj instanceof JSONLookupValue)
 		{
@@ -411,6 +414,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 	}
 
+	@Nullable
 	private DocumentId retrieveRowId_MultiKey(final ResultSet rs, final String adLanguage) throws SQLException
 	{
 		final List<Object> rowIdParts = new ArrayList<>(keyColumnNamesMap.getKeyPartsCount());
@@ -497,8 +501,7 @@ class SqlViewDataRepository implements IViewDataRepository
 			DB.setParameters(pstmt, sqlAndParams.getSqlParams());
 
 			rs = pstmt.executeQuery();
-			final List<IViewRow> page = loadViewRows(rs, viewEvalCtx, viewId, pageLength);
-			return page;
+			return loadViewRows(rs, viewEvalCtx, viewId, pageLength);
 		}
 		catch (final SQLException | DBException e)
 		{
@@ -583,8 +586,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 			rs = pstmt.executeQuery();
 
-			final List<IViewRow> lines = loadViewRows(rs, viewEvalCtx, viewId, -1/* limit */);
-			return lines;
+			return loadViewRows(rs, viewEvalCtx, viewId, -1/* limit */);
 		}
 		catch (final SQLException | DBException e)
 		{

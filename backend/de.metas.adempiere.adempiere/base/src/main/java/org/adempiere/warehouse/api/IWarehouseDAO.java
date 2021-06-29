@@ -116,6 +116,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	List<I_M_Warehouse> getAllWarehouses();
 
+	Set<WarehouseId> getAllWarehouseIds();
+
 	Set<WarehouseId> getWarehouseIdsOfSamePickingGroup(WarehouseId warehouseId);
 
 	WarehousePickingGroup getWarehousePickingGroupById(WarehousePickingGroupId warehousePickingGroupId);

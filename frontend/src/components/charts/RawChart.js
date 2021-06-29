@@ -68,10 +68,13 @@ class RawChart extends Component {
       data,
       noData,
       handleChartOptions,
+      zoomToDetailsAvailable,
     } = this.props;
     const { forceChartReRender } = this.state;
     const dataset0 =
       data && data.datasets && data.datasets[0] && data.datasets[0].values;
+    const dataset0_unit =
+      data && data.datasets && data.datasets[0] && data.datasets[0].unit;
 
     switch (chartType) {
       case 'BarChart':
@@ -148,13 +151,16 @@ class RawChart extends Component {
             )}
 
             <Indicator
-              value={
-                noData
-                  ? ''
-                  : dataset0[0][fields[0].fieldName] +
-                    (fields[0].unit ? ' ' + fields[0].unit : '')
-              }
-              {...{ caption, editmode }}
+              id={id}
+              zoomToDetailsAvailable={zoomToDetailsAvailable}
+              amount={noData ? '0' : dataset0[0][fields[0].fieldName]}
+              unit={dataset0_unit ? dataset0_unit : fields[0].unit}
+              {...{
+                caption:
+                  typeof caption === 'string' ? caption.toUpperCase() : caption,
+                editmode,
+                data,
+              }}
             />
           </div>
         );
@@ -203,6 +209,7 @@ RawChart.propTypes = {
   handleChartOptions: PropTypes.func,
   editmode: PropTypes.bool,
   chartTitle: PropTypes.string,
+  zoomToDetailsAvailable: PropTypes.bool,
 };
 
 export default connect()(RawChart);

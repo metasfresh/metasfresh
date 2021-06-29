@@ -27,6 +27,7 @@ import { deleteRequest } from '../../api';
 import {
   createWindow,
   updateDataValidStatus,
+  updateDataIncludedTabsInfo,
 } from '../../actions/WindowActions';
 import {
   fetchInlineTabWrapperData,
@@ -99,6 +100,7 @@ class InlineTabWrapper extends PureComponent {
       inlineTabBranch,
       updateDataValidStatus,
       isDocumentValid,
+      updateDataIncludedTabsInfo,
     } = this.props;
     // if item is invalid we will remove it
     const newEntry = inlineTabBranch[`${windowId}_${tabId}_${rowId}`];
@@ -113,9 +115,11 @@ class InlineTabWrapper extends PureComponent {
         // perform deletion
         deleteRequest('window', windowId, docId, tabId, rowId).then(
           (deleteResponse) => {
-            let { validStatus } = deleteResponse.data[0];
+            let { validStatus, includedTabsInfo } = deleteResponse.data[0];
             updateDataValidStatus('master', validStatus || { valid: true });
             this.updateTable(true);
+            includedTabsInfo &&
+              updateDataIncludedTabsInfo('master', includedTabsInfo);
           }
         );
       } else {
@@ -323,6 +327,7 @@ InlineTabWrapper.propTypes = {
   updateDataValidStatus: PropTypes.func.isRequired,
   isDocumentValid: PropTypes.bool.isRequired,
   includedTabsInfo: PropTypes.object,
+  updateDataIncludedTabsInfo: PropTypes.func,
 };
 
 /**
@@ -378,6 +383,7 @@ export default connect(
     setInlineTabAddNew,
     setInlineTabShowMore,
     updateDataValidStatus,
+    updateDataIncludedTabsInfo,
   }
 )(onClickOutside(InlineTabWrapper));
 

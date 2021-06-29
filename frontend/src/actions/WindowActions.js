@@ -435,7 +435,7 @@ export function updateTabLayout(windowId, tabId) {
       .then(({ data }) => {
         dispatch(setUpdatedTabLayout(tabId, data));
 
-        return Promise.reject(tabId);
+        return Promise.resolve(tabId);
       })
       .catch((error) => {
         return Promise.reject(error);
@@ -621,34 +621,45 @@ export function createWindow({
 
       if (documentId === 'NEW') {
         dispatch(updateModal(null, docId));
+        const { includedTabsInfo } = responseDocuments[0];
+        includedTabsInfo &&
+          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
       }
 
       // TODO: Is `elem` ever different than 0 ?
       docId = responseDocuments[elem].id;
-      dispatch(
-        initDataSuccess({
-          data: parseToDisplay(responseDocuments[elem].fieldsByName),
-          docId,
-          saveStatus: data.saveStatus,
-          scope: getScope(isModal),
-          standardActions: data.standardActions,
-          validStatus: data.validStatus,
-          includedTabsInfo: data.includedTabsInfo,
-          websocket: data.websocketEndpoint,
-          hasComments: data.hasComments,
-        })
-      );
+      disconnected !== 'inlineTab' &&
+        dispatch(
+          initDataSuccess({
+            data: parseToDisplay(responseDocuments[elem].fieldsByName),
+            docId,
+            saveStatus: data.saveStatus,
+            scope: getScope(isModal),
+            standardActions: data.standardActions,
+            validStatus: data.validStatus,
+            includedTabsInfo: data.includedTabsInfo,
+            websocket: data.websocketEndpoint,
+            hasComments: data.hasComments,
+          })
+        );
 
       if (isModal) {
         if (rowId === 'NEW') {
-          dispatch(
-            mapDataToState(response.data, false, 'NEW', docId, windowType)
-          );
-          dispatch(updateStatus(responseDocuments));
-          dispatch(updateModal(data.rowId));
           /** special case of inlineTab - disconnectedData will be used for data feed */
           if (disconnected === 'inlineTab') {
             disconnectedData = responseDocuments[0];
+          } else {
+            dispatch(
+              mapDataToState({
+                data: response.data,
+                isModal: false,
+                rowId: 'NEW',
+                docId,
+                windowType,
+              })
+            );
+            dispatch(updateStatus(responseDocuments));
+            dispatch(updateModal(data.rowId));
           }
         }
       } else {
@@ -679,9 +690,9 @@ export function createWindow({
           /** post get layout action triggered for the inlineTab case */
           if (disconnectedData && disconnected === 'inlineTab') {
             dispatch(inlineTabAfterGetLayout({ data, disconnectedData }));
+          } else {
+            dispatch(initLayoutSuccess(data, getScope(isModal)));
           }
-
-          dispatch(initLayoutSuccess(data, getScope(isModal)));
         })
         .catch((e) => Promise.reject(e));
     });
@@ -819,7 +830,8 @@ export function patch(
   isModal,
   isAdvanced,
   viewId,
-  isEdit
+  isEdit,
+  disconnected
 ) {
   return async (dispatch) => {
     const symbol = Symbol();
@@ -847,6 +859,10 @@ export function patch(
           ? response.data.documents
           : response.data;
       const dataItem = data[0];
+      const includedTabsInfo =
+        dataItem && dataItem.includedTabsInfo
+          ? dataItem.includedTabsInfo
+          : undefined;
 
       // prevent recursion in merge
       data.documents &&
@@ -854,8 +870,20 @@ export function patch(
         delete data.documents.documents;
 
       await dispatch(
-        mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
+        mapDataToState({
+          data,
+          isModal,
+          rowId,
+          id,
+          windowType,
+          isAdvanced,
+          disconnected,
+        })
       );
+
+      // update the inlineTabsInfo if such information is present
+      includedTabsInfo &&
+        dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
 
       if (
         dataItem &&
@@ -898,14 +926,15 @@ export function patch(
       });
 
       await dispatch(
-        mapDataToState(
-          response.data,
+        mapDataToState({
+          data: response.data,
           isModal,
           rowId,
           id,
           windowType,
-          isAdvanced
-        )
+          isAdvanced,
+          disconnected,
+        })
       );
     }
   };
@@ -929,14 +958,14 @@ export function fireUpdateData({
       fetchAdvancedFields: fetchAdvancedFields,
     }).then((response) => {
       dispatch(
-        mapDataToState(
-          response.data,
+        mapDataToState({
+          data: response.data,
           isModal,
           rowId,
           documentId,
           windowId,
-          fetchAdvancedFields
-        )
+          fetchAdvancedFields,
+        })
       );
     });
   };
@@ -959,7 +988,7 @@ function updateData(doc, scope) {
   };
 }
 
-function mapDataToState(data, isModal, rowId) {
+function mapDataToState({ data, isModal, rowId, disconnected }) {
   return (dispatch) => {
     const dataArray = typeof data.splice === 'function' ? data : [data];
 
@@ -975,7 +1004,10 @@ function mapDataToState(data, isModal, rowId) {
         !(index === 0 && rowId === 'NEW') &&
         (!item.rowId || (isModal && item.rowId))
       ) {
-        dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+        // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
+        // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
+        disconnected !== 'inlineTab' &&
+          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
     });
   };

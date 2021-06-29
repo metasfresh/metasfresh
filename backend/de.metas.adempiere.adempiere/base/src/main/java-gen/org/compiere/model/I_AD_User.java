@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_User
  *  @author metasfresh (generated) 
@@ -145,8 +144,7 @@ public interface I_AD_User
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Set Responsible.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -155,8 +153,7 @@ public interface I_AD_User
 	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
 
 	/**
-	 * Get Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Get Responsible.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -299,7 +296,7 @@ public interface I_AD_User
 
 	/**
 	 * Set Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -309,7 +306,7 @@ public interface I_AD_User
 
 	/**
 	 * Get Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -317,11 +314,6 @@ public interface I_AD_User
 	 */
 	int getC_Greeting_ID();
 
-	@Nullable org.compiere.model.I_C_Greeting getC_Greeting();
-
-	void setC_Greeting(@Nullable org.compiere.model.I_C_Greeting C_Greeting);
-
-	ModelColumn<I_AD_User, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new ModelColumn<>(I_AD_User.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
 	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
 	/**
@@ -350,31 +342,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, org.compiere.model.I_C_Job> COLUMN_C_Job_ID = new ModelColumn<>(I_AD_User.class, "C_Job_ID", org.compiere.model.I_C_Job.class);
 	String COLUMNNAME_C_Job_ID = "C_Job_ID";
-
-	/**
-	 * Set Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Title_ID (int C_Title_ID);
-
-	/**
-	 * Get Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Title_ID();
-
-	@Nullable org.compiere.model.I_C_Title getC_Title();
-
-	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
-
-	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
-	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 
 	/**
 	 * Set Comments.
@@ -513,6 +480,31 @@ public interface I_AD_User
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Title_ID (int C_Title_ID);
+
+	/**
+	 * Get Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Title_ID();
+
+	@Nullable org.compiere.model.I_C_Title getC_Title();
+
+	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
+	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 
 	/**
 	 * Set Löschdatum.
@@ -986,6 +978,27 @@ public interface I_AD_User
 	String COLUMNNAME_IsInPayroll = "IsInPayroll";
 
 	/**
+	 * Set Invoice Email Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceEmailEnabled (@Nullable java.lang.String IsInvoiceEmailEnabled);
+
+	/**
+	 * Get Invoice Email Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsInvoiceEmailEnabled();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsInvoiceEmailEnabled = new ModelColumn<>(I_AD_User.class, "IsInvoiceEmailEnabled", null);
+	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
+
+	/**
 	 * Set Use Login As Printing HostKey.
 	 * Wenn gesetzt und ein Nutzer meldet sich an, dann wird immer der jeweilige User-Login als Hostkey benutzt, egal von welchem Computer aus sich der Nutzer anmeldet
 	 *
@@ -1007,6 +1020,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsLoginAsHostKey = new ModelColumn<>(I_AD_User.class, "IsLoginAsHostKey", null);
 	String COLUMNNAME_IsLoginAsHostKey = "IsLoginAsHostKey";
+
+	/**
+	 * Set Is Membership Contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMembershipContact (boolean IsMembershipContact);
+
+	/**
+	 * Get Is Membership Contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMembershipContact();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsMembershipContact = new ModelColumn<>(I_AD_User.class, "IsMembershipContact", null);
+	String COLUMNNAME_IsMembershipContact = "IsMembershipContact";
 
 	/**
 	 * Set Newsletter.
@@ -1531,6 +1565,31 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Registry = new ModelColumn<>(I_AD_User.class, "Registry", null);
 	String COLUMNNAME_Registry = "Registry";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_AD_User, Object> COLUMN_SeqNo = new ModelColumn<>(I_AD_User.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Vorgesetzter.

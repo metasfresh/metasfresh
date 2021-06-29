@@ -86,7 +86,7 @@ public interface ILockCommand
 	 * <p>
 	 * <b>IMPORTANT: </b> the lock owner's name is part of the <code>T_Lock</code> record, so don't use {@link LockOwner#ANY} or {@link LockOwner#NONE} if you are going to invoke {@link ILockManager#getLockedByFilter(Class, ILock)}, {@link ILockManager#getLockedRecordsQueryBuilder(Class, Object)} or {@link ILockManager#getLockedWhereClause(Class, String, ILock)}.
 	 */
-	ILockCommand setOwner(final LockOwner owner);
+	ILockCommand setOwner(LockOwner owner);
 
 	/**
 	 * @return owner/new owner of the lock which will be acquired; never returns <code>null</code>
@@ -101,11 +101,7 @@ public interface ILockCommand
 	 * All you care about is that this document will <b>not</b> concurrently be processed by another <code>DocumentEngine</code>.<br>
 	 * For this case, you can call <code>setAllowAdditionalLocks(AllowAdditionalLocks.FOR_DIFFERENT_OWNERS)</code>.
 	 *
-	 * @param multipleLocks
-	 * @return
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/09849_allow_multiple_locks_with_different_owners_on_the_same_record_%28106402984513%29
-	 *
+	 * task http://dewiki908/mediawiki/index.php/09849_allow_multiple_locks_with_different_owners_on_the_same_record_%28106402984513%29
 	 */
 	ILockCommand setAllowAdditionalLocks(AllowAdditionalLocks allowAdditionalLocks);
 

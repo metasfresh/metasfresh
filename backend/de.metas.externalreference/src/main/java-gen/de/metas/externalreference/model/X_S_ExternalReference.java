@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 773772171L;
+	private static final long serialVersionUID = -1378776581L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -44,6 +44,18 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public String getExternalReference()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalReference);
+	}
+
+	@Override
+	public void setExternalReferenceURL (final @Nullable String ExternalReferenceURL)
+	{
+		set_Value (COLUMNNAME_ExternalReferenceURL, ExternalReferenceURL);
+	}
+
+	@Override
+	public String getExternalReferenceURL()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalReferenceURL);
 	}
 
 	/** 
@@ -150,8 +162,6 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Bpartner = "BPartner";
 	/** BPartnerLocation = BPartnerLocation */
 	public static final String TYPE_BPartnerLocation = "BPartnerLocation";
-	/** BPartnerValue = BPartnerValue */
-	public static final String TYPE_BPartnerValue = "BPartnerValue";
 	/** Product = Product */
 	public static final String TYPE_Product = "Product";
 	/** ProductCategory = ProductCategory */
@@ -162,11 +172,12 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_PriceListVersion = "PriceListVersion";
 	/** ProductPrice = ProductPrice */
 	public static final String TYPE_ProductPrice = "ProductPrice";
+	/** BPartnerValue = BPartnerValue */
+	public static final String TYPE_BPartnerValue = "BPartnerValue";
 	/** Shipper = Shipper */
 	public static final String TYPE_Shipper = "Shipper";
 	/** Warehouse = Warehouse */
 	public static final String TYPE_Warehouse = "Warehouse";
-
 	@Override
 	public void setType (final String Type)
 	{

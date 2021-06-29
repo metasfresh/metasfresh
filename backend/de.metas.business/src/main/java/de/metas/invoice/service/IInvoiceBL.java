@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -226,11 +227,9 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Sets Target Document Type and IsSOTrx.
 	 *
-	 * @param invoice
-	 * @param docBaseType
 	 * @return true if document type found and set
 	 */
-	boolean setDocTypeTargetId(I_C_Invoice invoice, String docBaseType);
+	boolean setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice

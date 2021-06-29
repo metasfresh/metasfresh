@@ -50,6 +50,10 @@ public class JsonPurchaseCandidateCreateItem
 	@JsonProperty("externalHeaderId")
 	String externalHeaderId;
 
+	@Nullable
+	@JsonProperty("externalPurchaseOrderUrl")
+	String externalPurchaseOrderUrl;
+
 	@NonNull
 	@JsonProperty("externalLineId")
 	String externalLineId;
@@ -114,6 +118,7 @@ public class JsonPurchaseCandidateCreateItem
 	private JsonPurchaseCandidateCreateItem(
 			@JsonProperty("orgCode") final @NonNull String orgCode,
 			@JsonProperty("externalHeaderId") final @NonNull String externalHeaderId,
+			@JsonProperty("externalPurchaseOrderUrl") final @Nullable String externalPurchaseOrderUrl,
 			@JsonProperty("externalLineId") final @NonNull String externalLineId,
 			@JsonProperty("isManualPrice") @Nullable final Boolean isManualPrice,
 			@JsonProperty("isPrepared") final boolean isPrepared,
@@ -131,6 +136,7 @@ public class JsonPurchaseCandidateCreateItem
 
 		this.orgCode = orgCode;
 		this.externalHeaderId = externalHeaderId;
+		this.externalPurchaseOrderUrl = externalPurchaseOrderUrl;
 		this.externalLineId = externalLineId;
 		this.isManualPrice = CoalesceUtil.coalesce(isManualPrice, false);
 		this.isPrepared = isPrepared;

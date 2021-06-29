@@ -98,6 +98,29 @@ public interface I_S_ExternalReference
 	String COLUMNNAME_ExternalReference = "ExternalReference";
 
 	/**
+	 * Set URL in external system.
+	 * If a record was synched from an external system, this field can be used to store its URL
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalReferenceURL (@Nullable String ExternalReferenceURL);
+
+	/**
+	 * Get URL in external system.
+	 * If a record was synched from an external system, this field can be used to store its URL
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getExternalReferenceURL();
+
+	ModelColumn<I_S_ExternalReference, Object> COLUMN_ExternalReferenceURL = new ModelColumn<>(I_S_ExternalReference.class, "ExternalReferenceURL", null);
+	String COLUMNNAME_ExternalReferenceURL = "ExternalReferenceURL";
+
+	/**
 	 * Set External system.
 	 * Name of an external system (e.g. Github )
 	 *

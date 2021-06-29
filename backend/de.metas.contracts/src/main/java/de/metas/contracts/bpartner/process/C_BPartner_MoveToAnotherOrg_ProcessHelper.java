@@ -29,6 +29,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.bpartner.service.OrgChangeRequest;
 import de.metas.contracts.bpartner.service.OrgChangeService;
+import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.organization.OrgId;
 import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessParametersCallout;
@@ -37,11 +38,11 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_CompensationGroup_Schema_Category;
 
 import java.time.Instant;
 
@@ -54,23 +55,21 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 	final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	public static final String PARAM_AD_ORG_TARGET_ID = "AD_Org_Target_ID";
-	public static final String PARAM_M_PRODUCT_ID = "M_Product_Membership_ID";
+	public static final String PARAM_GroupCategory_ID = I_C_CompensationGroup_Schema_Category.COLUMNNAME_C_CompensationGroup_Schema_Category_ID;
 	public static final String PARAM_DATE_ORG_CHANGE = "Date_OrgChange";
 	public static final String PARAM_IS_SHOW_MEMBERSHIP_PARAMETER = "IsShowMembershipParameter";
 
 	@Param(parameterName = PARAM_AD_ORG_TARGET_ID, mandatory = true)
 	protected OrgId p_orgTargetId;
 
-	@Param(parameterName = PARAM_M_PRODUCT_ID)
-	protected ProductId p_membershipProductId;
+	@Param(parameterName = PARAM_GroupCategory_ID)
+	protected GroupCategoryId p_groupCategoryId;
 
 	@Param(parameterName = PARAM_DATE_ORG_CHANGE, mandatory = true)
 	protected Instant p_startDate;
 
 	@Param(parameterName = PARAM_IS_SHOW_MEMBERSHIP_PARAMETER, mandatory = true)
 	protected boolean isShowMembershipParameter;
-
-
 
 	@Override
 	protected String doIt() throws Exception
@@ -82,7 +81,7 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 		final OrgChangeRequest orgChangeRequest = OrgChangeRequest.builder()
 				.bpartnerId(bpartnerId)
 				.startDate(p_startDate)
-				.membershipProductId(p_membershipProductId)
+				.groupCategoryId(p_groupCategoryId)
 				.orgFromId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
 				.orgToId(p_orgTargetId)
 				.build();
@@ -102,6 +101,7 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 
 		return ProcessPreconditionsResolution.accept();
 	}
+
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
@@ -120,6 +120,13 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 			isShowMembershipParameter = orgChangePartnerComposite.hasMembershipSubscriptions()
 					&& service.hasAnyMembershipProduct(p_orgTargetId);
 
+			final GroupCategoryId groupCategoryId = orgChangePartnerComposite.getGroupCategoryId();
+
+			if (groupCategoryId != null && service.isGroupCategoryContainsProductsInTargetOrg(groupCategoryId, p_orgTargetId))
+			{
+				p_groupCategoryId = groupCategoryId;
+			}
 		}
 	}
+
 }

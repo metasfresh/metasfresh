@@ -22,7 +22,9 @@
 
 package de.metas.camel.externalsystems.alberta.patient;
 
+import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.HospitalApi;
@@ -37,6 +39,7 @@ import lombok.Data;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +47,9 @@ import java.util.List;
 @Builder
 public class GetPatientsRouteContext
 {
+	@NonNull
+	private final JsonExternalSystemRequest request;
+
 	@NonNull
 	private final PatientApi patientApi;
 
@@ -73,6 +79,22 @@ public class GetPatientsRouteContext
 
 	@Nullable
 	private final JsonMetasfreshId rootBPartnerIdForUsers;
+
+	@NonNull
+	private Instant updatedAfterValue;
+
+	public void setUpdatedAfterValue(@Nullable final Instant candidate)
+	{
+		if (candidate == null)
+		{
+			return;
+		}
+
+		if (candidate.isAfter(this.updatedAfterValue))
+		{
+			this.updatedAfterValue = candidate;
+		}
+	}
 
 	private final List<JsonResponseBPartnerCompositeUpsertItem> importedBPartnerResponseList = new ArrayList<>();
 
