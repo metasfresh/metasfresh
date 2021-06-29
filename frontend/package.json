@@ -65,7 +65,7 @@
     "autoprefixer": "9.7.2",
     "axios-mock-adapter": "1.19.0",
     "babel-jest": "27.0.6",
-    "babel-loader": "8.1.0",
+    "babel-loader": "8.2.2",
     "babel-plugin-dynamic-import-node": "2.3.3",
     "better-docs": "2.3.2",
     "common-tags": "1.8.0",
