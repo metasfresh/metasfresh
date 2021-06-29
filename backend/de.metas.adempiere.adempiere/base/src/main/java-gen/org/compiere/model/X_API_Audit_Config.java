@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for API_Audit_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_Audit_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1055114115L;
+	private static final long serialVersionUID = 1831783931L;
 
     /** Standard Constructor */
     public X_API_Audit_Config (final Properties ctx, final int API_Audit_Config_ID, @Nullable final String trxName)
@@ -35,18 +35,30 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
-	public void setAD_User_InCharge_ID (final int AD_User_InCharge_ID)
+	public org.compiere.model.I_AD_UserGroup getAD_UserGroup_InCharge()
 	{
-		if (AD_User_InCharge_ID < 1) 
-			set_Value (COLUMNNAME_AD_User_InCharge_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_User_InCharge_ID, AD_User_InCharge_ID);
+		return get_ValueAsPO(COLUMNNAME_AD_UserGroup_InCharge_ID, org.compiere.model.I_AD_UserGroup.class);
 	}
 
 	@Override
-	public int getAD_User_InCharge_ID() 
+	public void setAD_UserGroup_InCharge(final org.compiere.model.I_AD_UserGroup AD_UserGroup_InCharge)
 	{
-		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
+		set_ValueFromPO(COLUMNNAME_AD_UserGroup_InCharge_ID, org.compiere.model.I_AD_UserGroup.class, AD_UserGroup_InCharge);
+	}
+
+	@Override
+	public void setAD_UserGroup_InCharge_ID (final int AD_UserGroup_InCharge_ID)
+	{
+		if (AD_UserGroup_InCharge_ID < 1) 
+			set_Value (COLUMNNAME_AD_UserGroup_InCharge_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_UserGroup_InCharge_ID, AD_UserGroup_InCharge_ID);
+	}
+
+	@Override
+	public int getAD_UserGroup_InCharge_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_UserGroup_InCharge_ID);
 	}
 
 	@Override

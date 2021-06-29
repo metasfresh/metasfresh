@@ -44,8 +44,8 @@ import lombok.NonNull;
 @Repository
 public class UserGroupRepository
 {
-	private final CCache<UserId, UserGroupUserAssignmentsCollection> //
-	assignmentsByUserId = CCache.<UserId, UserGroupUserAssignmentsCollection> builder()
+	private final CCache<UserId, UserIdWithGroupsCollection> //
+	assignmentsByUserId = CCache.<UserId, UserIdWithGroupsCollection> builder()
 			.tableName(I_AD_UserGroup_User_Assign.Table_Name)
 			.build();
 
@@ -75,7 +75,21 @@ public class UserGroupRepository
 				.getAssignedGroupIds(date);
 	}
 
-	private UserGroupUserAssignmentsCollection retrieveUserAssignments(@NonNull final UserId userId)
+	public UserGroupsCollection getByUserGroupId(@NonNull final UserGroupId userGroupId)
+	{
+		final ImmutableSet<UserGroupUserAssignment> assignments = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_UserGroup_User_Assign.class)
+				.addEqualsFilter(I_AD_UserGroup_User_Assign.COLUMN_AD_UserGroup_ID, userGroupId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(UserGroupRepository::toUserGroupUserAssignment)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return UserGroupsCollection.of(assignments);
+	}
+
+	private UserIdWithGroupsCollection retrieveUserAssignments(@NonNull final UserId userId)
 	{
 		final ImmutableSet<UserGroupUserAssignment> assignments = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_UserGroup_User_Assign.class)
@@ -83,10 +97,10 @@ public class UserGroupRepository
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(record -> toUserGroupUserAssignment(record))
+				.map(UserGroupRepository::toUserGroupUserAssignment)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return UserGroupUserAssignmentsCollection.of(assignments);
+		return UserIdWithGroupsCollection.of(assignments);
 	}
 
 	private static UserGroupUserAssignment toUserGroupUserAssignment(final I_AD_UserGroup_User_Assign record)

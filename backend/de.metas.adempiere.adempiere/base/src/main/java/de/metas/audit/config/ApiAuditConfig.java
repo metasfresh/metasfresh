@@ -24,7 +24,7 @@ package de.metas.audit.config;
 
 import de.metas.audit.HttpMethod;
 import de.metas.organization.OrgId;
-import de.metas.user.UserId;
+import de.metas.user.UserGroupId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -60,7 +60,7 @@ public class ApiAuditConfig
 	NotificationTriggerType notifyUserInCharge;
 
 	@Nullable
-	UserId userInChargeId;
+	UserGroupId userGroupInChargeId;
 
 	public boolean matchesRequest(@NonNull final String requestPath, @NonNull final String httpMethod)
 	{
@@ -68,5 +68,13 @@ public class ApiAuditConfig
 		final boolean isMethodMatching = this.method == null || httpMethod.equalsIgnoreCase(method.getCode());
 
 		return isMethodMatching && isPathMatching;
+	}
+
+	public boolean shouldNotifyUserGroup(final boolean isError){
+		return this.userGroupInChargeId == null
+				|| this.notifyUserInCharge == null
+				|| this.notifyUserInCharge.equals(NotificationTriggerType.NEVER)
+				|| (NotificationTriggerType.ONLY_ON_ERROR.equals(this.notifyUserInCharge)
+				&& !isError);
 	}
 }
