@@ -83,6 +83,7 @@ class Indicator extends Component {
       editmode,
       framework,
       zoomToDetailsAvailable,
+      data: { computedTimestamp },
     } = this.props;
     const { renderedLastComputedString } = this.state;
 
@@ -118,8 +119,16 @@ class Indicator extends Component {
         </div>
         {renderedLastComputedString && (
           <div className="indicator-last-updated">
-            <i className="meta-icon-reload" />
-            {renderedLastComputedString}
+            <a
+              className="indicator-fuzzy"
+              href="#"
+              data-toggle="tooltip"
+              data-placement="top"
+              title={moment(computedTimestamp).format('LLL')}
+            >
+              <i className="meta-icon-reload" />
+              {renderedLastComputedString}
+            </a>
           </div>
         )}
       </div>

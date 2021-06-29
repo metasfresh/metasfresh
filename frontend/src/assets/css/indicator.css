@@ -106,7 +106,14 @@
     text-align: left;
     color: $brand-color-primary;
 }
-
+.indicator-fuzzy {
+    text-decoration: none;
+    color: $brand-color-primary;
+}
+.indicator-fuzzy:hover {
+    text-decoration: none;
+    color: $brand-color-primary;
+}
 
 @media screen and (max-width: 901px) {
     .indicator {
