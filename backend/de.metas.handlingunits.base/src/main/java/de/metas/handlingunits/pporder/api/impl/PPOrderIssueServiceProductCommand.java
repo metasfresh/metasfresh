@@ -150,6 +150,13 @@ class PPOrderIssueServiceProductCommand
 
 		for (final AttributeCode attributeCode : attributesToChange.getAttributeCodes())
 		{
+			// Skip attribute it does not exist in our HU attributes.
+			// If we would not skip it then it would fail.
+			if (!attributes.hasAttribute(attributeCode))
+			{
+				continue;
+			}
+
 			attributes.setValue(attributeCode, attributesToChange.getValue(attributeCode));
 		}
 		attributes.saveChangesIfNeeded();
@@ -185,7 +192,7 @@ class PPOrderIssueServiceProductCommand
 	private ImmutableAttributeSet getBOMLineAttributes()
 	{
 		ImmutableAttributeSet bomLineAttributes = _bomLineAttributes;
-		if(bomLineAttributes == null)
+		if (bomLineAttributes == null)
 		{
 			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(getBOMLineRecord().getM_AttributeSetInstance_ID());
 			bomLineAttributes = _bomLineAttributes = attributeDAO.getImmutableAttributeSetById(asiId);
