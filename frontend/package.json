@@ -46,7 +46,7 @@
     "testEnvironment": "jest-environment-jsdom-sixteen"
   },
   "devDependencies": {
-    "@babel/core": "7.11.5",
+    "@babel/core": "7.14.6",
     "@babel/eslint-parser": "7.13.0",
     "@babel/plugin-proposal-class-properties": "7.10.4",
     "@babel/plugin-proposal-object-rest-spread": "7.11.0",
