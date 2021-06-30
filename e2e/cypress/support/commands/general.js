@@ -27,7 +27,7 @@
 // import 'cypress-plugin-snapshots/commands';
 
 import { List } from 'immutable';
-import { goBack, push } from 'react-router-redux';
+import 'cypress-localstorage-commands';
 
 import { loginSuccess } from '../../../src/actions/AppActions';
 import Auth from '../../../src/services/Auth';
@@ -36,7 +36,7 @@ import nextTabbable from './nextTabbable';
 import { humanReadableNow } from '../utils/utils';
 import { RewriteURL } from '../utils/constants';
 
-context('Reusable "login" custom command using API', function() {
+context('Reusable "login" custom command using API', function () {
   Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
     let user = username;
     let pass = password;
@@ -51,15 +51,17 @@ context('Reusable "login" custom command using API', function() {
       message: user + ' | ' + '****' /*pass*/,
     });
 
-    const handleSuccess = function() {
-      if (redirect) {
-        Cypress.reduxStore.dispatch(goBack());
-      } else {
-        Cypress.reduxStore.dispatch(push('/'));
-      }
+    const handleSuccess = function () {
+      cy.window().then((win) => {
+        if (redirect) {
+          win.history.back();
+        } else {
+          win.history.pushState({}, '', '/');
+        }
+      });
     };
 
-    const checkIfAlreadyLogged = function() {
+    const checkIfAlreadyLogged = function () {
       const error = new Error('Error when checking if user logged in');
 
       return cy
@@ -69,9 +71,11 @@ context('Reusable "login" custom command using API', function() {
           failOnStatusCode: false,
           followRedirect: false,
         })
-        .then(response => {
+        .then((response) => {
           if (!response.body.error) {
-            return Cypress.reduxStore.dispatch(push('/'));
+            cy.window().then((win) => {
+              win.history.pushState({}, '', '/');
+            });
           }
 
           cy.log(`Login failed because ${error}`);
@@ -116,6 +120,8 @@ context('Reusable "login" custom command using API', function() {
             failOnStatusCode: false,
           })
           .then(() => {
+            cy.setLocalStorage('isLogged', true);
+            cy.saveLocalStorage();
             Cypress.reduxStore.dispatch(loginSuccess(auth));
 
             handleSuccess();

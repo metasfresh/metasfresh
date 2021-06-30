@@ -14,13 +14,14 @@
 // ***********************************************************
 
 import 'cypress-skip-and-only-ui/support';
+import 'cypress-localstorage-commands';
 import './commands/general';
 import './commands/navigation';
 import './commands/form';
 import './commands/action';
 import './commands/test';
 
-Cypress.on('uncaught:exception', (err) => {
+Cypress.on('uncaught:exception', () => {
   //(err, runnable) => {
   // returning false here prevents Cypress from
   // failing the test
@@ -32,15 +33,16 @@ Cypress.on('uncaught:exception', (err) => {
 //   return false
 // });
 
-Cypress.on('emit:counterpartTranslations', messages => {
+Cypress.on('emit:counterpartTranslations', (messages) => {
   Cypress.messages = messages;
 });
 
-Cypress.on('window:alert', text => {
+Cypress.on('window:alert', (text) => {
   cy.log(`Alert modal confirmed: ${text}`);
 });
 
-before(function() {
+before(function () {
+  cy.clearLocalStorageSnapshot();
   // no clue why i have to add this wait, but it seems to be the only way the getLanguageSpecific workaround... works
   cy.loginViaAPI().wait(300);
 
@@ -49,7 +51,11 @@ before(function() {
   });
 });
 
-Cypress.on('scrolled', $el => {
+beforeEach(() => {
+  cy.restoreLocalStorage();
+});
+
+Cypress.on('scrolled', ($el) => {
   $el.get(0).scrollIntoView({
     block: 'center',
     inline: 'center',
