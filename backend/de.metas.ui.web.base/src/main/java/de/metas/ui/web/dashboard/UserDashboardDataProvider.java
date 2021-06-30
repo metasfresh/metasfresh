@@ -24,7 +24,6 @@ package de.metas.ui.web.dashboard;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -103,20 +102,12 @@ public class UserDashboardDataProvider
 		try
 		{
 			request = toKPIDataRequest(item, context);
-			final ExplainedOptional<KPIDataResult> optionalKPIData = kpiDataProvider.getKPIData(request);
-			if (optionalKPIData.isPresent())
-			{
-				return UserDashboardItemDataResponse.ok(dashboardId, item.getId(), optionalKPIData.get());
-			}
-			else
-			{
-				return UserDashboardItemDataResponse.error(dashboardId, item.getId(), WebuiError.of(optionalKPIData.getExplanation()));
-			}
+			final KPIDataResult kpiData = kpiDataProvider.getKPIData(request);
+			return UserDashboardItemDataResponse.ok(dashboardId, item.getId(), kpiData);
 		}
 		catch (@NonNull final Exception ex)
 		{
-			logger.warn("Failed computing KPI data for request={}, item={}, context={}.",
-					request, item, context, ex);
+			logger.warn("Failed computing KPI data for request={}, item={}, context={}.", request, item, context, ex);
 
 			final ITranslatableString errorMessage = AdempiereException.isUserValidationError(ex)
 					? AdempiereException.extractMessageTrl(ex)

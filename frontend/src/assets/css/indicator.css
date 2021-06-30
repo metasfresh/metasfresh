@@ -105,6 +105,8 @@
     clear:both;
     text-align: left;
     color: $brand-color-primary;
+    float: left;
+    width: 90%;
 }
 .indicator-fuzzy {
     text-decoration: none;
@@ -114,6 +116,13 @@
     text-decoration: none;
     color: $brand-color-primary;
 }
+.indicator-has-errors {
+    width: 10%;
+    float: right;
+    text-align: right;
+    padding-top: 2px;
+}
+
 
 @media screen and (max-width: 901px) {
     .indicator {
