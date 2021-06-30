@@ -145,10 +145,7 @@ SelectionAttributes.propTypes = {
   supportAttribute: PropTypes.bool,
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    patchViewAttributes,
-    setViewAttributesData,
-  }
-)(SelectionAttributes);
+export default connect(mapStateToProps, {
+  patchViewAttributes,
+  setViewAttributesData,
+})(SelectionAttributes);

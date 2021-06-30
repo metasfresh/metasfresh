@@ -26,9 +26,8 @@ class Indicator extends Component {
    */
   static getDerivedStateFromProps({ data: { computedTimestamp } }) {
     return {
-      renderedLastComputedString: computeRenderedLastComputedString(
-        computedTimestamp
-      ),
+      renderedLastComputedString:
+        computeRenderedLastComputedString(computedTimestamp),
     };
   }
 
@@ -42,9 +41,8 @@ class Indicator extends Component {
   updateRenderedLastComputedString = () => {
     const { data } = this.props;
     const { computedTimestamp } = data;
-    const renderedLastComputedString = computeRenderedLastComputedString(
-      computedTimestamp
-    );
+    const renderedLastComputedString =
+      computeRenderedLastComputedString(computedTimestamp);
     return this.setState({ renderedLastComputedString });
   };
 

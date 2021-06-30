@@ -266,12 +266,9 @@ OverlayField.propTypes = {
 };
 
 export default BarcodeScanner(
-  connect(
-    null,
-    {
-      openModal,
-      patch,
-      updatePropertyValue,
-    }
-  )(onClickOutside(OverlayField))
+  connect(null, {
+    openModal,
+    patch,
+    updatePropertyValue,
+  })(onClickOutside(OverlayField))
 );

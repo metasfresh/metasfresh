@@ -182,7 +182,10 @@ export class DraggableWrapper extends Component {
       this.setState((prev) =>
         update(prev, {
           [entity]: {
-            $splice: [[dragIndex, 1], [hoverIndex, 0, draggedItem]],
+            $splice: [
+              [dragIndex, 1],
+              [hoverIndex, 0, draggedItem],
+            ],
           },
         })
       );
@@ -201,7 +204,10 @@ export class DraggableWrapper extends Component {
                   $set: [newItem],
                 }
               : {
-                  $splice: [[dragIndex, 1], [hoverIndex, 0, newItem]],
+                  $splice: [
+                    [dragIndex, 1],
+                    [hoverIndex, 0, newItem],
+                  ],
                 },
         })
       );

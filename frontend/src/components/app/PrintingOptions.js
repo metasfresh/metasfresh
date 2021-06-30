@@ -63,7 +63,6 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  { togglePrintingOption }
-)(PrintingOptions);
+export default connect(mapStateToProps, { togglePrintingOption })(
+  PrintingOptions
+);
