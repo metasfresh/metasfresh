@@ -135,16 +135,16 @@ class Indicator extends Component {
             </div>
           )}
           {errors && (
-          <div className="indicator-has-errors">
-            <span
-              className="text-danger"
-              data-toggle="tooltip"
-              data-placement="top"
-              title="ERROR_PLACEHOLDER"
-            >
-              <i className="meta-icon-important text-danger" />
-            </span>
-          </div>
+            <div className="indicator-has-errors">
+              <span
+                className="text-danger"
+                data-toggle="tooltip"
+                data-placement="top"
+                title="ERROR_PLACEHOLDER"
+              >
+                <i className="meta-icon-important text-danger" />
+              </span>
+            </div>
           )}
         </div>
       </div>
