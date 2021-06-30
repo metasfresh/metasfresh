@@ -16,7 +16,10 @@ function computeRenderedLastComputedString(computedTimestamp) {
 class Indicator extends Component {
   constructor(props) {
     super(props);
-    this.state = { renderedLastComputedString: null };
+    this.state = {
+      errors: null,
+      renderedLastComputedString: null,
+    };
   }
 
   /**
@@ -85,7 +88,7 @@ class Indicator extends Component {
       zoomToDetailsAvailable,
       data: { computedTimestamp },
     } = this.props;
-    const { renderedLastComputedString } = this.state;
+    const { renderedLastComputedString, errors } = this.state;
 
     if (loader)
       return (
@@ -117,19 +120,33 @@ class Indicator extends Component {
           <div className="indicator-amount">{amount}</div>
           <div className="indicator-unit">{unit}</div>
         </div>
-        {renderedLastComputedString && (
-          <div className="indicator-last-updated">
+        <div className="indocator-footer">
+          {renderedLastComputedString && (
+            <div className="indicator-last-updated">
+              <span
+                className="indicator-fuzzy"
+                data-toggle="tooltip"
+                data-placement="top"
+                title={moment(computedTimestamp).format('LLL z')}
+              >
+                <i className="meta-icon-reload" />
+                {renderedLastComputedString}
+              </span>
+            </div>
+          )}
+          {errors && (
+          <div className="indicator-has-errors">
             <span
-              className="indicator-fuzzy"
+              className="text-danger"
               data-toggle="tooltip"
               data-placement="top"
-              title={moment(computedTimestamp).format('LLL z')}
+              title="ERROR_PLACEHOLDER"
             >
-              <i className="meta-icon-reload" />
-              {renderedLastComputedString}
+              <i className="meta-icon-important text-danger" />
             </span>
           </div>
-        )}
+          )}
+        </div>
       </div>
     );
   }
