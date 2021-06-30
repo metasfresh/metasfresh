@@ -44,6 +44,8 @@ import lombok.NonNull;
 @Repository
 public class UserGroupRepository
 {
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<UserId, UserIdWithGroupsCollection> //
 	assignmentsByUserId = CCache.<UserId, UserIdWithGroupsCollection> builder()
 			.tableName(I_AD_UserGroup_User_Assign.Table_Name)
@@ -77,7 +79,7 @@ public class UserGroupRepository
 
 	public UserGroupsCollection getByUserGroupId(@NonNull final UserGroupId userGroupId)
 	{
-		final ImmutableSet<UserGroupUserAssignment> assignments = Services.get(IQueryBL.class)
+		final ImmutableSet<UserGroupUserAssignment> assignments = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_UserGroup_User_Assign.class)
 				.addEqualsFilter(I_AD_UserGroup_User_Assign.COLUMN_AD_UserGroup_ID, userGroupId)
 				.addOnlyActiveRecordsFilter()
@@ -89,9 +91,10 @@ public class UserGroupRepository
 		return UserGroupsCollection.of(assignments);
 	}
 
+	@NonNull
 	private UserIdWithGroupsCollection retrieveUserAssignments(@NonNull final UserId userId)
 	{
-		final ImmutableSet<UserGroupUserAssignment> assignments = Services.get(IQueryBL.class)
+		final ImmutableSet<UserGroupUserAssignment> assignments = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_UserGroup_User_Assign.class)
 				.addEqualsFilter(I_AD_UserGroup_User_Assign.COLUMN_AD_User_ID, userId)
 				.addOnlyActiveRecordsFilter()

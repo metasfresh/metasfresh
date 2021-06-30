@@ -1,18 +1,15 @@
 package de.metas.user;
 
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Range;
-
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L
@@ -38,6 +35,7 @@ import lombok.NonNull;
 
 final class UserIdWithGroupsCollection
 {
+	@NonNull
 	public static UserIdWithGroupsCollection of(final Collection<UserGroupUserAssignment> assignments)
 	{
 		if (assignments.isEmpty())
@@ -65,7 +63,7 @@ final class UserIdWithGroupsCollection
 	private UserIdWithGroupsCollection(final Collection<UserGroupUserAssignment> assignments)
 	{
 		Check.assumeNotEmpty(assignments, "assignments is not empty");
-		userId = getUserId(assignments).orElse(null);
+		userId = getUserId(assignments);
 
 		validDates = assignments.stream()
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
@@ -74,7 +72,8 @@ final class UserIdWithGroupsCollection
 				));
 	}
 
-	private static Optional<UserId> getUserId(final Collection<UserGroupUserAssignment> assignments)
+	@NonNull
+	private static UserId getUserId(final Collection<UserGroupUserAssignment> assignments)
 	{
 		final ImmutableSet<UserId> userIds = assignments.stream().map(UserGroupUserAssignment::getUserId).collect(ImmutableSet.toImmutableSet());
 		if (userIds.size() > 1)
@@ -82,7 +81,7 @@ final class UserIdWithGroupsCollection
 			throw new AdempiereException("More than one user found for " + assignments);
 		}
 
-		return userIds.stream().findFirst();
+		return userIds.stream().findFirst().orElseThrow(() -> new AdempiereException("UserId should always pe present on UserGroupUserAssignment" + assignments));
 	}
 
 	public ImmutableSet<UserGroupId> getAssignedGroupIds(@NonNull final Instant date)

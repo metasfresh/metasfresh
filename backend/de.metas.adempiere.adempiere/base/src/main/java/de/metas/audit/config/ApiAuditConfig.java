@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -70,11 +71,19 @@ public class ApiAuditConfig
 		return isMethodMatching && isPathMatching;
 	}
 
-	public boolean shouldNotifyUserGroup(final boolean isError){
-		return this.userGroupInChargeId == null
+	@NonNull
+	public Optional<UserGroupId> getUserGroupToNotify(final boolean isError)
+	{
+		if (this.userGroupInChargeId == null
 				|| this.notifyUserInCharge == null
 				|| this.notifyUserInCharge.equals(NotificationTriggerType.NEVER)
 				|| (NotificationTriggerType.ONLY_ON_ERROR.equals(this.notifyUserInCharge)
-				&& !isError);
+				&& !isError))
+		{
+
+			return Optional.empty();
+		}
+
+		return Optional.of(userGroupInChargeId);
 	}
 }

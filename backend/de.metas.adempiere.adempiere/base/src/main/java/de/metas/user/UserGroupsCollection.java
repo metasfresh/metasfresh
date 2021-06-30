@@ -33,9 +33,10 @@ import java.util.stream.Stream;
 
 public final class UserGroupsCollection
 {
-	public static UserGroupsCollection of(final Collection<UserGroupUserAssignment> assignments)
+	@NonNull
+	public static UserGroupsCollection of(@Nullable final Collection<UserGroupUserAssignment> assignments)
 	{
-		if (assignments.isEmpty())
+		if (Check.isEmpty(assignments))
 		{
 			return EMPTY;
 		}
@@ -61,7 +62,8 @@ public final class UserGroupsCollection
 		this.assignments = assignments.stream().collect(ImmutableSet.toImmutableSet());
 	}
 
-	public Stream<UserGroupUserAssignment> streamAssignmentsFor(@NonNull final UserGroupId userGroupId, @Nullable final Instant targetDate)
+	@NonNull
+	public Stream<UserGroupUserAssignment> streamAssignmentsFor(@NonNull final UserGroupId userGroupId, @NonNull final Instant targetDate)
 	{
 		return assignments.stream()
 				.filter(userGroupUserAssignment -> userGroupUserAssignment.getUserGroupId().equals(userGroupId))
