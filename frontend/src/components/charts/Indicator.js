@@ -16,10 +16,7 @@ function computeRenderedLastComputedString(computedTimestamp) {
 class Indicator extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      errors: null,
-      renderedLastComputedString: null,
-    };
+    this.state = { renderedLastComputedString: null };
   }
 
   /**
@@ -86,9 +83,9 @@ class Indicator extends Component {
       editmode,
       framework,
       zoomToDetailsAvailable,
-      data: { computedTimestamp },
+      data: { computedTimestamp, error },
     } = this.props;
-    const { renderedLastComputedString, errors } = this.state;
+    const { renderedLastComputedString } = this.state;
 
     if (loader)
       return (
@@ -117,8 +114,8 @@ class Indicator extends Component {
           )}
         </div>
         <div className="indicator-data">
-          <div className="indicator-amount">{amount}</div>
-          <div className="indicator-unit">{unit}</div>
+          <div className="indicator-amount">{amount || 0}</div>
+          <div className="indicator-unit">{unit || ''}</div>
         </div>
         <div className="indocator-footer">
           {renderedLastComputedString && (
@@ -134,13 +131,13 @@ class Indicator extends Component {
               </span>
             </div>
           )}
-          {errors && (
+          {error && (
             <div className="indicator-has-errors">
               <span
                 className="text-danger"
                 data-toggle="tooltip"
                 data-placement="top"
-                title="ERROR_PLACEHOLDER"
+                title={error.message}
               >
                 <i className="meta-icon-important text-danger" />
               </span>

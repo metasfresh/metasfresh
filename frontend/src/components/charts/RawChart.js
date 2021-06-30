@@ -181,11 +181,11 @@ class RawChart extends Component {
   }
 
   render() {
-    const { data } = this.props;
+    const { data, chartType } = this.props;
 
     if (!data) {
       return this.renderNoData(true); // loading
-    } else if (data.error) {
+    } else if (data.error && chartType !== 'Indicator') {
       return this.renderError(data.error.message);
     } else if (data.datasets && data.datasets.length > 0) {
       return this.renderChart();
