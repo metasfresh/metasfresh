@@ -140,3 +140,80 @@ UPDATE AD_Ref_List_Trl SET Name='Eingehend',Updated=TO_TIMESTAMP('2021-06-30 13:
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Ref_List_Trl SET Name='Eingehend',Updated=TO_TIMESTAMP('2021-06-30 13:55:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=542683
 ;
+
+--Direction column EN TRL
+
+-- 2021-06-30T11:17:00.310Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='D', PrintName='Direction',Updated=TO_TIMESTAMP('2021-06-30 14:17:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=540579 AND AD_Language='en_GB'
+;
+
+-- 2021-06-30T11:17:00.312Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540579,'en_GB')
+;
+
+-- 2021-06-30T11:17:07.258Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-30 14:17:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=540579 AND AD_Language='en_GB'
+;
+
+-- 2021-06-30T11:17:07.260Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540579,'en_GB')
+;
+
+-- 2021-06-30T11:17:22.045Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Direction',Updated=TO_TIMESTAMP('2021-06-30 14:17:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=540579 AND AD_Language='en_GB'
+;
+
+-- 2021-06-30T11:17:22.049Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540579,'en_GB')
+;
+
+-- 2021-06-30T11:17:27.033Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-30 14:17:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=540579 AND AD_Language='de_CH'
+;
+
+-- 2021-06-30T11:17:27.035Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540579,'de_CH')
+;
+
+-- 2021-06-30T11:17:33.315Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Direction', PrintName='Direction',Updated=TO_TIMESTAMP('2021-06-30 14:17:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=540579 AND AD_Language='en_US'
+;
+
+-- 2021-06-30T11:17:33.317Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540579,'en_US')
+;
+
+-- 2021-06-30T11:17:37.587Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-30 14:17:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=540579 AND AD_Language='nl_NL'
+;
+
+-- 2021-06-30T11:17:37.589Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540579,'nl_NL')
+;
+
+-- 2021-06-30T11:17:41.637Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-06-30 14:17:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=540579 AND AD_Language='de_DE'
+;
+
+-- 2021-06-30T11:17:41.638Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(540579,'de_DE')
+;
+
+-- 2021-06-30T11:17:41.648Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(540579,'de_DE')
+;
