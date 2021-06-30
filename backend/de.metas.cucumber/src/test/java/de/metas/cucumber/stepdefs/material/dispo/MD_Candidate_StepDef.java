@@ -34,20 +34,27 @@ import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
+import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
+import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
+import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -61,16 +68,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
+import static org.assertj.core.api.Assertions.*;
 
 public class MD_Candidate_StepDef
 {
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
 
-	private StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
+	private final StepDefData<MaterialDispoDataItem> materialDispoDataItemStepDefData = new StepDefData<>();
 
 	@Before
 	public void beforeEach()
@@ -91,6 +98,12 @@ public class MD_Candidate_StepDef
 		DB.executeUpdateEx("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
 	}
 
+	@And("metasfresh initially has no MD_Candidate_StockChange_detail data")
+	public void setupMD_Candidate_StockChange_detail_Data()
+	{
+		DB.executeUpdateEx("TRUNCATE TABLE md_candidate_stockChange_detail cascade", ITrx.TRXNAME_None);
+	}
+
 	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
 	public void shipmentScheduleCreatedEvent(@NonNull final DataTable dataTable)
 	{
@@ -101,14 +114,11 @@ public class MD_Candidate_StepDef
 		final Instant preparationDate = Instant.parse(map.get("PreparationDate"));
 		final BigDecimal qty = new BigDecimal(map.get("Qty"));
 
+		final MaterialDescriptor descriptor = MaterialDispoUtils.createMaterialDescriptor(productId, preparationDate, qty);
+
 		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientId.METASFRESH.getRepoId(), StepDefConstants.ORG_ID.getRepoId()))
-				.materialDescriptor(MaterialDescriptor.builder()
-						.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productId))
-						.date(preparationDate)
-						.quantity(qty)
-						.warehouseId(StepDefConstants.WAREHOUSE_ID)
-						.build())
+				.materialDescriptor(descriptor)
 				.shipmentScheduleId(shipmentScheduleId)
 				.reservedQuantity(qty)
 				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
@@ -201,5 +211,55 @@ public class MD_Candidate_StepDef
 			final int shipmentScheduleId = DataTableUtil.extractIntForColumnName(tableRow, I_MD_Candidate_Demand_Detail.COLUMNNAME_M_ShipmentSchedule_ID);
 			assertThat(DemandDetail.cast(businessCaseDetail).getShipmentScheduleId()).isEqualTo(shipmentScheduleId);
 		}
+	}
+
+	@And("metasfresh has this MD_Candidate_StockChange_Detail data")
+	public void metasfresh_has_this_md_candidate_stockChange_detail_data(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			final int freshQtyOnHandId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_ID");
+			final int freshQtyOnHandLineId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_Line_ID");
+			final boolean isReverted = DataTableUtil.extractBooleanForColumnName(row, "IsReverted");
+
+			final I_MD_Candidate_StockChange_Detail stockChangeDetail = queryBL.createQueryBuilder(I_MD_Candidate_StockChange_Detail.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_MD_Candidate_StockChange_Detail.COLUMN_Fresh_QtyOnHand_Line_ID, freshQtyOnHandLineId)
+					.create()
+					.firstOnly(I_MD_Candidate_StockChange_Detail.class);
+
+			assertThat(stockChangeDetail).isNotNull();
+			assertThat(stockChangeDetail.getFresh_QtyOnHand_ID()).isEqualTo(freshQtyOnHandId);
+			assertThat(stockChangeDetail.isReverted()).isEqualTo(isReverted);
+		}
+	}
+
+	@And("^metasfresh receives a (StockEstimateCreatedEvent|StockEstimateDeletedEvent)$")
+	public void metasfresh_receives_StockEstimateEvent(@NonNull final String eventType, @NonNull final DataTable dataTable)
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID");
+		final int freshQtyOnHandId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_ID");
+		final int freshQtyOnHandLineId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_Line_ID");
+		final Instant dateDoc = DataTableUtil.extractInstantForColumnName(row, "DateDoc");
+		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, "Qty");
+
+		final AbstractStockEstimateEvent event;
+
+		switch (eventType)
+		{
+			case StockEstimateCreatedEvent.TYPE:
+				event = MaterialDispoUtils.createStockEstimateCreatedEvent(productId, freshQtyOnHandId, freshQtyOnHandLineId, dateDoc, qty);
+				break;
+			case StockEstimateDeletedEvent.TYPE:
+				event = MaterialDispoUtils.createStockEstimateDeletedEvent(productId, freshQtyOnHandId, freshQtyOnHandLineId, dateDoc, qty);
+				break;
+			default:
+				throw new AdempiereException("Event type not handeled: " + eventType);
+		}
+
+		postMaterialEventService.postEventNow(event);
 	}
 }

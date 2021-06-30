@@ -67,6 +67,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import static de.metas.material.event.EventTestHelper.NOW;
 import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
@@ -76,7 +77,7 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptorWit
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -663,10 +664,10 @@ public class MaterialEventSerializerTests
 	{
 		final StockEstimateCreatedEvent stockCountCreatedEvent = StockEstimateCreatedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
-				.productDescriptor(createProductDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.date(NOW)
 				.plantId(2)
-				.quantity(new BigDecimal("3"))
+				.eventDate(Instant.now())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(stockCountCreatedEvent);
@@ -677,10 +678,10 @@ public class MaterialEventSerializerTests
 	{
 		final StockEstimateDeletedEvent stockCountDeletedEvent = StockEstimateDeletedEvent.builder()
 				.eventDescriptor(createEventDescriptor())
-				.productDescriptor(createProductDescriptor())
+				.materialDescriptor(createMaterialDescriptor())
 				.date(NOW)
 				.plantId(2)
-				.quantity(new BigDecimal("3"))
+				.eventDate(Instant.now())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(stockCountDeletedEvent);
