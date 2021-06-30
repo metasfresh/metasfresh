@@ -81,7 +81,7 @@ final class UserIdWithGroupsCollection
 			throw new AdempiereException("More than one user found for " + assignments);
 		}
 
-		return userIds.stream().findFirst().orElseThrow(() -> new AdempiereException("UserId should always pe present on UserGroupUserAssignment" + assignments));
+		return userIds.stream().findFirst().orElseThrow(() -> new AdempiereException("UserId should always be present on UserGroupUserAssignment" + assignments));
 	}
 
 	public ImmutableSet<UserGroupId> getAssignedGroupIds(@NonNull final Instant date)

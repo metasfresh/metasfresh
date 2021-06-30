@@ -44,7 +44,7 @@ import lombok.NonNull;
 @Repository
 public class UserGroupRepository
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final CCache<UserId, UserIdWithGroupsCollection> //
 	assignmentsByUserId = CCache.<UserId, UserIdWithGroupsCollection> builder()
@@ -77,6 +77,7 @@ public class UserGroupRepository
 				.getAssignedGroupIds(date);
 	}
 
+	@NonNull
 	public UserGroupsCollection getByUserGroupId(@NonNull final UserGroupId userGroupId)
 	{
 		final ImmutableSet<UserGroupUserAssignment> assignments = queryBL
