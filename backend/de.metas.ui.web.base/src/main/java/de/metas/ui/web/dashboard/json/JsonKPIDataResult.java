@@ -84,8 +84,9 @@ public class JsonKPIDataResult
 						.stream()
 						.map(dataSet -> JsonKPIDataSet.of(dataSet, jsonOpts))
 						.collect(ImmutableList.toImmutableList()))
-				.took(kpiData.getTook() != null ? kpiData.getTook().toString() : null)
-				.computedTimestamp(DateTimeConverters.toJson(kpiData.getCreatedTime(), jsonOpts.getZoneId()))
+				.took(kpiData.getDatasetsComputedTime().toString())
+				.computedTimestamp(DateTimeConverters.toJson(kpiData.getDatasetsComputedTime(), jsonOpts.getZoneId()))
+				.error(kpiData.getError() != null ? JsonWebuiError.of(kpiData.getError(), jsonOpts) : null)
 				.build();
 
 	}

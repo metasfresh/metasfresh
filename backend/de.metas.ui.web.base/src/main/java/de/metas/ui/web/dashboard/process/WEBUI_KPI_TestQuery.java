@@ -90,8 +90,7 @@ public class WEBUI_KPI_TestQuery extends JavaProcess implements IProcessPrecondi
 								.from(p_DateFrom)
 								.to(p_DateTo)
 								.build())
-						.build())
-				.get();
+						.build());
 
 		final String jsonData = jsonObjectMapper.writeValueAsString(kpiData);
 		log.info("jsonData:\n {}", jsonData);

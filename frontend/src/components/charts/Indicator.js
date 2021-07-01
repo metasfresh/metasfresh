@@ -24,12 +24,17 @@ class Indicator extends Component {
    * @param {props} param0
    * @returns
    */
-  static getDerivedStateFromProps({ data: { computedTimestamp } }) {
-    return {
-      renderedLastComputedString: computeRenderedLastComputedString(
-        computedTimestamp
-      ),
-    };
+  static getDerivedStateFromProps(props) {
+    const { data } = props;
+    const computedTimestamp = data ? data.computedTimestamp : undefined;
+    if (computedTimestamp) {
+      return {
+        renderedLastComputedString: computeRenderedLastComputedString(
+          computedTimestamp
+        ),
+      };
+    }
+    return null;
   }
 
   componentDidMount() {
@@ -55,14 +60,15 @@ class Indicator extends Component {
    * @param {string} indicatorId
    */
   showDetails = (indicatorId) => {
-    getTargetIndicatorsDetails(indicatorId).then((detailsResp) => {
-      const { viewId, windowId } = detailsResp.data;
-      let detailsTab = window.open(
-        `${window.location.origin}/window/${windowId}?viewId=${viewId}`,
-        '_blank'
-      );
-      detailsTab.focus();
-    });
+    indicatorId &&
+      getTargetIndicatorsDetails(indicatorId).then((detailsResp) => {
+        const { viewId, windowId } = detailsResp.data;
+        let detailsTab = window.open(
+          `${window.location.origin}/window/${windowId}?viewId=${viewId}`,
+          '_blank'
+        );
+        detailsTab.focus();
+      });
   };
 
   /**
@@ -83,9 +89,13 @@ class Indicator extends Component {
       editmode,
       framework,
       zoomToDetailsAvailable,
-      data: { computedTimestamp },
+      data,
     } = this.props;
     const { renderedLastComputedString } = this.state;
+    const computedTimestamp = data ? data.computedTimestamp : null;
+    const error = data ? data.error : null;
+    const headerCaption =
+      typeof caption === 'string' ? caption.toUpperCase() : caption;
 
     if (loader)
       return (
@@ -103,7 +113,7 @@ class Indicator extends Component {
         style={fullWidth ? { width: '100%' } : {}}
       >
         <div>
-          <div className="indicator-kpi-caption">{caption}</div>
+          <div className="indicator-kpi-caption">{headerCaption}</div>
           {zoomToDetailsAvailable && (
             <div
               className="indicator-details-link"
@@ -114,23 +124,36 @@ class Indicator extends Component {
           )}
         </div>
         <div className="indicator-data">
-          <div className="indicator-amount">{amount}</div>
-          <div className="indicator-unit">{unit}</div>
+          <div className="indicator-amount">{amount || 0}</div>
+          <div className="indicator-unit">{unit || ''}</div>
         </div>
-        {renderedLastComputedString && (
-          <div className="indicator-last-updated">
-            <span
-              className="indicator-fuzzy"
-              href="#"
-              data-toggle="tooltip"
-              data-placement="top"
-              title={moment(computedTimestamp).format('LLL z')}
-            >
-              <i className="meta-icon-reload" />
-              {renderedLastComputedString}
-            </span>
-          </div>
-        )}
+        <div className="indocator-footer">
+          {renderedLastComputedString && (
+            <div className="indicator-last-updated">
+              <span
+                className="indicator-fuzzy"
+                data-toggle="tooltip"
+                data-placement="top"
+                title={moment(computedTimestamp).format('LLL z')}
+              >
+                <i className="meta-icon-reload" />
+                {renderedLastComputedString}
+              </span>
+            </div>
+          )}
+          {error && (
+            <div className="indicator-has-errors">
+              <span
+                className="text-danger"
+                data-toggle="tooltip"
+                data-placement="top"
+                title={error.message}
+              >
+                <i className="meta-icon-important text-danger" />
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     );
   }
