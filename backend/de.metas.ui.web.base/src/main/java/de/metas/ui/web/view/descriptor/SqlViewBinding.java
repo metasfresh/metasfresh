@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.accounting.filters.FactAcctFilterConverter;
+import de.metas.ui.web.bpartner.filter.BPartnerExportFilterConverter;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.fullTextSearch.FullTextSearchSqlDocumentFilterConverter;
@@ -343,7 +344,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		private final Map<String, SqlViewRowFieldBinding> _fieldsByFieldName = new LinkedHashMap<>();
 		private ViewRowCustomizer rowCustomizer;
 
-		@Nullable private ArrayList<DocumentQueryOrderBy> defaultOrderBys;
+		@Nullable
+		private ArrayList<DocumentQueryOrderBy> defaultOrderBys;
 		private final OrderByFieldNameAliasMap.OrderByFieldNameAliasMapBuilder orderByFieldNameAliasMap = OrderByFieldNameAliasMap.builder();
 		private DocumentFilterDescriptorsProvider filterDescriptors = NullDocumentFilterDescriptorsProvider.instance;
 		private final SqlDocumentFilterConvertersList.Builder filterConverters = SqlDocumentFilterConverters.listBuilder();
@@ -362,6 +364,7 @@ public class SqlViewBinding implements SqlEntityBinding
 			filterConverters.converter(GeoLocationFilterConverter.instance);
 			filterConverters.converter(FactAcctFilterConverter.instance);
 			// filterConverters2.whenFilterIdStartsWith(FacetsDocumentFilterDescriptorsProviderFactory.FILTER_ID_PREFIX, converter);
+			filterConverters.converter(BPartnerExportFilterConverter.instance);
 		}
 
 		@Override
