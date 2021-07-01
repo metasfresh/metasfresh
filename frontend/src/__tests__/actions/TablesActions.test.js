@@ -1,7 +1,7 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import produce from 'immer';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import { combineReducers } from 'redux';
 import nock from 'nock';
 
@@ -37,8 +37,7 @@ const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       viewHandler: initialViewsState,
       tables: { ...tablesHandler(undefined, {}) },

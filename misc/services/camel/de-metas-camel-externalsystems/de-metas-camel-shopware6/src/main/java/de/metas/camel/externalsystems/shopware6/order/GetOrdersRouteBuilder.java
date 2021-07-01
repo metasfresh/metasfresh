@@ -23,8 +23,8 @@
 package de.metas.camel.externalsystems.shopware6.order;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.CamelRouteUtil;
-import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.order.processor.ClearOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.CreateBPartnerUpsertReqProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
@@ -59,6 +59,13 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 	public static final String PAYMENT_REQUEST_PROCESSOR_ID = "SW6Orders-PaymentRequestProcessorId";
 	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "SW6Orders-RuntimeParamsProcessorId";
 
+	private final ProcessLogger processLogger;
+
+	public GetOrdersRouteBuilder(final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
+
 	@Override
 	public void configure()
 	{
@@ -71,44 +78,44 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.routeId(GET_ORDERS_ROUTE_ID)
 				.log("Route invoked")
 				.streamCaching()
-				.process(new GetOrdersProcessor()).id(GET_ORDERS_PROCESSOR_ID)
+				.process(new GetOrdersProcessor(processLogger)).id(GET_ORDERS_PROCESSOR_ID)
 				.split(body())
-				.to(direct(PROCESS_ORDER_ROUTE_ID))
+					.to(direct(PROCESS_ORDER_ROUTE_ID))
 				.end()
 				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
 				.to(direct(CLEAR_ORDERS_ROUTE_ID))
-				.process((exchange) -> ProcessorHelper.logProcessMessage(exchange, "Shopware6:GetOrders process ended!" + Instant.now(),
+				.process((exchange) -> processLogger.logMessage("Shopware6:GetOrders process ended!" + Instant.now(),
 						exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class)));
 
 		from(direct(PROCESS_ORDER_ROUTE_ID))
 				.routeId(PROCESS_ORDER_ROUTE_ID)
 				.log("Route invoked")
 				.doTry()
-				.process(new OrderFilter()).id(FILTER_ORDER_PROCESSOR_ID)
-				.choice()
-				.when(body().isNull())
-				.log(LoggingLevel.INFO, "Nothing to do! The order was filtered out!")
-				.otherwise()
-				.process(new CreateBPartnerUpsertReqProcessor()).id(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
-				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
-				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+					.process(new OrderFilter()).id(FILTER_ORDER_PROCESSOR_ID)
+					.choice()
+						.when(body().isNull())
+							.log(LoggingLevel.INFO, "Nothing to do! The order was filtered out!")
+						.otherwise()
+							.process(new CreateBPartnerUpsertReqProcessor()).id(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
+							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert BPartners: ${body}")
+							.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 
-				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
-				.process(new OLCandRequestProcessor()).id(OLCAND_REQ_PROCESSOR_ID)
-				.to(direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID))
+							.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
+							.process(new OLCandRequestProcessor()).id(OLCAND_REQ_PROCESSOR_ID)
+							.to(direct(ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID))
 
-				.process(new PaymentRequestProcessor()).id(PAYMENT_REQUEST_PROCESSOR_ID)
-				.choice()
-				.when(body().isNull())
-				.log(LoggingLevel.INFO, "Nothing to do! No payment was found!")
-				.otherwise()
-				.to(direct(ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID))
-				.end()
-				.endChoice()
-				.end()
+							.process(new PaymentRequestProcessor()).id(PAYMENT_REQUEST_PROCESSOR_ID)
+							.choice()
+								.when(body().isNull())
+									.log(LoggingLevel.INFO, "Nothing to do! No payment was found!")
+								.otherwise()
+									.to(direct(ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID))
+								.end()
+							.endChoice()
+						.end()
 				.endDoTry()
 				.doCatch(Exception.class)
-				.to(direct(MF_ERROR_ROUTE_ID))
+					.to(direct(MF_ERROR_ROUTE_ID))
 				.end();
 
 		from(direct(CLEAR_ORDERS_ROUTE_ID))
@@ -116,8 +123,8 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.log("Route invoked")
 				.process(new ClearOrdersProcessor()).id(CLEAR_OLCAND_PROCESSOR_ID)
 				.split(body())
-				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to clear orders: ${body}")
-				.to(direct(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID))
+					.log(LoggingLevel.DEBUG, "Calling metasfresh-api to clear orders: ${body}")
+					.to(direct(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID))
 				.end();
 
 		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
@@ -125,10 +132,10 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 				.log("Route invoked")
 				.process(new RuntimeParametersProcessor()).id(RUNTIME_PARAMS_PROCESSOR_ID)
 				.choice()
-				.when(body().isNull())
-				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert runtime parameters: ${body}")
-				.otherwise()
-				.to(direct(ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID))
+					.when(body().isNull())
+						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert runtime parameters: ${body}")
+					.otherwise()
+						.to(direct(ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID))
 				.endChoice()
 				.end();
 		//@formatter:on

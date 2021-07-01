@@ -37,6 +37,7 @@ public class AvailableForSalesResult
 	@NonNull
 	AvailableForSalesQuery availableForSalesQuery;
 
+	@NonNull
 	ProductId productId;
 
 	@NonNull

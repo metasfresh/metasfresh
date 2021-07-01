@@ -23,8 +23,8 @@
 package de.metas.ui.web.window.descriptor.sql.productLookup;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
-import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.ui.web.material.adapter.AvailabilityInfoResultForWebui;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.window.datatypes.LookupValuesList;

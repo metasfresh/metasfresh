@@ -6,7 +6,7 @@ import { omit } from 'lodash';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as widgetHandlerState } from '../../../reducers/widgetHandler';
@@ -18,8 +18,7 @@ import ConnectedTableQuickInput, { TableQuickInput } from '../../../components/t
 const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 const createStore = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       widgetHandler: widgetHandlerState,
     },

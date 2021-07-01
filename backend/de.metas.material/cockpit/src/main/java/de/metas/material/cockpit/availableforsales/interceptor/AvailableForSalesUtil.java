@@ -18,6 +18,7 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesResult;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesResult.Quantities;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -334,7 +335,7 @@ public class AvailableForSalesUtil
 					.builder()
 					.dateOfInterest(dateOfInterest)
 					.productId(productId)
-					.storageAttributesKey(storageAttributesKey)
+					.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(storageAttributesKey))
 					.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
 					.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
 					.build();

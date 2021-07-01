@@ -39,7 +39,7 @@
     "timestamp": "2021-02-08T07:48:14.215Z",
     "createdAt": "2021-02-08T07:48:14.213Z",
     "updatedAt": "2021-02-08T07:48:14.213Z",
-    "createdBy": "6741f5aa-f646-4f65-9eb0-5213fc0ad96f",
-    "updatedBy": "6741f5aa-f646-4f65-9eb0-5213fc0ad96f"
+    "createdBy": "createdBy_updatedBy_UserId",
+    "updatedBy": "createdBy_updatedBy_UserId"
   }
 ]

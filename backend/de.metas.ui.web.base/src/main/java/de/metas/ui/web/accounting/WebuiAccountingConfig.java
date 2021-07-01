@@ -2,9 +2,11 @@ package de.metas.ui.web.accounting;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -81,7 +83,8 @@ public class WebuiAccountingConfig
 		linkToTableNames
 				.stream()
 				.map(adTablesRepo::retrieveTableId)
-				.filter(adTableId -> adTableId > 0)
+				.map(AdTableId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
 				.forEach(adTableId -> adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
 						.processId(repostProcessId)
 						.tableId(adTableId)
@@ -114,7 +117,8 @@ public class WebuiAccountingConfig
 		linkToTableNames
 				.stream()
 				.map(adTablesRepo::retrieveTableId)
-				.filter(adTableId -> adTableId > 0)
+				.map(AdTableId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
 				.forEach(adTableId -> adProcessesRepo.registerTableProcess(RelatedProcessDescriptor.builder()
 						.processId(repostProcessId)
 						.tableId(adTableId)

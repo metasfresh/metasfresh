@@ -1004,3 +1004,8 @@ table {
 }
 
 
+
+.btn-borderless:focus {
+  outline: none;
+  box-shadow: none;
+}

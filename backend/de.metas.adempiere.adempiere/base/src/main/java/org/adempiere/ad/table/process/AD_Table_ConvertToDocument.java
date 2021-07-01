@@ -1,15 +1,15 @@
 package org.adempiere.ad.table.process;
 
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.I_AD_Process;
-import org.compiere.model.I_AD_Table;
-
-import de.metas.process.IADProcessBL;
+import de.metas.process.ADProcessService;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.CopyColumnsProducer;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Process;
+import org.compiere.model.I_AD_Table;
 
 /*
  * #%L
@@ -46,7 +46,7 @@ import de.metas.util.Services;
 public class AD_Table_ConvertToDocument extends JavaProcess
 {
 	private static final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-	private static final IADProcessBL processBL = Services.get(IADProcessBL.class);
+	private static final ADProcessService processBL = SpringContextHolder.instance.getBean(ADProcessService.class);
 	private static final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override

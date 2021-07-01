@@ -1,19 +1,20 @@
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ExternalSystem_Config_Shopware6Mapping
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_Shopware6Mapping 
+public interface I_ExternalSystem_Config_Shopware6Mapping
 {
 
 	String Table_Name = "ExternalSystem_Config_Shopware6Mapping";
 
-//	/** AD_Table_ID=541621 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=541621 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -49,6 +50,98 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set If business partner exists.
+	 * Specifies what to do if a Shopware customer already exists as business partner in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBPartner_IfExists (java.lang.String BPartner_IfExists);
+
+	/**
+	 * Get If business partner exists.
+	 * Specifies what to do if a Shopware customer already exists as business partner in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getBPartner_IfExists();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_BPartner_IfExists = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "BPartner_IfExists", null);
+	String COLUMNNAME_BPartner_IfExists = "BPartner_IfExists";
+
+	/**
+	 * Set If business partner doesn't exist.
+	 * Specifies what to do if a Shopware customer does not yet exist as business partner in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBPartner_IfNotExists (java.lang.String BPartner_IfNotExists);
+
+	/**
+	 * Get If business partner doesn't exist.
+	 * Specifies what to do if a Shopware customer does not yet exist as business partner in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getBPartner_IfNotExists();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_BPartner_IfNotExists = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "BPartner_IfNotExists", null);
+	String COLUMNNAME_BPartner_IfNotExists = "BPartner_IfNotExists";
+
+	/**
+	 * Set If address exists.
+	 * Specifies what to do if a Shopware customer's address already exists in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerLocation_IfExists (java.lang.String BPartnerLocation_IfExists);
+
+	/**
+	 * Get If address exists.
+	 * Specifies what to do if a Shopware customer's address already exists in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getBPartnerLocation_IfExists();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_BPartnerLocation_IfExists = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "BPartnerLocation_IfExists", null);
+	String COLUMNNAME_BPartnerLocation_IfExists = "BPartnerLocation_IfExists";
+
+	/**
+	 * Set If addr doesn't exist.
+	 * Specifies what to do if a Shopware customer's address does not yet exist in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerLocation_IfNotExists (java.lang.String BPartnerLocation_IfNotExists);
+
+	/**
+	 * Get If addr doesn't exist.
+	 * Specifies what to do if a Shopware customer's address does not yet exist in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getBPartnerLocation_IfNotExists();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6Mapping, Object> COLUMN_BPartnerLocation_IfNotExists = new ModelColumn<>(I_ExternalSystem_Config_Shopware6Mapping.class, "BPartnerLocation_IfNotExists", null);
+	String COLUMNNAME_BPartnerLocation_IfNotExists = "BPartnerLocation_IfNotExists";
 
 	/**
 	 * Set Auftrags-Belegart.
@@ -166,7 +259,7 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	String COLUMNNAME_ExternalSystem_Config_Shopware6_ID = "ExternalSystem_Config_Shopware6_ID";
 
 	/**
-	 * Set Externa System Config Shopware6 Mapping.
+	 * Set Sales order disposition.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -175,7 +268,7 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	void setExternalSystem_Config_Shopware6Mapping_ID (int ExternalSystem_Config_Shopware6Mapping_ID);
 
 	/**
-	 * Get Externa System Config Shopware6 Mapping.
+	 * Get Sales order disposition.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -235,7 +328,7 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -246,7 +339,7 @@ public interface I_ExternalSystem_Config_Shopware6Mapping
 	/**
 	 * Get SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true

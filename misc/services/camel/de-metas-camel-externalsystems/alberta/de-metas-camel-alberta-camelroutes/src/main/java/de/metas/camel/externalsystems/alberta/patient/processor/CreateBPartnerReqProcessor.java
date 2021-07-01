@@ -22,14 +22,13 @@
 
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
-import com.google.common.collect.ImmutableMap;
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.patient.BPartnerUpsertRequestProducer;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupResponse;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.DoctorApi;
@@ -38,6 +37,7 @@ import io.swagger.client.api.NursingHomeApi;
 import io.swagger.client.api.NursingServiceApi;
 import io.swagger.client.api.PayerApi;
 import io.swagger.client.api.PharmacyApi;
+import io.swagger.client.api.UserApi;
 import io.swagger.client.model.Doctor;
 import io.swagger.client.model.Hospital;
 import io.swagger.client.model.NursingHome;
@@ -47,12 +47,12 @@ import io.swagger.client.model.PatientHospital;
 import io.swagger.client.model.PatientPayer;
 import io.swagger.client.model.Payer;
 import io.swagger.client.model.Pharmacy;
+import io.swagger.client.model.Users;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * Takes a {@link JsonExternalReferenceLookupResponse} and the current {@link Patient} and transformes them into a {@link BPUpsertCamelRequest}.
@@ -62,48 +62,31 @@ public class CreateBPartnerReqProcessor implements Processor
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
-		final JsonExternalReferenceLookupResponse esrLookupResponse = exchange.getIn().getBody(JsonExternalReferenceLookupResponse.class);
-		final ImmutableMap<String, JsonMetasfreshId> externalId2MetasfreshId = buildExternalId2MetasfreshIdMap(esrLookupResponse);
+		final Patient patient = exchange.getIn().getBody(Patient.class);
 
-		final AlbertaConnectionDetails connectionDetails = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_CONN_DETAILS, AlbertaConnectionDetails.class);
-		if (connectionDetails == null)
-		{
-			throw new RuntimeException("Missing camel route property: " + GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_CONN_DETAILS);
-		}
+		final String orgCode = ProcessorHelper.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE, String.class);
 
-		final Patient patient = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_CURRENT_PATIENT, Patient.class);
-		if (patient == null)
-		{
-			throw new RuntimeException("Missing camel route property: " + GetPatientsRouteConstants.ROUTE_PROPERTY_CURRENT_PATIENT);
-		}
+		final GetPatientsRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, GetPatientsRouteContext.class);
 
-		final String orgCode = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE, String.class);
-		if (orgCode == null)
-		{
-			throw new RuntimeException("Missing camel route property: " + GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE);
-		}
+		final AlbertaConnectionDetails connectionDetails = routeContext.getAlbertaConnectionDetails();
 
-		final DoctorApi doctorApi = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_DOCTOR_API, DoctorApi.class);
-		final Doctor doctorOrNull = getDoctorOrNull(doctorApi, connectionDetails, patient.getPrimaryDoctorId());
+		final Doctor doctorOrNull = getDoctorOrNull(routeContext.getDoctorApi(), connectionDetails, patient.getPrimaryDoctorId());
 
-		final NursingHomeApi nursingHomeApi = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_NURSINGHOME_API, NursingHomeApi.class);
-		final NursingHome nursingHomeOrNull = getNursingHomeOrNull(nursingHomeApi, connectionDetails, patient.getNursingHomeId());
+		final NursingHome nursingHomeOrNull = getNursingHomeOrNull(routeContext.getNursingHomeApi(), connectionDetails, patient.getNursingHomeId());
 
-		final NursingServiceApi nursingServiceApi = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_NURSINGSERVICE_API, NursingServiceApi.class);
-		final NursingService nursingServiceOrNull = getNursingServiceOrNull(nursingServiceApi, connectionDetails, patient.getNursingServiceId());
+		final NursingService nursingServiceOrNull = getNursingServiceOrNull(routeContext.getNursingServiceApi(), connectionDetails, patient.getNursingServiceId());
 
-		final HospitalApi hospitalApi = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_HOSPITAL_API, HospitalApi.class);
-		final Hospital hospital = getHospital(hospitalApi, connectionDetails, patient.getHospital());
+		final Hospital hospital = getHospital(routeContext.getHospitalApi(), connectionDetails, patient.getHospital());
 
-		final PayerApi payerApi = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PAYER_API, PayerApi.class);
-		final Payer payerOrNull = getPayerOrNull(payerApi, connectionDetails, patient.getPayer());
+		final Payer payerOrNull = getPayerOrNull(routeContext.getPayerApi(), connectionDetails, patient.getPayer());
 
-		final PharmacyApi pharmacyApi = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PHARMACY_API, PharmacyApi.class);
-		final Pharmacy pharmacyOrNull = getPharmacyOrNull(pharmacyApi, connectionDetails, patient.getPharmacyId());
+		final Pharmacy pharmacyOrNull = getPharmacyOrNull(routeContext.getPharmacyApi(), connectionDetails, patient.getPharmacyId());
+
+		final Users createdBy = getUserOrNull(routeContext.getUserApi(), connectionDetails, patient.getCreatedBy());
+		final Users updatedBy = getUserOrNull(routeContext.getUserApi(), connectionDetails, patient.getUpdatedBy());
 
 		final BPartnerUpsertRequestProducer bPartnerUpsertRequestProducer = BPartnerUpsertRequestProducer.builder()
 				.patient(patient)
-				.externalId2MetasfreshId(externalId2MetasfreshId)
 				.orgCode(orgCode)
 				.doctor(doctorOrNull)
 				.nursingHome(nursingHomeOrNull)
@@ -111,6 +94,9 @@ public class CreateBPartnerReqProcessor implements Processor
 				.hospital(hospital)
 				.payer(payerOrNull)
 				.pharmacy(pharmacyOrNull)
+				.createdBy(createdBy)
+				.updatedBy(updatedBy)
+				.rootBPartnerIdForUsers(routeContext.getRootBPartnerIdForUsers())
 				.build();
 
 		final BPartnerUpsertRequestProducer.BPartnerRequestProducerResult result = bPartnerUpsertRequestProducer.run();
@@ -121,33 +107,8 @@ public class CreateBPartnerReqProcessor implements Processor
 				.sourceBPartnerLocationIdentifier(result.getPatientMainAddressIdentifier())
 				.build();
 
-		final BPUpsertCamelRequest bpUpsertCamelRequest = BPUpsertCamelRequest.builder()
-				.jsonRequestBPartnerUpsert(result.getJsonRequestBPartnerUpsert())
-				.orgCode(orgCode)
-				.build();
-
-		exchange.getIn().setBody(bpUpsertCamelRequest);
+		exchange.getIn().setBody(result.getJsonRequestBPartnerUpsert());
 		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_BP_IDENTIFIER_TO_ROLE, bPartnerRoleInfoProvider);
-	}
-
-	private ImmutableMap<String, JsonMetasfreshId> buildExternalId2MetasfreshIdMap(@NonNull final JsonExternalReferenceLookupResponse esrLookupResponse)
-	{
-		final List<JsonExternalReferenceItem> items = esrLookupResponse.getItems();
-		if (items == null || items.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableMap.Builder<String, JsonMetasfreshId> result = ImmutableMap.builder();
-		for (final JsonExternalReferenceItem item : items)
-		{
-			if (item.getMetasfreshId() == null)
-			{
-				continue;
-			}
-			result.put(item.getLookupItem().getId(), item.getMetasfreshId());
-		}
-		return result.build();
 	}
 
 	@Nullable
@@ -268,5 +229,25 @@ public class CreateBPartnerReqProcessor implements Processor
 			throw new RuntimeException("No info returned for pharmacy: " + pharmacyId);
 		}
 		return pharmacy;
+	}
+
+	@Nullable
+	private Users getUserOrNull(
+			@NonNull final UserApi userApi,
+			@NonNull final AlbertaConnectionDetails albertaConnectionDetails,
+			@Nullable final String userId) throws ApiException
+	{
+		if (EmptyUtil.isBlank(userId))
+		{
+			return null;
+		}
+
+		final Users user = userApi.getUser(albertaConnectionDetails.getApiKey(), albertaConnectionDetails.getTenant(), userId);
+
+		if (user == null)
+		{
+			throw new RuntimeException("No info returned for user: " + userId);
+		}
+		return user;
 	}
 }
