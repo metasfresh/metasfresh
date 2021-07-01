@@ -24,6 +24,7 @@ package de.metas.fresh.freshQtyOnHand.model.validator;
 
 import de.metas.fresh.model.I_Fresh_QtyOnHand;
 import de.metas.fresh.model.I_Fresh_QtyOnHand_Line;
+import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.ProductPlanningService;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
@@ -77,9 +78,8 @@ public class Fresh_QtyOnHand_Line
 		final ProductPlanningService productPlanningService = SpringContextHolder.instance.getBean(ProductPlanningService.class);
 
 		final ResourceId plantId = productPlanningService.getPlantOfWarehouse(WarehouseId.ofRepoId(line.getM_Warehouse_ID()))
-				.orElseThrow(() -> new AdempiereException("No plantId found for selected warehouse")
-						.appendParametersToMessage()
-						.setParameter("warehouseId", line.getM_Warehouse_ID()));
+				.orElseThrow(() -> new AdempiereException(AdMessageKey.of("Fresh_QtyOnHand_Line.MissingWarehousePlant"))
+						.markAsUserValidationError());
 
 		line.setPP_Plant_ID(plantId.getRepoId());
 	}
