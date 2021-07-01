@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for API_Audit_Config
  *  @author metasfresh (generated) 
@@ -52,24 +51,29 @@ public interface I_API_Audit_Config
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Responsible.
+	 * Set User group in charge.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
+	void setAD_UserGroup_InCharge_ID (int AD_UserGroup_InCharge_ID);
 
 	/**
-	 * Get Responsible.
+	 * Get User group in charge.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getAD_User_InCharge_ID();
+	int getAD_UserGroup_InCharge_ID();
 
-	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
+	@Nullable org.compiere.model.I_AD_UserGroup getAD_UserGroup_InCharge();
+
+	void setAD_UserGroup_InCharge(@Nullable org.compiere.model.I_AD_UserGroup AD_UserGroup_InCharge);
+
+	ModelColumn<I_API_Audit_Config, org.compiere.model.I_AD_UserGroup> COLUMN_AD_UserGroup_InCharge_ID = new ModelColumn<>(I_API_Audit_Config.class, "AD_UserGroup_InCharge_ID", org.compiere.model.I_AD_UserGroup.class);
+	String COLUMNNAME_AD_UserGroup_InCharge_ID = "AD_UserGroup_InCharge_ID";
 
 	/**
 	 * Set API Audit Config.

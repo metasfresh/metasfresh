@@ -12,7 +12,7 @@ de.metas.audit.config.ApiAuditConfigRepositoryTest.getAllConfigsByOrgId=[
       "method" : "PUT",
       "pathPrefix" : "pathPrefix",
       "notifyUserInCharge" : "ALWAYS",
-      "userInChargeId" : 1,
+      "userGroupInChargeId" : 1,
       "invokerWaitsForResponse" : true
     }
   ]
