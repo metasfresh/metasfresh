@@ -85,7 +85,7 @@ public class ApiAuditConfigRepositoryTest
 		final I_API_Audit_Config config = InterfaceWrapperHelper.newInstance(I_API_Audit_Config.class);
 
 		config.setAD_Org_ID(orgId);
-		config.setAD_User_InCharge_ID(1);
+		config.setAD_UserGroup_InCharge_ID(1);
 		config.setIsActive(isActive);
 		config.setIsInvokerWaitsForResult(true);
 		config.setKeepRequestBodyDays(100);
