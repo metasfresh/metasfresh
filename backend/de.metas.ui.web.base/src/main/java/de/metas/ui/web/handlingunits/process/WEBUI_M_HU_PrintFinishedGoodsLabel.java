@@ -84,7 +84,6 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 
 		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId)
 				.stream()
-				.filter(HUToReport::isTopLevel) 
 				.collect(ImmutableList.toImmutableList());
 
 		HUReportExecutor.newInstance(getCtx())
