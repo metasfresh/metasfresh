@@ -222,7 +222,7 @@ INSERT INTO c_bpartner_export
 (ad_client_id, address1, address2, address3, address4, ad_org_id, birthday, bpname, bpvalue, category, c_bpartner_export_id,
  c_country_id, c_greeting_id, city, created, createdby, emailuser, firstname, greeting, isactive, lastname, letter_salutation,
  masterenddate, masterstartdate, postal, terminationreason, updated, updatedby, c_postal_id, ad_language, companyname, contractstatus,
- mktg_campaign_id, c_compensationgroup_schema_id, hasdifferentbillpartner, c_flatrate_term_id, C_Order_ID, C_BPartner_ID)
+ mktg_campaign_id, c_compensationgroup_schema_id, hasdifferentbillpartner, c_flatrate_term_id, C_Order_ID, C_BPartner_ID, c_flatrate_conditions_id)
 
 SELECT ad_client_id,
        address1,
@@ -261,7 +261,8 @@ SELECT ad_client_id,
        hasdifferentbillpartner,
        c_flatrate_term_id,
        C_Order_ID,
-       C_BPartner_ID
+       C_BPartner_ID,
+	   c_flatrate_conditions_id
 
 FROM c_bpartner_export_view
 ;
