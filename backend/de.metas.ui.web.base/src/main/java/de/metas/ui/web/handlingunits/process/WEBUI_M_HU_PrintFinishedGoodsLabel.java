@@ -7,6 +7,8 @@ import org.springframework.context.annotation.Profile;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.Profiles;
+import de.metas.handlingunits.process.api.HUProcessDescriptor;
+import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
@@ -16,6 +18,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.util.Services;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -82,7 +86,7 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 		final AdProcessId adProcessId = huReportService.retrievePrintFinishedGoodsLabelProcessIdOrNull();
 		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
 
-		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId)
+		final List<HUToReport> husToProcess = getHUsToProcess(hu, adProcessId)
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 
@@ -91,5 +95,20 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 
 		return MSG_OK;
 	}
+	
+	private List<HUToReport> getHUsToProcess(
+			@NonNull final HUToReport huToReport,
+			@NonNull final AdProcessId adProcessId)
+	{
+		final IMHUProcessDAO huProcessDAO = Services.get(IMHUProcessDAO.class);
+		final HUProcessDescriptor huProcessDescriptor = huProcessDAO.getByProcessIdOrNull(adProcessId);
+		if (huProcessDescriptor == null)
+		{
+			return ImmutableList.of();
+		}
+		return huToReport.streamRecursively()
+				.collect(ImmutableList.toImmutableList());
+	}
+
 
 }
