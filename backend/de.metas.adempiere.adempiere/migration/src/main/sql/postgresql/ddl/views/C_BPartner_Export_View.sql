@@ -81,14 +81,14 @@ FROM C_BPartner bp
          LEFT JOIN C_Flatrate_Term term
                    ON term.bill_bpartner_id = bp.c_bpartner_id
                        AND term.C_Flatrate_Term_ID = (SELECT C_Flatrate_Term_ID
-                                                      FROM C_Flatrate_Term
-                                                      WHERE bill_bpartner_id = bp.c_bpartner_id
+                                                      FROM C_Flatrate_Term t
+                                                               JOIN M_Product tp ON t.m_product_id = tp.m_product_id
+                                                      WHERE t.bill_bpartner_id = bp.c_bpartner_id
                                                         AND DocStatus IN ('CO', 'CL')
-                                                      ORDER BY (COALESCE(masterenddate, endDate)) DESC
+                                                      ORDER BY (COALESCE(masterenddate, endDate)) DESC, tp.c_compensationgroup_schema_id NULLS LAST
                                                       LIMIT 1)
          LEFT JOIN M_Product termProduct ON term.m_product_id = termProduct.m_product_id
-         LEFT JOIN c_compensationgroup_schema_templateline schemaLine ON termProduct.m_product_id = schemaLine.M_Product_id
-         LEFT JOIN c_compensationgroup_schema schema ON schemaLine.c_compensationgroup_schema_id = schema.c_compensationgroup_schema_id
+         LEFT JOIN c_compensationgroup_schema schema ON termProduct.c_compensationgroup_schema_id = schema.c_compensationgroup_schema_id
          LEFT JOIN c_flatrate_conditions cond ON term.c_flatrate_conditions_id = cond.c_flatrate_conditions_id
          LEFT JOIN C_Order o
                    ON bp.c_bpartner_id = o.bill_bpartner_id
@@ -99,7 +99,5 @@ FROM C_BPartner bp
                                              AND docstatus IN ('CO', 'CL')
                                            ORDER BY dateordered DESC
                                            LIMIT 1)
-
-
+										   
 ;
-
