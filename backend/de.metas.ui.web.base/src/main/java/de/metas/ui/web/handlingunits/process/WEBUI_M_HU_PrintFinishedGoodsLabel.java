@@ -79,7 +79,7 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 	{
 		final HUReportService huReportService = HUReportService.get();
 
-		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
+		final AdProcessId adProcessId = huReportService.retrievePrintFinishedGoodsLabelProcessIdOrNull();
 		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
 
 		final List<HUToReport> husToProcess = huReportService.getHUsToProcess(hu, adProcessId)
