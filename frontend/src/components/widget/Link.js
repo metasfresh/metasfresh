@@ -14,13 +14,8 @@ class Link extends PureComponent {
   };
 
   render() {
-    const {
-      getClassNames,
-      isFocused,
-      widgetProperties,
-      icon,
-      widgetData,
-    } = this.props;
+    const { getClassNames, isFocused, widgetProperties, icon, widgetData } =
+      this.props;
 
     const { validStatus, value } = widgetData[0];
 

@@ -312,12 +312,9 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    updateFilterWidgetShown,
-    updateActiveFilters,
-    clearAllFilters,
-    updateNotValidFields,
-  }
-)(Filters);
+export default connect(mapStateToProps, {
+  updateFilterWidgetShown,
+  updateActiveFilters,
+  clearAllFilters,
+  updateNotValidFields,
+})(Filters);

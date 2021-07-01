@@ -680,9 +680,6 @@ RawLookup.propTypes = {
   updateItems: PropTypes.func,
 };
 
-export default connect(
-  mapStateToProps,
-  null,
-  null,
-  { forwardRef: true }
-)(RawLookup);
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  RawLookup
+);

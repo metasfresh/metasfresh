@@ -267,11 +267,8 @@ const mapStateToProps = (state, props) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    getInlineTabLayoutAndData,
-    updateDataValidStatus,
-    setInlineTabItemProp,
-  }
-)(InlineTab);
+export default connect(mapStateToProps, {
+  getInlineTabLayoutAndData,
+  updateDataValidStatus,
+  setInlineTabItemProp,
+})(InlineTab);

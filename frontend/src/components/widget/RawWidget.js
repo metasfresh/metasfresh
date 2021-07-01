@@ -167,12 +167,8 @@ export class RawWidget extends PureComponent {
    * duplicated focus actions in the parent TableRow
    */
   handleFocus = () => {
-    const {
-      handleFocus,
-      listenOnKeysFalse,
-      disableShortcut,
-      widgetType,
-    } = this.props;
+    const { handleFocus, listenOnKeysFalse, disableShortcut, widgetType } =
+      this.props;
 
     // fix issue in Cypress with cut underscores - false positive failing tests
     // - commented out because if you focus on an item and you disable the shourtcuts
@@ -260,13 +256,8 @@ export class RawWidget extends PureComponent {
    * @param {*} e - DOM event
    */
   handleKeyDown = (e) => {
-    const {
-      lastFormField,
-      widgetType,
-      filterWidget,
-      fields,
-      closeTableField,
-    } = this.props;
+    const { lastFormField, widgetType, filterWidget, fields, closeTableField } =
+      this.props;
     const value = e.target.value;
     const { key } = e;
     const widgetField = getWidgetField({ filterWidget, fields });
@@ -332,13 +323,8 @@ export class RawWidget extends PureComponent {
    * @param {*} isForce
    */
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const {
-      handlePatch,
-      inProgress,
-      widgetType,
-      maxLength,
-      widgetData,
-    } = this.props;
+    const { handlePatch, inProgress, widgetType, maxLength, widgetData } =
+      this.props;
     const { cachedValue } = this.state;
     const willPatch = shouldPatch({
       property,
@@ -510,12 +496,8 @@ export class RawWidget extends PureComponent {
       fieldInputClass,
     } = this.props;
 
-    const {
-      errorPopup,
-      clearedFieldWarning,
-      tooltipToggled,
-      isFocused,
-    } = this.state;
+    const { errorPopup, clearedFieldWarning, tooltipToggled, isFocused } =
+      this.state;
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
     const quickInput = subentity === 'quickInput';

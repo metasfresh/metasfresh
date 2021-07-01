@@ -32,14 +32,8 @@ class TableContextMenu extends Component {
   }
 
   componentDidMount() {
-    const {
-      x,
-      y,
-      fieldName,
-      supportZoomInto,
-      supportFieldEdit,
-      docId,
-    } = this.props;
+    const { x, y, fieldName, supportZoomInto, supportFieldEdit, docId } =
+      this.props;
 
     this.updateContextMenuState(
       x,
