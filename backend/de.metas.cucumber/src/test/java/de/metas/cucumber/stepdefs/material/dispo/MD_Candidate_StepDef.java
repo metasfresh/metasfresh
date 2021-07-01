@@ -72,7 +72,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class MD_Candidate_StepDef
 {
-	final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private PostMaterialEventService postMaterialEventService;
 	private MaterialDispoRecordRepository materialDispoRecordRepository;
@@ -190,7 +190,7 @@ public class MD_Candidate_StepDef
 			assertThat(materialDispoRecord.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(tableRow.getQty());
 			assertThat(materialDispoRecord.getAtp()).isEqualByComparingTo(tableRow.getAtp());
 
-			materialDispoDataItemStepDefData.put(tableRow.getIdentifier(), materialDispoRecord);
+			materialDispoDataItemStepDefData.putIfMissing(tableRow.getIdentifier(), materialDispoRecord);
 		}
 	}
 
@@ -219,19 +219,26 @@ public class MD_Candidate_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
+			final String candidateIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "MD_Candidate_ID.Identifier");
 			final int freshQtyOnHandId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_ID");
 			final int freshQtyOnHandLineId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_Line_ID");
 			final boolean isReverted = DataTableUtil.extractBooleanForColumnName(row, "IsReverted");
 
 			final I_MD_Candidate_StockChange_Detail stockChangeDetail = queryBL.createQueryBuilder(I_MD_Candidate_StockChange_Detail.class)
 					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_MD_Candidate_StockChange_Detail.COLUMN_Fresh_QtyOnHand_Line_ID, freshQtyOnHandLineId)
+					.addEqualsFilter(I_MD_Candidate_StockChange_Detail.COLUMNNAME_Fresh_QtyOnHand_Line_ID, freshQtyOnHandLineId)
 					.create()
 					.firstOnly(I_MD_Candidate_StockChange_Detail.class);
 
 			assertThat(stockChangeDetail).isNotNull();
 			assertThat(stockChangeDetail.getFresh_QtyOnHand_ID()).isEqualTo(freshQtyOnHandId);
 			assertThat(stockChangeDetail.isReverted()).isEqualTo(isReverted);
+
+			if (candidateIdentifier != null)
+			{
+				final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(candidateIdentifier);
+				assertThat(materialDispoDataItem.getCandidateId().getRepoId()).isEqualTo(stockChangeDetail.getMD_Candidate_ID());
+			}
 		}
 	}
 
@@ -261,5 +268,14 @@ public class MD_Candidate_StepDef
 		}
 
 		postMaterialEventService.postEventNow(event);
+	}
+
+	@And("metasfresh has no MD_Candidate for identifier {string}")
+	public void metasfresh_has_no_md_cand_for_identifier(@NonNull final String identifier)
+	{
+		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(identifier);
+		final I_MD_Candidate candidateRecord = MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId());
+
+		assertThat(candidateRecord).isNull();
 	}
 }

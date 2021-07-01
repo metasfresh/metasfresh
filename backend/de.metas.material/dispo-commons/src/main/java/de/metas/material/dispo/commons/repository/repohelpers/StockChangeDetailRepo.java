@@ -40,7 +40,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
-public final class StockChangeDetailRepo
+public class StockChangeDetailRepo
 {
 	@Nullable
 	public StockChangeDetail getSingleForCandidateRecordOrNull(@NonNull final I_MD_Candidate candidateRecord)

@@ -77,7 +77,9 @@ public class Fresh_QtyOnHand_Line
 		final ProductPlanningService productPlanningService = SpringContextHolder.instance.getBean(ProductPlanningService.class);
 
 		final ResourceId plantId = productPlanningService.getPlantOfWarehouse(WarehouseId.ofRepoId(line.getM_Warehouse_ID()))
-				.orElseThrow(() -> new AdempiereException("No plantId found warehouse: " + line.getM_Warehouse_ID()));
+				.orElseThrow(() -> new AdempiereException("No plantId found for selected warehouse")
+						.appendParametersToMessage()
+						.setParameter("warehouseId", line.getM_Warehouse_ID()));
 
 		line.setPP_Plant_ID(plantId.getRepoId());
 	}

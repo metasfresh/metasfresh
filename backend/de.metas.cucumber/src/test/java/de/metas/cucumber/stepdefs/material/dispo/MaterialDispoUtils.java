@@ -23,15 +23,20 @@
 package de.metas.cucumber.stepdefs.material.dispo;
 
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
@@ -92,5 +97,16 @@ public class MaterialDispoUtils
 				.quantity(qty)
 				.warehouseId(StepDefConstants.WAREHOUSE_ID)
 				.build();
+	}
+
+	@Nullable
+	public I_MD_Candidate getCandidateRecordById(@NonNull final CandidateId candidateId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidateId.getRepoId())
+				.create()
+				.firstOnlyOrNull(I_MD_Candidate.class);
 	}
 }

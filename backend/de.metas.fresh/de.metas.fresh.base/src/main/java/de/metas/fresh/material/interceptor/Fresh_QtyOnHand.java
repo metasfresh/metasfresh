@@ -18,9 +18,9 @@ import org.adempiere.ad.modelvalidator.ModelChangeUtil;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -49,17 +49,20 @@ import java.util.List;
  */
 
 @Interceptor(I_Fresh_QtyOnHand.class)
+@Component
 public class Fresh_QtyOnHand
 {
-	public static final Fresh_QtyOnHand INSTANCE = new Fresh_QtyOnHand();
+	private final IFreshQtyOnHandDAO freshQtyOnHandDAO = Services.get(IFreshQtyOnHandDAO.class);
 
-	public final IFreshQtyOnHandDAO freshQtyOnHandDAO = Services.get(IFreshQtyOnHandDAO.class);
+	private final ModelProductDescriptorExtractor productDescriptorFactory;
+	private final PostMaterialEventService materialEventService;
 
-	final ModelProductDescriptorExtractor productDescriptorFactory = SpringContextHolder.instance.getBean(ModelProductDescriptorExtractor.class);
-	final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-
-	private Fresh_QtyOnHand()
+	public Fresh_QtyOnHand(
+			@NonNull final ModelProductDescriptorExtractor productDescriptorFactory,
+			@NonNull final PostMaterialEventService materialEventService)
 	{
+		this.productDescriptorFactory = productDescriptorFactory;
+		this.materialEventService = materialEventService;
 	}
 
 	@ModelChange(timings = {

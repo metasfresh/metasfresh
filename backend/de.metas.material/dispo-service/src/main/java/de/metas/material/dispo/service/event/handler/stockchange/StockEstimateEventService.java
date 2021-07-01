@@ -58,7 +58,7 @@ public class StockEstimateEventService
 	@Nullable
 	public Candidate retrievePreviousStockCandidateOrNull(@NonNull final AbstractStockEstimateEvent event)
 	{
-		final CandidatesQuery query = createPreviousCandidatesQuery(event);
+		final CandidatesQuery query = createPreviousStockCandidatesQuery(event);
 		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(query);
 	}
 
@@ -77,7 +77,7 @@ public class StockEstimateEventService
 	}
 
 	@NonNull
-	private CandidatesQuery createPreviousCandidatesQuery(@NonNull final AbstractStockEstimateEvent event)
+	private CandidatesQuery createPreviousStockCandidatesQuery(@NonNull final AbstractStockEstimateEvent event)
 	{
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.forDescriptor(event.getMaterialDescriptor())
 				.toBuilder()

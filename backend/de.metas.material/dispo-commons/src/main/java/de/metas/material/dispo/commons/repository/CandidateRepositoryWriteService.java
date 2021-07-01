@@ -89,7 +89,7 @@ public class CandidateRepositoryWriteService
 	private final StockChangeDetailRepo stockChangeDetailRepo;
 
 	public CandidateRepositoryWriteService(
-			final DimensionService dimensionService,
+			@NonNull final DimensionService dimensionService,
 			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
 	{
 		this.dimensionService = dimensionService;
