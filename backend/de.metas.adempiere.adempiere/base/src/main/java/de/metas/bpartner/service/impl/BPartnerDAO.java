@@ -190,6 +190,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		// NOTE: generally, don't load out of trx unless knowing the context that therefore knowing that it's OK.
 		// You *don not* know that the C_BPartner wasn't just created and the DB was not yet committed.
 		// Therefore, you can't assume that loading out of trx will be OK.
+
 		return load(bpartnerId.getRepoId(), modelClass);
 	}
 
@@ -1722,4 +1723,16 @@ public class BPartnerDAO implements IBPartnerDAO
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
 				.build();
 	}
+
+	@Override
+	public BPartnerLocationId retrieveLastUpdatedLocation(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_BPartner_Location.class)
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.orderByDescending(I_C_BPartner_Location.COLUMNNAME_Updated)
+				.create()
+				.firstId(this::getBPartnerLocationIdByRepoId);
+	}
+
 }

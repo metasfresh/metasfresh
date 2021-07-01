@@ -28,6 +28,8 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesQuery;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.commons.attributes.AttributesKeyPattern;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -38,6 +40,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
@@ -49,6 +52,7 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
 /**
  * Note: AFS stands for "available for sales" and basically means "on-hand qty minus pending shipments"
  */
@@ -110,7 +114,7 @@ public class AFSProductLookupEnricher
 			@NonNull final Instant dateOfInterest,
 			final int salesOrderLookBehindHours,
 			final int shipmentDateLookAheadHours,
-			@NonNull final WarehouseId warehouseId)
+			@Nullable final WarehouseId warehouseId)
 	{
 		final AvailableForSalesMultiQuery.AvailableForSalesMultiQueryBuilder result = AvailableForSalesMultiQuery.builder();
 
@@ -118,12 +122,13 @@ public class AFSProductLookupEnricher
 				.productId(productId)
 				.dateOfInterest(dateOfInterest)
 				.salesOrderLookBehindHours(salesOrderLookBehindHours)
+				.warehouseId(warehouseId)
 				.shipmentDateLookAheadHours(shipmentDateLookAheadHours);
 
 		boolean containsAll = false;
-		for (final AttributesKey attributesKey : retrieveAttributesKeys(warehouseId, productId))
+		for (final AttributesKeyPattern attributesKey : availableForSaleAdapter.getPredefinedStorageAttributeKeys())
 		{
-			final AvailableForSalesQuery query = queryBuilder.storageAttributesKey(attributesKey).build();
+			final AvailableForSalesQuery query = queryBuilder.storageAttributesKeyPattern(attributesKey).build();
 			result.availableForSalesQuery(query);
 			if (attributesKey.isAll())
 			{
@@ -134,19 +139,23 @@ public class AFSProductLookupEnricher
 		if (!containsAll)
 		{
 			// we don't just want the different attributes' quantities, but also the "sum"
-			final AvailableForSalesQuery query = queryBuilder.storageAttributesKey(AttributesKey.ALL).build();
+			final AvailableForSalesQuery query = queryBuilder.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(AttributesKey.ALL)).build();
 			result.availableForSalesQuery(query);
 		}
 		return result.build();
 	}
 
-	private ImmutableList<AttributesKey> retrieveAttributesKeys(final WarehouseId warehouseId, final ProductId productId)
+	private ImmutableList<AttributesKey> retrieveAttributesKeys(@Nullable final WarehouseId warehouseId, @NonNull final ProductId productId)
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_MD_Stock.class)
+		final IQueryBuilder<I_MD_Stock> queryBuilder = Services.get(IQueryBL.class).createQueryBuilder(I_MD_Stock.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, warehouseId.getRepoId())
 				.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, productId.getRepoId())
-				.addCompareFilter(I_MD_Stock.COLUMN_QtyOnHand, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
+				.addCompareFilter(I_MD_Stock.COLUMN_QtyOnHand, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO);
+		if (warehouseId != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, warehouseId.getRepoId());
+		}
+		return queryBuilder
 				.create()
 				.stream().map(s -> AttributesKey.ofString(s.getAttributesKey()))
 				.collect(ImmutableList.toImmutableList());

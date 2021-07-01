@@ -1,17 +1,17 @@
 package de.metas.material.dispo.commons.repository.atp;
 
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.CoalesceUtil;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import java.util.Set;
 
 /*
  * #%L

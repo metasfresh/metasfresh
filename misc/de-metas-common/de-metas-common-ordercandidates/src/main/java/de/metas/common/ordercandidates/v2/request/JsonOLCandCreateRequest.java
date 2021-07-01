@@ -42,6 +42,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.SHIPPER_IDENTIFIER_DOC;
 
 /**
  * Specifies a single order line candidate for be created by the system
@@ -155,7 +156,8 @@ public class JsonOLCandCreateRequest
 	String pricingSystemCode;
 
 	@ApiModelProperty( //
-			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.")
+			value = "If set, then the order line candidate will be created with a manual (i.e. not coming from metasfresh) price.\n"
+					+ "If the price has too many digits, it is rounded according to the price list's price precision.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal price;
 
@@ -178,7 +180,7 @@ public class JsonOLCandCreateRequest
 			value = "Translates to `M_Warehouse.Value`. The looked up warehouse's ID is then set to `C_OLCand.M_Warehouse_ID`.")
 	String warehouseCode;
 
-	@ApiModelProperty(required = false, //
+	@ApiModelProperty( //
 			value = "Translates to `C_OLCand.M_Warehouse_Dest_ID`.")
 	String warehouseDestCode;
 
@@ -217,7 +219,7 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JsonSalesPartner salesPartner;
 
-	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order")
+	@ApiModelProperty(value = "Specifies the value for the shipper that will propagate to the created order. \n " + SHIPPER_IDENTIFIER_DOC)
 	@JsonInclude(Include.NON_NULL)
 	String shipper;
 

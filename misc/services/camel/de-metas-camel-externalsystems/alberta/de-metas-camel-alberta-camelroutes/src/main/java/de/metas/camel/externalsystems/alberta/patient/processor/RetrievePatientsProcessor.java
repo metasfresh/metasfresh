@@ -22,18 +22,22 @@
 
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.CoalesceUtil;
+import io.swagger.client.ApiException;
 import io.swagger.client.api.PatientApi;
 import io.swagger.client.model.Patient;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -55,24 +59,39 @@ public class RetrievePatientsProcessor implements Processor
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
 		}
 
-		final PatientApi patientApi = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_PATIENT_API, PatientApi.class);
+		final GetPatientsRouteContext routeContext = ProcessorHelper
+				.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, GetPatientsRouteContext.class);
 
-		final var basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
-		final var apiKey = request.getParameters().get(ExternalSystemConstants.PARAM_API_KEY);
-		final var tenant = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT);
-		final var updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);
-		
-		final var createdPatients = patientApi.getCreatedPatients(apiKey, tenant, GetPatientsRouteConstants.PatientStatus.CREATED.getValue(), updatedAfter);
+		final String updatedAfter = CoalesceUtil.coalesce(
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+				Instant.ofEpochMilli(0).toString());
+
+		final List<Patient> patientsToImport = getPatientsToImport(routeContext, updatedAfter);
+
+		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
+		exchange.getIn().setBody(patientsToImport);
+	}
+
+	private List<Patient> getPatientsToImport(@NonNull final GetPatientsRouteContext routeContext, @NonNull final String updatedAfter) throws ApiException
+	{
+		final PatientApi patientApi = routeContext.getPatientApi();
+		final AlbertaConnectionDetails connectionDetails = routeContext.getAlbertaConnectionDetails();
+
+		final var createdPatients = patientApi
+				.getCreatedPatients(connectionDetails.getApiKey(), connectionDetails.getTenant(), GetPatientsRouteConstants.PatientStatus.CREATED.getValue(), updatedAfter);
 
 		final List<Patient> patientsToImport = createdPatients == null || createdPatients.isEmpty()
 				? new ArrayList<>()
 				: createdPatients;
 
-		final Set<String> createdPatientIds = createdPatients == null || createdPatients.isEmpty()
-		? new HashSet<>()
-		: createdPatients.stream().map(Patient::getId).filter(Objects::nonNull).map(UUID::toString).collect(Collectors.toSet());
+		final Set<String> createdPatientIds = patientsToImport.stream()
+				.map(Patient::getId)
+				.filter(Objects::nonNull)
+				.map(UUID::toString)
+				.collect(Collectors.toSet());
 
-		final List<Patient> updatedPatients = patientApi.getCreatedPatients(apiKey, tenant, GetPatientsRouteConstants.PatientStatus.UPDATED.getValue(), updatedAfter);
+		final List<Patient> updatedPatients = patientApi
+				.getCreatedPatients(connectionDetails.getApiKey(), connectionDetails.getTenant(), GetPatientsRouteConstants.PatientStatus.UPDATED.getValue(), updatedAfter);
 
 		if (updatedPatients != null && !updatedPatients.isEmpty())
 		{
@@ -81,14 +100,6 @@ public class RetrievePatientsProcessor implements Processor
 					.forEach(patientsToImport::add);
 		}
 
-		final AlbertaConnectionDetails albertaConnectionDetails = AlbertaConnectionDetails.builder()
-				.apiKey(apiKey)
-				.basePath(basePath)
-				.tenant(tenant)
-				.build();
-
-		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE, request.getOrgCode());
-		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_CONN_DETAILS, albertaConnectionDetails);
-		exchange.getIn().setBody(patientsToImport);
+		return patientsToImport;
 	}
 }

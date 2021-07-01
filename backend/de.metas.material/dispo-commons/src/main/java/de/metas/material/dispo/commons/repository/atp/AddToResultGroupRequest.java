@@ -1,23 +1,8 @@
-package de.metas.material.dispo.commons.repository.atp;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.Util.ArrayKey;
-
-import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.util.Check;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * metasfresh-material-dispo-commons
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,11 +20,27 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.material.dispo.commons.repository.atp;
+
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.Util.ArrayKey;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+
 @Value
 public final class AddToResultGroupRequest
 {
 	WarehouseId warehouseId;
-	int productId;
+	ProductId productId;
 	BPartnerClassifier bpartner;
 	AttributesKey storageAttributesKey;
 
@@ -51,7 +52,7 @@ public final class AddToResultGroupRequest
 	@Builder
 	public AddToResultGroupRequest(
 			@NonNull final WarehouseId warehouseId,
-			final int productId,
+			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
 			@NonNull final BPartnerClassifier bpartner,
 			@NonNull final BigDecimal qty,
@@ -59,7 +60,7 @@ public final class AddToResultGroupRequest
 			final int seqNo)
 	{
 		this.warehouseId = warehouseId;
-		this.productId = Check.assumeGreaterThanZero(productId, "productId");
+		this.productId = productId;
 		this.bpartner = bpartner;
 		this.storageAttributesKey = storageAttributesKey;
 

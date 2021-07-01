@@ -30,12 +30,13 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
@@ -59,7 +60,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 class JsonRetrieverServiceTest
 {
@@ -92,7 +93,8 @@ class JsonRetrieverServiceTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				new CurrencyRepository(),
-				Mockito.mock(ExternalReferenceRestControllerService.class));
+				Mockito.mock(ExternalReferenceRestControllerService.class),
+				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();
 

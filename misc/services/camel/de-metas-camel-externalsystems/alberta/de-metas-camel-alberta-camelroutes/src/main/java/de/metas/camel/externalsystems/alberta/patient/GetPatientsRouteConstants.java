@@ -50,6 +50,7 @@ public interface GetPatientsRouteConstants
 	//Route properties
 	String ROUTE_PROPERTY_ORG_CODE = "orgCode";
 	String ROUTE_PROPERTY_ALBERTA_CONN_DETAILS = "albertaConnectionDetails";
+	String ROUTE_PROPERTY_GET_PATIENTS_CONTEXT = "GetPatientsRouteContext";
 
 	/**
 	 * Property used to store the current patient while we need another object to be the exchange-body.
