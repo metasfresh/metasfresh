@@ -74,6 +74,10 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=649942
 UPDATE AD_UI_Element SET SeqNo=90,Updated=TO_TIMESTAMP('2021-07-01 18:59:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=586924
 ;
 
+
+
+
+
 -- 2021-07-01T16:00:14.017Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,649942,0,544118,546167,586950,'F',TO_TIMESTAMP('2021-07-01 19:00:13','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Vertragsbedingungen',80,0,0,TO_TIMESTAMP('2021-07-01 19:00:13','YYYY-MM-DD HH24:MI:SS'),100)
@@ -83,6 +87,16 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 
 
+
+-- 2021-07-01T17:03:18.715Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner_export','C_Flatrate_Conditions_ID','NUMERIC(10)',null,null)
+;
+
+-- 2021-07-01T17:03:32.592Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET AD_Reference_Value_ID=540280, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2021-07-01 20:03:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574920
+;
 
 
 
