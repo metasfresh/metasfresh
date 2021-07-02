@@ -1,26 +1,11 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import history from '../services/History';
 import currentDevice from 'current-device';
 import { Set } from 'immutable';
 
+import history from '../services/History';
 import { openInNewTab } from '../utils/index';
-import { toggleFullScreen, preFormatPostDATA } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
-import { PROCESS_NAME } from '../constants/Constants';
-import {
-  getData,
-  patchRequest,
-  getLayout,
-  getProcessData,
-  getTabRequest,
-  startProcess,
-  formatParentUrl,
-  getTabLayoutRequest,
-} from '../api';
 
-import { getTableId } from '../reducers/tables';
-import { findViewByViewId } from '../reducers/viewHandler';
 import {
   ACTIVATE_TAB,
   ALLOW_SHORTCUT,
@@ -62,6 +47,23 @@ import {
   TOGGLE_PRINTING_OPTION,
 } from '../constants/ActionTypes';
 import { createView } from './ViewActions';
+import { PROCESS_NAME } from '../constants/Constants';
+import { toggleFullScreen, preFormatPostDATA } from '../utils';
+import { getScope, parseToDisplay } from '../utils/documentListHelper';
+
+import {
+  getData,
+  patchRequest,
+  getLayout,
+  getProcessData,
+  getTabRequest,
+  startProcess,
+  formatParentUrl,
+  getTabLayoutRequest,
+} from '../api';
+
+import { getTableId } from '../reducers/tables';
+import { findViewByViewId } from '../reducers/viewHandler';
 import {
   addNotification,
   setNotificationProgress,

@@ -41,15 +41,13 @@ Cypress.on('window:alert', (text) => {
   cy.log(`Alert modal confirmed: ${text}`);
 });
 
-before(function (done) {
+before(function () {
   cy.clearLocalStorageSnapshot();
   // no clue why i have to add this wait, but it seems to be the only way the getLanguageSpecific workaround... works
-  cy.loginViaAPI().then(() => {
-    Cypress.Cookies.defaults({
-      preserve: ['SESSION', 'isLogged'],
-    });
+  cy.loginViaAPI().wait(300);
 
-    done();
+  Cypress.Cookies.defaults({
+    preserve: ['SESSION', 'isLogged'],
   });
 });
 
