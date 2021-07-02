@@ -52,6 +52,7 @@ public class JsonResponseContact
 	public static final String FAX = "fax";
 	public static final String DESCRIPTION = "description";
 	public static final String NEWSLETTER = "newsletter";
+	public static final String INVOICE_EMAIL_ENABLED = "invoiceEmailEnabled";
 	public static final String DEFAULT_CONTACT = "defaultContact";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 	public static final String BILL_TO_DEFAULT = "billToDefault";
@@ -103,6 +104,9 @@ public class JsonResponseContact
 
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean newsletter;
+
+	@ApiModelProperty(allowEmptyValue = false)
+	Boolean invoiceEmailEnabled;
 
 	@ApiModelProperty(allowEmptyValue = false)
 	boolean shipToDefault;
@@ -160,6 +164,8 @@ public class JsonResponseContact
 			@JsonProperty(PURCHASE) final boolean purchase,
 			@JsonProperty(PURCHASE_DEFAULT) final boolean purchaseDefault,
 			@JsonProperty(SUBJECT_MATTER) final boolean subjectMatter,
+			@JsonProperty(INVOICE_EMAIL_ENABLED) final Boolean invoiceEmailEnabled,
+
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
@@ -188,6 +194,7 @@ public class JsonResponseContact
 		this.lastName = lastName;
 		this.email = email;
 		this.phone = phone;
+		this.invoiceEmailEnabled = invoiceEmailEnabled;
 
 		this.changeInfo = changeInfo;
 	}

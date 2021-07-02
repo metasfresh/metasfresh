@@ -31,8 +31,9 @@ import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.common.shipping.v2.shipment.mpackage.JsonCreateShippingPackagesRequest;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.logging.LogManager;
-import de.metas.rest_api.v2.shipping.mpackage.ShippingPackageService;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.shipping.mpackage.ShippingPackageService;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
@@ -86,6 +87,8 @@ public class ShipmentRestController
 		}
 		catch (final Exception ex)
 		{
+			Loggables.addLog(ex.getMessage(), ex);
+
 			log.error(ex.getMessage(), ex);
 
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();

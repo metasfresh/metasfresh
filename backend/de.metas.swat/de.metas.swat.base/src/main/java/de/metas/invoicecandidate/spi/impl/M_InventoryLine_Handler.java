@@ -1,5 +1,29 @@
 package de.metas.invoicecandidate.spi.impl;
 
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.ZERO;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.Properties;
+
+import de.metas.lang.SOTrx;
+import de.metas.tax.api.TaxId;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Inventory;
+import org.compiere.util.Env;
+
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
@@ -212,7 +236,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				inoutBPLocationId, // shipC_BPartner_Location_ID
-				false); // isSOTrx same as in vendor return
+				SOTrx.PURCHASE); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId.getRepoId());
 
 		//

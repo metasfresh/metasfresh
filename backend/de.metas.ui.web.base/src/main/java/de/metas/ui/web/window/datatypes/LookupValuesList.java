@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,6 +15,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BinaryOperator;
@@ -56,8 +58,6 @@ public final class LookupValuesList implements Iterable<LookupValue>
 {
 	/**
 	 * Collects {@link LookupValue}s and builds a {@link LookupValuesList} with those values.
-	 *
-	 * @param debugProperties optional debug properties, <code>null</code> is also OK.
 	 */
 	public static Collector<LookupValue, ?, LookupValuesList> collect()
 	{
@@ -113,8 +113,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		}
 
 		final boolean ordered = true;
-		final LookupValuesList result = new LookupValuesList(valuesById, ordered, debugProperties);
-		return result;
+		return new LookupValuesList(valuesById, ordered, debugProperties);
 	}
 
 	public static final LookupValuesList EMPTY = new LookupValuesList();
@@ -163,6 +162,11 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		return valuesById.isEmpty() && debugProperties.isEmpty();
 	}
 
+	public int size()
+	{
+		return valuesById.size();
+	}
+
 	public Set<Object> getKeys()
 	{
 		return valuesById.keySet();
@@ -174,7 +178,6 @@ public final class LookupValuesList implements Iterable<LookupValue>
 				.map(LookupValue::getIdAsString)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
 
 	public Set<Integer> getKeysAsInt()
 	{
@@ -197,13 +200,12 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	}
 
 	@Override
-	public Iterator<LookupValue> iterator()
+	public @NonNull Iterator<LookupValue> iterator()
 	{
 		return getValues().iterator();
 	}
 
 	/**
-	 * @param id
 	 * @return true if this list contains an {@link LookupValue} with given <code>id</code>
 	 * @see LookupValue#getId()
 	 */
@@ -213,7 +215,6 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	}
 
 	/**
-	 * @param id
 	 * @return first lookup value found for <code>id</code> or null
 	 */
 	public LookupValue getById(final Object id)
@@ -244,7 +245,6 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	}
 
 	/**
-	 * @param maxSize
 	 * @return a {@link LookupValuesList} which has the given maximum size
 	 */
 	public LookupValuesList limit(final int maxSize)
@@ -262,7 +262,7 @@ public final class LookupValuesList implements Iterable<LookupValue>
 
 	public LookupValuesList offsetAndLimit(final int offset, final int maxSize)
 	{
-		final int offsetEffective = offset <= 0 ? 0 : offset;
+		final int offsetEffective = Math.max(offset, 0);
 		final long maxSizeEffective = maxSize <= 0 ? Long.MAX_VALUE : maxSize;
 
 		if (offsetEffective <= 0 && valuesById.size() <= maxSizeEffective)
@@ -276,19 +276,19 @@ public final class LookupValuesList implements Iterable<LookupValue>
 				.collect(collect(debugProperties));
 	}
 
+	public LookupValuesList filter(final Predicate<LookupValue> filter)
+	{
+		return filter(filter, 0, Integer.MAX_VALUE);
+	}
+
 	/**
 	 * Filters, skips <code>offset</code> items and limits the result to <code>maxSize</code>.
 	 * <p>
 	 * NOTE: please mind the operations order, i.e. first we filter and then we skip and limit.
-	 *
-	 * @param filter
-	 * @param offset
-	 * @param maxSize
-	 * @return
 	 */
 	public LookupValuesList filter(final Predicate<LookupValue> filter, final int offset, final int maxSize)
 	{
-		final int offsetEffective = offset <= 0 ? 0 : offset;
+		final int offsetEffective = Math.max(offset, 0);
 		final long maxSizeEffective = maxSize <= 0 ? Long.MAX_VALUE : maxSize;
 
 		return stream()
@@ -373,5 +373,33 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	public LookupValuesList notOrdered()
 	{
 		return ordered(false);
+	}
+
+	public LookupValuesPage pageByOffsetAndLimit(final int offset, final int limit)
+	{
+		final int size = valuesById.size();
+		final int lastIndex = size - 1;
+
+		final int pageFirstIndex = Math.max(offset, 0);
+		final int pageLastIndex = limit > 0 ? Math.min(pageFirstIndex + limit - 1, lastIndex) : lastIndex;
+
+		if (pageFirstIndex == 0 && pageLastIndex == lastIndex)
+		{
+			return LookupValuesPage.allValues(this);
+		}
+
+		final ImmutableList<LookupValue> pageValues = valuesById.values()
+				.asList()
+				.subList(pageFirstIndex, pageLastIndex + 1);
+
+		final boolean hasMoreValues = pageLastIndex < lastIndex;
+
+		return LookupValuesPage.builder()
+				.totalRows(OptionalInt.of(size))
+				.firstRow(pageFirstIndex)
+				.values(LookupValuesList.fromCollection(pageValues)
+								.ordered(isOrdered()))
+				.hasMoreResults(OptionalBoolean.ofBoolean(hasMoreValues))
+				.build();
 	}
 }

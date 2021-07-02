@@ -23,6 +23,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -644,7 +645,7 @@ public final class AggregationEngine
 	private/* static */void setDocBaseType(final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
-		final String docBaseType;
+		final InvoiceDocBaseType docBaseType;
 
 		//
 		// Case: Invoice DocType was preset
@@ -653,7 +654,7 @@ public final class AggregationEngine
 			final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
 			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, invoiceDocType);
 
-			docBaseType = invoiceDocType.getDocBaseType();
+			docBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 		}
 		//
 		// Case: no invoice DocType was set
@@ -667,30 +668,30 @@ public final class AggregationEngine
 				if (totalAmt.signum() < 0)
 				{
 					// AR Credit Memo Invoice (sales)
-					docBaseType = X_C_DocType.DOCBASETYPE_ARCreditMemo;
+					docBaseType = InvoiceDocBaseType.CustomerCreditMemo;
 				}
 				else
 				{
 					// Regular AR Invoice (sales)
-					docBaseType = X_C_DocType.DOCBASETYPE_ARInvoice;
+					docBaseType = InvoiceDocBaseType.CustomerInvoice;
 				}
 			}
 			else
 			{
 				if (totalAmt.signum() < 0)
 				{
-					docBaseType = X_C_DocType.DOCBASETYPE_APCreditMemo;
+					docBaseType = InvoiceDocBaseType.VendorCreditMemo;
 				}
 				else
 				{
-					docBaseType = X_C_DocType.DOCBASETYPE_APInvoice;
+					docBaseType = InvoiceDocBaseType.VendorInvoice;
 				}
 			}
 		}
 
 		//
 		// NOTE: in credit memos, amount are positive but the invoice effect is reversed
-		if (invoiceBL.isCreditMemo(docBaseType))
+		if (docBaseType.isCreditMemo())
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}

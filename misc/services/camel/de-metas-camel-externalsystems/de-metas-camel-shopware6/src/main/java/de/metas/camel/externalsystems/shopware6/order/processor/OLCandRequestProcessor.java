@@ -24,8 +24,6 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
-import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLine;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
@@ -53,7 +51,6 @@ import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.apache.camel.RuntimeCamelException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -290,17 +287,8 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder)
 	{
 		if (routeContext.getShopware6ConfigMappings() == null
-				|| routeContext.getShopware6ConfigMappings().getJsonExternalSystemShopware6ConfigMappingList().isEmpty())
-		{
-			return;
-		}
-
-		final Optional<JsonCustomerGroups> groupsOptional = invokeShopwareClientGetCustomerGroups(routeContext);
-		final Optional<JsonCustomerGroup> customerGroup = groupsOptional
-				.filter(customerGroups -> customerGroups.getCustomerGroupList().size() == 1)
-				.map(jsonCustomerGroups -> jsonCustomerGroups.getCustomerGroupList().get(0));
-
-		if (customerGroup.isEmpty())
+				|| routeContext.getShopware6ConfigMappings().getJsonExternalSystemShopware6ConfigMappingList().isEmpty()
+		        || routeContext.getBPartnerCustomerGroup() == null)
 		{
 			return;
 		}
@@ -308,7 +296,7 @@ public class OLCandRequestProcessor implements Processor
 		final OrderCompositeInfo orderCompositeInfo = routeContext.getCompositeOrderNotNull();
 
 		final PaymentMethodType candidatePaymentMethod = PaymentMethodType.ofValue(orderCompositeInfo.getJsonPaymentMethod().getShortName());
-		final String customerGroupValue = customerGroup.get().getName();
+		final String customerGroupValue = routeContext.getBPartnerCustomerGroup().getName();
 
 		final Optional<JsonExternalSystemShopware6ConfigMapping> matchingConfig = routeContext.getShopware6ConfigMappings()
 				.getJsonExternalSystemShopware6ConfigMappingList()
@@ -322,23 +310,6 @@ public class OLCandRequestProcessor implements Processor
 				.paymentTerm(Check.isBlank(config.getPaymentTermValue())
 						? null
 						: VALUE_PREFIX + "-" + config.getPaymentTermValue()));
-	}
-
-	@NonNull
-	private Optional<JsonCustomerGroups> invokeShopwareClientGetCustomerGroups(@NonNull final ImportOrdersRouteContext routeContext)
-	{
-		final OrderCandidate order = routeContext.getOrderNotNull();
-		final Optional<JsonCustomerGroups> groupsOptional;
-		try
-		{
-			// we need the "internal" shopware-ID to navigate to the customer
-			groupsOptional = routeContext.getShopwareClient().getCustomerGroup(order.getShopwareCustomerId());
-		}
-		catch (final RuntimeException e)
-		{
-			throw new RuntimeCamelException("Exception getting CustomerGroup for order-id=" + order.getJsonOrder().getId() + " and customer-id=" + order.getShopwareCustomerId(), e);
-		}
-		return groupsOptional;
 	}
 
 	@NonNull

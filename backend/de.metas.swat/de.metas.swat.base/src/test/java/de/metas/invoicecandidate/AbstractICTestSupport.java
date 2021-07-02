@@ -40,7 +40,6 @@ import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
-import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
@@ -89,14 +88,20 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InvoiceLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
@@ -108,6 +113,7 @@ import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -134,6 +140,52 @@ import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.Getter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_Activity;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_UOM_Conversion;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnableAdapter;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.util.Check.assumeGreaterThanZero;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AbstractICTestSupport extends AbstractTestSupport
 {
@@ -409,7 +461,9 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		tax_NotFound = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
 		tax_NotFound.setC_Tax_ID(100);
-		tax_NotFound.setC_TaxCategory(taxCategory_None);
+		tax_NotFound.setC_TaxCategory_ID(taxCategory_None.getC_TaxCategory_ID());
+		tax_NotFound.setValidFrom(plvDate);
+		tax_NotFound.setC_Country_ID(100);
 		InterfaceWrapperHelper.save(tax_NotFound);
 
 		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
@@ -419,7 +473,9 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		tax_Default = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
 		tax_Default.setC_Tax_ID(1000000);
-		tax_Default.setC_TaxCategory(taxCategory_Default);
+		tax_Default.setC_TaxCategory_ID(taxCategory_Default.getC_TaxCategory_ID());
+		tax_Default.setValidFrom(plvDate);
+		tax_Default.setC_Country_ID(100);
 		InterfaceWrapperHelper.save(tax_Default);
 	}
 

@@ -7,8 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.util.Properties;
 
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -118,8 +116,6 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
-
-
 		Mockito.when(taxBL.getTaxNotNull(
 				ctx,
 				term1,
@@ -128,10 +124,8 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				term1.getStartDate(),
 				OrgId.ofRepoId(term1.getAD_Org_ID()),
 				(WarehouseId)null,
-				CoalesceUtil.coalesceSuppliers(
-						() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getDropShip_BPartner_ID(), term1.getDropShip_Location_ID()),
-						() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getBill_BPartner_ID(), term1.getBill_Location_ID())),
-				SOTrx.SALES.toBoolean()))
+				CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID()),
+				SOTrx.SALES))
 				.thenReturn(TaxId.ofRepoId(3));
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();

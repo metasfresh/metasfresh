@@ -63,6 +63,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.IOrgDAO;
@@ -451,7 +452,6 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
-		final boolean isSOTrx = true;
 
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
@@ -466,7 +466,7 @@ public class FlatrateBL implements IFlatrateBL
 				orgId,
 				(WarehouseId)null,
 				shipToLocationId,
-				isSOTrx);
+				SOTrx.SALES);
 
 		newCand.setC_Tax_ID(taxId.getRepoId());
 
@@ -586,7 +586,6 @@ public class FlatrateBL implements IFlatrateBL
 		newCand.setIsTaxIncluded(term.isTaxIncluded());
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
-		final boolean isSOTrx = true;
 
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
@@ -601,7 +600,7 @@ public class FlatrateBL implements IFlatrateBL
 				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
 				(WarehouseId)null,
 				shipToLocationId,
-				isSOTrx);
+				SOTrx.SALES);
 
 		newCand.setC_Tax_ID(TaxId.toRepoId(taxId)); // guard against NPEs in unit tests
 

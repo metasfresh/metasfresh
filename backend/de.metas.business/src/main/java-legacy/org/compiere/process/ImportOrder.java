@@ -16,6 +16,13 @@
  *****************************************************************************/
 package org.compiere.process;
 
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.util.Services;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -32,7 +39,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.MBPartner;
 import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.MLocation;
@@ -887,8 +893,8 @@ public class ImportOrder extends JavaProcess
 				}
 
 				// 05129
-				final I_C_Tax tax = Services.get(ITaxDAO.class).getTaxById(line.getC_Tax_ID());
-				line.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+				final Tax tax = Services.get(ITaxDAO.class).getTaxById(line.getC_Tax_ID());
+				line.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 
 				if (imp.getFreightAmt() != null)
 				{

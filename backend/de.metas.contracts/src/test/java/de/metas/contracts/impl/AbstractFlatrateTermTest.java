@@ -18,7 +18,6 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
-import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
@@ -291,6 +290,7 @@ public abstract class AbstractFlatrateTermTest
 		tax.setValidFrom(TimeUtil.asTimestamp(LocalDate.of(1970, Month.JANUARY, 1).atStartOfDay().atZone(ZoneId.systemDefault())));
 		tax.setC_Country_ID(country.getC_Country_ID());
 		tax.setTo_Country_ID(country.getC_Country_ID());
+		tax.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
 		tax.setSOPOType(X_C_Tax.SOPOTYPE_SalesTax);
 		saveRecord(tax);
 	}

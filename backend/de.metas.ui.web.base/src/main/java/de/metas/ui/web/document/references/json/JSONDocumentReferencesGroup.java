@@ -39,13 +39,13 @@ import lombok.Value;
 public class JSONDocumentReferencesGroup
 {
 	@JsonProperty("caption")
-	private final String caption;
+	String caption;
 
 	@JsonProperty("references")
-	private final List<JSONDocumentReference> references;
+	List<JSONDocumentReference> references;
 
 	@JsonProperty("miscGroup")
-	private final boolean miscGroup;
+	boolean miscGroup;
 
 	@JsonCreator
 	@Builder

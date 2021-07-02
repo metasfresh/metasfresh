@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+import de.metas.lang.SOTrx;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.tax.api.TaxId;
@@ -108,7 +109,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				CoalesceUtil.coalesceSuppliers(
 						()-> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getDropShip_BPartner_ID(), term.getDropShip_Location_ID()),
 						()->BPartnerLocationAndCaptureId.ofRepoIdOrNull(term.getBill_BPartner_ID(), term.getBill_Location_ID())),
-				isSOTrx);
+				SOTrx.ofBoolean(isSOTrx));
 		ic.setC_Tax_ID(taxId.getRepoId());
 	}
 

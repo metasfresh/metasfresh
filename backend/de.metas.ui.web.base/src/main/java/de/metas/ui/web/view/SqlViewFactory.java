@@ -38,7 +38,7 @@ import org.springframework.stereotype.Service;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.references.related_documents.ZoomInfoPermissionsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilter.DocumentFilterBuilder;
@@ -50,8 +50,8 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
-import de.metas.ui.web.document.references.DocumentReferenceId;
-import de.metas.ui.web.document.references.service.DocumentReferencesService;
+import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
+import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
@@ -76,14 +76,14 @@ import lombok.NonNull;
 public class SqlViewFactory implements IViewFactory
 {
 	private static final Logger logger = LogManager.getLogger(SqlViewFactory.class);
-	private final DocumentReferencesService documentReferencesService;
+	private final WebuiDocumentReferencesService webuiDocumentReferencesService;
 	private final ViewLayoutFactory viewLayouts;
 	private final CompositeDefaultViewProfileIdProvider defaultProfileIdProvider;
 	private final ViewHeaderPropertiesProviderMap headerPropertiesProvider;
 
 	public SqlViewFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
-			@NonNull final DocumentReferencesService documentReferencesService,
+			@NonNull final WebuiDocumentReferencesService webuiDocumentReferencesService,
 			@NonNull final List<SqlViewCustomizer> viewCustomizersList,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final Optional<List<ViewHeaderPropertiesProvider>> headerPropertiesProvider,
@@ -91,7 +91,7 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors,
 			@NonNull final GeoLocationDocumentService geoLocationDocumentService)
 	{
-		this.documentReferencesService = documentReferencesService;
+		this.webuiDocumentReferencesService = webuiDocumentReferencesService;
 
 		final SqlViewCustomizerMap viewCustomizers = SqlViewCustomizerMap.ofCollection(viewCustomizersList);
 		logger.info("View customizers: {}", viewCustomizers);
@@ -196,7 +196,7 @@ public class SqlViewFactory implements IViewFactory
 	private DocumentFilter extractReferencedDocumentFilter(
 			@NonNull final WindowId targetWindowId,
 			@Nullable final DocumentPath referencedDocumentPath,
-			@Nullable final DocumentReferenceId documentReferenceId)
+			@Nullable final WebuiDocumentReferenceId documentReferenceId)
 	{
 		if (referencedDocumentPath == null)
 		{
@@ -209,11 +209,11 @@ public class SqlViewFactory implements IViewFactory
 		}
 		else
 		{
-			return documentReferencesService.getDocumentReferenceFilter(
+			return webuiDocumentReferencesService.getDocumentReferenceFilter(
 					referencedDocumentPath,
 					targetWindowId,
 					documentReferenceId,
-					ZoomInfoPermissionsFactory.allowAll());
+					RelatedDocumentsPermissionsFactory.allowAll());
 		}
 	}
 

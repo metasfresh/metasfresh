@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -167,13 +168,26 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 	private JsonExternalSystemShopware6ConfigMapping toJsonExternalSystemShopware6ConfigMapping(
 			@NonNull final ExternalSystemShopware6ConfigMapping externalSystemShopware6ConfigMapping)
 	{
+		final SyncAdvise bPartnerSyncAdvice = SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerIfExists()))
+				.ifNotExists(SyncAdvise.IfNotExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerIfNotExists()))
+				.build();
+
+		final SyncAdvise bpartnerLocationSyncAdvice = SyncAdvise.builder()
+				.ifExists(SyncAdvise.IfExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerLocationIfExists()))
+				.ifNotExists(SyncAdvise.IfNotExists.valueOf(externalSystemShopware6ConfigMapping.getBpartnerLocationIfNotExists()))
+				.build();
+
 		final JsonExternalSystemShopware6ConfigMapping.JsonExternalSystemShopware6ConfigMappingBuilder builder =
 				JsonExternalSystemShopware6ConfigMapping.builder()
 						.paymentRule(externalSystemShopware6ConfigMapping.getPaymentRule())
 						.sw6PaymentMethod(externalSystemShopware6ConfigMapping.getSw6PaymentMethod())
 						.sw6CustomerGroup(externalSystemShopware6ConfigMapping.getSw6CustomerGroup())
 						.description(externalSystemShopware6ConfigMapping.getDescription())
-						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo());
+						.seqNo(externalSystemShopware6ConfigMapping.getSeqNo())
+						.invoiceEmailEnabled(externalSystemShopware6ConfigMapping.getIsInvoiceEmailEnabled())
+						.bPartnerSyncAdvice(bPartnerSyncAdvice)
+						.bPartnerLocationSyncAdvice(bpartnerLocationSyncAdvice);
 
 		final JsonOrderDocType orderDocType = docTypeService
 				.getOrderDocType(externalSystemShopware6ConfigMapping.getDocTypeOrderId())

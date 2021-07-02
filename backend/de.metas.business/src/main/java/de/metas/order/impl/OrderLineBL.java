@@ -22,9 +22,9 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
+import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -40,6 +40,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
@@ -643,7 +644,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final I_C_Tax tax = taxBL.getTaxById(TaxId.ofRepoId(orderLine.getC_Tax_ID()));
+		final Tax tax = taxBL.getTaxById(TaxId.ofRepoId(orderLine.getC_Tax_ID()));
 
 		final I_C_Order order = orderLine.getC_Order();
 		return orderBL().isTaxIncluded(order, tax);

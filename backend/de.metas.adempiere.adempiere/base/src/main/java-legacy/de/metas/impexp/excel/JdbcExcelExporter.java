@@ -1,26 +1,23 @@
 package de.metas.impexp.excel;
 
+import de.metas.impexp.excel.service.DataConsumer;
+import de.metas.impexp.excel.service.ExcelExporterService;
+import de.metas.logging.LogManager;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.DBException;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import de.metas.impexp.excel.service.DataConsumer;
-import de.metas.impexp.excel.service.ExcelExporterService;
-import de.metas.logging.LogManager;
-import de.metas.common.util.CoalesceUtil;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
 
 /**
  * DataConsumer that consumes a jdbc-{@link ResultSet} towards an excel file.
@@ -51,16 +48,23 @@ public class JdbcExcelExporter
 			@Nullable final Properties ctx,
 			@Nullable final File resultFile,
 			@Nullable final List<String> columnHeaders,
-			@Nullable final Boolean translateHeaders)
+			@Nullable final Boolean translateHeaders,
+			@Nullable final Boolean applyFormatting)
 	{
 		super(excelFormat, constants);
 		m_columnHeaders = columnHeaders;
 
 		this.m_ctx = ctx != null ? ctx : Env.getCtx();
 
-		this.translateHeaders = CoalesceUtil.coalesce(translateHeaders, true);
+		this.translateHeaders = translateHeaders != null ? translateHeaders : true;
 		this.resultFile = resultFile;
 		this.noDataAddedYet = true;
+
+		setApplyFormatting(applyFormatting != null ? applyFormatting : true);
+		if (!isApplyFormatting())
+		{
+			setFreezePane(0, 0);
+		}
 	}
 
 	@Override

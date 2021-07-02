@@ -1,10 +1,58 @@
 package de.metas.order.invoicecandidate;
 
+import java.math.BigDecimal;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.lang.SOTrx;
+import de.metas.tax.api.TaxId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
+
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
 import de.metas.interfaces.I_C_OrderLine;
@@ -68,6 +116,7 @@ import java.util.Properties;
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -217,10 +266,19 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
 				orderDeliveryLocation.toBPartnerLocationAndCaptureId(), // ship location id
-				order.isSOTrx());
+				SOTrx.ofBoolean(order.isSOTrx()));
 		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 
-		// set Quality Issue Percentage Override
+		//DocType
+		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
+				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
+				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
+		final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
+		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(orderDocType.getC_DocTypeInvoice_ID());
+		if (invoiceDocTypeId != null)
+		{
+			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+		}
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
 		final ImmutableAttributeSet attributes = Services.get(IAttributeDAO.class).getImmutableAttributeSetById(asiId);
@@ -452,10 +510,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		ic.setGroupCompensationPercentage(fromOrderLine.getGroupCompensationPercentage());
 	}
 
-	/**
-	 * Invalidates the candidate(s) referencing the given order line.
-	 * This method additionally invalidates all candidates with the same header aggregation key and (depending on invoice schedule) even more dependent candidates.
-	 */
 	@Override
 	public final void invalidateCandidatesFor(final Object model)
 	{

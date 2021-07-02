@@ -22,7 +22,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.logging.TableRecordMDC;
-import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,6 +45,25 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_OrderLine;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isValueChanged;
 
@@ -434,13 +453,9 @@ public class C_Invoice_Candidate
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
 	public void errorIfTaxNotFound(final I_C_Invoice_Candidate candidate)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(candidate);
+		final Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(candidate);
 
-		final I_C_Tax taxNotFound = Services.get(ITaxDAO.class).retrieveNoTaxFound(ctx);
-
-		final I_C_Tax taxEffective = Services.get(IInvoiceCandBL.class).getTaxEffective(candidate);
-
-		if (taxNotFound.getC_Tax_ID() == taxEffective.getC_Tax_ID())
+		if (taxEffective.isTaxNotFound())
 		{
 			candidate.setIsError(true);
 		}

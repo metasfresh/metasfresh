@@ -117,7 +117,7 @@ public class ManualCandidateService
 				newIC.getOrgId(),
 				newIC.getSoTrx().isSales() ? orgDAO.getOrgWarehouseId(newIC.getOrgId()) : orgDAO.getOrgPOWarehouseId(newIC.getOrgId()),
 				newIC.getBillPartnerInfo().toBPartnerLocationAndCaptureId(), // ship location id
-				newIC.getSoTrx().toBoolean());
+				newIC.getSoTrx());
 		candidate.taxId(taxId);
 
 		final InvoiceRule invoiceRule = coalesce(

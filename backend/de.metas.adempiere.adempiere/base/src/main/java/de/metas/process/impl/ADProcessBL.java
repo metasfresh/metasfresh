@@ -50,7 +50,7 @@ public class ADProcessBL implements IADProcessBL
 
 		// Process
 		final I_AD_Process adProcess = InterfaceWrapperHelper.newInstance(I_AD_Process.class);
-		adProcess.setAD_Workflow(adWorkflow);
+		adProcess.setAD_Workflow_ID(adWorkflow.getAD_Workflow_ID());
 		adProcess.setValue(adWorkflow.getValue());
 		adProcess.setName(adWorkflow.getName());
 		adProcess.setEntityType(adWorkflow.getEntityType());

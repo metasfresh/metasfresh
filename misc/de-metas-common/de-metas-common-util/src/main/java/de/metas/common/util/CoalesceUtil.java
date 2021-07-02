@@ -43,6 +43,12 @@ public class CoalesceUtil
 		return value1 == null ? value2 : value1;
 	}
 
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final T value2)
+	{
+		return value1 == null ? value2 : value1;
+	}
+
 	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @NonNull final Supplier<T> value2)
 	{
@@ -56,6 +62,12 @@ public class CoalesceUtil
 	// NOTE: this method is optimized for common usage
 	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
+	{
+		return value1 != null ? value1 : (value2 != null ? value2 : value3);
+	}
+
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @NonNull final T value3)
 	{
 		return value1 != null ? value1 : (value2 != null ? value2 : value3);
 	}
@@ -79,6 +91,18 @@ public class CoalesceUtil
 			}
 		}
 		return null;
+	}
+
+	@SafeVarargs
+	@NonNull
+	public <T> T coalesceNotNull(@Nullable final T... values)
+	{
+		final T result = coalesce(values);
+		if (result == null)
+		{
+			throw new NullPointerException("At least one parameter must be not-null");
+		}
+		return result;
 	}
 
 	/**

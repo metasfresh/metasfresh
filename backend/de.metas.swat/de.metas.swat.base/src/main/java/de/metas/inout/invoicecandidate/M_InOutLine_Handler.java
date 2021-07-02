@@ -35,6 +35,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
@@ -400,7 +401,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				deliveryLocation, // shipC_BPartner_Location_ID
-				isSOTrx);
+				SOTrx.ofBoolean(isSOTrx));
 		icRecord.setC_Tax_ID(taxId.getRepoId());
 
 		//

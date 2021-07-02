@@ -168,6 +168,7 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
+	@NonNull
 	public OrgId getWarehouseOrgId(@NonNull final WarehouseId warehouseId)
 	{
 		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);

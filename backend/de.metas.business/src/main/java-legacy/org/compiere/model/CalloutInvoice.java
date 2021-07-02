@@ -33,7 +33,6 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.security.IUserRolePermissions;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
@@ -739,13 +738,13 @@ public class CalloutInvoice extends CalloutEngine
 			else
 			{
 				final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
+				final de.metas.tax.api.Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
 
 				if (tax != null)
 				{
 
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
-					taxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, taxIncluded, pricePrecision.toInt());
+					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt());
 					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}

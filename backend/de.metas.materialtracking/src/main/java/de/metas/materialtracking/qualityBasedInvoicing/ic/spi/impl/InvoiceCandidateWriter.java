@@ -625,7 +625,7 @@ public class InvoiceCandidateWriter
 				OrgId.ofRepoId(ic.getAD_Org_ID()),
 				(WarehouseId)null,
 				billToLocation, // shipPartnerLocation TODO
-				SOTrx.PURCHASE.toBoolean());
+				SOTrx.PURCHASE);
 		ic.setC_Tax_ID(taxID.getRepoId());
 	}
 }

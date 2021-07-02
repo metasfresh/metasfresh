@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import java.time.LocalDate;
 import java.util.List;
 
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.payment.paymentterm.PaymentTermId;
 import org.compiere.model.I_C_DocType;
@@ -33,7 +34,7 @@ import javax.annotation.Nullable;
 
 	private List<IInvoiceCandAggregate> lines;
 
-	private String docBaseType;
+	private InvoiceDocBaseType docBaseType;
 
 	private String poReference;
 
@@ -116,7 +117,7 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public String getDocBaseType()
+	public InvoiceDocBaseType getDocBaseType()
 	{
 		return docBaseType;
 	}
@@ -156,7 +157,7 @@ import javax.annotation.Nullable;
 		this.lines = lines;
 	}
 
-	public void setDocBaseType(final String docBaseType)
+	public void setDocBaseType(final InvoiceDocBaseType docBaseType)
 	{
 		this.docBaseType = docBaseType;
 	}

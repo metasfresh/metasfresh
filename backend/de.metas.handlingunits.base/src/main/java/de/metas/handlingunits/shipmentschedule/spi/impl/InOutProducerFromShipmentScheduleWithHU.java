@@ -32,7 +32,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUShipperTransportationBL;
-import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.impl.HUShipmentPackingMaterialLinesBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -48,7 +47,6 @@ import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.agg.key.impl.ShipmentScheduleKeyValueHandler;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -56,9 +54,7 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -79,17 +75,16 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.MDC;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -127,12 +122,16 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private ITrxItemProcessorContext processorCtx;
 	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
 
+	@Nullable
 	private I_M_InOut currentShipment;
+
+	@Nullable
 	private ShipmentLineBuilder currentShipmentLineBuilder;
 
 	/**
 	 * All candidates for {@link #currentShipment}
 	 */
+	@Nullable
 	private List<ShipmentScheduleWithHU> currentCandidates;
 
 	/**
@@ -157,7 +156,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 */
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
 
-	@NonNull
 	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
@@ -203,7 +201,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private static String extractSourceInfo(final List<ShipmentScheduleWithHU> candidates)
 	{
 		return candidates.stream()
-				.map(candidate -> extractSourceInfo(candidate))
+				.map(InOutProducerFromShipmentScheduleWithHU::extractSourceInfo)
 				.distinct()
 				.collect(Collectors.joining(", "));
 	}
@@ -256,7 +254,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 *
 	 * @return shipment (header)
 	 */
-	private I_M_InOut getCreateShipmentHeader(final ShipmentScheduleWithHU candidate)
+	private I_M_InOut getCreateShipmentHeader(@NonNull final ShipmentScheduleWithHU candidate)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
@@ -592,8 +590,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 			final @NonNull I_M_InOut shipment,
 			final @NonNull LocalDate shipmentDeliveryDate)
 	{
+		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoId(shipment.getAD_Org_ID()));
+
 		final LocalDate today = SystemTime.asLocalDate();
-		final LocalDate movementDate = TimeUtil.asLocalDate(shipment.getMovementDate());
+		final LocalDate movementDate = TimeUtil.asLocalDate(shipment.getMovementDate(), timeZone);
 
 		final boolean isCandidateInThePast = shipmentDeliveryDate.isBefore(today);
 		final boolean isMovementDateInThePast = movementDate.isBefore(today);
@@ -624,8 +624,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		// then create shipment line (if any) and reset the builder
 		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
 		{
-			createShipmentLineIfAny();
-			// => currentShipmentLineBuilder = null;
+			createShipmentLineIfAny(); // => currentShipmentLineBuilder is null after this
 		}
 
 		//

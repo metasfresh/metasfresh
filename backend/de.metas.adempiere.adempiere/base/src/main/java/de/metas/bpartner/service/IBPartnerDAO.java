@@ -61,6 +61,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_C_BPartner_Stats;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -127,7 +128,7 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
 
 	@Nullable
-	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(BPartnerLocationId bpartnerLocationId);
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);

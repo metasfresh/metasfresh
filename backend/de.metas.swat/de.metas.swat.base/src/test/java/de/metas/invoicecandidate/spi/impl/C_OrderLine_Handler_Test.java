@@ -21,6 +21,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
@@ -238,6 +239,34 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		final String key2 = headerAggregationKeyBuilder.buildKey(ic2);
 
 		assertEquals(key1, key2);
+	}
+
+	private void setUpActivityAndTaxRetrieval(final I_C_Order order1, final I_C_OrderLine oL1)
+	{
+		IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		ITaxBL taxBL = Mockito.mock(ITaxBL.class);
+
+		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		Services.registerService(ITaxBL.class, taxBL);
+
+		Mockito.doReturn(null).when(productAcctDAO).retrieveActivityForAcct(
+				AdditionalMatchers.not(ArgumentMatchers.eq(clientId)),
+				AdditionalMatchers.not(ArgumentMatchers.eq(orgId)),
+				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));
+
+		final Properties ctx = Env.getCtx();
+		Mockito
+				.when(taxBL.getTaxNotNull(
+						ctx,
+						order1,
+						(TaxCategoryId)null,
+						oL1.getM_Product_ID(),
+						order1.getDatePromised(),
+						OrgId.ofRepoId(order1.getAD_Org_ID()),
+						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
+						order1.getC_BPartner_Location_ID(),
+						order1.isSOTrx()))
+				.thenReturn(TaxId.ofRepoId(3));
 	}
 
 	@Test

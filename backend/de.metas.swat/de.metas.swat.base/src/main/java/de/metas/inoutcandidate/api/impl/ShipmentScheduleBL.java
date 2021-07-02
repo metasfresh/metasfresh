@@ -312,6 +312,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+	public void closeShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
+
+		closeShipmentSchedule(shipmentSchedule);
+	}
+
+	@Override
 	public void openShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
 		Check.errorUnless(shipmentScheduleRecord.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentScheduleRecord);

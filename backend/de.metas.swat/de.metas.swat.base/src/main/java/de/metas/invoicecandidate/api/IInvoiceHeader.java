@@ -1,5 +1,11 @@
 package de.metas.invoicecandidate.api;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import de.metas.invoice.InvoiceDocBaseType;
+import org.compiere.model.I_C_DocType;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -14,7 +20,7 @@ import java.util.List;
 
 public interface IInvoiceHeader
 {
-	String getDocBaseType();
+	InvoiceDocBaseType getDocBaseType();
 
 	String getPOReference();
 

@@ -47,11 +47,6 @@ import java.util.List;
  */
 public class Main extends AbstractModuleInterceptor
 {
-	private static final Logger logger = LogManager.getLogger(Main.class);
-
-	private static final String SYSCONFIG_JMS_QUEUE_RESPONSE = "de.metas.procurement.webui.jms.queue.response";
-	private static final String SYSCONFIG_JMS_QUEUE_REQUEST = "de.metas.procurement.webui.jms.queue.request";
-
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
@@ -118,32 +113,8 @@ public class Main extends AbstractModuleInterceptor
 	protected void onAfterInit()
 	{
 		setupFlatrateTerms();
-		setupJaxRs();
 	}
-
-	private void setupJaxRs()
-	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-		final String requestQueueName = sysConfigBL.getValue(SYSCONFIG_JMS_QUEUE_REQUEST, getAD_Client_ID());
-		final String responseQueueName = sysConfigBL.getValue(SYSCONFIG_JMS_QUEUE_RESPONSE, getAD_Client_ID());
-
-		if (Check.isEmpty(requestQueueName, true) || Check.isEmpty(responseQueueName, true))
-		{
-			logger.error("At least one one of requestQueueName={} and responseQueueName={} is not set. \n"
-								 + "Therefore this instance won't be able to actively send data to the procurement UI. \n"
-								 + "To fix this, add AD_SysConfig records with AD_Client_ID={} and AD_Org_ID=0 and with the following names:\n"
-								 + "{} \n"
-								 + "{}",
-						 requestQueueName, responseQueueName, Math.max(getAD_Client_ID(), 0), SYSCONFIG_JMS_QUEUE_REQUEST, SYSCONFIG_JMS_QUEUE_RESPONSE);
-			return;
-		}
-		//
-		// create the client endpoint so we can reach the procurement webUI.
-		// TODO ? register rabbitmq-stuff ?
-
-		// note: ServerSync will just be a "normal" server, listening no our default queues
-	}
+	
 
 	private void setupFlatrateTerms()
 	{

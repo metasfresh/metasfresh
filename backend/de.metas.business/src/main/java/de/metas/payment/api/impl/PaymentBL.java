@@ -45,6 +45,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -82,11 +83,13 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -578,6 +581,32 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
+	public void fullyWriteOffPayments(@NonNull final Iterator<I_C_Payment> payments, @NonNull Instant writeOffDate)
+	{
+		while (payments.hasNext())
+		{
+			final I_C_Payment payment = payments.next();
+			fullyWriteOffPayment(payment, writeOffDate);
+		}
+	}
+
+	private void fullyWriteOffPayment(@NonNull final I_C_Payment payment, final @NonNull Instant writeOffDate)
+	{
+		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
+
+		final Money moneyToWriteOff = Money.of(paymentDAO.getAvailableAmount(paymentId),
+											   CurrencyId.ofRepoId(payment.getC_Currency_ID()));
+
+		logger.debug("Writing off {} for the payment{}",
+					 moneyToWriteOff,
+					 payment);
+
+		final I_C_AllocationHdr allocationHdr = paymentWriteOff(payment, moneyToWriteOff.toBigDecimal(), TimeUtil.asDate(writeOffDate) );
+
+		logger.debug("C_AllocationHdr {} created for the payment {}", allocationHdr, payment);
+	}
+
+	@Override
 	public I_C_AllocationHdr paymentWriteOff(final I_C_Payment payment, final BigDecimal writeOffAmt, final Date date)
 	{
 		Check.assumeNotNull(payment, "payment not null");
@@ -632,7 +661,8 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void markNotReconciled(@NonNull final Collection<PaymentId> paymentIds)
+	public void markNotReconciled(
+			@NonNull final Collection<PaymentId> paymentIds)
 	{
 		if (paymentIds.isEmpty())
 		{
@@ -647,7 +677,8 @@ public class PaymentBL implements IPaymentBL
 		}
 	}
 
-	public static void markNotReconciledNoSave(@NonNull final I_C_Payment payment)
+	public static void markNotReconciledNoSave(
+			@NonNull final I_C_Payment payment)
 	{
 		payment.setIsReconciled(false);
 		payment.setC_BankStatement_ID(-1);
@@ -656,7 +687,8 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public void markReconciled(@NonNull final Collection<PaymentReconcileRequest> requests)
+	public void markReconciled(
+			@NonNull final Collection<PaymentReconcileRequest> requests)
 	{
 		final Collection<I_C_Payment> preloadedPayments = ImmutableList.of();
 		markReconciled(requests, preloadedPayments);
@@ -801,14 +833,17 @@ public class PaymentBL implements IPaymentBL
 	}
 
 	@Override
-	public Optional<PaymentId> getByExtIdOrgId(@NonNull final ExternalId externalId, @NonNull final OrgId orgId)
+	public Optional<PaymentId> getByExtIdOrgId(
+			@NonNull final ExternalId externalId,
+			@NonNull final OrgId orgId)
 	{
 		final Optional<I_C_Payment> payment = paymentDAO.getByExternalId(externalId, orgId);
 		return Optional.ofNullable(payment.isPresent() ? PaymentId.ofRepoId(payment.get().getC_Payment_ID()) : null);
 	}
 
 	@Override
-	public CurrencyConversionContext extractCurrencyConversionContext(@NonNull final I_C_Payment payment)
+	public CurrencyConversionContext extractCurrencyConversionContext(
+			@NonNull final I_C_Payment payment)
 	{
 		final PaymentCurrencyContext paymentCurrencyContext = PaymentCurrencyContext.ofPaymentRecord(payment);
 		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
