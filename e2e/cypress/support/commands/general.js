@@ -104,10 +104,15 @@ context('Reusable "login" custom command using API', function () {
       })
       .then(response => {
         if (!response.isOkStatusCode) {
+          if (response.body.message === 'User already logged in') {
+            return cy.wrap(true);
+          }
           return checkIfAlreadyLogged();
         }
 
         if (response.body.loginComplete) {
+          cy.setLocalStorage('isLogged', true);
+          cy.saveLocalStorage();
           return handleSuccess();
         }
         const roles = List(response.body.roles);
