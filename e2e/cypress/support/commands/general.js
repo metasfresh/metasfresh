@@ -78,18 +78,16 @@ context('Reusable "login" custom command using API', function () {
             });
           }
 
-          cy.log(`Login failed because ${error}`);
+          cy.log(`Login failed because ${error}, real error: ${response.body.error} `);
           return Promise.reject(error);
         });
     };
 
     const auth = new Auth();
 
-    cy.on('emit:reduxStore', store => {
+    cy.on('emit:reduxStore', (store) => {
       Cypress.reduxStore = store;
     });
-
-    cy.visit('/login');
 
     return cy
       .request({
@@ -102,12 +100,19 @@ context('Reusable "login" custom command using API', function () {
           password: pass,
         },
       })
-      .then(response => {
+      .then((response) => {
         if (!response.isOkStatusCode) {
+          if (response.body.message === 'User already logged in') {
+            return cy.wrap(true);
+          }
+
           return checkIfAlreadyLogged();
         }
 
         if (response.body.loginComplete) {
+          cy.setLocalStorage('isLogged', true);
+          cy.saveLocalStorage();
+
           return handleSuccess();
         }
         const roles = List(response.body.roles);
