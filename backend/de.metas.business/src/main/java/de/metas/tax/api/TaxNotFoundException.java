@@ -26,6 +26,7 @@ import org.compiere.model.MLocation;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -46,15 +47,15 @@ public class TaxNotFoundException extends AdempiereException
 
 	private final LocalDate shipDate;
 	private final CountryId shipFromCountryId;
-	private final int shipFromC_Location_ID;
+	private final LocationId shipFromC_Location_ID;
 
 	private final CountryId shipToCountryId;
 	private final BPartnerLocationAndCaptureId shipToC_Location_ID;
 
 	private final LocalDate billDate;
 	private final CountryId billFromCountryId;
-	private final int billFromC_Location_ID;
-	private final int billToC_Location_ID;
+	private final LocationId billFromC_Location_ID;
+	private final LocationId billToC_Location_ID;
 
 	@Builder
 	private TaxNotFoundException(
@@ -67,15 +68,15 @@ public class TaxNotFoundException extends AdempiereException
 			final OrgId orgId,
 			//
 			final Date shipDate,
-			final int shipFromC_Location_ID,
+			final LocationId shipFromC_Location_ID,
 			final CountryId shipFromCountryId,
 			final CountryId shipToCountryId,
 			final BPartnerLocationAndCaptureId shipToC_Location_ID,
 			//
 			final Date billDate,
-			final int billFromC_Location_ID,
+			final LocationId billFromC_Location_ID,
 			final CountryId billFromCountryId,
-			final int billToC_Location_ID)
+			final LocationId billToC_Location_ID)
 	{
 		super(TranslatableStrings.empty());
 
@@ -96,7 +97,7 @@ public class TaxNotFoundException extends AdempiereException
 		setParameter("shipDate", shipDate);
 
 		this.shipFromC_Location_ID = shipFromC_Location_ID;
-		setParameter("shipFromC_Location_ID", shipFromC_Location_ID > 0 ? shipFromC_Location_ID : null);
+		setParameter("shipFromC_Location_ID", shipFromC_Location_ID != null ? shipFromC_Location_ID.getRepoId() : null);
 		this.shipFromCountryId = shipFromCountryId;
 		setParameter("shipFromCountryId", shipFromCountryId);
 
@@ -108,11 +109,11 @@ public class TaxNotFoundException extends AdempiereException
 		this.billDate = TimeUtil.asLocalDate(billDate);
 		setParameter("billDate", billDate);
 		this.billFromC_Location_ID = billFromC_Location_ID;
-		setParameter("billFromC_Location_ID", billFromC_Location_ID > 0 ? billFromC_Location_ID : null);
+		setParameter("billFromC_Location_ID", billFromC_Location_ID != null ? billFromC_Location_ID.getRepoId() : null);
 		this.billFromCountryId = billFromCountryId;
 		setParameter("billFromCountryId", billFromCountryId);
 		this.billToC_Location_ID = billToC_Location_ID;
-		setParameter("billToC_Location_ID", billToC_Location_ID > 0 ? billToC_Location_ID : null);
+		setParameter("billToC_Location_ID", billToC_Location_ID != null ? billToC_Location_ID.getRepoId() : null);
 	}
 
 	@Override
@@ -157,7 +158,7 @@ public class TaxNotFoundException extends AdempiereException
 		{
 			message.append(" - ").appendADElement("ShipDate").append(": ").appendDate(shipDate);
 		}
-		if (shipFromC_Location_ID > 0 || shipFromCountryId != null)
+		if (shipFromC_Location_ID != null || shipFromCountryId != null)
 		{
 			final ITranslatableString locationString = getLocationString(shipFromC_Location_ID, shipFromCountryId);
 			message.append(" - ").appendADElement("ShipFrom").append(": ").append(locationString);
@@ -179,12 +180,12 @@ public class TaxNotFoundException extends AdempiereException
 		{
 			message.append(" - ").appendADElement("BillDate").append(": ").appendDate(billDate);
 		}
-		if (billFromC_Location_ID > 0 || billFromCountryId != null)
+		if (billFromC_Location_ID != null || billFromCountryId != null)
 		{
 			final ITranslatableString locationString = getLocationString(billFromC_Location_ID, billFromCountryId);
 			message.append(" - ").appendADElement("BillFrom").append(": ").append(locationString);
 		}
-		if (billToC_Location_ID > 0)
+		if (billToC_Location_ID != null)
 		{
 			final String locationString = getLocationString(billToC_Location_ID);
 			message.append(" - ").appendADElement("BillTo").append(": ").append(locationString);
@@ -195,9 +196,9 @@ public class TaxNotFoundException extends AdempiereException
 		return message.build();
 	}
 
-	private static ITranslatableString getLocationString(final int locationId, final CountryId fallbackCountryId)
+	private static ITranslatableString getLocationString(final LocationId locationId, final CountryId fallbackCountryId)
 	{
-		if (locationId > 0)
+		if (locationId != null)
 		{
 			return TranslatableStrings.anyLanguage(getLocationString(locationId));
 		}
@@ -216,15 +217,15 @@ public class TaxNotFoundException extends AdempiereException
 				: TranslatableStrings.anyLanguage("?");
 	}
 
-	private static String getLocationString(final int locationId)
+	private static String getLocationString(@Nullable final LocationId locationId)
 	{
-		if (locationId <= 0)
+		if (locationId == null)
 		{
 			return "?";
 		}
 
-		final MLocation loc = MLocation.get(Env.getCtx(), locationId, null);
-		if (loc == null || loc.get_ID() != locationId)
+		final MLocation loc = MLocation.get(Env.getCtx(), locationId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
+		if (loc == null || loc.getC_Location_ID() != locationId.getRepoId())
 		{
 			return "?";
 		}

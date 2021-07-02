@@ -1948,11 +1948,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	@Override
-	public void setQtyToInvoice_Override (final @Nullable BigDecimal QtyToInvoice_Override)
-	{
-		set_Value (COLUMNNAME_QtyToInvoice_Override, QtyToInvoice_Override);
-	}
 
 	@Override
 	public BigDecimal getQtyToInvoice_Override()
@@ -1980,25 +1975,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		set_Value (COLUMNNAME_QtyToInvoice_Override, QtyToInvoice_Override);
 	}
 
-	@Override
-	public BigDecimal getQtyToInvoice_Override()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoice_Override);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setQtyToInvoice_OverrideFulfilled (final @Nullable BigDecimal QtyToInvoice_OverrideFulfilled)
-	{
-		set_Value (COLUMNNAME_QtyToInvoice_OverrideFulfilled, QtyToInvoice_OverrideFulfilled);
-	}
-
-	@Override
-	public BigDecimal getQtyToInvoice_OverrideFulfilled()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoice_OverrideFulfilled);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
 
 	@Override
 	public void setQtyToInvoiceBeforeDiscount (final BigDecimal QtyToInvoiceBeforeDiscount)

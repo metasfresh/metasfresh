@@ -16,39 +16,15 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
-import de.metas.tax.api.TaxId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.util.DB;
-import org.compiere.util.TrxRunnableAdapter;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -371,7 +347,7 @@ public class MOrderLine extends X_C_OrderLine
 					.isSOTrx(isSOTrx)
 					.billDate(taxDate)
 					.billFromCountryId(countryFromId)
-					.billToC_Location_ID(bpLocation.getC_Location_ID())
+					.billToC_Location_ID(bpLocationId.getLocationCaptureId())
 					.build()
 					.throwOrLogWarning(true, log);
 		}

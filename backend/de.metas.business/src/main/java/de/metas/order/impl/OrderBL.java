@@ -124,11 +124,7 @@ public class OrderBL implements IOrderBL
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
 	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
 
-	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
-	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);

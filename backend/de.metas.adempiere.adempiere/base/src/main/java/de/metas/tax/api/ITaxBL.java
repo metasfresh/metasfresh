@@ -57,7 +57,7 @@ public interface ITaxBL extends ISingletonService
 			@NonNull OrgId orgId,
 			@Nullable WarehouseId warehouseId,
 			BPartnerLocationAndCaptureId shipBPartnerLocationId,
-			boolean isSOTrx);
+			SOTrx soTrx);
 
 	/**
 	 * Calculate Tax - no rounding

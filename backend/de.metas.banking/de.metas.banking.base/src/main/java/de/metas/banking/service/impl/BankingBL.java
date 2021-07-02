@@ -22,17 +22,21 @@
 
 package de.metas.banking.service.impl;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.List;
-
+import de.metas.banking.model.I_C_RecurrentPayment;
+import de.metas.banking.model.X_C_RecurrentPaymentLine;
+import de.metas.banking.service.IBankingBL;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocument;
+import de.metas.document.location.DocumentLocation;
+import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.logging.LogManager;
+import de.metas.payment.PaymentRule;
+import de.metas.util.Services;
 import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,14 +46,12 @@ import org.compiere.model.MRecurrentPaymentHistory;
 import org.compiere.model.MRecurrentPaymentLine;
 import org.slf4j.Logger;
 
-import de.metas.banking.model.I_C_RecurrentPayment;
-import de.metas.banking.model.X_C_RecurrentPaymentLine;
-import de.metas.banking.service.IBankingBL;
-import de.metas.document.engine.IDocument;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.logging.LogManager;
-import de.metas.payment.PaymentRule;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 public class BankingBL implements IBankingBL
 {

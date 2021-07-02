@@ -15,6 +15,7 @@ import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.location.LocationId;
 import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.TaxCategoryNotFoundException;
@@ -245,7 +246,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 						.shipToC_Location_ID(partnerLocationId)
 						.billDate(invoice.getDateInvoiced())
 						.billFromCountryId(countryFromId)
-						.billToC_Location_ID(bPartnerLocationRecord.getC_Location_ID())
+						.billToC_Location_ID(LocationId.ofRepoId(bPartnerLocationRecord.getC_Location_ID()))
 						.build();
 			}
 			final TaxId taxId = tax.getTaxId();

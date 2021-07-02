@@ -27,6 +27,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -147,34 +148,6 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 		return LocationId.ofRepoId(location.getC_Location_ID());
 	}
 
-	private void setUpActivityAndTaxRetrieval(final I_C_Order order1, final I_C_OrderLine oL1)
-	{
-		IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
-		ITaxBL taxBL = Mockito.mock(ITaxBL.class);
-
-		Services.registerService(IProductAcctDAO.class, productAcctDAO);
-		Services.registerService(ITaxBL.class, taxBL);
-
-		Mockito.doReturn(null).when(productAcctDAO).retrieveActivityForAcct(
-				AdditionalMatchers.not(ArgumentMatchers.eq(clientId)),
-				AdditionalMatchers.not(ArgumentMatchers.eq(orgId)),
-				AdditionalMatchers.not(ArgumentMatchers.eq(productId)));
-
-		final Properties ctx = Env.getCtx();
-		Mockito
-				.when(taxBL.getTaxNotNull(
-						ctx,
-						order1,
-						null,
-						oL1.getM_Product_ID(),
-						order1.getDatePromised(),
-						OrgId.ofRepoId(order1.getAD_Org_ID()),
-						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
-						BPartnerLocationAndCaptureId.ofRepoId(order1.getC_BPartner_ID(), order1.getC_BPartner_Location_ID(), order1.getC_BPartner_Location_Value_ID()),
-						order1.isSOTrx()))
-				.thenReturn(TaxId.ofRepoId(3));
-	}
-
 	@Test
 	public void testSimilarAggregationKeys()
 	{
@@ -264,8 +237,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						order1.getDatePromised(),
 						OrgId.ofRepoId(order1.getAD_Org_ID()),
 						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
-						order1.getC_BPartner_Location_ID(),
-						order1.isSOTrx()))
+						BPartnerLocationAndCaptureId.ofRepoId(order1.getC_BPartner_ID(), order1.getC_BPartner_Location_ID(), order1.getC_BPartner_Location_Value_ID()),
+						SOTrx.ofBoolean(order1.isSOTrx())))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 

@@ -23,6 +23,7 @@ import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
@@ -248,13 +249,13 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 				.build());
 		if (tax == null)
 		{
-			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(commissionToLocationId);
+			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(commissionToLocationId.getBpartnerLocationId());
 			TaxNotFoundException.builder()
 					.taxCategoryId(pricingResult.getTaxCategoryId())
 					.isSOTrx(false)
 					.billDate(icRecord.getDeliveryDate())
 					.orgId(orgId)
-					.billToC_Location_ID(bpLocation.getC_Location_ID())
+					.billToC_Location_ID(LocationId.ofRepoId(bpLocation.getC_Location_ID()))
 					.build()
 					.throwOrLogWarning(true, log);
 		}

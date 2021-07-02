@@ -1,7 +1,6 @@
 package de.metas.tax.api.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -31,13 +30,8 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.MBPartnerLocation;
-import org.compiere.model.X_C_Tax;
 import org.compiere.model.X_C_TaxCategory;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -103,13 +97,10 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				}
 			}
 
-			final I_C_BPartner_Location bpLocTo = loadOutOfTrx(shipC_BPartner_Location_ID, I_C_BPartner_Location.class);
-			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpLocTo.getC_BPartner_ID(), bpLocTo.getC_BPartner_Location_ID());
-
 			final Tax tax = taxDAO.getBy(TaxQuery.builder()
 					.fromCountryId(countryFromId)
 					.orgId(orgId)
-					.bPartnerLocationId(bPartnerLocationId)
+					.bPartnerLocationId(shipBPartnerLocationId)
 					.dateOfInterest(shipDate)
 					.taxCategoryId(taxCategoryId)
 					.warehouseId(warehouseId)
@@ -308,7 +299,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					.shipFromCountryId(shipFromCountryId)
 					.shipToCountryId(shipToCountryId)
 					.billDate(billDate)
-					.billFromC_Location_ID(0)
+					.billFromC_Location_ID(null)
 					.build();
 		}
 		return taxId;
