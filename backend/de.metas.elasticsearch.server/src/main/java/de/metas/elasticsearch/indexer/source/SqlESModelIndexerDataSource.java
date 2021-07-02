@@ -108,6 +108,6 @@ public class SqlESModelIndexerDataSource implements ESModelIndexerDataSource
 
 		//
 		// Execute query
-		return query.stream().map(ESModelToIndex::ofObject);
+		return query.stream().map(POBasedESModelToIndex::ofObject);
 	}
 }

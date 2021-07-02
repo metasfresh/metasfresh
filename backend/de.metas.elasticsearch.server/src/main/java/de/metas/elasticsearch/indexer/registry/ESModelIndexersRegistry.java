@@ -35,6 +35,7 @@ import de.metas.elasticsearch.indexer.source.SqlESModelIndexerDataSource;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -77,7 +78,7 @@ public class ESModelIndexersRegistry
 		final ESModelIndexer indexer = indexersById.get(modelIndexerId);
 		if (indexer == null)
 		{
-			throw new IllegalArgumentException("No indexer found for modelIndexerId=" + modelIndexerId);
+			throw new AdempiereException("No indexer found for modelIndexerId=" + modelIndexerId);
 		}
 		return indexer;
 	}

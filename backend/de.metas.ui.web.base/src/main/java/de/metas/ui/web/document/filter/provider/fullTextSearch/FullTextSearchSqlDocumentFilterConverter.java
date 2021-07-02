@@ -1,25 +1,7 @@
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DB;
-import org.elasticsearch.action.search.SearchRequest;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.client.RequestOptions;
-import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.jgoodies.common.base.Objects;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -28,6 +10,21 @@ import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DB;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -96,7 +93,6 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 		final QueryBuilder query = QueryBuilders.multiMatchQuery(text, ftsContext.getEsSearchFieldNamesAsArray());
 		logger.trace("ES query: {}", query);
 
-		
 		final SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
 		sourceBuilder.query(query);
 
@@ -109,9 +105,9 @@ public class FullTextSearchSqlDocumentFilterConverter implements SqlDocumentFilt
 		{
 			searchResponse = elasticsearchClient.search(searchRequest, RequestOptions.DEFAULT);
 		}
-		catch(java.io.IOException e)
+		catch (java.io.IOException e)
 		{
-			throw AdempiereException.wrapIfNeeded(e); 
+			throw AdempiereException.wrapIfNeeded(e);
 		}
 
 		logger.trace("ES response: {}", searchResponse);

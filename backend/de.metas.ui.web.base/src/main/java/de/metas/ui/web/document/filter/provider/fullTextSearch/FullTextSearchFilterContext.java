@@ -1,14 +1,11 @@
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.elasticsearch.client.Client;
-
 import com.google.common.collect.ImmutableSet;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.elasticsearch.client.RestHighLevelClient;
 
 /*
@@ -37,15 +34,11 @@ import org.elasticsearch.client.RestHighLevelClient;
 @Builder
 public class FullTextSearchFilterContext
 {
+	@NonNull RestHighLevelClient elasticsearchClient;
+	@NonNull String modelTableName;
+	@NonNull String esIndexName;
 	@NonNull
-	final RestHighLevelClient elasticsearchClient;
-	@NonNull
-	final String modelTableName;
-	@NonNull
-	final String esIndexName;
-	@NonNull
-	@Singular
-	final ImmutableSet<String> esSearchFieldNames;
+	@Singular ImmutableSet<String> esSearchFieldNames;
 
 	public String[] getEsSearchFieldNamesAsArray()
 	{

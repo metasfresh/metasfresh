@@ -31,8 +31,9 @@ import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.elasticsearch.config.ESTextAnalyzer;
 import de.metas.elasticsearch.denormalizers.IESDenormalizerFactory;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
+import de.metas.elasticsearch.indexer.engine.DefaultESModelIndexer;
+import de.metas.elasticsearch.indexer.engine.DefaultESModelIndexer.DefaultESModelIndexerBuilder;
 import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
-import de.metas.elasticsearch.indexer.engine.ESModelIndexer.ESModelIndexerBuilder;
 import de.metas.elasticsearch.trigger.IESModelIndexerTrigger;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -76,7 +77,7 @@ final class ESModelIndexerFactory
 
 	public ESModelIndexer create()
 	{
-		final ImmutableList<ESModelIndexer> includedModelIndexers = includedModelsConfigs.stream()
+		final ImmutableList<DefaultESModelIndexer> includedModelIndexers = includedModelsConfigs.stream()
 				.map(this::createIncludedModelIndexer)
 				.collect(ImmutableList.toImmutableList());
 
@@ -89,7 +90,7 @@ final class ESModelIndexerFactory
 				.build();
 	}
 
-	private ESModelIndexer createIncludedModelIndexer(final ESIncludedModelsConfig includedModelConfig)
+	private DefaultESModelIndexer createIncludedModelIndexer(final ESIncludedModelsConfig includedModelConfig)
 	{
 		return newModelIndexerBuilder(includedModelConfig.getChildTableName())
 				.id(id.includedModel(includedModelConfig.getAttributeName()))
@@ -100,9 +101,9 @@ final class ESModelIndexerFactory
 				.build();
 	}
 
-	private ESModelIndexerBuilder newModelIndexerBuilder(final String modelTableName)
+	private DefaultESModelIndexerBuilder newModelIndexerBuilder(final String modelTableName)
 	{
-		return ESModelIndexer.builder()
+		return DefaultESModelIndexer.builder()
 				.elasticsearchClient(elasticsearchClient)
 				.jsonObjectMapper(jsonObjectMapper)
 				.modelTableName(modelTableName)

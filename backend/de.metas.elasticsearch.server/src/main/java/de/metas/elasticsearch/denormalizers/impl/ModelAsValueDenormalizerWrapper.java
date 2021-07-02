@@ -22,9 +22,9 @@
 
 package de.metas.elasticsearch.denormalizers.impl;
 
-import de.metas.elasticsearch.denormalizers.IESValueDenormalizer;
 import de.metas.elasticsearch.denormalizers.IESModelDenormalizer;
-import de.metas.elasticsearch.indexer.source.ESModelToIndex;
+import de.metas.elasticsearch.denormalizers.IESValueDenormalizer;
+import de.metas.elasticsearch.indexer.source.POBasedESModelToIndex;
 import lombok.NonNull;
 import lombok.ToString;
 import org.elasticsearch.common.xcontent.XContentBuilder;
@@ -49,7 +49,7 @@ final class ModelAsValueDenormalizerWrapper implements IESValueDenormalizer
 	public Object denormalizeValue(@Nullable final Object value)
 	{
 		return value != null
-				? modelDenormalizer.denormalizeModel(ESModelToIndex.ofObject(value))
+				? modelDenormalizer.denormalizeModel(POBasedESModelToIndex.ofObject(value))
 				: null;
 	}
 

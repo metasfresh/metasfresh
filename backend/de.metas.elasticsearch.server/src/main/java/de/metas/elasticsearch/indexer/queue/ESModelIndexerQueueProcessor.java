@@ -27,10 +27,11 @@ import de.metas.Profiles;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerId;
 import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
-import de.metas.elasticsearch.indexer.source.ESModelIndexerDataSources;
-import de.metas.elasticsearch.indexer.source.ESModelToIndex;
 import de.metas.elasticsearch.indexer.engine.IESIndexerResult;
 import de.metas.elasticsearch.indexer.registry.ESModelIndexersRegistry;
+import de.metas.elasticsearch.indexer.source.ESModelIndexerDataSources;
+import de.metas.elasticsearch.indexer.source.ESModelToIndex;
+import de.metas.elasticsearch.indexer.source.POBasedESModelToIndex;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.util.Loggables;
@@ -111,7 +112,7 @@ public class ESModelIndexerQueueProcessor implements Consumer<ESModelIndexEvent>
 		{
 			if (InterfaceWrapperHelper.isActive(po))
 			{
-				modelsToAdd.add(ESModelToIndex.ofPO(po));
+				modelsToAdd.add(POBasedESModelToIndex.ofPO(po));
 			}
 			else
 			{

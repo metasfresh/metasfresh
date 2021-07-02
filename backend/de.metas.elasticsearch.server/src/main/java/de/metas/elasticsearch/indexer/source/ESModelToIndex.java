@@ -22,55 +22,17 @@
 
 package de.metas.elasticsearch.indexer.source;
 
-import lombok.EqualsAndHashCode;
 import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
 
-@EqualsAndHashCode
-@ToString
-public class ESModelToIndex
+public interface ESModelToIndex
 {
-	public static ESModelToIndex ofObject(@NonNull final Object object)
-	{
-		return object instanceof ESModelToIndex
-				? (ESModelToIndex)object
-				: new ESModelToIndex(object);
-	}
-
-	public static ESModelToIndex ofPO(@NonNull final PO po)
-	{
-		return new ESModelToIndex(po);
-	}
-
-	@NonNull Object object;
-
-	private ESModelToIndex(@NonNull final Object object)
-	{
-		this.object = object;
-	}
-
-	public PO getPO()
-	{
-		return InterfaceWrapperHelper.getPO(object);
-	}
+	@Nullable
+	Object getFieldValue(@NonNull String columnName);
 
 	@Nullable
-	public Object getFieldValue(@NonNull final String columnName)
-	{
-		return getPO().get_Value(columnName);
-	}
-
-	@Nullable
-	public ESModelToIndex getFieldValueAsModel(
-			@NonNull final String columnName,
-			@NonNull final String modelValueTableName)
-	{
-		final PO po = getPO();
-		final Object valueAsModel = po.get_ValueAsPO(columnName, modelValueTableName);
-		return valueAsModel != null ? ofObject(valueAsModel) : null;
-	}
+	ESModelToIndex getFieldValueAsModel(
+			@NonNull String columnName,
+			@NonNull String modelValueTableName);
 }

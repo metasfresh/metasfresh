@@ -22,12 +22,10 @@
 
 package de.metas.elasticsearch.indexer.source;
 
-import de.metas.elasticsearch.indexer.engine.ESModelIndexer;
-
 import java.util.stream.Stream;
 
 /**
- * Provides models to be indexed by {@link ESModelIndexer}
+ * Provides models to be indexed by {@link de.metas.elasticsearch.indexer.engine.ESModelIndexer}
  */
 @FunctionalInterface
 public interface ESModelIndexerDataSource
