@@ -1,10 +1,5 @@
 package de.metas.ui.web.view.descriptor;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import javax.annotation.Nullable;
-
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlOrderByValue;
@@ -13,6 +8,10 @@ import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /*
  * #%L
@@ -48,19 +47,20 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 		Object retrieveValue(ResultSet rs, String adLanguage) throws SQLException;
 	}
 
-	private final String fieldName;
-	private final String columnName;
-	private final boolean keyColumn;
-	private final DocumentFieldWidgetType widgetType;
-	private final boolean virtualColumn;
+	String fieldName;
+	String columnName;
+	boolean keyColumn;
+	DocumentFieldWidgetType widgetType;
+	boolean virtualColumn;
+	boolean mandatory;
 
-	private final Class<?> sqlValueClass;
-	private final SqlSelectValue sqlSelectValue;
-	private final SqlSelectDisplayValue sqlSelectDisplayValue;
+	Class<?> sqlValueClass;
+	SqlSelectValue sqlSelectValue;
+	SqlSelectDisplayValue sqlSelectDisplayValue;
 
-	private final SqlOrderByValue sqlOrderBy;
+	SqlOrderByValue sqlOrderBy;
 
-	private final SqlViewRowFieldLoader fieldLoader;
+	SqlViewRowFieldLoader fieldLoader;
 
 	@Builder
 	private SqlViewRowFieldBinding(
@@ -69,6 +69,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 			final boolean keyColumn,
 			@NonNull final DocumentFieldWidgetType widgetType,
 			final boolean virtualColumn,
+			final boolean mandatory,
 			//
 			@Nullable final Class<?> sqlValueClass,
 			@NonNull final SqlSelectValue sqlSelectValue,
@@ -82,6 +83,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 		this.keyColumn = keyColumn;
 		this.widgetType = widgetType;
 		this.virtualColumn = virtualColumn;
+		this.mandatory = mandatory;
 
 		this.sqlValueClass = sqlValueClass != null ? sqlValueClass : widgetType.getValueClass();
 		this.sqlSelectValue = sqlSelectValue;
@@ -91,5 +93,11 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 				? sqlOrderBy
 				: SqlOrderByValue.builder().sqlSelectDisplayValue(sqlSelectDisplayValue).sqlSelectValue(sqlSelectValue).columnName(columnName).build();
 		this.fieldLoader = fieldLoader;
+	}
+
+	@Override
+	public boolean isMandatory()
+	{
+		return mandatory;
 	}
 }

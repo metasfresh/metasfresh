@@ -23,12 +23,22 @@
 package de.metas.ui.web.dashboard;
 
 import de.metas.cache.CCache;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
+import de.metas.ui.web.kpi.KPITimeRangeDefaults;
+import de.metas.ui.web.kpi.data.KPIDataProvider;
+import de.metas.ui.web.kpi.data.KPIDataRequest;
+import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.kpi.descriptor.KPIId;
+import de.metas.ui.web.kpi.descriptor.KPIRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Optional;
 
@@ -48,11 +58,32 @@ public class UserDashboardDataService
 	{
 		this.userDashboardRepository = userDashboardRepository;
 
-		final IESSystem esSystem = Services.get(IESSystem.class);
 		this.kpiDataProvider = KPIDataProvider.builder()
-				.esSystem(esSystem)
 				.kpiRepository(kpiRepository)
+				.esSystem(Services.get(IESSystem.class))
+				.sysConfigBL(Services.get(ISysConfigBL.class))
 				.build();
+	}
+
+	@PostConstruct
+	void postConstruct()
+	{
+		CacheMgt.get().addCacheResetListener(this::onCacheResetRequest);
+	}
+
+	private long onCacheResetRequest(final CacheInvalidateMultiRequest multiRequest)
+	{
+		if (multiRequest.isResetAll())
+		{
+			kpiDataProvider.cacheReset();
+		}
+
+		return 1;
+	}
+
+	public Optional<UserDashboardId> getUserDashboardId(@NonNull final UserDashboardKey userDashboardKey)
+	{
+		return userDashboardRepository.getUserDashboardId(userDashboardKey);
 	}
 
 	public Optional<UserDashboardDataProvider> getData(@NonNull final UserDashboardKey userDashboardKey)

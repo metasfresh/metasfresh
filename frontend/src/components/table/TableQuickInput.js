@@ -119,10 +119,6 @@ class TableQuickInput extends PureComponent {
           if (callback) {
             callback();
           }
-
-          // otherwise this promise will stay resolved until we won't get another patch
-          // which potentially can lead to unwanted behaviour
-          this.patchPromise = null;
           resolve();
         }
       );
@@ -197,16 +193,8 @@ class TableQuickInput extends PureComponent {
   };
 
   renderFields = () => {
-    const {
-      tabId,
-      docType,
-      forceHeight,
-      data,
-      layout,
-      id,
-      inProgress,
-      docId,
-    } = this.props;
+    const { tabId, docType, forceHeight, data, layout, id, inProgress, docId } =
+      this.props;
 
     const layoutFieldsAmt = layout ? layout.length : 2;
     const stylingLayout = [

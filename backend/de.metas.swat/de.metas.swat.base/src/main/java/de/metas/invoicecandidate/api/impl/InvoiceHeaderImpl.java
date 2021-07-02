@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import java.time.LocalDate;
 import java.util.List;
 
+import de.metas.invoice.InvoiceDocBaseType;
 import org.compiere.model.I_C_DocType;
 
 import com.google.common.collect.ImmutableList;
@@ -22,14 +23,14 @@ import lombok.Setter;
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
 	/** @return builder */
-	public static final InvoiceHeaderImplBuilder builder()
+	public static InvoiceHeaderImplBuilder builder()
 	{
 		return new InvoiceHeaderImplBuilder();
 	}
 
 	private List<IInvoiceCandAggregate> lines;
 
-	private String docBaseType;
+	private InvoiceDocBaseType docBaseType;
 
 	private String poReference;
 
@@ -118,7 +119,7 @@ import lombok.Setter;
 	}
 
 	@Override
-	public String getDocBaseType()
+	public InvoiceDocBaseType getDocBaseType()
 	{
 		return docBaseType;
 	}
@@ -170,7 +171,7 @@ import lombok.Setter;
 		this.lines = lines;
 	}
 
-	public void setDocBaseType(final String docBaseType)
+	public void setDocBaseType(final InvoiceDocBaseType docBaseType)
 	{
 		this.docBaseType = docBaseType;
 	}

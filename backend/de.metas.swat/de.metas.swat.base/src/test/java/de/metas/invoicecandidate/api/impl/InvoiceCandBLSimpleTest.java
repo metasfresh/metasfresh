@@ -7,10 +7,20 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.product.ProductType;
+import de.metas.uom.UomId;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,17 +50,23 @@ import de.metas.order.InvoiceRule;
  * #L%
  */
 
-/** Simple tests for {@link InvoiceCandBL} that don't have a lot of dependencies. */
+/**
+ * Simple tests for {@link InvoiceCandBL} that don't have a lot of dependencies.
+ */
 class InvoiceCandBLSimpleTest
 {
 
 	private InvoiceCandBL invoiceCandBL;
+
+	private UomId uomId;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
+		final I_C_UOM uomrecord = BusinessTestHelper.createUOM("testUom");
+		uomId = UomId.ofRepoId(uomrecord.getC_UOM_ID());
 		invoiceCandBL = new InvoiceCandBL();
 	}
 
@@ -124,6 +140,88 @@ class InvoiceCandBLSimpleTest
 
 		assertThat(freightCostICRecord.getQtyToInvoice()).isEqualByComparingTo(TEN); // unchanged
 		assertThat(freightCostICRecord.getDeliveryDate()).isEqualTo(otherICDeliveryDate); // was synched to the other IC
+	}
+
+	@Test
+	void computeDateToInvoice_OrderCompletelyDelivered_two_services()
+	{
+		final Timestamp deliveryDate = Timestamp.valueOf("2021-06-01 11:39:00");
+
+		// under or over delivery should not matter with service products
+		final I_C_Invoice_Candidate overDelivered = createSchedForOrderCompletelyDeliveredTest("8", ProductType.Service, deliveryDate);
+		final I_C_Invoice_Candidate correctlyDelivered = createSchedForOrderCompletelyDeliveredTest("8", ProductType.Service, deliveryDate);
+
+		assertThat(new InvoiceCandBL().computeDateToInvoice(correctlyDelivered)).as("underDelivered").isEqualTo(deliveryDate);
+		assertThat(new InvoiceCandBL().computeDateToInvoice(overDelivered)).as("overDelivered").isEqualTo(deliveryDate);
+	}
+	
+	@Test
+	void computeDateToInvoice_OrderCompletelyDelivered_two_items_one_underdelivered()
+	{
+		final Timestamp deliveryDate = Timestamp.valueOf("2021-06-01 11:39:00");
+
+		final I_C_Invoice_Candidate overDelivered = createSchedForOrderCompletelyDeliveredTest("12", ProductType.Item, deliveryDate);
+		final I_C_Invoice_Candidate underDelivered = createSchedForOrderCompletelyDeliveredTest("8", ProductType.Item, deliveryDate);
+
+		assertThat(new InvoiceCandBL().computeDateToInvoice(underDelivered)).as("underDelivered").isEqualTo(Env.MAX_DATE);
+		assertThat(new InvoiceCandBL().computeDateToInvoice(overDelivered)).as("overDelivered").isEqualTo(Env.MAX_DATE);
+	}
+
+	@Test
+	void computeDateToInvoice_OrderCompletelyDelivered_two_items()
+	{
+		final Timestamp deliveryDate = Timestamp.valueOf("2021-06-01 11:39:00");
+
+		final I_C_Invoice_Candidate overDelivered = createSchedForOrderCompletelyDeliveredTest("12", ProductType.Item, deliveryDate);
+		final I_C_Invoice_Candidate correctlyDelivered = createSchedForOrderCompletelyDeliveredTest("10", ProductType.Item, deliveryDate);
+
+		assertThat(new InvoiceCandBL().computeDateToInvoice(correctlyDelivered)).as("underDelivered").isEqualTo(deliveryDate);
+		assertThat(new InvoiceCandBL().computeDateToInvoice(overDelivered)).as("overDelivered").isEqualTo(deliveryDate);
+	}
+
+	@Test
+	void computeDateToInvoice_OrderCompletelyDelivered_service_item_underdelivered()
+	{
+		final Timestamp deliveryDate = Timestamp.valueOf("2021-06-01 11:39:00");
+
+		final I_C_Invoice_Candidate overDelivered = createSchedForOrderCompletelyDeliveredTest("12", ProductType.Service, deliveryDate);
+		final I_C_Invoice_Candidate underDelivered = createSchedForOrderCompletelyDeliveredTest("8", ProductType.Item, deliveryDate);
+
+		assertThat(new InvoiceCandBL().computeDateToInvoice(underDelivered)).as("underDelivered").isEqualTo(Env.MAX_DATE);
+		assertThat(new InvoiceCandBL().computeDateToInvoice(overDelivered)).as("overDelivered").isEqualTo(Env.MAX_DATE);
+	}
+
+	@Test
+	void computeDateToInvoice_OrderCompletelyDelivered_service_item()
+	{
+		final Timestamp deliveryDate = Timestamp.valueOf("2021-06-01 11:39:00");
+
+		final I_C_Invoice_Candidate overDelivered = createSchedForOrderCompletelyDeliveredTest("12", ProductType.Service, deliveryDate);
+		final I_C_Invoice_Candidate correctlyDelivered = createSchedForOrderCompletelyDeliveredTest("10", ProductType.Item, deliveryDate);
+
+		assertThat(new InvoiceCandBL().computeDateToInvoice(correctlyDelivered)).as("underDelivered").isEqualTo(deliveryDate);
+		assertThat(new InvoiceCandBL().computeDateToInvoice(overDelivered)).as("overDelivered").isEqualTo(deliveryDate);
+	}
+	
+	private I_C_Invoice_Candidate createSchedForOrderCompletelyDeliveredTest(
+			@NonNull final String qtyDelivered,
+			@NonNull final ProductType productType,
+			@NonNull final Timestamp deliveryDate)
+	{
+		final I_M_Product product = BusinessTestHelper.createProduct("testproduct_" + qtyDelivered, uomId);
+		product.setProductType(productType.getCode());
+		InterfaceWrapperHelper.saveRecord(product);
+
+		final I_C_Invoice_Candidate overDelivered = newInstance(I_C_Invoice_Candidate.class);
+		overDelivered.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_OrderCompletelyDelivered);
+		overDelivered.setQtyDelivered(new BigDecimal(qtyDelivered));
+		overDelivered.setQtyOrdered(BigDecimal.TEN);
+
+		overDelivered.setDeliveryDate(deliveryDate);
+		overDelivered.setHeaderAggregationKey("headerAggregationKey");
+		overDelivered.setM_Product_ID(product.getM_Product_ID());
+		InterfaceWrapperHelper.saveRecord(overDelivered);
+		return overDelivered;
 	}
 
 }

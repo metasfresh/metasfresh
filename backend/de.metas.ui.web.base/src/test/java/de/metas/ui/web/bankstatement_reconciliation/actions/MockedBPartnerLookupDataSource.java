@@ -1,22 +1,20 @@
 package de.metas.ui.web.bankstatement_reconciliation.actions;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Evaluatee;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Evaluatee;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -73,13 +71,13 @@ final class MockedBPartnerLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public LookupValuesList findEntities(final Evaluatee ctx, final int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final int pageLength)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
 		throw new UnsupportedOperationException();
 	}

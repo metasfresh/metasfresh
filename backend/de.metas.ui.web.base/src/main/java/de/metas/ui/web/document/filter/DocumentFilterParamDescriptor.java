@@ -1,11 +1,6 @@
 package de.metas.ui.web.document.filter;
 
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -20,6 +15,10 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -44,7 +43,8 @@ import lombok.Value;
  */
 
 @Value
-public final class DocumentFilterParamDescriptor
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+public class DocumentFilterParamDescriptor
 {
 	public static Builder builder()
 	{
@@ -53,26 +53,28 @@ public final class DocumentFilterParamDescriptor
 
 	private static final Logger logger = LogManager.getLogger(DocumentFilterParamDescriptor.class);
 
-	private final boolean joinAnd;
-	private final String parameterName;
-	private final String fieldName;
-	private final DocumentFieldWidgetType widgetType;
-	private final Class<?> valueClass;
-	private final ITranslatableString displayName;
-	private final boolean showIncrementDecrementButtons;
+	boolean joinAnd;
+	String parameterName;
+	String fieldName;
+	DocumentFieldWidgetType widgetType;
+	Class<?> valueClass;
+	ITranslatableString displayName;
+	boolean showIncrementDecrementButtons;
 
-	private final Operator operator;
-	private final Object defaultValue;
-	private final Object defaultValueTo;
+	Operator operator;
+	Object defaultValue;
+	Object defaultValueTo;
 
-	private final boolean mandatory;
-	private final Optional<LookupDescriptor> lookupDescriptor;
+	boolean mandatory;
+	Optional<LookupDescriptor> lookupDescriptor;
 
+	@SuppressWarnings("StringOperationCanBeSimplified")
 	public static final String AUTOFILTER_INITIALVALUE_DATE_NOW = new String("NOW");
+	@SuppressWarnings("StringOperationCanBeSimplified")
 	public static final String AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER = new String("@#AD_User_ID@");
-	private final Object autoFilterInitialValue;
+	Object autoFilterInitialValue;
 
-	private final BarcodeScannerType barcodeScannerType;
+	BarcodeScannerType barcodeScannerType;
 
 	private DocumentFilterParamDescriptor(final Builder builder)
 	{
@@ -103,7 +105,7 @@ public final class DocumentFilterParamDescriptor
 		mandatory = builder.mandatory;
 
 		autoFilterInitialValue = builder.autoFilterInitialValue;
-		
+
 		barcodeScannerType = builder.barcodeScannerType;
 	}
 
@@ -122,21 +124,25 @@ public final class DocumentFilterParamDescriptor
 		return lookupDescriptor.map(LookupDataSourceFactory.instance::getLookupDataSource);
 	}
 
+	@Nullable
 	public Object getDefaultValueConverted()
 	{
 		return convertValueToFieldType(getDefaultValue());
 	}
 
+	@Nullable
 	public Object getDefaultValueToConverted()
 	{
 		return convertValueToFieldType(getDefaultValueTo());
 	}
 
+	@Nullable
 	public Object convertValueFromJson(final Object jsonValue)
 	{
 		return convertValueToFieldType(jsonValue);
 	}
 
+	@Nullable
 	private Object convertValueToFieldType(final Object value)
 	{
 		Object valueConv = DataTypes.convertToValueClass(
@@ -172,6 +178,7 @@ public final class DocumentFilterParamDescriptor
 		return widgetType.isLookup() && AUTOFILTER_INITIALVALUE_CURRENT_LOGGED_USER.equals(autoFilterInitialValue);
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static final class Builder
 	{
 		private boolean joinAnd = true;
@@ -215,10 +222,9 @@ public final class DocumentFilterParamDescriptor
 			return fieldName;
 		}
 
-		Builder setParameterName(final String parameterName)
+		void setParameterName(final String parameterName)
 		{
 			this.parameterName = parameterName;
-			return this;
 		}
 
 		public Builder setWidgetType(final DocumentFieldWidgetType widgetType)
@@ -248,6 +254,11 @@ public final class DocumentFilterParamDescriptor
 		{
 			this.displayName = TranslatableStrings.constant(displayName);
 			return this;
+		}
+
+		public Builder setDisplayName(final AdMessageKey displayName)
+		{
+			return setDisplayName(TranslatableStrings.adMessage(displayName));
 		}
 
 		public ITranslatableString getDisplayName()
@@ -297,7 +308,7 @@ public final class DocumentFilterParamDescriptor
 			return this;
 		}
 
-		public Builder setAutoFilterInitialValue(Object autoFilterInitialValue)
+		public Builder setAutoFilterInitialValue(final Object autoFilterInitialValue)
 		{
 			this.autoFilterInitialValue = autoFilterInitialValue;
 			return this;

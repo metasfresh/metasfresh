@@ -5,6 +5,7 @@ import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
@@ -50,7 +51,7 @@ public interface LookupDataSourceFetcher
 
 	LookupDataSourceContext.Builder newContextForFetchingList();
 
-	LookupValuesList retrieveEntities(LookupDataSourceContext evalCtx);
+	LookupValuesPage retrieveEntities(LookupDataSourceContext evalCtx);
 
 	//
 	// Caching

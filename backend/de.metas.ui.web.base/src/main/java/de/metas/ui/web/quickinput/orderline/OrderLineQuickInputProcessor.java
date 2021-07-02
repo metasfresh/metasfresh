@@ -1,7 +1,6 @@
 package de.metas.ui.web.quickinput.orderline;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -10,6 +9,7 @@ import de.metas.adempiere.gui.search.impl.PlainHUPackingAware;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.contracts.ConditionsId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -17,10 +17,16 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineInputValidator;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineInputValidatorResults;
 import de.metas.order.compensationGroup.Group;
+import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupCreateRequest;
 import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.GroupRegularLine;
+import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -55,7 +61,9 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -92,10 +100,55 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	private final IProductBOMBL bomsService = Services.get(IProductBOMBL.class);
 
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final GroupTemplateRepository groupTemplateRepo = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
 	private final Collection<IOrderLineInputValidator> validators = SpringContextHolder.instance.getBeansOfType(IOrderLineInputValidator.class);
 
 	@Override
 	public Set<DocumentId> process(final QuickInput quickInput)
+	{
+		final Set<OrderLineId> newOrderLineIds;
+		if (extractGroupTemplateId(quickInput).isPresent())
+		{
+			newOrderLineIds = process_GenerateOrderLinesFromGroupTemplate(quickInput);
+		}
+		else
+		{
+			newOrderLineIds = process_default(quickInput);
+		}
+
+		return DocumentId.ofRepoIdsSet(newOrderLineIds);
+	}
+
+	private Set<OrderLineId> process_GenerateOrderLinesFromGroupTemplate(final QuickInput quickInput)
+	{
+		final GroupTemplateId groupTemplateId = extractGroupTemplateId(quickInput).orElseThrow(() -> new AdempiereException("No GroupTemplateId defined"));
+		final GroupTemplate groupTemplate = groupTemplateRepo.getById(groupTemplateId);
+
+		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		final ConditionsId contractConditionsId = extractContractConditionsId(quickInput).orElse(null);
+
+		final Group group = orderGroupsRepo.prepareNewGroup()
+				.groupTemplate(groupTemplate)
+				.createGroup(orderId, contractConditionsId);
+
+		final HashSet<OrderLineId> newOrderLineIds = new HashSet<>();
+		group.getRegularLines()
+				.stream()
+				.map(GroupRegularLine::getRepoId)
+				.map(OrderLineId::cast)
+				.forEach(newOrderLineIds::add);
+		group.getCompensationLines()
+				.stream()
+				.map(GroupCompensationLine::getRepoId)
+				.map(OrderLineId::cast)
+				.forEach(newOrderLineIds::add);
+
+		return newOrderLineIds;
+	}
+
+	private Set<OrderLineId> process_default(final QuickInput quickInput)
 	{
 		final OrderLineCandidate initialCandidate = toOrderLineCandidate(quickInput);
 		validateInput(initialCandidate);
@@ -105,16 +158,27 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
 		final Properties ctx = InterfaceWrapperHelper.getCtx(order);
 
-		final ImmutableSet.Builder<DocumentId> documentIds = ImmutableSet.builder();
+		final HashSet<OrderLineId> newOrderLineIds = new HashSet<>();
 		for (final OrderLineCandidate candidate : candidates)
 		{
 			final I_C_OrderLine newOrderLine = OrderFastInput.addOrderLine(ctx, order, orderLine -> updateOrderLine(orderLine, candidate));
-			final int newOrderLineId = newOrderLine.getC_OrderLine_ID();
-			final DocumentId documentId = DocumentId.of(newOrderLineId);
-			documentIds.add(documentId);
+			final OrderLineId newOrderLineId = OrderLineId.ofRepoId(newOrderLine.getC_OrderLine_ID());
+			newOrderLineIds.add(newOrderLineId);
 		}
 
-		return documentIds.build();
+		return newOrderLineIds;
+	}
+
+	private static Optional<GroupTemplateId> extractGroupTemplateId(final QuickInput quickInput)
+	{
+		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+		return GroupTemplateId.optionalOfRepoId(orderLineQuickInput.getC_CompensationGroup_Schema_ID());
+	}
+
+	private static Optional<ConditionsId> extractContractConditionsId(final QuickInput quickInput)
+	{
+		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+		return ConditionsId.optionalOfRepoId(orderLineQuickInput.getC_Flatrate_Conditions_ID());
 	}
 
 	private void validateInput(final OrderLineCandidate candidate)
@@ -204,18 +268,18 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 			if (compensationGroupId == null)
 			{
 				compensationGroupId = orderGroupsRepo.createNewGroupId(GroupCreateRequest.builder()
-																			   .orderId(initialCandidate.getOrderId())
-																			   .name(productBL.getProductName(bomProductId))
-																			   .build());
+						.orderId(initialCandidate.getOrderId())
+						.name(productBL.getProductName(bomProductId))
+						.build());
 			}
 
 			result.add(initialCandidate.toBuilder()
-							   .productId(bomLineProductId)
-							   .attributes(attributes)
-							   .qty(bomLineQty)
-							   .compensationGroupId(compensationGroupId)
-							   .explodedFromBOMLineId(bomLineId)
-							   .build());
+					.productId(bomLineProductId)
+					.attributes(attributes)
+					.qty(bomLineQty)
+					.compensationGroupId(compensationGroupId)
+					.explodedFromBOMLineId(bomLineId)
+					.build());
 		}
 
 		return result;
@@ -282,6 +346,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		return huPackingAware;
 	}
 
+	@Nullable
 	private AttributeSetInstanceId createASI(
 			@NonNull final ProductId productId,
 			@NonNull final ImmutableAttributeSet attributes)

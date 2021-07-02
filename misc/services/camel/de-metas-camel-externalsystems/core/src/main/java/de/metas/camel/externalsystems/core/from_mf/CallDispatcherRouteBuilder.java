@@ -22,58 +22,79 @@
 
 package de.metas.camel.externalsystems.core.from_mf;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import lombok.NonNull;
+import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
-import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.core.CoreConstants.FROM_MF_ROUTE;
 
 @Component
 public class CallDispatcherRouteBuilder extends RouteBuilder
 {
 	@VisibleForTesting
-	static final String ROUTE_ID = "MF-HTTP-To-ExternalSystem-Dispatcher";
+	static final String DISPATCH_ROUTE_ID = "MF-To-ExternalSystem-Dispatcher";
+
+	@NonNull
+	private final ProcessLogger processLogger;
+
+	private final static String FROM_MF_ROUTE_ID = "RabbitMQ_from_MF_ID";
+
+	public CallDispatcherRouteBuilder(final @NonNull ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
 
 	@Override
 	public void configure()
 	{
-		final var objectMapper = (new ObjectMapper())
-				.findAndRegisterModules()
-				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				.enable(MapperFeature.USE_ANNOTATIONS);
-
-		final JacksonDataFormat jacksonDataFormat = new JacksonDataFormat();
-		jacksonDataFormat.setCamelContext(getContext());
-		jacksonDataFormat.setObjectMapper(objectMapper);
-		jacksonDataFormat.setUnmarshalType(JsonExternalSystemRequest.class);
-
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
 				.to(StaticEndpointBuilders.direct(MF_ERROR_ROUTE_ID));
 
-		// assuming that we have server.port=8095 in the application.properties, you can call this EP with http://localhost:8095/camel/do
-		rest("/").produces("text/plain") // TODO fix
-				.put("do")
+		from(FROM_MF_ROUTE)
+				.routeId(FROM_MF_ROUTE_ID)
 				.to("direct:dispatch");
 
 		from("direct:dispatch")
-				.routeId(ROUTE_ID)
+				.routeId(DISPATCH_ROUTE_ID)
 				.streamCaching()
-				.unmarshal(jacksonDataFormat)
+				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemRequest.class))
 				.process(exchange -> {
 					final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 					exchange.getIn().setHeader("targetRoute", request.getExternalSystemName().getName() + "-" + request.getCommand());
+
+					if (request.getAdPInstanceId() != null)
+					{
+						exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
+					}
 				})
 				.log("routing request to route ${header.targetRoute}")
+				.process(this::logRequestRouted)
 				.toD("direct:${header.targetRoute}", false)
-				.process(exchange -> exchange.getIn().setBody("OK")); //FIXME with the TODO from line 56
+				.process(this::logInvocationDone);
+	}
+
+	private void logRequestRouted(@NonNull final Exchange exchange)
+	{
+		final String targetRoute = exchange.getIn().getHeader("targetRoute", String.class);
+
+		processLogger.logMessage("Routing request to: " + targetRoute,
+								 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
+	}
+
+	private void logInvocationDone(@NonNull final Exchange exchange)
+	{
+		final String targetRoute = exchange.getIn().getHeader("targetRoute", String.class);
+
+		processLogger.logMessage("Invocation done: " + targetRoute,
+								 exchange.getIn().getHeader(HEADER_PINSTANCE_ID, Integer.class));
 	}
 }

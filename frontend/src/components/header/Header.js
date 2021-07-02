@@ -637,7 +637,8 @@ class Header extends PureComponent {
                     'btn-square btn-header',
                     'tooltip-parent js-not-unselect',
                     {
-                      'btn-meta-default-dark btn-subheader-open btn-header-open': isSubheaderShow,
+                      'btn-meta-default-dark btn-subheader-open btn-header-open':
+                        isSubheaderShow,
                       'btn-meta-primary': !isSubheaderShow,
                     }
                   )}
@@ -777,7 +778,8 @@ class Header extends PureComponent {
                       'side-panel-toggle btn-square',
                       'js-not-unselect',
                       {
-                        'btn-meta-default-bright btn-header-open': isSideListShow,
+                        'btn-meta-default-bright btn-header-open':
+                          isSideListShow,
                         'btn-meta-primary': !isSideListShow,
                       }
                     )}

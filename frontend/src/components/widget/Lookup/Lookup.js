@@ -209,13 +209,8 @@ class Lookup extends Component {
 
   // TODO: Rewrite per widget if needed
   handleClear = () => {
-    const {
-      updateItems,
-      widgetData,
-      onChange,
-      properties,
-      onSelectBarcode,
-    } = this.props;
+    const { updateItems, widgetData, onChange, properties, onSelectBarcode } =
+      this.props;
     const propsWithoutTooltips = properties.filter(
       (prop) => prop.type !== 'Tooltip'
     );
@@ -341,9 +336,9 @@ class Lookup extends Component {
       forceHeight,
       advSearchCaption,
       advSearchWindowId,
+      forwardedRef,
       isFilterActive,
       updateItems,
-      forwardedRef,
     } = this.props;
 
     const {
@@ -361,7 +356,7 @@ class Lookup extends Component {
         (validStatus && validStatus.initialValue && !validStatus.valid));
 
     const errorInputCondition =
-      validStatus && (!validStatus.valid && !validStatus.initialValue);
+      validStatus && !validStatus.valid && !validStatus.initialValue;
     const classRank = rank || 'primary';
     let showBarcodeScannerBtn = false;
 
@@ -619,9 +614,12 @@ Lookup.propTypes = {
   scannerElement: PropTypes.any,
   advSearchCaption: PropTypes.string,
   advSearchWindowId: PropTypes.string,
+<<<<<<<<< Temporary merge branch 1
   isFilterActive: PropTypes.bool,
   updateItems: PropTypes.func,
+=========
   forwardedRef: PropTypes.any,
+>>>>>>>>> Temporary merge branch 2
 };
 
 export default withForwardedRef(BarcodeScanner(onClickOutside(Lookup)));

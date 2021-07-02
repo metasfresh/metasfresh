@@ -1,13 +1,5 @@
 package de.metas.ui.web.notification;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Service;
-
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
@@ -17,12 +9,20 @@ import de.metas.notification.UserNotification;
 import de.metas.notification.UserNotificationUtils;
 import de.metas.notification.UserNotificationsList;
 import de.metas.ui.web.session.UserSession.LanguagedChangedEvent;
+import de.metas.ui.web.session.json.WebuiSessionId;
 import de.metas.ui.web.websocket.WebsocketSender;
 import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -59,7 +59,7 @@ public class UserNotificationsService
 	private final AtomicBoolean subscribedToEventBus = new AtomicBoolean(false);
 
 	@EventListener
-	private void onUserLanguageChanged(final LanguagedChangedEvent event)
+	public void onUserLanguageChanged(final LanguagedChangedEvent event)
 	{
 		final UserNotificationsQueue notificationsQueue = adUserId2notifications.get(event.getAdUserId());
 		if (notificationsQueue != null)
@@ -78,7 +78,7 @@ public class UserNotificationsService
 	}
 
 	public synchronized void enableForSession(
-			@NonNull final String sessionId,
+			@NonNull final WebuiSessionId sessionId,
 			@NonNull final UserId adUserId,
 			@NonNull final JSONOptions jsonOptions)
 	{

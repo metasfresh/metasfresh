@@ -1,37 +1,36 @@
 package de.metas.ui.web.view.descriptor;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.compiere.util.DB;
-
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.sql.PlainSqlEntityFieldBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
+import de.metas.ui.web.window.model.sql.SqlComposedKey;
 import de.metas.ui.web.window.model.sql.SqlDocumentQueryBuilder;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.compiere.util.DB;
+
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -55,9 +54,15 @@ import lombok.ToString;
  * #L%
  */
 
-@ToString(of = "webuiSelectionColumnNamesByKeyColumnName")
+@ToString(of = "keyColumnsInfosByKeyColumnName")
 public final class SqlViewKeyColumnNamesMap
 {
+	public enum MappingType
+	{
+		SOURCE_TABLE,
+		WEBUI_SELECTION_TABLE
+	}
+
 	public static SqlViewKeyColumnNamesMap ofKeyFields(final Collection<? extends SqlEntityFieldBinding> keyFields)
 	{
 		return new SqlViewKeyColumnNamesMap(ImmutableList.copyOf(keyFields));
@@ -70,40 +75,42 @@ public final class SqlViewKeyColumnNamesMap
 
 	public static SqlViewKeyColumnNamesMap ofIntKeyField(final String columnName)
 	{
-		return ofKeyField(PlainSqlEntityFieldBinding.intField(columnName));
+		return ofKeyField(PlainSqlEntityFieldBinding.mandatoryIntField(columnName));
 	}
 
 	private final List<SqlEntityFieldBinding> keyFields;
 
-	private final ImmutableMap<String, String> webuiSelectionColumnNamesByKeyColumnName;
+	private final ImmutableMap<String, KeyColumnNameInfo> keyColumnsInfosByKeyColumnName;
+	private final KeyColumnNameInfo singleKeyColumnInfo;
 
 	private final ImmutableList<String> keyColumnNames;
-	private final String singleKeyColumnName;
-
 	private final ImmutableList<String> webuiSelectionColumnNames;
-	private final String singleWebuiSelectionColumnName;
 
 	@Builder
 	private SqlViewKeyColumnNamesMap(@NonNull @Singular final List<SqlEntityFieldBinding> keyFields)
 	{
 		this.keyFields = ImmutableList.copyOf(Check.assumeNotEmpty(keyFields, "keyFields"));
 
-		webuiSelectionColumnNamesByKeyColumnName = buildWebuiSelectionColumnNamesByKeyColumnName(this.keyFields);
-		keyColumnNames = ImmutableList.copyOf(webuiSelectionColumnNamesByKeyColumnName.keySet());
-		singleKeyColumnName = keyColumnNames.size() == 1 ? keyColumnNames.get(0) : null;
-		webuiSelectionColumnNames = ImmutableList.copyOf(webuiSelectionColumnNamesByKeyColumnName.values());
-		singleWebuiSelectionColumnName = webuiSelectionColumnNames.size() == 1 ? webuiSelectionColumnNames.get(0) : null;
+		keyColumnsInfosByKeyColumnName = extractKeyColumnNameInfosIndexedByKeyColumnName(this.keyFields);
+		singleKeyColumnInfo = keyColumnsInfosByKeyColumnName.size() == 1 ? keyColumnsInfosByKeyColumnName.values().iterator().next() : null;
+
+		keyColumnNames = ImmutableList.copyOf(keyColumnsInfosByKeyColumnName.keySet());
+
+		webuiSelectionColumnNames = keyColumnsInfosByKeyColumnName.values()
+				.stream()
+				.map(KeyColumnNameInfo::getWebuiSelectionColumnName)
+				.collect(ImmutableList.toImmutableList());
 	}
 
-	private static ImmutableMap<String, String> buildWebuiSelectionColumnNamesByKeyColumnName(@NonNull final List<SqlEntityFieldBinding> keyFields)
+	private static ImmutableMap<String, KeyColumnNameInfo> extractKeyColumnNameInfosIndexedByKeyColumnName(@NonNull final List<SqlEntityFieldBinding> keyFields)
 	{
-		final List<String> availableIntKeys = new ArrayList<>(I_T_WEBUI_ViewSelection.COLUMNNAME_IntKeys);
-		final List<String> availableStringKeys = new ArrayList<>(I_T_WEBUI_ViewSelection.COLUMNNAME_StringKeys);
+		final ArrayList<String> availableIntKeys = new ArrayList<>(I_T_WEBUI_ViewSelection.COLUMNNAME_IntKeys);
+		final ArrayList<String> availableStringKeys = new ArrayList<>(I_T_WEBUI_ViewSelection.COLUMNNAME_StringKeys);
 
-		final ImmutableMap.Builder<String, String> keyColumnName2selectionColumnName = ImmutableMap.builder();
+		final ImmutableMap.Builder<String, KeyColumnNameInfo> keyColumnName2selectionColumnName = ImmutableMap.builder();
 		for (final SqlEntityFieldBinding keyField : keyFields)
 		{
-			final List<String> availableKeys;
+			final ArrayList<String> availableKeys;
 			final Class<?> sqlValueClass = keyField.getSqlValueClass();
 			if (Integer.class.equals(sqlValueClass) || int.class.equals(sqlValueClass))
 			{
@@ -125,7 +132,13 @@ public final class SqlViewKeyColumnNamesMap
 
 			final String webuiSelectionColumnName = availableKeys.remove(0);
 
-			keyColumnName2selectionColumnName.put(keyField.getColumnName(), webuiSelectionColumnName);
+			final KeyColumnNameInfo keyColumnNameInfo = KeyColumnNameInfo.builder()
+					.keyColumnName(keyField.getColumnName())
+					.webuiSelectionColumnName(webuiSelectionColumnName)
+					.isNullable(!keyField.isMandatory())
+					.build();
+
+			keyColumnName2selectionColumnName.put(keyField.getColumnName(), keyColumnNameInfo);
 		}
 
 		return keyColumnName2selectionColumnName.build();
@@ -160,61 +173,57 @@ public final class SqlViewKeyColumnNamesMap
 				.collect(Collectors.joining(", "));
 	}
 
-	public String getSingleKeyColumnName()
+	private KeyColumnNameInfo getSingleKeyColumnInfo()
 	{
-		if (singleKeyColumnName == null)
+		if (singleKeyColumnInfo == null)
 		{
 			throw new AdempiereException("Not single primary key: " + this);
 		}
-		return singleKeyColumnName;
+		return singleKeyColumnInfo;
+
+	}
+
+	public String getSingleKeyColumnName()
+	{
+		return getSingleKeyColumnInfo().getKeyColumnName();
 	}
 
 	public boolean isSingleKey()
 	{
-		return singleKeyColumnName != null;
+		return singleKeyColumnInfo != null;
 	}
 
 	public String getWebuiSelectionColumnNameForKeyColumnName(@NonNull final String keyColumnName)
 	{
-		final String webuiSelectionColumnName = webuiSelectionColumnNamesByKeyColumnName.get(keyColumnName);
-		if (webuiSelectionColumnName == null)
+		return getKeyColumnNameInfo(keyColumnName).getWebuiSelectionColumnName();
+	}
+
+	@NonNull
+	private KeyColumnNameInfo getKeyColumnNameInfo(final @NonNull String keyColumnName)
+	{
+		final KeyColumnNameInfo keyColumnNameInfo = keyColumnsInfosByKeyColumnName.get(keyColumnName);
+		if (keyColumnNameInfo == null)
 		{
 			throw new AdempiereException("No " + I_T_WEBUI_ViewSelection.Table_Name + " mapping found for " + keyColumnName);
 		}
-		return webuiSelectionColumnName;
-	}
-
-	/**
-	 * @param mapper function of (keyColumnName, webuiSelectionColumnName)
-	 */
-	public String getKeyColumnNamePairsCommaSeparated(final BiFunction<String, String, String> mapper)
-	{
-		return webuiSelectionColumnNamesByKeyColumnName
-				.entrySet()
-				.stream()
-				.map(e -> {
-					final String keyColumnName = e.getKey();
-					final String webuiSelectionColumnName = e.getValue();
-					return mapper.apply(keyColumnName, webuiSelectionColumnName);
-				})
-				.collect(Collectors.joining(", "));
+		return keyColumnNameInfo;
 	}
 
 	public int getKeyPartsCount()
 	{
-		return webuiSelectionColumnNamesByKeyColumnName.size();
+		return keyColumnsInfosByKeyColumnName.size();
 	}
 
 	public boolean isKeyPartFieldName(@NonNull final String fieldName)
 	{
-		return webuiSelectionColumnNamesByKeyColumnName.containsKey(fieldName);
+		return keyColumnsInfosByKeyColumnName.containsKey(fieldName);
 	}
 
 	public List<String> getWebuiSelectionColumnNames()
 	{
 		if (webuiSelectionColumnNames.isEmpty())
 		{
-			Check.fail("No key column names defined; this={}", this);
+			throw new AdempiereException("No key column names defined; this=" + this);
 		}
 		return webuiSelectionColumnNames;
 	}
@@ -240,47 +249,52 @@ public final class SqlViewKeyColumnNamesMap
 
 	public String getSingleWebuiSelectionColumnName()
 	{
-		if (singleWebuiSelectionColumnName == null)
-		{
-			throw new AdempiereException("Not single primary key: " + this);
-		}
-		return singleWebuiSelectionColumnName;
+		return getSingleKeyColumnInfo().getWebuiSelectionColumnName();
 	}
 
 	public String getSqlJoinCondition(final String sourceTableAlias, final String selectionTableAlias)
 	{
 		return prepareSqlJoinCondition()
 				.tableAlias1(sourceTableAlias)
-				.useKeyColumnNames1(true)
+				.mappingType1(MappingType.SOURCE_TABLE)
 				.tableAlias2(selectionTableAlias)
-				.useKeyColumnNames2(false)
+				.mappingType2(MappingType.WEBUI_SELECTION_TABLE)
 				.build();
 	}
 
 	@Builder(builderMethodName = "prepareSqlJoinCondition", builderClassName = "SqlJoinConditionBuilder")
 	private String buildSqlJoinCondition(
-			final String tableAlias1,
-			final boolean useKeyColumnNames1,
-			final String tableAlias2,
-			final boolean useKeyColumnNames2)
+			@NonNull final String tableAlias1,
+			@NonNull final MappingType mappingType1,
+			@NonNull final String tableAlias2,
+			@NonNull final MappingType mappingType2)
 	{
 		Check.assumeNotEmpty(tableAlias1, "tableAlias1 is not empty");
 		Check.assumeNotEmpty(tableAlias2, "tableAlias2 is not empty");
 
 		final StringBuilder sqlJoinCondition = new StringBuilder();
-		for (final String keyColumnName : getKeyColumnNames())
+		for (final KeyColumnNameInfo keyColumnInfo : keyColumnsInfosByKeyColumnName.values())
 		{
-			final String columnName1 = useKeyColumnNames1 ? keyColumnName : getWebuiSelectionColumnNameForKeyColumnName(keyColumnName);
-			final String columnName2 = useKeyColumnNames2 ? keyColumnName : getWebuiSelectionColumnNameForKeyColumnName(keyColumnName);
+			final String columnName1 = keyColumnInfo.getEffectiveColumnName(mappingType1);
+			final String columnName2 = keyColumnInfo.getEffectiveColumnName(mappingType2);
 
 			if (sqlJoinCondition.length() > 0)
 			{
 				sqlJoinCondition.append(" AND ");
 			}
-			sqlJoinCondition
-					.append(tableAlias1).append(".").append(columnName1)
-					.append("=")
-					.append(tableAlias2).append(".").append(columnName2);
+
+			sqlJoinCondition.append(tableAlias1).append(".").append(columnName1);
+
+			if (keyColumnInfo.isNullable())
+			{
+				sqlJoinCondition.append(" IS NOT DISTINCT FROM ");
+			}
+			else
+			{
+				sqlJoinCondition.append("=");
+			}
+
+			sqlJoinCondition.append(tableAlias2).append(".").append(columnName2);
 		}
 
 		return sqlJoinCondition.toString();
@@ -301,7 +315,7 @@ public final class SqlViewKeyColumnNamesMap
 			@NonNull final DocumentIdsSelection rowIds,
 			@Nullable final SqlViewRowIdsConverter rowIdsConverter,
 			@Nullable final String sqlColumnPrefix,
-			final boolean useKeyColumnName,
+			@Nullable final MappingType mappingType,
 			final boolean embedSqlParams)
 	{
 		if (rowIds.isEmpty())
@@ -309,9 +323,11 @@ public final class SqlViewKeyColumnNamesMap
 			throw new AdempiereException("rowIds shall not be empty");
 		}
 
+		final MappingType mappingTypeEffective = mappingType != null ? mappingType : MappingType.WEBUI_SELECTION_TABLE;
+
 		if (isSingleKey())
 		{
-			final String selectionColumnName = useKeyColumnName ? getSingleKeyColumnName() : getSingleWebuiSelectionColumnName();
+			final String selectionColumnName = getSingleKeyColumnInfo().getEffectiveColumnName(mappingTypeEffective);
 			final String keyColumnName = (sqlColumnPrefix != null ? sqlColumnPrefix : "") + selectionColumnName;
 			final Set<Integer> recordIds = rowIdsConverter != null ? rowIdsConverter.convertToRecordIds(rowIds) : rowIds.toIntSet();
 			if (recordIds.isEmpty())
@@ -327,7 +343,7 @@ public final class SqlViewKeyColumnNamesMap
 		{
 			final List<SqlAndParams> sqls = rowIds.toSet()
 					.stream()
-					.map(rowId -> getSqlFilterByRowId(rowId, sqlColumnPrefix, useKeyColumnName, embedSqlParams))
+					.map(rowId -> getSqlFilterByRowId(rowId, sqlColumnPrefix, mappingTypeEffective, embedSqlParams))
 					.collect(ImmutableList.toImmutableList());
 
 			return SqlAndParams.and(sqls);
@@ -336,8 +352,8 @@ public final class SqlViewKeyColumnNamesMap
 
 	private SqlAndParams getSqlFilterByRowId(
 			@NonNull final DocumentId rowId,
-			final String sqlColumnPrefix,
-			final boolean useKeyColumnName,
+			@Nullable final String sqlColumnPrefix,
+			@NonNull final MappingType mappingType,
 			final boolean embedSqlParams)
 	{
 		final List<Object> sqlParams = embedSqlParams ? null : new ArrayList<>();
@@ -349,10 +365,14 @@ public final class SqlViewKeyColumnNamesMap
 						sql.append(" AND ");
 					}
 
-					final String selectionColumnName = useKeyColumnName ? keyColumnName : getWebuiSelectionColumnNameForKeyColumnName(keyColumnName);
+					final String selectionColumnName = getKeyColumnNameInfo(keyColumnName).getEffectiveColumnName(mappingType);
 					sql.append(sqlColumnPrefix != null ? sqlColumnPrefix : "").append(selectionColumnName);
 
-					if (sqlParams != null)
+					if (JSONNullValue.isNull(value))
+					{
+						sql.append(" IS NULL");
+					}
+					else if (sqlParams != null)
 					{
 						sql.append("=?");
 						sqlParams.add(value);
@@ -366,34 +386,26 @@ public final class SqlViewKeyColumnNamesMap
 		return SqlAndParams.of(sql.toString(), sqlParams);
 	}
 
-	/** @return map of (keyColumnName, value) pairs */
-	private Map<String, Object> extractComposedKey(final DocumentId rowId)
+	/**
+	 * @return map of (keyColumnName, value) pairs
+	 */
+	@VisibleForTesting
+	SqlComposedKey extractComposedKey(final DocumentId rowId)
 	{
 		return SqlDocumentQueryBuilder.extractComposedKey(rowId, keyFields);
 	}
 
 	public SqlAndParams getSqlValuesCommaSeparated(@NonNull final DocumentId rowId)
 	{
-		final StringBuilder sql = new StringBuilder();
-		final List<Object> sqlParams = new ArrayList<>();
-		extractComposedKey(rowId)
-				.forEach((keyColumnName, value) -> {
-					if (sql.length() > 0)
-					{
-						sql.append(", ");
-					}
-					sql.append("?");
-					sqlParams.add(value);
-				});
-
-		return SqlAndParams.of(sql.toString(), sqlParams);
+		return extractComposedKey(rowId).getSqlValuesCommaSeparated();
 	}
 
 	public List<Object> getSqlValuesList(@NonNull final DocumentId rowId)
 	{
-		return ImmutableList.copyOf(extractComposedKey(rowId).values());
+		return extractComposedKey(rowId).getSqlValuesList();
 	}
 
+	@Nullable
 	public DocumentId retrieveRowId(final ResultSet rs)
 	{
 		final String sqlColumnPrefix = null;
@@ -401,7 +413,8 @@ public final class SqlViewKeyColumnNamesMap
 		return retrieveRowId(rs, sqlColumnPrefix, useKeyColumnNames);
 	}
 
-	public DocumentId retrieveRowId(final ResultSet rs, final String sqlColumnPrefix, final boolean useKeyColumnNames)
+	@Nullable
+	public DocumentId retrieveRowId(final ResultSet rs, @Nullable final String sqlColumnPrefix, final boolean useKeyColumnNames)
 	{
 		final List<Object> rowIdParts = keyFields
 				.stream()
@@ -419,7 +432,7 @@ public final class SqlViewKeyColumnNamesMap
 		return DocumentId.ofComposedKeyParts(rowIdParts);
 	}
 
-	private String buildKeyColumnNameEffective(final String keyColumnName, final String sqlColumnPrefix, final boolean useKeyColumnName)
+	private String buildKeyColumnNameEffective(final String keyColumnName, @Nullable final String sqlColumnPrefix, final boolean useKeyColumnName)
 	{
 		final String selectionColumnName = useKeyColumnName ? keyColumnName : getWebuiSelectionColumnNameForKeyColumnName(keyColumnName);
 		if (sqlColumnPrefix != null && !sqlColumnPrefix.isEmpty())
@@ -432,6 +445,7 @@ public final class SqlViewKeyColumnNamesMap
 		}
 	}
 
+	@Nullable
 	private Object retrieveRowIdPart(final ResultSet rs, final String columnName, final Class<?> sqlValueClass)
 	{
 		try
@@ -457,6 +471,32 @@ public final class SqlViewKeyColumnNamesMap
 		catch (final SQLException ex)
 		{
 			throw new DBException("Failed fetching " + columnName + " (" + sqlValueClass + ")", ex);
+		}
+	}
+
+	@Value
+	@Builder
+	private static class KeyColumnNameInfo
+	{
+		@NonNull String keyColumnName;
+		@NonNull String webuiSelectionColumnName;
+		boolean isNullable;
+
+		public String getEffectiveColumnName(@NonNull final MappingType mappingType)
+		{
+			if (mappingType == MappingType.SOURCE_TABLE)
+			{
+				return keyColumnName;
+			}
+			else if (mappingType == MappingType.WEBUI_SELECTION_TABLE)
+			{
+				return webuiSelectionColumnName;
+			}
+			else
+			{
+				// shall not happen
+				throw new AdempiereException("Unknown mapping type: " + mappingType);
+			}
 		}
 	}
 }

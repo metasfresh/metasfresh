@@ -46,8 +46,6 @@ import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Optional;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
 public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
@@ -119,18 +117,18 @@ public interface IOrderBL extends ISingletonService
 
 	PriceListId retrievePriceListId(I_C_Order order, PricingSystemId pricingSystemIdOverride);
 
-	/**
-	 * Set Target Sales Document Type.
-	 * This method is also setting IsSOTrx to true.
-	 *
-	 * @param soDocSubType sales DocSubType
-	 */
-	void setDocTypeTargetId(I_C_Order order, String soDocSubType);
 
 	/**
 	 * Sets Target Document Type based on {@link I_C_Order#isSOTrx()} (Standard Order or PO)
 	 */
-	void setDocTypeTargetId(I_C_Order order);
+	void setDefaultDocTypeTargetId(I_C_Order order);
+
+	void setPODocTypeTargetId(I_C_Order order, String poDocSubType);
+
+	/**
+	 * Set Target Sales Document Type.
+	 */
+	void setSODocTypeTargetId(I_C_Order order, final String soDocSubType);
 
 	void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, DocTypeId docTypeId);
 
@@ -229,6 +227,8 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isRequisition(@NonNull I_C_Order order);
 
+	boolean isMediated(@NonNull I_C_Order order);
+
 	boolean isPrepay(OrderId orderId);
 
 	boolean isPrepay(I_C_Order order);
@@ -258,4 +258,6 @@ public interface IOrderBL extends ISingletonService
 	void validateHaddexDate(I_C_Order order);
 
 	boolean isHaddexOrder(I_C_Order order);
+
+	void closeOrder(final OrderId orderId);
 }

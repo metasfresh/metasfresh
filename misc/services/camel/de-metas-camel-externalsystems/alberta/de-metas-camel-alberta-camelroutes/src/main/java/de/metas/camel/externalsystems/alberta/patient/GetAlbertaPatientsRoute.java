@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.alberta.patient;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.processor.CreateBPRelationReqProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.CreateBPartnerReqProcessor;
+import de.metas.camel.externalsystems.alberta.patient.processor.PatientsRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.PrepareApiClientsProcessor;
 import de.metas.camel.externalsystems.alberta.patient.processor.RetrievePatientsProcessor;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
@@ -41,6 +42,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.alberta.CamelRouteUtil.setupJacksonDataFormatFor;
+import static de.metas.camel.externalsystems.alberta.attachment.GetAlbertaAttachmentRoute.GET_DOCUMENTS_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -50,12 +52,14 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 	public static final String GET_PATIENTS_ROUTE_ID = "Alberta-getPatients";
 	public static final String PROCESS_PATIENT_ROUTE_ID = "AlbertaPatients-processPatient";
 	public static final String IMPORT_BPARTNER_ROUTE_ID = "AlbertaPatients-importBPartner";
+	public static final String UPSERT_RUNTIME_PARAMS_ROUTE_ID = "Alberta-upsertRuntimeParams";
 
 	public static final String PREPARE_PATIENTS_API_PROCESSOR_ID = "AlbertaPatients-PreparePatientsApiProcessorId";
 	public static final String RETRIEVE_PATIENTS_PROCESSOR_ID = "AlbertaPatients-GetPatientsFromAlbertaProcessorId";
 	public static final String CREATE_UPSERT_BPARTNER_REQUEST_PROCESSOR_ID = "AlbertaPatients-CreateBPartnerUpsertReqProcessorId";
 	public static final String CREATE_UPSERT_BPARTNER_RELATION_REQUEST_PROCESSOR_ID = "Alberta-CreateBPartnerRelationReqProcessorId";
 	public static final String IMPORT_BPARTNER_PROCESSOR_ID = "AlbertaPatients-ImportBPartnerProcessorId";
+	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "Alberta-RuntimeParamsProcessorId";
 
 	@Override
 	public void configure()
@@ -73,8 +77,13 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 				.process(new PrepareApiClientsProcessor()).id(PREPARE_PATIENTS_API_PROCESSOR_ID)
 				.process(new RetrievePatientsProcessor()).id(RETRIEVE_PATIENTS_PROCESSOR_ID)
 				.split(body())
+					.stopOnException()
 					.to(direct(PROCESS_PATIENT_ROUTE_ID))
-				.end();
+				.end()
+				.to(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
+
+				.process(this::resetBodyToJsonExternalRequest)
+				.to(direct(GET_DOCUMENTS_ROUTE_ID));
 
 		from(direct(PROCESS_PATIENT_ROUTE_ID))
 				.routeId(PROCESS_PATIENT_ROUTE_ID)
@@ -104,6 +113,12 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
 				.process(this::gatherBPartnerResponseItems);
+
+		from(direct(UPSERT_RUNTIME_PARAMS_ROUTE_ID))
+				.routeId(UPSERT_RUNTIME_PARAMS_ROUTE_ID)
+				.log("Route invoked")
+				.process(new PatientsRuntimeParametersProcessor()).id(RUNTIME_PARAMS_PROCESSOR_ID)
+				.to(direct(ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID));
 		//@formatter:on
 	}
 
@@ -154,5 +169,13 @@ public class GetAlbertaPatientsRoute extends RouteBuilder
 				.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, GetPatientsRouteContext.class);
 
 		routeContext.removeAllResponseItems();
+	}
+
+	private void resetBodyToJsonExternalRequest(@NonNull final Exchange exchange)
+	{
+		final GetPatientsRouteContext routeContext = ProcessorHelper
+				.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, GetPatientsRouteContext.class);
+
+		exchange.getIn().setBody(routeContext.getRequest());
 	}
 }

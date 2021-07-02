@@ -5,8 +5,10 @@ import de.metas.contracts.subscription.ISubscriptionBL;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.compensationGroup.GroupId;
+import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -41,13 +43,20 @@ public class C_OrderLine
 			return;
 		}
 
-		final GroupId groupId = OrderGroupRepository.extractGroupId(orderLine);
+		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
+		final GroupTemplateId groupTemplateId = groupChangesHandler.getGroupTemplateId(groupId);
+
+		if (groupChangesHandler.isProductExcludedFromFlatrateConditions(groupTemplateId, ProductId.ofRepoId(orderLine.getM_Product_ID())))
+		{
+			return;
+		}
+
 		final int flatrateConditionsId = retrieveFirstFlatrateConditionsIdForCompensationGroup(groupId);
 
 		orderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
 
 		int excludeOrderLineId = orderLine.getC_OrderLine_ID();
-		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, excludeOrderLineId);
+		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
 	}
 
 	/**
@@ -65,14 +74,16 @@ public class C_OrderLine
 		}
 
 		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
-		if (groupId == null)
+		final GroupTemplateId groupTemplateId = groupChangesHandler.getGroupTemplateId(groupId);
+
+		if (groupChangesHandler.isProductExcludedFromFlatrateConditions(groupTemplateId, ProductId.ofRepoId(orderLine.getM_Product_ID())))
 		{
 			return;
 		}
 
 		final int flatrateConditionsId = orderLine.getC_Flatrate_Conditions_ID();
 		final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
-		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, excludeOrderLineId);
+		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
 
 		groupChangesHandler.recreateGroupOnOrderLineChanged(orderLine);
 	}
@@ -88,13 +99,18 @@ public class C_OrderLine
 		return flatrateConditionsId != null && flatrateConditionsId > 0 ? flatrateConditionsId : -1;
 	}
 
-	private void setFlatrateConditionsIdToCompensationGroup(final int flatrateConditionsId, final GroupId groupId, final int excludeOrderLineId)
+	private void setFlatrateConditionsIdToCompensationGroup(final int flatrateConditionsId,
+			final GroupId groupId,
+			final GroupTemplateId groupTemplateId,
+			final int excludeOrderLineId)
 	{
 		groupChangesHandler.retrieveGroupOrderLinesQuery(groupId)
 				.addNotEqualsFilter(I_C_OrderLine.COLUMN_C_OrderLine_ID, excludeOrderLineId)
 				.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateConditionsId > 0 ? flatrateConditionsId : null)
 				.create()
 				.list(I_C_OrderLine.class)
+				.stream()
+				.filter(ol -> !groupChangesHandler.isProductExcludedFromFlatrateConditions(groupTemplateId, ProductId.ofRepoId(ol.getM_Product_ID())))
 				.forEach(otherOrderLine -> {
 					otherOrderLine.setC_Flatrate_Conditions_ID(flatrateConditionsId);
 					DYNATTR_SkipUpdatingGroupFlatrateConditions.setValue(otherOrderLine, Boolean.TRUE);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { List } from 'immutable';
 import { mount, shallow } from 'enzyme';
-import uuid from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 
 import RawList, { RawList as RawListBare } from '../../../../components/widget/List/RawList';
 import SelectionDropdown from '../../../../components/widget/SelectionDropdown';
@@ -16,7 +16,7 @@ const createDummyProps = function(props, data) {
     onCloseDropdown: jest.fn(),
     ...props,
     list: List(data),
-    listHash: uuid(),
+    listHash: uuidv4(),
   };
 };
 

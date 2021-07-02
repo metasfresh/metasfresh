@@ -307,3 +307,8 @@
   display: block;
   transform: rotate(180deg);
 }
+.meta-icon-reload:before {
+    content: "\e984";
+    margin: 0px 6px 0px 2px;
+    font-size: 0.7rem;
+}

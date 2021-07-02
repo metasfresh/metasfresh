@@ -155,9 +155,10 @@ class WidgetRenderer extends PureComponent {
       parameterName: fields[0].parameterName,
       validStatus: widgetData[0].validStatus,
       onChange: onPatch,
+      ref: forwardedRef,
       isFilterActive: filterActiveState,
       updateItems,
-      ref: forwardedRef,
+      disconnected,
     };
     const dateProps = {
       field: widgetField,
@@ -173,6 +174,7 @@ class WidgetRenderer extends PureComponent {
       updateItems,
       defaultValue: widgetData[0].defaultValue,
       onChange: this.handleDateChange,
+      disconnected,
     };
     const dateRangeProps = {
       mandatory: widgetData[0].mandatory,
@@ -187,6 +189,7 @@ class WidgetRenderer extends PureComponent {
       defaultValueTo: widgetData[0].defaultValueTo,
       updateItems,
       field: widgetData[0].field,
+      disconnected,
     };
 
     const attributesProps = {
@@ -605,6 +608,7 @@ class WidgetRenderer extends PureComponent {
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
+            dataId={dataId}
             tabId={tabId}
             rowId={rowId}
             windowType={windowType}
@@ -618,6 +622,7 @@ class WidgetRenderer extends PureComponent {
               })
             }
             tabIndex={tabIndex}
+            disconnected={disconnected}
           />
         );
       }

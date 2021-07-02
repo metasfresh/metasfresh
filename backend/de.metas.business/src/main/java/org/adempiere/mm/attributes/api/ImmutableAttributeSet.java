@@ -492,6 +492,31 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return createSubSet(this, I_M_Attribute::isStorageRelevant);
 	}
 
+	public boolean containsAttributeValues(@NonNull final ImmutableAttributeSet targetImmutableAttributeSet)
+	{
+		return targetImmutableAttributeSet.getAttributeIds()
+				.stream()
+				.allMatch(attributeId -> {
+					if (!this.hasAttribute(attributeId))
+					{
+						return false;
+					}
+
+					final String targetValueType = targetImmutableAttributeSet.getAttributeValueType(attributeId);
+					final String actualValueType = this.getAttributeValueType(attributeId);
+
+					if (!targetValueType.equals(actualValueType))
+					{
+						return false;
+					}
+
+					final Object targetValue = targetImmutableAttributeSet.getValue(attributeId);
+					final Object exitingValue = this.getValue(attributeId);
+
+					return Objects.equals(targetValue, exitingValue);
+				});
+	}
+
 	//
 	//
 	// -------------------------

@@ -198,14 +198,8 @@ export function fetchAttributes(tableId, tableResponse) {
       ? state.tables[tableId]
       : tableResponse;
 
-    const {
-      rows,
-      supportAttribute,
-      keyProperty,
-      windowId,
-      viewId,
-      selected,
-    } = tableData;
+    const { rows, supportAttribute, keyProperty, windowId, viewId, selected } =
+      tableData;
 
     let rowId =
       selected && selected.length
@@ -319,12 +313,8 @@ export function updateGridTable(tableId, tableResponse) {
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
-      const {
-        collapsible,
-        expandedDepth,
-        keyProperty,
-        indentSupported,
-      } = tableData;
+      const { collapsible, expandedDepth, keyProperty, indentSupported } =
+        tableData;
 
       if (tableData.rows && tableData.rows.length && indentSupported) {
         tableData.rows = flattenRows(tableData.rows);

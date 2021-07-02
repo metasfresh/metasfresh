@@ -13,7 +13,7 @@ import MultiSelect from '../MultiSelect';
  * to the top of the list. In case it's not in the list (changed partner for instance),
  * use defaultValue
  */
-const setSelectedValue = function(dropdownList, selected, defaultValue) {
+const setSelectedValue = function (dropdownList, selected, defaultValue) {
   const changedValues = {};
   let idx = 0;
   let selectedOption = selected;
@@ -77,14 +77,8 @@ export class RawList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const {
-      list,
-      mandatory,
-      defaultValue,
-      selected,
-      emptyText,
-      listHash,
-    } = this.props;
+    const { list, mandatory, defaultValue, selected, emptyText, listHash } =
+      this.props;
     let dropdownList = this.state.dropdownList;
     let changedValues = {};
 
@@ -262,14 +256,8 @@ export class RawList extends PureComponent {
    * @param {object} event
    */
   handleKeyDown = (e) => {
-    const {
-      onSelect,
-      list,
-      loading,
-      readonly,
-      isToggled,
-      onOpenDropdown,
-    } = this.props;
+    const { onSelect, list, loading, readonly, isToggled, onOpenDropdown } =
+      this.props;
 
     if (e.key === 'Tab') {
       if (list.size === 0 && !readonly && !loading) {
@@ -403,7 +391,8 @@ export class RawList extends PureComponent {
               'input-mandatory': mandatory && !selected,
               'input-error':
                 validStatus &&
-                (!validStatus.valid && !validStatus.initialValue) &&
+                !validStatus.valid &&
+                !validStatus.initialValue &&
                 !isToggled,
             })}
             ref={(c) => (this.inputContainer = c)}

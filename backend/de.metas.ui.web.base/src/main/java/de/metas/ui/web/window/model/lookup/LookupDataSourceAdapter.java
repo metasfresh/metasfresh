@@ -1,18 +1,16 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.compiere.util.Evaluatee;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.compiere.util.Evaluatee;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -44,7 +42,7 @@ import lombok.NonNull;
  */
 final class LookupDataSourceAdapter implements LookupDataSource
 {
-	public static final LookupDataSourceAdapter of(final LookupDataSourceFetcher fetcher)
+	public static LookupDataSourceAdapter of(final LookupDataSourceFetcher fetcher)
 	{
 		return new LookupDataSourceAdapter(fetcher);
 	}
@@ -73,13 +71,13 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	}
 
 	@Override
-	public final LookupValuesList findEntities(final Evaluatee ctx, final int pageLength)
+	public final LookupValuesPage findEntities(final Evaluatee ctx, final int pageLength)
 	{
 		return findEntities(ctx, LookupDataSourceContext.FILTER_Any, FIRST_ROW, pageLength);
 	}
 
 	@Override
-	public final LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
+	public final LookupValuesPage findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
 		final String filterEffective;
 		if (Check.isEmpty(filter, true))
@@ -97,8 +95,7 @@ final class LookupDataSourceAdapter implements LookupDataSource
 				.requiresFilterAndLimit() // make sure the filter, limit and offset will be kept on build
 				.build();
 
-		final LookupValuesList lookupValuesList = fetcher.retrieveEntities(evalCtx);
-		return lookupValuesList;
+		return fetcher.retrieveEntities(evalCtx);
 	}
 
 	@Override

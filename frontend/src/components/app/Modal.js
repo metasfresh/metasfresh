@@ -16,6 +16,7 @@ import {
   callAPI,
   patch,
   resetPrintingOptions,
+  fireUpdateData,
 } from '../../actions/WindowActions';
 import { openFile } from '../../actions/GenericActions';
 
@@ -32,6 +33,9 @@ import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 import CommentsPanel from '../comments/CommentsPanel';
 import PrintingOptions from './PrintingOptions';
+
+import SockJs from 'sockjs-client';
+import Stomp from 'stompjs/lib/stomp.min.js';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -55,6 +59,12 @@ class Modal extends Component {
       waitingFetch: false,
       isTooltipShow: false,
     };
+
+    // we do not use global WS connector as we don't want to mess with the logic around it and have undesired side effects
+    // WS connectivity for `Modal` has to reside in this class as it is easier to reason about and follow
+    // note that we do not initialize here the connection as the websocket is not present in the props now
+    // example side effect that was fixed with a hotfix: https://github.com/metasfresh/metasfresh/commit/f680d4c7ee28e924d98bf8581081e426836c33ce
+    this.modalWsClient = null;
   }
 
   componentDidMount() {
@@ -80,10 +90,60 @@ class Modal extends Component {
     this.mounted = false;
 
     this.removeEventListeners();
+
+    // disconnect when the component is unmounted
+    this.modalWsClient &&
+      this.modalWsClient.connected &&
+      this.modalWsClient.disconnect();
   }
 
+  /**
+   * @method initModalWsConnection
+   * @summary - connect and subscribes to the subscription `websocket` topic (websocket endpoint)
+   * @param {string} websocket - subscription topic
+   */
+  initModalWsConnection = (websocket) => {
+    if (this.modalWsClient === null && websocket) {
+      this.modalWsClient = Stomp.Stomp.over(new SockJs(config.WS_URL));
+      this.modalWsClient.debug = null;
+      this.modalWsClient.connect({}, () => {
+        this.modalWsClient.connected &&
+          this.modalWsClient.subscribe(websocket, (msgFromWs) => {
+            this.onWebsocketMessage(msgFromWs);
+          });
+      });
+    }
+  };
+
+  /**
+   * @method onWebsocketMessage
+   * @summary - logic executed when a messages is received via WS for the modal subscription
+   * @param {string} websocketMsg
+   */
+  onWebsocketMessage = (websocketMsg) => {
+    const msgBody = JSON.parse(websocketMsg.body);
+    const { stale } = msgBody;
+    if (stale) {
+      const { dispatch, windowId, docId, tabId, rowId } = this.props;
+
+      dispatch(
+        fireUpdateData({
+          windowId,
+          documentId: docId,
+          isModal: true,
+          tabId,
+          rowId,
+        })
+      );
+    }
+  };
+
   componentDidUpdate(prevProps) {
-    const { windowId, viewId, indicator } = this.props;
+    const { windowId, viewId, indicator, websocket } = this.props;
+
+    // initializes the WS connection for the modal if there isn't already an existing one
+    websocket && this.initModalWsConnection(websocket);
+
     const { waitingFetch } = this.state;
 
     if (prevProps.windowId !== windowId || prevProps.viewId !== viewId) {
@@ -419,12 +479,8 @@ class Modal extends Component {
    * @summary before printing we check the available parameters from the store and we use those for forming the final printing URI
    */
   handlePrinting = () => {
-    const {
-      windowId,
-      modalViewDocumentIds,
-      dataId,
-      printingOptions,
-    } = this.props;
+    const { windowId, modalViewDocumentIds, dataId, printingOptions } =
+      this.props;
     const docNo = modalViewDocumentIds[0];
     const docId = dataId;
     const { options } = printingOptions;
@@ -826,6 +882,9 @@ Modal.propTypes = {
   printBtnCaption: PropTypes.string,
   printingOptions: PropTypes.object,
   title: PropTypes.string,
+  websocket: PropTypes.string,
+  windowsType: PropTypes.string,
+  docId: PropTypes.string,
 };
 
 const mapStateToProps = (state, props) => {

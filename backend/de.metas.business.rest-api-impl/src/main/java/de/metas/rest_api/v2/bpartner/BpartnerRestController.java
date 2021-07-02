@@ -40,9 +40,9 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v2.SyncAdvise.IfNotExists;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
-import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -72,7 +72,7 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.LOCATION_IDENTIFIE
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.NEXT_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.SINCE_DOC;
 
-@RequestMapping(value = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartner")
+@RequestMapping(value = { MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartner" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 // the spelling "Bpartner" is to avoid swagger from spelling it "b-partner-rest.."

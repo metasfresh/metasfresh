@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_ExternalSystem_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1716702547L;
+	private static final long serialVersionUID = -526552002L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config (final Properties ctx, final int ExternalSystem_Config_ID, @Nullable final String trxName)
@@ -32,18 +32,6 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public void setCamelURL (final String CamelURL)
-	{
-		set_Value (COLUMNNAME_CamelURL, CamelURL);
-	}
-
-	@Override
-	public String getCamelURL()
-	{
-		return get_ValueAsString(COLUMNNAME_CamelURL);
 	}
 
 	@Override

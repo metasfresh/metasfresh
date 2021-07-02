@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.order.compensationGroup.GroupCategoryId;
+import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.product.CreateProductRequest;
 import de.metas.product.IProductDAO;
@@ -47,6 +49,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
@@ -540,14 +543,20 @@ public class ProductDAO implements IProductDAO
 	public int getGuaranteeMonthsInDays(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-		if(product != null && Check.isNotBlank(product.getGuaranteeMonths()))
+		if (product != null && Check.isNotBlank(product.getGuaranteeMonths()))
 		{
-			switch (product.getGuaranteeMonths()) {
-				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_36: return THREE_YEAR_DAYS;
-				case X_M_Product.GUARANTEEMONTHS_60: return FIVE_YEAR_DAYS;
-				default: return 0;
+			switch (product.getGuaranteeMonths())
+			{
+				case X_M_Product.GUARANTEEMONTHS_12:
+					return ONE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_24:
+					return TWO_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_36:
+					return THREE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_60:
+					return FIVE_YEAR_DAYS;
+				default:
+					return 0;
 			}
 		}
 		return 0;
@@ -567,5 +576,44 @@ public class ProductDAO implements IProductDAO
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return GroupTemplateId.optionalOfRepoId(product.getC_CompensationGroup_Schema_ID());
+	}
+
+	@Override
+	public void clearIndividualMasterDataFromProduct(final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+
+		product.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
+
+		saveRecord(product);
+	}
+
+	@Override
+	public Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
+			@NonNull final GroupCategoryId groupCategoryId,
+			@NonNull final OrgId targetOrgId)
+	{
+
+		final ProductId targetProductId = queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, targetOrgId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_Category_ID, groupCategoryId)
+				.orderByDescending(I_M_Product.COLUMNNAME_M_Product_ID)
+				.create()
+				.firstId(ProductId::ofRepoIdOrNull);
+
+		if (targetProductId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(getById(targetProductId, de.metas.product.model.I_M_Product.class));
 	}
 }

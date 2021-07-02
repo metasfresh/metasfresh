@@ -87,7 +87,8 @@ class JsonInsertInvoiceCandidateServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository())); // needed in case a ProductNotOnPriceListException shluld be thrown
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, partnerBL); // needed in case a ProductNotOnPriceListException shluld be thrown
 
 		final I_C_ILCandHandler manualICHandler = newInstance(I_C_ILCandHandler.class);
 		manualICHandler.setClassname(ManualCandidateHandler.class.getName());
@@ -152,7 +153,7 @@ class JsonInsertInvoiceCandidateServiceTest
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		saveRecord(taxRecord);
 
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository());
 		jsonInsertInvoiceCandidateService = new CreateInvoiceCandidatesService(
 				new BPartnerQueryService(),
 				bpartnerCompositeRepository,

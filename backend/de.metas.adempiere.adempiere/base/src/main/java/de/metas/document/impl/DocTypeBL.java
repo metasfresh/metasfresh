@@ -111,4 +111,12 @@ public class DocTypeBL implements IDocTypeBL
 		return X_C_DocType.DOCSUBTYPE_Requisition.equals(dt.getDocSubType())
 				&& X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType());
 	}
+
+	@Override
+	public boolean isMediated(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
+		return X_C_DocType.DOCSUBTYPE_Mediated.equals(dt.getDocSubType())
+				&& X_C_DocType.DOCBASETYPE_PurchaseOrder.equals(dt.getDocBaseType());
+	}
 }

@@ -83,6 +83,7 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
 
 			bPartnerRecord.setM_PricingSystem_ID(DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID));
+			bPartnerRecord.setPO_PricingSystem_ID(DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID));
 
 			bPartnerRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_AD_Language));
 

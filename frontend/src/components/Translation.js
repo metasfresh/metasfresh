@@ -18,7 +18,7 @@ class Translation extends Component {
 
       counterpart.registerTranslations('lang', response.data);
       counterpart.setLocale('lang');
-      counterpart.setMissingEntryGenerator(function(key) {
+      counterpart.setMissingEntryGenerator(function (key) {
         // eslint-disable-next-line no-console
         console.error(`Missing translation: ${key}`);
         return `{${key}}`;

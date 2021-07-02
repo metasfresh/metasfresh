@@ -877,4 +877,10 @@ public class OrderLineBL implements IOrderLineBL
 
 		return lineNetAmt;
 	}
+
+	@Override
+	public void save(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		orderDAO.save(orderLine);
+	}
 }

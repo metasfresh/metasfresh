@@ -1,16 +1,15 @@
 package de.metas.ui.web.document.filter.sql;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
-import org.compiere.util.DB;
-
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.compiere.util.DB;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -36,15 +35,14 @@ import lombok.NonNull;
 
 /**
  * Converts a {@link DocumentFilter} to SQL.
- * 
- * To create and manipulate {@link SqlDocumentFilterConverter}s please use {@link SqlDocumentFilterConverters}.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * <p>
+ * Implementations are automatically discovered if they are spring beans.
  */
 public interface SqlDocumentFilterConverter
 {
-	/** @return true if the filter identified by <code>filterId</code> can be converted to SQL by this converter */
+	/**
+	 * @return true if the filter identified by <code>filterId</code> can be converted to SQL by this converter
+	 */
 	boolean canConvert(final String filterId);
 
 	/**
@@ -55,11 +53,12 @@ public interface SqlDocumentFilterConverter
 	 */
 	@Nullable
 	String getSql(SqlParamsCollector sqlParamsOut,
-			DocumentFilter filter,
-			final SqlOptions sqlOpts,
-			final SqlDocumentFilterConverterContext context);
+				  DocumentFilter filter,
+				  final SqlOptions sqlOpts,
+				  final SqlDocumentFilterConverterContext context);
 
-	/* final */ default String getSql(
+	/* final */
+	default String getSql(
 			@NonNull final SqlParamsCollector sqlParamsOut,
 			@NonNull final DocumentFilterList filters,
 			@NonNull final SqlOptions sqlOpts,

@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.core.from_mf;
 
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
@@ -29,6 +30,7 @@ import org.apache.camel.builder.NotifyBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.util.SocketUtils;
 
 import java.io.IOException;
@@ -41,7 +43,7 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		return new CallDispatcherRouteBuilder();
+		return new CallDispatcherRouteBuilder(Mockito.mock(ProcessLogger.class));
 	}
 
 	@Override
@@ -75,7 +77,7 @@ class CallDispatcherRouteBuilderTest extends CamelTestSupport
 		final var externalSystem = "myExternalSystem";
 		
 		AdviceWith.adviceWith(context,
-				CallDispatcherRouteBuilder.ROUTE_ID,
+				CallDispatcherRouteBuilder.DISPATCH_ROUTE_ID,
 				a -> a.interceptSendToEndpoint("direct:" + externalSystem + "-" + command)
 						.skipSendToOriginalEndpoint()
 						.process(postEndpoint));
