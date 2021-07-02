@@ -125,7 +125,9 @@ import java.util.Properties;
 		huContextCopy.setDate(getDate());
 		huContextCopy.setHUPackingMaterialsCollector(_huPackingMaterialsCollector.copy());
 		huContextCopy._trxListeners = getTrxListeners().copy(); // using the getter to make sure they are loaded
-
+		
+		huContextCopy.huIdsToNotDestroy.addAll(huIdsToNotDestroy);
+		
 		emptyHUListeners.forEach(huContextCopy::addEmptyHUListener);
 
 		return huContextCopy;
@@ -287,7 +289,7 @@ import java.util.Properties;
 	public IAutoCloseable temporarilyDontDestroyHU(@NonNull final HuId huId)
 	{
 		huIdsToNotDestroy.add(huId);
-		return ()->huIdsToNotDestroy.remove(huId);
+		return () -> huIdsToNotDestroy.remove(huId);
 	}
 
 	@Override
