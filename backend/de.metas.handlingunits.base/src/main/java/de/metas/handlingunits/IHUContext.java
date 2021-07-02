@@ -27,6 +27,8 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
+import lombok.NonNull;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -116,4 +118,17 @@ public interface IHUContext extends IContextAware
 	 * Useful for example to persist the HU Attributes.
 	 */
 	void flush();
+
+	/**
+	 * Temporarily make sure that the given HU is not destroyed.
+	 * We sometimes need this when splitting out something from a TU that is on an LU
+	 * and the new TU has to be on the same LU. 
+	 * Without this, the LU might be destroyed after the old TU was destroyed (if it was the last one) and before the new TU was added.
+	 */
+	IAutoCloseable temporarilyDontDestroyHU(@NonNull HuId huId);
+
+	/**
+	 * @return {@code true} if the HU shall not be destroyed right now
+	 */
+	boolean isDontDestroyHu(@NonNull HuId ofRepoId);
 }
