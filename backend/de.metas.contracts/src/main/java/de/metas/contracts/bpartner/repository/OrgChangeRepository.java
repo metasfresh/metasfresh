@@ -28,7 +28,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTerm;
@@ -37,7 +36,6 @@ import de.metas.contracts.FlatrateTermStatus;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.compensationGroup.GroupCategoryId;
@@ -57,7 +55,6 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -71,7 +68,6 @@ public class OrgChangeRepository
 {
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -174,6 +170,7 @@ public class OrgChangeRepository
 		return queryBL.createQueryBuilder(I_M_Product.class)
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Org_ID, orgId)
 				.addNotEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID, null)
+				.addNotEqualsFilter(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_Category_ID, null)
 				.create();
 	}
 

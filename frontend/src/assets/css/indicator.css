@@ -49,6 +49,7 @@
 }
 
 .indicator-data {
+    clear: both;
     padding-top: 0;
     margin-top: -0.3rem;
 }
@@ -95,14 +96,35 @@
     width: 30%;
     float: right;
     text-align: right;
-    font-size: 0.9rem;
+    font-size: 0.7rem;
     font-weight: bold;
     cursor: pointer;
+    color: $brand-color-primary;
+}
+.indicator-last-updated {
+    clear:both;
+    text-align: left;
+    color: $brand-color-primary;
+    float: left;
+    width: 90%;
+}
+.indicator-fuzzy {
+    text-decoration: none;
+    color: $brand-color-primary;
+}
+.indicator-fuzzy:hover {
+    text-decoration: none;
+    color: $brand-color-primary;
+}
+.indicator-has-errors {
+    width: 10%;
+    float: right;
+    text-align: right;
+    padding-top: 2px;
 }
 
 
-
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 901px) {
     .indicator {
         border-right: 1px solid $brand-border-color;
         width: calc(50% - 1rem);
@@ -110,6 +132,7 @@
         display: inline-block;
         text-align: center;
         padding: 20px;
+        float: left;
     }
     .indicators-wrapper {
         margin: 0;

@@ -55,15 +55,15 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 	final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	public static final String PARAM_AD_ORG_TARGET_ID = "AD_Org_Target_ID";
-	public static final String PARAM_GroupTemplate_ID = I_C_CompensationGroup_Schema_Category.COLUMNNAME_C_CompensationGroup_Schema_Category_ID;
+	public static final String PARAM_GroupCategory_ID = I_C_CompensationGroup_Schema_Category.COLUMNNAME_C_CompensationGroup_Schema_Category_ID;
 	public static final String PARAM_DATE_ORG_CHANGE = "Date_OrgChange";
 	public static final String PARAM_IS_SHOW_MEMBERSHIP_PARAMETER = "IsShowMembershipParameter";
 
 	@Param(parameterName = PARAM_AD_ORG_TARGET_ID, mandatory = true)
 	protected OrgId p_orgTargetId;
 
-	@Param(parameterName = PARAM_GroupTemplate_ID)
-	protected GroupCategoryId p_groupTemplateId;
+	@Param(parameterName = PARAM_GroupCategory_ID)
+	protected GroupCategoryId p_groupCategoryId;
 
 	@Param(parameterName = PARAM_DATE_ORG_CHANGE, mandatory = true)
 	protected Instant p_startDate;
@@ -81,7 +81,7 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 		final OrgChangeRequest orgChangeRequest = OrgChangeRequest.builder()
 				.bpartnerId(bpartnerId)
 				.startDate(p_startDate)
-				.groupCategoryId(p_groupTemplateId)
+				.groupCategoryId(p_groupCategoryId)
 				.orgFromId(OrgId.ofRepoId(bpartnerRecord.getAD_Org_ID()))
 				.orgToId(p_orgTargetId)
 				.build();
@@ -120,7 +120,13 @@ public abstract class C_BPartner_MoveToAnotherOrg_ProcessHelper extends JavaProc
 			isShowMembershipParameter = orgChangePartnerComposite.hasMembershipSubscriptions()
 					&& service.hasAnyMembershipProduct(p_orgTargetId);
 
-			p_groupTemplateId = orgChangePartnerComposite.getGroupCategoryId();
+			final GroupCategoryId groupCategoryId = orgChangePartnerComposite.getGroupCategoryId();
+
+			if (groupCategoryId != null && service.isGroupCategoryContainsProductsInTargetOrg(groupCategoryId, p_orgTargetId))
+			{
+				p_groupCategoryId = groupCategoryId;
+			}
 		}
 	}
+
 }

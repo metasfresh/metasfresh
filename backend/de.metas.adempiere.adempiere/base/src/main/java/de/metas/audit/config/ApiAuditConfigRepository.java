@@ -25,7 +25,7 @@ package de.metas.audit.config;
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.HttpMethod;
 import de.metas.organization.OrgId;
-import de.metas.user.UserId;
+import de.metas.user.UserGroupId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -73,7 +73,7 @@ public class ApiAuditConfigRepository
 				.method(HttpMethod.ofNullableCode(record.getMethod()))
 				.pathPrefix(record.getPathPrefix())
 				.notifyUserInCharge(NotificationTriggerType.ofNullableCode(record.getNotifyUserInCharge()))
-				.userInChargeId(UserId.ofRepoIdOrNull(record.getAD_User_InCharge_ID()))
+				.userGroupInChargeId(UserGroupId.ofRepoIdOrNull(record.getAD_UserGroup_InCharge_ID()))
 				.build();
 	}
 }

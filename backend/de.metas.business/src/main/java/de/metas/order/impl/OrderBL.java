@@ -1029,6 +1029,20 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public boolean isMediated(@NonNull final I_C_Order order)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		if (!soTrx.isPurchase())
+		{
+			// only purchase orders can be mediated
+			return false;
+		}
+
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isMediated(docTypeId);
+	}
+
+	@Override
 	public boolean isPrepay(@NonNull final OrderId orderId)
 	{
 		final I_C_Order order = getById(orderId);

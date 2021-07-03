@@ -27,11 +27,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.base.MoreObjects;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
@@ -42,7 +44,7 @@ public class KPIField
 	@NonNull ITranslatableString caption;
 	@NonNull ITranslatableString offsetCaption;
 	@NonNull ITranslatableString description;
-	@Nullable String unit;
+	@Nullable ITranslatableString unit;
 	@NonNull KPIFieldValueType valueType;
 	@Nullable Integer numberPrecision;
 	@Nullable String color;
@@ -54,7 +56,7 @@ public class KPIField
 			@NonNull final ITranslatableString caption,
 			@Nullable final ITranslatableString offsetCaption,
 			@Nullable final ITranslatableString description,
-			@Nullable final String unit,
+			@Nullable final ITranslatableString unit,
 			@NonNull final KPIFieldValueType valueType,
 			@Nullable final Integer numberPrecision,
 			@Nullable final String color)
@@ -64,7 +66,7 @@ public class KPIField
 		this.caption = caption;
 		this.offsetCaption = offsetCaption != null ? offsetCaption : TranslatableStrings.empty();
 		this.description = description != null ? description : TranslatableStrings.empty();
-		this.unit = unit;
+		this.unit = !TranslatableStrings.isBlank(unit) ? unit : null;
 		this.valueType = valueType;
 		this.numberPrecision = numberPrecision;
 		this.color = color;
@@ -99,5 +101,12 @@ public class KPIField
 	public String getDescription(final String adLanguage)
 	{
 		return description.translate(adLanguage);
+	}
+
+	public Optional<String> getUnit(final String adLanguage)
+	{
+		return unit != null
+				? StringUtils.trimBlankToOptional(unit.translate(adLanguage))
+				: Optional.empty();
 	}
 }

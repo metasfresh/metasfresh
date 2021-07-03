@@ -92,7 +92,7 @@ public class JsonKPIFieldLayout
 		}
 
 		description = kpiField.getDescription(adLanguage);
-		unit = kpiField.getUnit();
+		unit = kpiField.getUnit(adLanguage).orElse(null);
 
 		// groupBy = kpiField.isGroupBy();
 		dataType = kpiField.getValueType().toJson();

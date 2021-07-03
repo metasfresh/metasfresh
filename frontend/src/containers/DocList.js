@@ -191,10 +191,7 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    getWindowBreadcrumb,
-    updateUri,
-  }
-)(DocList);
+export default connect(mapStateToProps, {
+  getWindowBreadcrumb,
+  updateUri,
+})(DocList);

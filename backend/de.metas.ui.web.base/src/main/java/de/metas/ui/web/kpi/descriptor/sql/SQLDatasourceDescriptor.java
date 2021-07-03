@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -87,9 +88,7 @@ public class SQLDatasourceDescriptor
 				.map(StringExpressionCompiler.instance::compile)
 				.orElse(IStringExpression.NULL);
 
-		this.sqlDetailsWhereClause = StringUtils.trimBlankToOptional(sqlDetailsWhereClause)
-				.map(StringExpressionCompiler.instance::compile)
-				.orElse(this.sqlWhereClause);
+		this.sqlDetailsWhereClause = buildSqlDetailsWhereClause(sqlDetailsWhereClause, sqlWhereClause);
 
 		this.applySecuritySettings = applySecuritySettings;
 
@@ -170,6 +169,26 @@ public class SQLDatasourceDescriptor
 		}
 
 		return StringExpressionCompiler.instance.compile(sql.toString());
+	}
+
+	private static IStringExpression buildSqlDetailsWhereClause(
+			@Nullable final String sqlDetailsWhereClause,
+			@Nullable final String sqlWhereClause)
+	{
+		String sqlDetailsWhereClauseNorm = CoalesceUtil.firstNotEmptyTrimmed(
+				sqlDetailsWhereClause,
+				sqlWhereClause);
+		if (sqlDetailsWhereClauseNorm == null || Check.isBlank(sqlDetailsWhereClauseNorm))
+		{
+			return IStringExpression.NULL;
+		}
+
+		if (sqlDetailsWhereClauseNorm.toUpperCase().startsWith("WHERE"))
+		{
+			sqlDetailsWhereClauseNorm = sqlDetailsWhereClauseNorm.substring("WHERE".length()).trim();
+		}
+
+		return StringExpressionCompiler.instance.compile(sqlDetailsWhereClauseNorm);
 	}
 
 	public Set<CtxName> getRequiredContextParameters()

@@ -216,9 +216,7 @@ export function createDate({ fieldValue, fieldType }) {
       ? Moment.utc(Moment.duration(fieldValue).asMilliseconds())
           .locale(languageKey)
           .format(TIME_FORMAT)
-      : Moment(fieldValue)
-          .locale(languageKey)
-          .format(getDateFormat(fieldType));
+      : Moment(fieldValue).locale(languageKey).format(getDateFormat(fieldType));
   }
 
   return '';

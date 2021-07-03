@@ -373,14 +373,11 @@ const mapStateToProps = (state, props) => {
     includedTabsInfo, // this holds the allowCreateNew, allowDelete, stale props
   };
 };
-export default connect(
-  mapStateToProps,
-  {
-    fetchInlineTabWrapperData,
-    createWindow,
-    setInlineTabAddNew,
-    setInlineTabShowMore,
-    updateDataValidStatus,
-    updateDataIncludedTabsInfo,
-  }
-)(onClickOutside(InlineTabWrapper));
+export default connect(mapStateToProps, {
+  fetchInlineTabWrapperData,
+  createWindow,
+  setInlineTabAddNew,
+  setInlineTabShowMore,
+  updateDataValidStatus,
+  updateDataIncludedTabsInfo,
+})(onClickOutside(InlineTabWrapper));

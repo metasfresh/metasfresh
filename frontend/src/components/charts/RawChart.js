@@ -156,9 +156,9 @@ class RawChart extends Component {
               amount={noData ? '0' : dataset0[0][fields[0].fieldName]}
               unit={dataset0_unit ? dataset0_unit : fields[0].unit}
               {...{
-                caption:
-                  typeof caption === 'string' ? caption.toUpperCase() : caption,
+                caption,
                 editmode,
+                data,
               }}
             />
           </div>
@@ -169,22 +169,29 @@ class RawChart extends Component {
   }
 
   renderNoData(showLoader) {
-    const { chartType } = this.props;
+    const { chartType, data, zoomToDetailsAvailable, caption } = this.props;
 
     switch (chartType) {
       case 'Indicator':
-        return <Indicator value={'No data'} loader={showLoader} />;
+        return (
+          <Indicator
+            value={'No data'}
+            data={data}
+            loader={showLoader}
+            {...{ caption, zoomToDetailsAvailable }}
+          />
+        );
       default:
         return <div>{showLoader ? <Loader /> : 'No data'}</div>;
     }
   }
 
   render() {
-    const { data } = this.props;
+    const { data, chartType } = this.props;
 
     if (!data) {
       return this.renderNoData(true); // loading
-    } else if (data.error) {
+    } else if (data.error && chartType !== 'Indicator') {
       return this.renderError(data.error.message);
     } else if (data.datasets && data.datasets.length > 0) {
       return this.renderChart();

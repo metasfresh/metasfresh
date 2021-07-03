@@ -83,14 +83,8 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const {
-      deselectTableRows,
-      windowId,
-      viewId,
-      docId,
-      tabId,
-      isModal,
-    } = this.props;
+    const { deselectTableRows, windowId, viewId, docId, tabId, isModal } =
+      this.props;
     const tableId = getTableId({ windowId, viewId, docId, tabId });
 
     deselectTableRows({
@@ -103,14 +97,8 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselectAll = (callback) => {
-    const {
-      deselectTableRows,
-      windowId,
-      viewId,
-      docId,
-      tabId,
-      isModal,
-    } = this.props;
+    const { deselectTableRows, windowId, viewId, docId, tabId, isModal } =
+      this.props;
 
     callback && callback();
 
@@ -214,9 +202,7 @@ class TableContainer extends PureComponent {
       res &&
         res.data &&
         window.open(
-          `/window/${res.data.documentPath.windowId}/${
-            res.data.documentPath.documentId
-          }`,
+          `/window/${res.data.documentPath.windowId}/${res.data.documentPath.documentId}`,
           '_blank'
         );
     });
