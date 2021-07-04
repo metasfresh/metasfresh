@@ -37,6 +37,7 @@ const PrivateRoute = (props) => {
   useEffect(() => {
     if (firstRender) {
       setFirstRender(false);
+      dispatch(clearNotifications());
 
       if (!isLoggedIn && !authRequestPending()) {
         const url = location.pathname;
@@ -57,7 +58,6 @@ const PrivateRoute = (props) => {
       }
 
       if (location.pathname !== '/logout') {
-        dispatch(clearNotifications());
         dispatch(getNotificationsEndpoint(auth));
         dispatch(getNotifications());
       }
