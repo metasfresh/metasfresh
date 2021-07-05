@@ -59,7 +59,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_API_Request_Audit;
 import org.compiere.util.Env;
-import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -99,12 +98,14 @@ public class ApiAuditService
 			AdMessageKey.of("de.metas.util.web.audit.invocation_failed");
 
 	private static final String CFG_INTERNAL_HOST_NAME = "de.metas.util.web.audit.AppServerInternalHostName";
-
 	/**
 	 * this default works if you run both app and webapi locally. In our usual stack, it should be set to {@code "app"}.
 	 */
 	private static final String CFG_INTERNAL_HOST_NAME_DEFAULT = "localhost";
 
+	private static final String CFG_INTERNAL_PORT = "de.metas.util.web.audit.AppServerInternalPort";
+	private static final int CFG_INTERNAL_PORT_DEFAULT = 8282;
+	
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private final ApiAuditConfigRepository apiAuditConfigRepository;
@@ -116,25 +117,18 @@ public class ApiAuditService
 	private final ConcurrentHashMap<UserId, HttpCallScheduler> callerId2Scheduler;
 	private final ObjectMapper objectMapper;
 
-	/**
-	 * Required by {@link #executeHttpCall(ApiRequestAudit)} to get our own port at runtime. That also works with random ports.
-	 * Thx to https://www.baeldung.com/spring-boot-running-port#1-using-servletwebserverapplicationcontext !
-	 */
-	private final ServletWebServerApplicationContext servletWebServerApplicationContext;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public ApiAuditService(
 			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository,
 			@NonNull final ApiRequestAuditRepository apiRequestAuditRepository,
 			@NonNull final ApiResponseAuditRepository apiResponseAuditRepository,
-			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO,
-			@NonNull final ServletWebServerApplicationContext servletWebServerApplicationContext)
+			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO)
 	{
 		this.apiAuditConfigRepository = apiAuditConfigRepository;
 		this.apiRequestAuditRepository = apiRequestAuditRepository;
 		this.apiResponseAuditRepository = apiResponseAuditRepository;
 		this.apiAuditRequestLogDAO = apiAuditRequestLogDAO;
-		this.servletWebServerApplicationContext = servletWebServerApplicationContext;
 
 		this.webClient = WebClient.create();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
@@ -263,13 +257,13 @@ public class ApiAuditService
 
 		httpHeaders.forEach((key, value) -> uriSpec.header(key, value.toArray(new String[0])));
 
-		final int ourPort = servletWebServerApplicationContext.getWebServer().getPort();
-
 		final String hostName = computeInternalHostName(apiRequestAudit);
+		final int port = sysConfigBL.getIntValue(CFG_INTERNAL_PORT, CFG_INTERNAL_PORT_DEFAULT);
+
 		final String[] split = apiRequestAudit.getPath().split("\\?");
 		final String queryString = split.length > 1 ? "?" + split[1] : "";
 
-		final URI uri = URI.create("http://" + hostName + ":" + ourPort + apiRequestAudit.getRequestURI() + queryString);
+		final URI uri = URI.create("http://" + hostName + ":" + port + apiRequestAudit.getRequestURI() + queryString);
 
 		final WebClient.RequestBodySpec bodySpec = uriSpec.uri(uri);
 
@@ -278,14 +272,22 @@ public class ApiAuditService
 			bodySpec.body(Mono.just(apiRequestAudit.getRequestBody(objectMapper)), Object.class);
 		}
 
-		return bodySpec.exchangeToMono(cr -> cr
-				.bodyToMono(String.class)
-
-				.map(body -> ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), body))
-
-				.defaultIfEmpty(ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
-
-				.block();
+		try
+		{
+			return bodySpec.exchangeToMono(cr -> cr
+					.bodyToMono(String.class)
+					.map(body -> ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), body))
+					.defaultIfEmpty(ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
+					.block();
+		}
+		catch (final RuntimeException rte)
+		{
+			throw new AdempiereException("Caught " + rte.getClass().getSimpleName() + " exception while making web-client http call", rte)
+					.appendParametersToMessage()
+					.setParameter("URI", uri)
+					.setParameter("AD_SysConfig de.metas.util.web.audit.AppServerInternalHostName", sysConfigBL.getValue(CFG_INTERNAL_HOST_NAME, CFG_INTERNAL_HOST_NAME_DEFAULT))
+					.setParameter("AD_SysConfig de.metas.util.web.audit.AppServerInternalPort", sysConfigBL.getIntValue(CFG_INTERNAL_PORT, CFG_INTERNAL_PORT_DEFAULT));
+		}
 	}
 
 	private String computeInternalHostName(@NonNull final ApiRequestAudit apiRequestAudit)
