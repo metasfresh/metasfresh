@@ -117,8 +117,23 @@ export function deleteNotification(key) {
 }
 
 export function clearNotifications() {
+  return (dispatch, getState) => {
+    const { appHandler } = getState();
+
+    if (
+      appHandler.inbox.notifications.length === 0 ||
+      appHandler.inbox.pending
+    ) {
+      return;
+    }
+
+    dispatch({ type: types.CLEAR_NOTIFICATIONS });
+  };
+}
+
+export function requestNotifications() {
   return {
-    type: types.CLEAR_NOTIFICATIONS,
+    type: types.GET_NOTIFICATIONS_REQUEST,
   };
 }
 
@@ -285,7 +300,15 @@ export function getNotificationsEndpoint(auth) {
 }
 
 export function getNotifications() {
-  return (dispatch) => {
+  return (dispatch, getState) => {
+    const state = getState();
+
+    if (state.appHandler.inbox.pending) {
+      return Promise.resolve(true);
+    }
+
+    dispatch(requestNotifications());
+
     return getNotificationsRequest()
       .then((response) => {
         dispatch(
