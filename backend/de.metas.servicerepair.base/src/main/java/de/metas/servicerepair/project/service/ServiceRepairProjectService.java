@@ -439,7 +439,7 @@ public class ServiceRepairProjectService
 					.build());
 		}
 
-		task = task.withRepairOrderDone(true);
+		task = task.withRepairOrderDone(true, repairOrder.getSummary());
 		projectTaskRepository.save(task);
 	}
 
