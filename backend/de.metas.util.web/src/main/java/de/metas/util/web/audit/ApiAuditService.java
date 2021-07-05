@@ -103,7 +103,7 @@ public class ApiAuditService
 	 */
 	private static final String CFG_INTERNAL_HOST_NAME_DEFAULT = "localhost";
 
-	private static final String CFG_INTERNAL_PORT = "de.metas.util.web.audit.AppServerInternalPort";
+	public static final String CFG_INTERNAL_PORT = "de.metas.util.web.audit.AppServerInternalPort";
 	private static final int CFG_INTERNAL_PORT_DEFAULT = 8282;
 	
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
