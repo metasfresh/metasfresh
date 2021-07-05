@@ -68,7 +68,7 @@ SELECT
 	o.description AS order_description,
 	(CASE WHEN pl.priceprecision <= 1
     THEN '#,##0.0'
-   ELSE Substring('#,##0.0000' FROM 0 FOR 7 + pl.priceprecision :: integer) END) AS price_pattern,
+   ELSE Substring('#,##0.0000' FROM 0 FOR 7 + pl.priceprecision :: integer) END) AS price_pattern
 
 FROM
 	C_OrderLine ol

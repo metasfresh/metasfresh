@@ -209,13 +209,8 @@ class Lookup extends Component {
 
   // TODO: Rewrite per widget if needed
   handleClear = () => {
-    const {
-      updateItems,
-      widgetData,
-      onChange,
-      properties,
-      onSelectBarcode,
-    } = this.props;
+    const { updateItems, widgetData, onChange, properties, onSelectBarcode } =
+      this.props;
     const propsWithoutTooltips = properties.filter(
       (prop) => prop.type !== 'Tooltip'
     );
@@ -361,7 +356,7 @@ class Lookup extends Component {
         (validStatus && validStatus.initialValue && !validStatus.valid));
 
     const errorInputCondition =
-      validStatus && (!validStatus.valid && !validStatus.initialValue);
+      validStatus && !validStatus.valid && !validStatus.initialValue;
     const classRank = rank || 'primary';
     let showBarcodeScannerBtn = false;
 

@@ -457,7 +457,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setFilterId(FILTER_ID)
 					.setDisplayName(barcodeCaption)
 					.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
-					.setFrequentUsed(false)
+					.setFrequentUsed(true)
 					.addParameter(DocumentFilterParamDescriptor.builder()
 							.setFieldName(PARAM_Barcode)
 							.setDisplayName(barcodeCaption)
