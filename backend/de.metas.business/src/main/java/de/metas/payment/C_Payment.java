@@ -37,8 +37,10 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -65,7 +67,13 @@ public class C_Payment
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
+	/**
+	 * Note that because of C_Payment.C_Order_ID's validation rule we can one have only prepay orders in this field.
+	 * Before the payment is made, the prepay-order is not even completed, so the payment's date is effectively also the order's date.
+	 * So in case of a prepay order there is no need to take the term's DiscountDays into account.
+	 */
 	@CalloutMethod(columnNames = I_C_Payment.COLUMNNAME_C_Order_ID)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = I_C_Payment.COLUMNNAME_C_Order_ID)
 	public void updateDiscountAndPaymentAmount(@NonNull final I_C_Payment record)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(record.getC_Order_ID());
@@ -90,7 +98,6 @@ public class C_Payment
 		record.setC_Invoice(null);
 		record.setC_Charge_ID(0);
 		record.setIsPrepayment(true);
-		record.setDiscountAmt(BigDecimal.ZERO);
 		record.setWriteOffAmt(BigDecimal.ZERO);
 		record.setIsOverUnderPayment(false);
 		record.setOverUnderAmt(BigDecimal.ZERO);
