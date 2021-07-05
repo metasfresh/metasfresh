@@ -206,7 +206,7 @@ public class TestDunning extends DunningTestBase
 
 		//
 		// Process all dunning docs => candidates shall be marked as doc processed
-		processDunningDocs(dunningContext);
+		processDunningDocs();
 		loadDunningCandidates();
 		Assert.assertTrue("Candidate1 - IsDunningDocProcessed", candidate1.isDunningDocProcessed());
 		Assert.assertEquals("Candidate1 - DunningDateEffective", dunningContext.getDunningDate(), candidate1.getDunningDateEffective());
@@ -226,7 +226,7 @@ public class TestDunning extends DunningTestBase
 
 		dunningBL.processCandidates(dunningContext);
 
-		processDunningDocs(dunningContext);
+		processDunningDocs();
 
 		//
 		// Assert no invoice shall be wrote-off at this moment (we are still on level1)
@@ -246,7 +246,7 @@ public class TestDunning extends DunningTestBase
 
 		dunningBL.processCandidates(dunningContext);
 
-		processDunningDocs(dunningContext);
+		processDunningDocs();
 
 		//
 		// Create candidates without processing them - Second run => Level 2 shall be generated
@@ -274,7 +274,7 @@ public class TestDunning extends DunningTestBase
 
 		dunningBL.processCandidates(dunningContext);
 
-		processDunningDocs(dunningContext);
+		processDunningDocs();
 
 		//
 		// Create candidates without processing them - Second run => Level 2 shall be generated
@@ -285,7 +285,7 @@ public class TestDunning extends DunningTestBase
 		//
 		// Process second round of candidates, generate dunning docs and process them
 		processDunningCandidates(dunningContext);
-		processDunningDocs(dunningContext);
+		processDunningDocs();
 
 		//
 		// Check write-off because we actually executing the write-off
@@ -312,7 +312,7 @@ public class TestDunning extends DunningTestBase
 
 		dunningBL.processCandidates(dunningContext);
 
-		processDunningDocs(dunningContext);
+		processDunningDocs();
 
 		//
 		// Create candidates without processing them - Second run => Level 2 shall be generated
@@ -323,7 +323,7 @@ public class TestDunning extends DunningTestBase
 		//
 		// Process second round of candidates, generate dunning docs and process them
 		processDunningCandidates(dunningContext);
-		processDunningDocs(dunningContext);
+		processDunningDocs();
 
 		//
 		// Execute writeoff process

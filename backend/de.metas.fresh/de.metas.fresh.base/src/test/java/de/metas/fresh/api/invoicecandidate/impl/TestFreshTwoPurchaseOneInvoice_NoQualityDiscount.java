@@ -22,22 +22,26 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * #L%
  */
 
+import de.metas.currency.CurrencyRepository;
+import de.metas.greeting.GreetingRepository;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.money.MoneyService;
+import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
 
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.StartupListener;
-import de.metas.currency.CurrencyRepository;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.money.MoneyService;
-
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, /* ShutdownListener.class,*/ MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
 public class TestFreshTwoPurchaseOneInvoice_NoQualityDiscount extends AbstractFreshTwoInOutsOneInvoice_NoQualityDiscountTests
 {
+	@Override
+	public void init()
+	{
+		super.init();
+
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+	}
+
 	@Override
 	protected BigDecimal config_GetPriceEntered_Override()
 	{

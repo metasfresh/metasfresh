@@ -22,17 +22,24 @@
 
 package org.adempiere.model;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.impl.NullModelTranslationMap;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -63,25 +70,15 @@ import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.model.IModelCacheService;
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.util.lang.RepoIdAware;
-import de.metas.util.lang.RepoIdAwares;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * This class is heavily used throughout metasfresh. To understand what it's all about see the javadoc of {@link #create(Object, Class)}.
@@ -1693,9 +1690,8 @@ public class InterfaceWrapperHelper
 		return new ModelCopyHelper();
 	}
 
-	public static boolean isOldValues(final Object model)
+	public static boolean isOldValues(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		if (POWrapper.isHandled(model))
 		{
 			return POWrapper.isOldValues(model);
@@ -1714,6 +1710,15 @@ public class InterfaceWrapperHelper
 					+ "\n Class: " + (model == null ? null : model.getClass()));
 		}
 	}
+
+	public static void assertNotOldValues(@NonNull final Object model)
+	{
+		if (isOldValues(model))
+		{
+			throw new AdempiereException("Model was expected to not use old values: " + model + " (" + model.getClass() + ")");
+		}
+	}
+
 
 	/**
 	 * If the given <code>model</code> is not null and has all the columns which are defined inside the given <code>clazz</code>'s {@link IModelClassInfo},<br>

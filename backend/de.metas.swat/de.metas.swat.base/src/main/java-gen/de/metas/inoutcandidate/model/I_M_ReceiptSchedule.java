@@ -180,49 +180,26 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Can be exported from.
-	 * Timestamp from which onwards the record may be exported
+	 * Set Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setCanBeExportedFrom (@Nullable java.sql.Timestamp CanBeExportedFrom);
+	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
 
 	/**
-	 * Get Can be exported from.
-	 * Timestamp from which onwards the record may be exported
+	 * Get Standort abw..
+	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
 	 *
-	 * <br>Type: DateTime
+	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getCanBeExportedFrom();
+	int getC_BP_Location_Override_ID();
 
-	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_CanBeExportedFrom = new ModelColumn<>(I_M_ReceiptSchedule.class, "CanBeExportedFrom", null);
-	String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
-
-	/**
-	 * Set Catch UOM.
-	 * Catch weight UOM as taken from the product master data.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCatch_UOM_ID (int Catch_UOM_ID);
-
-	/**
-	 * Get Catch UOM.
-	 * Catch weight UOM as taken from the product master data.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getCatch_UOM_ID();
-
-	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
 
 	/**
 	 * Set Business Partner.
@@ -285,28 +262,6 @@ public interface I_M_ReceiptSchedule
 	int getC_BPartner_Override_ID();
 
 	String COLUMNNAME_C_BPartner_Override_ID = "C_BPartner_Override_ID";
-
-	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
-
-	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Location_Override_ID();
-
-	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
 
 	/**
 	 * Set Campaign.
@@ -432,6 +387,73 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCanBeExportedFrom (@Nullable java.sql.Timestamp CanBeExportedFrom);
+
+	/**
+	 * Get Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getCanBeExportedFrom();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_CanBeExportedFrom = new ModelColumn<>(I_M_ReceiptSchedule.class, "CanBeExportedFrom", null);
+	String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
+
+	/**
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCatch_UOM_ID();
+
+	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -455,28 +477,6 @@ public interface I_M_ReceiptSchedule
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Date.
@@ -793,29 +793,6 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
 
 	/**
-	 * Set Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
-
-	/**
-	 * Get Bewegungs-Datum.
-	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getMovementDate();
-
-	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_MovementDate = new ModelColumn<>(I_M_ReceiptSchedule.class, "MovementDate", null);
-	String COLUMNNAME_MovementDate = "MovementDate";
-
-	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -945,6 +922,29 @@ public interface I_M_ReceiptSchedule
 	int getM_Warehouse_Override_ID();
 
 	String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
+
+	/**
+	 * Set Bewegungs-Datum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMovementDate (@Nullable java.sql.Timestamp MovementDate);
+
+	/**
+	 * Get Bewegungs-Datum.
+	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getMovementDate();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_MovementDate = new ModelColumn<>(I_M_ReceiptSchedule.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
 	 * Set OnMaterialReceiptWithDestWarehouse.

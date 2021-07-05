@@ -28,13 +28,13 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.junit.Before;
-import org.junit.BeforeClass;
 
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.modelvalidator.OrderCandidate;
 import de.metas.testsupport.AbstractTestSupport;
 import de.metas.util.Services;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Test support for {@link I_C_OLCand}s
@@ -48,13 +48,13 @@ public abstract class AbstractOLCandTestSupport extends AbstractTestSupport
 		super();
 	}
 
-	@BeforeClass
-	public static final void staticInit()
+	@BeforeAll
+	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
 
-	@Before
+	@BeforeEach
 	public final void initStuff()
 	{
 		AdempiereTestHelper.get().init();
@@ -73,6 +73,7 @@ public abstract class AbstractOLCandTestSupport extends AbstractTestSupport
 
 	protected abstract void initDB();
 
+	@SuppressWarnings("SameParameterValue")
 	protected <T extends I_C_OLCand> T olCand(final IContextAware context, final Class<T> interfaceClass, final boolean save)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();

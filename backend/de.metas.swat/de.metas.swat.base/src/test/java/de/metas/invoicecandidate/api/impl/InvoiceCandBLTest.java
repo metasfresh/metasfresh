@@ -1,62 +1,11 @@
-/**
- *
- */
 package de.metas.invoicecandidate.api.impl;
 
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_InOut;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
+import de.metas.greeting.GreetingRepository;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
@@ -66,35 +15,57 @@ import de.metas.money.MoneyService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_InOut;
+import org.hamcrest.MatcherAssert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = { StartupListener.class, ShutdownListener.class, MoneyService.class, CurrencyRepository.class, InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS) // without this, this test fails when run in eclipse together with all tests of this project
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.hamcrest.Matchers.comparesEqualTo;
+
+@ExtendWith(AdempiereTestWatcher.class)
 public class InvoiceCandBLTest
 {
 	private InvoiceCandBL invoiceCandBL;
 	private AbstractICTestSupport icTestSupport;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		invoiceCandBL = new InvoiceCandBL();
 		icTestSupport = new AbstractICTestSupport();
 		icTestSupport.initStuff();
 		icTestSupport.registerModelInterceptors();
 
+		invoiceCandBL = new InvoiceCandBL();
+
 		POJOWrapper.setDefaultStrictValues(false);
 
-		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
-		Services.registerService(IBPartnerStatisticsUpdater.class, asyncBPartnerStatisticsUpdater);
+		Services.registerService(IBPartnerStatisticsUpdater.class, new BPartnerStatisticsUpdater());
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 	}
 
 	/**
 	 * Test: priceEntered in Invoice candidates
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
 	public void test_PriceEnteredInvoiceCandidates()
@@ -139,8 +110,8 @@ public class InvoiceCandBLTest
 		final List<I_C_Invoice_Candidate> invoiceCandidates = Arrays.asList(ic1, ic2);
 		icTestSupport.updateInvalid(invoiceCandidates);
 
-		assertThat("Price Actual Override should be same with price actual computed for " + ic1.getDescription(), ic1.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed1));
-		assertThat("Price Actual Override should be same with price actual computed for " + ic2.getDescription(), ic2.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed2));
+		MatcherAssert.assertThat("Price Actual Override should be same with price actual computed for " + ic1.getDescription(), ic1.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed1));
+		MatcherAssert.assertThat("Price Actual Override should be same with price actual computed for " + ic2.getDescription(), ic2.getPriceActual_Override(), comparesEqualTo(priceActual_OverrideComputed2));
 
 		final BigDecimal discount1After = ic1.getDiscount();
 		final BigDecimal discount_override1After = ic1.getDiscount_Override();
@@ -162,8 +133,8 @@ public class InvoiceCandBLTest
 
 	/**
 	 * Test: priceEntered_Override in Invoice candidates
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
 	public void test_PriceEnteredOverrideInvoiceCandidates()
@@ -190,13 +161,13 @@ public class InvoiceCandBLTest
 
 		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEnteredEffective(ic).toBigDecimal(), discount.toBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
-				ic.getPriceActual_Override(), priceActual_OverrideComputed);
+					 ic.getPriceActual_Override(), priceActual_OverrideComputed);
 	}
 
 	/**
 	 * Test: Discount_Override in Invoice candidates
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
 	public void test_DiscountOverrideInvoiceCandidates()
@@ -224,13 +195,13 @@ public class InvoiceCandBLTest
 		final Percent discount = invoiceCandBL.getDiscount(ic);
 		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEnteredEffective(ic).toBigDecimal(), discount.toBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
-				ic.getPriceActual_Override(), priceActual_OverrideComputed);
+					 ic.getPriceActual_Override(), priceActual_OverrideComputed);
 	}
 
 	/**
 	 * Test: Discount_Override and PriceEntered_Override in Invoice candidates
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
 	public void test_PriceEnteredOverride_DiscountOverrideInvoiceCandidates()
@@ -259,13 +230,13 @@ public class InvoiceCandBLTest
 		final Percent discount = invoiceCandBL.getDiscount(ic);
 		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEnteredEffective(ic).toBigDecimal(), discount.toBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
-				ic.getPriceActual_Override(), priceActual_OverrideComputed);
+					 ic.getPriceActual_Override(), priceActual_OverrideComputed);
 	}
 
 	/**
 	 * Test: remove priceEntered_Override in Invoice candidates
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
 	public void test_RemovePriceEnteredOverrideInvoiceCandidates()
@@ -292,7 +263,7 @@ public class InvoiceCandBLTest
 
 		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEnteredEffective(ic).toBigDecimal(), discount.toBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
-				ic.getPriceActual_Override(), priceActual_OverrideComputed);
+					 ic.getPriceActual_Override(), priceActual_OverrideComputed);
 
 		//
 		// remove price entered override
@@ -305,8 +276,8 @@ public class InvoiceCandBLTest
 
 	/**
 	 * Test: remove Discount_Override in Invoice candidates
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
 	public void test_RemoveDiscountOverrideInvoiceCandidates()
@@ -341,8 +312,8 @@ public class InvoiceCandBLTest
 
 	/**
 	 * Test: Remove Discount_Override and PriceEntered_Override in Invoice candidates
-	 *
-	 * @task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test
 	public void test_RemovePriceEnteredOverride_DiscountOverrideInvoiceCandidates()
@@ -371,7 +342,7 @@ public class InvoiceCandBLTest
 		final Percent discount = invoiceCandBL.getDiscount(ic);
 		final BigDecimal priceActual_OverrideComputed = subtractDiscount(invoiceCandBL.getPriceEnteredEffective(ic).toBigDecimal(), discount.toBigDecimal(), precision);
 		Check.assume(priceActual_OverrideComputed.compareTo(ic.getPriceActual_Override()) == 0, "Price Actual Override should equal with the one computed!", ic.getDescription(),
-				ic.getPriceActual_Override(), priceActual_OverrideComputed);
+					 ic.getPriceActual_Override(), priceActual_OverrideComputed);
 
 		//
 		ic.setDiscount_Override(null);
@@ -470,7 +441,7 @@ public class InvoiceCandBLTest
 		final InvoiceCandidate invoiceCandidate = invoiceCandidateRecordService.ofRecord(icRecord);
 		invoiceCandidateRecordService.updateRecord(invoiceCandidate, icRecord);
 
-		assertThat(invoiceCandBL.getQtyDelivered_Effective(icRecord), comparesEqualTo(expectedQtyDelivered_Effective));
+		MatcherAssert.assertThat(invoiceCandBL.getQtyDelivered_Effective(icRecord), comparesEqualTo(expectedQtyDelivered_Effective));
 	}
 
 	private static BigDecimal subtractDiscount(BigDecimal baseAmount, BigDecimal discount, CurrencyPrecision precision)

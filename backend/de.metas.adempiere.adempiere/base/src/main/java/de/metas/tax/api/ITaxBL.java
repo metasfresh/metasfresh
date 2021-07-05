@@ -22,6 +22,7 @@ package de.metas.tax.api;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -55,8 +56,8 @@ public interface ITaxBL extends ISingletonService
 			Timestamp shipDate,
 			@NonNull OrgId orgId,
 			@Nullable WarehouseId warehouseId,
-			int shipC_BPartner_Location_ID,
-			@NonNull SOTrx soTrx);
+			BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			SOTrx soTrx);
 
 	/**
 	 * Calculate Tax - no rounding
@@ -95,7 +96,8 @@ public interface ITaxBL extends ISingletonService
 	int get(Properties ctx, int M_Product_ID, int C_Charge_ID,
 			Timestamp billDate, Timestamp shipDate,
 			int AD_Org_ID, int M_Warehouse_ID,
-			int billC_BPartner_Location_ID, int shipC_BPartner_Location_ID,
+			BPartnerLocationAndCaptureId billC_BPartner_Location_ID,
+			BPartnerLocationAndCaptureId shipC_BPartner_Location_ID,
 			boolean IsSOTrx);
 
 	/**

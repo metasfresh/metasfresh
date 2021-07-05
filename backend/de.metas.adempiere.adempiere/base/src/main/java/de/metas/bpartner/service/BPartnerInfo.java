@@ -1,15 +1,18 @@
 package de.metas.bpartner.service;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.location.DocumentLocation;
+import de.metas.location.LocationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -38,32 +41,82 @@ import lombok.Value;
  * So, actually just a bunch of IDs. Not DDD at all.
  */
 @Value
-public final class BPartnerInfo
+public class BPartnerInfo
 {
-	private final BPartnerId bpartnerId;
-	private final BPartnerLocationId bpartnerLocationId;
-	private final BPartnerContactId contactId;
+	@NonNull BPartnerId bpartnerId;
 
-	@Builder
+	@Nullable
+	BPartnerLocationId bpartnerLocationId;
+
+	@Nullable
+	LocationId locationId;
+
+	@Nullable
+	BPartnerContactId contactId;
+
+	@Builder(toBuilder = true)
 	private BPartnerInfo(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final BPartnerLocationId bpartnerLocationId,
+			@Nullable final LocationId locationId,
 			@Nullable final BPartnerContactId contactId)
 	{
-		if (bpartnerLocationId != null
-				&& !bpartnerId.equals(bpartnerLocationId.getBpartnerId()))
+		if (bpartnerLocationId != null && !bpartnerId.equals(bpartnerLocationId.getBpartnerId()))
 		{
 			throw new AdempiereException("" + bpartnerId + " and " + bpartnerLocationId + " not matching");
 		}
 
-		if (contactId != null
-				&& !bpartnerId.equals(contactId.getBpartnerId()))
+		if (contactId != null && !bpartnerId.equals(contactId.getBpartnerId()))
 		{
 			throw new AdempiereException("" + bpartnerId + " and " + contactId + " not matching");
 		}
 
 		this.bpartnerId = bpartnerId;
 		this.bpartnerLocationId = bpartnerLocationId;
+		this.locationId = locationId;
 		this.contactId = contactId;
+	}
+
+	public static BPartnerInfo ofLocationAndContact(
+			@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId,
+			@Nullable final BPartnerContactId contactId)
+	{
+		return builder()
+				.bpartnerId(bpartnerLocationAndCaptureId.getBpartnerId())
+				.bpartnerLocationId(bpartnerLocationAndCaptureId.getBpartnerLocationId())
+				.locationId(bpartnerLocationAndCaptureId.getLocationCaptureId())
+				.contactId(contactId)
+				.build();
+	}
+
+	public static boolean equals(@Nullable final BPartnerInfo o1, @Nullable final BPartnerInfo o2)
+	{
+		return Objects.equals(o1, o2);
+	}
+
+	public DocumentLocation toDocumentLocation()
+	{
+		return DocumentLocation.builder()
+				.bpartnerId(bpartnerId)
+				.bpartnerLocationId(bpartnerLocationId)
+				.contactId(contactId)
+				.locationId(locationId)
+				.build();
+	}
+
+	public BPartnerInfo withLocationId(@Nullable final LocationId locationId)
+	{
+		return !LocationId.equals(this.locationId, locationId)
+				? toBuilder().locationId(locationId).build()
+				: this;
+	}
+
+	public BPartnerLocationAndCaptureId toBPartnerLocationAndCaptureId()
+	{
+		if (bpartnerLocationId == null)
+		{
+			throw new AdempiereException("Cannot convert " + this + " to " + BPartnerLocationAndCaptureId.class.getSimpleName() + " because bpartnerLocationId is null");
+		}
+		return BPartnerLocationAndCaptureId.of(bpartnerLocationId, locationId);
 	}
 }

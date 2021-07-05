@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.order.model.validator;
 
 /*
@@ -35,7 +32,7 @@ import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
 /**
- * Main Invoice Candidates validator
+ * Main Order validator
  *
  * @author tsa
  *

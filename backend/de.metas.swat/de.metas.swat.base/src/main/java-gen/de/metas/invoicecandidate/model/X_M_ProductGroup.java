@@ -1,111 +1,78 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ProductGroup
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_ProductGroup extends org.compiere.model.PO implements I_M_ProductGroup, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1839422585L;
+	private static final long serialVersionUID = -1245339163L;
 
     /** Standard Constructor */
-    public X_M_ProductGroup (Properties ctx, int M_ProductGroup_ID, String trxName)
+    public X_M_ProductGroup (final Properties ctx, final int M_ProductGroup_ID, @Nullable final String trxName)
     {
       super (ctx, M_ProductGroup_ID, trxName);
-      /** if (M_ProductGroup_ID == 0)
-        {
-			setM_ProductGroup_ID (0);
-			setM_Product_Proxy_ID (0);
-			setName (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_ProductGroup (Properties ctx, ResultSet rs, String trxName)
+    public X_M_ProductGroup (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Produktgruppe.
-		@param M_ProductGroup_ID 
-		Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setM_ProductGroup_ID (int M_ProductGroup_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		if (M_ProductGroup_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_ProductGroup_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_ProductGroup_ID, Integer.valueOf(M_ProductGroup_ID));
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
-	/** Get Produktgruppe.
-		@return Fasst eine Anzahl von Produkten oder Produktkategorien zu einer Gruppe zusammen.
-	  */
 	@Override
-	public int getM_ProductGroup_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ProductGroup_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Stellvertreter-Produkt.
-		@param M_Product_Proxy_ID 
-		Produkt, dass bei einer Aggregation unterschiedlicher Produkte als Stellvertreter der aggregierten Produkte ausgewiesen werden kann
-	  */
-	@Override
-	public void setM_Product_Proxy_ID (int M_Product_Proxy_ID)
+	public void setM_Product_Proxy_ID (final int M_Product_Proxy_ID)
 	{
 		if (M_Product_Proxy_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_Proxy_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_Proxy_ID, Integer.valueOf(M_Product_Proxy_ID));
+			set_Value (COLUMNNAME_M_Product_Proxy_ID, M_Product_Proxy_ID);
 	}
 
-	/** Get Stellvertreter-Produkt.
-		@return Produkt, dass bei einer Aggregation unterschiedlicher Produkte als Stellvertreter der aggregierten Produkte ausgewiesen werden kann
-	  */
 	@Override
-	public int getM_Product_Proxy_ID () 
+	public int getM_Product_Proxy_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Proxy_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_Proxy_ID);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setM_ProductGroup_ID (final int M_ProductGroup_ID)
+	{
+		if (M_ProductGroup_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_ProductGroup_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_ProductGroup_ID, M_ProductGroup_ID);
+	}
+
+	@Override
+	public int getM_ProductGroup_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_ProductGroup_ID);
+	}
+
+	@Override
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 }

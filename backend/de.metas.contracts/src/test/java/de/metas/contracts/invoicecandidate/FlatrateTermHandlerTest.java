@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -124,7 +125,9 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				term1.getStartDate(),
 				OrgId.ofRepoId(term1.getAD_Org_ID()),
 				(WarehouseId)null,
-				CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID()),
+				CoalesceUtil.coalesceSuppliers(
+						() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getDropShip_BPartner_ID(), term1.getDropShip_Location_ID()),
+						() -> BPartnerLocationAndCaptureId.ofRepoIdOrNull(term1.getBill_BPartner_ID(), term1.getBill_Location_ID())),
 				SOTrx.SALES))
 				.thenReturn(TaxId.ofRepoId(3));
 

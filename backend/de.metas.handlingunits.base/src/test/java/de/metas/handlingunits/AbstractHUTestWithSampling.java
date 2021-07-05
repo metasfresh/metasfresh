@@ -189,7 +189,6 @@ public class AbstractHUTestWithSampling extends AbstractHUTest
 	/**
 	 * Executed after {@link #initialize()}. To be overridden by implementing classes
 	 */
-	@OverridingMethodsMustInvokeSuper
 	protected void afterInitialize()
 	{
 		// nothing at this level

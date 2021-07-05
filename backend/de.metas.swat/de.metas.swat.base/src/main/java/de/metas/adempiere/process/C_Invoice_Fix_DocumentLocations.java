@@ -1,6 +1,3 @@
-/**
- * 
- */
 package de.metas.adempiere.process;
 
 /*
@@ -25,10 +22,13 @@ package de.metas.adempiere.process;
  * #L%
  */
 
-
-import java.util.List;
-import java.util.Properties;
-
+import ch.qos.logback.classic.Level;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.ITrxRunConfig;
 import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableFail;
@@ -36,17 +36,13 @@ import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
 import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.tools.AdempiereToolsHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.Query;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
-import org.compiere.util.TrxRunnable;
 
-import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author ts
@@ -55,7 +51,9 @@ import de.metas.util.Services;
 @Deprecated
 public class C_Invoice_Fix_DocumentLocations
 {
-	protected String doItWithTrxRunner() throws Exception
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+
+	protected void doItWithTrxRunner()
 	{
 		final String trxName = Trx.createTrxName("C_Invoice_Fix_DocumentLocations");
 		final Properties ctx = Env.getCtx();
@@ -65,7 +63,7 @@ public class C_Invoice_Fix_DocumentLocations
 		Services.get(ITrxManager.class).run(
 				trxName,
 				trxRunConfig,
-				(TrxRunnable)trxName1 -> {
+				trxName1 -> {
 					List<I_C_Invoice> invoicesToFix = retrieveInvoices(ctx, trxName1);
 
 					int counter = 0;
@@ -75,7 +73,7 @@ public class C_Invoice_Fix_DocumentLocations
 					{
 						for (final I_C_Invoice invoiceToFix : invoicesToFix)
 						{
-							Services.get(IDocumentLocationBL.class).setBPartnerAddress(invoiceToFix);
+							documentLocationBL.updateRenderedAddressAndCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoiceToFix));
 							InterfaceWrapperHelper.save(invoiceToFix);
 
 							counter++;
@@ -89,18 +87,15 @@ public class C_Invoice_Fix_DocumentLocations
 					}
 				});
 
-		return "@Success@";
 	}
 
 	private List<I_C_Invoice> retrieveInvoices(final Properties ctx, final String trxName)
 	{
-		final List<I_C_Invoice> invoiceToFix = new Query(ctx, I_C_Invoice.Table_Name, "DocStatus='CO' AND COALESCE(BPartnerAddress,'')=''", trxName)
+		return new Query(ctx, I_C_Invoice.Table_Name, "DocStatus='CO' AND COALESCE(BPartnerAddress,'')=''", trxName)
 				.setOnlyActiveRecords(true)
 				.setLimit(50)
 				// .setOrderBy(I_C_Invoice.COLUMNNAME_C_Invoice_ID)
 				.list(I_C_Invoice.class);
-
-		return invoiceToFix;
 	}
 
 	public static void main(String[] args)

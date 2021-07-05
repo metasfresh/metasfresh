@@ -21,28 +21,6 @@ package de.metas.handlingunits.receiptschedule.integrationtest;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static de.metas.business.BusinessTestHelper.createBPartner;
-import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
-import static de.metas.business.BusinessTestHelper.createWarehouse;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Warehouse;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
 
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.model.I_C_Order;
@@ -56,13 +34,32 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static de.metas.business.BusinessTestHelper.createBPartner;
+import static de.metas.business.BusinessTestHelper.createBPartnerLocation;
+import static de.metas.business.BusinessTestHelper.createWarehouse;
+
+@ExtendWith(AdempiereTestWatcher.class)
 public abstract class AbstractHUReceiptProcessIntegrationTest
 {
-	/** Watches current test and dumps the database to console in case of failure */
-	@Rule
-	public final TestWatcher testWatcher = new AdempiereTestWatcher();
-
 	// Services
 	protected HUTestHelper huTestHelper;
 
@@ -89,7 +86,7 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 	protected I_M_HU_PI piTU;
 	protected I_M_HU_PI_Item piLU_Item;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		huTestHelper = new HUTestHelper(false);
@@ -177,17 +174,17 @@ public abstract class AbstractHUReceiptProcessIntegrationTest
 	//
 	//
 
-	protected <T> T assertSingletonAndGet(final String message, final List<T> list)
+	@SuppressWarnings("SameParameterValue")
+	protected <T> void assertSingletonAndGet(final String message, final List<T> list)
 	{
 		final String prefix = (message == null ? "" : message)
 				+ "\nList: " + list
 				+ "\n\nError: ";
-		Assert.assertNotNull(prefix + "list not null", list);
-		Assert.assertEquals(prefix + "list shall have only one element", 1, list.size());
+		Assertions.assertNotNull(list, prefix + "list not null");
+		Assertions.assertEquals(1, list.size(), prefix + "list shall have only one element");
 
 		final T item = list.get(0);
-		Assert.assertNotNull(prefix + "item not null", item);
+		Assertions.assertNotNull(item, prefix + "item not null");
 
-		return item;
 	}
 }

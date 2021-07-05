@@ -32,6 +32,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.lang.SOTrx;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -185,14 +186,9 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 		ic.setC_Currency_ID(olcRecord.getC_Currency_ID());
 		// ic.setC_ConversionType_ID(C_ConversionType_ID); // N/A
 
-		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olcRecord)));
-
-		// bill location
-		final int billLocationId = BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olcRecord));
-		ic.setBill_Location_ID(billLocationId);
-
-		final int billUserId = BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olcRecord));
-		ic.setBill_User_ID(billUserId);
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.setFrom(olCandEffectiveValuesBL.getBuyerPartnerInfo(olcRecord));
 
 		ic.setDescription(olcRecord.getDescription());
 
@@ -229,7 +225,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				CoalesceUtil.coalesce(olcRecord.getDatePromised_Override(), olcRecord.getDatePromised(), olcRecord.getPresetDateInvoiced()),
 				orgId,
 				(WarehouseId)null,
-				BPartnerLocationId.toRepoId(shipToPartnerInfo.getBpartnerLocationId()),
+				shipToPartnerInfo.toBPartnerLocationAndCaptureId(),
 				SOTrx.SALES);
 		ic.setC_Tax_ID(taxId.getRepoId());
 
@@ -341,8 +337,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 
 		final I_C_OLCand olc = getOLCand(ic);
 
-		ic.setBill_BPartner_ID(BPartnerId.toRepoId(olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olc)));
-		ic.setBill_Location_ID(BPartnerLocationId.toRepoId(olCandEffectiveValuesBL.getBillLocationEffectiveId(olc)));
-		ic.setBill_User_ID(BPartnerContactId.toRepoId(olCandEffectiveValuesBL.getBillContactEffectiveId(olc)));
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.setFrom(olCandEffectiveValuesBL.getBuyerPartnerInfo(olc));
 	}
 }

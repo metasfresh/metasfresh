@@ -384,7 +384,7 @@ final class OrderLinePriceCalculator
 			return null;
 		}
 
-		return Services.get(IBPartnerDAO.class).getBPartnerLocationCountryId(bpLocationId);
+		return Services.get(IBPartnerDAO.class).getCountryId(bpLocationId);
 	}
 
 	private PricingConditionsBreak getPricingConditionsBreakFromRequest()

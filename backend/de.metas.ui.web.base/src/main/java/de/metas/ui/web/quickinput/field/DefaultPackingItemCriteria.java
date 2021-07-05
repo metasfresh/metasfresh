@@ -24,8 +24,12 @@ package de.metas.ui.web.quickinput.field;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.lang.SOTrx;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
@@ -50,7 +54,7 @@ public class DefaultPackingItemCriteria
 	private ProductId productId;
 
 	@NonNull
-	private BPartnerLocationId bPartnerLocationId;
+	private BPartnerLocationAndCaptureId bPartnerLocationId;
 
 	@NonNull
 	private ZonedDateTime date;
@@ -69,7 +73,7 @@ public class DefaultPackingItemCriteria
 
 	public static Optional<DefaultPackingItemCriteria> of(final I_C_Order order, final ProductId productId)
 	{
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId bpartnerLocationId = OrderDocumentLocationAdapterFactory.locationAdapter(order).getBPartnerLocationAndCaptureId();
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 		final ZonedDateTime date = TimeUtil.asZonedDateTime(order.getDatePromised());
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
@@ -94,7 +98,7 @@ public class DefaultPackingItemCriteria
 
 	public static Optional<DefaultPackingItemCriteria> of(@NonNull final I_C_Invoice invoice, @NonNull final ProductId productId)
 	{
-		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId bpartnerLocationId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
 		final PriceListId priceListId = PriceListId.ofRepoIdOrNull(invoice.getM_PriceList_ID());
 		final ZonedDateTime date = TimeUtil.asZonedDateTime(invoice.getDateInvoiced());
 		final ClientId clientId = ClientId.ofRepoId(invoice.getAD_Client_ID());

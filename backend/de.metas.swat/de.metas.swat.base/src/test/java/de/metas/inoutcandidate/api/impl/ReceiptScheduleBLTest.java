@@ -29,7 +29,10 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
@@ -55,7 +58,6 @@ public class ReceiptScheduleBLTest extends ReceiptScheduleTestBase
 	@Override
 	protected void setup()
 	{
-		// nothing
 	}
 
 	/**

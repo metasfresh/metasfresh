@@ -1,17 +1,7 @@
 package de.metas.location.geocoding.process;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.CountryId;
@@ -34,12 +24,19 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Set;
 
 public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 {
 	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
 	private final DocumentCollection documentCollection = SpringContextHolder.instance.getBean(DocumentCollection.class);
-	private final BPartnerLocationInfoRepository bpartnerLocationInfoRepo = SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
 	private final GeoLocationDocumentService geoLocationDocumentService = SpringContextHolder.instance.getBean(GeoLocationDocumentService.class);
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
@@ -113,8 +110,8 @@ public class C_BPartner_Window_AreaSearchProcess extends JavaProcess
 		if (!bpLocationIds.isEmpty())
 		{
 			// retrieve the selected location
-			final LocationId locationId = bpartnerLocationInfoRepo.getByBPartnerLocationId(BPartnerLocationId.ofRepoId(getRecord_ID(), bpLocationIds.iterator().next())).getLocationId();
-			return locationsRepo.getById(LocationId.ofRepoId(locationId.getRepoId()));
+			final LocationId locationId = bpartnersRepo.getBPartnerLocationAndCaptureIdInTrx(BPartnerLocationId.ofRepoId(getRecord_ID(), bpLocationIds.iterator().next())).getLocationCaptureId();
+			return locationsRepo.getById(locationId);
 		}
 		else
 		{

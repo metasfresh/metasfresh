@@ -1,7 +1,6 @@
 package de.metas.marketing.base;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.common.util.time.SystemTime;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.marketing.base.bpartner.DefaultAddressType;
@@ -71,7 +70,7 @@ public class CampaignServiceTest
 
 		userRepository = new UserRepository();
 		campaignService = new CampaignService(
-				new ContactPersonRepository(new BPartnerLocationInfoRepository()),
+				new ContactPersonRepository(),
 				new CampaignRepository(),
 				new PlatformRepository());
 	}

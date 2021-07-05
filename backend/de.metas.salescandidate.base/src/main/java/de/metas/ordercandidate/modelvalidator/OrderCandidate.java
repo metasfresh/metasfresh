@@ -1,37 +1,5 @@
 package de.metas.ordercandidate.modelvalidator;
 
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-
 import de.metas.i18n.IMsgBL;
 import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
@@ -40,10 +8,17 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.impl.OLCandASIAwareFactory;
 import de.metas.ordercandidate.spi.impl.OLCandPricingASIListener;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
+import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
 
 /**
  * Main model interceptor of <code>de.metas.ordercandidate</code> module.
- *
  */
 public class OrderCandidate extends AbstractModuleInterceptor
 {
@@ -62,16 +37,10 @@ public class OrderCandidate extends AbstractModuleInterceptor
 		}
 	}
 
-	@Override
-	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
-	{
-		calloutsRegistry.registerAnnotatedCallout(new de.metas.ordercandidate.callout.C_OLCandAggAndOrder());
-	}
-
 	private void ensureDataDestExists()
 	{
 		final I_AD_InputDataSource dest = Services.get(IInputDataSourceDAO.class).retrieveInputDataSource(Env.getCtx(), OrderCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME, false,
-				ITrx.TRXNAME_None);
+																										  ITrx.TRXNAME_None);
 		if (dest == null)
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);

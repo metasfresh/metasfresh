@@ -74,7 +74,6 @@ public class OLCandsProcessorExecutor
 	private final OLCandOrderDefaults orderDefaults;
 	private final InputDataSourceId processorDataDestinationId;
 	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
-	private final IOLCandBL olcandBL = Services.get(IOLCandBL.class);
 
 	private final OLCandSource candidatesSource;
 

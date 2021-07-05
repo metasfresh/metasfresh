@@ -32,6 +32,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.location.LocationId;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -131,6 +133,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 
+	BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureIdInTrx(@NonNull BPartnerLocationId bpartnerLocationId);
+
 	boolean existsAndIsActive(BPartnerLocationId bpartnerLocationId);
 
 	List<I_C_BPartner_Location> retrieveBPartnerLocations(BPartnerId bpartnerId);
@@ -141,9 +145,9 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Set<CountryId> retrieveBPartnerLocationCountryIds(BPartnerId bpartnerId);
 
-	CountryId retrieveBPartnerLocationCountryId(BPartnerLocationId bpLocationId);
+	CountryId getCountryIdInTrx(BPartnerLocationId bpLocationId);
 
-	CountryId retrieveBPartnerLocationCountryIdInTrx(BPartnerLocationId bpLocationId);
+	LocationId getLocationId(@NonNull BPartnerLocationId bpLocationId);
 
 	/**
 	 * @return Contacts of the partner, ordered by ad_user_ID, ascending
@@ -260,7 +264,7 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
-	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpartnerLocationId);
+	CountryId getCountryId(BPartnerLocationId bpLocationId);
 	
 	/**
 	 * Retrieve default/first bill to location.
@@ -370,6 +374,6 @@ public interface IBPartnerDAO extends ISingletonService
 
 	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(Collection<Integer> bpartnerLocationRepoIds);
 
-	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
+	I_C_BPartner_Location retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
 
 }

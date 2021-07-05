@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.adempiere.model;
 
 /*
@@ -28,16 +25,12 @@ package de.metas.adempiere.model;
 
 import org.compiere.model.I_C_BPartner_Location;
 
-import de.metas.document.model.IDocumentLocation;
-
-public interface I_OrderOrInOut extends IDocumentLocation
+public interface I_OrderOrInOut
 {
-	@Override
 	int getC_BPartner_ID();
 
 	org.compiere.model.I_C_BPartner getC_BPartner();
 
-	@Override
 	int getC_BPartner_Location_ID();
 
 	I_C_BPartner_Location getC_BPartner_Location();

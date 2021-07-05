@@ -16,13 +16,16 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.List;
-
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.DocumentLocation;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -37,37 +40,47 @@ import org.compiere.model.X_I_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
 
 /**
- *	Import Invoice from I_Invoice
+ * Import Invoice from I_Invoice
  *
- * 	@author 	Jorg Janke
- * 	@version 	$Id: ImportInvoice.java,v 1.1 2007/09/05 09:27:31 cruiz Exp $
+ * @author Jorg Janke
+ * @version $Id: ImportInvoice.java,v 1.1 2007/09/05 09:27:31 cruiz Exp $
  */
 public class ImportInvoice extends JavaProcess
 {
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-	
-	/**	Client to be imported to		*/
-	private int				m_AD_Client_ID = 0;
-	/**	Organization to be imported to		*/
-	private int				m_AD_Org_ID = 0;
-	/**	Delete old Imported				*/
-	private boolean			m_deleteOldImported = false;
-	/**	Document Action					*/
-	private String			m_docAction = MInvoice.DOCACTION_Prepare;
-
-
-	/** Effective						*/
-	private Timestamp		m_DateValue = null;
 
 	/**
-	 *  Prepare - e.g., get Parameters.
+	 * Client to be imported to
+	 */
+	private int m_AD_Client_ID = 0;
+	/**
+	 * Organization to be imported to
+	 */
+	private int m_AD_Org_ID = 0;
+	/**
+	 * Delete old Imported
+	 */
+	private boolean m_deleteOldImported = false;
+	/**
+	 * Document Action
+	 */
+	private String m_docAction = MInvoice.DOCACTION_Prepare;
+
+	/**
+	 * Effective
+	 */
+	private Timestamp m_DateValue = null;
+
+	/**
+	 * Prepare - e.g., get Parameters.
 	 */
 	@Override
 	protected void prepare()
@@ -88,14 +101,14 @@ public class ImportInvoice extends JavaProcess
 				log.error("Unknown Parameter: " + name);
 		}
 		if (m_DateValue == null)
-			m_DateValue = new Timestamp (System.currentTimeMillis());
-	}	//	prepare
-
+			m_DateValue = new Timestamp(System.currentTimeMillis());
+	}    //	prepare
 
 	/**
-	 *  Perform process.
-	 *  @return clear Message
-	 *  @throws Exception
+	 * Perform process.
+	 *
+	 * @return clear Message
+	 * @throws Exception
 	 */
 	@Override
 	protected String doIt() throws java.lang.Exception
@@ -109,389 +122,389 @@ public class ImportInvoice extends JavaProcess
 		//	Delete Old Imported
 		if (m_deleteOldImported)
 		{
-			sql = new StringBuffer ("DELETE FROM I_Invoice "
-				  + "WHERE I_IsImported='Y'").append (clientCheck);
+			sql = new StringBuffer("DELETE FROM I_Invoice "
+										   + "WHERE I_IsImported='Y'").append(clientCheck);
 			no = DB.executeUpdate(sql.toString(), get_TrxName());
 			log.debug("Deleted Old Impored =" + no);
 		}
 
 		//	Set Client, Org, IsActive, Created/Updated
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET AD_Client_ID = COALESCE (AD_Client_ID,").append (m_AD_Client_ID).append ("),"
-			  + " AD_Org_ID = COALESCE (AD_Org_ID,").append (m_AD_Org_ID).append ("),"
-			  + " IsActive = COALESCE (IsActive, 'Y'),"
-			  + " Created = COALESCE (Created, now()),"
-			  + " CreatedBy = COALESCE (CreatedBy, 0),"
-			  + " Updated = COALESCE (Updated, now()),"
-			  + " UpdatedBy = COALESCE (UpdatedBy, 0),"
-			  + " I_ErrorMsg = ' ',"
-			  + " I_IsImported = 'N' "
-			  + "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(m_AD_Client_ID).append("),"
+																															 + " AD_Org_ID = COALESCE (AD_Org_ID,").append(m_AD_Org_ID).append("),"
+																																																	   + " IsActive = COALESCE (IsActive, 'Y'),"
+																																																	   + " Created = COALESCE (Created, now()),"
+																																																	   + " CreatedBy = COALESCE (CreatedBy, 0),"
+																																																	   + " Updated = COALESCE (Updated, now()),"
+																																																	   + " UpdatedBy = COALESCE (UpdatedBy, 0),"
+																																																	   + " I_ErrorMsg = ' ',"
+																																																	   + " I_IsImported = 'N' "
+																																																	   + "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.info("Reset=" + no);
 
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Org, '"
-			+ "WHERE (AD_Org_ID IS NULL OR AD_Org_ID=0"
-			+ " OR EXISTS (SELECT * FROM AD_Org oo WHERE o.AD_Org_ID=oo.AD_Org_ID AND (oo.IsSummary='Y' OR oo.IsActive='N')))"
-			+ " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Org, '"
+									   + "WHERE (AD_Org_ID IS NULL OR AD_Org_ID=0"
+									   + " OR EXISTS (SELECT * FROM AD_Org oo WHERE o.AD_Org_ID=oo.AD_Org_ID AND (oo.IsSummary='Y' OR oo.IsActive='N')))"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Org=" + no);
 
 		//	Document Type - PO - SO
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
-			  + " AND d.DocBaseType IN ('API','APC') AND o.AD_Client_ID=d.AD_Client_ID) "
-			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx='N' AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
+									   + " AND d.DocBaseType IN ('API','APC') AND o.AD_Client_ID=d.AD_Client_ID) "
+									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx='N' AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.debug("Set PO DocType=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
-			  + " AND d.DocBaseType IN ('ARI','ARC') AND o.AD_Client_ID=d.AD_Client_ID) "
-			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx='Y' AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
+									   + " AND d.DocBaseType IN ('ARI','ARC') AND o.AD_Client_ID=d.AD_Client_ID) "
+									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx='Y' AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.debug("Set SO DocType=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
-			  + " AND d.DocBaseType IN ('API','ARI','APC','ARC') AND o.AD_Client_ID=d.AD_Client_ID) "
-			//+ "WHERE C_DocType_ID IS NULL AND IsSOTrx IS NULL AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
-			  + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_DocType_ID=(SELECT C_DocType_ID FROM C_DocType d WHERE d.Name=o.DocTypeName"
+									   + " AND d.DocBaseType IN ('API','ARI','APC','ARC') AND o.AD_Client_ID=d.AD_Client_ID) "
+									   //+ "WHERE C_DocType_ID IS NULL AND IsSOTrx IS NULL AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
+									   + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.debug("Set DocType=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid DocTypeName, ' "
-			  + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid DocTypeName, ' "
+									   + "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid DocTypeName=" + no);
 		//	DocType Default
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
-			  + " AND d.DocBaseType='API' AND o.AD_Client_ID=d.AD_Client_ID) "
-			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx='N' AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
+									   + " AND d.DocBaseType='API' AND o.AD_Client_ID=d.AD_Client_ID) "
+									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx='N' AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.debug("Set PO Default DocType=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
-			  + " AND d.DocBaseType='ARI' AND o.AD_Client_ID=d.AD_Client_ID) "
-			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx='Y' AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
+									   + " AND d.DocBaseType='ARI' AND o.AD_Client_ID=d.AD_Client_ID) "
+									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx='Y' AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.debug("Set SO Default DocType=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
-			  + " AND d.DocBaseType IN('ARI','API') AND o.AD_Client_ID=d.AD_Client_ID) "
-			  + "WHERE C_DocType_ID IS NULL AND IsSOTrx IS NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_DocType_ID=(SELECT MAX(C_DocType_ID) FROM C_DocType d WHERE d.IsDefault='Y'"
+									   + " AND d.DocBaseType IN('ARI','API') AND o.AD_Client_ID=d.AD_Client_ID) "
+									   + "WHERE C_DocType_ID IS NULL AND IsSOTrx IS NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.debug("Set Default DocType=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No DocType, ' "
-			  + "WHERE C_DocType_ID IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No DocType, ' "
+									   + "WHERE C_DocType_ID IS NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("No DocType=" + no);
 
 		//	Set IsSOTrx
-		sql = new StringBuffer ("UPDATE I_Invoice o SET IsSOTrx='Y' "
-			  + "WHERE EXISTS (SELECT * FROM C_DocType d WHERE o.C_DocType_ID=d.C_DocType_ID AND d.DocBaseType='ARI' AND o.AD_Client_ID=d.AD_Client_ID)"
-			  + " AND C_DocType_ID IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o SET IsSOTrx='Y' "
+									   + "WHERE EXISTS (SELECT * FROM C_DocType d WHERE o.C_DocType_ID=d.C_DocType_ID AND d.DocBaseType='ARI' AND o.AD_Client_ID=d.AD_Client_ID)"
+									   + " AND C_DocType_ID IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set IsSOTrx=Y=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o SET IsSOTrx='N' "
-			  + "WHERE EXISTS (SELECT * FROM C_DocType d WHERE o.C_DocType_ID=d.C_DocType_ID AND d.DocBaseType='API' AND o.AD_Client_ID=d.AD_Client_ID)"
-			  + " AND C_DocType_ID IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o SET IsSOTrx='N' "
+									   + "WHERE EXISTS (SELECT * FROM C_DocType d WHERE o.C_DocType_ID=d.C_DocType_ID AND d.DocBaseType='API' AND o.AD_Client_ID=d.AD_Client_ID)"
+									   + " AND C_DocType_ID IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set IsSOTrx=N=" + no);
 
 		//	Price List
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p WHERE p.IsDefault='Y'"
-			  + " AND p.C_Currency_ID=o.C_Currency_ID AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE M_PriceList_ID IS NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p WHERE p.IsDefault='Y'"
+									   + " AND p.C_Currency_ID=o.C_Currency_ID AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE M_PriceList_ID IS NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Default Currency PriceList=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p WHERE p.IsDefault='Y'"
-			  + " AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE M_PriceList_ID IS NULL AND C_Currency_ID IS NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p WHERE p.IsDefault='Y'"
+									   + " AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE M_PriceList_ID IS NULL AND C_Currency_ID IS NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Default PriceList=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p "
-			  + " WHERE p.C_Currency_ID=o.C_Currency_ID AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE M_PriceList_ID IS NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p "
+									   + " WHERE p.C_Currency_ID=o.C_Currency_ID AND p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE M_PriceList_ID IS NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Currency PriceList=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p "
-			  + " WHERE p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE M_PriceList_ID IS NULL AND C_Currency_ID IS NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET M_PriceList_ID=(SELECT MAX(M_PriceList_ID) FROM M_PriceList p "
+									   + " WHERE p.IsSOPriceList=o.IsSOTrx AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE M_PriceList_ID IS NULL AND C_Currency_ID IS NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set PriceList=" + no);
 		//
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No PriceList, ' "
-			  + "WHERE M_PriceList_ID IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No PriceList, ' "
+									   + "WHERE M_PriceList_ID IS NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("No PriceList=" + no);
 
 		//	Payment Term
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm p"
-			  + " WHERE o.PaymentTermValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_PaymentTerm_ID=(SELECT C_PaymentTerm_ID FROM C_PaymentTerm p"
+									   + " WHERE o.PaymentTermValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE C_PaymentTerm_ID IS NULL AND PaymentTermValue IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set PaymentTerm=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_PaymentTerm_ID=(SELECT MAX(C_PaymentTerm_ID) FROM C_PaymentTerm p"
-			  + " WHERE p.IsDefault='Y' AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE C_PaymentTerm_ID IS NULL AND o.PaymentTermValue IS NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_PaymentTerm_ID=(SELECT MAX(C_PaymentTerm_ID) FROM C_PaymentTerm p"
+									   + " WHERE p.IsDefault='Y' AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE C_PaymentTerm_ID IS NULL AND o.PaymentTermValue IS NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Default PaymentTerm=" + no);
 		//
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No PaymentTerm, ' "
-			  + "WHERE C_PaymentTerm_ID IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No PaymentTerm, ' "
+									   + "WHERE C_PaymentTerm_ID IS NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("No PaymentTerm=" + no);
 
 		// globalqss - Add project and activity
 		//	Project
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_Project_ID=(SELECT C_Project_ID FROM C_Project p"
-			  + " WHERE o.ProjectValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE C_Project_ID IS NULL AND ProjectValue IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_Project_ID=(SELECT C_Project_ID FROM C_Project p"
+									   + " WHERE o.ProjectValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE C_Project_ID IS NULL AND ProjectValue IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Project=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice "
-				  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Project, ' "
-				  + "WHERE C_Project_ID IS NULL AND (ProjectValue IS NOT NULL)"
-				  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Project, ' "
+									   + "WHERE C_Project_ID IS NULL AND (ProjectValue IS NOT NULL)"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Project=" + no);
 		//	Activity
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_Activity_ID=(SELECT C_Activity_ID FROM C_Activity p"
-			  + " WHERE o.ActivityValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE C_Activity_ID IS NULL AND ActivityValue IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_Activity_ID=(SELECT C_Activity_ID FROM C_Activity p"
+									   + " WHERE o.ActivityValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE C_Activity_ID IS NULL AND ActivityValue IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Activity=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice "
-				  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Activity, ' "
-				  + "WHERE C_Activity_ID IS NULL AND (ActivityValue IS NOT NULL)"
-				  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Activity, ' "
+									   + "WHERE C_Activity_ID IS NULL AND (ActivityValue IS NOT NULL)"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Activity=" + no);
 		// globalqss - add charge
 		//	Charge
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_Charge_ID=(SELECT C_Charge_ID FROM C_Charge p"
-			  + " WHERE o.ChargeName=p.Name AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE C_Charge_ID IS NULL AND ChargeName IS NOT NULL AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_Charge_ID=(SELECT C_Charge_ID FROM C_Charge p"
+									   + " WHERE o.ChargeName=p.Name AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE C_Charge_ID IS NULL AND ChargeName IS NOT NULL AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Charge=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice "
-				  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Charge, ' "
-				  + "WHERE C_Charge_ID IS NULL AND (ChargeName IS NOT NULL)"
-				  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Charge, ' "
+									   + "WHERE C_Charge_ID IS NULL AND (ChargeName IS NOT NULL)"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Charge=" + no);
 		//
 
 		//	BP from EMail
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET (C_BPartner_ID,AD_User_ID)=(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u"
-			  + " WHERE o.EMail=u.EMail AND o.AD_Client_ID=u.AD_Client_ID AND u.C_BPartner_ID IS NOT NULL) "
-			  + "WHERE C_BPartner_ID IS NULL AND EMail IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET (C_BPartner_ID,AD_User_ID)=(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u"
+									   + " WHERE o.EMail=u.EMail AND o.AD_Client_ID=u.AD_Client_ID AND u.C_BPartner_ID IS NOT NULL) "
+									   + "WHERE C_BPartner_ID IS NULL AND EMail IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.debug("Set BP from EMail=" + no);
 		//	BP from ContactName
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET (C_BPartner_ID,AD_User_ID)=(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u"
-			  + " WHERE o.ContactName=u.Name AND o.AD_Client_ID=u.AD_Client_ID AND u.C_BPartner_ID IS NOT NULL) "
-			  + "WHERE C_BPartner_ID IS NULL AND ContactName IS NOT NULL"
-			  + " AND EXISTS (SELECT Name FROM AD_User u WHERE o.ContactName=u.Name AND o.AD_Client_ID=u.AD_Client_ID AND u.C_BPartner_ID IS NOT NULL GROUP BY Name HAVING COUNT(*)=1)"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET (C_BPartner_ID,AD_User_ID)=(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u"
+									   + " WHERE o.ContactName=u.Name AND o.AD_Client_ID=u.AD_Client_ID AND u.C_BPartner_ID IS NOT NULL) "
+									   + "WHERE C_BPartner_ID IS NULL AND ContactName IS NOT NULL"
+									   + " AND EXISTS (SELECT Name FROM AD_User u WHERE o.ContactName=u.Name AND o.AD_Client_ID=u.AD_Client_ID AND u.C_BPartner_ID IS NOT NULL GROUP BY Name HAVING COUNT(*)=1)"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.debug("Set BP from ContactName=" + no);
 		//	BP from Value
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner bp"
-			  + " WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID) "
-			  + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner bp"
+									   + " WHERE o.BPartnerValue=bp.Value AND o.AD_Client_ID=bp.AD_Client_ID) "
+									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set BP from Value=" + no);
 		//	Default BP
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_BPartner_ID=(SELECT C_BPartnerCashTrx_ID FROM AD_ClientInfo c"
-			  + " WHERE o.AD_Client_ID=c.AD_Client_ID) "
-			  + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NULL AND Name IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_BPartner_ID=(SELECT C_BPartnerCashTrx_ID FROM AD_ClientInfo c"
+									   + " WHERE o.AD_Client_ID=c.AD_Client_ID) "
+									   + "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NULL AND Name IS NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Default BP=" + no);
 
 		//	Existing Location ? Exact Match
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_BPartner_Location_ID=(SELECT C_BPartner_Location_ID"
-			  + " FROM C_BPartner_Location bpl INNER JOIN C_Location l ON (bpl.C_Location_ID=l.C_Location_ID)"
-			  + " WHERE o.C_BPartner_ID=bpl.C_BPartner_ID AND bpl.AD_Client_ID=o.AD_Client_ID"
-			  + " AND DUMP(o.Address1)=DUMP(l.Address1) AND DUMP(o.Address2)=DUMP(l.Address2)"
-			  + " AND DUMP(o.City)=DUMP(l.City) AND DUMP(o.Postal)=DUMP(l.Postal)"
-			  //metas: bpl must be active
-			  + " AND bpl.IsActive='Y' "
-			  //metas end
-			  + " AND o.C_Region_ID=l.C_Region_ID AND o.C_Country_ID=l.C_Country_ID) "
-			  + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
-			  + " AND I_IsImported='N'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_BPartner_Location_ID=(SELECT C_BPartner_Location_ID"
+									   + " FROM C_BPartner_Location bpl INNER JOIN C_Location l ON (bpl.C_Location_ID=l.C_Location_ID)"
+									   + " WHERE o.C_BPartner_ID=bpl.C_BPartner_ID AND bpl.AD_Client_ID=o.AD_Client_ID"
+									   + " AND DUMP(o.Address1)=DUMP(l.Address1) AND DUMP(o.Address2)=DUMP(l.Address2)"
+									   + " AND DUMP(o.City)=DUMP(l.City) AND DUMP(o.Postal)=DUMP(l.Postal)"
+									   //metas: bpl must be active
+									   + " AND bpl.IsActive='Y' "
+									   //metas end
+									   + " AND o.C_Region_ID=l.C_Region_ID AND o.C_Country_ID=l.C_Country_ID) "
+									   + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
+									   + " AND I_IsImported='N'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Found Location=" + no);
 		//	Set Location from BPartner
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_BPartner_Location_ID=(SELECT MAX(C_BPartner_Location_ID) FROM C_BPartner_Location l"
-			  + " WHERE l.C_BPartner_ID=o.C_BPartner_ID AND o.AD_Client_ID=l.AD_Client_ID"
-			  //metas: l must be active
-			  + " AND l.IsActive='Y' "
-			  //metas end
-			  + " AND ((l.IsBillTo='Y' AND o.IsSOTrx='Y') OR o.IsSOTrx='N')"
-			  + ") "
-			  + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_BPartner_Location_ID=(SELECT MAX(C_BPartner_Location_ID) FROM C_BPartner_Location l"
+									   + " WHERE l.C_BPartner_ID=o.C_BPartner_ID AND o.AD_Client_ID=l.AD_Client_ID"
+									   //metas: l must be active
+									   + " AND l.IsActive='Y' "
+									   //metas end
+									   + " AND ((l.IsBillTo='Y' AND o.IsSOTrx='Y') OR o.IsSOTrx='N')"
+									   + ") "
+									   + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set BP Location from BP=" + no);
 		//
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BP Location, ' "
-			  + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BP Location, ' "
+									   + "WHERE C_BPartner_ID IS NOT NULL AND C_BPartner_Location_ID IS NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("No BP Location=" + no);
 
 		//	Set Country
 		/**
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET CountryCode=(SELECT MAX(CountryCode) FROM C_Country c WHERE c.IsDefault='Y'"
-			  + " AND c.AD_Client_ID IN (0, o.AD_Client_ID)) "
-			  + "WHERE C_BPartner_ID IS NULL AND CountryCode IS NULL AND C_Country_ID IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		log.debug("Set Country Default=" + no);
-		**/
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c"
-			  + " WHERE o.CountryCode=c.CountryCode AND c.AD_Client_ID IN (0, o.AD_Client_ID)) "
-			  + "WHERE C_BPartner_ID IS NULL AND C_Country_ID IS NULL AND CountryCode IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		 sql = new StringBuffer ("UPDATE I_Invoice o "
+		 + "SET CountryCode=(SELECT MAX(CountryCode) FROM C_Country c WHERE c.IsDefault='Y'"
+		 + " AND c.AD_Client_ID IN (0, o.AD_Client_ID)) "
+		 + "WHERE C_BPartner_ID IS NULL AND CountryCode IS NULL AND C_Country_ID IS NULL"
+		 + " AND I_IsImported<>'Y'").append (clientCheck);
+		 no = DB.executeUpdate(sql.toString(), get_TrxName());
+		 log.debug("Set Country Default=" + no);
+		 **/
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_Country_ID=(SELECT C_Country_ID FROM C_Country c"
+									   + " WHERE o.CountryCode=c.CountryCode AND c.AD_Client_ID IN (0, o.AD_Client_ID)) "
+									   + "WHERE C_BPartner_ID IS NULL AND C_Country_ID IS NULL AND CountryCode IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Country=" + no);
 		//
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Country, ' "
-			  + "WHERE C_BPartner_ID IS NULL AND C_Country_ID IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Country, ' "
+									   + "WHERE C_BPartner_ID IS NULL AND C_Country_ID IS NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Country=" + no);
 
 		//	Set Region
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "Set RegionName=(SELECT MAX(Name) FROM C_Region r"
-			  + " WHERE r.IsDefault='Y' AND r.C_Country_ID=o.C_Country_ID"
-			  + " AND r.AD_Client_ID IN (0, o.AD_Client_ID)) "
-			  + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL AND RegionName IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "Set RegionName=(SELECT MAX(Name) FROM C_Region r"
+									   + " WHERE r.IsDefault='Y' AND r.C_Country_ID=o.C_Country_ID"
+									   + " AND r.AD_Client_ID IN (0, o.AD_Client_ID)) "
+									   + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL AND RegionName IS NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Region Default=" + no);
 		//
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "Set C_Region_ID=(SELECT C_Region_ID FROM C_Region r"
-			  + " WHERE r.Name=o.RegionName AND r.C_Country_ID=o.C_Country_ID"
-			  + " AND r.AD_Client_ID IN (0, o.AD_Client_ID)) "
-			  + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL AND RegionName IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "Set C_Region_ID=(SELECT C_Region_ID FROM C_Region r"
+									   + " WHERE r.Name=o.RegionName AND r.C_Country_ID=o.C_Country_ID"
+									   + " AND r.AD_Client_ID IN (0, o.AD_Client_ID)) "
+									   + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL AND RegionName IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Region=" + no);
 		//
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Region, ' "
-			  + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL "
-			  + " AND EXISTS (SELECT * FROM C_Country c"
-			  + " WHERE c.C_Country_ID=o.C_Country_ID AND c.HasRegion='Y')"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Region, ' "
+									   + "WHERE C_BPartner_ID IS NULL AND C_Region_ID IS NULL "
+									   + " AND EXISTS (SELECT * FROM C_Country c"
+									   + " WHERE c.C_Country_ID=o.C_Country_ID AND c.HasRegion='Y')"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Region=" + no);
 
 		//	Product
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
-			  + " WHERE o.ProductValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
+									   + " WHERE o.ProductValue=p.Value AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE M_Product_ID IS NULL AND ProductValue IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Product from Value=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
-			  + " WHERE o.UPC=p.UPC AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE M_Product_ID IS NULL AND UPC IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
+									   + " WHERE o.UPC=p.UPC AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE M_Product_ID IS NULL AND UPC IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Product from UPC=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
-			  + " WHERE o.SKU=p.SKU AND o.AD_Client_ID=p.AD_Client_ID) "
-			  + "WHERE M_Product_ID IS NULL AND SKU IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET M_Product_ID=(SELECT MAX(M_Product_ID) FROM M_Product p"
+									   + " WHERE o.SKU=p.SKU AND o.AD_Client_ID=p.AD_Client_ID) "
+									   + "WHERE M_Product_ID IS NULL AND SKU IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Product fom SKU=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Product, ' "
-			  + "WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL OR UPC IS NOT NULL OR SKU IS NOT NULL)"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Product, ' "
+									   + "WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL OR UPC IS NOT NULL OR SKU IS NOT NULL)"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Product=" + no);
 
 		// globalqss - charge and product are exclusive
-		sql = new StringBuffer ("UPDATE I_Invoice "
-				  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Product and Charge, ' "
-				  + "WHERE M_Product_ID IS NOT NULL AND C_Charge_ID IS NOT NULL "
-				  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Product and Charge, ' "
+									   + "WHERE M_Product_ID IS NOT NULL AND C_Charge_ID IS NOT NULL "
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Product and Charge exclusive=" + no);
 
-			//	Tax
-		sql = new StringBuffer ("UPDATE I_Invoice o "
-			  + "SET C_Tax_ID=(SELECT MAX(C_Tax_ID) FROM C_Tax t"
-			  + " WHERE o.TaxIndicator=t.TaxIndicator AND o.AD_Client_ID=t.AD_Client_ID) "
-			  + "WHERE C_Tax_ID IS NULL AND TaxIndicator IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		//	Tax
+		sql = new StringBuffer("UPDATE I_Invoice o "
+									   + "SET C_Tax_ID=(SELECT MAX(C_Tax_ID) FROM C_Tax t"
+									   + " WHERE o.TaxIndicator=t.TaxIndicator AND o.AD_Client_ID=t.AD_Client_ID) "
+									   + "WHERE C_Tax_ID IS NULL AND TaxIndicator IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		log.debug("Set Tax=" + no);
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Tax, ' "
-			  + "WHERE C_Tax_ID IS NULL AND TaxIndicator IS NOT NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Tax, ' "
+									   + "WHERE C_Tax_ID IS NULL AND TaxIndicator IS NOT NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("Invalid Tax=" + no);
@@ -501,42 +514,42 @@ public class ImportInvoice extends JavaProcess
 		//	-- New BPartner ---------------------------------------------------
 
 		//	Go through Invoice Records w/o C_BPartner_ID
-		sql = new StringBuffer ("SELECT * FROM I_Invoice "
-			  + "WHERE I_IsImported='N' AND C_BPartner_ID IS NULL").append (clientCheck);
+		sql = new StringBuffer("SELECT * FROM I_Invoice "
+									   + "WHERE I_IsImported='N' AND C_BPartner_ID IS NULL").append(clientCheck);
 		try
 		{
-			PreparedStatement pstmt = DB.prepareStatement (sql.toString(), get_TrxName());
-			ResultSet rs = pstmt.executeQuery ();
-			while (rs.next ())
+			PreparedStatement pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
+			ResultSet rs = pstmt.executeQuery();
+			while (rs.next())
 			{
-				X_I_Invoice imp = new X_I_Invoice (getCtx(), rs, get_TrxName());
-				if (imp.getBPartnerValue () == null)
+				X_I_Invoice imp = new X_I_Invoice(getCtx(), rs, get_TrxName());
+				if (imp.getBPartnerValue() == null)
 				{
-					if (imp.getEMail () != null)
-						imp.setBPartnerValue (imp.getEMail ());
-					else if (imp.getName () != null)
-						imp.setBPartnerValue (imp.getName ());
+					if (imp.getEMail() != null)
+						imp.setBPartnerValue(imp.getEMail());
+					else if (imp.getName() != null)
+						imp.setBPartnerValue(imp.getName());
 					else
 						continue;
 				}
-				if (imp.getName () == null)
+				if (imp.getName() == null)
 				{
-					if (imp.getContactName () != null)
-						imp.setName (imp.getContactName ());
+					if (imp.getContactName() != null)
+						imp.setName(imp.getContactName());
 					else
-						imp.setName (imp.getBPartnerValue ());
+						imp.setName(imp.getBPartnerValue());
 				}
 				//	BPartner
-				I_C_BPartner bp = MBPartner.get (getCtx(), imp.getBPartnerValue());
+				I_C_BPartner bp = MBPartner.get(getCtx(), imp.getBPartnerValue());
 				if (bp == null)
 				{
 					bp = MBPartner.newFromTemplate();
 					bp.setAD_Org_ID(imp.getAD_Org_ID());
-					bp.setValue (imp.getBPartnerValue ());
-					bp.setName (imp.getName ());
+					bp.setValue(imp.getBPartnerValue());
+					bp.setName(imp.getName());
 					bpartnersRepo.save(bp);
 				}
-				imp.setC_BPartner_ID (bp.getC_BPartner_ID ());
+				imp.setC_BPartner_ID(bp.getC_BPartner_ID());
 
 				//	BP Location
 				I_C_BPartner_Location bpl = null;
@@ -545,17 +558,17 @@ public class ImportInvoice extends JavaProcess
 				{
 					if (imp.getC_BPartner_Location_ID() == bpls.get(i).getC_BPartner_Location_ID())
 						bpl = bpls.get(i);
-					//	Same Location ID
+						//	Same Location ID
 					else if (imp.getC_Location_ID() == bpls.get(i).getC_Location_ID())
 						bpl = bpls.get(i);
-					//	Same Location Info
+						//	Same Location Info
 					else if (imp.getC_Location_ID() <= 0)
 					{
 						I_C_Location loc = bpl.getC_Location();
 						if (MLocation.equals(loc,
-								imp.getC_Country_ID(), imp.getC_Region_ID(),
-								imp.getPostal(), "", imp.getCity(),
-								imp.getAddress1(), imp.getAddress2()))
+											 imp.getC_Country_ID(), imp.getC_Region_ID(),
+											 imp.getPostal(), "", imp.getCity(),
+											 imp.getAddress1(), imp.getAddress2()))
 						{
 							bpl = bpls.get(i);
 						}
@@ -564,69 +577,69 @@ public class ImportInvoice extends JavaProcess
 				if (bpl == null)
 				{
 					//	New Location
-					MLocation loc = new MLocation (getCtx (), 0, get_TrxName());
-					loc.setAddress1 (imp.getAddress1 ());
-					loc.setAddress2 (imp.getAddress2 ());
-					loc.setCity (imp.getCity ());
-					loc.setPostal (imp.getPostal ());
-					if (imp.getC_Region_ID () != 0)
-						loc.setC_Region_ID (imp.getC_Region_ID ());
-					loc.setC_Country_ID (imp.getC_Country_ID ());
-					if (!loc.save ())
+					MLocation loc = new MLocation(getCtx(), 0, get_TrxName());
+					loc.setAddress1(imp.getAddress1());
+					loc.setAddress2(imp.getAddress2());
+					loc.setCity(imp.getCity());
+					loc.setPostal(imp.getPostal());
+					if (imp.getC_Region_ID() != 0)
+						loc.setC_Region_ID(imp.getC_Region_ID());
+					loc.setC_Country_ID(imp.getC_Country_ID());
+					if (!loc.save())
 						continue;
 					//
-					bpl = new MBPartnerLocation (bp);
-					bpl.setC_Location_ID (imp.getC_Location_ID() > 0 ? imp.getC_Location_ID() : loc.getC_Location_ID());
+					bpl = new MBPartnerLocation(bp);
+					bpl.setC_Location_ID(imp.getC_Location_ID() > 0 ? imp.getC_Location_ID() : loc.getC_Location_ID());
 					bpartnersRepo.save(bpl);
 				}
-				imp.setC_Location_ID (bpl.getC_Location_ID ());
-				imp.setC_BPartner_Location_ID (bpl.getC_BPartner_Location_ID ());
+				imp.setC_Location_ID(bpl.getC_Location_ID());
+				imp.setC_BPartner_Location_ID(bpl.getC_BPartner_Location_ID());
 
 				//	User/Contact
-				if (imp.getContactName () != null
-					|| imp.getEMail () != null
-					|| imp.getPhone () != null)
+				if (imp.getContactName() != null
+						|| imp.getEMail() != null
+						|| imp.getPhone() != null)
 				{
 					List<I_AD_User> users = bpartnersRepo.retrieveContacts(bp);
 					I_AD_User user = null;
-					for (int i = 0; user == null && i < users.size();  i++)
+					for (int i = 0; user == null && i < users.size(); i++)
 					{
 						String name = users.get(i).getName();
 						if (name.equals(imp.getContactName())
-							|| name.equals(imp.getName()))
+								|| name.equals(imp.getName()))
 						{
 							user = users.get(i);
-							imp.setAD_User_ID (user.getAD_User_ID ());
+							imp.setAD_User_ID(user.getAD_User_ID());
 						}
 					}
 					if (user == null)
 					{
 						user = Services.get(IBPartnerBL.class).createDraftContact(bp);
-						if (imp.getContactName () == null)
-							user.setName (imp.getName ());
+						if (imp.getContactName() == null)
+							user.setName(imp.getName());
 						else
-							user.setName (imp.getContactName ());
-						user.setEMail (imp.getEMail ());
-						user.setPhone (imp.getPhone ());
+							user.setName(imp.getContactName());
+						user.setEMail(imp.getEMail());
+						user.setPhone(imp.getPhone());
 						InterfaceWrapperHelper.save(user);
-						imp.setAD_User_ID (user.getAD_User_ID ());
+						imp.setAD_User_ID(user.getAD_User_ID());
 					}
 				}
-				imp.save ();
+				imp.save();
 				commitEx(); // metas
-			}	//	for all new BPartners
-			rs.close ();
-			pstmt.close ();
+			}    //	for all new BPartners
+			rs.close();
+			pstmt.close();
 			//
 		}
 		catch (SQLException e)
 		{
 			log.error("CreateBP", e);
 		}
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			  + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BPartner, ' "
-			  + "WHERE C_BPartner_ID IS NULL"
-			  + " AND I_IsImported<>'Y'").append (clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No BPartner, ' "
+									   + "WHERE C_BPartner_ID IS NULL"
+									   + " AND I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
 		if (no != 0)
 			log.warn("No BPartner=" + no);
@@ -639,13 +652,13 @@ public class ImportInvoice extends JavaProcess
 		int noInsertLine = 0;
 
 		//	Go through Invoice Records w/o
-		sql = new StringBuffer ("SELECT * FROM I_Invoice "
-			  + "WHERE I_IsImported='N'").append (clientCheck)
-			.append(" ORDER BY C_BPartner_ID, C_BPartner_Location_ID, I_Invoice_ID");
+		sql = new StringBuffer("SELECT * FROM I_Invoice "
+									   + "WHERE I_IsImported='N'").append(clientCheck)
+				.append(" ORDER BY C_BPartner_ID, C_BPartner_Location_ID, I_Invoice_ID");
 		try
 		{
-			PreparedStatement pstmt = DB.prepareStatement (sql.toString(), get_TrxName());
-			ResultSet rs = pstmt.executeQuery ();
+			PreparedStatement pstmt = DB.prepareStatement(sql.toString(), get_TrxName());
+			ResultSet rs = pstmt.executeQuery();
 			//	Group Change
 			int oldC_BPartner_ID = 0;
 			int oldC_BPartner_Location_ID = 0;
@@ -653,16 +666,16 @@ public class ImportInvoice extends JavaProcess
 			//
 			MInvoice invoice = null;
 			int lineNo = 0;
-			while (rs.next ())
+			while (rs.next())
 			{
-				X_I_Invoice imp = new X_I_Invoice (getCtx (), rs, null);
+				X_I_Invoice imp = new X_I_Invoice(getCtx(), rs, null);
 				String cmpDocumentNo = imp.getDocumentNo();
 				if (cmpDocumentNo == null)
 					cmpDocumentNo = "";
 				//	New Invoice
 				if (oldC_BPartner_ID != imp.getC_BPartner_ID()
-					|| oldC_BPartner_Location_ID != imp.getC_BPartner_Location_ID()
-					|| !oldDocumentNo.equals(cmpDocumentNo)	)
+						|| oldC_BPartner_Location_ID != imp.getC_BPartner_Location_ID()
+						|| !oldDocumentNo.equals(cmpDocumentNo))
 				{
 					if (invoice != null)
 					{
@@ -676,17 +689,20 @@ public class ImportInvoice extends JavaProcess
 					if (oldDocumentNo == null)
 						oldDocumentNo = "";
 					//
-					invoice = new MInvoice (getCtx(), 0, null);
-					invoice.setClientOrg (imp.getAD_Client_ID(), imp.getAD_Org_ID());
+					invoice = new MInvoice(getCtx(), 0, null);
+					invoice.setClientOrg(imp.getAD_Client_ID(), imp.getAD_Org_ID());
 					invoice.setC_DocTypeTarget_ID(imp.getC_DocType_ID());
 					invoice.setIsSOTrx(imp.isSOTrx());
 					if (imp.getDocumentNo() != null)
 						invoice.setDocumentNo(imp.getDocumentNo());
 					//
-					invoice.setC_BPartner_ID(imp.getC_BPartner_ID());
-					invoice.setC_BPartner_Location_ID(imp.getC_BPartner_Location_ID());
-					if (imp.getAD_User_ID() != 0)
-						invoice.setAD_User_ID(imp.getAD_User_ID());
+					InvoiceDocumentLocationAdapterFactory
+							.locationAdapter(invoice)
+							.setFrom(DocumentLocation.builder()
+											 .bpartnerId(BPartnerId.ofRepoId(imp.getC_BPartner_ID()))
+											 .bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(imp.getC_BPartner_ID(), imp.getC_BPartner_Location_ID()))
+											 .contactId(BPartnerContactId.ofRepoIdOrNull(imp.getC_BPartner_ID(), imp.getAD_User_ID()))
+											 .build());
 					//
 					if (imp.getDescription() != null)
 						invoice.setDescription(imp.getDescription());
@@ -719,9 +735,9 @@ public class ImportInvoice extends JavaProcess
 					noInsert++;
 					lineNo = 10;
 				}
-				imp.setC_Invoice_ID (invoice.getC_Invoice_ID());
+				imp.setC_Invoice_ID(invoice.getC_Invoice_ID());
 				//	New InvoiceLine
-				MInvoiceLine line = new MInvoiceLine (invoice);
+				MInvoiceLine line = new MInvoiceLine(invoice);
 				if (imp.getLineDescription() != null)
 					line.setDescription(imp.getLineDescription());
 				line.setLine(lineNo);
@@ -767,7 +783,7 @@ public class ImportInvoice extends JavaProcess
 			}
 			if (invoice != null)
 			{
-				invoice.processIt (m_docAction);
+				invoice.processIt(m_docAction);
 				invoice.save();
 			}
 			rs.close();
@@ -779,15 +795,15 @@ public class ImportInvoice extends JavaProcess
 		}
 
 		//	Set Error to indicator to not imported
-		sql = new StringBuffer ("UPDATE I_Invoice "
-			+ "SET I_IsImported='N', Updated=now() "
-			+ "WHERE I_IsImported<>'Y'").append(clientCheck);
+		sql = new StringBuffer("UPDATE I_Invoice "
+									   + "SET I_IsImported='N', Updated=now() "
+									   + "WHERE I_IsImported<>'Y'").append(clientCheck);
 		no = DB.executeUpdate(sql.toString(), get_TrxName());
-		addLog (0, null, new BigDecimal (no), "@Errors@");
+		addLog(0, null, new BigDecimal(no), "@Errors@");
 		//
-		addLog (0, null, new BigDecimal (noInsert), "@C_Invoice_ID@: @Inserted@");
-		addLog (0, null, new BigDecimal (noInsertLine), "@C_InvoiceLine_ID@: @Inserted@");
+		addLog(0, null, new BigDecimal(noInsert), "@C_Invoice_ID@: @Inserted@");
+		addLog(0, null, new BigDecimal(noInsertLine), "@C_InvoiceLine_ID@: @Inserted@");
 		return "";
-	}	//	doIt
+	}    //	doIt
 
-}	//	ImportInvoice
+}    //	ImportInvoice

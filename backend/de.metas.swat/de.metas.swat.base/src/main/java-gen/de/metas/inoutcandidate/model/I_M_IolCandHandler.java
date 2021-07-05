@@ -1,18 +1,18 @@
 package de.metas.inoutcandidate.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_IolCandHandler
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_IolCandHandler 
 {
 
-    /** TableName=M_IolCandHandler */
-    public static final String Table_Name = "M_IolCandHandler";
+	String Table_Name = "M_IolCandHandler";
 
-    /** AD_Table_ID=540385 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540385 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +23,9 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +35,7 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +45,9 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Java-Klasse.
@@ -58,7 +56,7 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setClassname (java.lang.String Classname);
+	void setClassname (java.lang.String Classname);
 
 	/**
 	 * Get Java-Klasse.
@@ -67,12 +65,10 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getClassname();
+	java.lang.String getClassname();
 
-    /** Column definition for Classname */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_Classname = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "Classname", null);
-    /** Column name Classname */
-    public static final String COLUMNNAME_Classname = "Classname";
+	ModelColumn<I_M_IolCandHandler, Object> COLUMN_Classname = new ModelColumn<>(I_M_IolCandHandler.class, "Classname", null);
+	String COLUMNNAME_Classname = "Classname";
 
 	/**
 	 * Get Created.
@@ -82,12 +78,10 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_IolCandHandler, Object> COLUMN_Created = new ModelColumn<>(I_M_IolCandHandler.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -97,10 +91,9 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Active.
@@ -110,7 +103,7 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -120,12 +113,10 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_IolCandHandler, Object> COLUMN_IsActive = new ModelColumn<>(I_M_IolCandHandler.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set M_IolCandHandler.
@@ -134,7 +125,7 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_IolCandHandler_ID (int M_IolCandHandler_ID);
+	void setM_IolCandHandler_ID (int M_IolCandHandler_ID);
 
 	/**
 	 * Get M_IolCandHandler.
@@ -143,12 +134,10 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_IolCandHandler_ID();
+	int getM_IolCandHandler_ID();
 
-    /** Column definition for M_IolCandHandler_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_M_IolCandHandler_ID = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "M_IolCandHandler_ID", null);
-    /** Column name M_IolCandHandler_ID */
-    public static final String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
+	ModelColumn<I_M_IolCandHandler, Object> COLUMN_M_IolCandHandler_ID = new ModelColumn<>(I_M_IolCandHandler.class, "M_IolCandHandler_ID", null);
+	String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
 
 	/**
 	 * Set Name der DB-Tabelle.
@@ -157,7 +146,7 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setTableName (java.lang.String TableName);
+	void setTableName (java.lang.String TableName);
 
 	/**
 	 * Get Name der DB-Tabelle.
@@ -166,12 +155,10 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getTableName();
+	java.lang.String getTableName();
 
-    /** Column definition for TableName */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_TableName = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "TableName", null);
-    /** Column name TableName */
-    public static final String COLUMNNAME_TableName = "TableName";
+	ModelColumn<I_M_IolCandHandler, Object> COLUMN_TableName = new ModelColumn<>(I_M_IolCandHandler.class, "TableName", null);
+	String COLUMNNAME_TableName = "TableName";
 
 	/**
 	 * Get Updated.
@@ -181,12 +168,10 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_IolCandHandler, Object>(I_M_IolCandHandler.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_IolCandHandler, Object> COLUMN_Updated = new ModelColumn<>(I_M_IolCandHandler.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -196,8 +181,7 @@ public interface I_M_IolCandHandler
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -22,6 +22,7 @@
 
 package org.adempiere.warehouse.api;
 
+import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -61,4 +62,6 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	OrgId getWarehouseOrgId(WarehouseId warehouseId);
+
+	DocumentLocation getPlainDocumentLocation(WarehouseId warehouseId);
 }

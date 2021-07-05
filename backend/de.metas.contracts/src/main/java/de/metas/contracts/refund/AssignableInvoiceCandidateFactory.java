@@ -10,6 +10,8 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -103,9 +105,13 @@ public class AssignableInvoiceCandidateFactory
 
 		final List<AssignmentToRefundCandidate> assignments = assignmentToRefundCandidateRepository.getAssignmentsByAssignableCandidateId(invoiceCandidateId);
 
-		final AssignableInvoiceCandidate invoiceCandidate = AssignableInvoiceCandidate.builder()
+		final BPartnerLocationAndCaptureId billLocationId = InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(assignableRecord)
+				.getBPartnerLocationAndCaptureId();
+
+		return AssignableInvoiceCandidate.builder()
 				.id(invoiceCandidateId)
-				.bpartnerLocationId(BPartnerLocationId.ofRepoId(assignableRecord.getBill_BPartner_ID(),assignableRecord.getBill_Location_ID()))
+				.bpartnerLocationId(billLocationId.getBpartnerLocationId())
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
 				.precision(precision.toInt())
@@ -114,8 +120,6 @@ public class AssignableInvoiceCandidateFactory
 				.productId(ProductId.ofRepoId(assignableRecord.getM_Product_ID()))
 				.assignmentsToRefundCandidates(assignments)
 				.build();
-
-		return invoiceCandidate;
 	}
 
 	private Quantity extractQuantity(@NonNull final I_C_Invoice_Candidate assignableRecord)

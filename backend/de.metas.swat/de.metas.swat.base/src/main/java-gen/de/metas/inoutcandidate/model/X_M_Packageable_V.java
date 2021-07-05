@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Packageable_V
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -521904266L;
+	private static final long serialVersionUID = -461325559L;
 
     /** Standard Constructor */
-    public X_M_Packageable_V (Properties ctx, int M_Packageable_V_ID, String trxName)
+    public X_M_Packageable_V (final Properties ctx, final int M_Packageable_V_ID, @Nullable final String trxName)
     {
       super (ctx, M_Packageable_V_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_Packageable_V (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Packageable_V (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,13 +30,13 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setBPartnerAddress_Override (java.lang.String BPartnerAddress_Override)
+	public void setBPartnerAddress_Override (final @Nullable java.lang.String BPartnerAddress_Override)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPartnerAddress_Override, BPartnerAddress_Override);
 	}
@@ -43,11 +44,11 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	@Override
 	public java.lang.String getBPartnerAddress_Override() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPartnerAddress_Override);
+		return get_ValueAsString(COLUMNNAME_BPartnerAddress_Override);
 	}
 
 	@Override
-	public void setBPartnerLocationName (java.lang.String BPartnerLocationName)
+	public void setBPartnerLocationName (final @Nullable java.lang.String BPartnerLocationName)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPartnerLocationName, BPartnerLocationName);
 	}
@@ -55,11 +56,11 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	@Override
 	public java.lang.String getBPartnerLocationName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPartnerLocationName);
+		return get_ValueAsString(COLUMNNAME_BPartnerLocationName);
 	}
 
 	@Override
-	public void setBPartnerName (java.lang.String BPartnerName)
+	public void setBPartnerName (final @Nullable java.lang.String BPartnerName)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPartnerName, BPartnerName);
 	}
@@ -67,11 +68,11 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	@Override
 	public java.lang.String getBPartnerName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPartnerName);
+		return get_ValueAsString(COLUMNNAME_BPartnerName);
 	}
 
 	@Override
-	public void setBPartnerValue (java.lang.String BPartnerValue)
+	public void setBPartnerValue (final @Nullable java.lang.String BPartnerValue)
 	{
 		set_ValueNoCheck (COLUMNNAME_BPartnerValue, BPartnerValue);
 	}
@@ -79,16 +80,16 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	@Override
 	public java.lang.String getBPartnerValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_BPartnerValue);
+		return get_ValueAsString(COLUMNNAME_BPartnerValue);
 	}
 
 	@Override
-	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID)
+	public void setC_BPartner_Customer_ID (final int C_BPartner_Customer_ID)
 	{
 		if (C_BPartner_Customer_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_Customer_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_Customer_ID, Integer.valueOf(C_BPartner_Customer_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Customer_ID, C_BPartner_Customer_ID);
 	}
 
 	@Override
@@ -98,12 +99,12 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
 	@Override
@@ -113,12 +114,12 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setC_Currency_ID (int C_Currency_ID)
+	public void setC_Currency_ID (final int C_Currency_ID)
 	{
 		if (C_Currency_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
 	@Override
@@ -134,18 +135,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setC_OrderLineSO(org.compiere.model.I_C_OrderLine C_OrderLineSO)
+	public void setC_OrderLineSO(final org.compiere.model.I_C_OrderLine C_OrderLineSO)
 	{
 		set_ValueFromPO(COLUMNNAME_C_OrderLineSO_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLineSO);
 	}
 
 	@Override
-	public void setC_OrderLineSO_ID (int C_OrderLineSO_ID)
+	public void setC_OrderLineSO_ID (final int C_OrderLineSO_ID)
 	{
 		if (C_OrderLineSO_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_OrderLineSO_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_OrderLineSO_ID, Integer.valueOf(C_OrderLineSO_ID));
+			set_ValueNoCheck (COLUMNNAME_C_OrderLineSO_ID, C_OrderLineSO_ID);
 	}
 
 	@Override
@@ -161,18 +162,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setC_OrderSO(org.compiere.model.I_C_Order C_OrderSO)
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
 	{
 		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
 	}
 
 	@Override
-	public void setC_OrderSO_ID (int C_OrderSO_ID)
+	public void setC_OrderSO_ID (final int C_OrderSO_ID)
 	{
 		if (C_OrderSO_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_OrderSO_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_OrderSO_ID, Integer.valueOf(C_OrderSO_ID));
+			set_ValueNoCheck (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
 	}
 
 	@Override
@@ -182,12 +183,12 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
@@ -197,7 +198,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setDateOrdered (java.sql.Timestamp DateOrdered)
+	public void setDateOrdered (final @Nullable java.sql.Timestamp DateOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_DateOrdered, DateOrdered);
 	}
@@ -209,7 +210,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setDeliveryDate (java.sql.Timestamp DeliveryDate)
+	public void setDeliveryDate (final @Nullable java.sql.Timestamp DeliveryDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_DeliveryDate, DeliveryDate);
 	}
@@ -231,17 +232,20 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
-	public void setDeliveryViaRule (java.lang.String DeliveryViaRule)
+	public void setDeliveryViaRule (final @Nullable java.lang.String DeliveryViaRule)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
 	}
 
 	@Override
 	public java.lang.String getDeliveryViaRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DeliveryViaRule);
+		return get_ValueAsString(COLUMNNAME_DeliveryViaRule);
 	}
 
 	/** 
@@ -327,17 +331,24 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	public static final String DOCSUBTYPE_Bankstatement = "BS";
 	/** Virtual inventory = VIY */
 	public static final String DOCSUBTYPE_VirtualInventory = "VIY";
+	/** SR = SR */
+	public static final String DOCSUBTYPE_SR = "SR";
+	/** Requisition = REQ */
+	public static final String DOCSUBTYPE_Requisition = "REQ";
+	/** Frame Agrement = FA */
+	public static final String DOCSUBTYPE_FrameAgrement = "FA";
+	/** Order Call = OC */
+	public static final String DOCSUBTYPE_OrderCall = "OC";
 	@Override
-	public void setDocSubType (java.lang.String DocSubType)
+	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_DocSubType, DocSubType);
 	}
 
 	@Override
 	public java.lang.String getDocSubType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocSubType);
+		return get_ValueAsString(COLUMNNAME_DocSubType);
 	}
 
 	/** 
@@ -356,22 +367,21 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/** Versandkostenpauschale = P */
 	public static final String FREIGHTCOSTRULE_Versandkostenpauschale = "P";
 	@Override
-	public void setFreightCostRule (java.lang.String FreightCostRule)
+	public void setFreightCostRule (final @Nullable java.lang.String FreightCostRule)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_FreightCostRule, FreightCostRule);
 	}
 
 	@Override
 	public java.lang.String getFreightCostRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_FreightCostRule);
+		return get_ValueAsString(COLUMNNAME_FreightCostRule);
 	}
 
 	@Override
-	public void setIsDisplayed (boolean IsDisplayed)
+	public void setIsDisplayed (final boolean IsDisplayed)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsDisplayed, Boolean.valueOf(IsDisplayed));
+		set_ValueNoCheck (COLUMNNAME_IsDisplayed, IsDisplayed);
 	}
 
 	@Override
@@ -381,25 +391,25 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setLineNetAmt (java.math.BigDecimal LineNetAmt)
+	public void setLineNetAmt (final @Nullable BigDecimal LineNetAmt)
 	{
 		set_ValueNoCheck (COLUMNNAME_LineNetAmt, LineNetAmt);
 	}
 
 	@Override
-	public java.math.BigDecimal getLineNetAmt() 
+	public BigDecimal getLineNetAmt() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_LineNetAmt);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_LineNetAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setLockedBy_User_ID (int LockedBy_User_ID)
+	public void setLockedBy_User_ID (final int LockedBy_User_ID)
 	{
 		if (LockedBy_User_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_LockedBy_User_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_LockedBy_User_ID, Integer.valueOf(LockedBy_User_ID));
+			set_ValueNoCheck (COLUMNNAME_LockedBy_User_ID, LockedBy_User_ID);
 	}
 
 	@Override
@@ -415,18 +425,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
 	@Override
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
 	@Override
@@ -436,12 +446,12 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
@@ -451,12 +461,12 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
 	{
 		if (M_ShipmentSchedule_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
 	}
 
 	@Override
@@ -472,18 +482,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
 	}
 
 	@Override
-	public void setM_Shipper_ID (int M_Shipper_ID)
+	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
 		if (M_Shipper_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
 	}
 
 	@Override
@@ -493,12 +503,12 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
 		if (M_Warehouse_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
 	@Override
@@ -514,18 +524,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setM_Warehouse_Type(org.compiere.model.I_M_Warehouse_Type M_Warehouse_Type)
+	public void setM_Warehouse_Type(final org.compiere.model.I_M_Warehouse_Type M_Warehouse_Type)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class, M_Warehouse_Type);
 	}
 
 	@Override
-	public void setM_Warehouse_Type_ID (int M_Warehouse_Type_ID)
+	public void setM_Warehouse_Type_ID (final int M_Warehouse_Type_ID)
 	{
 		if (M_Warehouse_Type_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Warehouse_Type_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_Type_ID, Integer.valueOf(M_Warehouse_Type_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_Type_ID, M_Warehouse_Type_ID);
 	}
 
 	@Override
@@ -535,7 +545,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setOrderDocumentNo (java.lang.String OrderDocumentNo)
+	public void setOrderDocumentNo (final @Nullable java.lang.String OrderDocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_OrderDocumentNo, OrderDocumentNo);
 	}
@@ -543,7 +553,7 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	@Override
 	public java.lang.String getOrderDocumentNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_OrderDocumentNo);
+		return get_ValueAsString(COLUMNNAME_OrderDocumentNo);
 	}
 
 	@Override
@@ -553,18 +563,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setPickFrom_Order(org.eevolution.model.I_PP_Order PickFrom_Order)
+	public void setPickFrom_Order(final org.eevolution.model.I_PP_Order PickFrom_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_PickFrom_Order_ID, org.eevolution.model.I_PP_Order.class, PickFrom_Order);
 	}
 
 	@Override
-	public void setPickFrom_Order_ID (int PickFrom_Order_ID)
+	public void setPickFrom_Order_ID (final int PickFrom_Order_ID)
 	{
 		if (PickFrom_Order_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PickFrom_Order_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PickFrom_Order_ID, Integer.valueOf(PickFrom_Order_ID));
+			set_ValueNoCheck (COLUMNNAME_PickFrom_Order_ID, PickFrom_Order_ID);
 	}
 
 	@Override
@@ -574,19 +584,19 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
-	public void setPOReference (java.lang.String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
 	}
 
 	@Override
-	public java.lang.String getPOReference()
+	public java.lang.String getPOReference() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
 	@Override
-	public void setPreparationDate (java.sql.Timestamp PreparationDate)
+	public void setPreparationDate (final @Nullable java.sql.Timestamp PreparationDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_PreparationDate, PreparationDate);
 	}
@@ -613,20 +623,19 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/** Minor = 9 */
 	public static final String PRIORITYRULE_Minor = "9";
 	@Override
-	public void setPriorityRule (java.lang.String PriorityRule)
+	public void setPriorityRule (final @Nullable java.lang.String PriorityRule)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_PriorityRule, PriorityRule);
 	}
 
 	@Override
 	public java.lang.String getPriorityRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PriorityRule);
+		return get_ValueAsString(COLUMNNAME_PriorityRule);
 	}
 
 	@Override
-	public void setProductName (java.lang.String ProductName)
+	public void setProductName (final @Nullable java.lang.String ProductName)
 	{
 		set_ValueNoCheck (COLUMNNAME_ProductName, ProductName);
 	}
@@ -634,97 +643,97 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	@Override
 	public java.lang.String getProductName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductName);
+		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
 
 	@Override
-	public void setQtyDelivered (java.math.BigDecimal QtyDelivered)
+	public void setQtyDelivered (final @Nullable BigDecimal QtyDelivered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyDelivered, QtyDelivered);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyDelivered() 
+	public BigDecimal getQtyDelivered() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDelivered);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDelivered);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyOrdered (java.math.BigDecimal QtyOrdered)
+	public void setQtyOrdered (final @Nullable BigDecimal QtyOrdered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyOrdered() 
+	public BigDecimal getQtyOrdered() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyPickedAndDelivered (java.math.BigDecimal QtyPickedAndDelivered)
+	public void setQtyPickedAndDelivered (final @Nullable BigDecimal QtyPickedAndDelivered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyPickedAndDelivered, QtyPickedAndDelivered);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyPickedAndDelivered() 
+	public BigDecimal getQtyPickedAndDelivered() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickedAndDelivered);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickedAndDelivered);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyPickedNotDelivered (java.math.BigDecimal QtyPickedNotDelivered)
+	public void setQtyPickedNotDelivered (final @Nullable BigDecimal QtyPickedNotDelivered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyPickedNotDelivered, QtyPickedNotDelivered);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyPickedNotDelivered() 
+	public BigDecimal getQtyPickedNotDelivered() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickedNotDelivered);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickedNotDelivered);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyPickedOrDelivered (java.math.BigDecimal QtyPickedOrDelivered)
+	public void setQtyPickedOrDelivered (final @Nullable BigDecimal QtyPickedOrDelivered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyPickedOrDelivered, QtyPickedOrDelivered);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyPickedOrDelivered() 
+	public BigDecimal getQtyPickedOrDelivered() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickedOrDelivered);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickedOrDelivered);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyPickedPlanned (java.math.BigDecimal QtyPickedPlanned)
+	public void setQtyPickedPlanned (final @Nullable BigDecimal QtyPickedPlanned)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyPickedPlanned, QtyPickedPlanned);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyPickedPlanned() 
+	public BigDecimal getQtyPickedPlanned() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickedPlanned);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickedPlanned);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyToDeliver (java.math.BigDecimal QtyToDeliver)
+	public void setQtyToDeliver (final @Nullable BigDecimal QtyToDeliver)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyToDeliver, QtyToDeliver);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyToDeliver() 
+	public BigDecimal getQtyToDeliver() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -738,20 +747,19 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	/** Expiring_First = E */
 	public static final String SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First = "E";
 	@Override
-	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy)
+	public void setShipmentAllocation_BestBefore_Policy (final @Nullable java.lang.String ShipmentAllocation_BestBefore_Policy)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_ShipmentAllocation_BestBefore_Policy, ShipmentAllocation_BestBefore_Policy);
 	}
 
 	@Override
 	public java.lang.String getShipmentAllocation_BestBefore_Policy() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ShipmentAllocation_BestBefore_Policy);
+		return get_ValueAsString(COLUMNNAME_ShipmentAllocation_BestBefore_Policy);
 	}
 
 	@Override
-	public void setShipperName (java.lang.String ShipperName)
+	public void setShipperName (final @Nullable java.lang.String ShipperName)
 	{
 		set_ValueNoCheck (COLUMNNAME_ShipperName, ShipperName);
 	}
@@ -759,11 +767,11 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	@Override
 	public java.lang.String getShipperName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ShipperName);
+		return get_ValueAsString(COLUMNNAME_ShipperName);
 	}
 
 	@Override
-	public void setWarehouseName (java.lang.String WarehouseName)
+	public void setWarehouseName (final @Nullable java.lang.String WarehouseName)
 	{
 		set_ValueNoCheck (COLUMNNAME_WarehouseName, WarehouseName);
 	}
@@ -771,6 +779,6 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	@Override
 	public java.lang.String getWarehouseName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WarehouseName);
+		return get_ValueAsString(COLUMNNAME_WarehouseName);
 	}
 }

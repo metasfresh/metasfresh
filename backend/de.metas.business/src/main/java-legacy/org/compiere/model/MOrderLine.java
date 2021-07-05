@@ -17,14 +17,14 @@
 package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -326,8 +326,7 @@ public class MOrderLine extends X_C_OrderLine
 		final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(this);
 		final CountryId countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
 
-		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(getC_BPartner_ID(), getC_BPartner_Location_ID());
-		final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(bpLocationId);
+		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(this).getBPartnerLocationAndCaptureId();
 
 		final boolean isSOTrx = getParent().isSOTrx();
 		final Timestamp taxDate = getDateOrdered();
@@ -348,7 +347,7 @@ public class MOrderLine extends X_C_OrderLine
 					.isSOTrx(isSOTrx)
 					.billDate(taxDate)
 					.billFromCountryId(countryFromId)
-					.billToC_Location_ID(bpLocation.getC_Location_ID())
+					.billToC_Location_ID(bpLocationId.getLocationCaptureId())
 					.build()
 					.throwOrLogWarning(true, log);
 		}

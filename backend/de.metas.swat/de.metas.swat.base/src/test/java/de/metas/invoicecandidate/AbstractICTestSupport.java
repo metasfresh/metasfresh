@@ -23,6 +23,7 @@ import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
@@ -716,7 +717,8 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			invoiceCandidateValidator = new C_Invoice_Candidate(
 					new InvoiceCandidateRecordService(),
 					groupsRepo,
-					attachmentEntryService);
+					attachmentEntryService,
+					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
 		}
 		return invoiceCandidateValidator;
 	}

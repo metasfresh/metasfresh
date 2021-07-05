@@ -1,89 +1,80 @@
 package de.metas.invoicecandidate.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_InvoiceCandidate_InOutLine
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_InvoiceCandidate_InOutLine 
 {
 
-    /** TableName=C_InvoiceCandidate_InOutLine */
-    public static final String Table_Name = "C_InvoiceCandidate_InOutLine";
+	String Table_Name = "C_InvoiceCandidate_InOutLine";
 
-    /** AD_Table_ID=540579 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540579 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 1 - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(1);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Rechnungskandidat.
+	 * Set Invoice candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID);
+	void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID);
 
 	/**
-	 * Get Rechnungskandidat.
+	 * Get Invoice candidate.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Invoice_Candidate_ID();
+	int getC_Invoice_Candidate_ID();
 
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate();
+	@Nullable de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate();
 
-	public void setC_Invoice_Candidate(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate);
+	void setC_Invoice_Candidate(@Nullable de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate);
 
-    /** Column definition for C_Invoice_Candidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, de.metas.invoicecandidate.model.I_C_Invoice_Candidate> COLUMN_C_Invoice_Candidate_ID = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, de.metas.invoicecandidate.model.I_C_Invoice_Candidate>(I_C_InvoiceCandidate_InOutLine.class, "C_Invoice_Candidate_ID", de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
-    /** Column name C_Invoice_Candidate_ID */
-    public static final String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, de.metas.invoicecandidate.model.I_C_Invoice_Candidate> COLUMN_C_Invoice_Candidate_ID = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "C_Invoice_Candidate_ID", de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
+	String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
 
 	/**
 	 * Set C_InvoiceCandidate_InOutLine.
@@ -92,7 +83,7 @@ public interface I_C_InvoiceCandidate_InOutLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_InvoiceCandidate_InOutLine_ID (int C_InvoiceCandidate_InOutLine_ID);
+	void setC_InvoiceCandidate_InOutLine_ID (int C_InvoiceCandidate_InOutLine_ID);
 
 	/**
 	 * Get C_InvoiceCandidate_InOutLine.
@@ -101,88 +92,80 @@ public interface I_C_InvoiceCandidate_InOutLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_InvoiceCandidate_InOutLine_ID();
+	int getC_InvoiceCandidate_InOutLine_ID();
 
-    /** Column definition for C_InvoiceCandidate_InOutLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_C_InvoiceCandidate_InOutLine_ID = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "C_InvoiceCandidate_InOutLine_ID", null);
-    /** Column name C_InvoiceCandidate_InOutLine_ID */
-    public static final String COLUMNNAME_C_InvoiceCandidate_InOutLine_ID = "C_InvoiceCandidate_InOutLine_ID";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_C_InvoiceCandidate_InOutLine_ID = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "C_InvoiceCandidate_InOutLine_ID", null);
+	String COLUMNNAME_C_InvoiceCandidate_InOutLine_ID = "C_InvoiceCandidate_InOutLine_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_Created = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_IsActive = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Lieferung/ Wareneingang freigeben.
@@ -193,7 +176,7 @@ public interface I_C_InvoiceCandidate_InOutLine
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setIsInOutApprovedForInvoicing (boolean IsInOutApprovedForInvoicing);
+	void setIsInOutApprovedForInvoicing (boolean IsInOutApprovedForInvoicing);
 
 	/**
 	 * Get Lieferung/ Wareneingang freigeben.
@@ -202,41 +185,37 @@ public interface I_C_InvoiceCandidate_InOutLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public boolean isInOutApprovedForInvoicing();
+	boolean isInOutApprovedForInvoicing();
 
-    /** Column definition for IsInOutApprovedForInvoicing */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_IsInOutApprovedForInvoicing = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "IsInOutApprovedForInvoicing", null);
-    /** Column name IsInOutApprovedForInvoicing */
-    public static final String COLUMNNAME_IsInOutApprovedForInvoicing = "IsInOutApprovedForInvoicing";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_IsInOutApprovedForInvoicing = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "IsInOutApprovedForInvoicing", null);
+	String COLUMNNAME_IsInOutApprovedForInvoicing = "IsInOutApprovedForInvoicing";
 
 	/**
-	 * Set Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Set Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_InOutLine_ID (int M_InOutLine_ID);
+	void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
-	 * Get Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Get Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_InOutLine_ID();
+	int getM_InOutLine_ID();
 
-	public org.compiere.model.I_M_InOutLine getM_InOutLine();
+	@Nullable org.compiere.model.I_M_InOutLine getM_InOutLine();
 
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine);
+	void setM_InOutLine(@Nullable org.compiere.model.I_M_InOutLine M_InOutLine);
 
-    /** Column definition for M_InOutLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, org.compiere.model.I_M_InOutLine>(I_C_InvoiceCandidate_InOutLine.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
-    /** Column name M_InOutLine_ID */
-    public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, org.compiere.model.I_M_InOutLine> COLUMN_M_InOutLine_ID = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "M_InOutLine_ID", org.compiere.model.I_M_InOutLine.class);
+	String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
 	 * Set Gelieferte Menge.
@@ -246,7 +225,7 @@ public interface I_C_InvoiceCandidate_InOutLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDelivered (java.math.BigDecimal QtyDelivered);
+	void setQtyDelivered (@Nullable BigDecimal QtyDelivered);
 
 	/**
 	 * Get Gelieferte Menge.
@@ -256,134 +235,121 @@ public interface I_C_InvoiceCandidate_InOutLine
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDelivered();
+	BigDecimal getQtyDelivered();
 
-    /** Column definition for QtyDelivered */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDelivered = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "QtyDelivered", null);
-    /** Column name QtyDelivered */
-    public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDelivered = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "QtyDelivered", null);
+	String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
-	 * Set Geliefert Catch.
-	 * Tatsächlich gelieferte Menge
+	 * Set Delivered catch.
+	 * Actually delivered catch quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDeliveredInUOM_Catch (java.math.BigDecimal QtyDeliveredInUOM_Catch);
+	void setQtyDeliveredInUOM_Catch (@Nullable BigDecimal QtyDeliveredInUOM_Catch);
 
 	/**
-	 * Get Geliefert Catch.
-	 * Tatsächlich gelieferte Menge
+	 * Get Delivered catch.
+	 * Actually delivered catch quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDeliveredInUOM_Catch();
+	BigDecimal getQtyDeliveredInUOM_Catch();
 
-    /** Column definition for QtyDeliveredInUOM_Catch */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDeliveredInUOM_Catch = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "QtyDeliveredInUOM_Catch", null);
-    /** Column name QtyDeliveredInUOM_Catch */
-    public static final String COLUMNNAME_QtyDeliveredInUOM_Catch = "QtyDeliveredInUOM_Catch";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDeliveredInUOM_Catch = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "QtyDeliveredInUOM_Catch", null);
+	String COLUMNNAME_QtyDeliveredInUOM_Catch = "QtyDeliveredInUOM_Catch";
 
 	/**
-	 * Set Geliefert Nominal.
+	 * Set Delivered nominal.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDeliveredInUOM_Nominal (java.math.BigDecimal QtyDeliveredInUOM_Nominal);
+	void setQtyDeliveredInUOM_Nominal (@Nullable BigDecimal QtyDeliveredInUOM_Nominal);
 
 	/**
-	 * Get Geliefert Nominal.
+	 * Get Delivered nominal.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDeliveredInUOM_Nominal();
+	BigDecimal getQtyDeliveredInUOM_Nominal();
 
-    /** Column definition for QtyDeliveredInUOM_Nominal */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDeliveredInUOM_Nominal = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "QtyDeliveredInUOM_Nominal", null);
-    /** Column name QtyDeliveredInUOM_Nominal */
-    public static final String COLUMNNAME_QtyDeliveredInUOM_Nominal = "QtyDeliveredInUOM_Nominal";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDeliveredInUOM_Nominal = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "QtyDeliveredInUOM_Nominal", null);
+	String COLUMNNAME_QtyDeliveredInUOM_Nominal = "QtyDeliveredInUOM_Nominal";
 
 	/**
-	 * Set Geliefert abw..
+	 * Set Delivered override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDeliveredInUOM_Override (java.math.BigDecimal QtyDeliveredInUOM_Override);
+	void setQtyDeliveredInUOM_Override (@Nullable BigDecimal QtyDeliveredInUOM_Override);
 
 	/**
-	 * Get Geliefert abw..
+	 * Get Delivered override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDeliveredInUOM_Override();
+	BigDecimal getQtyDeliveredInUOM_Override();
 
-    /** Column definition for QtyDeliveredInUOM_Override */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDeliveredInUOM_Override = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "QtyDeliveredInUOM_Override", null);
-    /** Column name QtyDeliveredInUOM_Override */
-    public static final String COLUMNNAME_QtyDeliveredInUOM_Override = "QtyDeliveredInUOM_Override";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyDeliveredInUOM_Override = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "QtyDeliveredInUOM_Override", null);
+	String COLUMNNAME_QtyDeliveredInUOM_Override = "QtyDeliveredInUOM_Override";
 
 	/**
-	 * Set Berechn. Menge.
-	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
+	 * Set Quantity Invoiced.
+	 * Invoiced quantity in the product's UOM.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced);
+	void setQtyInvoiced (BigDecimal QtyInvoiced);
 
 	/**
-	 * Get Berechn. Menge.
-	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
+	 * Get Quantity Invoiced.
+	 * Invoiced quantity in the product's UOM.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyInvoiced();
+	BigDecimal getQtyInvoiced();
 
-    /** Column definition for QtyInvoiced */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyInvoiced = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "QtyInvoiced", null);
-    /** Column name QtyInvoiced */
-    public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_QtyInvoiced = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "QtyInvoiced", null);
+	String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_InvoiceCandidate_InOutLine, Object>(I_C_InvoiceCandidate_InOutLine.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_InvoiceCandidate_InOutLine, Object> COLUMN_Updated = new ModelColumn<>(I_C_InvoiceCandidate_InOutLine.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

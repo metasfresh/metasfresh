@@ -23,7 +23,7 @@
 package de.metas.pricing.service;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
@@ -76,6 +76,11 @@ public interface IPriceListDAO extends ISingletonService
 
 	PriceListsCollection retrievePriceListsCollectionByPricingSystemId(PricingSystemId pricingSystemId);
 
+	PriceListId retrievePriceListIdByPricingSyst(
+			@Nullable PricingSystemId pricingSystemId,
+			CountryId countryId,
+			SOTrx soTrx);
+
 	/**
 	 * Returns a list containing all the PO price lists for a given pricing system and a country.<br>
 	 * The method returns both price lists with the given country and without any country. The price list
@@ -89,7 +94,7 @@ public interface IPriceListDAO extends ISingletonService
 	 * @return the price list for the given pricing system and location or <code>null</code>.
 	 */
 	@Nullable
-	PriceListId retrievePriceListIdByPricingSyst(PricingSystemId pricingSystemId, BPartnerLocationId bpartnerLocationId, SOTrx soTrx);
+	PriceListId retrievePriceListIdByPricingSyst(PricingSystemId pricingSystemId, BPartnerLocationAndCaptureId bpartnerLocationId, SOTrx soTrx);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>

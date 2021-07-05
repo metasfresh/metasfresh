@@ -23,6 +23,7 @@
 package de.metas.tax.api;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.lang.SOTrx;
 import de.metas.location.ICountryAreaBL;
@@ -90,7 +91,7 @@ class TaxDAOTest
 	private static final int COUNTRY_AREA_ID = 10000;
 
 	private ITaxDAO taxDAO;
-	private final Map<TypeOfDestCountry, BPartnerLocationId> typeOfDestCountryBPartnerLocationIdMap = new HashMap<>();
+	private final Map<TypeOfDestCountry, BPartnerLocationAndCaptureId> typeOfDestCountryBPartnerLocationIdMap = new HashMap<>();
 	private final Map<TypeOfDestCountry, TaxId> typeOfDestCountryTaxIdByOrgIdMap = new HashMap<>();
 	private final Map<TypeOfDestCountry, TaxId> typeOfDestCountryTaxIdByWarehouseIdMap = new HashMap<>();
 
@@ -200,13 +201,13 @@ class TaxDAOTest
 
 	private void createWarehouseData()
 	{
-		final BPartnerLocationId bPartnerLocationId = createBPartnerData(WAREHOUSE_COUNTRY_ID, WAREHOUSE_COUNTRY_CODE, true);
+		final BPartnerLocationAndCaptureId bPartnerLocationId = createBPartnerData(WAREHOUSE_COUNTRY_ID, WAREHOUSE_COUNTRY_CODE, true);
 
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 		warehouse.setAD_Org_ID(ORG_ID.getRepoId());
 		warehouse.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());
 		warehouse.setC_BPartner_ID(bPartnerLocationId.getBpartnerId().getRepoId());
-		warehouse.setC_BPartner_Location_ID(bPartnerLocationId.getRepoId());
+		warehouse.setC_BPartner_Location_ID(bPartnerLocationId.getBpartnerLocationId().getRepoId());
 		save(warehouse);
 
 		typeOfDestCountryTaxIdByWarehouseIdMap.put(DOMESTIC, createTaxData(DOMESTIC, WAREHOUSE_COUNTRY_ID, WAREHOUSE_COUNTRY_ID));
@@ -214,7 +215,7 @@ class TaxDAOTest
 		typeOfDestCountryTaxIdByWarehouseIdMap.put(OUTSIDE_COUNTRY_AREA, createTaxData(OUTSIDE_COUNTRY_AREA, WAREHOUSE_COUNTRY_ID, NON_EU_COUNTRY_ID));
 	}
 
-	private BPartnerLocationId createBPartnerData(final int countryId, final String countryCode, final boolean includeInEU)
+	private BPartnerLocationAndCaptureId createBPartnerData(final int countryId, final String countryCode, final boolean includeInEU)
 	{
 		final I_C_Location location = createLocation(countryId, countryCode, includeInEU);
 
@@ -229,7 +230,7 @@ class TaxDAOTest
 		bPartnerLocation.setIsBillTo(true);
 		save(bPartnerLocation);
 
-		return BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
+		return BPartnerLocationAndCaptureId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID(), bPartnerLocation.getC_Location_ID());
 	}
 
 	@NonNull

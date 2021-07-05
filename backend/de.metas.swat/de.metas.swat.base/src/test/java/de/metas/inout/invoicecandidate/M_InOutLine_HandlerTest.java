@@ -106,6 +106,7 @@ public class M_InOutLine_HandlerTest
 		inout.setIsSOTrx(true);
 		inout.setDocStatus(IDocument.STATUS_Completed); // otherwise the code won't consider the inoutLines' quantities
 		inout.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		inout.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
 		inout.setM_Warehouse_ID(1);
 		inout.setMovementDate(SystemTime.asTimestamp());
 		save(inout);

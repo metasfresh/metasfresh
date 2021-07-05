@@ -2,6 +2,8 @@ package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -9,8 +11,10 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.location.DocumentLocation;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.event.InOutUserNotificationsProducer;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -18,6 +22,7 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
@@ -82,7 +87,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  * Class responsible for converting {@link I_M_ReceiptSchedule}s to {@link I_M_InOut} receipts.
  *
  * @author tsa
- *
  */
 public class InOutProducer implements IInOutProducer
 {
@@ -108,7 +112,7 @@ public class InOutProducer implements IInOutProducer
 	private final ReceiptMovementDateRule movementDateRule;
 
 	@NonNull
-	private final Map<ReceiptScheduleId,ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
+	private final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId;
 
 	private I_M_InOut _currentReceipt = null;
 	private int _currentReceiptLinesCount = 0;
@@ -125,17 +129,16 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 *
 	 * @param result
 	 * @param complete
 	 * @param movementDateRule if {@code ReceiptMovementDateRule#CURRENT_DATE} (the default), then a new InOut is created with the current date from {@link Env#getDate(Properties)}.
 	 *                         else if {@code ReceiptMovementDateRule#EXTERNAL_DATE_IF_AVAIL} then the MovementDate will be taken from {@code externalInfoByReceiptScheduleId} if available
 	 *                         else if {@code ReceiptMovementDateRule#ORDER_DATE_PROMISED} then the date will be the DatePromised value of the receipt schedule's C_Order.
-     */
+	 */
 	protected InOutProducer(@NonNull final InOutGenerateResult result,
 			final boolean complete,
 			@NonNull final ReceiptMovementDateRule movementDateRule,
-			@Nullable final Map<ReceiptScheduleId,ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId)
+			@Nullable final Map<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByReceiptScheduleId)
 	{
 		this.result = result;
 		this.complete = complete;
@@ -221,13 +224,13 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
-	 *
 	 * @param previousReceiptSchedule
 	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
 	 */
 	// package level because of JUnit tests
-	/* package */final boolean isNewReceiptRequired(final I_M_ReceiptSchedule previousReceiptSchedule, final I_M_ReceiptSchedule receiptSchedule)
+	/* package */
+	final boolean isNewReceiptRequired(final I_M_ReceiptSchedule previousReceiptSchedule, final I_M_ReceiptSchedule receiptSchedule)
 	{
 		Check.assumeNotNull(previousReceiptSchedule, "previousReceiptSchedule not null");
 		Check.assumeNotNull(receiptSchedule, "receiptSchedule not null");
@@ -310,7 +313,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Create bottom receipt lines, right before completing the receipt.
-	 *
+	 * <p>
 	 * NOTE: at this level this method does nothing but you are free to implement your functionality.
 	 *
 	 * @return created lines
@@ -374,7 +377,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Gets current receipt.
-	 *
+	 * <p>
 	 * If there is no current receipt, an exception will be thrown.
 	 *
 	 * @return current receipt; never return null.
@@ -454,9 +457,13 @@ public class InOutProducer implements IInOutProducer
 			final int bpartnerLocationId = receiptScheduleBL.getC_BPartner_Location_Effective_ID(rs);
 			final BPartnerContactId bpartnerContactId = receiptScheduleBL.getBPartnerContactID(rs);
 
-			receiptHeader.setC_BPartner_ID(bpartnerId);
-			receiptHeader.setC_BPartner_Location_ID(bpartnerLocationId);
-			receiptHeader.setAD_User_ID(bpartnerContactId.toRepoId(bpartnerContactId));
+			InOutDocumentLocationAdapterFactory
+					.locationAdapter(receiptHeader)
+					.setFrom(DocumentLocation.builder()
+									 .bpartnerId(BPartnerId.ofRepoId(bpartnerId))
+									 .bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationId))
+									 .contactId(bpartnerContactId)
+									 .build());
 		}
 
 		//
@@ -491,9 +498,9 @@ public class InOutProducer implements IInOutProducer
 		if (order != null && order.isDropShip())
 		{
 			receiptHeader.setIsDropShip(true);
-			receiptHeader.setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
-			receiptHeader.setDropShip_Location_ID(order.getDropShip_Location_ID());
-			receiptHeader.setDropShip_User_ID(order.getDropShip_User_ID());
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(receiptHeader)
+					.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation());
 		}
 		else
 		{
@@ -587,7 +594,7 @@ public class InOutProducer implements IInOutProducer
 
 	/**
 	 * Create receipt line(s) from current receipt schedule (see {@link #getCurrentReceiptSchedule()}).
-	 *
+	 * <p>
 	 * NOTE: this method can be overriden by extending classes.
 	 *
 	 * @return created receipt lines
@@ -662,7 +669,6 @@ public class InOutProducer implements IInOutProducer
 		return StringUtils.trimBlankToNull(receiptSchedule.getExternalResourceURL());
 
 	}
-
 
 	private Timestamp getMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{

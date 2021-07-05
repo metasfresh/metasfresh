@@ -25,32 +25,34 @@ package de.metas.adempiere.process;
  * #L%
  */
 
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.adapter.DocumentLocationAdaptersRegistry;
+import de.metas.document.location.adapter.IDocumentBillLocationAdapter;
+import de.metas.document.location.adapter.IDocumentDeliveryLocationAdapter;
+import de.metas.document.location.adapter.IDocumentLocationAdapter;
+import de.metas.organization.OrgId;
+import de.metas.process.JavaProcess;
+import de.metas.process.Param;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentBillLocation;
-import de.metas.document.model.IDocumentDeliveryLocation;
-import de.metas.document.model.IDocumentLocation;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author cg
@@ -58,53 +60,39 @@ import de.metas.util.Services;
  */
 public class UpdateAddresses extends JavaProcess
 {
+	private final IBPartnerBL partnerBL = Services.get(IBPartnerBL.class);
+	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
-	private int p_AD_Table_ID = -1;
-	private int p_AD_Org_ID = -1;
+	@Param(parameterName = "AD_Table_ID", mandatory = true)
+	private AdTableId p_AD_Table_ID;
 
-	@Override
-	protected void prepare()
-	{
-		for (ProcessInfoParameter para : getParametersAsArray())
-		{
-			String name = para.getParameterName();
-			if (para.getParameter() == null)
-			{
-				
-			}
-			else if (name.equals("AD_Table_ID"))
-			{
-				p_AD_Table_ID = para.getParameterAsInt();
-			}
-			else if (name.equals("AD_Org_ID"))
-			{
-				p_AD_Org_ID = para.getParameterAsInt();
-			}
-		}
-	}
+	@Param(parameterName = "AD_Org_ID")
+	private OrgId p_AD_Org_ID;
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
-		if (p_AD_Table_ID <= 0)
+		if (p_AD_Table_ID == null)
 		{
 			throw new FillMandatoryException("@AD_Table_ID@");
 		}
 
 		updateAddresses(p_AD_Table_ID);
 
-		return "OK";
+		return MSG_OK;
 	}
 
-	private void updateAddresses(final int AD_Table_ID)
+	private void updateAddresses(final AdTableId adTableId)
 	{
-		final MTable table = MTable.get(getCtx(), AD_Table_ID);
+		final MTable table = MTable.get(getCtx(), adTableId.getRepoId());
 
 		updateAddresses(table,
-				I_C_Order.COLUMNNAME_BPartnerAddress,
-				I_C_Order.COLUMNNAME_BillToAddress,
-				I_C_Order.COLUMNNAME_DeliveryToAddress,
-				I_C_BPartner_Location.COLUMNNAME_Address);
+						I_C_Order.COLUMNNAME_BPartnerAddress,
+						I_C_Order.COLUMNNAME_BillToAddress,
+						I_C_Order.COLUMNNAME_DeliveryToAddress,
+						I_C_BPartner_Location.COLUMNNAME_Address);
 	}
 
 	private void updateAddresses(final MTable table, final String... columnNames)
@@ -182,10 +170,10 @@ public class UpdateAddresses extends JavaProcess
 		return true;
 	}
 
-	private boolean updateAddress0(PO po, String columnName) throws Exception
+	private boolean updateAddress0(PO po, String columnName)
 	{
 		final String addressOld = po.get_ValueAsString(columnName);
-		if (!Check.isEmpty(addressOld, true))
+		if (!Check.isBlank(addressOld))
 		{
 			return false;
 		}
@@ -196,44 +184,47 @@ public class UpdateAddresses extends JavaProcess
 		if (I_C_BPartner_Location.Table_Name.equals(po.get_TableName()) && I_C_BPartner_Location.COLUMNNAME_Address.equals(columnName))
 		{
 			final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(po, I_C_BPartner_Location.class);
-			Services.get(IBPartnerBL.class).setAddress(bpLocation);
+			partnerBL.setAddress(bpLocation);
 			if (Check.isEmpty(bpLocation.getAddress()))
 			{
 				log.warn("Cannot calculate Address for " + bpLocation);
 			}
 
-			Services.get(IBPartnerDAO.class).save(bpLocation);
-			
+			partnerDAO.save(bpLocation);
+
 			return true;
 		}
 		//
 		// Case: DocumentLocation
-		else if (I_C_Order.COLUMNNAME_BPartnerAddress.equals(columnName))
-		{
-			final IDocumentLocation doc = InterfaceWrapperHelper.create(po, IDocumentLocation.class);
-			Services.get(IDocumentLocationBL.class).setBPartnerAddress(doc);
-			InterfaceWrapperHelper.save(doc);
-		}
-		//
-		// Case: DocumentBillLocation
-		else if (I_C_Order.COLUMNNAME_BillToAddress.equals(columnName))
-		{
-			final IDocumentBillLocation doc = InterfaceWrapperHelper.create(po, IDocumentBillLocation.class);
-			Services.get(IDocumentLocationBL.class).setBillToAddress(doc);
-			InterfaceWrapperHelper.save(doc);
-		}
-		//
-		// Case: DocumentDeliveryToAddress
-		else if (I_C_Order.COLUMNNAME_DeliveryToAddress.equals(columnName))
-		{
-			final IDocumentDeliveryLocation doc = InterfaceWrapperHelper.create(po, IDocumentDeliveryLocation.class);
-			Services.get(IDocumentLocationBL.class).setDeliveryToAddress(doc);
-			InterfaceWrapperHelper.save(doc);
-		}
-		// Not handled column => error
 		else
 		{
-			throw new IllegalStateException("The column is not one of the expected - " + columnName);
+			if (I_C_Order.COLUMNNAME_BPartnerAddress.equals(columnName))
+			{
+				final IDocumentLocationAdapter doc = documentLocationAdaptersRegistry.getDocumentLocationAdapterIfHandled(po).get();
+				documentLocationBL.updateRenderedAddressAndCapturedLocation(doc);
+				InterfaceWrapperHelper.save(doc);
+			}
+			//
+			// Case: DocumentBillLocation
+			else if (I_C_Order.COLUMNNAME_BillToAddress.equals(columnName))
+			{
+				final IDocumentBillLocationAdapter doc = documentLocationAdaptersRegistry.getDocumentBillLocationAdapterIfHandled(po).get();
+				documentLocationBL.updateRenderedAddressAndCapturedLocation(doc);
+				InterfaceWrapperHelper.save(doc);
+			}
+			//
+			// Case: DocumentDeliveryToAddress
+			else if (I_C_Order.COLUMNNAME_DeliveryToAddress.equals(columnName))
+			{
+				final IDocumentDeliveryLocationAdapter doc = documentLocationAdaptersRegistry.getDocumentDeliveryLocationAdapter(po).get();
+				documentLocationBL.updateRenderedAddressAndCapturedLocation(doc);
+				InterfaceWrapperHelper.save(doc);
+			}
+			// Not handled column => error
+			else
+			{
+				throw new AdempiereException("The column is not one of the expected - " + columnName);
+			}
 		}
 
 		return true;
@@ -244,7 +235,7 @@ public class UpdateAddresses extends JavaProcess
 		final StringBuilder whereClause = new StringBuilder("1=1");
 		final List<Object> params = new ArrayList<>();
 
-		if (p_AD_Org_ID > 0)
+		if (p_AD_Org_ID != null)
 		{
 			whereClause.append(" AND AD_Org_ID = ?");
 			params.add(p_AD_Org_ID);

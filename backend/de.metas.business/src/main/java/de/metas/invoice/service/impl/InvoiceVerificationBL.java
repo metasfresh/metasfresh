@@ -25,7 +25,7 @@ package de.metas.invoice.service.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
@@ -140,13 +140,13 @@ public class InvoiceVerificationBL implements IInvoiceVerificationBL
 		final I_C_InvoiceLine line = invoiceDAO.retrieveLineById(InvoiceLineId.ofRepoId(invoiceId, setLine.getC_InvoiceLine_ID()));
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(invoice.getC_BPartner_ID());
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, invoice.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId bpartnerLocationId = BPartnerLocationAndCaptureId.ofRepoIdOrNull(bpartnerId, invoice.getC_BPartner_Location_ID(), invoice.getC_BPartner_Location_Value_ID());
 		final OrgId orgId = OrgId.ofRepoId(setLine.getAD_Org_ID());
 
 		final TaxQuery query = TaxQuery.builder()
 				.orgId(orgId)
 				.warehouseId(WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID()))
-				.bPartnerLocationId(bPartnerLocationId)
+				.bPartnerLocationId(bpartnerLocationId)
 				.taxCategoryId(TaxCategoryId.ofRepoIdOrNull(line.getC_TaxCategory_ID()))
 				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
 				.dateOfInterest(CoalesceUtil.coalesce(dateOfInterestOverride, setLine.getRelevantDate()))

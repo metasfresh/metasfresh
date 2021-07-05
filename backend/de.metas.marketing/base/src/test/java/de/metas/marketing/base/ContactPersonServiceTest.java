@@ -1,27 +1,5 @@
 package de.metas.marketing.base;
 
-import static de.metas.i18n.Language.AD_Language_en_AU;
-import static de.metas.i18n.Language.AD_Language_en_GB;
-import static de.metas.i18n.Language.AD_Language_en_US;
-import static de.metas.i18n.Language.asLanguage;
-import static de.metas.i18n.Language.asLanguageStringOrNull;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Before;
-import org.junit.Test;
-
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.i18n.Language;
 import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.I_MKTG_ContactPerson;
@@ -31,6 +9,25 @@ import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.Before;
+import org.junit.Test;
+
+import javax.annotation.Nullable;
+import java.util.List;
+
+import static de.metas.i18n.Language.AD_Language_en_AU;
+import static de.metas.i18n.Language.AD_Language_en_GB;
+import static de.metas.i18n.Language.AD_Language_en_US;
+import static de.metas.i18n.Language.asLanguage;
+import static de.metas.i18n.Language.asLanguageStringOrNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 /*
  * #%L
@@ -69,9 +66,7 @@ public class ContactPersonServiceTest
 		AdempiereTestHelper.get().init();
 
 		userRepository = new UserRepository();
-		contactPersonService = new ContactPersonService(
-				new ContactPersonRepository(
-						new BPartnerLocationInfoRepository()));
+		contactPersonService = new ContactPersonService(new ContactPersonRepository());
 	}
 
 	@Test

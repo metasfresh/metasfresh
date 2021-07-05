@@ -1,10 +1,9 @@
 package de.metas.invoice;
 
-import java.util.Optional;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.location.DocumentLocation;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -13,6 +12,8 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -36,6 +37,7 @@ import lombok.Value;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @Value
 @Builder
 public class BPartnerInvoicingInfo
@@ -64,4 +66,13 @@ public class BPartnerInvoicingInfo
 
 	@NonNull
 	CurrencyId currencyId;
+
+	public DocumentLocation getBillLocation()
+	{
+		return DocumentLocation.builder()
+				.bpartnerId(getBpartnerId())
+				.bpartnerLocationId(getBillBPartnerLocationId())
+				.contactId(getBillContactId().orElse(null))
+				.build();
+	}
 }
