@@ -60,6 +60,7 @@ public class ServiceRepairProjectTask
 	InOutAndLineId customerReturnLineId;
 
 	@Nullable PPOrderId repairOrderId;
+	String repairOrderSummary;
 	boolean isRepairOrderDone;
 	@Nullable HuId repairVhuId;
 
@@ -154,10 +155,13 @@ public class ServiceRepairProjectTask
 				.withUpdatedStatus();
 	}
 
-	public ServiceRepairProjectTask withRepairOrderDone(final boolean isRepairOrderDone)
+	public ServiceRepairProjectTask withRepairOrderDone(
+			final boolean isRepairOrderDone,
+			@Nullable final String repairOrderSummary)
 	{
 		return toBuilder()
 				.isRepairOrderDone(isRepairOrderDone)
+				.repairOrderSummary(repairOrderSummary)
 				.build()
 				.withUpdatedStatus();
 	}

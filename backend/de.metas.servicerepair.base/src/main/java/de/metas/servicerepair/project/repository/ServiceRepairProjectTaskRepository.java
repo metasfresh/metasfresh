@@ -40,6 +40,7 @@ import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjec
 import de.metas.servicerepair.repository.model.I_C_Project_Repair_Task;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -158,6 +159,7 @@ class ServiceRepairProjectTaskRepository
 				.customerReturnLineId(InOutAndLineId.ofRepoIdOrNull(record.getCustomerReturn_InOut_ID(), record.getCustomerReturn_InOutLine_ID()))
 				.repairOrderId(PPOrderId.ofRepoIdOrNull(record.getRepair_Order_ID()))
 				.isRepairOrderDone(record.isRepairOrderDone())
+				.repairOrderSummary(StringUtils.trimBlankToNull(record.getRepairOrderSummary()))
 				.repairVhuId(HuId.ofRepoIdOrNull(record.getRepair_VHU_ID()))
 				//
 				.build();
@@ -189,6 +191,8 @@ class ServiceRepairProjectTaskRepository
 		record.setQtyConsumed(from.getQtyConsumed().toBigDecimal());
 
 		record.setRepair_Order_ID(PPOrderId.toRepoId(from.getRepairOrderId()));
+		record.setRepairOrderSummary(from.getRepairOrderSummary());
+		record.setIsRepairOrderDone(from.isRepairOrderDone());
 	}
 
 	public void changeById(

@@ -41,6 +41,7 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -98,6 +99,7 @@ public class RepairManufacturingOrderService
 				.projectId(projectId)
 				.repairedProductId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.repairedQty(ppOrderBL.getQuantities(record).getQtyReceived())
+				.summary(record.getRepairOrderSummary())
 				.costCollectors(getCostCollectors(repairOrderId))
 				.build());
 	}

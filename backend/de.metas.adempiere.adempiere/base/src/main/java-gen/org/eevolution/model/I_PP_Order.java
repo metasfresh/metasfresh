@@ -1800,4 +1800,6 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Order.class, "Yield", null);
 	String COLUMNNAME_Yield = "Yield";
+
+	default String getRepairOrderSummary() { throw new UnsupportedOperationException(); }
 }
