@@ -44,6 +44,7 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 	public static final AttributesKeyPart OTHER = newForSpecialType(AttributeKeyPartType.Other);
 	public static final AttributesKeyPart NONE = newForSpecialType(AttributeKeyPartType.None);
 
+	@NonNull
 	static AttributesKeyPart parseString(@NonNull final String stringRepresentation)
 	{
 		try

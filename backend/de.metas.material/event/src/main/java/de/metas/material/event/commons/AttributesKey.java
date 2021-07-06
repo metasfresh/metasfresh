@@ -213,6 +213,7 @@ public final class AttributesKey implements Comparable<AttributesKey>
 			return ATTRIBUTEVALUEIDS_SPLITTER.splitToList(attributesKeyString.trim())
 					.stream()
 					.map(AttributesKeyPart::parseString)
+					.filter(p -> Check.isNotBlank(p.getValue()))
 					.collect(ImmutableSet.toImmutableSet());
 		}
 		catch (final Exception ex)
