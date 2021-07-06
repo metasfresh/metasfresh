@@ -13,6 +13,7 @@
   "requestTimeout_comment2": "Example: when adding a new sales order line, the actual 'request' does not happen directly,",
   "requestTimeout_comment3": "but only after some time, when the line was already added by the API",
   "requestTimeout" : 30000,
+  "runMode": 2,
 
   "videoCompression": false,
 

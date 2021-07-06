@@ -89,7 +89,7 @@ context('Reusable "login" custom command using API', function () {
       Cypress.reduxStore = store;
     });
 
-    // cy.visit('/login');
+    cy.visit('/login');
 
     return cy
       .request({
