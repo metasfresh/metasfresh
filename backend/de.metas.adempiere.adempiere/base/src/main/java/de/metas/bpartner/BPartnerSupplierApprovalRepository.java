@@ -30,7 +30,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.compiere.model.I_C_BP_SupplierApproval;
-import org.compiere.model.X_C_BP_SupplierApproval;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -84,21 +83,21 @@ public class BPartnerSupplierApprovalRepository
 
 		final IQueryFilter<I_C_BP_SupplierApproval> filterThreeYears =
 				queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)
-						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval, X_C_BP_SupplierApproval.SUPPLIERAPPROVAL_3Years)
+						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval, SupplierApproval.ThreeYears)
 						.addCompareFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval_Date,
 										  CompareQueryFilter.Operator.LESS_OR_EQUAL,
 										  threeMonthsFromNow.minusYears(3));
 
 		final IQueryFilter<I_C_BP_SupplierApproval> filterTwoYears =
 				queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)
-						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval, X_C_BP_SupplierApproval.SUPPLIERAPPROVAL_2Years)
+						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval, SupplierApproval.TwoYears)
 						.addCompareFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval_Date,
 										  CompareQueryFilter.Operator.LESS_OR_EQUAL,
 										  threeMonthsFromNow.minusYears(2));
 
 		final IQueryFilter<I_C_BP_SupplierApproval> filterOneYear =
 				queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)
-						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval, X_C_BP_SupplierApproval.SUPPLIERAPPROVAL_1Year)
+						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval, SupplierApproval.OneYear)
 						.addCompareFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval_Date,
 										  CompareQueryFilter.Operator.LESS_OR_EQUAL,
 										  threeMonthsFromNow.minusYears(1));
@@ -110,11 +109,11 @@ public class BPartnerSupplierApprovalRepository
 				.addFilter(filterTwoYears)
 				.addFilter(filterOneYear);
 
-		queryBL.createQueryBuilder(I_C_BP_SupplierApproval.class)
+		return queryBL.createQueryBuilder(I_C_BP_SupplierApproval.class)
 				.filter(supplierApprovalOptionFilter)
 				.create()
 				.listImmutable(I_C_BP_SupplierApproval.class)
-		;
+				;
 
 	}
 }

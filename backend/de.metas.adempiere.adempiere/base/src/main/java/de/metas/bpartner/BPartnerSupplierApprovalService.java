@@ -38,12 +38,12 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BP_SupplierApproval;
-import org.compiere.model.X_C_BP_SupplierApproval;
 import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 public class BPartnerSupplierApprovalService
@@ -95,8 +95,6 @@ public class BPartnerSupplierApprovalService
 
 			final I_C_BP_SupplierApproval bPartnerSupplierApproval = foundNorm.get();
 
-			final String supplierApproval = bPartnerSupplierApproval.getSupplierApproval();
-
 			final Timestamp supplierApprovalDate = bPartnerSupplierApproval.getSupplierApproval_Date();
 
 			if (supplierApprovalDate == null)
@@ -107,32 +105,45 @@ public class BPartnerSupplierApprovalService
 			final LocalDate supplierApprovalDateToUse = TimeUtil.asLocalDate(supplierApprovalDate,
 																			 orgDAO.getTimeZone(OrgId.ofRepoId(bPartnerSupplierApproval.getAD_Org_ID())));
 
-			final int numberOfYears;
+			final int numberOfYearsForApproval = getNumberOfYearsForApproval(bPartnerSupplierApproval);
 
-			switch (supplierApproval)
+			if (numberOfYearsForApproval == 0)
 			{
-				case X_C_BP_SupplierApproval.SUPPLIERAPPROVAL_1Year:
-					numberOfYears = 1;
-					break;
-
-				case X_C_BP_SupplierApproval.SUPPLIERAPPROVAL_2Years:
-					numberOfYears = 2;
-					break;
-
-				case X_C_BP_SupplierApproval.SUPPLIERAPPROVAL_3Years:
-					numberOfYears = 3;
-					break;
-
-				default:
-					// the vendor doesn't have a supplier approval
-					throw new AdempiereException(MSG_Partner_Lacks_SupplierApproval, partnerId, norm); // TODO: message
+				throw new AdempiereException(MSG_Partner_Lacks_SupplierApproval, partnerId, norm); // TODO: message
 			}
-
-			if (supplierApprovalExpired(supplierApprovalDateToUse, datePromised, numberOfYears))
+			if (supplierApprovalExpired(supplierApprovalDateToUse, datePromised, numberOfYearsForApproval))
 			{
 				throw new AdempiereException(MSG_Partner_Lacks_SupplierApproval, partnerId, norm); // TODO: message
 			}
 		}
+
+	}
+
+	private int getNumberOfYearsForApproval(final I_C_BP_SupplierApproval bPartnerSupplierApproval)
+	{
+		final SupplierApproval supplierApproval = SupplierApproval.ofNullableCode(bPartnerSupplierApproval.getSupplierApproval());
+
+		if (supplierApproval == null)
+		{
+			// the vendor doesn't have a supplier approval
+			return 0;
+		}
+		if (supplierApproval.isOneYear())
+		{
+			return 1;
+		}
+		else if (supplierApproval.isTwoYears())
+		{
+			return 2;
+		}
+		else if (supplierApproval.isThreeYears())
+		{
+			return 3;
+		}
+
+		// should not happen
+		// the vendor doesn't have a supplier approval
+		return 0;
 
 	}
 
@@ -173,7 +184,11 @@ public class BPartnerSupplierApprovalService
 
 		final String partnerName = bpartnerDAO.getBPartnerNameById(BPartnerId.ofRepoId(supplierApprovalRecord.getC_BPartner_ID()));
 		final String supplierApprovalNorm = supplierApprovalRecord.getSupplierApproval_Norm();
-		final LocalDate expirationDate = LocalDate.now(); // TODO FIX THIS
+
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(supplierApprovalRecord.getAD_Org_ID()));
+
+		final LocalDate expirationDate = TimeUtil.asLocalDate(supplierApprovalRecord.getSupplierApproval_Date(), timeZone)
+				.plusYears(getNumberOfYearsForApproval(supplierApprovalRecord));
 
 		userGroupRepository
 				.getByUserGroupId(userGroupId)
