@@ -22,23 +22,7 @@
 
 package de.metas.bpartner.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_Relation;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -59,6 +43,19 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -108,6 +105,8 @@ public interface IBPartnerDAO extends ISingletonService
 	<T extends I_C_BPartner> T retrieveOrgBPartner(Properties ctx, int orgId, Class<T> clazz, @Nullable String trxName);
 
 	Optional<UserId> getDefaultContactId(BPartnerId bpartnerId);
+
+	Stream<UserId> getUserIdsForBpartnerLocation(BPartnerLocationId bpartnerId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
