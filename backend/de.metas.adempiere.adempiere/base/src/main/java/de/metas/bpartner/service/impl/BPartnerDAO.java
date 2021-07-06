@@ -831,8 +831,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-														final String bpValue,
-														final String bpValueSuffixToFallback)
+			final String bpValue,
+			final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1229,7 +1229,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		bpLocationQueryBuilder.addInSubQueryFilter(I_C_BPartner_Location.COLUMN_C_Location_ID,
-				I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
+												   I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
 	}
 
 	private BPartnerLocationId createLocationIdOrNull(
@@ -1327,10 +1327,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (existingBPartnerId == null && query.isFailIfNotExists())
 		{
 			final String msg = StringUtils.formatMessage("Found no existing BPartner;"
-							+ " Searched via the following properties one-after-one (list may be empty): {};"
-							+ " The search was restricted to the following orgIds (empty means no restriction): {}",
-					searchedByInfo.toString(),
-					query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
+																 + " Searched via the following properties one-after-one (list may be empty): {};"
+																 + " The search was restricted to the following orgIds (empty means no restriction): {}",
+														 searchedByInfo.toString(),
+														 query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
 			throw new BPartnerIdNotFoundException(msg);
 		}
 
@@ -1764,8 +1764,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
 				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID)
 				.setFrom(fromBpartner)
-				.copyToNew(I_C_BPartner.class)
-				;
+				.copyToNew(I_C_BPartner.class);
 
 		if (request.getOrgId() != null)
 		{
@@ -1781,5 +1780,4 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return BPartnerId.ofRepoId(newBPartner.getC_BPartner_ID());
 	}
-
 }

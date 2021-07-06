@@ -1,6 +1,7 @@
 package de.metas.order.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.config.ESModelIndexerProfile;
 import de.metas.event.Topic;
@@ -28,6 +29,8 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	private static final Logger logger = LogManager.getLogger(OrderModuleInterceptor.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
 	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
+	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService = SpringContextHolder.instance.getBean(BPartnerSupplierApprovalService.class);
+
 	private final IESSystem esSystem = Services.get(IESSystem.class);
 
 	@Override
@@ -40,7 +43,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
 		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(orderLineDetailRepository)); // FRESH-348
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository));
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository, bPartnerSupplierApprovalService));
 
 		setupElasticsearchIndexing();
 	}
