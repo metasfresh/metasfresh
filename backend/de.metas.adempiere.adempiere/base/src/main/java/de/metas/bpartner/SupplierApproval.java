@@ -53,12 +53,7 @@ public enum SupplierApproval implements ReferenceListAwareEnum
 	{
 		return code != null ? ofCode(code) : null;
 	}
-
-	public static Optional<SupplierApproval> optionalOfCode(@Nullable final String code)
-	{
-		return Optional.ofNullable(ofNullableCode(code));
-	}
-
+	
 	public static SupplierApproval ofCode(@NonNull final String code)
 	{
 		SupplierApproval type = typesByCode.get(code);
