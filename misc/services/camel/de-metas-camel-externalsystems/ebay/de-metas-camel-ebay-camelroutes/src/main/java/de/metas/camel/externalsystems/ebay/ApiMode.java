@@ -20,20 +20,19 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor.product.price;
+package de.metas.camel.externalsystems.ebay;
 
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import com.ebay.api.client.auth.oauth2.model.Environment;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-@Value
-@Builder
-public class ProductPriceRequestProducerResult
+@AllArgsConstructor
+@Getter
+public enum ApiMode
 {
-	@NonNull
-	JsonRequestProductPriceUpsertItem jsonRequestProductPriceUpsertItem;
+	PRODUCTION("api.ebay.com", Environment.PRODUCTION),
+	SANDBOX("api.sandbox.ebay.com", Environment.SANDBOX);
 
-	@NonNull
-	String priceListVersionIdentifier;
+	private final String value;
+	private final Environment environment;
 }

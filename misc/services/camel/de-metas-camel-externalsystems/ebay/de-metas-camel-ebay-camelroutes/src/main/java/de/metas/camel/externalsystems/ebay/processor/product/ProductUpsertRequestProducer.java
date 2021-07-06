@@ -20,14 +20,10 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor.product;
+package de.metas.camel.externalsystems.ebay.processor.product;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import de.metas.camel.ebay.EbayConstants;
-import de.metas.camel.ebay.EbayUtils;
+import de.metas.camel.externalsystems.ebay.EbayConstants;
+import de.metas.camel.externalsystems.ebay.EbayUtils;
 import de.metas.camel.externalsystems.ebay.api.model.LineItem;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
@@ -36,6 +32,10 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Value
 public class ProductUpsertRequestProducer

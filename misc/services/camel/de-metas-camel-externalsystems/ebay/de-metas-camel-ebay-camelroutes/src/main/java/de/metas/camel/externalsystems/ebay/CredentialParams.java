@@ -20,23 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.ebay;
+package de.metas.camel.externalsystems.ebay;
 
-import org.apache.camel.Exchange;
-
+import lombok.Getter;
 import lombok.NonNull;
 
-public class ProcessorHelper
+public enum CredentialParams
 {
-	public static <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
+	APP_ID("appid"),
+	CERT_ID("certid"),
+	REDIRECT_URI("redirecturi");
+
+	@Getter
+	private final String value;
+
+	CredentialParams(@NonNull final String value)
 	{
-		final T property = exchange.getProperty(propertyName, propertyClass);
-		if (property == null)
-		{
-			throw new RuntimeException("Missing route property: " + propertyName + " !");
-		}
-
-		return property;
+		this.value = value;
 	}
-
 }

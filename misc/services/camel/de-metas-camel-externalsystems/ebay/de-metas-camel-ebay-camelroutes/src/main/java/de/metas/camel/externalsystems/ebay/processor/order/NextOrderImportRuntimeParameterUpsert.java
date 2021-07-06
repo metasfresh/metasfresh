@@ -20,23 +20,21 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor.order;
+package de.metas.camel.externalsystems.ebay.processor.order;
 
-import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.ebay.ProcessorHelper.getPropertyOrThrowError;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER;
+import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.ebay.EbayImportOrdersRouteContext;
+import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 
 import java.time.Instant;
 import java.util.Optional;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.camel.ebay.EbayImportOrdersRouteContext;
-import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
-import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
+import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.ebay.ProcessorHelper.getPropertyOrThrowError;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_UPDATED_AFTER;
 
 public class NextOrderImportRuntimeParameterUpsert implements Processor
 {

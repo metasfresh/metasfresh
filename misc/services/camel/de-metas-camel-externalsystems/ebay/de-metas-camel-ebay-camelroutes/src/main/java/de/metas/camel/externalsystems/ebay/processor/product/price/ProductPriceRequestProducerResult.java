@@ -20,38 +20,20 @@
  * #L%
  */
 
-package de.metas.camel.ebay;
+package de.metas.camel.externalsystems.ebay.processor.product.price;
 
-import static de.metas.camel.ebay.EbayConstants.EXTERNAL_ID_PREFIX;
-
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneOffset;
-
-import de.metas.camel.externalsystems.ebay.api.model.Order;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
-public class EbayUtils
+@Value
+@Builder
+public class ProductPriceRequestProducerResult
 {
+	@NonNull
+	JsonRequestProductPriceUpsertItem jsonRequestProductPriceUpsertItem;
 
 	@NonNull
-	public static LocalDate toLocalDate(@NonNull final String in)
-	{
-		Instant instant = Instant.parse(in);
-		LocalDate localDate = LocalDate.ofInstant(instant, ZoneOffset.UTC);
-		return localDate;
-	}
-
-	@NonNull
-	public static String bPartnerIdentifier(@NonNull final Order order)
-	{
-		return EXTERNAL_ID_PREFIX + order.getBuyer().getUsername();
-	}
-	
-	@NonNull
-	public static String formatExternalId(@NonNull final String externalId)
-	{
-		return EXTERNAL_ID_PREFIX + externalId;
-	}
-	
+	String priceListVersionIdentifier;
 }

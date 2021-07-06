@@ -20,7 +20,21 @@
  * #L%
  */
 
-package de.metas.camel.ebay;
+package de.metas.camel.externalsystems.ebay;
+
+import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.ebay.processor.bpartner.CreateBPartnerUpsertReqForEbayOrderProcessor;
+import de.metas.camel.externalsystems.ebay.processor.order.CreateOrderLineCandidateUpsertReqForEbayOrderProcessor;
+import de.metas.camel.externalsystems.ebay.processor.order.GetEbayOrdersProcessor;
+import de.metas.camel.externalsystems.ebay.processor.order.NextOrderImportRuntimeParameterUpsert;
+import de.metas.camel.externalsystems.ebay.processor.order.OrderFilterProcessor;
+import de.metas.camel.externalsystems.ebay.processor.product.CreateProductUpsertReqProcessor;
+import de.metas.camel.externalsystems.ebay.processor.product.price.CreateProductPriceUpsertReqProcessor;
+import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
+import org.apache.camel.LoggingLevel;
+import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
+import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
@@ -29,21 +43,6 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
-
-import org.apache.camel.LoggingLevel;
-import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.StaticEndpointBuilders;
-import org.springframework.stereotype.Component;
-
-import de.metas.camel.ebay.processor.bpartner.CreateBPartnerUpsertReqForEbayOrderProcessor;
-import de.metas.camel.ebay.processor.order.CreateOrderLineCandidateUpsertReqForEbayOrderProcessor;
-import de.metas.camel.ebay.processor.order.GetEbayOrdersProcessor;
-import de.metas.camel.ebay.processor.order.NextOrderImportRuntimeParameterUpsert;
-import de.metas.camel.ebay.processor.order.OrderFilterProcessor;
-import de.metas.camel.ebay.processor.product.CreateProductUpsertReqProcessor;
-import de.metas.camel.ebay.processor.product.price.CreateProductPriceUpsertReqProcessor;
-import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 
 /**
  * Route to fetch ebay orders and put them as order line candidates into metasfresh.

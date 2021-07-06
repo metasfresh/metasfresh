@@ -20,30 +20,11 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor.order;
-
-import static de.metas.camel.ebay.EbayConstants.DATA_SOURCE_INT_EBAY;
-import static de.metas.camel.ebay.EbayConstants.DEFAULT_DELIVERY_RULE;
-import static de.metas.camel.ebay.EbayConstants.DEFAULT_DELIVERY_VIA_RULE;
-import static de.metas.camel.ebay.EbayConstants.DEFAULT_ORDER_LINE_DISCOUNT;
-import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.ebay.ProcessorHelper.getPropertyOrThrowError;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package de.metas.camel.externalsystems.ebay.processor.order;
 
 import com.google.common.collect.ImmutableList;
-
-import de.metas.camel.ebay.EbayImportOrdersRouteContext;
-import de.metas.camel.ebay.EbayUtils;
+import de.metas.camel.externalsystems.ebay.EbayImportOrdersRouteContext;
+import de.metas.camel.externalsystems.ebay.EbayUtils;
 import de.metas.camel.externalsystems.ebay.api.model.LineItem;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
@@ -55,6 +36,22 @@ import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAnd
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+import static de.metas.camel.externalsystems.ebay.EbayConstants.DATA_SOURCE_INT_EBAY;
+import static de.metas.camel.externalsystems.ebay.EbayConstants.DEFAULT_DELIVERY_RULE;
+import static de.metas.camel.externalsystems.ebay.EbayConstants.DEFAULT_DELIVERY_VIA_RULE;
+import static de.metas.camel.externalsystems.ebay.EbayConstants.DEFAULT_ORDER_LINE_DISCOUNT;
+import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.ebay.ProcessorHelper.getPropertyOrThrowError;
 
 public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements Processor
 {

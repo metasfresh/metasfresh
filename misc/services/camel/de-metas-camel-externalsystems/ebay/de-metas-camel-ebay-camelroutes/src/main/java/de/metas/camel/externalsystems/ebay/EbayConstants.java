@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.camel.ebay;
-
-import java.math.BigDecimal;
+package de.metas.camel.externalsystems.ebay;
 
 import de.metas.common.pricing.v2.productprice.TaxCategory;
+
+import java.math.BigDecimal;
 
 public interface EbayConstants
 {

@@ -20,27 +20,16 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor.order;
+package de.metas.camel.externalsystems.ebay.processor.order;
 
-import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
-
-import java.time.Instant;
-import java.util.List;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.ebay.api.client.auth.oauth2.CredentialUtil;
 import com.ebay.api.client.auth.oauth2.OAuth2Api;
-import com.ebay.api.client.auth.oauth2.model.Environment;
 import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
-
-import de.metas.camel.ebay.EbayConstants;
-import de.metas.camel.ebay.EbayImportOrdersRouteContext;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.ebay.ApiMode;
+import de.metas.camel.externalsystems.ebay.CredentialParams;
+import de.metas.camel.externalsystems.ebay.EbayConstants;
+import de.metas.camel.externalsystems.ebay.EbayImportOrdersRouteContext;
 import de.metas.camel.externalsystems.ebay.api.OrderApi;
 import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
 import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
@@ -49,28 +38,44 @@ import de.metas.camel.externalsystems.ebay.api.model.Order;
 import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.CoalesceUtil;
+import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 
 /**
  * Processor to load orders from the eBay fulfilment api.
- *
  */
 public class GetEbayOrdersProcessor implements Processor
 {
 
+	private static final List<String> SCOPE_LIST = Collections.singletonList("https://api.ebay.com/oauth/api_scope");
+
 	protected Logger log = LoggerFactory.getLogger(getClass());
-	
+
 	private final ProcessLogger processLogger;
-	
+
 	public GetEbayOrdersProcessor(final ProcessLogger processLogger)
 	{
 		this.processLogger = processLogger;
 	}
-	
 
 	@Override
-	public void process(Exchange exchange) throws Exception
+	public void process(final Exchange exchange) throws Exception
 	{
-
 		log.debug("Execute ebay order request");
 
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
@@ -83,41 +88,13 @@ public class GetEbayOrdersProcessor implements Processor
 			processLogger.logMessage("Ebay:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
 		}
 
-		final String updatedAfter = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER);
+		final String updatedAfter = CoalesceUtil.coalesceNotNull(
+				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+				Instant.ofEpochMilli(0).toString());
 
-		// prepare api call
-		final String authCode = request.getParameters().get(EbayConstants.PARAM_API_AUTH_CODE);
-		final String apiMode = request.getParameters().get(EbayConstants.PARAM_API_MODE);
+		final ApiMode apiMode = ApiMode.valueOf(request.getParameters().get(ExternalSystemConstants.PARAM_API_MODE));
 
-		// env default to sandbox.
-		Environment ebayExecutionEnv;
-		if (Environment.PRODUCTION.toString().equalsIgnoreCase(apiMode))
-		{
-			ebayExecutionEnv = Environment.PRODUCTION;
-		}
-		else
-		{
-			ebayExecutionEnv = Environment.SANDBOX;
-
-		}
-
-		// get api auth token
-		final OAuthResponse oauth2Response;
-		if (exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT) == null)
-		{
-
-			log.debug("Getting ebay access token");
-			OAuth2Api auth2Api = new OAuth2Api();
-			oauth2Response = auth2Api.exchangeCodeForAccessToken(ebayExecutionEnv, authCode);
-
-		}
-		else
-		{
-
-			log.debug("Using provided ebay auth client");
-			OAuth2Api auth2Api = (OAuth2Api)exchange.getIn().getHeader(EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT);;
-			oauth2Response = auth2Api.exchangeCodeForAccessToken(ebayExecutionEnv, authCode);
-		}
+		final OAuthResponse oauth2Response = getAuthResponse(request.getParameters());
 
 		// execut api call
 		if (oauth2Response.getAccessToken().isPresent())
@@ -130,7 +107,7 @@ public class GetEbayOrdersProcessor implements Processor
 				log.debug("Constructing ebay api client");
 
 				ApiClient defaultClient = Configuration.getDefaultApiClient();
-				defaultClient.setBasePath(ebayExecutionEnv.getApiEndpoint());
+				defaultClient.setBasePath(apiMode.getEnvironment().getApiEndpoint());
 
 				// Configure OAuth2 access token for authorization: api_auth
 				OAuth api_auth = (OAuth)defaultClient.getAuthentication("api_auth");
@@ -164,7 +141,7 @@ public class GetEbayOrdersProcessor implements Processor
 					.externalSystemRequest(request)
 					.build();
 
-			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
+			exchange.setProperty(EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
 
 		}
 		else
@@ -174,4 +151,25 @@ public class GetEbayOrdersProcessor implements Processor
 
 	}
 
+	private OAuthResponse getAuthResponse(@NonNull final Map<String, String> parameters) throws IOException
+	{
+		final ApiMode apiMode = ApiMode.valueOf(parameters.get(ExternalSystemConstants.PARAM_API_MODE));
+
+		final Map<String, String> mapCredentialUtil = new HashMap<>();
+		mapCredentialUtil.put(CredentialParams.APP_ID.getValue(), parameters.get(ExternalSystemConstants.PARAM_APP_ID));
+		mapCredentialUtil.put(CredentialParams.CERT_ID.getValue(), parameters.get(ExternalSystemConstants.PARAM_CERT_ID));
+		mapCredentialUtil.put(CredentialParams.REDIRECT_URI.getValue(), parameters.get(ExternalSystemConstants.PARAM_REDIRECT_URL));
+
+		final Map<String, Map<String, String>> parentMap = new HashMap<>();
+		parentMap.put(apiMode.getValue(), mapCredentialUtil);
+
+		final Yaml yaml = new Yaml();
+		final String output = yaml.dump(parentMap);
+
+		CredentialUtil.load(output);
+
+		final OAuth2Api auth2Api = new OAuth2Api();
+
+		return auth2Api.getApplicationToken(apiMode.getEnvironment(), SCOPE_LIST);
+	}
 }

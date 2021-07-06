@@ -20,17 +20,15 @@
  * #L%
  */
 
-package de.metas.camel.ebay;
-
-import org.apache.camel.CamelContext;
-import org.apache.camel.component.jackson.JacksonDataFormat;
+package de.metas.camel.externalsystems.ebay;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
 import lombok.NonNull;
+import org.apache.camel.CamelContext;
+import org.apache.camel.component.jackson.JacksonDataFormat;
 
 /**
  * TODO: refactor -> copied from sw6 api.

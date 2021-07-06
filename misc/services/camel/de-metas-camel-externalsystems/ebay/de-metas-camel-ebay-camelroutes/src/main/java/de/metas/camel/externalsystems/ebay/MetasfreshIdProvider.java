@@ -20,10 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.ebay;
-
-import java.util.Map;
-import java.util.Optional;
+package de.metas.camel.externalsystems.ebay;
 
 import de.metas.common.externalreference.JsonExternalReferenceItem;
 import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
@@ -31,6 +28,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * 

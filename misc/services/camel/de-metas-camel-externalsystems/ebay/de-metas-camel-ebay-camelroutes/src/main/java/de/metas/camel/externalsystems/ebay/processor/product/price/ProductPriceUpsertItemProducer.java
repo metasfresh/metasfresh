@@ -20,17 +20,17 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor.product.price;
+package de.metas.camel.externalsystems.ebay.processor.product.price;
 
-import java.math.BigDecimal;
-
-import de.metas.camel.ebay.EbayConstants;
-import de.metas.camel.ebay.EbayUtils;
+import de.metas.camel.externalsystems.ebay.EbayConstants;
+import de.metas.camel.externalsystems.ebay.EbayUtils;
 import de.metas.camel.externalsystems.ebay.api.model.LineItem;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
 import lombok.Builder;
 import lombok.NonNull;
+
+import java.math.BigDecimal;
 
 
 public class ProductPriceUpsertItemProducer

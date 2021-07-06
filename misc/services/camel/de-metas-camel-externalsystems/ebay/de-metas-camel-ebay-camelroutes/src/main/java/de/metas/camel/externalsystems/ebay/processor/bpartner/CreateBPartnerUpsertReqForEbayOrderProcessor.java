@@ -20,22 +20,11 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor.bpartner;
+package de.metas.camel.externalsystems.ebay.processor.bpartner;
 
-import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.ebay.ProcessorHelper.getPropertyOrThrowError;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import de.metas.camel.ebay.EbayImportOrdersRouteContext;
-import de.metas.camel.ebay.EbayUtils;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.camel.externalsystems.ebay.EbayImportOrdersRouteContext;
+import de.metas.camel.externalsystems.ebay.EbayUtils;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 import de.metas.camel.externalsystems.ebay.api.model.ShippingStep;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
@@ -49,6 +38,16 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.ebay.ProcessorHelper.getPropertyOrThrowError;
 
 /**
  * Processor to create an UpsertRequest to create a new BPartner for an ebay

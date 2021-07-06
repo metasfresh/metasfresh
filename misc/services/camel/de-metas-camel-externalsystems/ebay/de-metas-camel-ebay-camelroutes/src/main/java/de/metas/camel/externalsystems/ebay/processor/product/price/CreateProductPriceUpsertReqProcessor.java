@@ -20,10 +20,18 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor.product.price;
+package de.metas.camel.externalsystems.ebay.processor.product.price;
 
-import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.ebay.ProcessorHelper.getPropertyOrThrowError;
+import de.metas.camel.externalsystems.common.v2.ProductPriceUpsertCamelRequest;
+import de.metas.camel.externalsystems.ebay.EbayImportOrdersRouteContext;
+import de.metas.camel.externalsystems.ebay.api.model.LineItem;
+import de.metas.camel.externalsystems.ebay.api.model.Order;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
+import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
+import de.metas.common.rest_api.v2.SyncAdvise;
+import lombok.NonNull;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,17 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-
-import de.metas.camel.ebay.EbayImportOrdersRouteContext;
-import de.metas.camel.externalsystems.common.v2.ProductPriceUpsertCamelRequest;
-import de.metas.camel.externalsystems.ebay.api.model.LineItem;
-import de.metas.camel.externalsystems.ebay.api.model.Order;
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
-import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
-import de.metas.common.rest_api.v2.SyncAdvise;
-import lombok.NonNull;
+import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.ebay.ProcessorHelper.getPropertyOrThrowError;
 
 public class CreateProductPriceUpsertReqProcessor implements Processor
 {

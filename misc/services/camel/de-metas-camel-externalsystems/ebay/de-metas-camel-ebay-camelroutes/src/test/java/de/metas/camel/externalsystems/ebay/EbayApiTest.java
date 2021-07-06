@@ -20,18 +20,19 @@
  * #L%
  */
 
-package de.metas.camel.ebay;
+package de.metas.camel.externalsystems.ebay;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.ebay.api.client.auth.oauth2.CredentialUtil;
+import com.ebay.api.client.auth.oauth2.OAuth2Api;
+import com.ebay.api.client.auth.oauth2.model.Environment;
+import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
+import de.metas.camel.externalsystems.ebay.api.OrderApi;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
+import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
+import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
+import de.metas.camel.externalsystems.ebay.api.invoker.auth.OAuth;
+import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -42,18 +43,15 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import com.ebay.api.client.auth.oauth2.CredentialUtil;
-import com.ebay.api.client.auth.oauth2.OAuth2Api;
-import com.ebay.api.client.auth.oauth2.model.Environment;
-import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
-
-import de.metas.camel.externalsystems.ebay.api.OrderApi;
-import de.metas.camel.externalsystems.ebay.api.invoker.ApiClient;
-import de.metas.camel.externalsystems.ebay.api.invoker.ApiException;
-import de.metas.camel.externalsystems.ebay.api.invoker.Configuration;
-import de.metas.camel.externalsystems.ebay.api.invoker.auth.OAuth;
-import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
-import io.github.bonigarcia.wdm.WebDriverManager;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class EbayApiTest
 {

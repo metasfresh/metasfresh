@@ -20,21 +20,20 @@
  * #L%
  */
 
-package de.metas.camel.ebay.processor.product;
+package de.metas.camel.externalsystems.ebay.processor.product;
 
-import static de.metas.camel.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.ebay.ProcessorHelper.getPropertyOrThrowError;
-
-import java.util.Optional;
-
+import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.ebay.EbayImportOrdersRouteContext;
+import de.metas.camel.externalsystems.ebay.api.model.Order;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.metas.camel.ebay.EbayImportOrdersRouteContext;
-import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
-import de.metas.camel.externalsystems.ebay.api.model.Order;
+import java.util.Optional;
+
+import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.ebay.ProcessorHelper.getPropertyOrThrowError;
 
 public class CreateProductUpsertReqProcessor implements Processor
 {

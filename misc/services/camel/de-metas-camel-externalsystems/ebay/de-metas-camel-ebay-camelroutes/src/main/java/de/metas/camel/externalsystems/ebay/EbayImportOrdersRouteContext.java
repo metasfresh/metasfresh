@@ -20,14 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.ebay;
-
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
+package de.metas.camel.externalsystems.ebay;
 
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
@@ -38,6 +31,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Context to store all properties of a single eBay order and processed meta-data
