@@ -17,7 +17,7 @@ AND )',Updated=TO_TIMESTAMP('2020-03-23 16:05:48','YYYY-MM-DD HH24:MI:SS'),Updat
 UPDATE AD_Val_Rule SET Code='EXISTS ( select 1 from Report.Fresh_PriceList_Version_Val_Rule plv
 where M_PriceList_Version.M_PriceList_Version_ID=plv.M_PriceList_Version_ID
  AND plv.C_BPartner_ID=@C_BPartner_ID@ 
-AND plv.IsSOTrx = ''Y'' )', Name='Fresh_SalesPriceList_Version_of_BPartner',Updated=TO_TIMESTAMP('2020-03-23 16:35:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540243
+AND plv.IsSOTrx = ''Y'' )', Updated=TO_TIMESTAMP('2020-03-23 16:35:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540243
 ;
 
 -- 2020-03-23T15:11:00.644Z
