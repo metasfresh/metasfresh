@@ -48,7 +48,6 @@ public class OLCandSetOverrideValues extends JavaProcess
 {
 	private final static String PARAM_BPartner = I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID;
 	private final static String PARAM_Location = I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID;
-	private final static String PARAM_User = I_C_OLCand.COLUMNNAME_AD_User_ID;
 
 	private IParams params = null;
 
@@ -58,13 +57,9 @@ public class OLCandSetOverrideValues extends JavaProcess
 		final List<ProcessInfoParameter> parameterList = new ArrayList<>(getProcessInfo().getParameter());
 		final Map<String, ProcessInfoParameter> parameters = parameterList.stream().collect(Collectors.toMap(ProcessInfoParameter::getParameterName, param -> param));
 
-		if (!Check.isBlank(parameters.get(PARAM_BPartner).getParameterAsString()))
+		if (Check.isNotBlank(parameters.get(PARAM_BPartner).getParameterAsString()) && Check.isBlank(parameters.get(PARAM_Location).getParameterAsString()))
 		{
-			if (Check.isBlank(parameters.get(PARAM_Location).getParameterAsString()))
-			{
-				throw new FillMandatoryException(PARAM_Location);
-			}
-			parameterList.add(ProcessInfoParameter.of(PARAM_User, (String)null));
+			throw new FillMandatoryException(PARAM_Location);
 		}
 		params = new ProcessParams(parameterList);
 	}
