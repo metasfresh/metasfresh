@@ -20,6 +20,7 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -213,7 +214,8 @@ public final class AttributesKey implements Comparable<AttributesKey>
 			return ATTRIBUTEVALUEIDS_SPLITTER.splitToList(attributesKeyString.trim())
 					.stream()
 					.map(AttributesKeyPart::parseString)
-					.filter(p -> Check.isNotBlank(p.getValue()))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
 					.collect(ImmutableSet.toImmutableSet());
 		}
 		catch (final Exception ex)

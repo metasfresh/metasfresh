@@ -2,9 +2,11 @@ package de.metas.material.event.commons;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -45,7 +47,7 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 	public static final AttributesKeyPart NONE = newForSpecialType(AttributeKeyPartType.None);
 
 	@NonNull
-	static AttributesKeyPart parseString(@NonNull final String stringRepresentation)
+	static Optional<AttributesKeyPart> parseString(@NonNull final String stringRepresentation)
 	{
 		try
 		{
@@ -53,14 +55,20 @@ public final class AttributesKeyPart implements Comparable<AttributesKeyPart>
 			if (equalsIdx < 0)
 			{
 				final int attributeValueIdOrSpecial = Integer.parseInt(stringRepresentation.trim());
-				return ofInteger(attributeValueIdOrSpecial);
+				return Optional.ofNullable(ofInteger(attributeValueIdOrSpecial));
 			}
 			else
 			{
 				final String attributeIdStr = stringRepresentation.substring(0, equalsIdx);
 				final AttributeId attributeId = AttributeId.ofRepoId(Integer.parseInt(attributeIdStr));
 				final String value = stringRepresentation.substring(equalsIdx + 1);
-				return ofAttributeIdAndValue(attributeId, value);
+
+				if (Check.isBlank(value))
+				{
+					return Optional.empty();
+				}
+
+				return Optional.of(ofAttributeIdAndValue(attributeId, value));
 			}
 		}
 		catch (final Exception ex)
