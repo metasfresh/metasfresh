@@ -1,0 +1,92 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.acct.api.impl;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
+
+@Service
+public class AcctSchemaBL implements IAcctSchemaBL
+{
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public void updateDebitorCreditorIds(@NonNull final AcctSchema acctSchema, @Nullable final OrgId orgId)
+	{
+		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class);
+		final Collection<OrgId> orgIdsToUse = getOrgIdsToUse(acctSchema, orgId);
+		if (!orgIdsToUse.contains(OrgId.ANY))
+		{
+			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgIdsToUse);
+		}
+		queryBuilder
+				.create()
+				.stream()
+				.forEach(bp -> {
+					updateDebitorCreditorIds(acctSchema, bp);
+					InterfaceWrapperHelper.save(bp);
+				});
+
+	}
+
+	private Collection<OrgId> getOrgIdsToUse(@NonNull final AcctSchema acctSchema, @Nullable final OrgId orgId)
+	{
+		if (orgId != null)
+		{
+			return Collections.singleton(orgId);
+		}
+		final ImmutableSet<OrgId> postOnlyForOrgIds = acctSchema.getPostOnlyForOrgIds();
+		return postOnlyForOrgIds.isEmpty() ? Collections.singleton(acctSchema.getOrgId()) : postOnlyForOrgIds;
+	}
+
+	@Override
+	public void updateDebitorCreditorIds(@NonNull final AcctSchema acctSchema, @NonNull final I_C_BPartner bpartner)
+	{
+		if (acctSchema.isAutoSetDebtoridAndCreditorid())
+		{
+			final String value = bpartner.getValue();
+			//as per c_bpartner_datev_no_generate.sql, we should be updating only values with length between 5 and 7
+			if (value.length() >= 5 && value.length() <= 7 && StringUtils.isNumber(value))
+			{
+				final String valueAsString = Strings.padStart(value, 7, '0').substring(0, 7);
+				bpartner.setCreditorId(Integer.parseInt(acctSchema.getCreditorIdPrefix() + valueAsString));
+				bpartner.setDebtorId(Integer.parseInt(acctSchema.getDebtorIdPrefix() + valueAsString));
+			}
+		}
+	}
+}
