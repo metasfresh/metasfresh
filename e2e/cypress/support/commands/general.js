@@ -36,109 +36,129 @@ import nextTabbable from './nextTabbable';
 import { humanReadableNow } from '../utils/utils';
 import { RewriteURL } from '../utils/constants';
 
-let cyLoginConter = 0;
-const CYPRESS_MAX_LOGIN_RETRIES = 4;
+context('Reusable "login" custom command using API', function () {});
 
-context('Reusable "login" custom command using API', function () {
-  Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
-    let user = username;
-    let pass = password;
+Cypress.Commands.add('loginViaForm', (username, password) => {
+  let user = username;
+  let pass = password;
 
-    if (!username || !password) {
-      user = config.username;
-      pass = config.password;
-    }
+  if (!username || !password) {
+    user = config.username;
+    pass = config.password;
+  }
+  Cypress.log({
+    name: 'loginViaForm',
+    message: user + ' | ' + '****' /*pass*/,
+  });
 
-    Cypress.log({
-      name: 'loginViaAPI',
-      message: user + ' | ' + '****' /*pass*/,
-    });
+  cy.on('emit:reduxStore', (store) => {
+    Cypress.reduxStore = store;
+  });
 
-    const handleSuccess = function () {
-      if (redirect) {
-        Cypress.reduxStore.dispatch(goBack());
-      } else {
-        Cypress.reduxStore.dispatch(push('/'));
+  cy.visit('/login').then(() => {
+    cy.location().then((location) => {
+      const WAIT_FOR_LOGIN = 5000;
+      if (location.pathname === '/login') {
+        cy.get(':nth-child(1) > .input-primary').type(user);
+        cy.get(':nth-child(2) > .input-primary').type(pass);
+        cy.get('.btn').click();
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            Cypress.Cookies.defaults({
+              preserve: ['SESSION', 'isLogged'],
+            });
+            resolve('Authenticated');
+          }, WAIT_FOR_LOGIN);
+        });
       }
-    };
-
-    // const checkIfAlreadyLogged = function () {
-    //   const error = new Error('Error when checking if user logged in');
-
-    //   return cy
-    //     .request({
-    //       method: 'GET',
-    //       url: config.API_URL + '/login/isLoggedIn',
-    //       failOnStatusCode: false,
-    //       followRedirect: false,
-    //     })
-    //     .then((response) => {
-    //       if (response.body && !response.body.error) {
-    //         cyLoginConter = 0;
-    //         return Cypress.reduxStore.dispatch(push('/'));
-    //       }
-
-    //       cy.log(`Login failed because ${error}`);
-    //       return Promise.reject(error);
-    //     });
-    // };
-
-    const auth = new Auth();
-
-    cy.on('emit:reduxStore', (store) => {
-      Cypress.reduxStore = store;
     });
+  });
+});
 
-    cy.visit('/login');
+Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
+  let user = username;
+  let pass = password;
 
-    const loginAuthenticate = function (user, pass) {
+  if (!username || !password) {
+    user = config.username;
+    pass = config.password;
+  }
+
+  Cypress.log({
+    name: 'loginViaAPI',
+    message: user + ' | ' + '****' /*pass*/,
+  });
+
+  const handleSuccess = function () {
+    if (redirect) {
+      Cypress.reduxStore.dispatch(goBack());
+    } else {
+      Cypress.reduxStore.dispatch(push('/'));
+    }
+  };
+
+  const checkIfAlreadyLogged = function () {
+    const error = new Error('Error when checking if user logged in');
+
+    return cy
+      .request({
+        method: 'GET',
+        url: config.API_URL + '/login/isLoggedIn',
+        failOnStatusCode: false,
+        followRedirect: false,
+      })
+      .then((response) => {
+        if (!response.body.error) {
+          return Cypress.reduxStore.dispatch(push('/'));
+        }
+
+        cy.log(`Login failed because ${error}`);
+        return Promise.reject(error);
+      });
+  };
+
+  const auth = new Auth();
+
+  cy.on('emit:reduxStore', (store) => {
+    Cypress.reduxStore = store;
+  });
+
+  cy.visit('/login');
+
+  return cy
+    .request({
+      method: 'POST',
+      url: config.API_URL + '/login/authenticate',
+      failOnStatusCode: false,
+      followRedirect: false,
+      body: {
+        username: user,
+        password: pass,
+      },
+    })
+    .then((response) => {
+      if (!response.isOkStatusCode) {
+        return checkIfAlreadyLogged();
+      }
+
+      if (response.body.loginComplete) {
+        return handleSuccess();
+      }
+      const roles = List(response.body.roles);
+
       return cy
         .request({
           method: 'POST',
-          url: config.API_URL + '/login/authenticate',
+          url: config.API_URL + '/login/loginComplete',
+          body: roles.get(0),
           failOnStatusCode: false,
-          followRedirect: false,
-          body: {
-            username: user,
-            password: pass,
-          },
         })
-        .then((response) => {
-          // if (!response.isOkStatusCode) {
-          //   return checkIfAlreadyLogged();
-          // }
+        .then(() => {
+          Cypress.reduxStore.dispatch(loginSuccess(auth));
 
-          if (response.status === 401) {
-            // retry
-            cyLoginConter += 1;
-            if (cyLoginConter < CYPRESS_MAX_LOGIN_RETRIES) {
-              cy.log(`Login failed because we got response ${JSON.stringify(response)}`);
-              return loginAuthenticate(user, pass);
-            }
-          }
-
-          if (response.body.loginComplete) {
-            return handleSuccess();
-          }
-          const roles = List(response.body.roles);
-
-          return cy
-            .request({
-              method: 'POST',
-              url: config.API_URL + '/login/loginComplete',
-              body: roles.get(0),
-              failOnStatusCode: false,
-            })
-            .then(() => {
-              Cypress.reduxStore.dispatch(loginSuccess(auth));
-
-              handleSuccess();
-            });
+          handleSuccess();
         });
-    };
-
-    return loginAuthenticate(user, pass);
-  });
+    });
 });
 
 /**

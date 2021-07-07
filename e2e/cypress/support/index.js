@@ -41,12 +41,11 @@ Cypress.on('window:alert', (text) => {
 });
 
 before(function () {
-  cy.wrap(null).then(() => {
-    return cy.loginViaAPI();
-  });
-
-  Cypress.Cookies.defaults({
-    preserve: ['SESSION', 'isLogged'],
+  const autoLogin = function () {
+    return cy.loginViaForm();
+  };
+  autoLogin().then((msg) => {
+    cy.log(msg);
   });
 });
 
