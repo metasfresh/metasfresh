@@ -20,7 +20,6 @@ import { noConnection } from '../actions/WindowActions';
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
-import useWhyDidYouUpdate from '../hooks/useWhyDidYouUpdate';
 import history from '../services/History';
 import Routes from '../routes';
 
@@ -46,12 +45,10 @@ if (window.Cypress) {
  * Main application component providing navigation, shortcuts, translations, and notifications
  * plus setting some global values and handling global errors.
  */
-const App = (props) => {
+const App = () => {
   // const [pluginsLoading, setPluginsLoading] = useState(!!APP_PLUGINS.length);
   const auth = useAuth();
   const dispatch = useDispatch();
-
-  useWhyDidYouUpdate('App', props);
 
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);

@@ -51,9 +51,7 @@ class Inbox extends Component {
           }
 
           history.push(
-            `/window/${item.target.windowId}/?viewId=${
-              item.target.viewId
-            }${samePageParam}`
+            `/window/${item.target.windowId}/?viewId=${item.target.viewId}${samePageParam}`
           );
 
           break;

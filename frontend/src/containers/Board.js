@@ -17,7 +17,7 @@ import Sidenav from '../components/board/Sidenav';
 
 /**
  * @file Class based component.
- * @module Filters
+ * @module Board
  * @extends Component
  */
 class Board extends Component {
@@ -35,18 +35,10 @@ class Board extends Component {
     };
   }
 
-  /**
-   * @method UNSAFE_componentWillMount
-   * @summary ToDo: Describe the method
-   */
   UNSAFE_componentWillMount = () => {
     this.init();
   };
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method
-   */
   componentWillUnmount = () => {
     disconnectWS.call(this);
   };
@@ -274,10 +266,6 @@ class Board extends Component {
     this.setState({ sidenavViewId: id });
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   */
   render() {
     const { modal, rawModal, pluginModal, breadcrumb, indicator } = this.props;
 

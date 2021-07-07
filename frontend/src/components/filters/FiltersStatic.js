@@ -53,9 +53,4 @@ FiltersStatic.propTypes = {
   viewId: PropTypes.string,
 };
 
-export default connect(
-  null,
-  {
-    clearStaticFilters,
-  }
-)(FiltersStatic);
+export default connect(null, { clearStaticFilters })(FiltersStatic);

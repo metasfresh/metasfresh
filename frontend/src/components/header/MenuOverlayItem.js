@@ -275,9 +275,6 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  null,
-  null,
-  { forwardRef: true }
-)(MenuOverlayItem);
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  MenuOverlayItem
+);

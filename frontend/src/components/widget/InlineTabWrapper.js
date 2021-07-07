@@ -376,16 +376,13 @@ const mapStateToProps = (state, props) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    fetchInlineTabWrapperData,
-    createWindow,
-    setInlineTabAddNew,
-    setInlineTabShowMore,
-    updateDataValidStatus,
-    updateDataIncludedTabsInfo,
-  }
-)(onClickOutside(InlineTabWrapper));
+export default connect(mapStateToProps, {
+  fetchInlineTabWrapperData,
+  createWindow,
+  setInlineTabAddNew,
+  setInlineTabShowMore,
+  updateDataValidStatus,
+  updateDataIncludedTabsInfo,
+})(onClickOutside(InlineTabWrapper));
 
 export { InlineTabWrapper };

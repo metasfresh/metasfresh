@@ -30,9 +30,8 @@ function useProvideAuth() {
   // controls if user is authenticated and stores in the local storage as well as local value
   const [isLoggedIn, setLoggedIn] = useState(localStorage.isLogged);
   // flag indicating if there's an ongoing authentication request
-  const [authRequestPending, setAuthRequestPending] = useSynchronousState(
-    false
-  );
+  const [authRequestPending, setAuthRequestPending] =
+    useSynchronousState(false);
   const [redirectRoute, setRedirectRoute] = useState(null);
 
   const clearRedirectRoute = () => {

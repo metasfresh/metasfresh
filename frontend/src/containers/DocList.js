@@ -194,10 +194,7 @@ const mapStateToProps = (state, { location }) => {
 };
 
 export default withRouter(
-  connect(
-    mapStateToProps,
-    {
-      getWindowBreadcrumb,
-    }
-  )(DocList)
+  connect(mapStateToProps, {
+    getWindowBreadcrumb,
+  })(DocList)
 );
