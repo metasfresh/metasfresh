@@ -43,17 +43,14 @@
   "dependencies": {
     "axios": "^0.21.1",
     "cypress-localstorage-commands": "^1.4.5",
-    "cypress-react-router": "^1.0.2",
     "cypress-skip-and-only-ui": "^1.2.11",
-    "cypress-wait-until": "^1.7.1",
     "immutable": "^4.0.0-rc.12",
     "js-base64": "3.6.1",
     "luxon": "1.27.0",
     "moment": "2.29.1",
     "numeral": "^2.0.6",
-    "react": "16.5.0",
-    "react-dom": "16.5.0",
-    "react-router-redux": "^4.0.8",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
     "sockjs-client": "^1.3.0",
     "stompjs": "^2.3.3"
   }

@@ -15,7 +15,6 @@
 
 import 'cypress-skip-and-only-ui/support';
 import 'cypress-localstorage-commands';
-import 'cypress-wait-until';
 import './commands/general';
 import './commands/navigation';
 import './commands/form';
@@ -44,13 +43,10 @@ Cypress.on('window:alert', (text) => {
 
 before(function () {
   cy.clearLocalStorageSnapshot();
-  // no clue why i have to add this wait, but it seems to be the only way the getLanguageSpecific workaround... works
+
   cy.loginViaAPI().then(() => {
-    // console.log('LOGGED IN');
     cy.log('logged in successfully');
   });
-
-  // cy.waitUntil(() => cy.window().then(win=> win.loggedIn === true))
 
   Cypress.Cookies.defaults({
     preserve: ['SESSION', 'isLogged'],
