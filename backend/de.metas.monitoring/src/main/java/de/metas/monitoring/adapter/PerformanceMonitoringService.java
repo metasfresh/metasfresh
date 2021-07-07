@@ -1,10 +1,12 @@
 package de.metas.monitoring.adapter;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -52,6 +54,12 @@ public interface PerformanceMonitoringService
 	@Builder
 	class SpanMetadata
 	{
+		public static final String LABEL_RECORD_ID = "recordId";
+		public static final String LABEL_EXTERNAL_HEADER_ID = "externalHeaderId";
+		public static final String LABEL_EXTERNAL_LINE_ID = "externalLineId";
+
+		public static final Set<String> VOLATILE_LABELS = ImmutableSet.of(LABEL_RECORD_ID, LABEL_EXTERNAL_LINE_ID, LABEL_EXTERNAL_HEADER_ID);
+
 		@NonNull
 		String name;
 

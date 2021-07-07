@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -708,7 +709,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 						.subType(SubType.MODEL_CHANGE.getCode())
 						.action(changeTypeStr)
 						.label("tableName", tableName)
-						.label("recordId", Integer.toString(po.get_ID()))
+						.label(SpanMetadata.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
 						.build());
 	}
 
@@ -1050,7 +1051,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * Fire Document Validation. Call docValidate method of added validators
 	 *
 	 * @param model if <code>null</code> or if {@link InterfaceWrapperHelper#getPO(Object)} returns <code>null</code> for the given value, then the method will do nothing.
-	 * @param docTiming see ModelValidator.TIMING_ constants
+	 * @param docTimingInt see ModelValidator.TIMING_ constants
 	 * @return always returns <code>null</code>; we keep this string return type only for legacy purposes (when the error message was returned)
 	 * @throws AdempiereException in case of failure
 	 */
@@ -1079,7 +1080,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 							.subType(SubType.DOC_VALIDATE.getCode())
 							.action(docTimingStr)
 							.label("tableName", tableName)
-							.label("recordId", Integer.toString(recordId))
+							.label(SpanMetadata.LABEL_RECORD_ID, Integer.toString(recordId))
 							.build());
 		}
 	}
@@ -1338,7 +1339,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	 * After Load Preferences into Context for selected client.
 	 *
 	 * @param ctx context
-	 * @see org.compiere.util.Login#loadPreferences(KeyNamePair, KeyNamePair, java.sql.Timestamp, String)
+	 * @see org.compiere.util.Login#loadPreferences(KeyNamePair, Timestamp) 
 	 * @author Teo Sarca - FR [ 1670025 ] - https://sourceforge.net/tracker/index.php?func=detail&aid=1670025&group_id=176962&atid=879335
 	 */
 	public void afterLoadPreferences(Properties ctx)

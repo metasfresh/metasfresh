@@ -206,8 +206,8 @@ public class OrderCandidatesRestControllerImpl implements OrderCandidatesRestEnd
 			final SpanMetadata spanMetadata = SpanMetadata.builder()
 					.name("CreateOrUpdateMasterDataSingle")
 					.type(Type.REST_API_PROCESSING.getCode())
-					.label("externalHeaderId", json.getExternalHeaderId())
-					.label("externalLineId", json.getExternalLineId())
+					.label(SpanMetadata.LABEL_EXTERNAL_HEADER_ID, json.getExternalHeaderId())
+					.label(SpanMetadata.LABEL_EXTERNAL_LINE_ID, json.getExternalLineId())
 					.build();
 
 			perfMonService.monitorSpan(

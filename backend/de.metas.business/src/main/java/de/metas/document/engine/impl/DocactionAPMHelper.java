@@ -43,7 +43,7 @@ public class DocactionAPMHelper
 				.type(Type.DOC_ACTION.getCode())
 				.subType(docAction)
 				.label("tableName", tableName)
-				.label("recordId", Integer.toString(document.get_ID()))
+				.label(SpanMetadata.LABEL_RECORD_ID, Integer.toString(document.get_ID()))
 				.build();
 	}
 }
