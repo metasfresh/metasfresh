@@ -202,13 +202,21 @@ public final class AttributesKeyPattern
 		{
 			boolean partPatternMatched = false;
 
-			for (final AttributesKeyPart part : attributesKey.getParts())
+			if (AttributesKey.NONE.getAsString().equals(attributesKey.getAsString()))
 			{
-				if (partPattern.matches(part))
+				partPatternMatched = partPattern.matches(AttributesKeyPart.NONE);
+			}
+			else
+			{
+				for (final AttributesKeyPart part : attributesKey.getParts())
 				{
-					partPatternMatched = true;
-					break;
+					if (partPattern.matches(part))
+					{
+						partPatternMatched = true;
+						break;
+					}
 				}
+
 			}
 
 			if (!partPatternMatched)
