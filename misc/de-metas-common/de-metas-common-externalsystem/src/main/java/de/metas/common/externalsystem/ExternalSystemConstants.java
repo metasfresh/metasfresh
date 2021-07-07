@@ -55,4 +55,10 @@ public class ExternalSystemConstants
 	public static final String PARAM_ALBERTA_ROLE = "Alberta_Role";
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
+
+	public static final String PARAM_APP_ID = "AppId";
+	public static final String PARAM_CERT_ID = "CertId";
+	public static final String PARAM_DEV_ID = "DevId";
+	public static final String PARAM_REDIRECT_URL = "RedirectURL";
+	public static final String PARAM_API_MODE  = "ApiMode";
 }

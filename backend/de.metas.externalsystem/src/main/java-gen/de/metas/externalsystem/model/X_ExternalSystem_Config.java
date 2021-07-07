@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_ExternalSystem_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -526552002L;
+	private static final long serialVersionUID = -996785268L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config (final Properties ctx, final int ExternalSystem_Config_ID, @Nullable final String trxName)
@@ -35,13 +35,13 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setDescription (final @Nullable String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public String getDescription()
+	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
 	}
@@ -62,13 +62,13 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setName (final String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public String getName()
+	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
@@ -84,14 +84,16 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Shopware6 = "S6";
 	/** Other = Other */
 	public static final String TYPE_Other = "Other";
+	/** Ebay = Ebay */
+	public static final String TYPE_Ebay = "Ebay";
 	@Override
-	public void setType (final String Type)
+	public void setType (final java.lang.String Type)
 	{
 		set_Value (COLUMNNAME_Type, Type);
 	}
 
 	@Override
-	public String getType()
+	public java.lang.String getType() 
 	{
 		return get_ValueAsString(COLUMNNAME_Type);
 	}
