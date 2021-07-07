@@ -39,6 +39,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BP_SupplierApproval;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -46,6 +47,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
 
+@Service
 public class BPartnerSupplierApprovalService
 {
 	private final BPartnerSupplierApprovalRepository repo;

@@ -104,3 +104,8 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('M_Product','ALTER TABLE public.M_Product ADD COLUMN RequiresSupplierApproval CHAR(1) DEFAULT ''N'' CHECK (RequiresSupplierApproval IN (''Y'',''N'')) NOT NULL')
 ;
 
+-- 2021-07-07T07:28:16.141Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@RequiresSupplierApproval@ = ''Y''',Updated=TO_TIMESTAMP('2021-07-07 10:28:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574949
+;
+
