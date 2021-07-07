@@ -1163,7 +1163,72 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2021-07-07 10:25:37','Y
 
 
 
+-- 2021-07-07T07:53:33.585Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@SupplierApproval_Norm@ ! NULL',Updated=TO_TIMESTAMP('2021-07-07 10:53:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
 
+-- 2021-07-07T07:54:28.805Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@SupplierApproval_Norm/''''@ ! ''''',Updated=TO_TIMESTAMP('2021-07-07 10:54:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+-- 2021-07-07T07:56:56.105Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@SupplierApproval_Norm@ ! ''''',Updated=TO_TIMESTAMP('2021-07-07 10:56:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+-- 2021-07-07T07:58:30.307Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@SupplierApproval_Norm@ ! NULL',Updated=TO_TIMESTAMP('2021-07-07 10:58:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+-- 2021-07-07T07:59:27.637Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@C_BP_SupplierApproval_ID@ >0',Updated=TO_TIMESTAMP('2021-07-07 10:59:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+
+
+-- 2021-07-07T08:03:49.540Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2021-07-07 11:03:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+-- 2021-07-07T08:08:05.048Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bp_supplierapproval','SupplierApproval_Norm','VARCHAR(50)',null,null)
+;
+
+-- 2021-07-07T08:13:35.305Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@SupplierApproval_Norm@ ! ''''',Updated=TO_TIMESTAMP('2021-07-07 11:13:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+-- 2021-07-07T08:13:55.451Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@SupplierApproval_Norm@!''''',Updated=TO_TIMESTAMP('2021-07-07 11:13:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+-- 2021-07-07T08:17:39.081Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@SupplierApproval_Norm@ = ''ISO9100'' | @SupplierApproval_Norm@ = ''TS16949''',Updated=TO_TIMESTAMP('2021-07-07 11:17:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+-- 2021-07-07T08:22:26.954Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2021-07-07 11:22:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+-- 2021-07-07T08:37:33.341Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsUpdateable='Y',Updated=TO_TIMESTAMP('2021-07-07 11:37:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
+
+-- 2021-07-07T08:39:07.080Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ReadOnlyLogic='@SupplierApproval_Norm@ ! ''''',Updated=TO_TIMESTAMP('2021-07-07 11:39:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=574946
+;
 
 
 
