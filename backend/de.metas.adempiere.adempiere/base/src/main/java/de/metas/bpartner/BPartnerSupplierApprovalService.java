@@ -40,6 +40,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BP_SupplierApproval;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -184,7 +185,7 @@ public class BPartnerSupplierApprovalService
 	{
 		final UserNotificationRequest.TargetRecordAction targetRecordAction = UserNotificationRequest
 				.TargetRecordAction
-				.of(I_C_BP_SupplierApproval.Table_Name, supplierApprovalRecord.getC_BP_SupplierApproval_ID());
+				.of(I_C_BPartner.Table_Name, supplierApprovalRecord.getC_BPartner_ID());
 
 		final int userGroupRecordId = sysConfigBL.getIntValue(SYS_CONFIG_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID,
 															  -1,
