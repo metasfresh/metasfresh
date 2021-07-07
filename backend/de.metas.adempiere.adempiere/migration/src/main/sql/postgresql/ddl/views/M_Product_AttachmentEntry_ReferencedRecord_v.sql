@@ -2,10 +2,10 @@ DROP VIEW IF EXISTS M_Product_AttachmentEntry_ReferencedRecord_v
 ;
 
 CREATE VIEW M_Product_AttachmentEntry_ReferencedRecord_v AS
---parent attachments
+    --parent attachments
 SELECT rel.m_product_id,
        r.AD_Table_ID,
-       r.Record_ID,
+       r.Record_ID                                                               AS RelatedProduct_ID,
        r.AD_Attachment_MultiRef_ID                                               AS M_Product_AttachmentEntry_ReferencedRecord_v_ID,
        r.AD_Client_ID,
        r.AD_Org_ID,

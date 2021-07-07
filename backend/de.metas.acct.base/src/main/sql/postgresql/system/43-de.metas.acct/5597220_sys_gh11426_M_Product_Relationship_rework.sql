@@ -133,6 +133,21 @@ UPDATE AD_Ref_List SET Name='Parent Product',Updated=TO_TIMESTAMP('2021-07-07 15
 UPDATE AD_Ref_List SET ValueName='Parent Product',Updated=TO_TIMESTAMP('2021-07-07 15:49:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542685
 ;
 
+-- 2021-07-07T13:36:43.265Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,574975,2432,0,30,540272,541733,'RelatedProduct_ID',TO_TIMESTAMP('2021-07-07 16:36:43','YYYY-MM-DD HH24:MI:SS'),100,'N','Zugeordnetes Produkt','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N',0,'Zugeordnetes Produkt',0,0,TO_TIMESTAMP('2021-07-07 16:36:43','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-07-07T13:36:43.266Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=574975 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-07-07T13:36:43.269Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_Column_Translation_From_AD_Element(2432)
+;
+
 DROP VIEW IF EXISTS M_Product_AttachmentEntry_ReferencedRecord_v
 ;
 
@@ -140,7 +155,7 @@ CREATE VIEW M_Product_AttachmentEntry_ReferencedRecord_v AS
     --parent attachments
 SELECT rel.m_product_id,
        r.AD_Table_ID,
-       r.Record_ID,
+       r.Record_ID                                                               AS RelatedProduct_ID,
        r.AD_Attachment_MultiRef_ID                                               AS M_Product_AttachmentEntry_ReferencedRecord_v_ID,
        r.AD_Client_ID,
        r.AD_Org_ID,
@@ -161,4 +176,3 @@ FROM AD_Attachment_MultiRef r
          JOIN M_Product_Relationship rel ON rel.ad_relationtype_id = 'Parent' AND rel.relatedproduct_id = r.record_id
 WHERE r.ad_table_id = 208 --M_Product
 ;
-
