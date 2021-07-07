@@ -1733,7 +1733,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	{
 		if (record.getC_DocType_ID() <= 0 || record.getAD_PrintFormat_ID() <= 0)
 		{
-			logger.debug("getPrintFormats - C_BP_PrintFormat_ID={} has C_DocType_ID={} and AD_PrintFormat_ID={}; -> skipping it", 
+			logger.debug("getPrintFormats - C_BP_PrintFormat_ID={} has C_DocType_ID={} and AD_PrintFormat_ID={}; -> skipping it",
 						 record.getC_BP_PrintFormat_ID(), record.getC_DocType_ID(), record.getAD_PrintFormat_ID());
 			return null;
 		}
@@ -1778,7 +1778,8 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
 				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID)
 				.setFrom(fromBpartner)
-				.copyToNew(I_C_BPartner.class);
+				.copyToNew(I_C_BPartner.class)
+				;
 
 		if (request.getOrgId() != null)
 		{
@@ -1794,4 +1795,5 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return BPartnerId.ofRepoId(newBPartner.getC_BPartner_ID());
 	}
+
 }
