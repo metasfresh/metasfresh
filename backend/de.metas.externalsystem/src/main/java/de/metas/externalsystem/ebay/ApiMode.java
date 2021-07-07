@@ -20,22 +20,19 @@
  * #L%
  */
 
-package de.metas.externalsystem;
+package de.metas.externalsystem.ebay;
 
-import org.junit.jupiter.api.Test;
+import de.metas.externalsystem.model.X_ExternalSystem_Config_Ebay;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-import static org.assertj.core.api.Assertions.*;
-
-class ExternalSystemTypeTest
+@AllArgsConstructor
+public enum ApiMode implements ReferenceListAwareEnum
 {
-	@Test
-	void ofCodeOrNameOrNull()
-	{
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("S6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Shopware6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("A")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Alberta")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Ebay")).isEqualTo(ExternalSystemType.Ebay);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("blah")).isNull();
-	}
+	PRODUCTION(X_ExternalSystem_Config_Ebay.API_MODE_PRODUCTION),
+	SANDBOX(X_ExternalSystem_Config_Ebay.API_MODE_SANDBOX);
+
+	@Getter
+	private final String code;
 }

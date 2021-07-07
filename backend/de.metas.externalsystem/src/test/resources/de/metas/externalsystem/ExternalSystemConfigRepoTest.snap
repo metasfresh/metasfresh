@@ -44,6 +44,55 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getById=[
+  {
+    "id" : 100001,
+    "type" : "Ebay",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "appId" : "appId",
+      "certId" : "certId",
+      "devId" : "devId",
+      "redirectUrl" : "redirectUrl",
+      "apiMode" : "SANDBOX"
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndParent=[
+  {
+        "id" : 100002,
+        "parentId" : 100001,
+        "appId" : "appId",
+        "certId" : "certId",
+        "devId" : "devId",
+        "redirectUrl" : "redirectUrl",
+        "apiMode" : "SANDBOX"
+      }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "Ebay",
+    "name" : "name",
+    "childConfig" :{
+                         "id" : 100002,
+                         "parentId" : 100001,
+                         "appId" : "appId",
+                         "certId" : "certId",
+                         "devId" : "devId",
+                         "redirectUrl" : "redirectUrl",
+                         "apiMode" : "SANDBOX"
+                       }
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
   {
     "id" : 100001,
