@@ -254,7 +254,7 @@ public class AdempiereException extends RuntimeException
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
 		this.mdcContextMap = captureMDCContextMap();
 
- 		setParameter("AD_Language", this.adLanguage);
+		setParameter("AD_Language", this.adLanguage);
 		setParameter("AD_Message", adMessage);
 	}
 
