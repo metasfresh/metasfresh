@@ -709,7 +709,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 						.subType(SubType.MODEL_CHANGE.getCode())
 						.action(changeTypeStr)
 						.label("tableName", tableName)
-						.label(SpanMetadata.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
+						.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
 						.build());
 	}
 
@@ -1080,7 +1080,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 							.subType(SubType.DOC_VALIDATE.getCode())
 							.action(docTimingStr)
 							.label("tableName", tableName)
-							.label(SpanMetadata.LABEL_RECORD_ID, Integer.toString(recordId))
+							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(recordId))
 							.build());
 		}
 	}
