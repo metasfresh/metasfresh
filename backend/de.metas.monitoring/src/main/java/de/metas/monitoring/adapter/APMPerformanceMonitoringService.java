@@ -1,24 +1,8 @@
-package de.metas.monitoring.adapter.apm;
-
-import java.util.Map;
-import java.util.concurrent.Callable;
-
-import org.springframework.stereotype.Service;
-
-import co.elastic.apm.api.ElasticApm;
-import co.elastic.apm.api.HeaderInjector;
-import co.elastic.apm.api.Scope;
-import co.elastic.apm.api.Span;
-import co.elastic.apm.api.Transaction;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringServiceUtil;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.monitoring
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +20,22 @@ import lombok.NonNull;
  * #L%
  */
 
+package de.metas.monitoring.adapter;
+
+import java.util.Map;
+import java.util.concurrent.Callable;
+
+import org.springframework.stereotype.Service;
+
+import co.elastic.apm.api.ElasticApm;
+import co.elastic.apm.api.HeaderInjector;
+import co.elastic.apm.api.Scope;
+import co.elastic.apm.api.Span;
+import co.elastic.apm.api.Transaction;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringServiceUtil;
+import lombok.NonNull;
+
 @Service
 public class APMPerformanceMonitoringService implements PerformanceMonitoringService
 {
@@ -48,6 +48,7 @@ public class APMPerformanceMonitoringService implements PerformanceMonitoringSer
 		final Map<String, String> distrHeaders = metadata.getDistributedTransactionHeaders();
 		if (distrHeaders.isEmpty())
 		{
+			
 			transaction = ElasticApm.startTransaction();
 		}
 		else
@@ -61,8 +62,7 @@ public class APMPerformanceMonitoringService implements PerformanceMonitoringSer
 			transaction.setType(metadata.getType().getCode());
 			metadata.getLabels().forEach(transaction::addLabel);
 
-			final V result = callable.call();
-			return result;
+			return callable.call();
 		}
 		catch (final Exception e)
 		{

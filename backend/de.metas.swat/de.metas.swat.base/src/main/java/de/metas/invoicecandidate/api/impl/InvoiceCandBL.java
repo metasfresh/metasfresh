@@ -1406,18 +1406,18 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final boolean creditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
 		final boolean creditedInvoiceReinvoicable = invoiceExt.isCreditedInvoiceReinvoicable(); // task 08927: this is only relevant if isCreditMemo, see below
 		final boolean creditedInvoiceIsReversed;
-
-		final Iterator<I_C_Invoice> creditMemosForInvoice = invoiceDAO.retrieveCreditMemosForInvoice(invoiceExt);
-		if (creditMemo && creditMemosForInvoice.hasNext())
+		final boolean creditMemoCreditsInvoice;
+		if (creditMemo)
 		{
-			final org.compiere.model.I_C_Invoice originalInvoice = creditMemosForInvoice.next();
-			final DocStatus originalInvoiceDocStatus = DocStatus.ofCode(originalInvoice.getDocStatus());
-			creditedInvoiceIsReversed = originalInvoiceDocStatus.isReversed();
+			creditedInvoiceIsReversed = invoiceDAO.isReferencedInvoiceReversed(invoiceExt);
+			creditMemoCreditsInvoice = invoiceExt.getRef_Invoice_ID() > 0;
 		}
 		else
 		{
 			creditedInvoiceIsReversed = false;
+			creditMemoCreditsInvoice = false;
 		}
+
 		// if we deal with a credit memo, we need to thread the qtys as negative
 		final BigDecimal factor = creditMemo ? ONE.negate() : ONE;
 
@@ -1471,7 +1471,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='Y'; ignoring overlap, because credit memo";
 				}
 
-				else if (creditMemo && !creditedInvoiceReinvoicable && creditedInvoiceIsReversed)
+				else if (creditMemo && !creditedInvoiceReinvoicable && (creditedInvoiceIsReversed || creditMemoCreditsInvoice))
 				{
 					// the original credit memo's ila also has QtyInvoiced=0
 					qtyInvoicedForIla = StockQtyAndUOMQtys.createZero(productId, uomId);

@@ -1,14 +1,10 @@
-package de.metas.event.impl;
-
-import java.util.concurrent.atomic.AtomicLong;
-
-import de.metas.event.EventBusStats;
+package de.metas.banking.payment;
 
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2019 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,27 +21,23 @@ import de.metas.event.EventBusStats;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-final class EventBusStatsCollector
+public enum PaymentParserType
 {
-	private final AtomicLong eventsEnqueued = new AtomicLong();
-	private final AtomicLong eventsDequeued = new AtomicLong();
+	QRCode("QRCodeStringParser"),
 
-	public void incrementEventsEnqueued()
+	ESRRegular("ESRRegularLineParser"),
+
+	ESRCreaLogix("ESRCreaLogixStringParser");
+
+	private final String type;
+
+	PaymentParserType(String type)
 	{
-		eventsEnqueued.incrementAndGet();
+		this.type = type;
 	}
 
-	public void incrementEventsDequeued()
+	public String getType()
 	{
-		eventsDequeued.incrementAndGet();
-	}
-
-	public EventBusStats snapshot()
-	{
-		return EventBusStats.builder()
-				.eventsEnqueued(eventsDequeued.get())
-				.eventsDequeued(eventsDequeued.get())
-				.build();
+		return type;
 	}
 }

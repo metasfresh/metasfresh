@@ -75,6 +75,7 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 {
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Override
 	public void save(@NonNull final org.compiere.model.I_C_Invoice invoice)
@@ -348,6 +349,35 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		}
 
 		return adjustmentCharges.iterator();
+	}
+
+	@Override
+	public boolean isReferencedInvoiceReversed(final I_C_Invoice invoice )
+	{
+		final org.compiere.model.I_C_Invoice referencedInvoice = getReferencedInvoice(invoice);
+		final DocStatus originalInvoiceDocStatus;
+		if (referencedInvoice != null)
+		{
+			originalInvoiceDocStatus = DocStatus.ofCode(referencedInvoice.getDocStatus());
+		}
+		else {
+			originalInvoiceDocStatus = DocStatus.ofCode(invoice.getDocStatus());
+		}
+		return originalInvoiceDocStatus.isReversed();
+	}
+
+	@Nullable
+	private org.compiere.model.I_C_Invoice getReferencedInvoice(final I_C_Invoice invoice)
+	{
+		if (!invoiceBL.isInvoice(invoice))
+		{
+			final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
+			if (invoiceId != null)
+			{
+				return getByIdInTrx(invoiceId);
+			}
+		}
+		return null;
 	}
 
 	private Iterator<I_C_Invoice> retrieveReferencesForInvoice(final I_C_Invoice invoice)

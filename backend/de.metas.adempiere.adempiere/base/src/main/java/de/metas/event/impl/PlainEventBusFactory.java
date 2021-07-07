@@ -68,8 +68,10 @@ public class PlainEventBusFactory implements IEventBusFactory
 
 	private EventBus createEventBus(final Topic topic)
 	{
+		final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector = EventBusFactory.createMicrometerEventBusStatsCollector(topic, new SimpleMeterRegistry());
+
 		final ExecutorService executor = null;
-		return new EventBus(topic.getName(), executor);
+		return new EventBus(topic.getName(), executor, micrometerEventBusStatsCollector);
 	}
 
 	@Override
