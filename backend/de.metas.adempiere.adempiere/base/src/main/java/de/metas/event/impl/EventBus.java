@@ -101,17 +101,19 @@ final class EventBus implements IEventBus
 
 	private final ExecutorService executorOrNull;
 
-	private final EventBusStatsCollector stats;
+	private final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector;
 
 	/**
 	 * @param executor if not null, the system creates an {@link AsyncEventBus}; also, it shuts down this executor on {@link #destroy()}
 	 */
 	public EventBus(
 			@NonNull final String topicName,
-			@Nullable final ExecutorService executor)
+			@Nullable final ExecutorService executor,
+			@NonNull final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector)
 	{
 		Check.assumeNotEmpty(topicName, "name not empty");
 
+		this.micrometerEventBusStatsCollector = micrometerEventBusStatsCollector;
 		this.executorOrNull = executor;
 		this.topicName = topicName;
 
@@ -126,8 +128,6 @@ final class EventBus implements IEventBus
 			this.eventBus = new com.google.common.eventbus.AsyncEventBus(executor, exceptionHandler);
 			this.async = true;
 		}
-
-		this.stats = new EventBusStatsCollector();
 	}
 
 	@Override
@@ -158,7 +158,7 @@ final class EventBus implements IEventBus
 		{
 			executorOrNull.shutdown(); // not 100% sure it's needed, but better safe than sorry
 		}
-		logger.trace("{0} - Destroyed", this);
+		logger.trace("Destroyed EventBus={}", this);
 	}
 
 	@Override
@@ -227,9 +227,9 @@ final class EventBus implements IEventBus
 	{
 		final String json = sharedJsonSerializer.writeValueAsString(obj);
 		postEvent(Event.builder()
-				.putProperty(PROP_Body, json)
-				.shallBeLogged()
-				.build());
+						  .putProperty(PROP_Body, json)
+						  .shallBeLogged()
+						  .build());
 	}
 
 	@Override
@@ -262,7 +262,7 @@ final class EventBus implements IEventBus
 			logger.debug("{} - Posting event: {}", this, eventToPost);
 			eventBus.post(eventToPost);
 
-			stats.incrementEventsEnqueued();
+			micrometerEventBusStatsCollector.incrementEventsEnqueued();
 		}
 	}
 
@@ -308,13 +308,18 @@ final class EventBus implements IEventBus
 		@Subscribe
 		public void onEvent(@NonNull final Event event)
 		{
-			stats.incrementEventsDequeued();
-
-			try (final MDCCloseable ignored = EventMDC.putEvent(event))
-			{
-				logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
-				invokeEventListener(this.eventListener, event);
-			}
+			micrometerEventBusStatsCollector.incrementEventsDequeued();
+			
+			micrometerEventBusStatsCollector
+					.getEventProcessingTimer()
+					.record(() ->
+							{
+								try (final MDCCloseable ignored = EventMDC.putEvent(event))
+								{
+									logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
+									invokeEventListener(this.eventListener, event);
+								}
+							});
 		}
 	}
 
@@ -362,6 +367,6 @@ final class EventBus implements IEventBus
 	@Override
 	public EventBusStats getStats()
 	{
-		return stats.snapshot();
+		return micrometerEventBusStatsCollector.snapshot();
 	}
 }

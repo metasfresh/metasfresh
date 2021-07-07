@@ -39,7 +39,8 @@ public class GeneratedComponentRequest
 	int qty;
 
 	@NonNull
-	ImmutableAttributeSet attributes;
+	ImmutableAttributeSet targetHUAttributes;
+	ImmutableAttributeSet bomLineAttributes;
 
 	@NonNull ClientId clientId;
 
@@ -49,7 +50,8 @@ public class GeneratedComponentRequest
 	public GeneratedComponentRequest(
 			@NonNull final ProductId productId,
 			final int qty,
-			@NonNull final ImmutableAttributeSet attributes,
+			@NonNull final ImmutableAttributeSet targetHUAttributes,
+			@NonNull final ImmutableAttributeSet bomLineAttributes,
 			@NonNull final ClientId clientId,
 			final boolean overrideExistingValues)
 	{
@@ -57,7 +59,8 @@ public class GeneratedComponentRequest
 
 		this.productId = productId;
 		this.qty = qty;
-		this.attributes = attributes;
+		this.targetHUAttributes = targetHUAttributes;
+		this.bomLineAttributes = bomLineAttributes;
 		this.clientId = clientId;
 		this.overrideExistingValues = overrideExistingValues;
 	}

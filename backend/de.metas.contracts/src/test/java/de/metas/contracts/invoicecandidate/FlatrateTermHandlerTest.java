@@ -125,7 +125,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				OrgId.ofRepoId(term1.getAD_Org_ID()),
 				(WarehouseId)null,
 				CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID()),
-				SOTrx.SALES.toBoolean()))
+				SOTrx.SALES))
 				.thenReturn(TaxId.ofRepoId(3));
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();
