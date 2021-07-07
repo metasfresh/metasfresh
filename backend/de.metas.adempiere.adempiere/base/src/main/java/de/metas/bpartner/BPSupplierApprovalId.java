@@ -23,6 +23,7 @@
 package de.metas.bpartner;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -73,4 +74,9 @@ public class BPSupplierApprovalId implements RepoIdAware
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BP_SupplierApproval_ID");
 	}
 
+	@JsonValue
+	public int toJson()
+	{
+		return getRepoId();
+	}
 }
