@@ -126,12 +126,9 @@ export function browseViewRequest({
   orderBy,
 }) {
   return get(
-    `${
-      config.API_URL
-    }/documentView/${windowId}/${viewId}?firstRow=${pageLength *
-      (page - 1)}&pageLength=${pageLength}${
-      orderBy ? `&orderBy=${orderBy}` : ''
-    }`
+    `${config.API_URL}/documentView/${windowId}/${viewId}?firstRow=${
+      pageLength * (page - 1)
+    }&pageLength=${pageLength}${orderBy ? `&orderBy=${orderBy}` : ''}`
   );
 }
 
@@ -204,9 +201,7 @@ export function deleteViewRequest(windowId, viewId, action) {
 
 export function deleteStaticFilter(windowId, viewId, filterId) {
   return del(
-    `${
-      config.API_URL
-    }/documentView/${windowId}/${viewId}/staticFilter/${filterId}`
+    `${config.API_URL}/documentView/${windowId}/${viewId}/staticFilter/${filterId}`
   );
 }
 
@@ -275,9 +270,7 @@ export function advSearchRequest({
   selectedId,
 }) {
   return post(
-    `${
-      config.API_URL
-    }/window/${windowId}/${documentId}/field/${fieldName}/advSearchResult`,
+    `${config.API_URL}/window/${windowId}/${documentId}/field/${fieldName}/advSearchResult`,
     {
       advSearchWindowId,
       selectedId,
@@ -295,9 +288,7 @@ export function advSearchRequest({
  */
 export function getViewAttributesLayoutRequest(windowId, viewId, rowId) {
   return get(
-    `${
-      config.API_URL
-    }/documentView/${windowId}/${viewId}/${rowId}/attributes/layout`
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/attributes/layout`
   );
 }
 
@@ -351,9 +342,7 @@ export function patchViewAttributesRequest(
  */
 export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
   return get(
-    `${
-      config.API_URL
-    }/documentView/${windowId}/${viewId}/${rowId}/attributes/attribute/${attribute}/dropdown`
+    `${config.API_URL}/documentView/${windowId}/${viewId}/${rowId}/attributes/attribute/${attribute}/dropdown`
   );
 }
 

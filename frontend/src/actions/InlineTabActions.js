@@ -194,9 +194,7 @@ export function getInlineTabLayoutAndData({ windowId, tabId, docId, rowId }) {
  */
 export function inlineTabAfterGetLayout({ data, disconnectedData }) {
   return (dispatch) => {
-    const inlineTabTargetId = `${disconnectedData.windowId}_${
-      disconnectedData.tabId
-    }_${disconnectedData.rowId}`;
+    const inlineTabTargetId = `${disconnectedData.windowId}_${disconnectedData.tabId}_${disconnectedData.rowId}`;
     dispatch(
       setInlineTabLayoutAndData({
         inlineTabId: inlineTabTargetId,

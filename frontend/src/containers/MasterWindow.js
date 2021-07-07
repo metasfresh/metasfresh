@@ -323,17 +323,14 @@ const mapStateToProps = (state) => ({
   breadcrumb: state.menuHandler.breadcrumb,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    addNotification,
-    attachFileAction,
-    clearMasterData,
-    fireUpdateData,
-    sortTab,
-    updateTabRowsData,
-    updateTabTableData,
-    deleteTable,
-    updateTabLayout,
-  }
-)(MasterWindowContainer);
+export default connect(mapStateToProps, {
+  addNotification,
+  attachFileAction,
+  clearMasterData,
+  fireUpdateData,
+  sortTab,
+  updateTabRowsData,
+  updateTabTableData,
+  deleteTable,
+  updateTabLayout,
+})(MasterWindowContainer);

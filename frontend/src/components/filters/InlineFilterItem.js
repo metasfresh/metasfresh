@@ -135,9 +135,6 @@ InlineFilterItem.propTypes = {
   updateInlineFilter: PropTypes.func,
 };
 
-export default connect(
-  null,
-  {
-    updateInlineFilter,
-  }
-)(InlineFilterItem);
+export default connect(null, {
+  updateInlineFilter,
+})(InlineFilterItem);

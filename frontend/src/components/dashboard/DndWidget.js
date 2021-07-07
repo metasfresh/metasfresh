@@ -105,6 +105,8 @@ DndWidget.propTypes = {
   isDragging: PropTypes.any,
 };
 
-export default DragSource((props) => props.entity, cardSource, collect)(
-  DropTarget((props) => props.entity, cardTarget, connect)(DndWidget)
-);
+export default DragSource(
+  (props) => props.entity,
+  cardSource,
+  collect
+)(DropTarget((props) => props.entity, cardTarget, connect)(DndWidget));

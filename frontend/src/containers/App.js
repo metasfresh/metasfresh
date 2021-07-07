@@ -64,10 +64,10 @@ const App = (props) => {
     initCurrentActiveLocale();
 
     axios.interceptors.response.use(
-      function(response) {
+      function (response) {
         return response;
       },
-      function(error) {
+      function (error) {
         const errorPrototype = Object.getPrototypeOf(error);
 
         // This is a canceled request error

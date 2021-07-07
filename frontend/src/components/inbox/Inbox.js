@@ -234,6 +234,7 @@ Inbox.propTypes = {
   close: PropTypes.func,
   inbox: PropTypes.object,
   all: PropTypes.bool,
+  history: PropTypes.object,
 };
 
 Inbox.defaultProps = {};

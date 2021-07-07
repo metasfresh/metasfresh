@@ -57,10 +57,7 @@ const selectTableHelper = (state, id) => {
  * @method getTable
  * @summary Memoized selector for getting table object by id from the state
  */
-export const getTable = createSelector(
-  selectTableHelper,
-  (table) => table
-);
+export const getTable = createSelector(selectTableHelper, (table) => table);
 
 const getSelectionData = (state, tableId) =>
   selectTableHelper(state, tableId).selected;
@@ -70,10 +67,7 @@ const getSelectionData = (state, tableId) =>
  * @summary Memoized selector for getting selections in a table
  */
 export const getSelection = () => {
-  return createSelector(
-    getSelectionData,
-    (table) => table
-  );
+  return createSelector(getSelectionData, (table) => table);
 };
 
 export const getSupportAttribute = (selected, rows) => {

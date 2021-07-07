@@ -32,7 +32,6 @@ import de.metas.audit.common.HttpHeadersWrapper;
 import de.metas.audit.config.ApiAuditConfig;
 import de.metas.audit.config.ApiAuditConfigId;
 import de.metas.audit.config.ApiAuditConfigRepository;
-import de.metas.audit.config.NotificationTriggerType;
 import de.metas.audit.request.ApiRequestAudit;
 import de.metas.audit.request.ApiRequestAuditId;
 import de.metas.audit.request.ApiRequestAuditRepository;
@@ -46,6 +45,9 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
+import de.metas.user.UserGroupId;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserGroupUserAssignment;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -102,6 +104,7 @@ public class ApiAuditService
 	private final ApiRequestAuditRepository apiRequestAuditRepository;
 	private final ApiResponseAuditRepository apiResponseAuditRepository;
 	private final ApiAuditRequestLogDAO apiAuditRequestLogDAO;
+	private final UserGroupRepository userGroupRepository;
 
 	private final WebClient webClient;
 	private final ConcurrentHashMap<UserId, HttpCallScheduler> callerId2Scheduler;
@@ -111,12 +114,14 @@ public class ApiAuditService
 			@NonNull final ApiAuditConfigRepository apiAuditConfigRepository,
 			@NonNull final ApiRequestAuditRepository apiRequestAuditRepository,
 			@NonNull final ApiResponseAuditRepository apiResponseAuditRepository,
-			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO)
+			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO,
+			@NonNull final UserGroupRepository userGroupRepository)
 	{
 		this.apiAuditConfigRepository = apiAuditConfigRepository;
 		this.apiRequestAuditRepository = apiRequestAuditRepository;
 		this.apiResponseAuditRepository = apiResponseAuditRepository;
 		this.apiAuditRequestLogDAO = apiAuditRequestLogDAO;
+		this.userGroupRepository = userGroupRepository;
 		this.webClient = WebClient.create();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
 		this.objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
@@ -316,14 +321,13 @@ public class ApiAuditService
 			@NonNull final ApiRequestAudit apiRequestAudit,
 			final boolean isError)
 	{
-		if (apiAuditConfig.getUserInChargeId() == null
-				|| apiAuditConfig.getNotifyUserInCharge() == null
-				|| apiAuditConfig.getNotifyUserInCharge().equals(NotificationTriggerType.NEVER)
-				|| (NotificationTriggerType.ONLY_ON_ERROR.equals(apiAuditConfig.getNotifyUserInCharge())
-				&& !isError))
+		final Optional<UserGroupId> userGroupToNotify = apiAuditConfig.getUserGroupToNotify(isError);
+
+		if (!userGroupToNotify.isPresent())
 		{
-			Loggables.addLog("Notification skipped due to ApiAuditConfig! ApiAuditConfigId = {}, NotifyUserInChargeTrigger = {}"
-					, apiAuditConfig.getUserInChargeId(), apiAuditConfig.getNotifyUserInCharge());
+			Loggables.addLog("Notification skipped due to ApiAuditConfig! UserGroupInChargeId = {}, "
+									 + "ApiAuditConfigId = {}, NotifyUserInChargeTrigger = {}",
+							 apiAuditConfig.getUserGroupInChargeId(), apiAuditConfig.getApiAuditConfigId(), apiAuditConfig.getNotifyUserInCharge());
 			return;
 		}
 
@@ -333,12 +337,17 @@ public class ApiAuditService
 				.TargetRecordAction
 				.of(I_API_Request_Audit.Table_Name, apiRequestAudit.getIdNotNull().getRepoId());
 
-		notificationBL.send(UserNotificationRequest.builder()
-									.recipientUserId(apiAuditConfig.getUserInChargeId())
-									.contentADMessage(messageKey)
-									.contentADMessageParam(apiRequestAudit.getPath())
-									.targetAction(targetRecordAction)
-									.build());
+		userGroupRepository
+				.getByUserGroupId(userGroupToNotify.get())
+				.streamAssignmentsFor(userGroupToNotify.get(), Instant.now())
+				.map(UserGroupUserAssignment::getUserId)
+				.map(userId -> UserNotificationRequest.builder()
+						.recipientUserId(userId)
+						.contentADMessage(messageKey)
+						.contentADMessageParam(apiRequestAudit.getPath())
+						.targetAction(targetRecordAction)
+						.build())
+				.forEach(notificationBL::send);
 	}
 
 	public boolean bypassFilter(@NonNull final HttpServletRequest request)

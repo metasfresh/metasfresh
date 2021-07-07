@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { List } from 'immutable';
 import { findKey } from 'lodash';
-import uuid from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   dropdownRequest,
@@ -139,7 +139,7 @@ class ListWidget extends Component {
 
             this.setState({
               list: List(values),
-              listHash: uuid(),
+              listHash: uuidv4(),
               loading: false,
             });
 
@@ -150,7 +150,7 @@ class ListWidget extends Component {
           } else {
             this.setState({
               list: List(values),
-              listHash: uuid(),
+              listHash: uuidv4(),
               loading: false,
             });
           }
@@ -368,9 +368,6 @@ const mapStateToProps = (state) => ({
   filter: state.windowHandler.filter,
 });
 
-export default connect(
-  mapStateToProps,
-  false,
-  false,
-  { forwardRef: true }
-)(ListWidget);
+export default connect(mapStateToProps, false, false, { forwardRef: true })(
+  ListWidget
+);

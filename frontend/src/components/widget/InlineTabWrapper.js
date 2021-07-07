@@ -375,6 +375,7 @@ const mapStateToProps = (state, props) => {
     includedTabsInfo, // this holds the allowCreateNew, allowDelete, stale props
   };
 };
+
 export default connect(
   mapStateToProps,
   {

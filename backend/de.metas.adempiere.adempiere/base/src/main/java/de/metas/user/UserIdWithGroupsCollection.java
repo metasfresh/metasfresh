@@ -1,17 +1,15 @@
 package de.metas.user;
 
-import java.time.Instant;
-import java.util.Collection;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Range;
-
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L
@@ -35,9 +33,10 @@ import lombok.NonNull;
  * #L%
  */
 
-final class UserGroupUserAssignmentsCollection
+final class UserIdWithGroupsCollection
 {
-	public static UserGroupUserAssignmentsCollection of(final Collection<UserGroupUserAssignment> assignments)
+	@NonNull
+	public static UserIdWithGroupsCollection of(final Collection<UserGroupUserAssignment> assignments)
 	{
 		if (assignments.isEmpty())
 		{
@@ -45,23 +44,26 @@ final class UserGroupUserAssignmentsCollection
 		}
 		else
 		{
-			return new UserGroupUserAssignmentsCollection(assignments);
+			return new UserIdWithGroupsCollection(assignments);
 		}
 	}
 
-	private static final UserGroupUserAssignmentsCollection EMPTY = new UserGroupUserAssignmentsCollection();
+	private static final UserIdWithGroupsCollection EMPTY = new UserIdWithGroupsCollection();
+
+	private final UserId userId;
 
 	private final ImmutableSetMultimap<UserGroupId, Range<Instant>> validDates;
 
-	private UserGroupUserAssignmentsCollection()
+	private UserIdWithGroupsCollection()
 	{
 		validDates = ImmutableSetMultimap.of();
+		userId = null;
 	}
 
-	private UserGroupUserAssignmentsCollection(final Collection<UserGroupUserAssignment> assignments)
+	private UserIdWithGroupsCollection(final Collection<UserGroupUserAssignment> assignments)
 	{
 		Check.assumeNotEmpty(assignments, "assignments is not empty");
-		assertSameUserId(assignments);
+		userId = getUserId(assignments);
 
 		validDates = assignments.stream()
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
@@ -70,13 +72,16 @@ final class UserGroupUserAssignmentsCollection
 				));
 	}
 
-	private static void assertSameUserId(final Collection<UserGroupUserAssignment> assignments)
+	@NonNull
+	private static UserId getUserId(final Collection<UserGroupUserAssignment> assignments)
 	{
 		final ImmutableSet<UserId> userIds = assignments.stream().map(UserGroupUserAssignment::getUserId).collect(ImmutableSet.toImmutableSet());
 		if (userIds.size() > 1)
 		{
 			throw new AdempiereException("More than one user found for " + assignments);
 		}
+
+		return userIds.stream().findFirst().orElseThrow(() -> new AdempiereException("UserId should always be present on UserGroupUserAssignment" + assignments));
 	}
 
 	public ImmutableSet<UserGroupId> getAssignedGroupIds(@NonNull final Instant date)

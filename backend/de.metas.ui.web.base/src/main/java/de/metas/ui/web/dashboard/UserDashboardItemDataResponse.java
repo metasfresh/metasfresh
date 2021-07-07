@@ -22,15 +22,12 @@
 
 package de.metas.ui.web.dashboard;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.exceptions.WebuiError;
 import de.metas.ui.web.kpi.data.KPIDataResult;
-import de.metas.ui.web.kpi.data.KPIDataSet;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 import java.util.Objects;
 
 @Value
@@ -59,21 +56,7 @@ public class UserDashboardItemDataResponse
 
 	public boolean isSameDataAs(@NonNull final UserDashboardItemDataResponse other)
 	{
-		return Objects.equals(getDatasetsOrNull(), other.getDatasetsOrNull())
-				// Consider CreatedTime because it's important to let the user know that we calculated it but same result.
-				&& Objects.equals(getCreatedTime(), other.getCreatedTime())
+		return KPIDataResult.equals(this.kpiData, other.kpiData)
 				&& Objects.equals(error, other.error);
-	}
-
-	@Nullable
-	private ImmutableList<KPIDataSet> getDatasetsOrNull()
-	{
-		return kpiData != null ? kpiData.getDatasets() : null;
-	}
-
-	@Nullable
-	private Instant getCreatedTime()
-	{
-		return kpiData != null ? kpiData.getCreatedTime() : null;
 	}
 }

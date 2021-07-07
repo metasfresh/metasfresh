@@ -137,7 +137,7 @@ class SQLKPIDataLoader
 		logger.trace("Loading data for {}", timeRange);
 
 		final KPIDataResult.Builder data = KPIDataResult.builder()
-				.setRange(timeRange);
+				.range(timeRange);
 
 		final String sql = createSelectSql();
 		logger.trace("Running SQL: {}", sql);
@@ -164,7 +164,7 @@ class SQLKPIDataLoader
 		}
 
 		return data
-				.setTook(duration.elapsed())
+				.datasetsComputeDuration(duration.elapsed())
 				.build();
 	}
 

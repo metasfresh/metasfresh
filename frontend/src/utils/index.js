@@ -272,7 +272,7 @@ export function deepUnfreeze(obj) {
     } else if (Array.isArray(obj)) {
       return obj.map((item) => unfreezeProp(item));
     } else if (typeof obj === 'function') {
-      const target = function() {
+      const target = function () {
         obj.call(this, ...arguments);
       };
       target.prototype = Object.create(obj.prototype);

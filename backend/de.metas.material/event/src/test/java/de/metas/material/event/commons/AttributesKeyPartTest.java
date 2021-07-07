@@ -73,7 +73,7 @@ public class AttributesKeyPartTest
 		{
 			for (final AttributesKeyPart specialKeyPart : specialKeyParts)
 			{
-				assertThat(AttributesKeyPart.parseString(specialKeyPart.getStringRepresentation())).isSameAs(specialKeyPart);
+				assertThat(AttributesKeyPart.parseString(specialKeyPart.getStringRepresentation()).get()).isSameAs(specialKeyPart);
 			}
 		}
 
@@ -81,28 +81,28 @@ public class AttributesKeyPartTest
 		void stringAttribute()
 		{
 			final AttributesKeyPart stringPart = AttributesKeyPart.ofStringAttribute(AttributeId.ofRepoId(111), "stringValue");
-			assertThat(AttributesKeyPart.parseString(stringPart.getStringRepresentation())).isEqualTo(stringPart);
+			assertThat(AttributesKeyPart.parseString(stringPart.getStringRepresentation()).get()).isEqualTo(stringPart);
 		}
 
 		@Test
 		void numberAttribute()
 		{
 			final AttributesKeyPart numberPart = AttributesKeyPart.ofNumberAttribute(AttributeId.ofRepoId(111), new BigDecimal("12.345000"));
-			assertThat(AttributesKeyPart.parseString(numberPart.getStringRepresentation())).isEqualTo(numberPart);
+			assertThat(AttributesKeyPart.parseString(numberPart.getStringRepresentation()).get()).isEqualTo(numberPart);
 		}
 
 		@Test
 		void dateAttribute()
 		{
 			final AttributesKeyPart datePart = AttributesKeyPart.ofDateAttribute(AttributeId.ofRepoId(111), LocalDate.of(2019, Month.SEPTEMBER, 2));
-			assertThat(AttributesKeyPart.parseString(datePart.getStringRepresentation())).isEqualTo(datePart);
+			assertThat(AttributesKeyPart.parseString(datePart.getStringRepresentation()).get()).isEqualTo(datePart);
 		}
 
 		@Test
 		void attributeValueId()
 		{
 			final AttributesKeyPart attributeValueIdPart = AttributesKeyPart.ofAttributeValueId(AttributeValueId.ofRepoId(1234));
-			assertThat(AttributesKeyPart.parseString(attributeValueIdPart.getStringRepresentation())).isEqualTo(attributeValueIdPart);
+			assertThat(AttributesKeyPart.parseString(attributeValueIdPart.getStringRepresentation()).get()).isEqualTo(attributeValueIdPart);
 		}
 	}
 
