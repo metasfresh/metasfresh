@@ -24,7 +24,10 @@ package de.metas.bpartner;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.IOrgDAO;
@@ -56,6 +59,7 @@ public class BPartnerSupplierApprovalService
 	private final ISysConfigBL sysConfigBL;
 	private final INotificationBL notificationBL;
 	private final IBPartnerDAO bpartnerDAO;
+	private final IMsgBL msgBL;
 
 	private static final AdMessageKey MSG_Partner_Lacks_SupplierApproval = AdMessageKey.of("C_BPartner_Lacks_Supplier_Approval");
 	private static final AdMessageKey MSG_Partner_SupplierApproval_ExpirationDate = AdMessageKey.of("C_BPartner_Supplier_Approval_WillExpire");
@@ -70,6 +74,7 @@ public class BPartnerSupplierApprovalService
 		this.sysConfigBL = Services.get(ISysConfigBL.class);
 		this.notificationBL = Services.get(INotificationBL.class);
 		this.bpartnerDAO = Services.get(IBPartnerDAO.class);
+		this.msgBL = Services.get(IMsgBL.class);
 	}
 
 	public void validateSupplierApproval(@NonNull final BPartnerId partnerId,
@@ -82,6 +87,8 @@ public class BPartnerSupplierApprovalService
 			return;
 		}
 
+		final String partnerName = bpartnerDAO.getBPartnerNameById(partnerId);
+
 		final ImmutableList<I_C_BP_SupplierApproval> supplierApprovals = repo.retrieveBPartnerSupplierApprovals(partnerId);
 
 		for (final String norm : supplierApprovalNorms)
@@ -92,7 +99,7 @@ public class BPartnerSupplierApprovalService
 
 			if (!foundNorm.isPresent())
 			{
-				throw new AdempiereException(MSG_Partner_Lacks_SupplierApproval, partnerId, norm); // TODO: message
+				partnerLacksSupplierApproval(partnerName, norm);
 			}
 
 			final I_C_BP_SupplierApproval bPartnerSupplierApproval = foundNorm.get();
@@ -102,7 +109,7 @@ public class BPartnerSupplierApprovalService
 			if (supplierApprovalDate == null)
 			{
 				// the vendor doesn't have a supplier approval
-				throw new AdempiereException(MSG_Partner_Lacks_SupplierApproval, partnerId, norm); // TODO: message
+				partnerLacksSupplierApproval(partnerName, norm);
 			}
 			final LocalDate supplierApprovalDateToUse = TimeUtil.asLocalDate(supplierApprovalDate,
 																			 orgDAO.getTimeZone(OrgId.ofRepoId(bPartnerSupplierApproval.getAD_Org_ID())));
@@ -111,14 +118,23 @@ public class BPartnerSupplierApprovalService
 
 			if (numberOfYearsForApproval == 0)
 			{
-				throw new AdempiereException(MSG_Partner_Lacks_SupplierApproval, partnerId, norm); // TODO: message
+				partnerLacksSupplierApproval(partnerName, norm);
 			}
 			if (supplierApprovalExpired(supplierApprovalDateToUse, datePromised, numberOfYearsForApproval))
 			{
-				throw new AdempiereException(MSG_Partner_Lacks_SupplierApproval, partnerId, norm); // TODO: message
+				partnerLacksSupplierApproval(partnerName, norm);
+				return;
 			}
 		}
 
+	}
+
+	private void partnerLacksSupplierApproval(final String partnerName, final String norm)
+	{
+		final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_Partner_Lacks_SupplierApproval,
+																	 partnerName,
+																	 norm);
+		throw new AdempiereException(msg).markAsUserValidationError();
 	}
 
 	private int getNumberOfYearsForApproval(final I_C_BP_SupplierApproval bPartnerSupplierApproval)
