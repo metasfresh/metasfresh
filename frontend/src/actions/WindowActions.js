@@ -698,7 +698,7 @@ export function createWindow({
   };
 }
 
-const getChangelogUrl = function(windowId, docId, tabId, rowId) {
+const getChangelogUrl = function (windowId, docId, tabId, rowId) {
   let documentId = docId;
 
   if (!docId && rowId) {

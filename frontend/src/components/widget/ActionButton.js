@@ -232,13 +232,8 @@ class ActionButton extends PureComponent {
    * @param {boolean} option
    */
   processStatus = (status, option) => {
-    const {
-      onChange,
-      docId,
-      windowType,
-      activeTab,
-      fetchTopActions,
-    } = this.props;
+    const { onChange, docId, windowType, activeTab, fetchTopActions } =
+      this.props;
     const changePromise = onChange(status);
 
     this.statusDropdown.blur();
@@ -405,7 +400,4 @@ const mapStateToProps = ({ windowHandler, appHandler }) => ({
   processStatus: appHandler.processStatus,
 });
 
-export default connect(
-  mapStateToProps,
-  { fetchTopActions }
-)(ActionButton);
+export default connect(mapStateToProps, { fetchTopActions })(ActionButton);

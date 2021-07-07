@@ -235,7 +235,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
 		docOutboundLogRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		docOutboundLogRecord.setDocumentNo(archiveRecord.getName());
+		docOutboundLogRecord.setDocumentNo(archiveRecord.getDocumentNo());
+		docOutboundLogRecord.setFileName(archiveRecord.getName());
 
 		final LocalDate documentDate = CoalesceUtil.coalesce(
 				docActionBL.getDocumentDate(ctx, adTableId, recordId),

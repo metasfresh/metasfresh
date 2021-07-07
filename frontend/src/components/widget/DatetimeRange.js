@@ -118,12 +118,8 @@ class DatetimeRange extends Component {
       [last30days]: [Moment().subtract(29, 'days'), Moment()],
       [thisMonth]: [Moment().startOf('month'), Moment().endOf('month')],
       [lastMonth]: [
-        Moment()
-          .subtract(1, 'month')
-          .startOf('month'),
-        Moment()
-          .subtract(1, 'month')
-          .endOf('month'),
+        Moment().subtract(1, 'month').startOf('month'),
+        Moment().subtract(1, 'month').endOf('month'),
       ],
     };
     const { startDate, endDate } = this.state;

@@ -32,12 +32,14 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.service.BPRelation;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
 import de.metas.bpartner.service.BPartnerPrintFormat;
 import de.metas.bpartner.service.BPartnerPrintFormatMap;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.CloneBPartnerRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
@@ -90,7 +92,6 @@ import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
@@ -118,6 +119,7 @@ import java.util.stream.Stream;
 
 import static de.metas.util.Check.assumeNotNull;
 import static de.metas.util.Check.isEmpty;
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
@@ -829,8 +831,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-			final String bpValue,
-			final String bpValueSuffixToFallback)
+														final String bpValue,
+														final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1227,7 +1229,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		}
 
 		bpLocationQueryBuilder.addInSubQueryFilter(I_C_BPartner_Location.COLUMN_C_Location_ID,
-												   I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
+				I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
 	}
 
 	private BPartnerLocationId createLocationIdOrNull(
@@ -1325,10 +1327,10 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (existingBPartnerId == null && query.isFailIfNotExists())
 		{
 			final String msg = StringUtils.formatMessage("Found no existing BPartner;"
-																 + " Searched via the following properties one-after-one (list may be empty): {};"
-																 + " The search was restricted to the following orgIds (empty means no restriction): {}",
-														 searchedByInfo.toString(),
-														 query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
+							+ " Searched via the following properties one-after-one (list may be empty): {};"
+							+ " The search was restricted to the following orgIds (empty means no restriction): {}",
+					searchedByInfo.toString(),
+					query.getOnlyOrgIds().stream().map(OrgId::getRepoId).collect(ImmutableList.toImmutableList()).toString());
 			throw new BPartnerIdNotFoundException(msg);
 		}
 
@@ -1737,6 +1739,47 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orderByDescending(I_C_BPartner_Location.COLUMNNAME_Updated)
 				.create()
 				.firstId(this::getBPartnerLocationIdByRepoId);
+	}
+
+	@Override
+	public Optional<BPartnerId> getCounterpartBPartnerId(
+			@NonNull final OrgMappingId orgMappingId,
+			@NonNull final OrgId targetOrgId)
+	{
+		final BPartnerId counterpartBPartnerId = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMN_AD_Org_Mapping_ID, orgMappingId)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, targetOrgId)
+				.create()
+				.firstId(BPartnerId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(counterpartBPartnerId);
+	}
+
+	@Override
+	public BPartnerId cloneBPartnerRecord(@NonNull final CloneBPartnerRequest request)
+	{
+		final I_C_BPartner fromBpartner = getById(request.getFromBPartnerId());
+
+		final I_C_BPartner newBPartner = copy()
+				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
+				.addTargetColumnNameToSkip(I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID)
+				.setFrom(fromBpartner)
+				.copyToNew(I_C_BPartner.class)
+				;
+
+		if (request.getOrgId() != null)
+		{
+			newBPartner.setAD_Org_ID(request.getOrgId().getRepoId());
+		}
+
+		if (request.getOrgMappingId() != null)
+		{
+			newBPartner.setAD_Org_Mapping_ID(request.getOrgMappingId().getRepoId());
+		}
+
+		save(newBPartner);
+
+		return BPartnerId.ofRepoId(newBPartner.getC_BPartner_ID());
 	}
 
 }

@@ -333,7 +333,7 @@ public class RecordWindowFinder
 
 		final GenericZoomIntoTableInfo tableInfo = getTableInfo();
 		final String tableName = tableInfo.getTableName();
-		final String keyColumnName = tableInfo.getKeyColumnName();
+		final String keyColumnName = tableInfo.getSingleKeyColumnName();
 		final int recordId = getRecord_ID();
 
 		final MQuery query = new MQuery(tableName);
@@ -372,7 +372,7 @@ public class RecordWindowFinder
 				return null;
 			}
 
-			final String keyColumnName = getTableInfo().getKeyColumnName();
+			final String keyColumnName = getTableInfo().getSingleKeyColumnName();
 			return keyColumnName + "=" + recordId;
 		}
 	}

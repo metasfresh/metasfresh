@@ -8,7 +8,7 @@ new WebpackDevServer(webpack(config), {
   publicPath: config.output.publicPath,
   hot: true,
   historyApiFallback: true,
-}).listen(3000, listenHost, function(err) {
+}).listen(3000, listenHost, function (err) {
   if (err) {
     // eslint-disable-next-line no-console
     return console.error(err);

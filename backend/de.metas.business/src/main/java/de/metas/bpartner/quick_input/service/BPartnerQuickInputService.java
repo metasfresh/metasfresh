@@ -41,6 +41,7 @@ import de.metas.bpartner.name.strategy.ComputeNameAndGreetingRequest;
 import de.metas.bpartner.quick_input.BPartnerContactQuickInputId;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.marketing.base.model.CampaignId;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.BooleanWithReason;
@@ -321,6 +322,7 @@ public class BPartnerQuickInputService
 				//
 				.excludeFromPromotions(template.isExcludeFromPromotions())
 				.referrer(template.getReferrer())
+				.campaignId(CampaignId.ofRepoIdOrNull(template.getMKTG_Campaign_ID()))
 				//
 				.build();
 

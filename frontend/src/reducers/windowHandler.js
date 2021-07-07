@@ -167,13 +167,8 @@ export const getData = (state, isModal = false) => {
 export const getElementLayout = (state, isModal, layoutPath) => {
   const selector = isModal ? 'modal' : 'master';
   const layout = state.windowHandler[selector].layout;
-  const [
-    sectionIdx,
-    columnIdx,
-    elGroupIdx,
-    elLineIdx,
-    elIdx,
-  ] = layoutPath.split('_');
+  const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
+    layoutPath.split('_');
 
   return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
     elGroupIdx
@@ -186,13 +181,8 @@ export const getInlineTabLayout = ({
   layoutId: layoutPath,
 }) => {
   const layout = state.windowHandler.inlineTab[inlineTabId].layout;
-  const [
-    sectionIdx,
-    columnIdx,
-    elGroupIdx,
-    elLineIdx,
-    elIdx,
-  ] = layoutPath.split('_');
+  const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
+    layoutPath.split('_');
   // console.log('Section:', sectionIdx);
   // console.log('Column:', columnIdx);
   // console.log('elGroupIndex:', elGroupIdx)
@@ -311,18 +301,15 @@ export const getProcessWidgetFields = createCachedSelector(
  *
  * @param {object} state - redux state
  */
-export const getMasterDocStatus = createSelector(
-  getData,
-  (data) => {
-    return [
-      {
-        status: data.DocStatus || null,
-        action: data.DocAction || null,
-        displayed: true,
-      },
-    ];
-  }
-);
+export const getMasterDocStatus = createSelector(getData, (data) => {
+  return [
+    {
+      status: data.DocStatus || null,
+      action: data.DocAction || null,
+      displayed: true,
+    },
+  ];
+});
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {

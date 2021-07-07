@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_QuickInput
  *  @author metasfresh (generated) 
@@ -118,33 +117,6 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_BPartnerName = "BPartnerName";
 
 	/**
-	 * Set Business Partner Group.
-	 * Business Partner Group
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Group_ID (int C_BP_Group_ID);
-
-	/**
-	 * Get Business Partner Group.
-	 * Business Partner Group
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Group_ID();
-
-	@Nullable org.compiere.model.I_C_BP_Group getC_BP_Group();
-
-	void setC_BP_Group(@Nullable org.compiere.model.I_C_BP_Group C_BP_Group);
-
-	ModelColumn<I_C_BPartner_QuickInput, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
-	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
-
-	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
@@ -206,6 +178,33 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_C_BPartner_QuickInput_ID = "C_BPartner_QuickInput_ID";
 
 	/**
+	 * Set Business Partner Group.
+	 * Business Partner Group
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Group_ID (int C_BP_Group_ID);
+
+	/**
+	 * Get Business Partner Group.
+	 * Business Partner Group
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Group_ID();
+
+	@Nullable org.compiere.model.I_C_BP_Group getC_BP_Group();
+
+	void setC_BP_Group(@Nullable org.compiere.model.I_C_BP_Group C_BP_Group);
+
+	ModelColumn<I_C_BPartner_QuickInput, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new ModelColumn<>(I_C_BPartner_QuickInput.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
+
+	/**
 	 * Set Greeting (ID).
 	 * Greeting to print on correspondence
 	 *
@@ -255,6 +254,27 @@ public interface I_C_BPartner_QuickInput
 	String COLUMNNAME_C_Location_ID = "C_Location_ID";
 
 	/**
+	 * Set Company Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompanyname (@Nullable java.lang.String Companyname);
+
+	/**
+	 * Get Company Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCompanyname();
+
+	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Companyname = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Companyname", null);
+	String COLUMNNAME_Companyname = "Companyname";
+
+	/**
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
@@ -275,27 +295,6 @@ public interface I_C_BPartner_QuickInput
 	int getC_PaymentTerm_ID();
 
 	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
-
-	/**
-	 * Set Company Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCompanyname (@Nullable java.lang.String Companyname);
-
-	/**
-	 * Get Company Name.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCompanyname();
-
-	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_Companyname = new ModelColumn<>(I_C_BPartner_QuickInput.class, "Companyname", null);
-	String COLUMNNAME_Companyname = "Companyname";
 
 	/**
 	 * Get Created.
@@ -474,6 +473,27 @@ public interface I_C_BPartner_QuickInput
 
 	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_IsVendor = new ModelColumn<>(I_C_BPartner_QuickInput.class, "IsVendor", null);
 	String COLUMNNAME_IsVendor = "IsVendor";
+
+	/**
+	 * Set Marketing Campaign.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMKTG_Campaign_ID (int MKTG_Campaign_ID);
+
+	/**
+	 * Get Marketing Campaign.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMKTG_Campaign_ID();
+
+	ModelColumn<I_C_BPartner_QuickInput, Object> COLUMN_MKTG_Campaign_ID = new ModelColumn<>(I_C_BPartner_QuickInput.class, "MKTG_Campaign_ID", null);
+	String COLUMNNAME_MKTG_Campaign_ID = "MKTG_Campaign_ID";
 
 	/**
 	 * Set Pricing System.

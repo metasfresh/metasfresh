@@ -164,6 +164,8 @@ Card.propTypes = {
   placeholder: PropTypes.bool,
 };
 
-export default DragSource(ItemTypes.CARD, cardSource, collect)(
-  DropTarget(ItemTypes.CARD, cardTarget, connect)(Card)
-);
+export default DragSource(
+  ItemTypes.CARD,
+  cardSource,
+  collect
+)(DropTarget(ItemTypes.CARD, cardTarget, connect)(Card));

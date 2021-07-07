@@ -66,7 +66,9 @@ SELECT
 	p.description AS p_description,
 	p.documentnote AS p_documentnote,
 	o.description AS order_description,
-	COALESCE('###,###.' || (repeat('#', (length(substring(ol.PriceEntered::text,'(\.[0-9]*)'))-1))), '###,###') AS price_pattern
+	(CASE WHEN pl.priceprecision <= 1
+    THEN '#,##0.0'
+   ELSE Substring('#,##0.0000' FROM 0 FOR 7 + pl.priceprecision :: integer) END) AS price_pattern,
 
 FROM
 	C_OrderLine ol
@@ -98,6 +100,8 @@ FROM
 	) att ON ol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND ol.C_OrderLine_ID = att.C_OrderLine_ID
 
 	LEFT JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID and c.isActive = 'Y'
+	
+	INNER JOIN M_PriceList pl on pl.m_pricelist_id = o.m_pricelist_id
 
 WHERE
 	ol.C_Order_ID = $1 AND ol.isActive = 'Y'

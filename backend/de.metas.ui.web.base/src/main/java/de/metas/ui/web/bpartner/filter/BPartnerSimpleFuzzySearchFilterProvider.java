@@ -26,6 +26,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstants;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -38,7 +39,6 @@ import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
@@ -60,10 +60,10 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			+ "FROM C_Bpartner p "
 			+ "LEFT OUTER JOIN C_Bpartner_Location pl ON p.C_Bpartner_ID = pl.C_Bpartner_ID AND pl.IsActive='Y' AND pl.IsShipToDefault = 'Y' "
 			+ "LEFT OUTER JOIN C_Location l ON pl.C_Location_ID = l.C_Location_ID AND pl.IsActive='Y' "
-			+ "WHERE unaccent_string(p.Name,1) ILIKE unaccent_string(?,1) "
-			+ "OR unaccent_string(p.Value,1) ILIKE unaccent_string(?,1) "
-			+ "OR unaccent_string(l.City,1) ILIKE unaccent_string(?,1))";
-	private static final AdMessageKey MSG_Caption = AdMessageKey.of("Filter");
+			+ "WHERE p.Name ILIKE ? "
+			+ "OR p.Value ILIKE ? "
+			+ "OR l.City ILIKE ? )";
+	private static final AdMessageKey MSG_Caption = AdMessageKey.of("Member Search");
 	public static final DocumentFilterDescriptor FILTER_DESCRIPTOR = DocumentFilterDescriptor.builder()
 			.setFilterId(FILTER_ID)
 			.setFrequentUsed(true)
@@ -71,7 +71,6 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 			.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_INLINE_FILTERS)
 			.addParameter(DocumentFilterParamDescriptor.builder()
-					.setMandatory(true)
 					.setFieldName(PARAMETERNAME_SearchText)
 					.setDisplayName(MSG_Caption)
 					.setWidgetType(DocumentFieldWidgetType.Text)
@@ -117,11 +116,12 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context)
 	{
-		final String searchText = filter.getParameterValueAsString(PARAMETERNAME_SearchText);
-		if (Check.isBlank(searchText))
+		final DocumentFilterParam filterParameter = filter.getParameterOrNull(PARAMETERNAME_SearchText);
+		if (filterParameter == null)
 		{
 			return null;
 		}
+		final String searchText = filterParameter.getValueAsString();
 		return SqlAndParams.builder()
 				.append(sqlOpts.getTableNameOrAlias())
 				.append(getSqlCriteria(searchText))

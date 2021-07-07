@@ -113,7 +113,7 @@ public class BPartnerContact
 	private String phone;
 
 	private boolean newsletter;
-	private final boolean membershipContact;
+	private boolean membershipContact;
 	private boolean subjectMatterContact;
 
 	@Nullable

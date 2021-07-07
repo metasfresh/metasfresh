@@ -193,16 +193,8 @@ class TableQuickInput extends PureComponent {
   };
 
   renderFields = () => {
-    const {
-      tabId,
-      docType,
-      forceHeight,
-      data,
-      layout,
-      id,
-      inProgress,
-      docId,
-    } = this.props;
+    const { tabId, docType, forceHeight, data, layout, id, inProgress, docId } =
+      this.props;
 
     const layoutFieldsAmt = layout ? layout.length : 2;
     const stylingLayout = [

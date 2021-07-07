@@ -23,7 +23,6 @@
 package de.metas.order.impl;
 
 import ch.qos.logback.classic.Level;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -113,7 +112,6 @@ import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-import static org.compiere.model.X_C_DocType.DOCSUBTYPE_Mediated;
 
 public class OrderBL implements IOrderBL
 {
@@ -333,7 +331,6 @@ public class OrderBL implements IOrderBL
 			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
 					.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
-					.docSubTypeNotIn(ImmutableSet.of(DOCSUBTYPE_Mediated))
 					.adClientId(order.getAD_Client_ID())
 					.adOrgId(order.getAD_Org_ID())
 					.build();
@@ -1029,6 +1026,20 @@ public class OrderBL implements IOrderBL
 
 		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
 		return docTypeId != null && docTypeBL.isRequisition(docTypeId);
+	}
+
+	@Override
+	public boolean isMediated(@NonNull final I_C_Order order)
+	{
+		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+		if (!soTrx.isPurchase())
+		{
+			// only purchase orders can be mediated
+			return false;
+		}
+
+		final DocTypeId docTypeId = getDocTypeIdEffectiveOrNull(order);
+		return docTypeId != null && docTypeBL.isMediated(docTypeId);
 	}
 
 	@Override

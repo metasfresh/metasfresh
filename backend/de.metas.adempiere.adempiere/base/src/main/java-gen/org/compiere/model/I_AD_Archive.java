@@ -303,6 +303,29 @@ public interface I_AD_Archive
 	String COLUMNNAME_DocumentFlavor = "DocumentFlavor";
 
 	/**
+	 * Set Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
+
+	/**
+	 * Get Document No.
+	 * Document sequence number of the document
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDocumentNo();
+
+	ModelColumn<I_AD_Archive, Object> COLUMN_DocumentNo = new ModelColumn<>(I_AD_Archive.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
 	 * Set Help.
 	 * Comment or Hint
 	 *

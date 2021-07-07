@@ -111,7 +111,7 @@ export function getTabLayoutRequest(windowId, tabId) {
 /**
  * getAPIUrl function
  */
-const getAPIUrl = function({ windowId, docId, tabId, rowId, path }) {
+const getAPIUrl = function ({ windowId, docId, tabId, rowId, path }) {
   let documentId = docId;
 
   if (!docId && rowId) {
@@ -271,8 +271,6 @@ export function completeRequest(
   subentityId = subentityId ? `/${subentityId}` : '';
 
   return post(
-    `${
-      config.API_URL
-    }/${entity}${docType}${docId}${tabId}${rowId}${subentity}${subentityId}/complete`
+    `${config.API_URL}/${entity}${docType}${docId}${tabId}${rowId}${subentity}${subentityId}/complete`
   );
 }

@@ -479,12 +479,8 @@ class Modal extends Component {
    * @summary before printing we check the available parameters from the store and we use those for forming the final printing URI
    */
   handlePrinting = () => {
-    const {
-      windowId,
-      modalViewDocumentIds,
-      dataId,
-      printingOptions,
-    } = this.props;
+    const { windowId, modalViewDocumentIds, dataId, printingOptions } =
+      this.props;
     const docNo = modalViewDocumentIds[0];
     const docId = dataId;
     const { options } = printingOptions;

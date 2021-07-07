@@ -154,13 +154,8 @@ class Tabs extends PureComponent {
 
     return tabs.map((item) => {
       if (selected.last() === item.key) {
-        const {
-          tabId,
-          queryOnActivate,
-          docId,
-          orderBy,
-          singleRowView,
-        } = item.props;
+        const { tabId, queryOnActivate, docId, orderBy, singleRowView } =
+          item.props;
 
         return (
           <div key={'pane-' + item.key} className="tab-pane active">

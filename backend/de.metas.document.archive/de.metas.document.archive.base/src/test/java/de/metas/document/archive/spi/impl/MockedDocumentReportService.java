@@ -41,6 +41,8 @@ public class MockedDocumentReportService extends DocumentReportService
 	@Setter
 	private PInstanceId pinstanceIdToReturn = PInstanceId.ofRepoId(12345);
 
+	public static final String MOCKED_REPORT_FILENAME = "report.pdf";
+
 	public MockedDocumentReportService(
 			final @NonNull List<DocumentReportAdvisor> advisors,
 			final @NonNull DocumentPrintOptionDescriptorsRepository documentPrintOptionDescriptorsRepository,
@@ -59,7 +61,7 @@ public class MockedDocumentReportService extends DocumentReportService
 	{
 		return ExecuteReportProcessResult.builder()
 				.reportData(ReportResultData.builder()
-						.reportFilename("report.pdf")
+						.reportFilename(MOCKED_REPORT_FILENAME)
 						.reportContentType(MimeType.TYPE_PDF)
 						.reportData(new byte[] { 1, 2, 3 })
 						.build())

@@ -26,11 +26,17 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.contracts.bpartner.repository.OrgChangeRepository;
 import de.metas.contracts.bpartner.repository.OrgMappingRepository;
+import de.metas.order.compensationGroup.GroupCategoryId;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
+import de.metas.product.model.I_M_Product;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 
 @Service
 public class OrgChangeService
@@ -38,23 +44,33 @@ public class OrgChangeService
 	private final OrgChangeRepository orgChangeRepo;
 	private final BPartnerCompositeRepository bpCompositeRepo;
 	private final OrgMappingRepository orgMappingRepo;
+	private final OrgChangeHistoryRepository orgChangeHistoryRepo;
+	private final GroupTemplateRepository groupTemplateRepo;
+
+	final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	public OrgChangeService(
 			@NonNull final OrgChangeRepository orgChangeRepo,
 			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
-			@NonNull final OrgMappingRepository orgMappingRepo)
+			@NonNull final OrgMappingRepository orgMappingRepo,
+			@NonNull final OrgChangeHistoryRepository orgChangeHistoryRepo,
+			@NonNull final GroupTemplateRepository groupTemplateRepo)
 	{
 		this.orgChangeRepo = orgChangeRepo;
 		this.bpCompositeRepo = bpCompositeRepo;
 		this.orgMappingRepo = orgMappingRepo;
+		this.orgChangeHistoryRepo = orgChangeHistoryRepo;
+		this.groupTemplateRepo = groupTemplateRepo;
 	}
 
 	public void moveToNewOrg(@NonNull final OrgChangeRequest request)
 	{
 		OrgChangeCommand.builder()
-				.orgChangeRepo(orgChangeRepo)
-				.orgMappingRepo(orgMappingRepo)
 				.bpCompositeRepo(bpCompositeRepo)
+				.orgMappingRepo(orgMappingRepo)
+				.orgChangeRepo(orgChangeRepo)
+				.orgChangeHistoryRepo(orgChangeHistoryRepo)
+				.groupTemplateRepo(groupTemplateRepo)
 				.request(request)
 				.build()
 				.execute();
@@ -68,5 +84,13 @@ public class OrgChangeService
 	public boolean hasAnyMembershipProduct(final OrgId orgId)
 	{
 		return orgChangeRepo.hasAnyMembershipProduct(orgId);
+	}
+
+	public boolean isGroupCategoryContainsProductsInTargetOrg(@NonNull final GroupCategoryId groupCategoryId,
+			@NonNull final OrgId targetOrgId)
+	{
+		final Optional<I_M_Product> productOfGroupCategory = productDAO.getProductOfGroupCategory(groupCategoryId, targetOrgId);
+
+		return productOfGroupCategory.isPresent();
 	}
 }
