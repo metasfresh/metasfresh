@@ -52,9 +52,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT;
 
 /**
  * Processor to load orders from the eBay fulfilment api.
@@ -94,7 +96,10 @@ public class GetEbayOrdersProcessor implements Processor
 
 		final ApiMode apiMode = ApiMode.valueOf(request.getParameters().get(ExternalSystemConstants.PARAM_API_MODE));
 
-		final OAuthResponse oauth2Response = getAuthResponse(request.getParameters());
+		final OAuth2Api oAuth2Api = Optional.ofNullable(exchange.getIn().getHeader(ROUTE_PROPERTY_EBAY_AUTH_CLIENT, OAuth2Api.class))
+				.orElseGet(OAuth2Api::new);
+
+		final OAuthResponse oauth2Response = getAuthResponse(request.getParameters(), oAuth2Api);
 
 		// execut api call
 		if (oauth2Response.getAccessToken().isPresent())
@@ -151,7 +156,7 @@ public class GetEbayOrdersProcessor implements Processor
 
 	}
 
-	private OAuthResponse getAuthResponse(@NonNull final Map<String, String> parameters) throws IOException
+	private OAuthResponse getAuthResponse(@NonNull final Map<String, String> parameters, @NonNull final OAuth2Api oAuth2Api) throws IOException
 	{
 		final ApiMode apiMode = ApiMode.valueOf(parameters.get(ExternalSystemConstants.PARAM_API_MODE));
 
@@ -168,8 +173,6 @@ public class GetEbayOrdersProcessor implements Processor
 
 		CredentialUtil.load(output);
 
-		final OAuth2Api auth2Api = new OAuth2Api();
-
-		return auth2Api.getApplicationToken(apiMode.getEnvironment(), SCOPE_LIST);
+		return oAuth2Api.getApplicationToken(apiMode.getEnvironment(), SCOPE_LIST);
 	}
 }
