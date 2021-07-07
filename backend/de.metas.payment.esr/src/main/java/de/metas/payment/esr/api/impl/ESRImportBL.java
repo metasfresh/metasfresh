@@ -360,7 +360,7 @@ public class ESRImportBL implements IESRImportBL
 		// Done with interesting data.
 		//
 		// Update IsValid flag
-		final boolean isValid = Check.isEmpty(importLine.getImportErrorMsg()) && Check.isEmpty(importLine.getMatchErrorMsg());
+		final boolean isValid = Check.isBlank(importLine.getImportErrorMsg()) && Check.isBlank(importLine.getMatchErrorMsg());
 		importLine.setIsValid(isValid);
 		if (isValid)
 		{
@@ -500,7 +500,7 @@ public class ESRImportBL implements IESRImportBL
 					continue;
 				}
 
-				// skip lines that have a payment, but are not are not yet processed (because a user needs to select an action)
+				// skip lines that have a payment, but are not yet processed (because a user needs to select an action)
 				// 08500: skip the lines with payments
 				refresh(line);
 				if (line.getC_Payment_ID() > 0)

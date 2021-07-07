@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.util.web
+ * de.metas.business
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,20 +20,20 @@
  * #L%
  */
 
-package de.metas.util.web.audit;
+package de.metas.invoice.service;
 
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceVerificationRunId;
+import de.metas.invoice.InvoiceVerificationSetId;
+import de.metas.util.ISingletonService;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
+import java.util.Collection;
 
-@Value
-public class ScheduleRequest
+public interface IInvoiceVerificationBL extends ISingletonService
 {
-	@NonNull
-	CompletableFuture<ApiResponse> completableFuture;
+	void createVerificationSetLines(final InvoiceVerificationSetId verificationSetId, final Collection<InvoiceId> invoiceIds);
 
-	@NonNull
-	Supplier<ApiResponse> httpResponseSupplier;
+	void createVerificationRunLines(final InvoiceVerificationRunId runId);
+
+	InvoiceVerificationRunStatus getStatusFor(final InvoiceVerificationRunId runId);
 }

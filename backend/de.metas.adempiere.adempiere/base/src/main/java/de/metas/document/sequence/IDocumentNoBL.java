@@ -38,16 +38,11 @@ public interface IDocumentNoBL extends ISingletonService
 {
 	/**
 	 * Register another listener.
-	 *
-	 * @param listener
 	 */
 	void registerDocumentNoListener(IDocumentNoListener listener);
 
 	/**
 	 * Notify the listeners of a changed documentNo.
-	 *
-	 * @param model
-	 * @param newDocumentNo
 	 */
 	void fireDocumentNoChange(Object model, String newDocumentNo);
 

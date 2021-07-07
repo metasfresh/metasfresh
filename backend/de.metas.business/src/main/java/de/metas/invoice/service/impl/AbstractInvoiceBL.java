@@ -69,7 +69,9 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -127,7 +129,6 @@ import java.util.Set;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.util.Check.assumeNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -201,7 +202,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			//
 			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
 			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
-																						  false); // creditMemoAdjusted = false
+					false); // creditMemoAdjusted = false
 
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)
@@ -222,13 +223,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// create the credit memo as a copy of the original invoice
 		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
 				copyFrom(invoice, de.metas.common.util.time.SystemTime.asTimestamp(),
-						 targetDocTypeId.getRepoId(),
-						 invoice.isSOTrx(),
-						 false, // counter == false
-						 creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
-						 creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
-						 true, // copyLines == true
-						 new CreditMemoInvoiceCopyHandler(creditCtx)),
+						targetDocTypeId.getRepoId(),
+						invoice.isSOTrx(),
+						false, // counter == false
+						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
+						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
+						true, // copyLines == true
+						new CreditMemoInvoiceCopyHandler(creditCtx)),
 				I_C_Invoice.class);
 		return creditMemo;
 	}
@@ -669,12 +670,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final BPartnerLocationId billBPartnerLocationId = getBillBPartnerLocationId(bpartnerId, soTrx);
 		final User billContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-																		  .onlyActive(true)
-																		  .contactType(ContactType.BILL_TO_DEFAULT)
-																		  .bpartnerId(billBPartnerLocationId.getBpartnerId())
-																		  .bPartnerLocationId(billBPartnerLocationId)
-																		  .ifNotFound(IfNotFound.RETURN_NULL)
-																		  .build());
+				.onlyActive(true)
+				.contactType(ContactType.BILL_TO_DEFAULT)
+				.bpartnerId(billBPartnerLocationId.getBpartnerId())
+				.bPartnerLocationId(billBPartnerLocationId)
+				.ifNotFound(IfNotFound.RETURN_NULL)
+				.build());
 		final Optional<BPartnerContactId> billContactId = billContact != null
 				? Optional.of(BPartnerContactId.of(billContact.getBpartnerId(), billContact.getId()))
 				: Optional.empty();
@@ -1259,7 +1260,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				{
 					final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
 					final I_C_TaxCategory taxCategoryRecord = taxDAO.getTaxCategoryById(TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID()));
-					stdTax = createTax(ctx, taxDAO.getDefaultTax(taxCategoryRecord).getC_Tax_ID(), trxName);
+					stdTax = createTax(ctx, taxDAO.getDefaultTaxId(taxCategoryRecord), trxName);
 				}
 
 			}
@@ -1281,7 +1282,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
 				log.debug("Price List includes Tax and Tax Changed on Invoice Line: New Tax Amt: "
-								  + taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
+						+ taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
 			}
 		}
 
@@ -1294,7 +1295,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void setTaxAmt(final I_C_InvoiceLine invoiceLine)
 	{
-		final ITaxBL taxBL = Services.get(ITaxBL.class);
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 		final int taxId = invoiceLine.getC_Tax_ID();
@@ -1304,7 +1304,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// setLineNetAmt();
-		final I_C_Tax tax = taxDAO.getTaxById(taxId);
+		final Tax tax = taxDAO.getTaxById(taxId);
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 		if (tax.isDocumentLevel() && invoice.isSOTrx())
 		{
@@ -1314,7 +1314,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
 		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
-		final BigDecimal TaxAmt = taxBL.calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
+		final BigDecimal TaxAmt = tax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt());
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);
@@ -1326,18 +1326,19 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		invoiceLine.setTaxAmt(TaxAmt);
 	}    // setTaxAmt
 
-	private I_C_Tax createTax(final Properties ctx, final int taxId, final String trxName)
+	private I_C_Tax createTax(final Properties ctx, final TaxId taxId, final String trxName)
 	{
-		final I_C_Tax tax = InterfaceWrapperHelper.create(ctx, taxId, I_C_Tax.class, trxName);
+		final int ctaxId = taxId.getRepoId();
+		final I_C_Tax tax = InterfaceWrapperHelper.create(ctx, ctaxId, I_C_Tax.class, trxName);
 
-		if (taxId == 0)
+		if (ctaxId == 0)
 		{
 			tax.setIsDefault(false);
 			tax.setIsDocumentLevel(true);
 			tax.setIsSummary(false);
 			tax.setIsTaxExempt(false);
 			tax.setRate(BigDecimal.ZERO);
-			tax.setRequiresTaxCertificate(false);
+			tax.setRequiresTaxCertificate(null);
 			tax.setSOPOType(X_C_Tax.SOPOTYPE_Both);
 			tax.setValidFrom(TimeUtil.getDay(1990, 1, 1));
 			tax.setIsSalesTax(false);
@@ -1347,28 +1348,28 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	/**
-	 * Calls {@link #isTaxIncluded(org.compiere.model.I_C_Invoice, I_C_Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
+	 * Calls {@link #isTaxIncluded(org.compiere.model.I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
 	 */
 	@Override
 	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
-		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
+		final Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		return isTaxIncluded(invoice, tax);
 	}
 
 	@Override
-	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Invoice invoice, @Nullable final I_C_Tax tax)
+	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Invoice invoice, @Nullable final Tax tax)
 	{
 		if (tax != null && tax.isWholeTax())
 		{
 			return true;
 		}
 
-		return invoice.isTaxIncluded(); // 08486: use the invoice's flag, not whatever the PL sais right now
+		return invoice.isTaxIncluded(); // 08486: use the invoice's flag, not whatever the PL says right now
 	}
 
 	@Override
@@ -1600,11 +1601,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final String docbasetype = X_C_DocType.DOCBASETYPE_ARInvoice;
 		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-																							   .docBaseType(docbasetype)
-																							   .docSubType(docSubType)
-																							   .adClientId(invoice.getAD_Client_ID())
-																							   .adOrgId(invoice.getAD_Org_ID())
-																							   .build());
+				.docBaseType(docbasetype)
+				.docSubType(docSubType)
+				.adClientId(invoice.getAD_Client_ID())
+				.adOrgId(invoice.getAD_Org_ID())
+				.build());
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
 				copyFrom(
 						invoice,
@@ -1618,7 +1619,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				I_C_Invoice.class);
 
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"
-												+ invoice.getDescription());
+				+ invoice.getDescription());
 
 		adjustmentCharge.setRef_Invoice_ID(invoice.getC_Invoice_ID());
 		InterfaceWrapperHelper.save(adjustmentCharge);
@@ -1721,7 +1722,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
 		// In case we have a charge, use the tax category from charge
 		final ChargeId chargeId = ChargeId.ofRepoIdOrNull(invoiceLine.getC_Charge_ID());
-		if (chargeId  != null)
+		if (chargeId != null)
 		{
 			final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
 			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
