@@ -631,16 +631,16 @@ public class BPartnerBL implements IBPartnerBL
 				ComputeNameAndGreetingRequest.builder()
 						.adLanguage(bpartner.getAD_Language())
 						.contacts(bpartnersRepo.retrieveContacts(bpartner)
-										  .stream()
-										  .map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
-												  .greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
-												  .firstName(contact.getFirstname())
-												  .lastName(contact.getLastname())
-												  .seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
-												  .isDefaultContact(contact.isDefaultContact())
-												  .isMembershipContact(contact.isMembershipContact())
-												  .build())
-										  .collect(ImmutableList.toImmutableList()))
+								.stream()
+								.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
+										.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
+										.firstName(contact.getFirstname())
+										.lastName(contact.getLastname())
+										.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
+										.isDefaultContact(contact.isDefaultContact())
+										.isMembershipContact(contact.isMembershipContact())
+										.build())
+								.collect(ImmutableList.toImmutableList()))
 						.build())
 				.orElse(null);
 
