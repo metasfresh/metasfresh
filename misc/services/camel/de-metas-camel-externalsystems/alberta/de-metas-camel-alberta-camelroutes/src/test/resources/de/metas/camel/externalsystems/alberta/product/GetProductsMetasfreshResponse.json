@@ -3,6 +3,7 @@
     {
       "id": 2005604,
       "productNo": "1000004",
+      "productCategoryId": 100001,
       "name": "My new Product updated",
       "description": "My new description updated",
       "uom": "Stk",
@@ -12,6 +13,7 @@
       "albertaProductInfo": {
         "albertaProductId": "7bc17275-cfe4-4ea5-a965-c7fdab54d0df",
         "additionalDescription": "AlbertaAdditionalDecUpdated",
+        "productGroupId": "82d3d688-4035-48fa-90cb-d9d39b8975bd",
         "size": "20",
         "medicalAidPositionNumber": "myMedicalAidPositionNumberUpdated",
         "inventoryType": "1",
