@@ -6,6 +6,7 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.compiere.Adempiere;
 
 import java.util.HashMap;
