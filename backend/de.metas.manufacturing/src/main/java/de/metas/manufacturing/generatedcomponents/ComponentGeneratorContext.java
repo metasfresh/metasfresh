@@ -41,6 +41,7 @@ public class ComponentGeneratorContext
 {
 	int qty;
 	@NonNull ImmutableAttributeSet existingAttributes;
+	@NonNull ImmutableAttributeSet bomLineAttributes;
 	@NonNull ComponentGeneratorParams parameters;
 	@NonNull ClientId clientId;
 	boolean overrideExistingValues;
