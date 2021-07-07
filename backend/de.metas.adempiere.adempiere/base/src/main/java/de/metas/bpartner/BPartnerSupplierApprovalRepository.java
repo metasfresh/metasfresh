@@ -83,22 +83,22 @@ public class BPartnerSupplierApprovalRepository
 
 		final IQueryFilter<I_C_BP_SupplierApproval> filterThreeYears =
 				queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)
-						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval, SupplierApproval.ThreeYears)
-						.addCompareFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval_Date,
+						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval, SupplierApproval.ThreeYears)
+						.addCompareFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval_Date,
 										  CompareQueryFilter.Operator.LESS_OR_EQUAL,
 										  threeMonthsFromNow.minusYears(3));
 
 		final IQueryFilter<I_C_BP_SupplierApproval> filterTwoYears =
 				queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)
-						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval, SupplierApproval.TwoYears)
-						.addCompareFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval_Date,
+						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval, SupplierApproval.TwoYears)
+						.addCompareFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval_Date,
 										  CompareQueryFilter.Operator.LESS_OR_EQUAL,
 										  threeMonthsFromNow.minusYears(2));
 
 		final IQueryFilter<I_C_BP_SupplierApproval> filterOneYear =
 				queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)
-						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval, SupplierApproval.OneYear)
-						.addCompareFilter(I_C_BP_SupplierApproval.COLUMN_SupplierApproval_Date,
+						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval, SupplierApproval.OneYear)
+						.addCompareFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval_Date,
 										  CompareQueryFilter.Operator.LESS_OR_EQUAL,
 										  threeMonthsFromNow.minusYears(1));
 

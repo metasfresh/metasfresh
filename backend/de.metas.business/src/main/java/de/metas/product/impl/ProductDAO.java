@@ -625,7 +625,6 @@ public class ProductDAO implements IProductDAO
 		return queryBL.createQueryBuilder(I_M_Product_SupplierApproval_Norm.class)
 				.addEqualsFilter(I_M_Product_SupplierApproval_Norm.COLUMNNAME_M_Product_ID, productId)
 				.create()
-
 				.stream()
 				.map(I_M_Product_SupplierApproval_Norm::getSupplierApproval_Norm)
 				.collect(ImmutableList.toImmutableList());

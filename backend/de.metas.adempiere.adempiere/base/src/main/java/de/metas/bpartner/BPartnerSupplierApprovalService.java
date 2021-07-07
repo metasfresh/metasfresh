@@ -24,7 +24,6 @@ package de.metas.bpartner;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -181,7 +180,7 @@ public class BPartnerSupplierApprovalService
 
 	}
 
-	private void notifyUserGroupAboutSupplierApprovalExpiration(final I_C_BP_SupplierApproval supplierApprovalRecord)
+	private void notifyUserGroupAboutSupplierApprovalExpiration(@NonNull final I_C_BP_SupplierApproval supplierApprovalRecord)
 	{
 		final UserNotificationRequest.TargetRecordAction targetRecordAction = UserNotificationRequest
 				.TargetRecordAction
@@ -214,7 +213,7 @@ public class BPartnerSupplierApprovalService
 				.map(UserGroupUserAssignment::getUserId)
 				.map(userId -> UserNotificationRequest.builder()
 						.recipientUserId(userId)
-						.contentADMessage(MSG_Partner_SupplierApproval_ExpirationDate) // TODo message
+						.contentADMessage(MSG_Partner_SupplierApproval_ExpirationDate)
 						.contentADMessageParam(partnerName)
 						.contentADMessageParam(supplierApprovalNorm)
 						.contentADMessageParam(expirationDate)

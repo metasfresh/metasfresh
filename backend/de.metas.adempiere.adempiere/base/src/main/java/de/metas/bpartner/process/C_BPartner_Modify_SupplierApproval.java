@@ -38,10 +38,10 @@ public class C_BPartner_Modify_SupplierApproval extends JavaProcess implements I
 {
 	final BPartnerSupplierApprovalRepository repo = SpringContextHolder.instance.getBean(BPartnerSupplierApprovalRepository.class);
 
-	@Param(parameterName = "SupplierApproval_Parameter", mandatory = false)
+	@Param(parameterName = "SupplierApproval_Parameter")
 	private String p_SupplierApproval;
 
-	@Param(parameterName = "SupplierApproval_Date", mandatory = false)
+	@Param(parameterName = "SupplierApproval_Date")
 	private Instant p_SupplierApproval_Date;
 
 	@Override
@@ -60,7 +60,9 @@ public class C_BPartner_Modify_SupplierApproval extends JavaProcess implements I
 	{
 		final BPSupplierApprovalId bpSupplierApprovalId = BPSupplierApprovalId.ofRepoId(getRecord_ID());
 
-		repo.updateBPSupplierApproval(bpSupplierApprovalId, p_SupplierApproval, p_SupplierApproval_Date);
+		repo.updateBPSupplierApproval(bpSupplierApprovalId,
+									  p_SupplierApproval,
+									  p_SupplierApproval_Date);
 
 		return MSG_OK;
 	}
