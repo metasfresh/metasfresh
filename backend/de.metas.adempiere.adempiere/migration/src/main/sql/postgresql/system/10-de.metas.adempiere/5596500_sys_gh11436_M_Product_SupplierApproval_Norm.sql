@@ -541,3 +541,11 @@ UPDATE AD_Field SET DisplayLogic='@RequiresSupplierApproval@ = ''Y''',Updated=TO
 UPDATE AD_Field SET DisplayLogic='@RequiresSupplierApproval/''N''@ = ''Y''',Updated=TO_TIMESTAMP('2021-07-05 17:34:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=650071
 ;
 
+
+
+
+-- 2021-07-07T22:39:21.536Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET IsAllowFiltering='N',Updated=TO_TIMESTAMP('2021-07-08 01:39:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=586998
+;
+
