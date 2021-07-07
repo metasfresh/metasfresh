@@ -36,6 +36,9 @@ import nextTabbable from './nextTabbable';
 import { humanReadableNow } from '../utils/utils';
 import { RewriteURL } from '../utils/constants';
 
+let cyLoginConter = 0;
+const CYPRESS_MAX_LOGIN_RETRIES = 4;
+
 context('Reusable "login" custom command using API', function () {
   Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
     let user = username;
@@ -59,25 +62,26 @@ context('Reusable "login" custom command using API', function () {
       }
     };
 
-    const checkIfAlreadyLogged = function () {
-      const error = new Error('Error when checking if user logged in');
+    // const checkIfAlreadyLogged = function () {
+    //   const error = new Error('Error when checking if user logged in');
 
-      return cy
-        .request({
-          method: 'GET',
-          url: config.API_URL + '/login/isLoggedIn',
-          failOnStatusCode: false,
-          followRedirect: false,
-        })
-        .then((response) => {
-          if (!response.body.error) {
-            return Cypress.reduxStore.dispatch(push('/'));
-          }
+    //   return cy
+    //     .request({
+    //       method: 'GET',
+    //       url: config.API_URL + '/login/isLoggedIn',
+    //       failOnStatusCode: false,
+    //       followRedirect: false,
+    //     })
+    //     .then((response) => {
+    //       if (response.body && !response.body.error) {
+    //         cyLoginConter = 0;
+    //         return Cypress.reduxStore.dispatch(push('/'));
+    //       }
 
-          cy.log(`Login failed because ${error}`);
-          return Promise.reject(error);
-        });
-    };
+    //       cy.log(`Login failed because ${error}`);
+    //       return Promise.reject(error);
+    //     });
+    // };
 
     const auth = new Auth();
 
@@ -87,40 +91,53 @@ context('Reusable "login" custom command using API', function () {
 
     cy.visit('/login');
 
-    return cy
-      .request({
-        method: 'POST',
-        url: config.API_URL + '/login/authenticate',
-        failOnStatusCode: false,
-        followRedirect: false,
-        body: {
-          username: user,
-          password: pass,
-        },
-      })
-      .then((response) => {
-        if (!response.isOkStatusCode) {
-          return checkIfAlreadyLogged();
-        }
+    const loginAuthenticate = function (user, pass) {
+      return cy
+        .request({
+          method: 'POST',
+          url: config.API_URL + '/login/authenticate',
+          failOnStatusCode: false,
+          followRedirect: false,
+          body: {
+            username: user,
+            password: pass,
+          },
+        })
+        .then((response) => {
+          // if (!response.isOkStatusCode) {
+          //   return checkIfAlreadyLogged();
+          // }
 
-        if (response.body.loginComplete) {
-          return handleSuccess();
-        }
-        const roles = List(response.body.roles);
+          if (response.status === 401) {
+            // retry
+            cyLoginConter += 1;
+            if (cyLoginConter < CYPRESS_MAX_LOGIN_RETRIES) {
+              cy.log(`Login failed because we got response ${JSON.stringify(response)}`);
+              return loginAuthenticate(user, pass);
+            }
+          }
 
-        return cy
-          .request({
-            method: 'POST',
-            url: config.API_URL + '/login/loginComplete',
-            body: roles.get(0),
-            failOnStatusCode: false,
-          })
-          .then(() => {
-            Cypress.reduxStore.dispatch(loginSuccess(auth));
+          if (response.body.loginComplete) {
+            return handleSuccess();
+          }
+          const roles = List(response.body.roles);
 
-            handleSuccess();
-          });
-      });
+          return cy
+            .request({
+              method: 'POST',
+              url: config.API_URL + '/login/loginComplete',
+              body: roles.get(0),
+              failOnStatusCode: false,
+            })
+            .then(() => {
+              Cypress.reduxStore.dispatch(loginSuccess(auth));
+
+              handleSuccess();
+            });
+        });
+    };
+
+    return loginAuthenticate(user, pass);
   });
 });
 
