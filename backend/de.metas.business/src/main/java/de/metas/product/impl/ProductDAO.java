@@ -570,12 +570,13 @@ public class ProductDAO implements IProductDAO
 		return Optional.ofNullable(productId);
 	}
 
-	@Override
-	public Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull final ProductId productId)
-	{
-		final I_M_Product product = getById(productId);
-		return GroupTemplateId.optionalOfRepoId(product.getC_CompensationGroup_Schema_ID());
-	}
+	// TODO uncoment again when merging master
+	// @Override
+	// public Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull final ProductId productId)
+	// {
+	// 	final I_M_Product product = getById(productId);
+	// 	return GroupTemplateId.optionalOfRepoId(product.getC_CompensationGroup_Schema_ID());
+	// }
 
 	@Override
 	public void clearIndividualMasterDataFromProduct(final ProductId productId)

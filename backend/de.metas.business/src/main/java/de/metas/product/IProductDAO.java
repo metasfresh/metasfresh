@@ -98,8 +98,9 @@ public interface IProductDAO extends ISingletonService
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
-
-	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
+	
+	// TODO uncoment again when merging master
+	// Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 
 	void clearIndividualMasterDataFromProduct(ProductId productId);
 
