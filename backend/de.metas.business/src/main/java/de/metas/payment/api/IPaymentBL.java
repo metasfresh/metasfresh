@@ -153,4 +153,6 @@ public interface IPaymentBL extends ISingletonService
 	Optional<PaymentId> getByExtIdOrgId(ExternalId externalId, OrgId orgId);
 
 	CurrencyConversionContext extractCurrencyConversionContext(@NonNull I_C_Payment payment);
+
+	void validateDocTypeIsInSync(@NonNull final I_C_Payment payment);
 }

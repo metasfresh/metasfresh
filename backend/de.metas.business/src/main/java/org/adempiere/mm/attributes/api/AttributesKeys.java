@@ -94,17 +94,24 @@ public final class AttributesKeys
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{
 			final String valueStr = attributeSet.getValueAsString(attributeCode);
-			return AttributesKeyPart.ofStringAttribute(attributeId, valueStr);
+
+			return Check.isNotBlank(valueStr)
+					? AttributesKeyPart.ofStringAttribute(attributeId, valueStr)
+					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
 			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeCode);
-			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
+			return valueBD != null
+					? AttributesKeyPart.ofNumberAttribute(attributeId, valueBD)
+					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
 			final LocalDate valueDate = attributeSet.getValueAsLocalDate(attributeCode);
-			return AttributesKeyPart.ofDateAttribute(attributeId, valueDate);
+			return valueDate != null
+					? AttributesKeyPart.ofDateAttribute(attributeId, valueDate)
+					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
