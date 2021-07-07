@@ -32,15 +32,15 @@ Cypress.on('uncaught:exception', (err) => {
 //   return false
 // });
 
-Cypress.on('emit:counterpartTranslations', messages => {
+Cypress.on('emit:counterpartTranslations', (messages) => {
   Cypress.messages = messages;
 });
 
-Cypress.on('window:alert', text => {
+Cypress.on('window:alert', (text) => {
   cy.log(`Alert modal confirmed: ${text}`);
 });
 
-before(function() {
+before(function () {
   // no clue why i have to add this wait, but it seems to be the only way the getLanguageSpecific workaround... works
   cy.loginViaAPI().wait(300);
 
@@ -49,7 +49,7 @@ before(function() {
   });
 });
 
-Cypress.on('scrolled', $el => {
+Cypress.on('scrolled', ($el) => {
   $el.get(0).scrollIntoView({
     block: 'center',
     inline: 'center',
