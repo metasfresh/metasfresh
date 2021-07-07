@@ -41,8 +41,9 @@ Cypress.on('window:alert', (text) => {
 });
 
 before(function () {
-  // no clue why i have to add this wait, but it seems to be the only way the getLanguageSpecific workaround... works
-  cy.loginViaAPI().wait(300);
+  cy.wrap(null).then(() => {
+    return cy.loginViaAPI();
+  });
 
   Cypress.Cookies.defaults({
     preserve: ['SESSION', 'isLogged'],
