@@ -1,5 +1,4 @@
 
-
 CREATE OR REPLACE FUNCTION public.GenerateASIStorageAttributesKey(
 		IN p_M_AttributeSetInstance_ID numeric,
 		IN p_NullString text)
