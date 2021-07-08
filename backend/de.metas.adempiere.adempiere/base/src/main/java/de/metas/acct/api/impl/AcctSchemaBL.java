@@ -97,8 +97,10 @@ public class AcctSchemaBL implements IAcctSchemaBL
 			catch (final RuntimeException runException)
 			{
 				final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
-				loggable.addLog("AcctSchemaBL.updateDebitorCreditorIdsAndSave - caught {} with message={}",
-						runException.getClass(), runException.getMessage(),
+				loggable.addLog("AcctSchemaBL.updateDebitorCreditorIdsAndSave, for bpartnerId {} - caught {} with message={}",
+						bpartner.getC_BPartner_ID(),
+						runException.getClass(),
+						runException.getMessage(),
 						runException);
 			}
 		});
