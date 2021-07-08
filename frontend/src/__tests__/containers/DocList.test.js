@@ -10,12 +10,14 @@ import waitForExpect from 'wait-for-expect';
 import { waitFor } from '@testing-library/dom';
 import { merge } from 'merge-anything';
 import thunk from 'redux-thunk';
+import promiseMiddleware from 'redux-promise';
+import http from 'http';
+import StompServer from 'stomp-broker-js';
 
 import { ShortcutProvider } from '../../components/keyshortcuts/ShortcutProvider';
-// import CustomRouter from '../../containers/CustomRouter';
 import { ProvideAuth } from '../../hooks/useAuth';
 import { Routes } from '../../routes';
-
+import { serverTestPort } from '../../../test_setup/jestSetup';
 
 import pluginsHandler, {
   initialState as pluginsHandlerState,
@@ -60,24 +62,11 @@ import attributesData from '../../../test_setup/fixtures/attributes.json';
 
 jest.mock(`../../components/app/QuickActions`);
 
-jest.useFakeTimers();
+// jest.useFakeTimers();
 
 const middleware = [thunk];
 
 localStorage.setItem('isLogged', true);
-
-// const rootReducer = combineReducers({
-//   appHandler,
-//   listHandler,
-//   viewHandler,
-//   menuHandler,
-//   windowHandler,
-//   pluginsHandler,
-//   tables,
-//   routing,
-//   filters,
-//   actionsHandler,
-// });
 
 const rootReducer = combineReducers({
   appHandler,
@@ -102,7 +91,6 @@ const createInitialState = function(state = {}) {
       pluginsHandler: { ...pluginsHandlerState },
       tables: tablesHandlerState,
       filters: { ...filtersHandlerState },
-      // routing: { ...propsFixtures.state1.routing },
       actionsHandler: actionsHandlerState,
     },
     state
@@ -111,40 +99,32 @@ const createInitialState = function(state = {}) {
   return res;
 };
 
-describe.skip('DocList', () => {
-  describe('included views grid', () => {
-    const props = propsFixtures.props1;
-    const history = createMemoryHistory(`/window/${props.windowId}`);
-    // const auth = {
-    //   initNotificationClient: jest.fn(),
-    //   initSessionClient: jest.fn(),
-    // };
+describe('DocList', () => {
+  const menuResponse = propsFixtures.menu1;
 
+  let mockServer;
+  let server;
+  let history;
 
-  // beforeAll(() => {
-    
-  //   localStorage.clear();
-  //   jest.clearAllMocks();
+  beforeAll(() => {
+    server = http.createServer();
 
-    // localStorage.setItem('isLogged', true);
+    mockServer = new StompServer({
+      server: server,
+      path: '/ws',
+    });
 
-    // console.log('localStoare before: ', localStorage.getItem('isLogged'))
-    // server = http.createServer();
-
-    // mockServer = new StompServer({
-    //   server,
-    //   path: '/ws',
-    // });
-
-    // server.listen(serverTestPort); // this is defined in the jestSetup file
-  // });
+    server.listen(serverTestPort+1); // this is defined in the jestSetup file
+  });
 
   // afterEach stop server
-  // afterAll(async () => {
-  //   console.log('LocalStorage after: ', localStorage)
-  //   await server.close();
-  // });
+  afterAll(async () => {
+    await server.close();
+  });
 
+  describe('included views grid', () => {
+    const props = propsFixtures.props1;
+    const history = createMemoryHistory({ initialEntries: [`/window/${props.windowId}`]} );
 
     it('renders without errors and loads quick actions', async (done) => {
       const initialState = createInitialState();
@@ -169,53 +149,6 @@ describe.skip('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`
-        )
-        .reply(200, dataFixtures.breadcrumbs1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/geolocation/config')
-        .reply(200, []);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${includedWindowId}/${includedViewId}/${rowId}/attributes/layout`
-        )
-        .reply(200, attributes.layout);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${includedWindowId}/${includedViewId}/${rowId}/attributes`
-        )
-        .reply(200, attributes.data);
-
-      // included view
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get('/geolocation/config')
-        .reply(200, []);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .post(`/documentView/${windowId}`)
-        .reply(200, dataFixtures.data1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${windowId}/layout?viewType=grid`)
-        .reply(200, layoutFixtures.layout1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(`/documentView/${includedWindowId}/layout?viewType=includedView`)
-        .reply(200, layoutFixtures.includedViewLayout1);
-
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get('/userSession')
         .reply(200, userSessionData);
 
@@ -231,8 +164,62 @@ describe.skip('DocList', () => {
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/documentView/${windowId}/layout?viewType=grid`)
+        .reply(200, layoutFixtures.layout1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/geolocation/config')
+        .reply(200, []);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/menu/elementPath?type=window&elementId=${windowId}&inclusive=true`
+        )
+        .reply(200, menuResponse);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
         .get(`/documentView/${windowId}/${viewId}?firstRow=0&pageLength=20`)
         .reply(200, rowFixtures.rowData1);
+
+      // included view
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(`/documentView/${includedWindowId}/layout?viewType=includedView`)
+        .reply(200, layoutFixtures.includedViewLayout1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get('/geolocation/config')
+        .reply(200, []);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .post(`/documentView/${windowId}`)
+        .reply(200, dataFixtures.data1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}?firstRow=0&pageLength=20`
+        )
+        .reply(200, rowFixtures.includedViewData1);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}/${rowId}/attributes/layout`
+        )
+        .reply(200, attributes.layout);
+
+      nock(config.API_URL)
+        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
+        .get(
+          `/documentView/${includedWindowId}/${includedViewId}/${rowId}/attributes`
+        )
+        .reply(200, attributes.data);
 
       nock(config.API_URL)
         .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
@@ -252,13 +239,6 @@ describe.skip('DocList', () => {
         )
         .reply(200, quickActionsData.included_quickactions);
 
-      nock(config.API_URL)
-        .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
-        .get(
-          `/documentView/${includedWindowId}/${includedViewId}?firstRow=0&pageLength=20`
-        )
-        .reply(200, rowFixtures.includedViewData1);
-
       let wrapper;
 
       await act(async () => {
@@ -275,36 +255,41 @@ describe.skip('DocList', () => {
         );
       });
 
+      await act( async() => {
+        wrapper.update();
 
-      act(() => {
-        wrapper.update()
+        await waitFor(async () => {
+          expect(store.getState().appHandler.me.loggedIn).toEqual(true);
+          expect(Object.keys(store.getState().viewHandler.views).length).toBe(2);
+        });
+      });      
+
+      await act( async() => {
+        wrapper.update();
+
+        await waitFor(async () => {
+          expect(
+            store.getState().viewHandler.views[includedWindowId].layoutPending
+          ).toBeFalsy();
+        });
       });
 
-      await waitFor(() => {
-        expect(Object.keys(store.getState().viewHandler.views).length).toBe(2)
-      }, { timeout: 5000 });
-
-      // wrapper.update();
-
-      await waitFor(() =>
-        expect(
-          store.getState().viewHandler.views[includedWindowId].layoutPending
-        ).toBeFalsy()
-      );
-
-      await waitForExpect(() => {
+      waitForExpect(() => {
         const html = wrapper.html();
         expect(html).toContain('document-list-has-included');
         expect(html).toContain('document-list-is-included');
       }, 4000);
 
       const quickActionsId = getQuickActionsId({ windowId: includedWindowId, viewId: includedViewId });
-      await waitFor(() => {
-        expect(
-          store.getState().actionsHandler[quickActionsId]
-        ).toBeTruthy();
-        expect(store.getState().windowHandler.indicator).toEqual('saved');
-      });
+
+      await act( async() => {
+        waitFor(() => {
+          expect(
+            store.getState().actionsHandler[quickActionsId]
+          ).toBeTruthy();
+          expect(store.getState().windowHandler.indicator).toEqual('saved');
+        });
+      });   
 
       done();
     }, 20000);

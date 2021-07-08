@@ -54,7 +54,7 @@ window.HTMLDivElement.prototype.getBoundingClientRect = function() {
 //   console.log('EXCEPTION', err);
 // });
 
-export const serverTestPort = '10001'; // everything from 10000-65535 should be fine, setting it lower could make it collide with other open ports
+export const serverTestPort = 10001; // everything from 10000-65535 should be fine, setting it lower could make it collide with other open ports
 
 global.EventSource = EventSource;
 global.window = window;
