@@ -36,6 +36,19 @@ public class DurationUtilsTest
 	public static final Percentage ACCURACY_PERCENTAGE = Percentage.withPercentage(0.0001);
 
 	@Test
+	public void testRounding1Month()
+	{
+		Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(1), ChronoUnit.MONTHS));
+	}
+
+	@Test
+	public void testRoundingHalfDay()
+	{
+		final Duration duration = DurationUtils.toWorkDuration(BigDecimal.valueOf(0.5), ChronoUnit.DAYS);
+		Assertions.assertThat(duration.getSeconds()).isCloseTo((long)(4 * 60 * 60), ACCURACY_PERCENTAGE);
+	}
+
+	@Test
 	public void testRoundingHalfHour()
 	{
 		final Duration duration = DurationUtils.toWorkDuration(BigDecimal.valueOf(0.5), ChronoUnit.HOURS);
@@ -54,4 +67,6 @@ public class DurationUtilsTest
 	{
 		Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(0.0001), ChronoUnit.SECONDS));
 	}
+
+
 }
