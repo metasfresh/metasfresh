@@ -45,21 +45,17 @@ const PrivateRoute = (props) => {
           if (!authenticated) {
             auth.setRedirectRoute(url);
             history.push('/login');
+          } else {
+            dispatch(getNotificationsEndpoint(auth));
+            dispatch(getNotifications());
           }
         });
       } else if (isLoggedIn && !authRequestPending()) {
         auth.login();
       }
-    }
 
-    if (isLoggedIn) {
       if (hasTutorial) {
         dispatch(enableTutorial());
-      }
-
-      if (location.pathname !== '/logout') {
-        dispatch(getNotificationsEndpoint(auth));
-        dispatch(getNotifications());
       }
     }
 
