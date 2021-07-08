@@ -1,0 +1,272 @@
+-- New JasperDocument
+-- 2021-07-08T12:07:57.620Z
+-- URL zum Konzept
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,JasperReport,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584863,'N','de.metas.report.jasper.client.process.JasperReportStarter',TO_TIMESTAMP('2021-07-08 14:07:57','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','N','Y','N','N','N','Y','Y','Y','@PREFIX@de/metas/docs/sales/order/report.jasper','CostEstimate(Jasper)','json','N','N','JasperReportsSQL',TO_TIMESTAMP('2021-07-08 14:07:57','YYYY-MM-DD HH24:MI:SS'),100,'CostEstimate(Jasper)')
+;
+
+-- 2021-07-08T12:07:57.628Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_ID=584863 AND NOT EXISTS (SELECT 1 FROM AD_Process_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_ID=t.AD_Process_ID)
+;
+
+-- 2021-07-08T12:08:01.838Z
+-- URL zum Konzept
+UPDATE AD_Process SET IsDirectPrint='Y',Updated=TO_TIMESTAMP('2021-07-08 14:08:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584863
+;
+
+--Create docType
+-- 2021-07-08T12:24:00.618Z
+-- URL zum Konzept
+INSERT INTO C_DocType (AD_Client_ID,AD_Org_ID,C_DocType_ID,Created,CreatedBy,DocBaseType,DocumentCopies,EntityType,GL_Category_ID,HasCharges,HasProforma,IsActive,IsCopyDescriptionToDocument,IsCreateCounter,IsDefault,IsDefaultCounterDoc,IsDocNoControlled,IsIndexed,IsInTransit,IsOverwriteDateOnComplete,IsOverwriteSeqOnComplete,IsPickQAConfirm,IsShipConfirm,IsSOTrx,IsSplitWhenDifference,Name,PrintName,Updated,UpdatedBy) VALUES (1000000,1000000,541019,TO_TIMESTAMP('2021-07-08 14:24:00','YYYY-MM-DD HH24:MI:SS'),100,'SOO',1,'de.metas.swat',0,'N','N','Y','Y','Y','N','N','Y','N','N','N','N','N','N','N','N','CostEstimate','CostEstimate',TO_TIMESTAMP('2021-07-08 14:24:00','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-08T12:24:00.618Z
+-- URL zum Konzept
+INSERT INTO C_DocType_Trl (AD_Language,C_DocType_ID, Description,DocumentNote,Name,PrintName, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.C_DocType_ID, t.Description,t.DocumentNote,t.Name,t.PrintName, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, C_DocType t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.C_DocType_ID=541019 AND NOT EXISTS (SELECT 1 FROM C_DocType_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.C_DocType_ID=t.C_DocType_ID)
+;
+
+-- 2021-07-08T12:24:00.619Z
+-- URL zum Konzept
+INSERT INTO AD_Document_Action_Access (AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,C_DocType_ID , AD_Ref_List_ID, AD_Role_ID) (SELECT 1000000,0,'Y', now(),100, now(),100, doctype.C_DocType_ID, action.AD_Ref_List_ID, rol.AD_Role_ID FROM AD_Client client INNER JOIN C_DocType doctype ON (doctype.AD_Client_ID=client.AD_Client_ID) INNER JOIN AD_Ref_List action ON (action.AD_Reference_ID=135) INNER JOIN AD_Role rol ON (rol.AD_Client_ID=client.AD_Client_ID) WHERE client.AD_Client_ID=1000000 AND doctype.C_DocType_ID=541019 AND rol.IsManual='N')
+;
+
+-- 2021-07-08T12:24:10.966Z
+-- URL zum Konzept
+UPDATE C_DocType SET DocumentCopies=0,Updated=TO_TIMESTAMP('2021-07-08 14:24:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:25:27.195Z
+-- URL zum Konzept
+UPDATE C_DocType SET IsSOTrx='Y',Updated=TO_TIMESTAMP('2021-07-08 14:25:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:26:25.099Z
+-- URL zum Konzept
+UPDATE C_DocType SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2021-07-08 14:26:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:26:39.403Z
+-- URL zum Konzept
+UPDATE C_DocType SET DocSubType='ON',Updated=TO_TIMESTAMP('2021-07-08 14:26:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541019
+;
+
+-- CeateSequence
+-- 2021-07-08T12:28:31.801Z
+-- URL zum Konzept
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (1000000,1000000,555460,TO_TIMESTAMP('2021-07-08 14:28:31','YYYY-MM-DD HH24:MI:SS'),100,1000000,100,1,'Y','N','N','N','Belegnummer CostEstimate','N',1000000,TO_TIMESTAMP('2021-07-08 14:28:31','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-08T12:28:35.736Z
+-- URL zum Konzept
+UPDATE AD_Sequence SET IsAutoSequence='Y',Updated=TO_TIMESTAMP('2021-07-08 14:28:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555460
+;
+
+-- 2021-07-08T12:29:10.395Z
+-- URL zum Konzept
+UPDATE AD_Sequence SET CurrentNext=10,Updated=TO_TIMESTAMP('2021-07-08 14:29:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555460
+;
+
+-- 2021-07-08T12:29:19.785Z
+-- URL zum Konzept
+UPDATE AD_Sequence SET DecimalPattern='000',Updated=TO_TIMESTAMP('2021-07-08 14:29:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555460
+;
+
+-- 2021-07-08T12:29:23.800Z
+-- URL zum Konzept
+UPDATE AD_Sequence SET AD_Org_ID=0,Updated=TO_TIMESTAMP('2021-07-08 14:29:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Sequence_ID=555460
+;
+
+-- Set Sequence in the new DocumentType
+-- 2021-07-08T12:31:48.331Z
+-- URL zum Konzept
+UPDATE C_DocType SET DocNoSequence_ID=555460,Updated=TO_TIMESTAMP('2021-07-08 14:31:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541019
+;
+
+-- Trl Document
+-- 2021-07-08T12:34:47.948Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET Name='Kostenvoranschlag',Updated=TO_TIMESTAMP('2021-07-08 14:34:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:34:51.542Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET PrintName='Kostenvoranschlag',Updated=TO_TIMESTAMP('2021-07-08 14:34:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:34:51.649Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-07-08 14:34:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:35:14.712Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET Name='Kostenvoranschlag',Updated=TO_TIMESTAMP('2021-07-08 14:35:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:35:17.920Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET PrintName='Kostenvoranschlag',Updated=TO_TIMESTAMP('2021-07-08 14:35:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:35:17.995Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-07-08 14:35:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:35:32.635Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET Name='Kostenvoranschlag',Updated=TO_TIMESTAMP('2021-07-08 14:35:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:35:35.513Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET PrintName='Kostenvoranschlag',Updated=TO_TIMESTAMP('2021-07-08 14:35:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:35:35.576Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-07-08 14:35:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:35:43.427Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET Name='Cost Estimate',Updated=TO_TIMESTAMP('2021-07-08 14:35:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:35:46.213Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET PrintName='Cost Estimate',Updated=TO_TIMESTAMP('2021-07-08 14:35:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541019
+;
+
+-- 2021-07-08T12:35:46.320Z
+-- URL zum Konzept
+UPDATE C_DocType_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-07-08 14:35:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND C_DocType_ID=541019
+;
+
+-- Update report folder
+-- 2021-07-08T12:58:37.787Z
+-- URL zum Konzept
+UPDATE AD_Process SET JasperReport='@PREFIX@de/metas/docs/sales/order/costestimate/report.jasper',Updated=TO_TIMESTAMP('2021-07-08 14:58:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584863
+;
+
+-- create Print format
+-- 2021-07-08T13:05:08.203Z
+-- URL zum Konzept
+INSERT INTO AD_PrintFormat (AD_Client_ID,AD_Org_ID,AD_PrintColor_ID,AD_PrintFont_ID,AD_Printformat_Group,AD_PrintFormat_ID,AD_PrintPaper_ID,AD_Table_ID,Created,CreatedBy,FooterMargin,HeaderMargin,IsActive,IsDefault,IsForm,IsStandardHeaderFooter,IsTableBased,Name,Updated,UpdatedBy) VALUES (1000000,1000000,100,540006,'None',540119,102,496,TO_TIMESTAMP('2021-07-08 15:05:08','YYYY-MM-DD HH24:MI:SS'),100,0,0,'Y','N','N','Y','Y','CostEstimate',TO_TIMESTAMP('2021-07-08 15:05:08','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-08T13:05:13.875Z
+-- URL zum Konzept
+UPDATE AD_PrintFormat SET JasperProcess_ID=584863,Updated=TO_TIMESTAMP('2021-07-08 15:05:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_PrintFormat_ID=540119
+;
+
+-- 2021-07-08T13:05:31.755Z
+-- URL zum Konzept
+UPDATE AD_PrintFormat SET Description='Druckformat Auftrag',Updated=TO_TIMESTAMP('2021-07-08 15:05:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_PrintFormat_ID=540119
+;
+
+-- 2021-07-08T13:05:31.907Z
+-- URL zum Konzept
+UPDATE AD_PrintFormat SET IsForm='Y',Updated=TO_TIMESTAMP('2021-07-08 15:05:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_PrintFormat_ID=540119
+;
+
+-- 2021-07-08T13:06:12.652Z
+-- URL zum Konzept
+UPDATE AD_PrintFormat SET AD_PrintFont_ID=540008,Updated=TO_TIMESTAMP('2021-07-08 15:06:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_PrintFormat_ID=540119
+;
+
+-- 2021-07-08T13:06:19.452Z
+-- URL zum Konzept
+UPDATE AD_PrintFormat SET AD_PrintPaper_ID=103,Updated=TO_TIMESTAMP('2021-07-08 15:06:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_PrintFormat_ID=540119
+;
+
+-- 2021-07-08T13:06:28.815Z
+-- URL zum Konzept
+UPDATE AD_PrintFormat SET IsStandardHeaderFooter='N',Updated=TO_TIMESTAMP('2021-07-08 15:06:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_PrintFormat_ID=540119
+;
+
+-- 2021-07-08T13:11:16.434Z
+-- URL zum Konzept
+INSERT INTO AD_PrintFormatItem (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_PrintFormat_ID,AD_PrintFormatItem_ID,ArcDiameter,Created,CreatedBy,FieldAlignmentType,ImageIsAttached,IsActive,IsAveraged,IsCentrallyMaintained,IsCounted,IsDeviationCalc,IsFilledRectangle,IsFixedWidth,IsGroupBy,IsHeightOneLine,IsImageField,IsMaxCalc,IsMinCalc,IsNextLine,IsNextPage,IsOrderBy,IsPageBreak,IsPrinted,IsRelativePosition,IsRunningTotal,IsSetNLPosition,IsSummarized,IsSuppressNull,IsSuppressRepeats,IsVarianceCalc,LineAlignmentType,LineWidth,MaxHeight,MaxWidth,Name,PrintAreaType,PrintFormatType,RunningTotalLines,SeqNo,ShapeType,SortNo,Updated,UpdatedBy,XPosition,XSpace,YPosition,YSpace) VALUES (1000000,7086,1000000,540119,540981,0,TO_TIMESTAMP('2021-07-08 15:11:16','YYYY-MM-DD HH24:MI:SS'),100,'L','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','Y','Y','N','N','N','N','N','N','X',1,0,0,'Message Text','C','F',20,10,'N',0,TO_TIMESTAMP('2021-07-08 15:11:16','YYYY-MM-DD HH24:MI:SS'),100,0,0,0,0)
+;
+
+-- 2021-07-08T13:11:16.434Z
+-- URL zum Konzept
+INSERT INTO AD_PrintFormatItem_Trl (AD_Language,AD_PrintFormatItem_ID, PrintName,PrintNameSuffix, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_PrintFormatItem_ID, t.PrintName,t.PrintNameSuffix, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_PrintFormatItem t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_PrintFormatItem_ID=540981 AND NOT EXISTS (SELECT 1 FROM AD_PrintFormatItem_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_PrintFormatItem_ID=t.AD_PrintFormatItem_ID)
+;
+
+-- 2021-07-08T13:11:40.049Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem SET IsActive='Y', IsGroupBy='N', IsPageBreak='N', SortNo=0, XPosition=0, YPosition=0,Updated=TO_TIMESTAMP('2021-07-08 15:11:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_PrintFormatItem_ID=540981
+;
+
+-- 2021-07-08T13:11:45.723Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem SET AD_Org_ID=0, IsGroupBy='N', IsPageBreak='N', SortNo=0, XPosition=0, YPosition=0,Updated=TO_TIMESTAMP('2021-07-08 15:11:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_PrintFormatItem_ID=540981
+;
+
+-- 2021-07-08T13:11:49.210Z
+-- URL zum Konzept
+UPDATE AD_PrintFormatItem SET IsActive='N', IsGroupBy='N', IsPageBreak='N', SortNo=0, XPosition=0, YPosition=0,Updated=TO_TIMESTAMP('2021-07-08 15:11:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_PrintFormatItem_ID=540981
+;
+
+-- Set Print Format Cost Estimate for DocumentType Cost Estimate
+-- 2021-07-08T13:34:53.741Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,578551,0,584863,542046,20,'PRINTER_OPTS_IsPrintLogo',TO_TIMESTAMP('2021-07-08 15:34:53','YYYY-MM-DD HH24:MI:SS'),100,'U',0,'Y','N','Y','N','N','N','Logo drucken',10,TO_TIMESTAMP('2021-07-08 15:34:53','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-08T13:34:53.742Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542046 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
+-- 2021-07-08T13:35:02.614Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-07-08 15:35:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542046
+;
+
+-- 2021-07-08T13:35:16.571Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET EntityType='D',Updated=TO_TIMESTAMP('2021-07-08 15:35:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542046
+;
+
+-- 2021-07-08T13:35:25.710Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET FieldLength=1,Updated=TO_TIMESTAMP('2021-07-08 15:35:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542046
+;
+
+-- 2021-07-08T13:36:00.634Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET DefaultValue='Y',Updated=TO_TIMESTAMP('2021-07-08 15:36:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542046
+;
+
+-- 2021-07-08T13:37:32.530Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Para (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Process_ID,AD_Process_Para_ID,AD_Reference_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAutocomplete,IsCentrallyMaintained,IsEncrypted,IsMandatory,IsRange,Name,SeqNo,Updated,UpdatedBy) VALUES (0,578552,0,584863,542047,20,'PRINTER_OPTS_IsPrintTotals',TO_TIMESTAMP('2021-07-08 15:37:32','YYYY-MM-DD HH24:MI:SS'),100,'U',0,'Y','N','Y','N','N','N','Gesamtbeträge drucken',20,TO_TIMESTAMP('2021-07-08 15:37:32','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-08T13:37:32.532Z
+-- URL zum Konzept
+INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Process_Para_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Process_Para t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Process_Para_ID=542047 AND NOT EXISTS (SELECT 1 FROM AD_Process_Para_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Process_Para_ID=t.AD_Process_Para_ID)
+;
+
+-- 2021-07-08T13:37:35.279Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-07-08 15:37:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542047
+;
+
+-- 2021-07-08T13:37:48.898Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET EntityType='D',Updated=TO_TIMESTAMP('2021-07-08 15:37:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542047
+;
+
+-- 2021-07-08T13:37:57.122Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET FieldLength=1,Updated=TO_TIMESTAMP('2021-07-08 15:37:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542047
+;
+
+-- 2021-07-08T13:38:06.125Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET DefaultValue='Y',Updated=TO_TIMESTAMP('2021-07-08 15:38:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=542047
+;

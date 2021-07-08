@@ -356,3 +356,8 @@ UPDATE AD_Element_Trl SET Name='Aufgabentyp', PrintName='Aufgabentyp',Updated=TO
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2021-07-06 10:16:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=13573
 ;
 
+-- Update Duration param reference
+-- 2021-07-01T08:16:22.817Z
+-- URL zum Konzept
+UPDATE AD_Process_Para SET AD_Reference_ID=22,Updated=TO_TIMESTAMP('2021-07-01 10:16:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_Para_ID=541905
+;
