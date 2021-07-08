@@ -22,46 +22,58 @@
 
 package de.metas.acct.api.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 
 @Service
 public class AcctSchemaBL implements IAcctSchemaBL
 {
+	private final Logger logger = LogManager.getLogger(AcctSchemaBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public void updateDebitorCreditorIds(@NonNull final AcctSchema acctSchema, @Nullable final OrgId orgId)
 	{
-		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class);
+		if (!acctSchema.isAutoSetDebtoridAndCreditorid())
+		{
+			return;
+		}
+		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter();
 		final Collection<OrgId> orgIdsToUse = getOrgIdsToUse(acctSchema, orgId);
 		if (!orgIdsToUse.contains(OrgId.ANY))
 		{
 			queryBuilder.addInArrayFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgIdsToUse);
 		}
-		queryBuilder
-				.create()
-				.stream()
-				.forEach(bp -> {
-					updateDebitorCreditorIds(acctSchema, bp);
-					InterfaceWrapperHelper.save(bp);
-				});
-
+		final Iterator<I_C_BPartner> bPartnerIterator = queryBuilder.create()
+				.iterate(I_C_BPartner.class);
+		while (bPartnerIterator.hasNext())
+		{
+			final I_C_BPartner bpartner = bPartnerIterator.next();
+			updateDebitorCreditorIdsAndSave(acctSchema, bpartner);
+		}
 	}
 
 	private Collection<OrgId> getOrgIdsToUse(@NonNull final AcctSchema acctSchema, @Nullable final OrgId orgId)
@@ -72,6 +84,24 @@ public class AcctSchemaBL implements IAcctSchemaBL
 		}
 		final ImmutableSet<OrgId> postOnlyForOrgIds = acctSchema.getPostOnlyForOrgIds();
 		return postOnlyForOrgIds.isEmpty() ? Collections.singleton(acctSchema.getOrgId()) : postOnlyForOrgIds;
+	}
+
+	private void updateDebitorCreditorIdsAndSave(@NonNull final AcctSchema acctSchema, @NonNull final I_C_BPartner bpartner)
+	{
+		Services.get(ITrxManager.class).runInNewTrx(localTrxName -> {
+			try
+			{
+				updateDebitorCreditorIdsAndSave(acctSchema, bpartner);
+				InterfaceWrapperHelper.save(bpartner);
+			}
+			catch (final RuntimeException runException)
+			{
+				final ILoggable loggable = Loggables.withLogger(logger, Level.WARN);
+				loggable.addLog("AcctSchemaBL.updateDebitorCreditorIdsAndSave - caught {} with message={}",
+						runException.getClass(), runException.getMessage(),
+						runException);
+			}
+		});
 	}
 
 	@Override
@@ -86,6 +116,10 @@ public class AcctSchemaBL implements IAcctSchemaBL
 				final String valueAsString = Strings.padStart(value, 7, '0').substring(0, 7);
 				bpartner.setCreditorId(Integer.parseInt(acctSchema.getCreditorIdPrefix() + valueAsString));
 				bpartner.setDebtorId(Integer.parseInt(acctSchema.getDebtorIdPrefix() + valueAsString));
+			}
+			else
+			{
+				Loggables.withLogger(logger, Level.DEBUG).addLog("value {} for bpartnerId {} must be a number with 5 to 7 digits", value, bpartner.getC_BPartner_ID());
 			}
 		}
 	}

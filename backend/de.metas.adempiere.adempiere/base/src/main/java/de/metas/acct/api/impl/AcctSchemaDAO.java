@@ -96,7 +96,12 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	@Override
 	public AcctSchemaId getAcctSchemaIdByClientAndOrg(final ClientId clientId, final OrgId orgId)
 	{
-		return AcctSchemaId.ofRepoId(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
+		if (acctSchemaId == null)
+		{
+			throw new AdempiereException("No accounting schema found for AD_Client_ID=" + clientId + " and AD_Org_ID=" + orgId);
+		}
+		return acctSchemaId;
 	}
 
 	@Override

@@ -594,7 +594,7 @@ UPDATE AD_Column SET AD_Reference_ID=11, DefaultValue='0', IsMandatory='Y',Updat
 
 -- 2021-07-06T12:33:35.303Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584857,'Y','de.metas.acct.process.C_AcctSchema_Update_DebtorIdAndCreditorId','N',TO_TIMESTAMP('2021-07-06 15:33:35','YYYY-MM-DD HH24:MI:SS'),100,'Aktualisiert die Debitoren- und Kreditoren-IDs aller Geschäftspartner','D','Y','N','N','N','Y','N','N','N','Y','Y',0,'Debitoren- und Kreditoren-Id aktualisieren','json','N','N','Java',TO_TIMESTAMP('2021-07-06 15:33:35','YYYY-MM-DD HH24:MI:SS'),100,'C_AcctSchema_Update_DebtorIdAndCreditorId')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,Description,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584857,'Y','de.metas.acct.process.C_AcctSchema_Update_DebtorIdAndCreditorId','N',TO_TIMESTAMP('2021-07-06 15:33:35','YYYY-MM-DD HH24:MI:SS'),100,'Aktualisiert die Debitoren- und Kreditoren-IDs aller Geschäftspartner','D','Y','N','N','N','Y','Y','N','N','Y','Y',0,'Debitoren- und Kreditoren-Id aktualisieren','json','N','N','Java',TO_TIMESTAMP('2021-07-06 15:33:35','YYYY-MM-DD HH24:MI:SS'),100,'C_AcctSchema_Update_DebtorIdAndCreditorId')
 ;
 
 -- 2021-07-06T12:33:35.305Z
@@ -604,7 +604,7 @@ INSERT INTO AD_Process_Trl (AD_Language,AD_Process_ID, Description,Help,Name, Is
 
 -- 2021-07-06T12:34:43.465Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Description='Updates the Debitor-Nrs and and Creditor-Nrs of all business partners', Name='Update Debtor-Nr and Creditor-Nr',Updated=TO_TIMESTAMP('2021-07-06 15:34:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584857
+UPDATE AD_Process_Trl SET Description='Updates the Debtor-Nrs and and Creditor-Nrs of all business partners', Name='Update Debtor-Nr and Creditor-Nr',Updated=TO_TIMESTAMP('2021-07-06 15:34:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=584857
 ;
 
 -- 2021-07-06T12:35:18.355Z
@@ -614,7 +614,7 @@ UPDATE AD_Process_Trl SET Name='Debitoren- und Kreditoren-Nr aktualisieren',Upda
 
 -- 2021-07-06T12:35:19.414Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Description='Aktualisiert die Debitoren- und Kreditoren-IDs aller Geschäftspartner', Help=NULL, Name='Debitoren- und Kreditoren-Nr aktualisieren',Updated=TO_TIMESTAMP('2021-07-06 15:35:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584857
+UPDATE AD_Process SET Description='Aktualisiert die Debitoren- und Kreditoren-Nrn aller zugehörigen Geschäftspartner.', Help=NULL, Name='Debitoren- und Kreditoren-Nr aktualisieren',Updated=TO_TIMESTAMP('2021-07-06 15:35:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584857
 ;
 
 -- 2021-07-06T12:35:19.409Z
@@ -629,22 +629,22 @@ UPDATE AD_Process_Trl SET Name='Debitoren- und Kreditoren-Nr aktualisieren',Upda
 
 -- 2021-07-06T12:35:41.675Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Description='Aktualisiert die Debitoren- und Kreditoren-Nrs aller Geschäftspartner',Updated=TO_TIMESTAMP('2021-07-06 15:35:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584857
+UPDATE AD_Process_Trl SET Description='Aktualisiert die Debitoren- und Kreditoren-Nrn aller zugehörigen Geschäftspartner.',Updated=TO_TIMESTAMP('2021-07-06 15:35:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Process_ID=584857
 ;
 
 -- 2021-07-06T12:35:43.659Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process SET Description='Aktualisiert die Debitoren- und Kreditoren-Nrs aller Geschäftspartner', Help=NULL, Name='Debitoren- und Kreditoren-Nr aktualisieren',Updated=TO_TIMESTAMP('2021-07-06 15:35:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584857
+UPDATE AD_Process SET Description='Aktualisiert die Debitoren- und Kreditoren-Nrn aller zugehörigen Geschäftspartner.', Help=NULL, Name='Debitoren- und Kreditoren-Nr aktualisieren',Updated=TO_TIMESTAMP('2021-07-06 15:35:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=584857
 ;
 
 -- 2021-07-06T12:35:43.654Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Description='Aktualisiert die Debitoren- und Kreditoren-Nrs aller Geschäftspartner',Updated=TO_TIMESTAMP('2021-07-06 15:35:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584857
+UPDATE AD_Process_Trl SET Description='Aktualisiert die Debitoren- und Kreditoren-Nrn aller zugehörigen Geschäftspartner.',Updated=TO_TIMESTAMP('2021-07-06 15:35:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Process_ID=584857
 ;
 
 -- 2021-07-06T12:36:07.950Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Process_Trl SET Description='Aktualisiert die Debitoren- und Kreditoren-Nrs aller Geschäftspartner',Updated=TO_TIMESTAMP('2021-07-06 15:36:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584857
+UPDATE AD_Process_Trl SET Description='Aktualisiert die Debitoren- und Kreditoren-Nrn aller zugehörigen Geschäftspartner.',Updated=TO_TIMESTAMP('2021-07-06 15:36:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Process_ID=584857
 ;
 
 -- 2021-07-06T12:36:13.577Z
@@ -682,3 +682,12 @@ INSERT INTO t_alter_column values('c_acctschema','IsAutoSetDebtoridAndCreditorid
 UPDATE C_AcctSchema SET IsAutoSetDebtoridAndCreditorid='N' WHERE IsAutoSetDebtoridAndCreditorid IS NULL
 ;
 
+-- 2021-07-08T07:15:38.993Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','CreditorId','NUMERIC(10)',null,null)
+;
+
+-- 2021-07-08T07:16:26.760Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bpartner','DebtorId','NUMERIC(10)',null,null)
+;

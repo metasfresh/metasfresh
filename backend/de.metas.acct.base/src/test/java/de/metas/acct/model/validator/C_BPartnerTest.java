@@ -24,7 +24,6 @@ package de.metas.acct.model.validator;
 
 import de.metas.acct.AcctSchemaTestHelper;
 import de.metas.acct.api.AcctSchemaId;
-import groovy.lang.Tuple3;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -40,21 +39,21 @@ import java.util.Map;
 
 public class C_BPartnerTest
 {
-	public static final int orgId = 100;
-	public static final int clientId = 10;
-	public static final int debitorPrefix = 10;
-	public static final int creditorPrefix = 70;
+	public static final int ORG_ID = 100;
+	public static final int CLIENT_ID = 10;
+	public static final int DEBTOR_PREFIX = 10;
+	public static final int CREDITOR_PREFIX = 70;
 	public static final Map<String, Object> orgClientMap = new HashMap<>();
 	private I_C_BPartner bpartner;
-	private final Tuple3<String, Integer, Integer> valueToDebtorCreditorIds = new Tuple3<>("1234567", 101234567, 701234567);
-	private final Tuple3<String, Integer, Integer> longValueToDebtorCreditorIds = new Tuple3<>("1234567890", 0, 0);
-	private final Tuple3<String, Integer, Integer> shortValueToDebtorCreditorIds = new Tuple3<>("123", 0, 0);
-	private final Tuple3<String, Integer, Integer> nanValueToDebtorCreditorIds = new Tuple3<>("123A", 0, 0);
+	private final BpartnerValueToDebtorCreditorIds valueToDebtorCreditorIds = new BpartnerValueToDebtorCreditorIds("1234567", 101234567, 701234567);
+	private final BpartnerValueToDebtorCreditorIds longValueToDebtorCreditorIds = new BpartnerValueToDebtorCreditorIds("1234567890", 0, 0);
+	private final BpartnerValueToDebtorCreditorIds shortValueToDebtorCreditorIds = new BpartnerValueToDebtorCreditorIds("123", 0, 0);
+	private final BpartnerValueToDebtorCreditorIds nanValueToDebtorCreditorIds = new BpartnerValueToDebtorCreditorIds("123A", 0, 0);
 
 	static
 	{
-		orgClientMap.put(I_C_AcctSchema.COLUMNNAME_AD_Client_ID, clientId);
-		orgClientMap.put(I_C_AcctSchema.COLUMNNAME_AD_Org_ID, orgId);
+		orgClientMap.put(I_C_AcctSchema.COLUMNNAME_AD_Client_ID, CLIENT_ID);
+		orgClientMap.put(I_C_AcctSchema.COLUMNNAME_AD_Org_ID, ORG_ID);
 	}
 
 	@BeforeEach
@@ -65,8 +64,8 @@ public class C_BPartnerTest
 
 		final I_C_AcctSchema acctSchema = InterfaceWrapperHelper.load(acctSchemaId, I_C_AcctSchema.class);
 		acctSchema.setIsAutoSetDebtoridAndCreditorid(true);
-		acctSchema.setDebtorIdPrefix(debitorPrefix);
-		acctSchema.setCreditorIdPrefix(creditorPrefix);
+		acctSchema.setDebtorIdPrefix(DEBTOR_PREFIX);
+		acctSchema.setCreditorIdPrefix(CREDITOR_PREFIX);
 		InterfaceWrapperHelper.save(acctSchema);
 		AcctSchemaTestHelper.registerAcctSchemaDAOWhichAlwaysProvides(AcctSchemaId.ofRepoId(acctSchema.getC_AcctSchema_ID()));
 		bpartner = createBPartner();
@@ -104,11 +103,11 @@ public class C_BPartnerTest
 		testBpartnerValueChange(nanValueToDebtorCreditorIds);
 	}
 
-	private void testBpartnerValueChange(final Tuple3<String, Integer, Integer> tuple)
+	private void testBpartnerValueChange(final BpartnerValueToDebtorCreditorIds tuple)
 	{
-		bpartner.setValue(tuple.getFirst());
+		bpartner.setValue(tuple.getValue());
 		new C_BPartner().beforeSave(bpartner);
-		Assertions.assertThat(bpartner.getDebtorId()).isEqualTo(tuple.getSecond());
-		Assertions.assertThat(bpartner.getCreditorId()).isEqualTo(tuple.getThird());
+		Assertions.assertThat(bpartner.getDebtorId()).isEqualTo(tuple.getDebtorId());
+		Assertions.assertThat(bpartner.getCreditorId()).isEqualTo(tuple.getCreditorId());
 	}
 }
