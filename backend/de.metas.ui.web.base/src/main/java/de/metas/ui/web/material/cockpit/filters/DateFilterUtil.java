@@ -1,7 +1,5 @@
 package de.metas.ui.web.material.cockpit.filters;
 
-import org.compiere.util.Env;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -14,6 +12,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
+import org.compiere.util.Env;
 
 /*
  * #%L
@@ -65,7 +64,7 @@ class DateFilterUtil
 		return DocumentFilter.builder()
 				.setFilterId(DateFilterVO.FILTER_ID)
 				.setCaption(Services.get(IMsgBL.class).translatable(DateFilterVO.PARAM_Date))
-				.addParameter(DocumentFilterParam.ofNameOperatorValue(DateFilterVO.PARAM_Date, Operator.EQUAL, Env.getDate(Env.getCtx())))
+				.addParameter(DocumentFilterParam.ofNameOperatorValue(DateFilterVO.PARAM_Date, Operator.EQUAL, Env.getDate()))
 				.build();
 	}
 

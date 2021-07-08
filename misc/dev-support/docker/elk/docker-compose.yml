@@ -6,8 +6,8 @@ services:
     restart: always
     ports:
       - "127.0.0.1:5601:5601" #Kibana web interface
-      - "127.0.0.1:9200:9200" #Elasticsearch JSON interface  - only set for docker-compose v1
-      - "127.0.0.1:9300:9300" #Elasticsearch transport interface - only set for docker-compose v1
+      - "127.0.0.1:9201:9200" #Elasticsearch JSON interface  - only set for docker-compose v1
+      - "127.0.0.1:9301:9300" #Elasticsearch transport interface - only set for docker-compose v1
       - "127.0.0.1:5000:5000" #Logstash appender - only set for docker-compose v1
     volumes:
       - metasfresh_elk_elasticsearch:/var/lib/elasticsearch

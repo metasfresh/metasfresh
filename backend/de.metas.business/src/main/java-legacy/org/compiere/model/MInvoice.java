@@ -48,7 +48,9 @@ import de.metas.payment.PaymentRule;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
+import de.metas.report.StandardDocumentReportType;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -60,7 +62,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -962,7 +963,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				final MTax[] cTaxes = tax.getChildTaxes(false);    // Multiple taxes
 				for (final MTax cTax : cTaxes)
 				{
-					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, cTax);
+					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, TaxUtils.from(cTax));
 					final BigDecimal taxBaseAmt = iTax.getTaxBaseAmt();
 					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, taxBaseAmt, taxIncluded, taxPrecision.toInt());
 					//

@@ -59,7 +59,7 @@ public class APIExportAudit<T extends APIExportAuditItem>
 	private APIExportAudit(
 			@NonNull final OrgId orgId,
 			@NonNull final String transactionId,
-			@NonNull final int exportSequenceNumber,
+			final int exportSequenceNumber,
 			@NonNull final APIExportStatus exportStatus,
 			@Nullable final String forwardedData,
 			@Nullable final AdIssueId issueId,

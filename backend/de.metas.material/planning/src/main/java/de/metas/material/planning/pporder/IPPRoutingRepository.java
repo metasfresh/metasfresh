@@ -38,5 +38,9 @@ public interface IPPRoutingRepository extends ISingletonService
 
 	void changeRouting(PPRoutingChangeRequest changeRequest);
 
+	boolean nodesAlreadyExistInWorkflow(@NonNull PPRoutingActivityId excludeActivityId);
+
 	Optional<PPRoutingId> getDefaultRoutingIdByType(@NonNull PPRoutingType type);
+
+	void setFirstNodeToWorkflow(@NonNull PPRoutingActivityId ppRoutingActivityId);
 }

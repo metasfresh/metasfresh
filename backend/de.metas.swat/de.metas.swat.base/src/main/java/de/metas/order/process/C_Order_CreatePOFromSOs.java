@@ -123,6 +123,6 @@ public class C_Order_CreatePOFromSOs
 		}
 		workpackageAggregator.closeAllGroups();
 
-		return "Success";
+		return MSG_OK;
 	}
 }

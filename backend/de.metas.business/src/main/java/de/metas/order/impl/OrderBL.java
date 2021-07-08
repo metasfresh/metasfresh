@@ -66,6 +66,7 @@ import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.request.RequestTypeId;
+import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -88,7 +89,6 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.MOrder;
@@ -811,7 +811,7 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
-	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, I_C_Tax tax)
+	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Order order, Tax tax)
 	{
 		if (tax != null && tax.isWholeTax())
 		{

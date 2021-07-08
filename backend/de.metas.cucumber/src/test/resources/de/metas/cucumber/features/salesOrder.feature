@@ -33,7 +33,7 @@ Feature: sales order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    Then after not more than 10s, M_ShipmentSchedules are found:
+    Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
