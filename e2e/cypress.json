@@ -32,7 +32,10 @@
     "**/__snapshots__/*",
     "**/__image_snapshots__/*"
   ],
-
+  "retries": {
+    "runMode": 2,
+    "openMode": 1
+  },
   "env": {
     "cypress-plugin-snapshots": {
       "autoCleanUp": false,
