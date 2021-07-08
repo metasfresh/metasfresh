@@ -51,12 +51,15 @@ import java.util.function.Function;
 @Service
 public class AlbertaProductService
 {
-	private final AlbertaProductDAO albertaProductDAO;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final ExternalReferenceRepository externalReferenceRepository;
 
-	public AlbertaProductService(final AlbertaProductDAO albertaProductDAO, final ExternalReferenceRepository externalReferenceRepository)
+	private final ExternalReferenceRepository externalReferenceRepository;
+	private final AlbertaProductDAO albertaProductDAO;
+
+	public AlbertaProductService(
+			@NonNull final AlbertaProductDAO albertaProductDAO,
+			@NonNull final ExternalReferenceRepository externalReferenceRepository)
 	{
 		this.albertaProductDAO = albertaProductDAO;
 		this.externalReferenceRepository = externalReferenceRepository;
