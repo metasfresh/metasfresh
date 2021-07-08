@@ -98,8 +98,7 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 				.therapyIds(albertaProductInfo.getTherapyIds())
 				.billableTherapies(albertaProductInfo.getBillableTherapies())
 				.packagingUnits(toPackageUnitList(albertaProductInfo.getPackagingUnits(), pcn))
-				.productGroupId("82d3d688-4035-48fa-90cb-d9d39b8975bd") // TODO
-		;
+				.productGroupId(albertaProductInfo.getProductGroupId());
 
 		return Optional.of(UpsertArticleRequest.builder()
 								   .article(article)

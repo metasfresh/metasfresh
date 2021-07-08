@@ -53,6 +53,11 @@ public class JsonProduct
 	@JsonProperty("id")
 	JsonMetasfreshId id;
 
+	@ApiModelProperty("This translates to `M_Product.M_Product_Category_ID`.")
+	@NonNull
+	@JsonProperty("productCategoryId")
+	JsonMetasfreshId productCategoryId;
+
 	@ApiModelProperty("This translates to `M_Product.Value`.")
 	@NonNull
 	@JsonProperty("productNo")
