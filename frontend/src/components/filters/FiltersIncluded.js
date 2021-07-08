@@ -25,14 +25,14 @@ class FiltersIncluded extends PureComponent {
    * @param {object} target element
    */
   handleClickOutside = ({ target }) => {
-    const { widgetShown, dropdownToggled, allowOutsideClick } = this.props;
+    const { widgetShown, allowOutsideClick } = this.props;
+    const { isOpenDropdown } = this.state;
 
     if (target.classList && target.classList.contains('input-dropdown-list')) {
       return;
     }
 
-    if (allowOutsideClick && !widgetShown) {
-      dropdownToggled();
+    if (allowOutsideClick && !widgetShown && isOpenDropdown) {
       this.toggleDropdown(false);
       this.toggleFilter(null);
     }
@@ -45,18 +45,23 @@ class FiltersIncluded extends PureComponent {
    * @param {boolean} value
    */
   toggleDropdown = (value) => {
-    const { active, data } = this.props;
+    const { active, data, dropdownToggled } = this.props;
     const toCheckAgainst = data.map((item) => item.filterId);
-    let openFilterIdValue;
+    let openFilterIdValue = null;
+
     if (active !== null) {
       const foundInActive = active.filter((activeItem) =>
         toCheckAgainst.includes(activeItem.filterId)
       );
       openFilterIdValue =
         foundInActive.length && active ? active[0].filterId : null;
-    } else {
-      openFilterIdValue = null;
     }
+
+    // when hiding the dropdown invalidate the filter fields in the store
+    if (!value) {
+      dropdownToggled();
+    }
+
     this.setState({
       isOpenDropdown: value,
       openFilterId: openFilterIdValue,
@@ -65,10 +70,10 @@ class FiltersIncluded extends PureComponent {
 
   /**
    * @method toggleFilter
-   * @summary Updates in the state the openFilterId with the given filter index (matched from the filtersActive)
-   * @param {integer} index - position that corresponds to a filter in the filtersActive
+   * @summary Updates in the state the openFilterId with the given filter name (matched from the filtersActive)
+   * @param {string} id - name of the in the filtersActive array
    */
-  toggleFilter = (index) => this.setState({ openFilterId: index });
+  toggleFilter = (id) => this.setState({ openFilterId: id });
 
   // wrappers around props.handleShow to skip creating anonymous functions on render
   handleShowTrue = () => this.props.handleShow(true);

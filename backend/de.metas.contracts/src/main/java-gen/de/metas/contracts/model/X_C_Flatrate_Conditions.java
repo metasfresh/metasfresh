@@ -6,148 +6,85 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Flatrate_Conditions
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_C_Flatrate_Conditions, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1484724506L;
+	private static final long serialVersionUID = -683179023L;
 
     /** Standard Constructor */
-    public X_C_Flatrate_Conditions (Properties ctx, int C_Flatrate_Conditions_ID, String trxName)
+    public X_C_Flatrate_Conditions (final Properties ctx, final int C_Flatrate_Conditions_ID, final String trxName)
     {
       super (ctx, C_Flatrate_Conditions_ID, trxName);
-      /** if (C_Flatrate_Conditions_ID == 0)
-        {
-			setC_Flatrate_Conditions_ID (0);
-			setC_UOM_ID (0);
-			setDocAction (null); // CO
-			setDocStatus (null); // DR
-			setInvoiceRule (null); // I
-			setIsClosingWithActualSum (false); // N
-			setIsClosingWithCorrectionSum (false); // N
-			setIsCorrectionAmtAtClosing (false); // N
-			setIsCreateNoInvoice (false); // N
-			setIsFreeOfCharge (false); // N
-			setIsManualPrice (false); // N
-			setIsSimulation (false); // N
-			setMargin_Max (BigDecimal.ZERO);
-			setMargin_Min (BigDecimal.ZERO);
-			setM_Product_Flatrate_ID (0);
-			setName (null);
-			setOnFlatrateTermExtend (null); // 'Ca'
-			setProcessed (false); // N
-			setProcessing (false); // N
-			setType_Clearing (null); // EX
-			setType_Conditions (null);
-			setType_Flatrate (null); // NONE
-			setUOMType (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Flatrate_Conditions (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Flatrate_Conditions (final Properties ctx, final ResultSet rs, final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Vertragsbedingungen.
-		@param C_Flatrate_Conditions_ID Vertragsbedingungen	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		if (C_Flatrate_Conditions_ID < 1)
-		{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_Flatrate_Conditions_ID (final int C_Flatrate_Conditions_ID)
+	{
+		if (C_Flatrate_Conditions_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Conditions_ID, null);
-		}
-		else
-		{
-			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Conditions_ID, Integer.valueOf(C_Flatrate_Conditions_ID));
-		}
+		else 
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Conditions_ID, C_Flatrate_Conditions_ID);
 	}
 
-	/** Get Vertragsbedingungen.
-		@return Vertragsbedingungen	  */
 	@Override
-	public int getC_Flatrate_Conditions_ID () 
+	public int getC_Flatrate_Conditions_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Conditions_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_ID);
 	}
 
-	/** Set C_Flatrate_Matching_IncludedT.
-		@param C_Flatrate_Matching_IncludedT C_Flatrate_Matching_IncludedT	  */
 	@Override
-	public void setC_Flatrate_Matching_IncludedT (java.lang.String C_Flatrate_Matching_IncludedT)
+	public void setC_Flatrate_Matching_IncludedT (final java.lang.String C_Flatrate_Matching_IncludedT)
 	{
 		throw new IllegalArgumentException ("C_Flatrate_Matching_IncludedT is virtual column");	}
 
-	/** Get C_Flatrate_Matching_IncludedT.
-		@return C_Flatrate_Matching_IncludedT	  */
 	@Override
-	public java.lang.String getC_Flatrate_Matching_IncludedT () 
+	public java.lang.String getC_Flatrate_Matching_IncludedT() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_C_Flatrate_Matching_IncludedT);
+		return get_ValueAsString(COLUMNNAME_C_Flatrate_Matching_IncludedT);
 	}
 
 	@Override
-	public de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition() throws RuntimeException
+	public de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class);
 	}
 
 	@Override
-	public void setC_Flatrate_Transition(de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition)
+	public void setC_Flatrate_Transition(final de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Flatrate_Transition_ID, de.metas.contracts.model.I_C_Flatrate_Transition.class, C_Flatrate_Transition);
 	}
 
-	/** Set Vertragsverlängerung/-übergang.
-		@param C_Flatrate_Transition_ID 
-		Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
 	@Override
-	public void setC_Flatrate_Transition_ID (int C_Flatrate_Transition_ID)
+	public void setC_Flatrate_Transition_ID (final int C_Flatrate_Transition_ID)
 	{
-		if (C_Flatrate_Transition_ID < 1)
-		{
+		if (C_Flatrate_Transition_ID < 1) 
 			set_Value (COLUMNNAME_C_Flatrate_Transition_ID, null);
-		}
-		else
-		{
-			set_Value (COLUMNNAME_C_Flatrate_Transition_ID, Integer.valueOf(C_Flatrate_Transition_ID));
-		}
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Transition_ID, C_Flatrate_Transition_ID);
 	}
 
-	/** Get Vertragsverlängerung/-übergang.
-		@return Regelt z.B. die Vertragslaufzeit, Kündigungsfristen, autmatische Verlängerung usw.
-	  */
 	@Override
-	public int getC_Flatrate_Transition_ID () 
+	public int getC_Flatrate_Transition_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Transition_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Transition_ID);
 	}
 
 	/** 
@@ -159,67 +96,31 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String CLEARINGAMTBASEON_ProductPrice = "ProductPrice";
 	/** FlatrateAmount = FlatrateAmount */
 	public static final String CLEARINGAMTBASEON_FlatrateAmount = "FlatrateAmount";
-	/** Set Basis für Verrechnungs-Zahlbetrag.
-		@param ClearingAmtBaseOn 
-		Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
 	@Override
-	public void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn)
+	public void setClearingAmtBaseOn (final java.lang.String ClearingAmtBaseOn)
 	{
-
 		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
 	}
 
-	/** Get Basis für Verrechnungs-Zahlbetrag.
-		@return Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird. 
-	  */
 	@Override
-	public java.lang.String getClearingAmtBaseOn () 
+	public java.lang.String getClearingAmtBaseOn() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ClearingAmtBaseOn);
+		return get_ValueAsString(COLUMNNAME_ClearingAmtBaseOn);
 	}
 
 	@Override
-	public org.compiere.model.I_C_UOM getC_UOM() throws RuntimeException
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class);
-	}
-
-	@Override
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM)
-	{
-		set_ValueFromPO(COLUMNNAME_C_UOM_ID, org.compiere.model.I_C_UOM.class, C_UOM);
-	}
-
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
-	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
-	{
-		if (C_UOM_ID < 1)
-		{
+		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
-		}
-		else
-		{
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
-		}
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	/** 
@@ -257,24 +158,16 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String DOCACTION_WaitComplete = "WC";
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
-	/** Set Belegverarbeitung.
-		@param DocAction 
-		Der zukünftige Status des Belegs
-	  */
 	@Override
-	public void setDocAction (java.lang.String DocAction)
+	public void setDocAction (final java.lang.String DocAction)
 	{
-
 		set_Value (COLUMNNAME_DocAction, DocAction);
 	}
 
-	/** Get Belegverarbeitung.
-		@return Der zukünftige Status des Belegs
-	  */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
+		return get_ValueAsString(COLUMNNAME_DocAction);
 	}
 
 	/** 
@@ -306,24 +199,16 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus (final java.lang.String DocStatus)
 	{
-
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	/** 
@@ -331,440 +216,208 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	 * Reference name: C_Order InvoiceRule
 	 */
 	public static final int INVOICERULE_AD_Reference_ID=150;
-	/** Nach Lieferung Auftrag = O */
-	public static final String INVOICERULE_NachLieferungAuftrag = "O";
-	/** Nach Lieferung = D */
-	public static final String INVOICERULE_NachLieferung = "D";
-	/** Kundenintervall (nach Lieferung) = S */
-	public static final String INVOICERULE_KundenintervallNachLieferung = "S";
-	/** Sofort = I */
-	public static final String INVOICERULE_Sofort = "I";
-	/** Set Rechnungsstellung.
-		@param InvoiceRule 
-		"Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
-	  */
+	/** AfterOrderDelivered = O */
+	public static final String INVOICERULE_AfterOrderDelivered = "O";
+	/** AfterDelivery = D */
+	public static final String INVOICERULE_AfterDelivery = "D";
+	/** CustomerScheduleAfterDelivery = S */
+	public static final String INVOICERULE_CustomerScheduleAfterDelivery = "S";
+	/** Immediate = I */
+	public static final String INVOICERULE_Immediate = "I";
+	/** OrderCompletelyDelivered = C */
+	public static final String INVOICERULE_OrderCompletelyDelivered = "C";
 	@Override
-	public void setInvoiceRule (java.lang.String InvoiceRule)
+	public void setInvoiceRule (final java.lang.String InvoiceRule)
 	{
-
 		set_Value (COLUMNNAME_InvoiceRule, InvoiceRule);
 	}
 
-	/** Get Rechnungsstellung.
-		@return "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
-	  */
 	@Override
-	public java.lang.String getInvoiceRule () 
+	public java.lang.String getInvoiceRule() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InvoiceRule);
+		return get_ValueAsString(COLUMNNAME_InvoiceRule);
 	}
 
-	/** Set Gegenüberstellung mit erbr. Leist..
-		@param IsClosingWithActualSum 
-		Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
-	  */
 	@Override
-	public void setIsClosingWithActualSum (boolean IsClosingWithActualSum)
+	public void setIsClosingWithActualSum (final boolean IsClosingWithActualSum)
 	{
-		set_Value (COLUMNNAME_IsClosingWithActualSum, Boolean.valueOf(IsClosingWithActualSum));
+		set_Value (COLUMNNAME_IsClosingWithActualSum, IsClosingWithActualSum);
 	}
 
-	/** Get Gegenüberstellung mit erbr. Leist..
-		@return Legt fest, ob die pauschal abgerechenten Beträge den tatsächlich erbrachten Leistungen gegenüber gestellt werden sollen
-	  */
 	@Override
-	public boolean isClosingWithActualSum () 
+	public boolean isClosingWithActualSum() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsClosingWithActualSum);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsClosingWithActualSum);
 	}
 
-	/** Set Abschlusskorrektur vorsehen.
-		@param IsClosingWithCorrectionSum 
-		Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
-	  */
 	@Override
-	public void setIsClosingWithCorrectionSum (boolean IsClosingWithCorrectionSum)
+	public void setIsClosingWithCorrectionSum (final boolean IsClosingWithCorrectionSum)
 	{
-		set_Value (COLUMNNAME_IsClosingWithCorrectionSum, Boolean.valueOf(IsClosingWithCorrectionSum));
+		set_Value (COLUMNNAME_IsClosingWithCorrectionSum, IsClosingWithCorrectionSum);
 	}
 
-	/** Get Abschlusskorrektur vorsehen.
-		@return Legt fest, ob innerhalb der Vertragslaufzeit (in der Regel zu deren Ende) noch korrigierte Pauschalen-Mengen erfasst werden können
-	  */
 	@Override
-	public boolean isClosingWithCorrectionSum () 
+	public boolean isClosingWithCorrectionSum() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsClosingWithCorrectionSum);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsClosingWithCorrectionSum);
 	}
 
-	/** Set Verrechung erst nach Abschlusskorrektur.
-		@param IsCorrectionAmtAtClosing 
-		Legt fest, ob Nach- bzw. Rückzahlungen erst nach Erfassung der Abschlusskorrektur in Rechnung zu stellen sind
-	  */
 	@Override
-	public void setIsCorrectionAmtAtClosing (boolean IsCorrectionAmtAtClosing)
+	public void setIsCorrectionAmtAtClosing (final boolean IsCorrectionAmtAtClosing)
 	{
-		set_Value (COLUMNNAME_IsCorrectionAmtAtClosing, Boolean.valueOf(IsCorrectionAmtAtClosing));
+		set_Value (COLUMNNAME_IsCorrectionAmtAtClosing, IsCorrectionAmtAtClosing);
 	}
 
-	/** Get Verrechung erst nach Abschlusskorrektur.
-		@return Legt fest, ob Nach- bzw. Rückzahlungen erst nach Erfassung der Abschlusskorrektur in Rechnung zu stellen sind
-	  */
 	@Override
-	public boolean isCorrectionAmtAtClosing () 
+	public boolean isCorrectionAmtAtClosing() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCorrectionAmtAtClosing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCorrectionAmtAtClosing);
 	}
 
-	/** Set Keine Rechnungserstellung.
-		@param IsCreateNoInvoice Keine Rechnungserstellung	  */
 	@Override
-	public void setIsCreateNoInvoice (boolean IsCreateNoInvoice)
+	public void setIsCreateNoInvoice (final boolean IsCreateNoInvoice)
 	{
-		set_Value (COLUMNNAME_IsCreateNoInvoice, Boolean.valueOf(IsCreateNoInvoice));
+		set_Value (COLUMNNAME_IsCreateNoInvoice, IsCreateNoInvoice);
 	}
 
-	/** Get Keine Rechnungserstellung.
-		@return Keine Rechnungserstellung	  */
 	@Override
-	public boolean isCreateNoInvoice () 
+	public boolean isCreateNoInvoice() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsCreateNoInvoice);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsCreateNoInvoice);
 	}
 
-	/** Set Gratis.
-		@param IsFreeOfCharge 
-		Es wird unabhängig vom gewählten Preissystem ein Rabatt von 100% gewährt
-	  */
 	@Override
-	public void setIsFreeOfCharge (boolean IsFreeOfCharge)
+	public void setIsFreeOfCharge (final boolean IsFreeOfCharge)
 	{
-		set_Value (COLUMNNAME_IsFreeOfCharge, Boolean.valueOf(IsFreeOfCharge));
+		set_Value (COLUMNNAME_IsFreeOfCharge, IsFreeOfCharge);
 	}
 
-	/** Get Gratis.
-		@return Es wird unabhängig vom gewählten Preissystem ein Rabatt von 100% gewährt
-	  */
 	@Override
-	public boolean isFreeOfCharge () 
+	public boolean isFreeOfCharge() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsFreeOfCharge);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsFreeOfCharge);
 	}
 
-	/** Set Manueller Preis.
-		@param IsManualPrice Manueller Preis	  */
 	@Override
-	public void setIsManualPrice (boolean IsManualPrice)
+	public void setIsManualPrice (final boolean IsManualPrice)
 	{
-		set_Value (COLUMNNAME_IsManualPrice, Boolean.valueOf(IsManualPrice));
+		set_Value (COLUMNNAME_IsManualPrice, IsManualPrice);
 	}
 
-	/** Get Manueller Preis.
-		@return Manueller Preis	  */
 	@Override
-	public boolean isManualPrice () 
+	public boolean isManualPrice() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsManualPrice);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsManualPrice);
 	}
 
-	/** Set Planspiel.
-		@param IsSimulation Planspiel	  */
 	@Override
-	public void setIsSimulation (boolean IsSimulation)
+	public void setIsSimulation (final boolean IsSimulation)
 	{
-		set_Value (COLUMNNAME_IsSimulation, Boolean.valueOf(IsSimulation));
+		set_Value (COLUMNNAME_IsSimulation, IsSimulation);
 	}
 
-	/** Get Planspiel.
-		@return Planspiel	  */
 	@Override
-	public boolean isSimulation () 
+	public boolean isSimulation() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSimulation);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsSimulation);
 	}
 
-	/** Set Korridor - Überschreitung.
-		@param Margin_Max Korridor - Überschreitung	  */
 	@Override
-	public void setMargin_Max (java.math.BigDecimal Margin_Max)
+	public void setMargin_Max (final BigDecimal Margin_Max)
 	{
 		set_Value (COLUMNNAME_Margin_Max, Margin_Max);
 	}
 
-	/** Get Korridor - Überschreitung.
-		@return Korridor - Überschreitung	  */
 	@Override
-	public java.math.BigDecimal getMargin_Max () 
+	public BigDecimal getMargin_Max() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Max);
-		if (bd == null)
-		{
-			return BigDecimal.ZERO;
-		}
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Margin_Max);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Korridor - Unterschreitung.
-		@param Margin_Min Korridor - Unterschreitung	  */
 	@Override
-	public void setMargin_Min (java.math.BigDecimal Margin_Min)
+	public void setMargin_Min (final BigDecimal Margin_Min)
 	{
 		set_Value (COLUMNNAME_Margin_Min, Margin_Min);
 	}
 
-	/** Get Korridor - Unterschreitung.
-		@return Korridor - Unterschreitung	  */
 	@Override
-	public java.math.BigDecimal getMargin_Min () 
+	public BigDecimal getMargin_Min() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Margin_Min);
-		if (bd == null)
-		{
-			return BigDecimal.ZERO;
-		}
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Margin_Min);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public org.compiere.model.I_M_PricingSystem getM_PricingSystem() throws RuntimeException
+	public void setM_PricingSystem_ID (final int M_PricingSystem_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class);
-	}
-
-	@Override
-	public void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem)
-	{
-		set_ValueFromPO(COLUMNNAME_M_PricingSystem_ID, org.compiere.model.I_M_PricingSystem.class, M_PricingSystem);
-	}
-
-	/** Set Preissystem.
-		@param M_PricingSystem_ID 
-		Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
-	@Override
-	public void setM_PricingSystem_ID (int M_PricingSystem_ID)
-	{
-		if (M_PricingSystem_ID < 1)
-		{
+		if (M_PricingSystem_ID < 1) 
 			set_Value (COLUMNNAME_M_PricingSystem_ID, null);
-		}
-		else
-		{
-			set_Value (COLUMNNAME_M_PricingSystem_ID, Integer.valueOf(M_PricingSystem_ID));
-		}
-	}
-
-	/** Get Preissystem.
-		@return Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
-	  */
-	@Override
-	public int getM_PricingSystem_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_PricingSystem_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		else 
+			set_Value (COLUMNNAME_M_PricingSystem_ID, M_PricingSystem_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product_Actual() throws RuntimeException
+	public int getM_PricingSystem_ID() 
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Actual_ID, org.compiere.model.I_M_Product.class);
+		return get_ValueAsInt(COLUMNNAME_M_PricingSystem_ID);
 	}
 
 	@Override
-	public void setM_Product_Actual(org.compiere.model.I_M_Product M_Product_Actual)
+	public void setM_Product_Actual_ID (final int M_Product_Actual_ID)
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Actual_ID, org.compiere.model.I_M_Product.class, M_Product_Actual);
-	}
-
-	/** Set Produkt für Verrechnung.
-		@param M_Product_Actual_ID 
-		Produkt, unter dem ggf. die Differenz zu tatsächlich erbrachten Leistungen in Rechnung gestellt wird.
-	  */
-	@Override
-	public void setM_Product_Actual_ID (int M_Product_Actual_ID)
-	{
-		if (M_Product_Actual_ID < 1)
-		{
+		if (M_Product_Actual_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_Actual_ID, null);
-		}
-		else
-		{
-			set_Value (COLUMNNAME_M_Product_Actual_ID, Integer.valueOf(M_Product_Actual_ID));
-		}
-	}
-
-	/** Get Produkt für Verrechnung.
-		@return Produkt, unter dem ggf. die Differenz zu tatsächlich erbrachten Leistungen in Rechnung gestellt wird.
-	  */
-	@Override
-	public int getM_Product_Actual_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Actual_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		else 
+			set_Value (COLUMNNAME_M_Product_Actual_ID, M_Product_Actual_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_M_Product getM_Product_Correction() throws RuntimeException
+	public int getM_Product_Actual_ID() 
 	{
-		return get_ValueAsPO(COLUMNNAME_M_Product_Correction_ID, org.compiere.model.I_M_Product.class);
+		return get_ValueAsInt(COLUMNNAME_M_Product_Actual_ID);
 	}
 
 	@Override
-	public void setM_Product_Correction(org.compiere.model.I_M_Product M_Product_Correction)
+	public void setM_Product_Correction_ID (final int M_Product_Correction_ID)
 	{
-		set_ValueFromPO(COLUMNNAME_M_Product_Correction_ID, org.compiere.model.I_M_Product.class, M_Product_Correction);
-	}
-
-	/** Set Produkt für Abschlusskorrektur.
-		@param M_Product_Correction_ID 
-		Produkt, unter dem ggf. die Differenz zu den in der Abschlusskorrektur gemeldeten Mengen in Rechnung gestellt wird.
-	  */
-	@Override
-	public void setM_Product_Correction_ID (int M_Product_Correction_ID)
-	{
-		if (M_Product_Correction_ID < 1)
-		{
+		if (M_Product_Correction_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_Correction_ID, null);
-		}
-		else
-		{
-			set_Value (COLUMNNAME_M_Product_Correction_ID, Integer.valueOf(M_Product_Correction_ID));
-		}
+		else 
+			set_Value (COLUMNNAME_M_Product_Correction_ID, M_Product_Correction_ID);
 	}
 
-	/** Get Produkt für Abschlusskorrektur.
-		@return Produkt, unter dem ggf. die Differenz zu den in der Abschlusskorrektur gemeldeten Mengen in Rechnung gestellt wird.
-	  */
 	@Override
-	public int getM_Product_Correction_ID () 
+	public int getM_Product_Correction_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Correction_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_Correction_ID);
 	}
 
-	/** Set Produkt für pauschale Berechnung.
-		@param M_Product_Flatrate_ID 
-		Produkt, unter dem die pauschal abzurechnenden Leistungen in Rechnung gestellt werden
-	  */
 	@Override
-	public void setM_Product_Flatrate_ID (int M_Product_Flatrate_ID)
+	public void setM_Product_Flatrate_ID (final int M_Product_Flatrate_ID)
 	{
-		if (M_Product_Flatrate_ID < 1)
-		{
+		if (M_Product_Flatrate_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_Flatrate_ID, null);
-		}
-		else
-		{
-			set_Value (COLUMNNAME_M_Product_Flatrate_ID, Integer.valueOf(M_Product_Flatrate_ID));
-		}
+		else 
+			set_Value (COLUMNNAME_M_Product_Flatrate_ID, M_Product_Flatrate_ID);
 	}
 
-	/** Get Produkt für pauschale Berechnung.
-		@return Produkt, unter dem die pauschal abzurechnenden Leistungen in Rechnung gestellt werden
-	  */
 	@Override
-	public int getM_Product_Flatrate_ID () 
+	public int getM_Product_Flatrate_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Flatrate_ID);
-		if (ii == null)
-		{
-			return 0;
-		}
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_Flatrate_ID);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	/** 
@@ -776,93 +429,52 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String ONFLATRATETERMEXTEND_CopyPrice = "Co";
 	/** CalculatePrice = Ca */
 	public static final String ONFLATRATETERMEXTEND_CalculatePrice = "Ca";
-	/** Set Behaviour when extending contract.
-		@param OnFlatrateTermExtend Behaviour when extending contract	  */
 	@Override
-	public void setOnFlatrateTermExtend (java.lang.String OnFlatrateTermExtend)
+	public void setOnFlatrateTermExtend (final java.lang.String OnFlatrateTermExtend)
 	{
-
 		set_Value (COLUMNNAME_OnFlatrateTermExtend, OnFlatrateTermExtend);
 	}
 
-	/** Get Behaviour when extending contract.
-		@return Behaviour when extending contract	  */
 	@Override
-	public java.lang.String getOnFlatrateTermExtend () 
+	public java.lang.String getOnFlatrateTermExtend() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_OnFlatrateTermExtend);
+		return get_ValueAsString(COLUMNNAME_OnFlatrateTermExtend);
 	}
 
-	/** Set Drucktext.
-		@param PrintName 
-		Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
-	  */
 	@Override
-	public void setPrintName (java.lang.String PrintName)
+	public void setPrintName (final java.lang.String PrintName)
 	{
 		set_Value (COLUMNNAME_PrintName, PrintName);
 	}
 
-	/** Get Drucktext.
-		@return Bezeichnung, die auf dem Dokument oder der Korrespondenz gedruckt werden soll
-	  */
 	@Override
-	public java.lang.String getPrintName () 
+	public java.lang.String getPrintName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_PrintName);
+		return get_ValueAsString(COLUMNNAME_PrintName);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Beleg verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
 	@Override
-	public boolean isProcessing () 
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean)
-			{
-				return ((Boolean)oo).booleanValue();
-			} 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
 	/** 
@@ -874,21 +486,16 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CLEARING_Complete = "CO";
 	/** Exceeding = EX */
 	public static final String TYPE_CLEARING_Exceeding = "EX";
-	/** Set Verrechnungsmodus.
-		@param Type_Clearing Verrechnungsmodus	  */
 	@Override
-	public void setType_Clearing (java.lang.String Type_Clearing)
+	public void setType_Clearing (final java.lang.String Type_Clearing)
 	{
-
 		set_Value (COLUMNNAME_Type_Clearing, Type_Clearing);
 	}
 
-	/** Get Verrechnungsmodus.
-		@return Verrechnungsmodus	  */
 	@Override
-	public java.lang.String getType_Clearing () 
+	public java.lang.String getType_Clearing() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Type_Clearing);
+		return get_ValueAsString(COLUMNNAME_Type_Clearing);
 	}
 
 	/** 
@@ -910,23 +517,18 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_CONDITIONS_Procurement = "Procuremnt";
 	/** Refund = Refund */
 	public static final String TYPE_CONDITIONS_Refund = "Refund";
-
+	/** Commission = Commission */
 	public static final String TYPE_CONDITIONS_Commission = "Commission";
-	/** Set Vertragsart.
-		@param Type_Conditions Vertragsart	  */
 	@Override
-	public void setType_Conditions (java.lang.String Type_Conditions)
+	public void setType_Conditions (final java.lang.String Type_Conditions)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_Type_Conditions, Type_Conditions);
 	}
 
-	/** Get Vertragsart.
-		@return Vertragsart	  */
 	@Override
-	public java.lang.String getType_Conditions () 
+	public java.lang.String getType_Conditions() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Type_Conditions);
+		return get_ValueAsString(COLUMNNAME_Type_Conditions);
 	}
 
 	/** 
@@ -938,24 +540,16 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String TYPE_FLATRATE_NONE = "NONE";
 	/** Corridor_Percent = LIPE */
 	public static final String TYPE_FLATRATE_Corridor_Percent = "LIPE";
-	/** Set Verrechnungsart.
-		@param Type_Flatrate 
-		Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
-	  */
 	@Override
-	public void setType_Flatrate (java.lang.String Type_Flatrate)
+	public void setType_Flatrate (final java.lang.String Type_Flatrate)
 	{
-
 		set_Value (COLUMNNAME_Type_Flatrate, Type_Flatrate);
 	}
 
-	/** Get Verrechnungsart.
-		@return Art der Verrechnung bei der Gegenüberstellung mit tatsächliche erbrachten Leistungen
-	  */
 	@Override
-	public java.lang.String getType_Flatrate () 
+	public java.lang.String getType_Flatrate() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Type_Flatrate);
+		return get_ValueAsString(COLUMNNAME_Type_Flatrate);
 	}
 
 	/** 
@@ -967,23 +561,15 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public static final String UOMTYPE_Gesundheitswesen = "HC";
 	/** Abrechnungsgenauigkeit = TD */
 	public static final String UOMTYPE_Abrechnungsgenauigkeit = "TD";
-	/** Set Einheiten-Typ.
-		@param UOMType 
-		Dient der Zusammenfassung ähnlicher Maßeinheiten
-	  */
 	@Override
-	public void setUOMType (java.lang.String UOMType)
+	public void setUOMType (final java.lang.String UOMType)
 	{
-
 		set_Value (COLUMNNAME_UOMType, UOMType);
 	}
 
-	/** Get Einheiten-Typ.
-		@return Dient der Zusammenfassung ähnlicher Maßeinheiten
-	  */
 	@Override
-	public java.lang.String getUOMType () 
+	public java.lang.String getUOMType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UOMType);
+		return get_ValueAsString(COLUMNNAME_UOMType);
 	}
 }

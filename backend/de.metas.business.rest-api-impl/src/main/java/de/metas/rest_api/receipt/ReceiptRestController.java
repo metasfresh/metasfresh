@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.receipt.JsonCreateReceiptsRequest;
 import de.metas.common.receipt.JsonCreateReceiptsResponse;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
@@ -45,24 +45,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@RequestMapping(ReceiptRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/receipt",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/receipt",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/receipts" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ReceiptRestController
 {
 	private static final Logger log = LogManager.getLogger(ReceiptRestController.class);
 
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/receipt";
-
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final ReceiptService receiptService;
-	private final CustomerReturnService customerReturnService;
+	private final CustomerReturnRestService customerReturnRestService;
 
-	public ReceiptRestController(final ReceiptService receiptService, final CustomerReturnService customerReturnService)
+	public ReceiptRestController(final ReceiptService receiptService, final CustomerReturnRestService customerReturnRestService)
 	{
 		this.receiptService = receiptService;
-		this.customerReturnService = customerReturnService;
+		this.customerReturnRestService = customerReturnRestService;
 	}
 
 	@PostMapping
@@ -92,7 +93,7 @@ public class ReceiptRestController
 
 		final List<InOutId> createdReturnIds = jsonCreateReceiptsRequest.getJsonCreateCustomerReturnInfoList().isEmpty()
 				? ImmutableList.of()
-				: customerReturnService.handleReturns(jsonCreateReceiptsRequest.getJsonCreateCustomerReturnInfoList());
+				: customerReturnRestService.handleReturns(jsonCreateReceiptsRequest.getJsonCreateCustomerReturnInfoList());
 
 		return toJsonCreateReceiptsResponse(createdReceiptIds, createdReturnIds);
 	}

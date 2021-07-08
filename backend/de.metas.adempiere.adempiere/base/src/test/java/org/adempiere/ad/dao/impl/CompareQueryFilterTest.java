@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_Test;
@@ -40,7 +41,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.util.time.SystemTime;
 
 public class CompareQueryFilterTest
 {

@@ -28,6 +28,7 @@ import de.metas.process.JavaProcess;
  *  @author Jorg Janke
  *  @version $Id: WorkflowMoveToClient.java,v 1.2 2006/07/30 00:51:05 jjanke Exp $
  */
+@Deprecated
 public class WorkflowMoveToClient extends JavaProcess
 {
 	/**	The new Client			*/

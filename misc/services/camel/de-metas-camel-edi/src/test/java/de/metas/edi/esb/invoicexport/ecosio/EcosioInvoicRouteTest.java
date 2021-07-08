@@ -24,6 +24,8 @@ package de.metas.edi.esb.invoicexport.ecosio;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
+
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
@@ -31,6 +33,10 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.Unmarshaller;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Properties;
@@ -62,7 +68,7 @@ class EcosioInvoicRouteTest extends CamelTestSupport
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
 			return properties;
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -101,4 +107,31 @@ class EcosioInvoicRouteTest extends CamelTestSupport
 						+ "    <EDI_ExportStatus>S</EDI_ExportStatus>"
 						+ "</EDI_Invoice_Feedback>");
 	}
+	@Test
+	void nonEmpty_invoic() throws Exception
+	{
+		// given
+		final var inputStr = EcosioInvoicRouteTest.class.getResourceAsStream("/de/metas/edi/esb/invoicexport/ecosio/INVOIC.xml");
+		assertThat(inputStr).isNotNull();
+
+		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+		final JAXBElement<EDIExpDesadvType> inputXml = (JAXBElement) unmarshaller.unmarshal(inputStr);
+
+		// when
+		template.sendBodyAndHeader(
+				EcosioInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER /*endpoint-URI*/,
+				inputXml.getValue() /*actual inputStr*/,
+
+				EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, inputXml.getValue() // this header is otherwise set by the preceeding generic route
+		);
+
+		// then
+		fileOutputEndpoint.expectedMessageCount(1);
+		fileOutputEndpoint.assertIsSatisfied(1000);
+		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		assertThat(desadvOutput)
+				.isXmlEqualToContentOf(new File("./src/test/resources/de/metas/edi/esb/invoicexport/ecosio/INVOIC_expected_output.xml"));
+	}
+	
 }

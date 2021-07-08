@@ -3,7 +3,7 @@ package de.metas.dlm.model.interceptor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.ILookupDAO.ITableRefInfo;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.util.DisplayType;
 
@@ -56,7 +56,7 @@ public class DLM_Partition_Config_Reference
 		}
 
 		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-		final ITableRefInfo tableRefInfo;
+		final TableRefInfo tableRefInfo;
 		if (lookupDAO.isTableReference(ad_Reference_ID))
 		{
 			tableRefInfo = lookupDAO.retrieveTableRefInfo(ad_Reference_ID);

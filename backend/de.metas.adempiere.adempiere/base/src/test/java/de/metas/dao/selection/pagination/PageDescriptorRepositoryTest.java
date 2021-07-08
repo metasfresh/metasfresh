@@ -3,11 +3,10 @@ package de.metas.dao.selection.pagination;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.time.Instant;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

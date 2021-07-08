@@ -26,7 +26,9 @@ import de.metas.currency.FixedConversionRate;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_C_Payment;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -42,6 +44,25 @@ public class PaymentCurrencyContext
 	@Nullable BigDecimal currencyRate;
 
 	public static final PaymentCurrencyContext NONE = builder().build();
+
+	public static PaymentCurrencyContext ofPaymentRecord(@NonNull final I_C_Payment payment)
+	{
+		final PaymentCurrencyContext.PaymentCurrencyContextBuilder resultBuilder = PaymentCurrencyContext.builder()
+				.paymentCurrencyId(CurrencyId.ofRepoId(payment.getC_Currency_ID()))
+				.currencyConversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(payment.getC_ConversionType_ID()));
+
+		final CurrencyId sourceCurrencyId = CurrencyId.ofRepoIdOrNull(payment.getSource_Currency_ID());
+		final BigDecimal currencyRate = payment.getCurrencyRate();
+		if (sourceCurrencyId != null
+				&& currencyRate != null
+				&& currencyRate.signum() != 0)
+		{
+			resultBuilder.sourceCurrencyId(sourceCurrencyId)
+					.currencyRate(currencyRate);
+		}
+
+		return resultBuilder.build();
+	}
 
 	public boolean isFixedConversionRate()
 	{

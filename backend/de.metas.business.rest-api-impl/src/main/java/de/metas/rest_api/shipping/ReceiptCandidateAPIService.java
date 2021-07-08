@@ -30,11 +30,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.common.rest_api.JsonAttributeSetInstance;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.shipping.JsonProduct;
 import de.metas.common.shipping.JsonProduct.JsonProductBuilder;
 import de.metas.common.shipping.JsonRequestCandidateResult;
@@ -313,13 +313,16 @@ class ReceiptCandidateAPIService
 	{
 		final OrgId orgId = receiptSchedule.getOrgId();
 
-		auditBuilder.item(
-				receiptSchedule.getId(),
-				ReceiptScheduleExportAuditItem.builder()
-						.exportStatus(APIExportStatus.Exported)
-						.repoIdAware(receiptSchedule.getId())
-						.orgId(orgId)
-						.build());
+		auditBuilder
+				.orgId(orgId)
+				.exportStatus(APIExportStatus.Exported)
+				.item(
+						receiptSchedule.getId(),
+						ReceiptScheduleExportAuditItem.builder()
+								.exportStatus(APIExportStatus.Exported)
+								.repoIdAware(receiptSchedule.getId())
+								.orgId(orgId)
+								.build());
 	}
 
 	private void createExportErrorAuditItem(
@@ -336,14 +339,17 @@ class ReceiptCandidateAPIService
 				.summary(e.getMessage())
 				.build());
 
-		auditBuilder.item(
-				receiptSchedule.getId(),
-				ReceiptScheduleExportAuditItem.builder()
-						.exportStatus(APIExportStatus.ExportError)
-						.repoIdAware(receiptSchedule.getId())
-						.issueId(adIssueId)
-						.orgId(orgId)
-						.build());
+		auditBuilder
+				.orgId(orgId)
+				.exportStatus(APIExportStatus.ExportError)
+				.item(
+						receiptSchedule.getId(),
+						ReceiptScheduleExportAuditItem.builder()
+								.exportStatus(APIExportStatus.ExportError)
+								.repoIdAware(receiptSchedule.getId())
+								.issueId(adIssueId)
+								.orgId(orgId)
+								.build());
 	}
 
 	@Value

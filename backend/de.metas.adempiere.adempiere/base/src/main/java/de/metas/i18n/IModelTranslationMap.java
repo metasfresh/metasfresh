@@ -7,6 +7,9 @@ import java.util.Optional;
 import com.google.common.base.Strings;
 
 import de.metas.i18n.impl.NullModelTranslation;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -54,7 +57,7 @@ public interface IModelTranslationMap
 	 * @param defaultValue default value to be used in case a translation is missing
 	 * @return {@link ITranslatableString} for given column name
 	 */
-	default ITranslatableString getColumnTrl(final String columnName, final String defaultValue)
+	default ITranslatableString getColumnTrl(@NonNull final String columnName, @Nullable final String defaultValue)
 	{
 		final Map<String, String> columnTrls = new HashMap<>();
 		for (final IModelTranslation modelTrl : getAllTranslations().values())

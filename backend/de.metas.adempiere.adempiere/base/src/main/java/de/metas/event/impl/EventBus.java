@@ -1,44 +1,9 @@
 package de.metas.event.impl;
 
-import java.util.IdentityHashMap;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.eventbus.SubscriberExceptionHandler;
-
 import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventBusStats;
@@ -54,6 +19,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import java.util.IdentityHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 final class EventBus implements IEventBus
 {
@@ -90,17 +64,19 @@ final class EventBus implements IEventBus
 
 	private final ExecutorService executorOrNull;
 
-	private final EventBusStatsCollector stats;
+	private final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector;
 
 	/**
 	 * @param executor if not null, the system creates an {@link AsyncEventBus}; also, it shuts down this executor on {@link #destroy()}
 	 */
 	public EventBus(
 			@NonNull final String topicName,
-			@Nullable final ExecutorService executor)
+			@Nullable final ExecutorService executor,
+			@NonNull final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector)
 	{
 		Check.assumeNotEmpty(topicName, "name not empty");
 
+		this.micrometerEventBusStatsCollector = micrometerEventBusStatsCollector;
 		this.executorOrNull = executor;
 		this.topicName = topicName;
 
@@ -115,8 +91,6 @@ final class EventBus implements IEventBus
 			this.eventBus = new com.google.common.eventbus.AsyncEventBus(executor, exceptionHandler);
 			this.async = true;
 		}
-
-		this.stats = new EventBusStatsCollector();
 	}
 
 	@Override
@@ -147,11 +121,11 @@ final class EventBus implements IEventBus
 		{
 			executorOrNull.shutdown(); // not 100% sure it's needed, but better safe than sorry
 		}
-		logger.trace("{0} - Destroyed", this);
+		logger.trace("Destroyed EventBus={}", this);
 	}
 
 	@Override
-	public void subscribe(@NonNull Consumer<Event> eventConsumer)
+	public void subscribe(@NonNull final Consumer<Event> eventConsumer)
 	{
 		final IEventListener listener = (eventBus, event) -> eventConsumer.accept(event);
 		subscribe(listener);
@@ -214,15 +188,15 @@ final class EventBus implements IEventBus
 	{
 		final String json = sharedJsonSerializer.writeValueAsString(obj);
 		postEvent(Event.builder()
-				.putProperty(PROP_Body, json)
-				.shallBeLogged()
-				.build());
+						  .putProperty(PROP_Body, json)
+						  .shallBeLogged()
+						  .build());
 	}
 
 	@Override
 	public void postEvent(@NonNull final Event event)
 	{
-		try (final MDCCloseable mdc = EventMDC.putEvent(event))
+		try (final MDCCloseable ignored = EventMDC.putEvent(event))
 		{
 			// Do nothing if destroyed
 			if (destroyed)
@@ -249,7 +223,7 @@ final class EventBus implements IEventBus
 			logger.debug("{} - Posting event: {}", this, eventToPost);
 			eventBus.post(eventToPost);
 
-			stats.incrementEventsEnqueued();
+			micrometerEventBusStatsCollector.incrementEventsEnqueued();
 		}
 	}
 
@@ -274,7 +248,7 @@ final class EventBus implements IEventBus
 		@Override
 		public void onEvent(final IEventBus eventBus, final Event event)
 		{
-			try (final MDCCloseable mdc = EventMDC.putEvent(event))
+			try (final MDCCloseable ignored = EventMDC.putEvent(event))
 			{
 				logger.debug("TypedConsumerAsEventListener.onEvent - eventBodyType={}", eventBodyType.getName());
 
@@ -296,13 +270,18 @@ final class EventBus implements IEventBus
 		@Subscribe
 		public void onEvent(@NonNull final Event event)
 		{
-			stats.incrementEventsDequeued();
-
-			try (final MDCCloseable mdc = EventMDC.putEvent(event))
-			{
-				logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
-				invokeEventListener(this.eventListener, event);
-			}
+			micrometerEventBusStatsCollector.incrementEventsDequeued();
+			
+			micrometerEventBusStatsCollector
+					.getEventProcessingTimer()
+					.record(() ->
+							{
+								try (final MDCCloseable ignored = EventMDC.putEvent(event))
+								{
+									logger.debug("GuavaEventListenerAdapter.onEvent - eventListener to invoke={}", eventListener);
+									invokeEventListener(this.eventListener, event);
+								}
+							});
 		}
 	}
 
@@ -324,22 +303,25 @@ final class EventBus implements IEventBus
 			@NonNull final IEventListener eventListener,
 			@NonNull final Event event)
 	{
-		try (final EventLogEntryCollector collector = EventLogEntryCollector.createThreadLocalForEvent(event))
+		try (final EventLogEntryCollector ignored = EventLogEntryCollector.createThreadLocalForEvent(event))
 		{
-			eventListener.onEvent(this, event);
-		}
-		catch (final RuntimeException ex)
-		{
-			if (!Adempiere.isUnitTestMode())
+			try
 			{
-				final EventLogUserService eventLogUserService = SpringContextHolder.instance.getBean(EventLogUserService.class);
-				eventLogUserService
-						.newErrorLogEntry(eventListener.getClass(), ex)
-						.createAndStore();
+				eventListener.onEvent(this, event);
 			}
-			else
+			catch (final RuntimeException ex)
 			{
-				logger.warn("Got exception while invoking eventListener={} with event={}", eventListener, event, ex);
+				if (!Adempiere.isUnitTestMode())
+				{
+					final EventLogUserService eventLogUserService = SpringContextHolder.instance.getBean(EventLogUserService.class);
+					eventLogUserService
+							.newErrorLogEntry(eventListener.getClass(), ex)
+							.createAndStore();
+				}
+				else
+				{
+					logger.warn("Got exception while invoking eventListener={} with event={}", eventListener, event, ex);
+				}
 			}
 		}
 	}
@@ -347,6 +329,6 @@ final class EventBus implements IEventBus
 	@Override
 	public EventBusStats getStats()
 	{
-		return stats.snapshot();
+		return micrometerEventBusStatsCollector.snapshot();
 	}
 }

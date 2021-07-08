@@ -171,6 +171,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Invoice_Clearing_Alloc());
 		engine.addModelValidator(new C_Order());
 		engine.addModelValidator(new C_OrderLine(groupChangesHandler));
+		engine.addModelValidator(new C_Invoice_Rejection_Detail());
 
 		// 03742
 		engine.addModelValidator(new C_Flatrate_Transition());

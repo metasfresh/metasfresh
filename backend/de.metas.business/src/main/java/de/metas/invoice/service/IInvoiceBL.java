@@ -1,42 +1,5 @@
 package de.metas.invoice.service;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.X_C_DocType;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
@@ -57,9 +20,25 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.X_C_DocType;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 public interface IInvoiceBL extends ISingletonService
 {
+	I_C_Invoice getById(final InvoiceId invoiceId);
+
 	/**
 	 * Copies a given invoice
 	 *
@@ -117,6 +96,12 @@ public interface IInvoiceBL extends ISingletonService
 		return X_C_DocType.DOCBASETYPE_APInvoice.equals(docBaseType)
 				|| X_C_DocType.DOCBASETYPE_APCreditMemo.equals(docBaseType);
 	}
+
+	/**
+	 * @param invoice the invoice to check
+	 * @return true if the given invoice is an Invoice (API or ARI)
+	 */
+	boolean isInvoice(@NonNull I_C_Invoice invoice);
 
 	/**
 	 * @param invoice
@@ -200,7 +185,7 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * @param order
-	 * @param C_DocTypeTarget_ID invoice's document type
+	 * @param docTypeTargetId invoice's document type
 	 * @param dateInvoiced may be <code>null</code>
 	 * @param dateAcct may be <code>null</code> (see task 08438)
 	 * @return created invoice

@@ -2,6 +2,7 @@ package de.metas.rest_api.bpartner_pricelist.command;
 
 import java.time.LocalDate;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_ProductPrice;
@@ -26,7 +27,6 @@ import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePrice;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;

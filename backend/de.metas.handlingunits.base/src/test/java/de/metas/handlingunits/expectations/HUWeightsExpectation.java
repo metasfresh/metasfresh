@@ -35,6 +35,8 @@ import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 
+import javax.annotation.Nullable;
+
 /**
  * Note that this is about the weight M_HU_Attributes. Not the storage per-se.
  */
@@ -49,12 +51,12 @@ public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpec
 
 	public static final BigDecimal DEFAULT_AcceptableWeightErrorMargin = BigDecimal.valueOf(0.001);
 
-	public static final HUWeightsExpectation<Object> newExpectation()
+	public static HUWeightsExpectation<Object> newExpectation()
 	{
 		return new HUWeightsExpectation<>();
 	}
 
-	public HUWeightsExpectation(final ParentExpectationType parentExpectation)
+	public HUWeightsExpectation(@Nullable final ParentExpectationType parentExpectation)
 	{
 		super(parentExpectation);
 		setErrorMargin(DEFAULT_AcceptableWeightErrorMargin);
@@ -73,7 +75,6 @@ public class HUWeightsExpectation<ParentExpectationType> extends AbstractHUExpec
 			final String weightTare,
 			final String weightTareAdjust)
 	{
-		this();
 		gross(weightGross);
 		net(weightNet);
 		tare(weightTare);

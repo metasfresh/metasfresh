@@ -307,11 +307,6 @@ public class RichTextEditor extends CPanel
 		boilerPlateMenu.setAttributes(attributes);
 	}
 
-	public ReportEngine getReportEngine()
-	{
-		return MADBoilerPlate.getReportEngine(getHtmlText(), getAttributes());
-	}
-
 	public File getPDF(String fileNamePrefix)
 	{
 		return MADBoilerPlate.getPDF(fileNamePrefix, getHtmlText(), getAttributes());
@@ -346,7 +341,7 @@ public class RichTextEditor extends CPanel
 
 	public boolean print()
 	{
-		ReportEngine re = getReportEngine();
+		ReportEngine re = MADBoilerPlate.getReportEngine(getHtmlText(), getAttributes());
 		int retValue = ADialogDialog.A_CANCEL;
 		do
 		{

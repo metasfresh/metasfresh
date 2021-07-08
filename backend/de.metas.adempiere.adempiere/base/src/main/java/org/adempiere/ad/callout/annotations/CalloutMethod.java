@@ -59,4 +59,10 @@ public @interface CalloutMethod
 	 * Skip calling this callout if we are copying (with details).
 	 */
 	boolean skipIfCopying() default false;
+
+	/**
+	 * Skip calling this callout if it is called via another callout.
+	 * Use case: you want a callout to do stuff only if invoked *directly* by a user (or business logic).
+	 */
+	boolean skipIfIndirectlyCalled() default false;
 }

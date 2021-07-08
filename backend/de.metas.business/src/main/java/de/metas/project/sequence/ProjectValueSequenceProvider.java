@@ -1,17 +1,20 @@
 package de.metas.project.sequence;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.isInstanceOf;
-
+import de.metas.document.DocumentSequenceInfo;
+import de.metas.document.IDocumentSequenceDAO;
+import de.metas.document.sequence.DocSequenceId;
+import de.metas.document.sequence.ValueSequenceInfoProvider;
+import de.metas.project.ProjectType;
+import de.metas.project.ProjectTypeId;
+import de.metas.project.ProjectTypeRepository;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
 import org.springframework.stereotype.Component;
 
-import de.metas.document.DocumentSequenceInfo;
-import de.metas.document.IDocumentSequenceDAO;
-import de.metas.document.sequence.ValueSequenceInfoProvider;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.isInstanceOf;
 
 /*
  * #%L
@@ -38,30 +41,38 @@ import lombok.NonNull;
 @Component
 public class ProjectValueSequenceProvider implements ValueSequenceInfoProvider
 {
-	@Override
+	private final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
+	private final ProjectTypeRepository projectTypeRepository;
+
+	public ProjectValueSequenceProvider(
+			@NonNull final ProjectTypeRepository projectTypeRepository)
+	{
+		this.projectTypeRepository = projectTypeRepository;
+	}
+
+		@Override
 	public ProviderResult computeValueInfo(@NonNull final Object modelRecord)
 	{
 		if (!isInstanceOf(modelRecord, I_C_Project.class))
 		{
 			return ProviderResult.EMPTY;
 		}
-		final I_C_Project project = create(modelRecord, I_C_Project.class);
 
-		if (project.getC_ProjectType_ID() <= 0)
+		final I_C_Project projectRecord = create(modelRecord, I_C_Project.class);
+		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
+		if (projectTypeId == null)
 		{
 			return ProviderResult.EMPTY;
 		}
 
-		final I_C_ProjectType projectType = project.getC_ProjectType();
-
-		final int adSequenceId = projectType.getAD_Sequence_ProjectValue_ID();
-		if (adSequenceId <= 0)
+		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
+		final DocSequenceId docSequenceId = projectType.getDocSequenceId();
+		if (docSequenceId == null)
 		{
 			return ProviderResult.EMPTY;
 		}
 
-		final IDocumentSequenceDAO documentSequenceDAO = Services.get(IDocumentSequenceDAO.class);
-		final DocumentSequenceInfo documentSequenceInfo = documentSequenceDAO.retriveDocumentSequenceInfo(adSequenceId);
+		final DocumentSequenceInfo documentSequenceInfo = documentSequenceDAO.retriveDocumentSequenceInfo(docSequenceId);
 
 		return ProviderResult.of(documentSequenceInfo);
 	}

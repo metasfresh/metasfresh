@@ -1,23 +1,21 @@
 package de.metas.material.planning.pporder;
 
-import java.math.BigDecimal;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.product.ResourceId;
 import de.metas.util.lang.Percent;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -45,35 +43,22 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class PPRoutingActivity
 {
-	@NonNull
-	PPRoutingActivityId id;
+	@NonNull PPRoutingActivityId id;
 
-	@NonNull
-	String code;
+	@NonNull String code;
+	@NonNull String name;
 
-	@NonNull
-	String name;
+	@NonNull @Default Range<LocalDate> validDates = Range.all();
 
-	@NonNull
-	@Default
-	Range<LocalDate> validDates = Range.all();
+	@NonNull ResourceId resourceId;
 
-	@NonNull
-	ResourceId resourceId;
+	@NonNull WFDurationUnit durationUnit;
 
-	@NonNull
-	TemporalUnit durationUnit;
-
-	@NonNull
-	Duration queuingTime;
-	@NonNull
-	Duration setupTime;
-	@NonNull
-	Duration waitingTime;
-	@NonNull
-	Duration movingTime;
-	@NonNull
-	Duration durationPerOneUnit;
+	@NonNull Duration queuingTime;
+	@NonNull Duration setupTime;
+	@NonNull Duration waitingTime;
+	@NonNull Duration movingTime;
+	@NonNull Duration durationPerOneUnit;
 	int overlapUnits;
 	/**
 	 * how many items can be manufactured on a production line in given duration unit.
@@ -82,25 +67,21 @@ public class PPRoutingActivity
 	/**
 	 * how many units are produced in a batch
 	 */
-	@NonNull
-	BigDecimal qtyPerBatch;
+	@NonNull BigDecimal qtyPerBatch;
 
 	/**
 	 * The Yield is the percentage of a lot that is expected to be of acceptable quality may fall below 100 percent
 	 */
-	@NonNull final Percent yield;
+	@NonNull Percent yield;
 
 	boolean subcontracting;
 	BPartnerId subcontractingVendorId;
 
 	boolean milestone;
 
-	@NonNull
-	@Default
-	ImmutableSet<PPRoutingActivityId> nextActivityIds = ImmutableSet.of();
+	@NonNull @Default ImmutableSet<PPRoutingActivityId> nextActivityIds = ImmutableSet.of();
 
-	@Nullable
-	PPRoutingActivityTemplateId activityTemplateId;
+	@Nullable PPRoutingActivityTemplateId activityTemplateId;
 
 	public boolean isValidAtDate(final LocalDateTime dateTime)
 	{

@@ -37,7 +37,7 @@ public class DurationUtils
 {
 	public static Duration toDuration(@NonNull final BigDecimal durationBD, @NonNull final TemporalUnit unit)
 	{
-		long durationLong = durationBD.setScale(0, RoundingMode.UP).longValueExact();
+		final long durationLong = durationBD.setScale(0, RoundingMode.UP).longValueExact();
 		return Duration.of(durationLong, unit);
 	}
 
@@ -51,7 +51,7 @@ public class DurationUtils
 		return (int)toLong(duration, unit);
 	}
 
-	public static long toLong(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
+	private static long toLong(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
 	{
 		if (unit == ChronoUnit.SECONDS)
 		{

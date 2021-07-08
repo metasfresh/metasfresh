@@ -1,9 +1,12 @@
 package de.metas.process;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.process.ProcessExecutionResult.DisplayQRCode;
+import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
+import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -13,16 +16,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import de.metas.JsonObjectMapperHolder;
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.process.ProcessExecutionResult.DisplayQRCode;
-import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
-import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -59,16 +55,14 @@ public class ProcessExecutionResultTest
 
 	private String toJson(final ProcessExecutionResult result) throws JsonProcessingException
 	{
-		final String json = jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
 		// System.out.println("json: \n" + json);
-		return json;
+		return jsonMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
 	}
 
-	private ProcessExecutionResult fromJson(final String json) throws IOException, JsonParseException, JsonMappingException
+	private ProcessExecutionResult fromJson(final String json) throws IOException
 	{
-		final ProcessExecutionResult resultFromJson = jsonMapper.readValue(json, ProcessExecutionResult.class);
 		// System.out.println("result (from json): " + resultFromJson);
-		return resultFromJson;
+		return jsonMapper.readValue(json, ProcessExecutionResult.class);
 	}
 
 	private void assertEqualsAsJson(final ProcessExecutionResult expected, final ProcessExecutionResult actual) throws JsonProcessingException
@@ -97,15 +91,14 @@ public class ProcessExecutionResultTest
 		return result;
 	}
 
-	private static final TableRecordReference createDummyTableRecordReference()
+	private static TableRecordReference createDummyTableRecordReference()
 	{
 		final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, ITrx.TRXNAME_None);
 		InterfaceWrapperHelper.save(invoice);
-		final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
-		return invoiceRef;
+		return TableRecordReference.of(invoice);
 	}
 
-	private static final List<TableRecordReference> createDummyTableRecordReferenceList(final int size)
+	private static List<TableRecordReference> createDummyTableRecordReferenceList(final int size)
 	{
 		final List<TableRecordReference> list = new ArrayList<>();
 		for (int i = 0; i < size; i++)
@@ -136,7 +129,7 @@ public class ProcessExecutionResultTest
 		Assert.assertEquals(result.isShowProcessLogs(), resultFromJson.isShowProcessLogs());
 		Assert.assertEquals(result.isRefreshAllAfterExecution(), resultFromJson.isRefreshAllAfterExecution());
 		//
-		Assert.assertArrayEquals(result.getReportData(), resultFromJson.getReportData());
+		Assert.assertEquals(result.getReportData(), resultFromJson.getReportData());
 		Assert.assertEquals(result.getReportFilename(), resultFromJson.getReportFilename());
 		Assert.assertEquals(result.getReportContentType(), resultFromJson.getReportContentType());
 		//

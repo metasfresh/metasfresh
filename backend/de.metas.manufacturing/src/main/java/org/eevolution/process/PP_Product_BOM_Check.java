@@ -1,25 +1,8 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- * Portions created by Carlos Ruiz are Copyright (C) 2005 QSS Ltda.
- * Contributor(s): Carlos Ruiz (globalqss)
- *****************************************************************************/
 package org.eevolution.process;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.metas.product.IProductBL;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -28,6 +11,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Product;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -52,13 +36,14 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 {
 	private final transient IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final transient IProductBOMDAO productBOMDAO = Services.get(IProductBOMDAO.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Param(parameterName = I_M_Product.COLUMNNAME_M_Product_Category_ID, mandatory = false)
 	private int p_M_Product_Category_ID;
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		if (!(I_M_Product.Table_Name.equals(context.getTableName()) || I_PP_Product_BOM.Table_Name.equals(context.getTableName())))
 		{
@@ -98,7 +83,7 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 							validateProduct(product);
 							counter.incrementAndGet();
 						}
-						catch (Exception ex)
+						catch (final Exception ex)
 						{
 							log.warn("Product is not valid: {}", product, ex);
 						}
@@ -123,7 +108,8 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		}
 		else if (I_PP_Product_BOM.Table_Name.equals(tableName))
 		{
-			final I_PP_Product_BOM bom = getRecord(I_PP_Product_BOM.class);
+			final ProductBOMId bomId = ProductBOMId.ofRepoId(getRecord_ID());
+			final I_PP_Product_BOM bom = productBOMDAO.getById(bomId);
 			return bom.getM_Product_ID();
 		}
 		else
@@ -169,7 +155,8 @@ public class PP_Product_BOM_Check extends JavaProcess implements IProcessPrecond
 		// Check All BOM Lines
 		for (final I_PP_Product_BOMLine tbomline : productBOMDAO.retrieveLines(bom))
 		{
-			final I_M_Product bomLineProduct = tbomline.getM_Product();
+			final ProductId productId = ProductId.ofRepoId(tbomline.getM_Product_ID());
+			final I_M_Product bomLineProduct = productBL.getById(productId);
 			updateProductLLCAndMarkAsVerified(bomLineProduct);
 		}
 	}

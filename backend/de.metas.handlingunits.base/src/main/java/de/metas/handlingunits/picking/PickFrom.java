@@ -3,7 +3,7 @@ package de.metas.handlingunits.picking;
 import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

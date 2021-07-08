@@ -86,11 +86,8 @@
 				</executions>
 				<configuration>
 					<generatePackage>de.metas.shipper.gateway.go.schema</generatePackage>
-					<wsdl>true</wsdl>
-					<xmlschema>false</xmlschema>
 					<schemaIncludes>*.wsdl</schemaIncludes>
 					<schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/go/schema/</schemaDirectory>
-					<schemaFiles>GOWebService.wsdl</schemaFiles>
 				</configuration>
 			</plugin>
 		</plugins>

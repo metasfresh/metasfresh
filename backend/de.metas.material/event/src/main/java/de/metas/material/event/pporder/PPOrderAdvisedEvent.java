@@ -1,10 +1,7 @@
 package de.metas.material.event.pporder;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
@@ -14,6 +11,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -60,19 +59,27 @@ public class PPOrderAdvisedEvent extends AbstractPPOrderEvent
 	@Getter
 	private final boolean directlyPickSupply;
 
+	/**
+	 * If {@code false}, then this event advises the recipient to not attempt to identify and update an existing supply candidate, but create a new one.
+	 */
+	@Getter
+	private final boolean tryUpdateExistingCandidate;
+
 	@JsonCreator
 	@Builder
 	public PPOrderAdvisedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("ppOrder") @NonNull final PPOrder ppOrder,
-			@JsonProperty("supplyRequiredDescriptor") @Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@JsonProperty("supplyRequiredDescriptor") @NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@JsonProperty("directlyCreatePPOrder") final boolean directlyCreatePPOrder,
-			@JsonProperty("directlyPickSupply") final boolean directlyPickSupply)
+			@JsonProperty("directlyPickSupply") final boolean directlyPickSupply,
+			@JsonProperty("tryUpdateExistingCandidate") final boolean tryUpdateExistingCandidate)
 	{
 		super(eventDescriptor, ppOrder, supplyRequiredDescriptor);
 
 		this.directlyCreatePPOrder = directlyCreatePPOrder;
 		this.directlyPickSupply = directlyPickSupply;
+		this.tryUpdateExistingCandidate = tryUpdateExistingCandidate;
 	}
 
 	public void validate()

@@ -90,7 +90,6 @@ public final class AddonStarter implements IAddonStarter
 
 	AddonStarter(final Properties props)
 	{
-		super();
 		this.props = props;
 	}
 

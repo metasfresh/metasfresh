@@ -192,6 +192,14 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId, recordId);
 	}
 
+	@Nullable
+	public static TableRecordReference ofOrNull(final int adTableId, final int recordId)
+	{
+		return adTableId > 0 && recordId >= 0
+			? new TableRecordReference(adTableId, recordId)
+			: null;
+	}
+
 	@JsonCreator
 	public static TableRecordReference of(@JsonProperty("tableName") final String tableName, @JsonProperty("recordId") final int recordId)
 	{
@@ -343,7 +351,7 @@ public final class TableRecordReference implements ITableRecordReference
 	 * Returns <code>true</code> if both this and the given <code>obj</code> are TableRecordReferences and have the same <code>AD_Table_ID</code> and <code>Record_ID</code>.
 	 */
 	@Override
-	public boolean equals(final Object obj)
+	public boolean equals(@Nullable final Object obj)
 	{
 		if (this == obj)
 		{
@@ -359,6 +367,11 @@ public final class TableRecordReference implements ITableRecordReference
 		{
 			return false;
 		}
+	}
+
+	public static boolean equals(@Nullable final TableRecordReference o1, @Nullable final TableRecordReference o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 
 	@Override

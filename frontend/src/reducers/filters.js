@@ -1,12 +1,38 @@
-import * as types from '../constants/FilterTypes';
 import { produce, original } from 'immer';
-export const initialFiltersBranchState = {};
+import { createCachedSelector } from 're-reselect';
 
+import * as types from '../constants/ActionTypes';
+import { deepUnfreeze } from '../utils';
+
+export const initialFiltersBranchState = {};
 export const initialFiltersLeafState = {
   widgetShown: false,
   filtersCaptions: {},
   notValidFields: null,
 };
+
+/**
+ * @method getFilterFromState
+ * @param {object} state - redux state
+ * @param {*} filterId
+ */
+export function getFilterFromState(state, filterId) {
+  return state.filters && state.filters[filterId]
+    ? state.filters[filterId]
+    : null;
+}
+
+/**
+ * @method getCachedFilter
+ * @summary cached selector for picking the filters
+ *
+ * @param {object} state - redux state
+ * @param {string} filterId - id from the filters structure
+ */
+export const getCachedFilter = createCachedSelector(
+  getFilterFromState,
+  (filters) => filters
+)((_state, filterId) => filterId);
 
 /**
  * @method getEntityRelatedId
@@ -46,7 +72,7 @@ const reducer = produce((draftState, action) => {
 
       return;
     }
-    case types.UPDATE_ACTIVE_FILTER: {
+    case types.UPDATE_ACTIVE_FILTERS: {
       const { id, data } = action.payload;
       draftState[id].filtersActive = data;
       return;
@@ -58,6 +84,9 @@ const reducer = produce((draftState, action) => {
     }
     case types.CLEAR_ALL_FILTERS: {
       const { id, data } = action.payload;
+
+      if (!id) return;
+
       const currentFilters = original(draftState[id]);
       if (currentFilters) {
         const filtersAfterClearing = currentFilters.filtersActive
@@ -80,9 +109,22 @@ const reducer = produce((draftState, action) => {
       return;
     }
     case types.UPDATE_INLINE_FILTER: {
-      const { filterId, data } = action.payload;
-      if (original(draftState[filterId].filtersActive).length) {
-        draftState[filterId].filtersActive[0].parameters[0].value = data;
+      const { filterId, parentFilterId, data } = action.payload;
+      const currentActiveFilters = original(draftState[filterId].filtersActive);
+
+      if (currentActiveFilters.length) {
+        draftState[filterId].filtersActive = currentActiveFilters.map(
+          (filter) => {
+            if (filter.filterId === parentFilterId) {
+              filter = deepUnfreeze(filter);
+              filter.parameters[0].value = data;
+
+              return filter;
+            }
+
+            return filter;
+          }
+        );
       }
       return;
     }

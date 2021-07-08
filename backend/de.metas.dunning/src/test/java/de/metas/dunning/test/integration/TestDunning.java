@@ -32,6 +32,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -63,7 +64,6 @@ import de.metas.dunning.spi.impl.MockedDunningCandidateListener;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import de.metas.util.time.SystemTime;
 
 /**
  * @author tsa
@@ -399,8 +399,8 @@ public class TestDunning extends DunningTestBase
 		invoice1.setIsSOTrx(true);
 		invoice1.setProcessed(true);
 		invoice1.setGrandTotal(new BigDecimal("110"));
-		invoice1.setDateAcct(SystemTime.asDayTimestamp());
-		invoice1.setDateInvoiced(SystemTime.asDayTimestamp());
+		invoice1.setDateAcct(de.metas.common.util.time.SystemTime.asDayTimestamp());
+		invoice1.setDateInvoiced(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		InterfaceWrapperHelper.save(invoice1);
 
 		invoice2 = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, ITrx.TRXNAME_None);
@@ -413,7 +413,7 @@ public class TestDunning extends DunningTestBase
 		invoice2.setIsSOTrx(true);
 		invoice2.setProcessed(true);
 		invoice2.setGrandTotal(new BigDecimal("110"));
-		invoice2.setDateAcct(SystemTime.asDayTimestamp());
+		invoice2.setDateAcct(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		invoice2.setDateInvoiced(SystemTime.asDayTimestamp());
 		InterfaceWrapperHelper.save(invoice2);
 
@@ -427,9 +427,9 @@ public class TestDunning extends DunningTestBase
 		invoice3.setC_DocType_ID(type.getC_DocType_ID());
 		invoice3.setIsSOTrx(true);
 		invoice3.setProcessed(true);
-		invoice3.setDateAcct(SystemTime.asDayTimestamp());
+		invoice3.setDateAcct(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		invoice3.setGrandTotal(new BigDecimal("110"));
-		invoice3.setDateInvoiced(SystemTime.asDayTimestamp());
+		invoice3.setDateInvoiced(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		InterfaceWrapperHelper.save(invoice3);
 
 		invoice4 = InterfaceWrapperHelper.create(Env.getCtx(), I_C_Invoice.class, ITrx.TRXNAME_None);
@@ -441,9 +441,9 @@ public class TestDunning extends DunningTestBase
 		invoice4.setC_DocType_ID(type.getC_DocType_ID());
 		invoice4.setIsSOTrx(true);
 		invoice4.setProcessed(true);
-		invoice4.setDateAcct(SystemTime.asDayTimestamp());
+		invoice4.setDateAcct(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		invoice4.setGrandTotal(new BigDecimal("110"));
-		invoice4.setDateInvoiced(SystemTime.asDayTimestamp());
+		invoice4.setDateInvoiced(de.metas.common.util.time.SystemTime.asDayTimestamp());
 		InterfaceWrapperHelper.save(invoice4);
 	}
 

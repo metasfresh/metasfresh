@@ -1,20 +1,5 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.function.Consumer;
-
-import org.adempiere.warehouse.LocatorId;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Warehouse;
-import org.junit.Before;
-
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
 import de.metas.handlingunits.IHUStatusBL;
@@ -37,6 +22,21 @@ import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Warehouse;
+import org.junit.Before;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.function.Consumer;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L
@@ -62,15 +62,14 @@ import de.metas.util.collections.CollectionUtils;
 
 /**
  * Contains masterdata and common stuff to be used by different tests.
- * This class is convenient whenever you want to test with (aggregate) HUs that were created by the {@link LUTUProducerDestination}.
+ * This class is convenient whenever you want to test with HUs that were created by the {@link LUTUProducerDestination}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class LUTUProducerDestinationTestSupport
 {
 	private static final String ATTR_Truck_Product = "Truck";
-	
+
 	public HUTestHelper helper;
 
 	public LocatorId defaultLocatorId;
@@ -117,10 +116,10 @@ public class LUTUProducerDestinationTestSupport
 
 	/**
 	 * This is an <b>alternative</b> to calling link AdempiereTestHelper#init()}! Don't call both, they will reset each other's stuff.
-	 *
+	 * <p>
 	 * Creates a new instance with fresh masterdata. Also causes the {@link HUTestHelper} to be initialized.
 	 * This constructor should be called from tests' {@link Before} methods.
-	 *
+	 * <p>
 	 * Creates PI as follows
 	 * <ul>
 	 * <li>LU (Palet)
@@ -129,7 +128,14 @@ public class LUTUProducerDestinationTestSupport
 	 */
 	public LUTUProducerDestinationTestSupport()
 	{
-		helper = new HUTestHelper();
+		helper = new HUTestHelper()
+		{
+			@Override
+			public void beforeRegisteringServices()
+			{
+				LUTUProducerDestinationTestSupport.this.beforeRegisteringServices();
+			}
+		};
 		helper.init();
 
 		{
@@ -188,6 +194,10 @@ public class LUTUProducerDestinationTestSupport
 		}
 	}
 
+	public void beforeRegisteringServices()
+	{
+	}
+
 	private LocatorId createLocatorId()
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
@@ -206,7 +216,7 @@ public class LUTUProducerDestinationTestSupport
 		});
 	}
 
-	public I_M_HU createLU(final int qtyTUs, final int qtyCUPerTU, Consumer<LUTUProducerDestination> producerCustomizer)
+	public I_M_HU createLU(final int qtyTUs, final int qtyCUPerTU, final Consumer<LUTUProducerDestination> producerCustomizer)
 	{
 		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 		lutuProducer.setLocatorId(defaultLocatorId);
@@ -234,7 +244,7 @@ public class LUTUProducerDestinationTestSupport
 	/**
 	 * Makes a stand alone CU with the given quantity and status "active".
 	 */
-	public I_M_HU mkRealStandAloneCuWithCuQty(final String strCuQty)
+	public I_M_HU mkRealStandAloneCuWithCuQty(@NonNull final String strCuQty)
 	{
 		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
 				.setLocatorId(defaultLocatorId);
@@ -256,7 +266,7 @@ public class LUTUProducerDestinationTestSupport
 		final I_M_HU cuToSplit = createdCUs.get(0);
 		huStatusBL.setHUStatus(helper.getHUContext(), cuToSplit, X_M_HU.HUSTATUS_Active);
 		save(cuToSplit);
-
+		
 		return cuToSplit;
 	}
 
@@ -283,15 +293,11 @@ public class LUTUProducerDestinationTestSupport
 		final List<I_M_HU> createdCUs = handlingUnitsDAO.retrieveIncludedHUs(createdTU);
 		assertThat(createdCUs.size(), is(1));
 
-		final I_M_HU cu = createdCUs.get(0);
-		return cu;
+		return createdCUs.get(0);
 	}
 
 	/**
 	 * Creates an LU with PI {@link LUTUProducerDestinationTestSupport#piLU} and an aggregate TU with PI {@link LUTUProducerDestinationTestSupport#piTU_IFCO}.
-	 *
-	 * @param totalQtyCUStr
-	 * @return
 	 */
 	public I_M_HU mkAggregateHUWithTotalQtyCU(final String totalQtyCUStr)
 	{
@@ -358,18 +364,10 @@ public class LUTUProducerDestinationTestSupport
 		return cuToSplit;
 	}
 
-	public void errorIfAnyHuIsAddedToPackingMaterialsCollector()
-	{
-		helper
-				.getHUContext()
-				.getHUPackingMaterialsCollector()
-				.errorIfAnyHuIsAdded();
-	}
-
 	/**
 	 * @param disableReason explains why we want to disable the collector.
 	 */
-	public void disableHUPackingMaterialsCollector(String disableReason)
+	public void disableHUPackingMaterialsCollector(final String disableReason)
 	{
 		helper.getHUContext().getHUPackingMaterialsCollector().disable();
 	}

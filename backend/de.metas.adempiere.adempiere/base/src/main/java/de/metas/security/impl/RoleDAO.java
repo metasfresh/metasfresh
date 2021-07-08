@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import de.metas.money.CurrencyId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.AdTreeId;
@@ -163,7 +164,7 @@ public class RoleDAO implements IRoleDAO
 				.addConstraint(UserPreferenceLevelConstraint.forPreferenceType(record.getPreferenceType()))
 				.addConstraint(WindowMaxQueryRecordsConstraint.of(record.getMaxQueryRecords(), record.getConfirmQueryRecords()))
 				.addConstraintIfNotEquals(StartupWindowConstraint.ofAD_Form_ID(record.getAD_Form_ID()), StartupWindowConstraint.NULL)
-				.addConstraint(DocumentApprovalConstraint.of(record.isCanApproveOwnDoc(), record.getAmtApproval(), record.getC_Currency_ID()))
+				.addConstraint(DocumentApprovalConstraint.of(record.isCanApproveOwnDoc(), record.getAmtApproval(), CurrencyId.ofRepoIdOrNull(record.getC_Currency_ID())))
 				.addConstraint(extractLoginOrgConstraint(record))
 				.addConstraint(UIDisplayedEntityTypes.of(record.isShowAllEntityTypes()))
 				.build();

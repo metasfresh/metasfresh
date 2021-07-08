@@ -25,8 +25,10 @@ package de.metas.document.archive.spi.impl;
 
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.archive.spi.impl.AbstractArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.util.Ini;
@@ -65,14 +67,14 @@ public class RemoteArchiveStorage extends AbstractArchiveStorage
 	}
 
 	@Override
-	public void init(final Properties ctx, final int adClientId)
+	public void init(@NonNull final ClientId clientId)
 	{
 		if (endpoint == null)
 		{
 			final String endpointClassname = Services.get(ISysConfigBL.class).getValue(
 					RemoteArchiveStorage.SYSCONFIG_ArchiveEndpoint,
 					RemoteArchiveStorage.DEFAULT_ArchiveEndpoint,
-					adClientId
+					clientId.getRepoId()
 					);
 			endpoint = Util.getInstance(IArchiveEndpoint.class, endpointClassname);
 		}

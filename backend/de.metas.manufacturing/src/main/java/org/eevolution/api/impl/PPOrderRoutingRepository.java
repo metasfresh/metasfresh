@@ -1,39 +1,27 @@
 package org.eevolution.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
-import java.util.Collection;
-import java.util.HashMap;
-
-/*
- * #%L
- * de.metas.adempiere.libero.libero
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Maps;
+import de.metas.bpartner.BPartnerId;
+import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.ResourceType;
+import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPRoutingActivityId;
+import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
+import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import de.metas.workflow.WFDurationUnit;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -46,42 +34,36 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityScheduleChangeRequest;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityCode;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.api.PPOrderRoutingActivitySchedule;
 import org.eevolution.api.PPOrderRoutingActivityStatus;
+import org.eevolution.api.PPOrderRoutingProduct;
+import org.eevolution.api.PPOrderRoutingProductId;
 import org.eevolution.model.I_PP_Order_Node;
 import org.eevolution.model.I_PP_Order_NodeNext;
+import org.eevolution.model.I_PP_Order_Node_Product;
 import org.eevolution.model.I_PP_Order_Workflow;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Maps;
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.material.planning.DurationUnitCodeUtils;
-import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
-import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.PPRoutingActivityId;
-import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
-import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.product.ResourceId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import de.metas.util.time.DurationUtils;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 {
+	public final IProductBL productBL = Services.get(IProductBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public PPOrderRouting getByOrderId(@NonNull final PPOrderId orderId)
 	{
@@ -89,7 +71,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		// Order Routing header
 		final I_PP_Order_Workflow orderRoutingRecord = retrieveOrderWorkflowOrNull(orderId);
 		Check.assumeNotNull(orderRoutingRecord, "Parameter orderWorkflow is not null");
-		final TemporalUnit durationUnit = DurationUnitCodeUtils.toTemporalUnit(orderRoutingRecord.getDurationUnit());
+		final WFDurationUnit durationUnit = WFDurationUnit.ofCode(orderRoutingRecord.getDurationUnit());
 		final int unitsPerCycle = orderRoutingRecord.getUnitsCycles().intValue();
 
 		//
@@ -99,11 +81,16 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.map(orderActivityRecord -> toPPOrderRoutingActivity(orderActivityRecord, durationUnit, unitsPerCycle))
 				.collect(ImmutableList.toImmutableList());
 
+		final ImmutableList<PPOrderRoutingProduct> orderProducts = retrieveOrderNodeProducts(orderId)
+				.stream()
+				.map(this::toPPOrderRoutingProduct)
+				.collect(ImmutableList.toImmutableList());
+
 		final ImmutableMap<Integer, PPOrderRoutingActivityCode> activityCodesByRepoId = orderActivities
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						orderActivity -> orderActivity.getId().getRepoId(),
-						orderActivity -> orderActivity.getCode()));
+						PPOrderRoutingActivity::getCode));
 
 		//
 		// First Activity Code
@@ -125,8 +112,24 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				//
 				.firstActivityCode(firstActivityCode)
 				.activities(orderActivities)
+				.products(orderProducts)
 				.codeToNextCodeMap(codeToNextCodeMap)
 				//
+				.build();
+	}
+
+	private PPOrderRoutingProduct toPPOrderRoutingProduct(final I_PP_Order_Node_Product product)
+	{
+		final PPOrderId orderId = PPOrderId.ofRepoId(product.getPP_Order_ID());
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, product.getPP_Order_Node_ID());
+		final PPOrderRoutingProductId id = PPOrderRoutingProductId.ofRepoId(activityId, product.getPP_Order_Node_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		return PPOrderRoutingProduct.builder()
+				.id(id)
+				.productId(productId)
+				.qty(Quantity.of(product.getQty(), productBL.getStockUOM(productId)))
+				.subcontracting(product.isSubcontracting())
+				.seqNo(product.getSeqNo())
 				.build();
 	}
 
@@ -138,7 +141,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		final PPOrderId orderId = orderRoutingActivityId.getOrderId();
 		final I_PP_Order_Workflow orderRoutingRecord = retrieveOrderWorkflowOrNull(orderId);
 		Check.assumeNotNull(orderRoutingRecord, "Parameter orderWorkflow is not null");
-		final TemporalUnit durationUnit = DurationUnitCodeUtils.toTemporalUnit(orderRoutingRecord.getDurationUnit());
+		final WFDurationUnit durationUnit = WFDurationUnit.ofCode(orderRoutingRecord.getDurationUnit());
 		final int unitsPerCycle = orderRoutingRecord.getUnitsCycles().intValue();
 
 		final I_PP_Order_Node orderActivityRecord = load(orderRoutingActivityId, I_PP_Order_Node.class);
@@ -187,9 +190,9 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		}
 	}
 
+	@Nullable
 	private I_PP_Order_Workflow retrieveOrderWorkflowOrNull(@NonNull final PPOrderId orderId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL.createQueryBuilder(I_PP_Order_Workflow.class)
 				.addEqualsFilter(I_PP_Order_Workflow.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
@@ -201,6 +204,15 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order_Node.class)
 				.addEqualsFilter(I_PP_Order_Node.COLUMNNAME_PP_Order_ID, orderId)
+				.create()
+				.list();
+	}
+
+	private List<I_PP_Order_Node_Product> retrieveOrderNodeProducts(final PPOrderId orderId)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order_Node_Product.class)
+				.addEqualsFilter(I_PP_Order_Node_Product.COLUMNNAME_PP_Order_ID, orderId)
 				.create()
 				.list();
 	}
@@ -226,9 +238,17 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		return resource.getName();
 	}
 
+	@Override
+	public PPOrderRoutingActivity getFirstActivity(@NonNull final PPOrderId orderId)
+	{
+		final I_PP_Order_Workflow orderWorkflow = retrieveOrderWorkflowOrNull(orderId);
+		final PPOrderRoutingActivityId firstActivityId = PPOrderRoutingActivityId.ofRepoId(orderId, orderWorkflow.getPP_Order_Node_ID());
+		return getOrderRoutingActivity(firstActivityId);
+	}
+
 	private PPOrderRoutingActivity toPPOrderRoutingActivity(
 			@NonNull final I_PP_Order_Node record,
-			@NonNull final TemporalUnit durationUnit,
+			@NonNull final WFDurationUnit durationUnit,
 			final int unitsPerCycle)
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(record.getPP_Order_ID());
@@ -254,21 +274,21 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				//
 				// Standard values
 				.durationUnit(durationUnit)
-				.queuingTime(Duration.of(record.getQueuingTime(), durationUnit))
-				.setupTime(Duration.of(record.getSetupTime(), durationUnit))
-				.waitingTime(Duration.of(record.getWaitingTime(), durationUnit))
-				.movingTime(Duration.of(record.getMovingTime(), durationUnit))
-				.durationPerOneUnit(Duration.of(record.getDuration(), durationUnit))
+				.queuingTime(Duration.of(record.getQueuingTime(), durationUnit.getTemporalUnit()))
+				.setupTime(Duration.of(record.getSetupTime(), durationUnit.getTemporalUnit()))
+				.waitingTime(Duration.of(record.getWaitingTime(), durationUnit.getTemporalUnit()))
+				.movingTime(Duration.of(record.getMovingTime(), durationUnit.getTemporalUnit()))
+				.durationPerOneUnit(Duration.of(record.getDuration(), durationUnit.getTemporalUnit()))
 				.unitsPerCycle(unitsPerCycle)
 				//
 				// Planned values
-				.setupTimeRequired(Duration.of(record.getSetupTimeRequiered(), durationUnit))
-				.durationRequired(Duration.of(record.getDurationRequiered(), durationUnit))
+				.setupTimeRequired(Duration.of(record.getSetupTimeRequiered(), durationUnit.getTemporalUnit()))
+				.durationRequired(Duration.of(record.getDurationRequiered(), durationUnit.getTemporalUnit()))
 				.qtyRequired(Quantity.of(record.getQtyRequiered(), uom))
 				//
 				// Reported values
-				.setupTimeReal(Duration.of(record.getSetupTimeReal(), durationUnit))
-				.durationReal(Duration.of(record.getDurationReal(), durationUnit))
+				.setupTimeReal(Duration.of(record.getSetupTimeReal(), durationUnit.getTemporalUnit()))
+				.durationReal(Duration.of(record.getDurationReal(), durationUnit.getTemporalUnit()))
 				.qtyDelivered(Quantity.of(record.getQtyDelivered(), uom))
 				.qtyScrapped(Quantity.of(record.getQtyScrap(), uom))
 				.qtyRejected(Quantity.of(record.getQtyReject(), uom))
@@ -404,6 +424,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		//
 		// Order Activities
 		final Collection<I_PP_Order_Node> activityRecordsToDelete;
+		final Map<Integer, PPOrderRoutingActivityId> wfNodeToActivityId = new HashMap<>();
 		{
 			final HashMap<PPOrderRoutingActivityId, I_PP_Order_Node> existingActivityRecords = retrieveOrderNodes(orderId)
 					.stream()
@@ -423,11 +444,39 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				}
 
 				saveRecord(activityRecord);
-				activity.setId(extractPPOrderRoutingActivityId(activityRecord));
+				final PPOrderRoutingActivityId id = extractPPOrderRoutingActivityId(activityRecord);
+				wfNodeToActivityId.put(activity.getRoutingActivityId().getRepoId(), id);
+				activity.setId(id);
 			}
 
 			//
 			activityRecordsToDelete = existingActivityRecords.values();
+		}
+
+		final Collection<I_PP_Order_Node_Product> productRecordsToDelete;
+		{
+			final HashMap<PPOrderRoutingProductId, I_PP_Order_Node_Product> existingProductRecords = retrieveOrderNodeProducts(orderId)
+					.stream()
+					.collect(GuavaCollectors.toHashMapByKey(this::extractPPOrderRoutingProductId));
+
+			// Create/Update
+			for (final PPOrderRoutingProduct product : orderRouting.getProducts())
+			{
+				I_PP_Order_Node_Product productRecord = existingProductRecords.remove(product.getId());
+				if (productRecord == null)
+				{
+					productRecord = toNewOrderNodeProductRecord(product, orderId, ppOrderWorkflowId, wfNodeToActivityId);
+				}
+				else
+				{
+					updateOrderNodeProductRecord(productRecord, product);
+				}
+
+				saveRecord(productRecord);
+			}
+
+			//
+			productRecordsToDelete = existingProductRecords.values();
 		}
 
 		//
@@ -469,7 +518,32 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 		//
 		// Delete remaining nodes if any
+		InterfaceWrapperHelper.deleteAll(productRecordsToDelete);
 		InterfaceWrapperHelper.deleteAll(activityRecordsToDelete);
+	}
+
+	private void updateOrderNodeProductRecord(final I_PP_Order_Node_Product record, final PPOrderRoutingProduct product)
+	{
+		record.setM_Product_ID(product.getProductId().getRepoId());
+		if (product.getQty() != null)
+		{
+			record.setQty(product.getQty().toBigDecimal());
+		}
+		record.setSeqNo(product.getSeqNo());
+		record.setIsSubcontracting(product.isSubcontracting());
+		record.setSpecification(product.getSpecification());
+	}
+
+	private I_PP_Order_Node_Product toNewOrderNodeProductRecord(final PPOrderRoutingProduct product, final PPOrderId orderId, final int ppOrderWorkflowId, final Map<Integer, PPOrderRoutingActivityId> wfNodeToActivityId)
+	{
+		final I_PP_Order_Node_Product record = InterfaceWrapperHelper.newInstance(I_PP_Order_Node_Product.class);
+		record.setPP_Order_ID(orderId.getRepoId());
+		record.setPP_Order_Workflow_ID(ppOrderWorkflowId);
+		record.setPP_Order_Node_ID(wfNodeToActivityId.get(product.getId().getActivityId().getRepoId()).getRepoId());
+
+		updateOrderNodeProductRecord(record, product);
+
+		return record;
 	}
 
 	private ImmutablePair<PPOrderRoutingActivityId, PPOrderRoutingActivityId> extractCurrentAndNextActivityIdPair(final I_PP_Order_NodeNext record)
@@ -484,6 +558,13 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	{
 		final PPOrderId orderId = PPOrderId.ofRepoId(record.getPP_Order_ID());
 		return PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID());
+	}
+
+	private PPOrderRoutingProductId extractPPOrderRoutingProductId(final I_PP_Order_Node_Product record)
+	{
+		final PPOrderId orderId = PPOrderId.ofRepoId(record.getPP_Order_ID());
+		final PPOrderRoutingActivityId activityId = PPOrderRoutingActivityId.ofRepoId(orderId, record.getPP_Order_Node_ID());
+		return PPOrderRoutingProductId.ofRepoId(activityId, record.getPP_Order_Node_Product_ID());
 	}
 
 	private I_PP_Order_Workflow toNewOrderWorkflowRecord(final PPOrderRouting from)
@@ -508,7 +589,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 	{
 		record.setIsActive(true);
 		record.setAD_Workflow_ID(from.getRoutingId().getRepoId());
-		record.setDurationUnit(DurationUnitCodeUtils.toDurationUnitCode(from.getDurationUnit()));
+		record.setDurationUnit(from.getDurationUnit().getCode());
 		record.setQtyBatchSize(from.getQtyPerBatch());
 	}
 
@@ -528,7 +609,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 	private void updateOrderNodeRecord(final I_PP_Order_Node record, final PPOrderRoutingActivity from)
 	{
-		final TemporalUnit durationUnit = from.getDurationUnit();
+		final WFDurationUnit durationUnit = from.getDurationUnit();
 
 		record.setIsActive(true);
 		record.setValue(from.getCode().getAsString());
@@ -547,25 +628,25 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 		//
 		// Standard values
-		record.setSetupTime(DurationUtils.toInt(from.getSetupTime(), durationUnit));
-		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTime(), durationUnit));
-		record.setMovingTime(DurationUtils.toInt(from.getMovingTime(), durationUnit));
-		record.setWaitingTime(DurationUtils.toInt(from.getWaitingTime(), durationUnit));
-		record.setQueuingTime(DurationUtils.toInt(from.getQueuingTime(), durationUnit));
-		record.setDuration(DurationUtils.toInt(from.getDurationPerOneUnit(), durationUnit));
-		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
+		record.setSetupTime(durationUnit.toInt(from.getSetupTime()));
+		record.setSetupTimeRequiered(durationUnit.toInt(from.getSetupTime()));
+		record.setMovingTime(durationUnit.toInt(from.getMovingTime()));
+		record.setWaitingTime(durationUnit.toInt(from.getWaitingTime()));
+		record.setQueuingTime(durationUnit.toInt(from.getQueuingTime()));
+		record.setDuration(durationUnit.toInt(from.getDurationPerOneUnit()));
+		record.setDurationRequiered(durationUnit.toInt(from.getDurationRequired()));
 
 		//
 		// Planned values
-		record.setSetupTimeRequiered(DurationUtils.toInt(from.getSetupTimeRequired(), durationUnit));
-		record.setDurationRequiered(DurationUtils.toInt(from.getDurationRequired(), durationUnit));
+		record.setSetupTimeRequiered(durationUnit.toInt(from.getSetupTimeRequired()));
+		record.setDurationRequiered(durationUnit.toInt(from.getDurationRequired()));
 		record.setQtyRequiered(from.getQtyRequired().toBigDecimal());
 		record.setC_UOM_ID(from.getQtyRequired().getUomId().getRepoId());
 
 		//
 		// Reported values
-		record.setSetupTimeReal(DurationUtils.toInt(from.getSetupTimeReal(), durationUnit));
-		record.setDurationReal(DurationUtils.toInt(from.getDurationReal(), durationUnit));
+		record.setSetupTimeReal(durationUnit.toInt(from.getSetupTimeReal()));
+		record.setDurationReal(durationUnit.toInt(from.getDurationReal()));
 		record.setQtyDelivered(from.getQtyDelivered().toBigDecimal());
 		record.setQtyScrap(from.getQtyScrapped().toBigDecimal());
 		record.setQtyReject(from.getQtyRejected().toBigDecimal());

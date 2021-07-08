@@ -434,11 +434,6 @@ public final class ALogin extends CDialog
 		}
 	}   // processWindowEvent
 
-	private void validateAppServer()
-	{
-		m_cc.testAppsServer();
-	}
-
 	private void connectToDatabase()
 	{
 		// Check connection
@@ -525,7 +520,6 @@ public final class ALogin extends CDialog
 	private void validateConnection()
 	{
 		m_connectionOK = false;
-		validateAppServer();
 
 		// make sure connecting to new database
 		DB.closeTarget();

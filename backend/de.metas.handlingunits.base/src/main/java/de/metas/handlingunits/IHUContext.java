@@ -29,12 +29,13 @@ import java.util.List;
 
 import org.adempiere.util.lang.IContextAware;
 
-import de.metas.adempiere.form.terminal.context.IPropertiesContainer;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.hutransaction.IHUTrxListener;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+
+import javax.annotation.Nullable;
 
 /**
  * Immutable Handling Unit Context. Use {@link IHUContextFactory} to create an instance.
@@ -45,7 +46,7 @@ import de.metas.handlingunits.storage.IHUStorageFactory;
  * @author tsa
  *
  */
-public interface IHUContext extends IContextAware, IPropertiesContainer
+public interface IHUContext extends IContextAware
 {
 	/**
 	 * DateTrx provider used to get the DateTrx when a new IHUContext is created.
@@ -64,6 +65,12 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 	 * @task http://dewiki908/mediawiki/index.php/08728_HU_Weight_Net_changes_after_Material_Receipt_%28107972107210%29
 	 */
 	String PROPERTY_IsStorageAdjustmentFromWeightAttribute = "IsStorageAdjustmentFromWeightAttribute";
+
+	@Nullable
+	<T> T getProperty(String propertyName);
+
+	@Nullable
+	Object setProperty(String propertyName, Object value);
 
 	/**
 	 * Create a mutable copy of this context.
@@ -103,4 +110,10 @@ public interface IHUContext extends IContextAware, IPropertiesContainer
 
 	/** @return previously added listeners that want to be notified before an empty HU is destroyed */
 	List<EmptyHUListener> getEmptyHUListeners();
+
+	/**
+	 * Flush the contents stored only in memory.
+	 * Useful for example to persist the HU Attributes.
+	 */
+	void flush();
 }

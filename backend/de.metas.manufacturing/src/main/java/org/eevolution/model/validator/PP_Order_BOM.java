@@ -28,7 +28,7 @@ import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_PP_Order_BOM;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.util.Services;
 
 @Validator(I_PP_Order_BOM.class)

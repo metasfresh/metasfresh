@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.util.TimeUtil;
@@ -16,7 +17,6 @@ import de.metas.contracts.impl.ContractsTestBase.FixedTimeSource;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

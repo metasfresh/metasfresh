@@ -233,7 +233,7 @@ public class PartitionerServiceCreatePartitionTests
 		payment.setC_Invoice(invoice);
 		InterfaceWrapperHelper.save(payment);
 
-		order.setC_Payment(payment);
+		order.setC_Payment_ID(payment.getC_Payment_ID());
 		InterfaceWrapperHelper.save(order);
 
 		setupMigratorServiceMock();

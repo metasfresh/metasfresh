@@ -52,6 +52,7 @@ public final class TranslatableStringBuilder
 	private static final String EMPTY_JOIN_STRING = "";
 
 	private final List<ITranslatableString> parts = new ArrayList<>();
+	@Nullable
 	private StringBuilder lastStringBuffer;
 
 	private TranslatableStringBuilder()
@@ -153,7 +154,7 @@ public final class TranslatableStringBuilder
 		return insertFirst(TranslatableStrings.constant(value));
 	}
 
-	public TranslatableStringBuilder append(final String value)
+	public TranslatableStringBuilder append(@Nullable final String value)
 	{
 		if (Check.isEmpty(value))
 		{

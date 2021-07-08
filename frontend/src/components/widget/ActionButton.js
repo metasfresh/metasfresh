@@ -2,9 +2,11 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { get } from 'lodash';
+import classnames from 'classnames';
 
-import { fetchTopActions } from '../../actions/WindowActions';
+import { fetchTopActions } from '../../actions/Actions';
 import { dropdownRequest } from '../../actions/GenericActions';
+
 import DocumentStatusContextShortcuts from '../keyshortcuts/DocumentStatusContextShortcuts';
 import Prompt from '../../components/app/Prompt';
 
@@ -281,6 +283,7 @@ class ActionButton extends PureComponent {
   };
 
   documentCompleteStatus = () => {
+    if (this.isDisabled()) return false;
     const { list } = this.state;
 
     this.handleChangeStatus(list.find((elem) => elem.key === 'CO'));
@@ -288,6 +291,18 @@ class ActionButton extends PureComponent {
 
   setRef = (ref) => {
     this.statusDropdown = ref;
+  };
+
+  /**
+   * @method isDisabled
+   * @summary the action button can be disabled when it has the property readonly `true` but it can also be disabled in case
+   *          of a process running situation or when a modal window is active
+   */
+  isDisabled = () => {
+    const { modalVisible, readonly, processStatus } = this.props;
+    return readonly || processStatus === 'pending' || modalVisible
+      ? true
+      : false;
   };
 
   /**
@@ -314,7 +329,12 @@ class ActionButton extends PureComponent {
     return (
       <div
         onKeyDown={this.handleKeyDown}
-        className="meta-dropdown-toggle dropdown-status-toggler js-dropdown-toggler"
+        className={classnames(
+          'meta-dropdown-toggle dropdown-status-toggler js-dropdown-toggler',
+          {
+            disabled: this.isDisabled(),
+          }
+        )}
         tabIndex={modalVisible ? -1 : 0}
         ref={this.setRef}
         onBlur={this.handleDropdownBlur}
@@ -347,6 +367,10 @@ class ActionButton extends PureComponent {
     );
   }
 }
+/**
+ * Default props
+ */
+ActionButton.defaultProps = { readonly: false };
 
 /**
  * @typedef {object} Props Component props
@@ -372,10 +396,13 @@ ActionButton.propTypes = {
   dataId: PropTypes.any,
   docId: PropTypes.any,
   activeTab: PropTypes.string,
+  processStatus: PropTypes.string,
+  readonly: PropTypes.bool,
 };
 
-const mapStateToProps = ({ windowHandler }) => ({
+const mapStateToProps = ({ windowHandler, appHandler }) => ({
   modalVisible: windowHandler.modal.visible,
+  processStatus: appHandler.processStatus,
 });
 
 export default connect(

@@ -22,6 +22,7 @@ package de.metas.security.impl;
  * #L%
  */
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -33,7 +34,6 @@ import de.metas.security.RoleId;
 import de.metas.security.model.interceptor.SecurityMainInterceptor;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class UserRolePermissionsDAOTest
 {

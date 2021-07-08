@@ -662,7 +662,7 @@ public class CCache<K, V> implements CacheInterface
 	 * @param valuesLoader
 	 * @return values (IMPORTANT: order is not guaranteed)
 	 */
-	public Collection<V> getAllOrLoad(final Collection<K> keys, final Function<Collection<K>, Map<K, V>> valuesLoader)
+	public Collection<V> getAllOrLoad(final Collection<K> keys, final Function<Set<K>, Map<K, V>> valuesLoader)
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{

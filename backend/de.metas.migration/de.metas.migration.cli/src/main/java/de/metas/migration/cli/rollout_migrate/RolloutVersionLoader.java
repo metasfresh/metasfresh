@@ -47,9 +47,6 @@ class RolloutVersionLoader
 	/**
 	 * Invokes our {@link PropertiesFileLoader} to load the {@link #BUILD_INFO_FILENAME} from the given {@code dirName} and returns it.
 	 *
-	 * @param dirName
-	 * @return
-	 *
 	 * @throws CantGetRolloutVersionStringException
 	 */
 	public String loadRolloutVersionString(@NonNull final String dirName)

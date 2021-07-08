@@ -195,7 +195,7 @@ public class DataImportService
 			notificationBL.send(UserNotificationRequest.builder()
 					.topic(USER_NOTIFICATIONS_TOPIC)
 					.recipientUserId(recipientUserId)
-					.contentADMessage(MSG_Event_RecordsImported.toAD_Message())
+					.contentADMessage(MSG_Event_RecordsImported)
 					.contentADMessageParam(result.getCountInsertsIntoTargetTableString())
 					.contentADMessageParam(result.getCountUpdatesIntoTargetTableString())
 					.contentADMessageParam(windowName)

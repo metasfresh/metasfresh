@@ -1,18 +1,23 @@
 package de.metas.invoicecandidate.api.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -40,6 +45,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -53,8 +59,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
@@ -132,6 +140,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
 	//
 	// Parameters
@@ -361,12 +371,17 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			setC_DocType(invoice, invoiceHeader);
 
-			invoice.setC_BPartner_ID(invoiceHeader.getBillBPartnerId().getRepoId());
+			final BPartnerId bpartnerID = invoiceHeader.getBillBPartnerId();
+			invoice.setC_BPartner_ID(bpartnerID.getRepoId());
 			invoice.setC_BPartner_Location_ID(invoiceHeader.getBill_Location_ID());
 			final BPartnerContactId adUserId = BPartnerContactId.ofRepoIdOrNull(invoiceHeader.getBillBPartnerId(), invoiceHeader.getBill_User_ID());
 			invoice.setAD_User_ID(BPartnerContactId.toRepoId(adUserId));
 			invoice.setC_Currency_ID(invoiceHeader.getCurrencyId().getRepoId()); // 03805
-			invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(invoiceHeader.getSalesPartnerId()));
+			final BPartnerId salesRepId = invoiceHeader.getSalesPartnerId();
+			if (!bpartnerID.equals(salesRepId))
+			{
+				invoice.setC_BPartner_SalesRep_ID(BPartnerId.toRepoId(salesRepId));
+			}
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
 
 			invoice.setIsSOTrx(header.isSOTrx());
@@ -413,9 +428,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// The invoice lines from 'aggregate' are generated in a common trx runner.
 				// That way we can undo all invoice lines if the creation of one of them fails.
 				final DefaultInvoiceLineGeneratorRunnable genLines = new DefaultInvoiceLineGeneratorRunnable(invoice,
-						aggregate, processedLines,
-						errorCandidates, errorException,
-						trxName);
+																											 aggregate, processedLines,
+																											 errorCandidates, errorException,
+																											 trxName);
 
 				// task 08927: we already do the ILAs in here, so we won't need to update them again.
 				InvoiceCandBL.DYNATTR_INVOICING_FROM_INVOICE_CANDIDATES_IS_IN_PROGRESS.setValue(invoice, Boolean.TRUE);
@@ -653,6 +668,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(ExternalIdsUtil.joinExternalIds(externalIds));
 
+				final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(cand);
+				dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
+
 				//
 				// Notify listeners that we created a new invoice line and we are about to save it
 				invoiceCandListeners.onBeforeInvoiceLineCreated(invoiceLine, ilVO, candsForIlVO);
@@ -843,6 +861,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				catch (final AdempiereException e)
 				{
 					createNoticesAndMarkICs(ImmutableList.of(ic), e);
+					Loggables.withLogger(logger, Level.WARN).addLog("Cannot invoice C_Invoice_Candidate_ID=" + ic.getC_Invoice_Candidate_ID() + "! See preceding logged error");
 				}
 			}
 		}
@@ -885,7 +904,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (getInvoicingParams() != null && getInvoicingParams().isAssumeOneInvoice())
 		{
 			Check.errorIf(aggregationResult.size() > 1, "The shall be only one invoice, but instead there are {}; aggregationResult={}",
-					aggregationResult.size(), aggregationResult);
+						  aggregationResult.size(), aggregationResult);
 		}
 
 		//
@@ -990,8 +1009,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
 					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
-							.map(AdMessageId::getRepoId)
-							.orElse(-1));
+												  .map(AdMessageId::getRepoId)
+												  .orElse(-1));
 
 					note.setAD_User_ID(userId);
 
@@ -1001,18 +1020,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 					note.setReference(error.getLocalizedMessage());
 
-					final String adLanguage;
-					if (user.getC_BPartner_ID() > 0)
-					{
-						adLanguage = user.getC_BPartner().getAD_Language();
-					}
-					else
-					{
-						adLanguage = Env.getAD_Language(getCtx());
-					}
-
+					final Language adLanguage = userBL.getUserLanguage(user);
 					final String noteMsg = msgBL.getMsg(
-							adLanguage,
+							adLanguage.getAD_Language(),
 							MSG_INVOICE_CAND_BL_PROCESSING_ERROR_DESC_1P,
 							new Object[] { candidates.toString() });
 					note.setTextMsg(noteMsg);

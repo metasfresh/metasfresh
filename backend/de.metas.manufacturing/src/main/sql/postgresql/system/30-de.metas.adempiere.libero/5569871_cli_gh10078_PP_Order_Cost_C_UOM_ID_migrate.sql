@@ -21,7 +21,7 @@ WHERE c_uom_id IS NULL
 ;
 
 UPDATE pp_order_cost oc
-SET c_uom_id=(SELECT n.c_uom_id
+SET c_uom_id=(SELECT distinct n.c_uom_id
               FROM m_product p
                        INNER JOIN pp_order_node n ON n.pp_order_id = oc.pp_order_id AND n.s_resource_id = p.s_resource_id)
 WHERE c_uom_id IS NULL

@@ -17,6 +17,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_BPartner_Product_Stats;
 import org.compiere.model.I_C_BPartner_Product_Stats_InOut_Online_v;
 import org.compiere.model.I_C_BPartner_Product_Stats_Invoice_Online_V;
@@ -64,29 +65,34 @@ import lombok.NonNull;
 @Repository
 class BPartnerProductStatsRepository
 {
-	public ImmutableMap<ProductId, BPartnerProductStats> getByPartnerAndProducts(
-			@NonNull final BPartnerId bpartnerId,
+	public ImmutableMap<ProductId, BPartnerProductStats> getByPartnerAndProducts(@NonNull final BPartnerId bpartnerId,
 			@NonNull final Set<ProductId> productIds)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
 				.addEqualsFilter(I_C_BPartner_Product_Stats.COLUMN_C_BPartner_ID, bpartnerId)
-				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productIds)
-				.create()
-				.stream(I_C_BPartner_Product_Stats.class)
-				.map(record -> toBPartnerProductStats(record))
+				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productIds).create()
+				.stream(I_C_BPartner_Product_Stats.class).map(record -> toBPartnerProductStats(record))
 				.collect(ImmutableMap.toImmutableMap(BPartnerProductStats::getProductId, Function.identity()));
 	}
 
-	public List<BPartnerProductStats> getByProductIds(@NonNull final Set<ProductId> productIds)
+	public List<BPartnerProductStats> getByProductIds(@NonNull final Set<ProductId> productIds,
+			@Nullable final CurrencyId currencyId)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
-		return Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_BPartner_Product_Stats> bpartnerStatsQueryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats.class)
-				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productIds)
+				.addInArrayFilter(I_C_BPartner_Product_Stats.COLUMN_M_Product_ID, productIds);
+
+		if (currencyId != null)
+		{
+			bpartnerStatsQueryBuilder.addEqualsFilter(I_C_BPartner_Product_Stats.COLUMNNAME_LastSalesPrice_Currency_ID,
+					currencyId);
+		}
+
+		return bpartnerStatsQueryBuilder
 				.create()
 				.stream(I_C_BPartner_Product_Stats.class)
 				.map(record -> toBPartnerProductStats(record))
@@ -95,8 +101,7 @@ class BPartnerProductStatsRepository
 
 	private static BPartnerProductStats toBPartnerProductStats(final I_C_BPartner_Product_Stats record)
 	{
-		return BPartnerProductStats.builder()
-				.repoId(record.getC_BPartner_Product_Stats_ID())
+		return BPartnerProductStats.builder().repoId(record.getC_BPartner_Product_Stats_ID())
 				.bpartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				//
@@ -129,11 +134,7 @@ class BPartnerProductStatsRepository
 			return null;
 		}
 
-		return LastInvoiceInfo.builder()
-				.invoiceId(invoiceId)
-				.invoiceDate(invoiceDate)
-				.price(price)
-				.build();
+		return LastInvoiceInfo.builder().invoiceId(invoiceId).invoiceDate(invoiceDate).price(price).build();
 	}
 
 	public void recomputeStatistics(@NonNull final RecomputeStatisticsRequest request)
@@ -141,13 +142,13 @@ class BPartnerProductStatsRepository
 		final BPartnerId bpartnerId = request.getBpartnerId();
 		final Set<ProductId> productIds = request.getProductIds();
 
-		final Map<ProductId, BPartnerProductStats> existingStatsByProductId = getByPartnerAndProducts(bpartnerId, productIds);
+		final Map<ProductId, BPartnerProductStats> existingStatsByProductId = getByPartnerAndProducts(bpartnerId,
+				productIds);
 
 		Map<ProductId, I_C_BPartner_Product_Stats_InOut_Online_v> inoutOnlineRecords = null;
 		if (request.isRecomputeInOutStatistics())
 		{
-			inoutOnlineRecords = Maps.uniqueIndex(
-					retrieveInOutOnlineStats(bpartnerId, productIds),
+			inoutOnlineRecords = Maps.uniqueIndex(retrieveInOutOnlineStats(bpartnerId, productIds),
 					record -> ProductId.ofRepoId(record.getM_Product_ID()));
 		}
 
@@ -185,8 +186,7 @@ class BPartnerProductStatsRepository
 		saveAll(statsToSave);
 	}
 
-	private void updateStatsFromInOutOnlineRecord(
-			@NonNull final BPartnerProductStats stats,
+	private void updateStatsFromInOutOnlineRecord(@NonNull final BPartnerProductStats stats,
 			@Nullable final I_C_BPartner_Product_Stats_InOut_Online_v record)
 	{
 		final Timestamp lastReceiptDate = record != null ? record.getLastReceiptDate() : null;
@@ -196,15 +196,15 @@ class BPartnerProductStatsRepository
 		stats.setLastShipmentDate(TimeUtil.asZonedDateTime(lastShipDate));
 	}
 
-	private void updateStatsFromSalesInvoiceOnlineRecord(
-			@NonNull final BPartnerProductStats stats,
+	private void updateStatsFromSalesInvoiceOnlineRecord(@NonNull final BPartnerProductStats stats,
 			@Nullable final I_C_BPartner_Product_Stats_Invoice_Online_V record)
 	{
 		final LastInvoiceInfo lastSalesInvoice = extractLastSalesInvoiceInfo(record);
 		stats.setLastSalesInvoice(lastSalesInvoice);
 	}
 
-	private static LastInvoiceInfo extractLastSalesInvoiceInfo(@Nullable final I_C_BPartner_Product_Stats_Invoice_Online_V record)
+	private static LastInvoiceInfo extractLastSalesInvoiceInfo(
+			@Nullable final I_C_BPartner_Product_Stats_Invoice_Online_V record)
 	{
 		if (record == null)
 		{
@@ -231,16 +231,11 @@ class BPartnerProductStatsRepository
 			return null;
 		}
 
-		return LastInvoiceInfo.builder()
-				.invoiceId(invoiceId)
-				.invoiceDate(invoiceDate)
-				.price(price)
-				.build();
+		return LastInvoiceInfo.builder().invoiceId(invoiceId).invoiceDate(invoiceDate).price(price).build();
 	}
 
 	private List<I_C_BPartner_Product_Stats_Invoice_Online_V> retrieveInvoiceOnlineStats(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final Set<ProductId> productIds,
+			@NonNull final BPartnerId bpartnerId, @NonNull final Set<ProductId> productIds,
 			@NonNull final SOTrx soTrx)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
@@ -249,22 +244,18 @@ class BPartnerProductStatsRepository
 				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats_Invoice_Online_V.class)
 				.addEqualsFilter(I_C_BPartner_Product_Stats_Invoice_Online_V.COLUMN_C_BPartner_ID, bpartnerId)
 				.addInArrayFilter(I_C_BPartner_Product_Stats_Invoice_Online_V.COLUMN_M_Product_ID, productIds)
-				.addEqualsFilter(I_C_BPartner_Product_Stats_Invoice_Online_V.COLUMN_IsSOTrx, soTrx.toBoolean())
-				.create()
+				.addEqualsFilter(I_C_BPartner_Product_Stats_Invoice_Online_V.COLUMN_IsSOTrx, soTrx.toBoolean()).create()
 				.list(I_C_BPartner_Product_Stats_Invoice_Online_V.class);
 	}
 
 	private List<I_C_BPartner_Product_Stats_InOut_Online_v> retrieveInOutOnlineStats(
-			@NonNull final BPartnerId bpartnerId,
-			@NonNull final Set<ProductId> productIds)
+			@NonNull final BPartnerId bpartnerId, @NonNull final Set<ProductId> productIds)
 	{
 		Check.assumeNotEmpty(productIds, "productIds is not empty");
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats_InOut_Online_v.class)
+		return Services.get(IQueryBL.class).createQueryBuilderOutOfTrx(I_C_BPartner_Product_Stats_InOut_Online_v.class)
 				.addEqualsFilter(I_C_BPartner_Product_Stats_InOut_Online_v.COLUMN_C_BPartner_ID, bpartnerId)
-				.addInArrayFilter(I_C_BPartner_Product_Stats_InOut_Online_v.COLUMN_M_Product_ID, productIds)
-				.create()
+				.addInArrayFilter(I_C_BPartner_Product_Stats_InOut_Online_v.COLUMN_M_Product_ID, productIds).create()
 				.list(I_C_BPartner_Product_Stats_InOut_Online_v.class);
 	}
 
@@ -299,8 +290,7 @@ class BPartnerProductStatsRepository
 		stats.setRepoId(record.getC_BPartner_Product_Stats_ID());
 	}
 
-	private static void updateRecordLastSalesInvoiceInfo(
-			@NonNull final I_C_BPartner_Product_Stats record,
+	private static void updateRecordLastSalesInvoiceInfo(@NonNull final I_C_BPartner_Product_Stats record,
 			@Nullable final LastInvoiceInfo lastSalesInvoiceInfo)
 	{
 		final InvoiceId invoiceId = lastSalesInvoiceInfo != null ? lastSalesInvoiceInfo.getInvoiceId() : null;

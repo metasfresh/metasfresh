@@ -22,18 +22,6 @@ package de.metas.invoicecandidate.async.spi.impl;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.compiere.model.I_C_Invoice;
-import org.slf4j.Logger;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkpackageParamDAO;
@@ -56,6 +44,16 @@ import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.model.I_C_Invoice;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * Generate {@link I_C_Invoice}s for given {@link I_C_Invoice_Candidate}s.
@@ -76,7 +74,6 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private InvoicingParams _invoicingParams = null; // lazy loaded
 
 	/**
-	 *
 	 * @param result result to be used when processing
 	 */
 	public InvoiceCandWorkpackageProcessor(@NonNull final IInvoiceGenerateResult result)

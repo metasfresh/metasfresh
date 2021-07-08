@@ -22,15 +22,17 @@ package org.adempiere.archive.api;
  * #L%
  */
 
-import java.io.InputStream;
-
+import de.metas.report.PrintCopies;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.PrintInfo;
 import org.compiere.print.layout.LayoutEngine;
 
-import de.metas.process.ProcessInfo;
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.io.InputStream;
+import java.util.Optional;
 
 /**
  * Archive related business logic
@@ -44,79 +46,21 @@ public interface IArchiveBL extends ISingletonService
 	 * Allow to store the required number of copies per archive. Storing it inside the AD_Archive record (i.e. DB) makes no sense, because one AD_Archive can be printed multiple times.
 	 * The value that is set here will be used in the respective printing queue item
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1240
+	 * Task https://github.com/metasfresh/metasfresh/issues/1240
 	 */
-	ModelDynAttributeAccessor<I_AD_Archive, Integer> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(Integer.class);
-
-
-	/**
-	 * Archives the given binary data. Data is archived only if auto-archive option is enabled (see {@link #isToArchive(PrintInfo)})
-	 *
-	 * @param data is it assumed (but not checked) that this is the binary data of a PDF document.
-	 * @param printInfo used to determine if the data will be archived at all.
-	 * @return the AD_Archive_ID of the new entry if the data has been archived, -1 otherwise.
-	 * @see #archive(byte[], PrintInfo, boolean, String)
-	 */
-	int archive(byte[] data, PrintInfo printInfo);
+	ModelDynAttributeAccessor<I_AD_Archive, PrintCopies> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(PrintCopies.class);
 
 	/**
+	 * Task http://dewiki908/mediawiki/index.php/09752_For_Umsatzreport_and_Mengenstatistiken%2C_two_printing_queue..._%28107420055849%29
 	 *
-	 * @param data
-	 * @param printInfo
-	 * @param force
-	 * @return archive or null
-	 * @see #archive(byte[], PrintInfo, boolean, String)
+	 * @deprecated Please use {@link #archive(ArchiveRequest)}
 	 */
-	I_AD_Archive archive(byte[] data, PrintInfo printInfo, boolean force);
+	@Nullable
+	@Deprecated
+	I_AD_Archive archive(byte[] data, ArchiveInfo archiveInfo, boolean force, boolean save, String trxName);
 
-	/**
-	 * Archives given <code>data</code>.
-	 *
-	 * @param data
-	 * @param printInfo
-	 * @param force if true, the document will be archived anyway (even if auto-archive is not activated)
-	 * @param trxName
-	 * @return
-	 */
-	I_AD_Archive archive(byte[] data, PrintInfo printInfo, boolean force, String trxName);
-
-	/**
-	 * Like {@link #archive(LayoutEngine, PrintInfo, boolean, String)}, but allows to only create the <code>AD_Archive</code> without saving the record.
-	 *
-	 * @param data
-	 * @param printInfo
-	 * @param force
-	 * @param save
-	 * @param trxName
-	 * @return
-	 * @task http://dewiki908/mediawiki/index.php/09752_For_Umsatzreport_and_Mengenstatistiken%2C_two_printing_queue..._%28107420055849%29
-	 */
-	I_AD_Archive archive(byte[] data, PrintInfo printInfo, boolean force, boolean save, String trxName);
-
-	/**
-	 * Converts to PDF and archives given <code>layout</code>.
-	 *
-	 * @param layout
-	 * @param printInfo
-	 * @param force if true, the document will be archived anyway (even if auto-archive is not activated)
-	 * @param trxName
-	 * @return
-	 */
-	I_AD_Archive archive(LayoutEngine layout, PrintInfo printInfo, boolean force, String trxName);
-
-	/**
-	 * Do we need to Auto-Archive ?
-	 *
-	 * @return true if we need to auto-archive
-	 */
-	boolean isToArchive(PrintInfo printInfo);
-
-	/**
-	 * Do we need to Auto-Archive ?
-	 *
-	 * @return true if we need to auto-archive
-	 */
-	boolean isToArchive(ProcessInfo processInfo);
+	@NonNull
+	ArchiveResult archive(@NonNull ArchiveRequest request);
 
 	String getContentType(I_AD_Archive archive);
 
@@ -125,4 +69,8 @@ public interface IArchiveBL extends ISingletonService
 	InputStream getBinaryDataAsStream(I_AD_Archive archive);
 
 	void setBinaryData(I_AD_Archive archive, byte[] data);
+
+	Optional<I_AD_Archive> getLastArchive(@NonNull TableRecordReference reference);
+
+	Optional<byte[]> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
 }

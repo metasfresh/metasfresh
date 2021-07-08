@@ -1,5 +1,6 @@
 package de.metas.business;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -250,6 +251,18 @@ public class BusinessTestHelper
 		bpl.setIsBillTo(true);
 		saveRecord(bpl);
 		return bpl;
+	}
+
+	public I_C_BP_Group createStandardBPGroup()
+	{
+		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
+		bpGroupRecord.setC_BP_Group_ID(BPGroupId.STANDARD.getRepoId());
+		bpGroupRecord.setName("Standard");
+		bpGroupRecord.setIsDefault(true);
+		InterfaceWrapperHelper.setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+
+		saveRecord(bpGroupRecord);
+		return bpGroupRecord;
 	}
 
 	public I_C_BP_Group createBPGroup(

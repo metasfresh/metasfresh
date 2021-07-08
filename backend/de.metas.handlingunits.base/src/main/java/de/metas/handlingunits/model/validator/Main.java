@@ -99,8 +99,8 @@ import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
-import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
-import de.metas.order.process.IC_Order_CreatePOFromSOsDAO;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.storage.IStorageEngineService;
@@ -294,8 +294,6 @@ public final class Main extends AbstractModuleInterceptor
 
 	/**
 	 * Setup tables for InTransaction only caching. see {@link ITableCacheConfigBuilder#setTrxLevel(TrxLevel)}.
-	 *
-	 * @param cachingService
 	 */
 	private void setupInTrxOnlyCaching(final IModelCacheService cachingService)
 	{

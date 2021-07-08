@@ -1,3 +1,29 @@
+package de.metas.product;
+
+import de.metas.organization.OrgId;
+import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.isEmpty;
+
 /*
  * #%L
  * de.metas.business
@@ -19,32 +45,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-package de.metas.product;
-
-import static de.metas.util.Check.assume;
-import static de.metas.util.Check.isEmpty;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
-
-import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
-import de.metas.util.lang.ExternalId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
 
 public interface IProductDAO extends ISingletonService
 {
@@ -98,6 +98,8 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
+	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
+
 	@Value
 	class ProductQuery
 	{
@@ -136,13 +138,13 @@ public interface IProductDAO extends ISingletonService
 		}
 	}
 
-	Stream<I_M_Product> streamAllProducts();
+	Stream<I_M_Product> streamAllProducts(@Nullable Instant since);
 
 	/**
-	 * @return product category or null
+	 * @return product category or null if the productId is null
 	 */
 	@Nullable
-	ProductCategoryId retrieveProductCategoryByProductId(ProductId productId);
+	ProductCategoryId retrieveProductCategoryByProductId(@Nullable ProductId productId);
 
 	@Nullable
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
@@ -175,4 +177,5 @@ public interface IProductDAO extends ISingletonService
 
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
 
+	int getGuaranteeMonthsInDays(ProductId productId);
 }

@@ -70,10 +70,6 @@ public interface IHUContextFactory extends ISingletonService
 	 */
 	IMutableHUContext createMutableHUContext(Properties ctx, @NonNull String trxName);
 
-	/**
-	 * @deprecated please consider using {@link #createMutableHUContext(IContextAware)} instead, so you can be sure to know which {@code AD_Org_ID} etc any new HUs are created with.
-	 */
-	@Deprecated
 	default IMutableHUContext createMutableHUContext()
 	{
 		return createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());

@@ -1,14 +1,5 @@
 package org.eevolution.model.validator;
 
-import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.modelvalidator.ModelChangeUtil;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.ModelValidator;
-import org.eevolution.model.I_PP_Order;
-
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
@@ -18,6 +9,14 @@ import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.modelvalidator.ModelChangeUtil;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.compiere.model.ModelValidator;
+import org.eevolution.model.I_PP_Order;
 
 /**
  * A dedicated model interceptor whose job it is to fire events on the {@link MetasfreshEventBusService}.<br>
@@ -85,9 +84,10 @@ public class PP_Order_PostMaterialEvent
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
 			// Note: close is currently handled in MPPOrder.closeIt()
-			ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_UNCLOSE,
-			ModelValidator.TIMING_AFTER_VOID
+			// for the other timings, we shall first figure out what we actually want
+			//ModelValidator.TIMING_AFTER_REACTIVATE,
+			//ModelValidator.TIMING_AFTER_UNCLOSE,
+			//ModelValidator.TIMING_AFTER_VOID
 	})
 	public void postMaterialEvent_ppOrderDocStatusChange(
 			@NonNull final I_PP_Order ppOrderRecord,

@@ -72,26 +72,27 @@ public class C_OrderLine
 			return;
 		}
 
-		// resetting PriceEntered so that it won't override the new price
-		ol.setPriceEntered(BigDecimal.ZERO);
+		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = false; // when the subscription changed, update all prices
 
 		final int subscriptionId = ol.getC_Flatrate_Conditions_ID();
 		if (subscriptionId <= 0)
 		{
 			final BigDecimal qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(ol).toBigDecimal();
 			ol.setQtyOrdered(qtyOrdered);
+			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(ol).toBigDecimal();
+			ol.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
 
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
 					.orderLine(ol)
 					.resultUOM(ResultUOM.PRICE_UOM)
-					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+					.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
 					.updateLineNetAmt(true)
 					.build());
 
 			return;
 		}
 
-		updatePrices(ol, soTrx);
+		updatePrices(ol, soTrx, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
 	}
 
 	@CalloutMethod(columnNames = { I_C_OrderLine.COLUMNNAME_QtyEntered })
@@ -106,10 +107,14 @@ public class C_OrderLine
 			return; // leave this job to the adempiere standard callouts
 		}
 
-		updatePrices(ol, soTrx);
+		final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet = true;
+		updatePrices(ol, soTrx, updatePriceEnteredAndDiscountOnlyIfNotAlreadySet);
 	}
 
-	private void updatePrices(final I_C_OrderLine ol, @NonNull final SOTrx soTrx)
+	private void updatePrices(
+			@NonNull final I_C_OrderLine ol,
+			@NonNull final SOTrx soTrx,
+			final boolean updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
 	{
 		final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -175,7 +180,7 @@ public class C_OrderLine
 				.priceListIdOverride(subscriptionPLId)
 				.qtyOverride(priceQty)
 				.resultUOM(ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(updatePriceEnteredAndDiscountOnlyIfNotAlreadySet)
 				.updateLineNetAmt(true)
 				.build());
 	}

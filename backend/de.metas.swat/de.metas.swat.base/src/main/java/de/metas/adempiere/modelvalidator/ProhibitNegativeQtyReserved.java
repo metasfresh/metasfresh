@@ -111,7 +111,7 @@ public class ProhibitNegativeQtyReserved implements ModelValidator
 //				final AdempiereException ex = new AdempiereException("@" + C_OrderLine.ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
 //						+ "\nStorage: " + st);
 //				logger.warn(ex.getLocalizedMessage(), ex);
-				logger.info(Services.get(IMsgBL.class).getMsg(po.getCtx(), "@" + C_OrderLine.ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO." + "\nStorage: " + st));
+				logger.info(Services.get(IMsgBL.class).getMsg(po.getCtx(), C_OrderLine.ERR_NEGATIVE_QTY_RESERVED.toAD_MessageWithMarkers() + ". Setting QtyReserved to ZERO." + "\nStorage: " + st));
 				return null;
 			}
 		}

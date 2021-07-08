@@ -120,6 +120,7 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
+		assertThat(generatedSSCC18.asString()).hasSize(18);
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
 				generatedSSCC18.getSerialNumber() // actual
@@ -133,6 +134,7 @@ public class SSCC18CodeBLTests
 
 		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
 
+		assertThat(generatedSSCC18.asString()).hasSize(18);
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
 				generatedSSCC18.getSerialNumber() // actual
@@ -145,6 +147,7 @@ public class SSCC18CodeBLTests
 		setManufacturerCode("2");
 
 		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY, 1000000);
+		assertThat(generatedSSCC18.asString()).hasSize(18);
 
 		Assert.assertEquals("Serial number is not correct",
 				"001000000", // expected,
@@ -163,11 +166,13 @@ public class SSCC18CodeBLTests
 		setManufacturerCode("123456789");
 		final SSCC18CodeBL sscc18CodeBL = new SSCC18CodeBL(orgId -> 23);
 		final SSCC18 generatedSSCC18 = sscc18CodeBL.generate(OrgId.ANY);
-		assertThat(sscc18CodeBL.toString(generatedSSCC18, false)).hasSize(18).isEqualTo("012345678900000234");
+
+		// then
+		assertThat(generatedSSCC18.asString()).hasSize(18).isEqualTo("012345678900000234");
 	}
 
 	@Test
-	public void testcheckValidSSCC18() // NOPMD by ts on 26.07.13 15:15 OK, method under test is expected to just return without exception
+	public void testcheckValidSSCC18()
 	{
 		final String manufacturerCode = "0718908 ";
 		final String serialNumber = "562723189";
@@ -175,6 +180,8 @@ public class SSCC18CodeBLTests
 		final int extensionDigit = 0;
 
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
+		assertThat(sscc18ToValidate.asString()).hasSize(18);
+
 		sscc18CodeBL.validate(sscc18ToValidate);
 	}
 
@@ -215,7 +222,7 @@ public class SSCC18CodeBLTests
 		final SSCC18 sscc18ToValidate = new SSCC18(extensionDigit, manufacturerCode, serialNumber, checkDigit);
 		sscc18CodeBL.validate(sscc18ToValidate);
 
-		assertThat(sscc18CodeBL.toString(sscc18ToValidate, false)).hasSize(18).isEqualTo("0" + manufacturerCode + serialNumber + checkDigit);
+		assertThat(sscc18ToValidate.asString()).hasSize(18).isEqualTo("0" + manufacturerCode + serialNumber + checkDigit);
 	}
 
 	@Test(expected = AdempiereException.class)

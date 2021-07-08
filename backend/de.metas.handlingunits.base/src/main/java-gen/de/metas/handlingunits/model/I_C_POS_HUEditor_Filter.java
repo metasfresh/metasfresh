@@ -1,85 +1,75 @@
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_POS_HUEditor_Filter
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_POS_HUEditor_Filter 
 {
 
-    /** TableName=C_POS_HUEditor_Filter */
-    public static final String Table_Name = "C_POS_HUEditor_Filter";
+	String Table_Name = "C_POS_HUEditor_Filter";
 
-    /** AD_Table_ID=540647 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540647 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 4 - System
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(4);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set AD_JavaClass.
+	 * Set Java Class.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_JavaClass_ID (int AD_JavaClass_ID);
+	void setAD_JavaClass_ID (int AD_JavaClass_ID);
 
 	/**
-	 * Get AD_JavaClass.
+	 * Get Java Class.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_JavaClass_ID();
+	int getAD_JavaClass_ID();
 
-    /** Column definition for AD_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_AD_JavaClass_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "AD_JavaClass_ID", null);
-    /** Column name AD_JavaClass_ID */
-    public static final String COLUMNNAME_AD_JavaClass_ID = "AD_JavaClass_ID";
+	ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_AD_JavaClass_ID = new ModelColumn<>(I_C_POS_HUEditor_Filter.class, "AD_JavaClass_ID", null);
+	String COLUMNNAME_AD_JavaClass_ID = "AD_JavaClass_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Referenz.
@@ -89,7 +79,7 @@ public interface I_C_POS_HUEditor_Filter
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Reference_ID (int AD_Reference_ID);
+	void setAD_Reference_ID (int AD_Reference_ID);
 
 	/**
 	 * Get Referenz.
@@ -99,16 +89,14 @@ public interface I_C_POS_HUEditor_Filter
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Reference_ID();
+	int getAD_Reference_ID();
 
-	public org.compiere.model.I_AD_Reference getAD_Reference();
+	org.compiere.model.I_AD_Reference getAD_Reference();
 
-	public void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference);
+	void setAD_Reference(org.compiere.model.I_AD_Reference AD_Reference);
 
-    /** Column definition for AD_Reference_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Reference>(I_C_POS_HUEditor_Filter.class, "AD_Reference_ID", org.compiere.model.I_AD_Reference.class);
-    /** Column name AD_Reference_ID */
-    public static final String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
+	ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_ID = new ModelColumn<>(I_C_POS_HUEditor_Filter.class, "AD_Reference_ID", org.compiere.model.I_AD_Reference.class);
+	String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
 
 	/**
 	 * Set Referenzschlüssel.
@@ -118,7 +106,7 @@ public interface I_C_POS_HUEditor_Filter
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Reference_Value_ID (int AD_Reference_Value_ID);
+	void setAD_Reference_Value_ID (int AD_Reference_Value_ID);
 
 	/**
 	 * Get Referenzschlüssel.
@@ -128,16 +116,14 @@ public interface I_C_POS_HUEditor_Filter
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Reference_Value_ID();
+	int getAD_Reference_Value_ID();
 
-	public org.compiere.model.I_AD_Reference getAD_Reference_Value();
+	@Nullable org.compiere.model.I_AD_Reference getAD_Reference_Value();
 
-	public void setAD_Reference_Value(org.compiere.model.I_AD_Reference AD_Reference_Value);
+	void setAD_Reference_Value(@Nullable org.compiere.model.I_AD_Reference AD_Reference_Value);
 
-    /** Column definition for AD_Reference_Value_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Value_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Reference>(I_C_POS_HUEditor_Filter.class, "AD_Reference_Value_ID", org.compiere.model.I_AD_Reference.class);
-    /** Column name AD_Reference_Value_ID */
-    public static final String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
+	ModelColumn<I_C_POS_HUEditor_Filter, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Value_ID = new ModelColumn<>(I_C_POS_HUEditor_Filter.class, "AD_Reference_Value_ID", org.compiere.model.I_AD_Reference.class);
+	String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
 
 	/**
 	 * Set POS HU Editor Filter.
@@ -146,7 +132,7 @@ public interface I_C_POS_HUEditor_Filter
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_POS_HUEditor_Filter_ID (int C_POS_HUEditor_Filter_ID);
+	void setC_POS_HUEditor_Filter_ID (int C_POS_HUEditor_Filter_ID);
 
 	/**
 	 * Get POS HU Editor Filter.
@@ -155,12 +141,10 @@ public interface I_C_POS_HUEditor_Filter
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_POS_HUEditor_Filter_ID();
+	int getC_POS_HUEditor_Filter_ID();
 
-    /** Column definition for C_POS_HUEditor_Filter_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_C_POS_HUEditor_Filter_ID = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "C_POS_HUEditor_Filter_ID", null);
-    /** Column name C_POS_HUEditor_Filter_ID */
-    public static final String COLUMNNAME_C_POS_HUEditor_Filter_ID = "C_POS_HUEditor_Filter_ID";
+	ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_C_POS_HUEditor_Filter_ID = new ModelColumn<>(I_C_POS_HUEditor_Filter.class, "C_POS_HUEditor_Filter_ID", null);
+	String COLUMNNAME_C_POS_HUEditor_Filter_ID = "C_POS_HUEditor_Filter_ID";
 
 	/**
 	 * Set Spaltenname.
@@ -170,7 +154,7 @@ public interface I_C_POS_HUEditor_Filter
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setColumnName (java.lang.String ColumnName);
+	void setColumnName (java.lang.String ColumnName);
 
 	/**
 	 * Get Spaltenname.
@@ -180,91 +164,81 @@ public interface I_C_POS_HUEditor_Filter
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getColumnName();
+	java.lang.String getColumnName();
 
-    /** Column definition for ColumnName */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_ColumnName = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "ColumnName", null);
-    /** Column name ColumnName */
-    public static final String COLUMNNAME_ColumnName = "ColumnName";
+	ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_ColumnName = new ModelColumn<>(I_C_POS_HUEditor_Filter.class, "ColumnName", null);
+	String COLUMNNAME_ColumnName = "ColumnName";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_Created = new ModelColumn<>(I_C_POS_HUEditor_Filter.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_IsActive = new ModelColumn<>(I_C_POS_HUEditor_Filter.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_POS_HUEditor_Filter, Object>(I_C_POS_HUEditor_Filter.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_POS_HUEditor_Filter, Object> COLUMN_Updated = new ModelColumn<>(I_C_POS_HUEditor_Filter.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

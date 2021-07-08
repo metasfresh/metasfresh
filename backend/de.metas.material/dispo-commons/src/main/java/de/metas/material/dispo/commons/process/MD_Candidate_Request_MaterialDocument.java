@@ -58,14 +58,16 @@ public class MD_Candidate_Request_MaterialDocument extends JavaProcess implement
 
 		return X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION.equals(businessCase)
 				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION.equals(businessCase)
-				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE.equals(businessCase);
+				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE.equals(businessCase)
+				|| X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_FORECAST.equals(businessCase);
 	};
 
 	private final Predicate<I_MD_Candidate> statusIsDocPlanned = r -> {
 
 		final String status = r.getMD_Candidate_Status();
 
-		return X_MD_Candidate.MD_CANDIDATE_STATUS_Doc_planned.equals(status);
+		return X_MD_Candidate.MD_CANDIDATE_STATUS_Doc_planned.equals(status)
+		|| X_MD_Candidate.MD_CANDIDATE_STATUS_Planned.equals(status);
 	};
 
 	@Override

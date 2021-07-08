@@ -24,14 +24,13 @@ package de.metas.serviceprovider.timebooking.importer;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.adempiere.model.I_AD_User;
+import de.metas.externalreference.ExternalReference;
+import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.serviceprovider.external.ExternalId;
-import de.metas.serviceprovider.external.reference.ExternalReference;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.externalreference.ExternalId;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.timebooking.TimeBooking;
@@ -46,6 +45,7 @@ import de.metas.util.time.HmmUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -147,7 +147,7 @@ public class TimeBookingsImporterService
 				.externalReference(externalId.getId())
 				.recordId(timeBookingId.getRepoId())
 				.externalSystem(externalId.getExternalSystem())
-				.externalReferenceType(ExternalReferenceType.TIME_BOOKING_ID)
+				.externalReferenceType(ExternalServiceReferenceType.TIME_BOOKING_ID)
 				.build();
 
 		externalReferenceRepository.save(externalReference);

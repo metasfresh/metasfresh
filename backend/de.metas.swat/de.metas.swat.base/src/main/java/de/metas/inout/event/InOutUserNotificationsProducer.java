@@ -22,21 +22,11 @@ package de.metas.inout.event;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_M_InOut;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
-
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -44,6 +34,15 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_InOut;
+import org.compiere.util.Env;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Helper class used for sending user notifications about generated or reversed shipments/receipts.
@@ -66,15 +65,14 @@ public final class InOutUserNotificationsProducer
 			.build();
 
 	// services
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 
-	private static final String MSG_Event_ShipmentGenerated = "Event_ShipmentGenerated";
-	private static final String MSG_Event_ShipmentReversed = "Event_ShipmentReversed";
-	private static final String MSG_Event_ShipmentError = "Event_ShipmentError";
+	private static final AdMessageKey MSG_Event_ShipmentGenerated = AdMessageKey.of("Event_ShipmentGenerated");
+	private static final AdMessageKey MSG_Event_ShipmentReversed = AdMessageKey.of("Event_ShipmentReversed");
+	private static final AdMessageKey MSG_Event_ShipmentError = AdMessageKey.of("Event_ShipmentError");
 	//
-	private static final String MSG_Event_ReceiptGenerated = "Event_ReceiptGenerated";
-	private static final String MSG_Event_ReceiptReversed = "Event_ReceiptReversed";
+	private static final AdMessageKey MSG_Event_ReceiptGenerated = AdMessageKey.of("Event_ReceiptGenerated");
+	private static final AdMessageKey MSG_Event_ReceiptReversed = AdMessageKey.of("Event_ReceiptReversed");
 
 	private InOutUserNotificationsProducer()
 	{
@@ -120,7 +118,7 @@ public final class InOutUserNotificationsProducer
 		final String bpValue = bpartner.getValue();
 		final String bpName = bpartner.getName();
 
-		final String adMessage = getNotificationAD_Message(inout);
+		final AdMessageKey adMessage = getNotificationAD_Message(inout);
 		final UserId recipientUserId = getNotificationRecipientUserId(inout);
 
 		final TableRecordReference inoutRef = TableRecordReference.of(inout);
@@ -141,9 +139,10 @@ public final class InOutUserNotificationsProducer
 				.topic(EVENTBUS_TOPIC);
 	}
 
-	private String getNotificationAD_Message(final I_M_InOut inout)
+	private AdMessageKey getNotificationAD_Message(final I_M_InOut inout)
 	{
-		if (docActionBL.isDocumentReversedOrVoided(inout))
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(inout.getDocStatus());
+		if (docStatus.isReversedOrVoided())
 		{
 			return inout.isSOTrx() ? MSG_Event_ShipmentReversed : MSG_Event_ReceiptReversed;
 		}
@@ -157,7 +156,8 @@ public final class InOutUserNotificationsProducer
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if (docActionBL.isDocumentReversedOrVoided(inout))
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(inout.getDocStatus());
+		if (docStatus.isReversedOrVoided())
 		{
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if (currentUserId > 0)

@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.modelvalidator;
 import java.util.Collections;
 import java.util.List;
 
+import de.metas.order.IOrderBL;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.I_C_Order;
@@ -55,7 +56,7 @@ public class C_Order_ReceiptSchedule
 		Check.assumeNotNull(order, "order not null");
 
 		// Only Purchase Orders are handled
-		if (order.isSOTrx())
+		if (order.isSOTrx() || Services.get(IOrderBL.class).isRequisition(order))
 		{
 			return false;
 		}
@@ -211,11 +212,11 @@ public class C_Order_ReceiptSchedule
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
-		for (I_C_OrderLine orderLine : orderLines)
+		for (final I_C_OrderLine orderLine : orderLines)
 		{
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
 
-			if (receiptScheduleBL.isClosed(receiptSchedule))
+			if (receiptSchedule == null || receiptScheduleBL.isClosed(receiptSchedule))
 			{
 				continue;
 			}

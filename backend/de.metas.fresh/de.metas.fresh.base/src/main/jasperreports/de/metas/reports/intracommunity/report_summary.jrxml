@@ -16,6 +16,9 @@
 	<parameter name="C_Period_ID" class="java.lang.Integer"/>
 	<parameter name="C_BPartner_ID" class="java.lang.Integer"/>
 	<parameter name="IsEuTax" class="java.lang.String"/>
+	<parameter name="AD_Org_ID" class="java.math.BigDecimal">
+		<defaultValueExpression><![CDATA[1000000]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[select i.countrycode,
        i.name,
@@ -26,6 +29,7 @@ from de_metas_endcustomer_fresh_reports.C_Invoice_V i
          join C_Period p on i.dateinvoiced >= p.startdate
     and i.dateinvoiced <= p.enddate
     and p.c_period_id = $P{C_Period_ID}
+    and i.AD_Org_ID = $P{AD_Org_ID}
         and
      ( case when $P{C_BPartner_ID} is not null then i.C_BPartner_id = $P{C_BPartner_ID} else 1=1 end)
     and

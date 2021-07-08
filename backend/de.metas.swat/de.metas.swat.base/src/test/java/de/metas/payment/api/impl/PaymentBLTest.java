@@ -5,6 +5,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
@@ -22,7 +23,6 @@ import de.metas.payment.reservation.PaymentReservationRepository;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
@@ -396,7 +396,7 @@ public class PaymentBLTest
 
 			assertThatThrownBy(() -> paymentBL.markReconciledAndSave(payment, bankStatementLine2))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Payment was already reconciled");
+					.hasMessageStartingWith("Payment with DocumentNo=");
 		}
 	}
 

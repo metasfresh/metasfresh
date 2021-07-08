@@ -9,6 +9,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.organization.OrgId;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
@@ -20,7 +21,6 @@ import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;

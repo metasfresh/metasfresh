@@ -1,204 +1,145 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Window
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -423169739L;
+	private static final long serialVersionUID = -1673008926L;
 
     /** Standard Constructor */
-    public X_AD_Window (Properties ctx, int AD_Window_ID, String trxName)
+    public X_AD_Window (final Properties ctx, final int AD_Window_ID, @Nullable final String trxName)
     {
       super (ctx, AD_Window_ID, trxName);
-      /** if (AD_Window_ID == 0)
-        {
-			setAD_Element_ID (0);
-			setAD_Window_ID (0);
-			setEntityType (null); // U
-			setIsBetaFunctionality (false);
-			setIsDefault (false);
-			setIsEnableRemoteCacheInvalidation (false); // N
-			setIsSOTrx (true); // Y
-			setName (null);
-			setWindowType (null); // M
-        } */
     }
 
     /** Load Constructor */
-    public X_AD_Window (Properties ctx, ResultSet rs, String trxName)
+    public X_AD_Window (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
-	public org.compiere.model.I_AD_Color getAD_Color() throws RuntimeException
+	public org.compiere.model.I_AD_Color getAD_Color()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Color_ID, org.compiere.model.I_AD_Color.class);
 	}
 
 	@Override
-	public void setAD_Color(org.compiere.model.I_AD_Color AD_Color)
+	public void setAD_Color(final org.compiere.model.I_AD_Color AD_Color)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Color_ID, org.compiere.model.I_AD_Color.class, AD_Color);
 	}
 
-	/** Set System-Farbe.
-		@param AD_Color_ID 
-		Color for backgrounds or indicators
-	  */
 	@Override
-	public void setAD_Color_ID (int AD_Color_ID)
+	public void setAD_Color_ID (final int AD_Color_ID)
 	{
 		if (AD_Color_ID < 1) 
 			set_Value (COLUMNNAME_AD_Color_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Color_ID, Integer.valueOf(AD_Color_ID));
+			set_Value (COLUMNNAME_AD_Color_ID, AD_Color_ID);
 	}
 
-	/** Get System-Farbe.
-		@return Color for backgrounds or indicators
-	  */
 	@Override
-	public int getAD_Color_ID () 
+	public int getAD_Color_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Color_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Color_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Element getAD_Element() throws RuntimeException
+	public org.compiere.model.I_AD_Element getAD_Element()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class);
 	}
 
 	@Override
-	public void setAD_Element(org.compiere.model.I_AD_Element AD_Element)
+	public void setAD_Element(final org.compiere.model.I_AD_Element AD_Element)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Element_ID, org.compiere.model.I_AD_Element.class, AD_Element);
 	}
 
-	/** Set System-Element.
-		@param AD_Element_ID 
-		Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
-	  */
 	@Override
-	public void setAD_Element_ID (int AD_Element_ID)
+	public void setAD_Element_ID (final int AD_Element_ID)
 	{
 		if (AD_Element_ID < 1) 
 			set_Value (COLUMNNAME_AD_Element_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Element_ID, Integer.valueOf(AD_Element_ID));
+			set_Value (COLUMNNAME_AD_Element_ID, AD_Element_ID);
 	}
 
-	/** Get System-Element.
-		@return Das "System-Element" ermöglicht die zentrale  Verwaltung von Spaltenbeschreibungen und Hilfetexten.
-	  */
 	@Override
-	public int getAD_Element_ID () 
+	public int getAD_Element_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Element_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Element_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Image getAD_Image() throws RuntimeException
+	public org.compiere.model.I_AD_Image getAD_Image()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_Image_ID, org.compiere.model.I_AD_Image.class);
 	}
 
 	@Override
-	public void setAD_Image(org.compiere.model.I_AD_Image AD_Image)
+	public void setAD_Image(final org.compiere.model.I_AD_Image AD_Image)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_Image_ID, org.compiere.model.I_AD_Image.class, AD_Image);
 	}
 
-	/** Set Bild.
-		@param AD_Image_ID 
-		Image or Icon
-	  */
 	@Override
-	public void setAD_Image_ID (int AD_Image_ID)
+	public void setAD_Image_ID (final int AD_Image_ID)
 	{
 		if (AD_Image_ID < 1) 
 			set_Value (COLUMNNAME_AD_Image_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_Image_ID, Integer.valueOf(AD_Image_ID));
+			set_Value (COLUMNNAME_AD_Image_ID, AD_Image_ID);
 	}
 
-	/** Get Bild.
-		@return Image or Icon
-	  */
 	@Override
-	public int getAD_Image_ID () 
+	public int getAD_Image_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Image_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Image_ID);
 	}
 
-	/** Set Fenster.
-		@param AD_Window_ID 
-		Data entry or display window
-	  */
 	@Override
-	public void setAD_Window_ID (int AD_Window_ID)
+	public void setAD_Window_ID (final int AD_Window_ID)
 	{
 		if (AD_Window_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Window_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Window_ID, Integer.valueOf(AD_Window_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Window_ID, AD_Window_ID);
 	}
 
-	/** Get Fenster.
-		@return Data entry or display window
-	  */
 	@Override
-	public int getAD_Window_ID () 
+	public int getAD_Window_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Window_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_Window_ID);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	/** 
@@ -206,205 +147,163 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	 * Reference name: _EntityTypeNew
 	 */
 	public static final int ENTITYTYPE_AD_Reference_ID=389;
-	/** Set Entitäts-Art.
-		@param EntityType 
-		Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public void setEntityType (java.lang.String EntityType)
+	public void setEntityType (final java.lang.String EntityType)
 	{
-
 		set_Value (COLUMNNAME_EntityType, EntityType);
 	}
 
-	/** Get Entitäts-Art.
-		@return Dictionary Entity Type; Determines ownership and synchronization
-	  */
 	@Override
-	public java.lang.String getEntityType () 
+	public java.lang.String getEntityType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_EntityType);
+		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
 
-	/** Set Kommentar/Hilfe.
-		@param Help 
-		Comment or Hint
-	  */
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Kommentar/Hilfe.
-		@return Comment or Hint
-	  */
 	@Override
-	public java.lang.String getHelp () 
+	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	/** Set Interner Name.
-		@param InternalName 
-		Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public void setInternalName (java.lang.String InternalName)
+	public void setInternalName (final @Nullable java.lang.String InternalName)
 	{
 		set_Value (COLUMNNAME_InternalName, InternalName);
 	}
 
-	/** Get Interner Name.
-		@return Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public java.lang.String getInternalName () 
+	public java.lang.String getInternalName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
+		return get_ValueAsString(COLUMNNAME_InternalName);
 	}
 
-	/** Set Beta-Funktionalität.
-		@param IsBetaFunctionality 
-		This functionality is considered Beta
-	  */
 	@Override
-	public void setIsBetaFunctionality (boolean IsBetaFunctionality)
+	public void setIsBetaFunctionality (final boolean IsBetaFunctionality)
 	{
-		set_Value (COLUMNNAME_IsBetaFunctionality, Boolean.valueOf(IsBetaFunctionality));
+		set_Value (COLUMNNAME_IsBetaFunctionality, IsBetaFunctionality);
 	}
 
-	/** Get Beta-Funktionalität.
-		@return This functionality is considered Beta
-	  */
 	@Override
-	public boolean isBetaFunctionality () 
+	public boolean isBetaFunctionality() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsBetaFunctionality);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsBetaFunctionality);
 	}
 
-	/** Set Standard.
-		@param IsDefault 
-		Default value
-	  */
 	@Override
-	public void setIsDefault (boolean IsDefault)
+	public void setIsDefault (final boolean IsDefault)
 	{
-		set_Value (COLUMNNAME_IsDefault, Boolean.valueOf(IsDefault));
+		set_Value (COLUMNNAME_IsDefault, IsDefault);
 	}
 
-	/** Get Standard.
-		@return Default value
-	  */
 	@Override
-	public boolean isDefault () 
+	public boolean isDefault() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDefault);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
 	}
 
-	/** Set Enable remote cache invalidation.
-		@param IsEnableRemoteCacheInvalidation Enable remote cache invalidation	  */
 	@Override
-	public void setIsEnableRemoteCacheInvalidation (boolean IsEnableRemoteCacheInvalidation)
+	public void setIsEnableRemoteCacheInvalidation (final boolean IsEnableRemoteCacheInvalidation)
 	{
-		set_Value (COLUMNNAME_IsEnableRemoteCacheInvalidation, Boolean.valueOf(IsEnableRemoteCacheInvalidation));
+		set_Value (COLUMNNAME_IsEnableRemoteCacheInvalidation, IsEnableRemoteCacheInvalidation);
 	}
 
-	/** Get Enable remote cache invalidation.
-		@return Enable remote cache invalidation	  */
 	@Override
-	public boolean isEnableRemoteCacheInvalidation () 
+	public boolean isEnableRemoteCacheInvalidation() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsEnableRemoteCacheInvalidation);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsEnableRemoteCacheInvalidation);
 	}
 
-	/** Set Verkaufs-Transaktion.
-		@param IsSOTrx 
-		This is a Sales Transaction
-	  */
 	@Override
-	public void setIsSOTrx (boolean IsSOTrx)
+	public void setIsExcludeFromZoomTargets (final boolean IsExcludeFromZoomTargets)
 	{
-		set_Value (COLUMNNAME_IsSOTrx, Boolean.valueOf(IsSOTrx));
+		set_Value (COLUMNNAME_IsExcludeFromZoomTargets, IsExcludeFromZoomTargets);
 	}
 
-	/** Get Verkaufs-Transaktion.
-		@return This is a Sales Transaction
-	  */
 	@Override
-	public boolean isSOTrx () 
+	public boolean isExcludeFromZoomTargets() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsSOTrx);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsExcludeFromZoomTargets);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setIsOverrideInMenu (final boolean IsOverrideInMenu)
+	{
+		set_Value (COLUMNNAME_IsOverrideInMenu, IsOverrideInMenu);
+	}
+
+	@Override
+	public boolean isOverrideInMenu() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsOverrideInMenu);
+	}
+
+	@Override
+	public void setIsSOTrx (final boolean IsSOTrx)
+	{
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
+	}
+
+	@Override
+	public boolean isSOTrx() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSOTrx);
+	}
+
+	@Override
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-	/** Set Verarbeiten.
-		@param Processing Verarbeiten	  */
 	@Override
-	public void setProcessing (boolean Processing)
+	public org.compiere.model.I_AD_Window getOverrides_Window()
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		return get_ValueAsPO(COLUMNNAME_Overrides_Window_ID, org.compiere.model.I_AD_Window.class);
 	}
 
-	/** Get Verarbeiten.
-		@return Verarbeiten	  */
 	@Override
-	public boolean isProcessing () 
+	public void setOverrides_Window(final org.compiere.model.I_AD_Window Overrides_Window)
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		set_ValueFromPO(COLUMNNAME_Overrides_Window_ID, org.compiere.model.I_AD_Window.class, Overrides_Window);
+	}
+
+	@Override
+	public void setOverrides_Window_ID (final int Overrides_Window_ID)
+	{
+		if (Overrides_Window_ID < 1) 
+			set_Value (COLUMNNAME_Overrides_Window_ID, null);
+		else 
+			set_Value (COLUMNNAME_Overrides_Window_ID, Overrides_Window_ID);
+	}
+
+	@Override
+	public int getOverrides_Window_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Overrides_Window_ID);
+	}
+
+	@Override
+	public void setProcessing (final boolean Processing)
+	{
+		set_Value (COLUMNNAME_Processing, Processing);
+	}
+
+	@Override
+	public boolean isProcessing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
 	/** 
@@ -420,61 +319,51 @@ public class X_AD_Window extends org.compiere.model.PO implements I_AD_Window, o
 	public static final String WINDOWTYPE_Transaktion = "T";
 	/** Query Only = Q */
 	public static final String WINDOWTYPE_QueryOnly = "Q";
-	/** Set WindowType.
-		@param WindowType 
-		Type or classification of a Window
-	  */
 	@Override
-	public void setWindowType (java.lang.String WindowType)
+	public void setWindowType (final java.lang.String WindowType)
 	{
-
 		set_Value (COLUMNNAME_WindowType, WindowType);
 	}
 
-	/** Get WindowType.
-		@return Type or classification of a Window
-	  */
 	@Override
-	public java.lang.String getWindowType () 
+	public java.lang.String getWindowType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_WindowType);
+		return get_ValueAsString(COLUMNNAME_WindowType);
 	}
 
-	/** Set Fensterhöhe.
-		@param WinHeight Fensterhöhe	  */
 	@Override
-	public void setWinHeight (int WinHeight)
+	public void setWinHeight (final int WinHeight)
 	{
-		set_Value (COLUMNNAME_WinHeight, Integer.valueOf(WinHeight));
+		set_Value (COLUMNNAME_WinHeight, WinHeight);
 	}
 
-	/** Get Fensterhöhe.
-		@return Fensterhöhe	  */
 	@Override
-	public int getWinHeight () 
+	public int getWinHeight() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WinHeight);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WinHeight);
 	}
 
-	/** Set Fensterbreite.
-		@param WinWidth Fensterbreite	  */
 	@Override
-	public void setWinWidth (int WinWidth)
+	public void setWinWidth (final int WinWidth)
 	{
-		set_Value (COLUMNNAME_WinWidth, Integer.valueOf(WinWidth));
+		set_Value (COLUMNNAME_WinWidth, WinWidth);
 	}
 
-	/** Get Fensterbreite.
-		@return Fensterbreite	  */
 	@Override
-	public int getWinWidth () 
+	public int getWinWidth() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_WinWidth);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_WinWidth);
+	}
+
+	@Override
+	public void setZoomIntoPriority (final int ZoomIntoPriority)
+	{
+		set_Value (COLUMNNAME_ZoomIntoPriority, ZoomIntoPriority);
+	}
+
+	@Override
+	public int getZoomIntoPriority() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ZoomIntoPriority);
 	}
 }

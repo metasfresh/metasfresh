@@ -1,13 +1,10 @@
 package org.eevolution.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.manufacturing.order.exportaudit.APIExportStatus;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import lombok.Builder;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
@@ -21,11 +18,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
-import lombok.Builder;
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -87,7 +85,7 @@ public class PPOrderBLTest
 		public void beforeEach()
 		{
 			now = ZonedDateTime.now();
-			de.metas.util.time.SystemTime.setTimeSource(FixedTimeSource.ofZonedDateTime(now));
+			SystemTime.setFixedTimeSource(now);
 		}
 
 		private void setCanBeExportedAfterSeconds(int seconds)

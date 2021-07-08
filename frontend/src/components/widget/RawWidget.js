@@ -1,5 +1,5 @@
 import React, { createRef, PureComponent } from 'react';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
 import { List as ImmutableList } from 'immutable';
@@ -7,7 +7,7 @@ import { List as ImmutableList } from 'immutable';
 import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
-
+import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
 import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
@@ -51,7 +51,11 @@ export class RawWidget extends PureComponent {
     const { rawWidget } = this;
 
     if (rawWidget.current && autoFocus) {
-      rawWidget.current.focus();
+      try {
+        rawWidget.current.focus();
+      } catch (e) {
+        console.error(`Custom widget doesn't have 'focus' function defined`);
+      }
     }
 
     if (textSelected) {
@@ -254,6 +258,7 @@ export class RawWidget extends PureComponent {
    */
   handleChange = (e) => {
     const { handleChange, filterWidget, fields } = this.props;
+
     const widgetField = getWidgetField({ filterWidget, fields });
 
     if (handleChange) {
@@ -412,9 +417,11 @@ export class RawWidget extends PureComponent {
     }
 
     // TODO: API SHOULD RETURN THE SAME PROPERTIES FOR FILTERS
-    const widgetField = filterWidget
-      ? fields[0].parameterName
-      : fields[0].field;
+    let widgetField = filterWidget ? fields[0].parameterName : fields[0].field;
+    if (!widgetField && this.props.widgetType === 'Switch') {
+      widgetField = fields[0].fields[0].field;
+    }
+
     const readonly = widgetData[0].readonly;
 
     if (fullScreen || readonly || (modalVisible && !isModal)) {
@@ -469,6 +476,34 @@ export class RawWidget extends PureComponent {
     );
   };
 
+  /**
+   * @method isScanQRbuttonPanel
+   * @returns boolean value indicating that we care in the case where the widget is rendered within a panel layout and has a barcodeScannerType (qrcode)
+   */
+  isScanQRbuttonPanel = () => {
+    const { barcodeScannerType, layoutType } = this.props;
+    return barcodeScannerType === 'qrCode' && layoutType === 'panel'
+      ? true
+      : false;
+  };
+
+  /**
+   * @method getAdaptedFieldColSize
+   * @returns adaptive size for the case when we have barcodeScannerType and `panel` layout type
+   */
+  getAdaptedFieldColSize = () =>
+    this.isScanQRbuttonPanel() ? 'col-sm-7' : 'col-sm-9';
+
+  /**
+   * @method onDetectedQR
+   * @summary After the QR code is detected the value of the field is updated with the corresponding string
+   * @param {string} qrCode
+   */
+  onDetectedQR = (qrCode) => {
+    const { widgetField, handleChange } = this.props;
+    handleChange(widgetField, qrCode);
+  };
+
   render() {
     const {
       caption,
@@ -489,6 +524,8 @@ export class RawWidget extends PureComponent {
       fieldLabelClass,
       fieldInputClass,
     } = this.props;
+
+    const fieldColSize = this.getAdaptedFieldColSize();
 
     const {
       errorPopup,
@@ -556,7 +593,8 @@ export class RawWidget extends PureComponent {
             ? 'col-sm-12 '
             : type === 'primaryLongLabels'
             ? 'col-sm-6'
-            : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex' : '');
+            : fieldColSize + ' ') +
+          (fields[0].devices ? 'form-group-flex' : '');
       }
     }
 
@@ -626,17 +664,19 @@ export class RawWidget extends PureComponent {
               })}
               title={valueDescription}
             >
-              <ReactCSSTransitionGroup
-                transitionName="fade"
-                transitionEnterTimeout={200}
-                transitionLeaveTimeout={200}
+              <CSSTransition
+                key={`trans_${fields[0].fieldName}`}
+                className="fade"
+                timeout={{ enter: 200, exit: 200 }}
               >
-                {errorPopup &&
-                  validStatus &&
-                  !validStatus.valid &&
-                  !validStatus.initialValue &&
-                  this.renderErrorPopup(validStatus.reason)}
-              </ReactCSSTransitionGroup>
+                <div>
+                  {errorPopup &&
+                    validStatus &&
+                    !validStatus.valid &&
+                    !validStatus.initialValue &&
+                    this.renderErrorPopup(validStatus.reason)}
+                </div>
+              </CSSTransition>
               {widgetBody}
             </div>
             {fields[0].devices && !widgetData[0].readonly && (
@@ -649,6 +689,10 @@ export class RawWidget extends PureComponent {
               />
             )}
           </div>
+          {/* this is a special case for displaying the scan button on the right side of the field */}
+          {this.isScanQRbuttonPanel() && (
+            <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+          )}
         </div>
       </div>
     );

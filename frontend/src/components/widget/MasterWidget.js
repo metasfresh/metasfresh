@@ -84,13 +84,16 @@ class MasterWidget extends PureComponent {
       windowId,
       patch,
       rowId,
+      dataId: docId,
       tabId,
-      onChange,
       relativeDocId,
       isAdvanced = false,
       viewId,
       updatePropertyValue,
+      disconnected,
+      updateRow,
     } = this.props;
+
     value = formatValueByWidgetType({ widgetType, value });
 
     let entity = viewId ? 'documentView' : this.props.entity;
@@ -102,6 +105,20 @@ class MasterWidget extends PureComponent {
       viewId,
     });
 
+    const updateOptions = {
+      windowId,
+      docId,
+      property,
+      value,
+      tabId,
+      rowId: currRowId,
+      isModal,
+      entity,
+      tableId,
+      disconnected,
+      action: 'patch',
+    };
+
     // TODO: Leaving this for now in case this is used in some edge cases
     // but seems like a duplication of what we have in `handleChange`.
     // *HOTFIX update*: This is used by attributes. I think we should try to rewrite the
@@ -110,15 +127,7 @@ class MasterWidget extends PureComponent {
     widgetType !== 'Button' &&
       !dataId &&
       (widgetType === 'ProductAttributes' || widgetType === 'Quantity') &&
-      updatePropertyValue({
-        property,
-        value,
-        tabId,
-        rowId: currRowId,
-        isModal,
-        entity,
-        tableId,
-      });
+      updatePropertyValue(updateOptions);
 
     ret = patch(
       entity,
@@ -133,8 +142,14 @@ class MasterWidget extends PureComponent {
       viewId,
       isEdit
     );
+
+    // flash the row to indicate a change
+    updateRow && updateRow();
     this.setState({ edited: false });
-    onChange && onChange(ret); //callback
+
+    /** we are using this `disconnected` flag to know when the Master widget should update the property value differently */
+    disconnected === 'inlineTab' &&
+      updatePropertyValue({ ...updateOptions, ret });
 
     return ret;
   };
@@ -160,6 +175,7 @@ class MasterWidget extends PureComponent {
       dataId,
       windowId,
       widgetData,
+      disconnected,
     } = this.props;
 
     // Add special case of formating for the case when people input 04.7.2020 to be transformed to 04.07.2020
@@ -186,6 +202,8 @@ class MasterWidget extends PureComponent {
       });
 
       updatePropertyValue({
+        windowId,
+        docId: dataId,
         property,
         value: val,
         tabId,
@@ -193,6 +211,8 @@ class MasterWidget extends PureComponent {
         isModal,
         entity,
         tableId,
+        disconnected,
+        action: 'change',
       });
     });
   };
@@ -208,7 +228,13 @@ class MasterWidget extends PureComponent {
   handleProcess = (caption, buttonProcessId, tabId, rowId) => {
     const { openModal } = this.props;
 
-    openModal(caption, buttonProcessId, 'process', tabId, rowId, false, false);
+    openModal({
+      title: caption,
+      windowId: buttonProcessId,
+      modalType: 'process',
+      tabId,
+      rowId,
+    });
   };
 
   /**
@@ -217,17 +243,23 @@ class MasterWidget extends PureComponent {
    * @param {*} field
    */
   handleZoomInto = (field) => {
-    const { dataId, windowId, tabId, rowId } = this.props;
+    const { dataId, windowId, tabId, rowId, entity } = this.props;
+    const fallBackEntity = entity ? entity : 'window';
 
-    getZoomIntoWindow('window', windowId, dataId, tabId, rowId, field).then(
-      (res) => {
-        const url = `/window/${res.data.documentPath.windowId}/${
-          res.data.documentPath.documentId
-        }`;
+    getZoomIntoWindow(
+      fallBackEntity,
+      windowId,
+      dataId,
+      tabId,
+      rowId,
+      field
+    ).then((res) => {
+      const url = `/${fallBackEntity}/${res.data.documentPath.windowId}/${
+        res.data.documentPath.documentId
+      }`;
 
-        res && res.data && window.open(url, '_blank');
-      }
-    );
+      res && res.data && window.open(url, '_blank');
+    });
   };
 
   /**
@@ -297,12 +329,13 @@ MasterWidget.propTypes = {
   widgetData: PropTypes.array,
   widgetType: PropTypes.string,
   patch: PropTypes.func,
-  onChange: PropTypes.func,
   relativeDocId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isAdvanced: PropTypes.bool,
   entity: PropTypes.string,
   precision: PropTypes.bool,
   clearValue: PropTypes.bool,
+  disconnected: PropTypes.string,
+  updateRow: PropTypes.func,
 };
 
 export default MasterWidget;

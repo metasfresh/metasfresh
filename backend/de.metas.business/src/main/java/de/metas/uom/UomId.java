@@ -1,6 +1,7 @@
 package de.metas.uom;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -51,6 +52,7 @@ public class UomId implements RepoIdAware
 		}
 	}
 
+	@Nullable
 	public static UomId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
@@ -59,6 +61,11 @@ public class UomId implements RepoIdAware
 	public static int toRepoId(final UomId uomId)
 	{
 		return uomId != null ? uomId.getRepoId() : -1;
+	}
+
+	public static Optional<UomId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	int repoId;

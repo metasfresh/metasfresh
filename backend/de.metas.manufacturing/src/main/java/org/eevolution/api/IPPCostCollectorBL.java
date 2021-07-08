@@ -1,15 +1,14 @@
 package org.eevolution.api;
 
 import java.time.Duration;
+import java.util.List;
 
 import lombok.NonNull;
-import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.validator.PP_Order_BOMLine;
 
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
@@ -25,13 +24,9 @@ public interface IPPCostCollectorBL extends ISingletonService
 
 	Quantity getMovementQtyInStockingUOM(I_PP_Cost_Collector cc);
 
-	Duration getTotalDurationReported(I_PP_Cost_Collector cc);
+	Quantity getTotalDurationReportedAsQuantity(@NonNull I_PP_Cost_Collector cc);
 
-	default boolean isMaterialReceipt(final I_PP_Cost_Collector cc)
-	{
-		final CostCollectorType costCollectorType = CostCollectorType.ofCode(cc.getCostCollectorType());
-		return costCollectorType.isMaterialReceipt();
-	}
+	Duration getTotalDurationReported(I_PP_Cost_Collector cc);
 
 	default boolean isMaterialReceiptOrCoProduct(final I_PP_Cost_Collector cc)
 	{
@@ -73,7 +68,7 @@ public interface IPPCostCollectorBL extends ISingletonService
 	 */
 	I_PP_Cost_Collector createReceipt(ReceiptCostCollectorCandidate candidate);
 
-	I_PP_Cost_Collector createActivityControl(ActivityControlCreateRequest request);
+	void createActivityControl(ActivityControlCreateRequest request);
 
 	void createMaterialUsageVariance(I_PP_Order ppOrder, I_PP_Order_BOMLine line);
 
@@ -82,7 +77,7 @@ public interface IPPCostCollectorBL extends ISingletonService
 	/**
 	 * Checks if given cost collector is a reversal.
 	 *
-	 * We consider given cost collector as a reversal if it's ID is bigger then the Reveral_ID.
+	 * We consider given cost collector as a reversal if it's ID is bigger then the Reversal_ID.
 	 *
 	 * @param cc cost collector
 	 * @return true if given cost collector is actually a reversal.
@@ -92,4 +87,6 @@ public interface IPPCostCollectorBL extends ISingletonService
 	boolean isFloorStock(I_PP_Cost_Collector cc);
 
 	void updateCostCollectorFromOrder(I_PP_Cost_Collector cc, I_PP_Order order);
+
+	List<I_PP_Cost_Collector> getByOrderId(PPOrderId ppOrderId);
 }

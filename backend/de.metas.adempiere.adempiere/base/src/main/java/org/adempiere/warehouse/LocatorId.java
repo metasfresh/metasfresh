@@ -1,19 +1,16 @@
 package org.adempiere.warehouse;
 
-import java.util.Collection;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_M_Locator;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_M_Locator;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L
@@ -54,15 +51,40 @@ public class LocatorId implements RepoIdAware
 		return ofRepoId(warehouseId, repoId);
 	}
 
+	@Nullable
 	public static LocatorId ofRepoIdOrNull(@Nullable final WarehouseId warehouseId, final int repoId)
 	{
 		if (repoId <= 0)
 		{
 			return null;
 		}
+
+		if (warehouseId == null)
+		{
+			throw new IllegalArgumentException("Inconsistent state: warehouseId is null but locator's repoId=" + repoId);
+		}
+
 		return ofRepoId(warehouseId, repoId);
 	}
 
+	@Nullable
+	public static LocatorId ofRepoIdOrNull(final int warehouseRepoId, final int repoId)
+	{
+		if (repoId <= 0)
+		{
+			return null;
+		}
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(warehouseRepoId);
+		if (warehouseId == null)
+		{
+			throw new IllegalArgumentException("Inconsistent state: warehouseId is null but locator's repoId=" + repoId);
+		}
+
+		return ofRepoId(warehouseId, repoId);
+	}
+
+	@Nullable
 	public static LocatorId ofRecordOrNull(@Nullable final I_M_Locator locatorRecord)
 	{
 		if (locatorRecord == null)
@@ -72,14 +94,14 @@ public class LocatorId implements RepoIdAware
 		return ofRecord(locatorRecord);
 	}
 
-	public static LocatorId ofRecord(@Nullable final I_M_Locator locatorRecord)
+	public static LocatorId ofRecord(@NonNull final I_M_Locator locatorRecord)
 	{
 		return ofRepoId(
 				WarehouseId.ofRepoId(locatorRecord.getM_Warehouse_ID()),
 				locatorRecord.getM_Locator_ID());
 	}
 
-	public static int toRepoId(final LocatorId locatorId)
+	public static int toRepoId(@Nullable final LocatorId locatorId)
 	{
 		return locatorId != null ? locatorId.getRepoId() : -1;
 	}
@@ -95,8 +117,8 @@ public class LocatorId implements RepoIdAware
 
 	public static boolean equalsByRepoId(final int repoId1, final int repoId2)
 	{
-		int repoId1Norm = repoId1 > 0 ? repoId1 : -1;
-		int repoId2Norm = repoId2 > 0 ? repoId2 : -1;
+		final int repoId1Norm = repoId1 > 0 ? repoId1 : -1;
+		final int repoId2Norm = repoId2 > 0 ? repoId2 : -1;
 		return repoId1Norm == repoId2Norm;
 	}
 

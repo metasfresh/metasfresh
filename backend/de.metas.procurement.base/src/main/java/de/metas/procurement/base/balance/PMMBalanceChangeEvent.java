@@ -56,7 +56,6 @@ public final class PMMBalanceChangeEvent
 
 	private PMMBalanceChangeEvent(final Builder builder)
 	{
-		super();
 		C_BPartner_ID = builder.C_BPartner_ID;
 		M_Product_ID = builder.M_Product_ID;
 		M_AttributeSetInstance_ID = builder.M_AttributeSetInstance_ID > 0 ? builder.M_AttributeSetInstance_ID : 0;

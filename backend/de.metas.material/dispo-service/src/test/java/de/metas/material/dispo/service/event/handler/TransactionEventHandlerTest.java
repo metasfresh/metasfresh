@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.document.dimension.DimensionService;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -50,11 +51,13 @@ import de.metas.material.event.commons.MaterialDescriptor;
 
 public class TransactionEventHandlerTest
 {
+	private DimensionService dimensionService = Mockito.mock(DimensionService.class);
+
 	@Test
 	public void createOneOrTwoCandidatesWithChangedTransactionDetailAndQuantity()
 	{
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(ImmutableList.of());
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService);
 
 		final TransactionEventHandler transactionEventHandler = new TransactionEventHandler(
 				candidateChangeHandler,

@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -39,7 +40,6 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -123,7 +123,7 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	protected Map<String, Object> getImportTableDefaultValues()
 	{
 		return ImmutableMap.<String, Object> builder()
-				.put(I_I_Inventory.COLUMNNAME_InventoryDate, SystemTime.asDayTimestamp())
+				.put(I_I_Inventory.COLUMNNAME_InventoryDate, de.metas.common.util.time.SystemTime.asDayTimestamp())
 				.build();
 	}
 
@@ -391,10 +391,12 @@ public class InventoryImportProcess extends ImportProcessTemplate<I_I_Inventory,
 	AttributeSetInstanceId extractASI(@NonNull final I_I_Inventory importRecord)
 	{
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
-		if (!productBL.isInstanceAttribute(productId))
-		{
-			return AttributeSetInstanceId.NONE;
-		}
+
+		// Always extract an ASI. Even if the product has no ASI, the HUs that we might want to match with might have Attributes that need to be matched against importRecord
+		// if (!productBL.isInstanceAttribute(productId))
+		// {
+		// 	return AttributeSetInstanceId.NONE;
+		// }
 
 		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASI(productId);
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());

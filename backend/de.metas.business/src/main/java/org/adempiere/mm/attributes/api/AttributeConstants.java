@@ -1,9 +1,8 @@
 package org.adempiere.mm.attributes.api;
 
+import lombok.experimental.UtilityClass;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-
-import lombok.experimental.UtilityClass;
 
 /*
  * #%L
@@ -51,9 +50,20 @@ public class AttributeConstants
 	//
 	public final AttributeCode ATTR_SubProducerBPartner_Value = AttributeCode.ofString("SubProducerBPartner");
 
-	public final AttributeCode ATTR_SerialNo = AttributeCode.ofString("SerialNo");
+	public static final String ATTR_SerialNo_String = "SerialNo";
+	public final AttributeCode ATTR_SerialNo = AttributeCode.ofString(ATTR_SerialNo_String);
 
 	public static final String ATTR_LotNumber_String = "Lot-Nummer";
 	public static final AttributeCode ATTR_LotNumber = AttributeCode.ofString(ATTR_LotNumber_String);
 	public static final AttributeCode ATTR_LotNumberDate = AttributeCode.ofString("HU_LotNumberDate");
+
+	public static final AttributeCode RouterPassword = AttributeCode.ofString("RouterPassword");
+	public static final AttributeCode RouterMAC1 = AttributeCode.ofString("RouterMAC1");
+	public static final AttributeCode RouterMAC2 = AttributeCode.ofString("RouterMAC2");
+	public static final AttributeCode RouterMAC3 = AttributeCode.ofString("RouterMAC3");
+	public static final AttributeCode RouterMAC4 = AttributeCode.ofString("RouterMAC4");
+	public static final AttributeCode RouterMAC5 = AttributeCode.ofString("RouterMAC5");
+	public static final AttributeCode RouterMAC6 = AttributeCode.ofString("RouterMAC6");
+
+	public static final AttributeCode WarrantyStartDate = AttributeCode.ofString("WarrantyStartDate");
 }

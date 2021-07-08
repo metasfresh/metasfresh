@@ -87,8 +87,8 @@ public class M_ForecastPostMaterialEventEventCreatorTest
 			forecastLineRecord1.setC_BPartner_ID(BPARTNER_ID_OF_FIRST_FORECAST_LINE.getRepoId());
 			forecastLineRecord1.setDatePromised(TimeUtil.parseTimestamp("2017-10-21"));
 			forecastLineRecord1.setQty(new BigDecimal("21"));
-			forecastLineRecord1.setM_Product(product1);
-			forecastLineRecord1.setM_Warehouse(warehouse1);
+			forecastLineRecord1.setM_Product_ID(product1.getM_Product_ID());
+			forecastLineRecord1.setM_Warehouse_ID(warehouse1.getM_Warehouse_ID());
 			save(forecastLineRecord1);
 		}
 
@@ -102,8 +102,8 @@ public class M_ForecastPostMaterialEventEventCreatorTest
 			forecastLineRecord2.setM_Forecast(forecastModel);
 			forecastLineRecord2.setDatePromised(TimeUtil.parseTimestamp("2017-10-22"));
 			forecastLineRecord2.setQty(new BigDecimal("22"));
-			forecastLineRecord2.setM_Product(product2);
-			forecastLineRecord2.setM_Warehouse(warehouse2);
+			forecastLineRecord2.setM_Product_ID(product2.getM_Product_ID());
+			forecastLineRecord2.setM_Warehouse_ID(warehouse2.getM_Warehouse_ID());
 			save(forecastLineRecord2);
 		}
 

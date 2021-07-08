@@ -80,6 +80,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_IsActive, BPartner.ACTIVE)
 			.put(I_C_BPartner.COLUMNNAME_IsVendor, BPartner.VENDOR)
 			.put(I_C_BPartner.COLUMNNAME_IsCustomer, BPartner.CUSTOMER)
+			.put(I_C_BPartner.COLUMNNAME_IsCompany, BPartner.COMPANY)
 			.put(I_C_BPartner.COLUMNNAME_VATaxID, BPartner.VAT_ID)
 			.build();
 

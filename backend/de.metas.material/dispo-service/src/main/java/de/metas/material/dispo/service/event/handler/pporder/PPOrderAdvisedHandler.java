@@ -2,6 +2,7 @@ package de.metas.material.dispo.service.event.handler.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -19,7 +20,6 @@ import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -104,15 +104,23 @@ public final class PPOrderAdvisedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingSupplyCandidateQuery(
-			@NonNull final PPOrder ppOrder,
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	protected CandidatesQuery createPreExistingSupplyCandidateQuery(@NonNull final AbstractPPOrderEvent abstractPPOrderEvent)
 	{
+		final PPOrderAdvisedEvent ppOrderAdvisedEvent = PPOrderAdvisedEvent.cast(abstractPPOrderEvent);
+		if(!ppOrderAdvisedEvent.isTryUpdateExistingCandidate())
+		{
+			return CandidatesQuery.FALSE;
+		}
+
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderAdvisedEvent.getSupplyRequiredDescriptor();
+
 		final CandidateId supplyCandidateId = CandidateId.ofRepoIdOrNull(supplyRequiredDescriptor.getSupplyCandidateId());
 		if (supplyCandidateId != null)
 		{ // the original request already contained an existing supply-candidate's ID that we need to update now.
 			return CandidatesQuery.fromId(supplyCandidateId);
 		}
+
+		final PPOrder ppOrder = ppOrderAdvisedEvent.getPpOrder();
 
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptor(supplyRequiredDescriptor);
 		final DemandDetailsQuery demandDetailsQuery = DemandDetailsQuery.ofDemandDetail(demandDetail);

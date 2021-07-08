@@ -53,6 +53,7 @@ public class DataEntryTab
 	ITranslatableString description;
 
 	String internalName;
+	boolean availableInApi;
 
 	ImmutableList<DataEntrySubTab> subTabs;
 
@@ -65,6 +66,7 @@ public class DataEntryTab
 			@NonNull final ITranslatableString caption,
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
+			@NonNull final boolean availableInApi,
 			@NonNull final DocumentLinkColumnName documentLinkColumnName,
 			@Singular final List<DataEntrySubTab> subTabs)
 	{
@@ -72,6 +74,7 @@ public class DataEntryTab
 		this.caption = caption;
 		this.description = description;
 		this.internalName = internalName;
+		this.availableInApi = availableInApi;
 		this.documentLinkColumnName = documentLinkColumnName;
 		this.subTabs = ImmutableList.copyOf(subTabs);
 	}

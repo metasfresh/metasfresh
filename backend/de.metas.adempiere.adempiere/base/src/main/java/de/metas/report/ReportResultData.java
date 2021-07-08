@@ -1,8 +1,19 @@
 package de.metas.report;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.google.common.io.Files;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.MimeType;
+import org.compiere.util.Util;
+
+import java.io.File;
+import java.io.IOException;
 
 /*
  * #%L
@@ -26,14 +37,16 @@ import lombok.Value;
  * #L%
  */
 
-/** Tiny and hopefully helpful class to exchange reporting data. */
+/**
+ * Tiny and hopefully helpful class to exchange reporting data.
+ */
 @Value
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
+@JsonDeserialize(builder = ReportResultData.ReportResultDataBuilder.class)
 public class ReportResultData
 {
 	byte[] reportData;
-
 	String reportFilename;
-
 	String reportContentType;
 
 	@Builder
@@ -47,4 +60,55 @@ public class ReportResultData
 		this.reportContentType = reportContentType;
 	}
 
+	@JsonPOJOBuilder(withPrefix = "")
+	public static class ReportResultDataBuilder
+	{
+	}
+
+	public static ReportResultData ofFile(@NonNull final File file)
+	{
+		final String reportFilename = file.getName();
+
+		return ReportResultData.builder()
+				.reportData(Util.readBytes(file))
+				.reportFilename(reportFilename)
+				.reportContentType(MimeType.getMimeType(reportFilename))
+				.build();
+	}
+
+	public boolean isEmpty()
+	{
+		return reportData == null || reportData.length <= 0;
+	}
+
+	public File writeToTemporaryFile(final String filenamePrefix)
+	{
+		final File file = createTemporaryFile(filenamePrefix);
+
+		try
+		{
+			Files.write(reportData, file);
+			return file;
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed writing " + file.getAbsolutePath(), ex);
+		}
+
+	}
+
+	@NonNull
+	private File createTemporaryFile(final String filenamePrefix)
+	{
+		try
+		{
+			final String ext = MimeType.getExtensionByType(reportContentType);
+			final String suffix = Check.isNotBlank(ext) ? "." + ext : "";
+			return File.createTempFile(filenamePrefix, suffix);
+		}
+		catch (final IOException ex)
+		{
+			throw new AdempiereException("Failed creating temporary file with `" + filenamePrefix + "` prefix", ex);
+		}
+	}
 }

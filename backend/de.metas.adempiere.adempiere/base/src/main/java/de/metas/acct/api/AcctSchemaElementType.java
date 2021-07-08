@@ -51,7 +51,15 @@ public enum AcctSchemaElementType
 	Activity(X_C_AcctSchema_Element.ELEMENTTYPE_Activity, I_C_ValidCombination.COLUMNNAME_C_Activity_ID), //
 	SubAccount(X_C_AcctSchema_Element.ELEMENTTYPE_SubAccount, I_C_ValidCombination.COLUMNNAME_C_SubAcct_ID), //
 	UserElement1(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement1, I_C_ValidCombination.COLUMNNAME_UserElement1_ID), //
-	UserElement2(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement2, I_C_ValidCombination.COLUMNNAME_UserElement2_ID) //
+	UserElement2(X_C_AcctSchema_Element.ELEMENTTYPE_UserElement2, I_C_ValidCombination.COLUMNNAME_UserElement2_ID),//
+	UserElementString1(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString1, I_C_ValidCombination.COLUMNNAME_UserElementString1),//
+	UserElementString2(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString2, I_C_ValidCombination.COLUMNNAME_UserElementString2),//
+	UserElementString3(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString3, I_C_ValidCombination.COLUMNNAME_UserElementString3),//
+	UserElementString4(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString4, I_C_ValidCombination.COLUMNNAME_UserElementString4),//
+	UserElementString5(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString5, I_C_ValidCombination.COLUMNNAME_UserElementString5),//
+	UserElementString6(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString6, I_C_ValidCombination.COLUMNNAME_UserElementString6),//
+	UserElementString7(X_C_AcctSchema_Element.ELEMENTTYPE_UserElementString7, I_C_ValidCombination.COLUMNNAME_UserElementString7),//
+
 	;
 
 	/**

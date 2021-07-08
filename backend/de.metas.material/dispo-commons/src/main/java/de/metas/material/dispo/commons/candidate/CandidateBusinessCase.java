@@ -6,6 +6,13 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
 import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.util.Check;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -29,31 +36,57 @@ import de.metas.material.dispo.model.X_MD_Candidate;
  * #L%
  */
 
-
 /**
  * Please keep in sync with the values of {@link X_MD_Candidate#MD_CANDIDATE_BUSINESSCASE_AD_Reference_ID}
  */
-public enum CandidateBusinessCase
+ public enum CandidateBusinessCase implements ReferenceListAwareEnum
 {
-	DISTRIBUTION(DistributionDetail.class),
+	DISTRIBUTION(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_DISTRIBUTION, DistributionDetail.class),
 
-	PRODUCTION(ProductionDetail.class),
+	PRODUCTION(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PRODUCTION, ProductionDetail.class),
 
-	SHIPMENT(DemandDetail.class),
+	SHIPMENT(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_SHIPMENT, DemandDetail.class),
 
-	FORECAST(DemandDetail.class),
+	FORECAST(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_FORECAST, DemandDetail.class),
 
-	PURCHASE(PurchaseDetail.class);
+	PURCHASE(X_MD_Candidate.MD_CANDIDATE_BUSINESSCASE_PURCHASE, PurchaseDetail.class);
 
-	CandidateBusinessCase(final Class<? extends BusinessCaseDetail> detailClass)
+	@Getter
+	private String code;
+
+	@Getter
+	private Class<? extends BusinessCaseDetail> detailClass;
+
+	CandidateBusinessCase(
+			final String code,
+			final Class<? extends BusinessCaseDetail> detailClass)
 	{
+		this.code = code;
 		this.detailClass = detailClass;
 	}
 
-	private Class<? extends BusinessCaseDetail> detailClass;
-
-	public Class<? extends BusinessCaseDetail> getDetailClass()
+	public static CandidateBusinessCase ofCode(@NonNull final String code)
 	{
-		return detailClass;
+		return index.ofCode(code);
+	}
+
+	public static CandidateBusinessCase ofCodeOrNull(@Nullable final String code)
+	{
+		if (Check.isBlank(code))
+		{
+			return null;
+		}
+		return CandidateBusinessCase.ofCode(code);
+	}
+
+	private static final ReferenceListAwareEnums.ValuesIndex<CandidateBusinessCase> index = ReferenceListAwareEnums.index(values());
+
+	public static String toCode(@Nullable final CandidateBusinessCase businessCase)
+	{
+		if (businessCase == null)
+		{
+			return null;
+		}
+		return businessCase.getCode();
 	}
 }

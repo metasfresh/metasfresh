@@ -1,10 +1,10 @@
 package de.metas.handlingunits.generichumodel;
 
-import java.util.Optional;
-
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -32,6 +32,12 @@ import lombok.Value;
 @Builder
 public class PackagingCode
 {
+	public static final PackagingCode NONE = PackagingCode.builder()
+			.id(PackagingCodeId.ofRepoId(Integer.MAX_VALUE))
+			.onlyForType(Optional.empty())
+			.value("NONE")
+			.build();
+
 	@NonNull
 	PackagingCodeId id;
 
@@ -40,4 +46,9 @@ public class PackagingCode
 
 	@NonNull
 	String value;
+
+	public boolean isNone()
+	{
+		return this.equals(NONE);
+	}
 }

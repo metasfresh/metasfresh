@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.eevolution.api.PPOrderBOMLineId;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;

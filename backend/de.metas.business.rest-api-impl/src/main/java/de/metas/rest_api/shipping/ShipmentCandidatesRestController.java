@@ -42,13 +42,14 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 
-@RequestMapping(ShipmentCandidatesRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/shipments",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/shipments",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/shipments" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ShipmentCandidatesRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/shipments";
-
 	private final ShipmentCandidateAPIService shipmentCandidateAPIService;
 
 	public ShipmentCandidatesRestController(@NonNull final ShipmentCandidateAPIService shipmentCandidateAPIService)
@@ -58,11 +59,12 @@ public class ShipmentCandidatesRestController
 
 	@GetMapping("shipmentCandidates")
 	public ResponseEntity<JsonResponseShipmentCandidates> getShipmentCandidates(
-			@ApiParam("Max number of items to be returned in one request.") //
-			@RequestParam(name = "limit", required = false, defaultValue = "500") //
+			@ApiParam("Max number orders per request for which shipmentSchedules shall be returned.\n"
+					+ "ShipmentSchedules without an order count as one.") //
+			@RequestParam(name = "limit", required = false, defaultValue = "10") //
 			@Nullable final Integer limit)
 	{
-		final QueryLimit limitEff = QueryLimit.ofNullableOrNoLimit(limit).ifNoLimitUse(500);
+		final QueryLimit limitEff = QueryLimit.ofNullableOrNoLimit(limit).ifNoLimitUse(10);
 		final JsonResponseShipmentCandidates result = shipmentCandidateAPIService.exportShipmentCandidates(limitEff);
 		return ResponseEntity.ok(result);
 	}

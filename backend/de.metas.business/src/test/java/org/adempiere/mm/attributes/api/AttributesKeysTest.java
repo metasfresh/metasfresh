@@ -53,7 +53,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class AttributesKeysTest
 {
-	/** Watches the current tests and dumps the database to console in case of failure */
+	/**
+	 * Watches the current tests and dumps the database to console in case of failure
+	 */
 	@Rule
 	public final TestWatcher testWatcher = new AdempiereTestWatcher();
 
@@ -165,6 +167,16 @@ public class AttributesKeysTest
 		final ImmutableAttributeSet attributeSet2 = AttributesKeys.toImmutableAttributeSet(attributesKey);
 
 		assertThat(attributeSet2).isEqualTo(attributeSet);
+	}
+
+	@Test
+	void pruneEmptyParts()
+	{
+		final AttributesKey attributesKey = AttributesKey.ofString("540044=§&§540047=");
+
+		final AttributesKey pruned = AttributesKeys.pruneEmptyParts(attributesKey);
+
+		assertThat(pruned).isEqualTo(AttributesKey.NONE);
 	}
 
 	@Nested

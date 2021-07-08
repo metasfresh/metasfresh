@@ -1,4 +1,4 @@
-import { get } from 'lodash';
+import { get, find } from 'lodash';
 import { createSelector } from 'reselect';
 
 import {
@@ -66,6 +66,7 @@ export const initialState = {
     viewId: null,
     windowId: null,
     viewProfileId: null,
+    parentId: null,
   },
 };
 
@@ -92,6 +93,23 @@ const getLocalView = createSelector(
 );
 
 const getViewType = (isModal) => (isModal ? 'modals' : 'views');
+
+/**
+ * @method findViewByViewId
+ * @summary searches for a specific view with viewId
+ *
+ * @param {object} state
+ * @param {string} viewId
+ */
+export function findViewByViewId({ viewHandler }, viewId) {
+  let view = find(viewHandler.views, (item) => item.viewId === viewId);
+
+  if (!view) {
+    view = find(viewHandler.modals, (item) => item.viewId === viewId);
+  }
+
+  return view;
+}
 
 export default function viewHandler(state = initialState, action) {
   if ((!action.payload || !action.payload.id) && action.type !== DELETE_VIEW) {
@@ -158,9 +176,14 @@ export default function viewHandler(state = initialState, action) {
     }
 
     case FETCH_DOCUMENT_PENDING: {
-      const { id, isModal } = action.payload;
+      const { id, isModal, websocketRefresh } = action.payload;
       const type = getViewType(isModal);
       const view = getLocalView(state, id, isModal);
+      // if a websocket event caused this data fetch, we're not setting
+      // pending flag to true as in case of multiple refreshes in a short
+      // period of time it will cause the spinner to flicker
+      // https://github.com/metasfresh/me03/issues/6262#issuecomment-733527251
+      const pending = websocketRefresh ? false : true;
 
       return {
         ...state,
@@ -169,7 +192,7 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             notFound: false,
-            pending: true,
+            pending,
             error: null,
           },
         },
@@ -273,7 +296,9 @@ export default function viewHandler(state = initialState, action) {
           [`${id}`]: {
             ...view,
             viewId,
-            pending: false,
+            // we don't change `pending` to false, since we'll be fetching data immediately
+            // after that and for a split of a second we can trigger unnecessary duplicated
+            // requests if pending will be falsy
             notFound: false,
           },
         },
@@ -346,6 +371,8 @@ export default function viewHandler(state = initialState, action) {
       const type = getViewType(isModal);
       const view = getLocalView(state, id, isModal);
 
+      // we're not setting `pending` to false, as it'll be reset
+      // by fetching the document
       return {
         ...state,
         [`${type}`]: {
@@ -357,7 +384,6 @@ export default function viewHandler(state = initialState, action) {
             size,
             // TODO: Should we always set it to 1 ?
             page: 1,
-            pending: false,
           },
         },
       };
@@ -456,7 +482,7 @@ export default function viewHandler(state = initialState, action) {
       return state;
     }
     case SET_INCLUDED_VIEW: {
-      const { id, viewId, viewProfileId } = action.payload;
+      const { id, viewId, viewProfileId, parentId } = action.payload;
 
       return {
         ...state,
@@ -465,6 +491,7 @@ export default function viewHandler(state = initialState, action) {
           viewId,
           windowId: id,
           viewProfileId,
+          parentId,
         },
       };
     }
@@ -480,6 +507,7 @@ export default function viewHandler(state = initialState, action) {
             viewId: null,
             windowId: null,
             viewProfileId: null,
+            parentId: null,
           },
         };
       } else {

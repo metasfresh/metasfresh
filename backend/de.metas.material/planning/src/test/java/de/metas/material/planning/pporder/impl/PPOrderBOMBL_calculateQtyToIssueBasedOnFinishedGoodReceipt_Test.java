@@ -9,6 +9,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -50,7 +51,6 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 	//
 	// Master data
 	private I_C_UOM uomMm;
-	private I_C_UOM uomEa;
 	// private I_M_Product pABAliceSalad;
 	// private I_M_Product pFolie;
 	private I_PP_Order ppOrder;
@@ -72,9 +72,9 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 	private void createMasterData()
 	{
 		uomMm = helper.createUOM("mm", 2);
-		uomEa = helper.createUOM("each", 0);
-		ProductId pABAliceSalad = helper.createProduct("P000787_AB Alicesalat 250g", uomEa); // finished good
-		ProductId pFolie = helper.createProduct("P000529_Folie AB Alicesalat (1000 lm)", uomMm); // component
+		final I_C_UOM uomEa = helper.createUOM("each", 0);
+		final ProductId pABAliceSalad = helper.createProduct("P000787_AB Alicesalat 250g", uomEa); // finished good
+		final ProductId pFolie = helper.createProduct("P000529_Folie AB Alicesalat (1000 lm)", uomMm); // component
 
 		// Finished good
 		ppOrder = InterfaceWrapperHelper.newInstance(I_PP_Order.class);
@@ -96,10 +96,6 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 
 	/**
 	 * Setup standard "P000787_AB Alicesalat 250g" test case.
-	 *
-	 * @param finishedGood_QtyOrdered
-	 * @param finishedGood_QtyReceived
-	 * @param component_QtyIssued
 	 */
 	private void setup_StandardTestCase_ABAliceSalad( //
 			final BigDecimal finishedGood_QtyOrdered, //
@@ -112,7 +108,7 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 		ppOrder.setQtyDelivered(finishedGood_QtyReceived); // i.e. Qty Receipt
 
 		// Component
-		ppOrderBOMLine.setIssueMethod(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived);
+		ppOrderBOMLine.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived.getCode());
 		ppOrderBOMLine.setIsQtyPercentage(false);
 		ppOrderBOMLine.setQtyBOM(new BigDecimal("260"));
 		ppOrderBOMLine.setQtyBatch(null);
@@ -232,7 +228,7 @@ public class PPOrderBOMBL_calculateQtyToIssueBasedOnFinishedGoodReceipt_Test
 			PPOrderBOMBL_TestUtils.setCommonValues(ppOrder);
 
 			// Component
-			ppOrderBOMLine.setIssueMethod(X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived);
+			ppOrderBOMLine.setIssueMethod(BOMComponentIssueMethod.IssueOnlyForReceived.getCode());
 			ppOrderBOMLine.setIsQtyPercentage(false);
 			ppOrderBOMLine.setC_UOM(uomMm);
 			ppOrderBOMLine.setQtyBOM(new BigDecimal("350"));

@@ -132,7 +132,7 @@ public class MOrderTax extends X_C_OrderTax
 		retValue.set_TrxName(trxName);
 		retValue.setClientOrg(line);
 		retValue.setC_Order_ID(line.getC_Order_ID());
-		retValue.setC_Tax(tax);
+		retValue.setC_Tax_ID(tax.getC_Tax_ID());
 		retValue.setIsWholeTax(tax.isWholeTax());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);
@@ -147,7 +147,7 @@ public class MOrderTax extends X_C_OrderTax
 	 * Persistence Constructor
 	 *
 	 * @param ctx context
-	 * @param ignored ignored
+	 * @param id ignored
 	 * @param trxName transaction
 	 */
 	public MOrderTax(Properties ctx, int id, String trxName)

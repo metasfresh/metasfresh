@@ -36,8 +36,6 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 
 public interface IInvoicesRestEndpoint
 {
-	String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/invoices/";
-
 	ResponseEntity<JsonCreateInvoiceCandidatesResponse> createInvoiceCandidates(JsonCreateInvoiceCandidatesRequest request);
 
 	ResponseEntity<JsonCloseInvoiceCandidatesResponse> closeInvoiceCandidates(JsonCloseInvoiceCandidatesRequest request);
@@ -48,4 +46,5 @@ public interface IInvoicesRestEndpoint
 
 	ResponseEntity<byte[]> getInvoicePDF(int invoiceRecordId);
 
+	ResponseEntity<?> getInvoiceInfo(int invoiceRecordId);
 }

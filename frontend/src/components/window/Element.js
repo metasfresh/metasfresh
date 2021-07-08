@@ -24,13 +24,21 @@ class Element extends PureComponent {
       elementGroupIndex,
       sectionIndex,
       columnIndex,
+      disconnected,
     } = this.props;
 
+    const { widgetType } = this.props.elementLayout;
     const autoFocus = isFocused && elementIndex === 0;
     const fieldName = elementLayout.fields ? elementLayout.fields[0].field : '';
     const layoutId = `${sectionIndex}_${columnIndex}_${elementGroupIndex}_${elementsLineIndex}_${elementIndex}`;
     const element = omit(elementLayout, ['fields']);
-    const dataSource = isModal ? 'modal' : 'element';
+    let dataSource = isModal ? 'modal' : 'element';
+    // InlineTab specific adapts
+    dataSource = widgetType === 'InlineTab' ? 'inline-wrapper' : dataSource;
+    if (widgetType === 'InlineTab') {
+      // this is because from the be we don't get any fields arr
+      element.fields = [];
+    }
 
     return (
       <WidgetWrapper
@@ -51,6 +59,7 @@ class Element extends PureComponent {
         fullScreen={isFullScreen}
         fieldName={fieldName}
         onBlurWidget={onBlurWidget}
+        disconnected={disconnected}
         {...element}
       />
     );
@@ -76,6 +85,7 @@ Element.propTypes = {
   tabIndex: PropTypes.number,
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
+  disconnected: PropTypes.string,
 };
 
 export default Element;

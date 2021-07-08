@@ -4,10 +4,14 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import classnames from 'classnames';
-
+import { getPrintingOptions } from '../../api/window';
 import { deleteRequest } from '../../api';
 import { duplicateRequest, openFile } from '../../actions/GenericActions';
-import { openModal } from '../../actions/WindowActions';
+import {
+  openModal,
+  setPrintingOptions,
+  resetPrintingOptions,
+} from '../../actions/WindowActions';
 import { setBreadcrumb } from '../../actions/MenuActions';
 
 import keymap from '../../shortcuts/keymap';
@@ -213,7 +217,7 @@ class Header extends PureComponent {
 
   /**
    * @method handleDashboardLink
-   * @summary ToDo: Describe the method
+   * @summary Reset breadcrumbs after clicking the logo
    */
   handleDashboardLink = () => {
     const { dispatch } = this.props;
@@ -286,23 +290,17 @@ class Header extends PureComponent {
     const { dispatch, viewId } = this.props;
 
     dispatch(
-      openModal(
-        caption,
+      openModal({
+        title: caption,
         windowId,
         modalType,
-        null,
-        null,
         isAdvanced,
         viewId,
-        selected,
-        null,
-        null,
-        null,
-        null,
+        viewDocumentIds: selected,
         childViewId,
         childViewSelectedIds,
-        staticModalType
-      )
+        staticModalType,
+      })
     );
   };
 
@@ -327,41 +325,67 @@ class Header extends PureComponent {
     const { dispatch } = this.props;
 
     dispatch(
-      openModal(
-        caption,
+      openModal({
+        title: caption,
         windowId,
         modalType,
         tabId,
         rowId,
-        false,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        null,
-        staticModalType
-      )
+        staticModalType,
+      })
     );
   };
 
   /**
    * @method handlePrint
-   * @summary ToDo: Describe the method
+   * @summary This does the actual printing, checking first the available options. If no options available will directly print
    * @param {string} windowId
    * @param {string} docId
    * @param {string} docNo
    */
-  handlePrint = (windowId, docId, docNo) => {
-    openFile(
-      'window',
-      windowId,
-      docId,
-      'print',
-      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
-    );
+  handlePrint = async (windowId, docId, docNo) => {
+    const { dispatch, viewId } = this.props;
+
+    try {
+      const response = await getPrintingOptions({
+        entity: 'window',
+        windowId,
+        docId,
+      });
+
+      if (response.status === 200) {
+        const { options, caption } = response.data;
+        // update in the store the printing options
+        dispatch(setPrintingOptions(response.data));
+
+        // in case there are no options we directly print and reset the printing options in the store
+        if (!options) {
+          openFile(
+            'window',
+            windowId,
+            docId,
+            'print',
+            `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
+          );
+          dispatch(resetPrintingOptions());
+        } else {
+          // otherwise we open the modal and we will reset the printing options in the store after the doc is printed
+          dispatch(
+            openModal({
+              title: caption,
+              windowId,
+              modalType: 'static',
+              viewId,
+              viewDocumentIds: [docNo],
+              dataId: docId,
+              staticModalType: 'printing',
+            })
+          );
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   /**
@@ -433,20 +457,18 @@ class Header extends PureComponent {
   };
 
   /**
-   * @method handlePromptScroll
-   * @summary ToDo: Describe the method
-   * @param {string} windowId
-   * @param {docId} docId
+   * @method handlePromptSubmitClick
+   * @summary Hanndler for the prompt submit action
    */
-  handlePromptSubmitClick = (windowId, docId) => {
-    const { dispatch, handleDeletedStatus } = this.props;
+  handlePromptSubmitClick = () => {
+    const { dispatch, handleDeletedStatus, windowId, dataId } = this.props;
 
     this.setState(
       {
         prompt: Object.assign({}, this.state.prompt, { open: false }),
       },
       () => {
-        deleteRequest('window', windowId, null, null, [docId]).then(() => {
+        deleteRequest('window', windowId, null, null, [dataId]).then(() => {
           handleDeletedStatus(true);
           dispatch(push(`/window/${windowId}`));
         });
@@ -586,11 +608,14 @@ class Header extends PureComponent {
       <div>
         {prompt.open && (
           <Prompt
-            title="Delete"
-            text="Are you sure?"
-            buttons={{ submit: 'Delete', cancel: 'Cancel' }}
+            title={counterpart.translate('window.Delete.caption')}
+            text={counterpart.translate('window.delete.message')}
+            buttons={{
+              submit: counterpart.translate('window.delete.confirm'),
+              cancel: counterpart.translate('window.delete.cancel'),
+            }}
             onCancelClick={this.handlePromptCancelClick}
-            onSubmitClick={() => this.handlePromptSubmitClick(windowId, dataId)}
+            onSubmitClick={this.handlePromptSubmitClick}
           />
         )}
 

@@ -144,12 +144,12 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public void addQty(final ProductId productId, final BigDecimal qty, final I_C_UOM uom)
+	public void addQty(@NonNull final ProductId productId, @NonNull final BigDecimal qtyToAdd, @NonNull final I_C_UOM uom)
 	{
 		// NOTE: we allow to add/remove qty even if HU Item is not of type Material
 		// because rollupIncremental is updating the storage on all levels
 
-		if (qty.signum() == 0)
+		if (qtyToAdd.signum() == 0)
 		{
 			return;
 		}
@@ -157,13 +157,13 @@ public class HUItemStorage implements IHUItemStorage
 		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(productId, uom);
 
 		final I_C_UOM uomStorage = extractUOM(storageLine);
-		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, uom, uomStorage);
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qtyToAdd, uom, uomStorage);
 		//
 		// Update storage line
 		final BigDecimal qtyOld = storageLine.getQty();
 		final BigDecimal qtyNew = qtyOld.add(qtyConv);
 
-		Check.errorIf(qtyNew.signum() < 0, "Attempt to set negative qty on storageLine; qty={}; qtyNew={}; qtyOld={}; this={}; storageLine={}", qty, qtyNew, qtyOld, this, storageLine);
+		Check.errorIf(qtyNew.signum() < 0, "Attempt to set negative qty on storageLine; qtyOld={}; qtyToAdd={}; qtyNew={}; this={}; storageLine={}", qtyOld, qtyToAdd, qtyNew, this, storageLine);
 
 		storageLine.setQty(qtyNew);
 		dao.save(storageLine);

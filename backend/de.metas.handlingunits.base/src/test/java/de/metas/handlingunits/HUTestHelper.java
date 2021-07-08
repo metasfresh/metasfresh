@@ -26,6 +26,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -141,7 +148,6 @@ import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -326,6 +332,8 @@ public class HUTestHelper
 
 	public I_M_Attribute attr_BestBeforeDate;
 
+	public I_M_Attribute attr_SerialNo;
+
 	/**
 	 * Mandatory in receipts
 	 */
@@ -418,9 +426,20 @@ public class HUTestHelper
 			AdempiereTestHelper.get().init();
 		}
 
+		beforeRegisteringServices();
+
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 		SpringContextHolder.registerJUnitBean(new BPartnerLocationInfoRepository());
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+		dimensionFactories.add(new InOutLineDimensionFactory());
+
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 		ctx = Env.getCtx();
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -463,6 +482,10 @@ public class HUTestHelper
 		afterInitialized();
 
 		return this;
+	}
+
+	public void beforeRegisteringServices()
+	{
 	}
 
 	protected void afterInitialized()
@@ -626,6 +649,7 @@ public class HUTestHelper
 		
 		attr_BestBeforeDate = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_BestBeforeDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 
+		attr_SerialNo = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SerialNo.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_PurchaseOrderLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_PurchaseOrderLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
 		attr_ReceiptInOutLine = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_ReceiptInOutLine_ID.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
@@ -1033,10 +1057,6 @@ public class HUTestHelper
 		final I_M_HU_PI pi = InterfaceWrapperHelper.create(ctx, I_M_HU_PI.class, ITrx.TRXNAME_None);
 		pi.setName(name);
 		InterfaceWrapperHelper.save(pi);
-
-		// // Create some several dummy versions
-		// createVersion(hu, false);
-		// createVersion(hu, false);
 
 		// Create the current version
 		final HuPackingInstructionsVersionId huPIVersionId = null;
@@ -1629,7 +1649,7 @@ public class HUTestHelper
 		final IAllocationRequest request = AllocationUtils.createQtyRequest(huContext0,
 				r.getCuProductId(), // product
 				Quantity.of(r.getLoadCuQty(), r.getLoadCuUOM()), // qty
-				SystemTime.asZonedDateTime());
+				de.metas.common.util.time.SystemTime.asZonedDateTime());
 
 		huLoader.load(request);
 	}
@@ -1662,7 +1682,6 @@ public class HUTestHelper
 	 *
 	 * @param mtrx the load's source. Also provides the context.
 	 * @param huPI a "simple" PI that contains one HU-item which links to one child-HU PI
-	 * @return
 	 */
 	public List<I_M_HU> createHUsFromSimplePI(final I_M_Transaction mtrx, final I_M_HU_PI huPI)
 	{
@@ -1943,9 +1962,6 @@ public class HUTestHelper
 
 	/**
 	 * Join given <code>tradingUnits</code> to the <code>loadingUnit</code>
-	 *
-	 * @param loadingUnit
-	 * @param tradingUnits
 	 */
 	public void joinHUs(final IHUContext huContext, final I_M_HU loadingUnit, final Collection<I_M_HU> tradingUnits)
 	{
@@ -2012,11 +2028,10 @@ public class HUTestHelper
 	 * Commits {@link #trxName} and writes the given {@code hu} as XML to std-out. The commit might break some tests.
 	 * Please only use this method temporarily to debug tests and comment it out again when the tests are fixed.
 	 *
-	 * @param hu
 	 * @deprecated please only use temporarily for debugging.
 	 */
 	@Deprecated
-	public void commitAndDumpHU(I_M_HU hu)
+	public void commitAndDumpHU(@NonNull final I_M_HU hu)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		if (!trxManager.isNull(trxName))
@@ -2029,11 +2044,9 @@ public class HUTestHelper
 
 	/**
 	 * Similar to {@link #commitAndDumpHU(I_M_HU)}.
-	 *
-	 * @param hus
 	 */
 	@Deprecated
-	public void commitAndDumpHUs(List<I_M_HU> hus)
+	public void commitAndDumpHUs(@NonNull final List<I_M_HU> hus)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		if (!trxManager.isNull(trxName))

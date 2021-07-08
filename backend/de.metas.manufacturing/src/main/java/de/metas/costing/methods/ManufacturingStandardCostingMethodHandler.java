@@ -21,7 +21,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
 import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;

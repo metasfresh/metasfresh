@@ -7,6 +7,8 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -36,7 +38,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
-import org.compiere.model.MProductCategory;
 import org.compiere.model.X_C_UOM;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
@@ -93,9 +94,10 @@ public final class ProductBL implements IProductBL
 	@Override
 	public String getMMPolicy(final I_M_Product product)
 	{
-		final MProductCategory pc = MProductCategory.get(Env.getCtx(), product.getM_Product_Category_ID());
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(product.getM_Product_Category_ID());
+		final I_M_Product_Category pc = productsRepo.getProductCategoryById(productCategoryId);
 		String policy = pc.getMMPolicy();
-		if (policy == null || policy.length() == 0)
+		if (policy == null || policy.isEmpty())
 		{
 			policy = clientDAO.retriveClient(Env.getCtx()).getMMPolicy();
 		}
@@ -365,7 +367,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public String getProductValueAndName(final ProductId productId)
+	public String getProductValueAndName(@Nullable final ProductId productId)
 	{
 		if (productId == null)
 		{
@@ -463,4 +465,34 @@ public final class ProductBL implements IProductBL
 	{
 		return productsRepo.getDefaultProductCategoryId();
 	}
+
+	@Override
+	public ITranslatableString getProductNameTrl(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (product == null)
+		{
+			return TranslatableStrings.anyLanguage("<" + productId + ">");
+		}
+
+		return InterfaceWrapperHelper.getModelTranslationMap(product)
+				.getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName());
+	}
+
+	@Override
+	public ProductId retrieveMappedProductIdOrNull(final ProductId productId, final OrgId orgId)
+	{
+		return productsRepo.retrieveMappedProductIdOrNull(productId, orgId);
+	}
+
+	@Override
+	public boolean isHaddexProduct(final ProductId productId)
+	{
+		final org.compiere.model.I_M_Product product = getById(productId);
+
+		return product.isHaddexCheck();
+	}
+
+
+
 }

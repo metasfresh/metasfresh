@@ -121,7 +121,7 @@ public class WFLayoutManager implements LayoutManager
 			for (int i = 0; i < parent.getComponentCount(); i++)
 			{
 				Component comp = parent.getComponent(i);
-				if (comp.isVisible() && comp instanceof WFNode)
+				if (comp.isVisible() && comp instanceof WFNodeComponent)
 				{
 					Dimension ps = comp.getPreferredSize();
 					comp.setLocation(x, y);
@@ -148,7 +148,7 @@ public class WFLayoutManager implements LayoutManager
 			for (int i = 0; i < parent.getComponentCount(); i++)
 			{
 				Component comp = parent.getComponent(i);
-				if (comp.isVisible() && comp instanceof WFNode)
+				if (comp.isVisible() && comp instanceof WFNodeComponent)
 				{
 					Dimension ps = comp.getPreferredSize();
 					Point loc = comp.getLocation();
@@ -189,9 +189,9 @@ public class WFLayoutManager implements LayoutManager
 		for (int i = 0; i < parent.getComponentCount(); i++)
 		{
 			Component comp = parent.getComponent(i);
-			if (comp instanceof WFNode && comp.getLocation().equals(p00))
+			if (comp instanceof WFNodeComponent && comp.getLocation().equals(p00))
 			{
-				log.debug(comp.toString());
+				log.debug("{}", comp);
 				return true;
 			}
 		}

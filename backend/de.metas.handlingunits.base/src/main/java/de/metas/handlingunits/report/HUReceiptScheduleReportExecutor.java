@@ -3,6 +3,8 @@ package de.metas.handlingunits.report;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import de.metas.printing.IMassPrintingService;
+import de.metas.report.PrintCopies;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
@@ -14,7 +16,6 @@ import com.google.common.base.Preconditions;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.i18n.Language;
-import de.metas.print.IPrintService;
 import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -42,7 +43,7 @@ import de.metas.util.Services;
  */
 
 /**
- * This little class is specialized in executing the jasper process whose {@code AD_Process_ID} is specified in @c{@code SysConfig} {@value #SYSCONFIG_ReceiptScheduleHUPOSJasperProcess}
+ * This little class is specialized in executing the jasper process whose {@code AD_Process_ID} is specified in @c{@code SysConfig} {@value #SYSCONFIG_ReceiptScheduleHUPOSJasper_Process}
  * 
  * @author metas-dev <dev@metasfresh.com>
  *
@@ -115,10 +116,10 @@ public class HUReceiptScheduleReportExecutor
 
 		//
 		// get number of copies from SysConfig (default=1)
-		final int copies = sysConfigBL.getIntValue(SYSCONFIG_ReceiptScheduleHUPOSJasper_Copies,
+		final PrintCopies copies = PrintCopies.ofInt(sysConfigBL.getIntValue(SYSCONFIG_ReceiptScheduleHUPOSJasper_Copies,
 				1, // default
 				receiptSchedule.getAD_Client_ID(),
-				receiptSchedule.getAD_Org_ID());
+				receiptSchedule.getAD_Org_ID()));
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(receiptSchedule);
 
@@ -139,7 +140,7 @@ public class HUReceiptScheduleReportExecutor
 				.setReportLanguage(bpartnerLaguage)
 				.addParameter(PARA_C_Orderline_ID, orderLineId)
 				.addParameter(PARA_AD_Table_ID, InterfaceWrapperHelper.getTableId(I_C_OrderLine.class))
-				.addParameter(IPrintService.PARAM_PrintCopies, BigDecimal.valueOf(copies))
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, copies.toInt())
 
 				//
 				// Execute report in a new AD_PInstance

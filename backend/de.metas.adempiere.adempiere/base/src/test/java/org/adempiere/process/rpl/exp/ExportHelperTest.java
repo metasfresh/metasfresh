@@ -22,7 +22,7 @@
 
 package org.adempiere.process.rpl.exp;
 
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_EXP_FormatLine;
@@ -52,7 +52,7 @@ class ExportHelperTest
 		final I_EXP_FormatLine formatLine = setupFormatLine();
 
 		// when
-		final String result = ExportHelper.encodeDate(SystemTime.asTimestamp(), formatLine, DisplayType.DateTime);
+		final String result = ExportHelper.encodeDate(de.metas.common.util.time.SystemTime.asTimestamp(), formatLine, DisplayType.DateTime);
 
 		// then
 		assertThat(result).isEqualTo("2020-08-11T08:21:35+02:00");

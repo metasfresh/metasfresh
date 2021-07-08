@@ -2,6 +2,7 @@ package de.metas.event;
 
 import java.util.List;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -58,15 +59,15 @@ public final class DocumentUserNotificationsProducer<ModelType>
 	// params
 	private final Logger logger;
 	private final Topic topic;
-	private final String eventAD_Message;
+	private final AdMessageKey eventAD_Message;
 	private final Function<ModelType, List<Object>> eventAD_MessageParamsExtractor;
 
 	@Builder
 	private DocumentUserNotificationsProducer(
 			final Logger logger,
 			@NonNull final Topic topic,
-			@NonNull String eventAD_Message,
-			@NonNull Function<ModelType, List<Object>> eventAD_MessageParamsExtractor)
+			@NonNull final AdMessageKey eventAD_Message,
+			@NonNull final Function<ModelType, List<Object>> eventAD_MessageParamsExtractor)
 	{
 		this.logger = logger != null ? logger : loggerDefault;
 		this.topic = topic;

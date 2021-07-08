@@ -531,12 +531,6 @@ public class MBPartner extends X_C_BPartner
 			return m_group;
 		}
 
-		if (getC_BP_Group() != null)
-		{
-			m_group = getC_BP_Group();
-			return m_group;
-		}
-
 		final IBPGroupDAO bpGroupsRepo = Services.get(IBPGroupDAO.class);
 
 		final BPGroupId bpGroupId = BPGroupId.ofRepoIdOrNull(getC_BP_Group_ID());
@@ -547,7 +541,7 @@ public class MBPartner extends X_C_BPartner
 		}
 		else
 		{
-			m_group = bpGroupsRepo.getById(bpGroupId);
+			m_group = bpGroupsRepo.getByIdInInheritedTrx(bpGroupId);
 		}
 		return m_group;
 	} // getBPGroup

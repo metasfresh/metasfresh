@@ -1,13 +1,15 @@
 package de.metas.material.dispo.commons.candidate;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -43,12 +45,15 @@ public class TransactionDetail
 				-1 /* attributeSetInstanceId */,
 				transactionId,
 				-1 /* stockId */,
-				(ResetStockPInstanceId)null /* resetStockAdPinstanceId */,
+				null /* resetStockAdPinstanceId */,
 				null, /* transactionDate */
-				false /* complete */);
+				false, /* complete */
+				null /* rebookedFromCandidateId */);
 	}
 
-	/** true means that this detail can be persisted; false means that id can still be part of a query. */
+	/**
+	 * true means that this detail can be persisted; false means that id can still be part of a query.
+	 */
 	boolean complete;
 
 	BigDecimal quantity;
@@ -68,21 +73,37 @@ public class TransactionDetail
 
 	int attributeSetInstanceId;
 
-	/** {@code MD_Stock_ID} */
+	/**
+	 * {@code MD_Stock_ID}
+	 */
 	int stockId;
 
 	Instant transactionDate;
 
-	@Builder
+	/**
+	 * Often there is a transaction-event that is related to an existing candidate, but has a different date or attributes.
+	 * <p>
+	 * E.g. a supply-candidate might anticipate a PP_Order receipt,
+	 * but the actual transaction for one of the PP_Order's receipts might have a date before the supply candidate's date.
+	 * <p>
+	 * In such a case, the transaction-quantity is subtracted from the preexisting supply-candidate (roughly speaking),
+	 * and a new candidate is created.
+	 * <p>
+	 * The field {@code rebookedFromCandidateId} from the new candidate then references the preexisting supply-candidate.
+	 */
+	CandidateId rebookedFromCandidateId;
+
+	@Builder(toBuilder = true)
 	private TransactionDetail(
-			final BigDecimal quantity,
-			final AttributesKey storageAttributesKey,
+			@Nullable final BigDecimal quantity,
+			@Nullable final AttributesKey storageAttributesKey,
 			final int attributeSetInstanceId,
 			final int transactionId,
 			final int stockId,
-			final ResetStockPInstanceId resetStockPInstanceId,
-			final Instant transactionDate,
-			final boolean complete)
+			@Nullable final ResetStockPInstanceId resetStockPInstanceId,
+			@Nullable final Instant transactionDate,
+			final boolean complete,
+			@Nullable final CandidateId rebookedFromCandidateId)
 	{
 		this.complete = complete;
 
@@ -101,5 +122,12 @@ public class TransactionDetail
 
 		this.stockId = stockId;
 		this.resetStockPInstanceId = resetStockPInstanceId;
+
+		this.rebookedFromCandidateId = rebookedFromCandidateId;
+	}
+
+	public TransactionDetail withRebookedFromCandidateId(@NonNull final CandidateId candidateId)
+	{
+		return toBuilder().rebookedFromCandidateId(candidateId).build();
 	}
 }

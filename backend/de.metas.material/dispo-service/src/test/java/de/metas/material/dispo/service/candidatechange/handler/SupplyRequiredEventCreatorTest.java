@@ -1,5 +1,6 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -10,7 +11,6 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import de.metas.util.time.SystemTime;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

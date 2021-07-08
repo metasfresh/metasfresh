@@ -27,36 +27,46 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.api.ICalloutMethodPointcut;
 
 import de.metas.util.Check;
 
 public final class CalloutMethodPointcut implements ICalloutMethodPointcut
 {
+	@Getter
 	private final Method method;
+
+	@Getter
 	private final Set<String> columnNames;
+
+	@Getter
 	private final Class<?> modelClass;
+
+	@Getter
 	private final boolean paramCalloutFieldRequired;
+
+	@Getter
 	private final boolean skipIfCopying;
 
-	public CalloutMethodPointcut(final Class<?> modelClass,
-			final Method method,
-			final String[] columnNames,
+	@Getter
+	private final boolean skipIfIndirectlyCalled;
+
+	public CalloutMethodPointcut(
+			@NonNull final Class<?> modelClass,
+			@NonNull final Method method,
+			@NonNull final String[] columnNames,
 			final boolean paramCalloutFieldRequired,
-			final boolean skipIfCopying)
+			final boolean skipIfCopying,
+			final boolean skipIfIndirectlyCalled)
 	{
-		super();
-
-		Check.assumeNotNull(modelClass, "modelClass not null");
 		this.modelClass = modelClass;
-
-		Check.assumeNotNull(method, "method not null");
 		this.method = method;
 
-		Check.assumeNotNull(columnNames, "columnNames not null");
 		Check.assume(columnNames.length > 0, "columnNames not empty");
 
-		this.columnNames = new HashSet<String>(columnNames.length);
+		this.columnNames = new HashSet<>(columnNames.length);
 		for (final String columnName : columnNames)
 		{
 			Check.assumeNotNull(columnName, "columnName not null");
@@ -66,35 +76,6 @@ public final class CalloutMethodPointcut implements ICalloutMethodPointcut
 		this.paramCalloutFieldRequired = paramCalloutFieldRequired;
 
 		this.skipIfCopying = skipIfCopying;
-	}
-
-	@Override
-	public Method getMethod()
-	{
-		return method;
-	}
-
-	@Override
-	public Set<String> getColumnNames()
-	{
-		return columnNames;
-	}
-
-	@Override
-	public Class<?> getModelClass()
-	{
-		return modelClass;
-	}
-
-	@Override
-	public boolean isParamCalloutFieldRequired()
-	{
-		return paramCalloutFieldRequired;
-	}
-
-	@Override
-	public boolean isSkipIfCopying()
-	{
-		return skipIfCopying;
+		this.skipIfIndirectlyCalled = skipIfIndirectlyCalled;
 	}
 }

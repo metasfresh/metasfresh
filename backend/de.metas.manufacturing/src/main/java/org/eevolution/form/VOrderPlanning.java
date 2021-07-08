@@ -92,7 +92,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Msg;
 import de.metas.logging.LogManager;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.process.IProcessExecutionListener;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;

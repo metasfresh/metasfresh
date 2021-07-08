@@ -1,30 +1,26 @@
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
+
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Flatrate_Conditions
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_C_Flatrate_Conditions 
 {
 
-    /** TableName=C_Flatrate_Conditions */
-    String Table_Name = "C_Flatrate_Conditions";
+	String Table_Name = "C_Flatrate_Conditions";
 
-    /** AD_Table_ID=540311 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540311 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -32,44 +28,32 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getAD_Client_ID();
 
-	org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Org_ID();
 
-	org.compiere.model.I_AD_Org getAD_Org();
-
-	void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Vertragsbedingungen.
+	 * Set Contract Terms.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -78,7 +62,7 @@ public interface I_C_Flatrate_Conditions
 	void setC_Flatrate_Conditions_ID (int C_Flatrate_Conditions_ID);
 
 	/**
-	 * Get Vertragsbedingungen.
+	 * Get Contract Terms.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -86,10 +70,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getC_Flatrate_Conditions_ID();
 
-    /** Column definition for C_Flatrate_Conditions_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_Flatrate_Conditions_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Flatrate_Conditions_ID", null);
-    /** Column name C_Flatrate_Conditions_ID */
-    String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_Flatrate_Conditions_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Flatrate_Conditions_ID", null);
+	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
 	 * Set C_Flatrate_Matching_IncludedT.
@@ -99,7 +81,8 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Virtual Column: true
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
-	@Deprecated void setC_Flatrate_Matching_IncludedT (java.lang.String C_Flatrate_Matching_IncludedT);
+	@Deprecated
+	void setC_Flatrate_Matching_IncludedT (@Nullable java.lang.String C_Flatrate_Matching_IncludedT);
 
 	/**
 	 * Get C_Flatrate_Matching_IncludedT.
@@ -108,12 +91,10 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	java.lang.String getC_Flatrate_Matching_IncludedT();
+	@Nullable java.lang.String getC_Flatrate_Matching_IncludedT();
 
-    /** Column definition for C_Flatrate_Matching_IncludedT */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_Flatrate_Matching_IncludedT = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Flatrate_Matching_IncludedT", null);
-    /** Column name C_Flatrate_Matching_IncludedT */
-    String COLUMNNAME_C_Flatrate_Matching_IncludedT = "C_Flatrate_Matching_IncludedT";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_Flatrate_Matching_IncludedT = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Flatrate_Matching_IncludedT", null);
+	String COLUMNNAME_C_Flatrate_Matching_IncludedT = "C_Flatrate_Matching_IncludedT";
 
 	/**
 	 * Set Vertragsverlängerung/-übergang.
@@ -135,14 +116,12 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getC_Flatrate_Transition_ID();
 
-	de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
+	@Nullable de.metas.contracts.model.I_C_Flatrate_Transition getC_Flatrate_Transition();
 
-	void setC_Flatrate_Transition(de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition);
+	void setC_Flatrate_Transition(@Nullable de.metas.contracts.model.I_C_Flatrate_Transition C_Flatrate_Transition);
 
-    /** Column definition for C_Flatrate_Transition_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Flatrate_Transition_ID", de.metas.contracts.model.I_C_Flatrate_Transition.class);
-    /** Column name C_Flatrate_Transition_ID */
-    String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_Flatrate_Transition> COLUMN_C_Flatrate_Transition_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Flatrate_Transition_ID", de.metas.contracts.model.I_C_Flatrate_Transition.class);
+	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
 	 * Set Basis für Verrechnungs-Zahlbetrag.
@@ -152,7 +131,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setClearingAmtBaseOn (java.lang.String ClearingAmtBaseOn);
+	void setClearingAmtBaseOn (@Nullable java.lang.String ClearingAmtBaseOn);
 
 	/**
 	 * Get Basis für Verrechnungs-Zahlbetrag.
@@ -162,16 +141,14 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getClearingAmtBaseOn();
+	@Nullable java.lang.String getClearingAmtBaseOn();
 
-    /** Column definition for ClearingAmtBaseOn */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_ClearingAmtBaseOn = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "ClearingAmtBaseOn", null);
-    /** Column name ClearingAmtBaseOn */
-    String COLUMNNAME_ClearingAmtBaseOn = "ClearingAmtBaseOn";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_ClearingAmtBaseOn = new ModelColumn<>(I_C_Flatrate_Conditions.class, "ClearingAmtBaseOn", null);
+	String COLUMNNAME_ClearingAmtBaseOn = "ClearingAmtBaseOn";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -179,14 +156,12 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Created", null);
-    /** Column name Created */
-    String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Created = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -194,14 +169,11 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -210,8 +182,8 @@ public interface I_C_Flatrate_Conditions
 	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -219,17 +191,10 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getC_UOM_ID();
 
-	org.compiere.model.I_C_UOM getC_UOM();
-
-	void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Belegverarbeitung.
+	 * Set Process Batch.
 	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
@@ -239,7 +204,7 @@ public interface I_C_Flatrate_Conditions
 	void setDocAction (java.lang.String DocAction);
 
 	/**
-	 * Get Belegverarbeitung.
+	 * Get Process Batch.
 	 * Der zukünftige Status des Belegs
 	 *
 	 * <br>Type: Button
@@ -248,14 +213,11 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.lang.String getDocAction();
 
-    /** Column definition for DocAction */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "DocAction", null);
-    /** Column name DocAction */
-    String COLUMNNAME_DocAction = "DocAction";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_DocAction = new ModelColumn<>(I_C_Flatrate_Conditions.class, "DocAction", null);
+	String COLUMNNAME_DocAction = "DocAction";
 
 	/**
-	 * Set Belegstatus.
-	 * The current status of the document
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -264,8 +226,7 @@ public interface I_C_Flatrate_Conditions
 	void setDocStatus (java.lang.String DocStatus);
 
 	/**
-	 * Get Belegstatus.
-	 * The current status of the document
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -273,10 +234,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.lang.String getDocStatus();
 
-    /** Column definition for DocStatus */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "DocStatus", null);
-    /** Column name DocStatus */
-    String COLUMNNAME_DocStatus = "DocStatus";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Flatrate_Conditions.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
 	 * Set Rechnungsstellung.
@@ -298,14 +257,12 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.lang.String getInvoiceRule();
 
-    /** Column definition for InvoiceRule */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_InvoiceRule = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "InvoiceRule", null);
-    /** Column name InvoiceRule */
-    String COLUMNNAME_InvoiceRule = "InvoiceRule";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_Flatrate_Conditions.class, "InvoiceRule", null);
+	String COLUMNNAME_InvoiceRule = "InvoiceRule";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -314,8 +271,8 @@ public interface I_C_Flatrate_Conditions
 	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -323,10 +280,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isActive();
 
-    /** Column definition for IsActive */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "IsActive", null);
-    /** Column name IsActive */
-    String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Flatrate_Conditions.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Gegenüberstellung mit erbr. Leist..
@@ -348,10 +303,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isClosingWithActualSum();
 
-    /** Column definition for IsClosingWithActualSum */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsClosingWithActualSum = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "IsClosingWithActualSum", null);
-    /** Column name IsClosingWithActualSum */
-    String COLUMNNAME_IsClosingWithActualSum = "IsClosingWithActualSum";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsClosingWithActualSum = new ModelColumn<>(I_C_Flatrate_Conditions.class, "IsClosingWithActualSum", null);
+	String COLUMNNAME_IsClosingWithActualSum = "IsClosingWithActualSum";
 
 	/**
 	 * Set Abschlusskorrektur vorsehen.
@@ -373,10 +326,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isClosingWithCorrectionSum();
 
-    /** Column definition for IsClosingWithCorrectionSum */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsClosingWithCorrectionSum = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "IsClosingWithCorrectionSum", null);
-    /** Column name IsClosingWithCorrectionSum */
-    String COLUMNNAME_IsClosingWithCorrectionSum = "IsClosingWithCorrectionSum";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsClosingWithCorrectionSum = new ModelColumn<>(I_C_Flatrate_Conditions.class, "IsClosingWithCorrectionSum", null);
+	String COLUMNNAME_IsClosingWithCorrectionSum = "IsClosingWithCorrectionSum";
 
 	/**
 	 * Set Verrechung erst nach Abschlusskorrektur.
@@ -398,10 +349,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isCorrectionAmtAtClosing();
 
-    /** Column definition for IsCorrectionAmtAtClosing */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsCorrectionAmtAtClosing = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "IsCorrectionAmtAtClosing", null);
-    /** Column name IsCorrectionAmtAtClosing */
-    String COLUMNNAME_IsCorrectionAmtAtClosing = "IsCorrectionAmtAtClosing";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsCorrectionAmtAtClosing = new ModelColumn<>(I_C_Flatrate_Conditions.class, "IsCorrectionAmtAtClosing", null);
+	String COLUMNNAME_IsCorrectionAmtAtClosing = "IsCorrectionAmtAtClosing";
 
 	/**
 	 * Set Keine Rechnungserstellung.
@@ -421,10 +370,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isCreateNoInvoice();
 
-    /** Column definition for IsCreateNoInvoice */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsCreateNoInvoice = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "IsCreateNoInvoice", null);
-    /** Column name IsCreateNoInvoice */
-    String COLUMNNAME_IsCreateNoInvoice = "IsCreateNoInvoice";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsCreateNoInvoice = new ModelColumn<>(I_C_Flatrate_Conditions.class, "IsCreateNoInvoice", null);
+	String COLUMNNAME_IsCreateNoInvoice = "IsCreateNoInvoice";
 
 	/**
 	 * Set Gratis.
@@ -446,10 +393,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isFreeOfCharge();
 
-    /** Column definition for IsFreeOfCharge */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsFreeOfCharge = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "IsFreeOfCharge", null);
-    /** Column name IsFreeOfCharge */
-    String COLUMNNAME_IsFreeOfCharge = "IsFreeOfCharge";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsFreeOfCharge = new ModelColumn<>(I_C_Flatrate_Conditions.class, "IsFreeOfCharge", null);
+	String COLUMNNAME_IsFreeOfCharge = "IsFreeOfCharge";
 
 	/**
 	 * Set Manueller Preis.
@@ -469,13 +414,11 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isManualPrice();
 
-    /** Column definition for IsManualPrice */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsManualPrice = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "IsManualPrice", null);
-    /** Column name IsManualPrice */
-    String COLUMNNAME_IsManualPrice = "IsManualPrice";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsManualPrice = new ModelColumn<>(I_C_Flatrate_Conditions.class, "IsManualPrice", null);
+	String COLUMNNAME_IsManualPrice = "IsManualPrice";
 
 	/**
-	 * Set Planspiel.
+	 * Set Simulation.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -484,7 +427,7 @@ public interface I_C_Flatrate_Conditions
 	void setIsSimulation (boolean IsSimulation);
 
 	/**
-	 * Get Planspiel.
+	 * Get Simulation.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -492,10 +435,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isSimulation();
 
-    /** Column definition for IsSimulation */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsSimulation = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "IsSimulation", null);
-    /** Column name IsSimulation */
-    String COLUMNNAME_IsSimulation = "IsSimulation";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_IsSimulation = new ModelColumn<>(I_C_Flatrate_Conditions.class, "IsSimulation", null);
+	String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
 	 * Set Korridor - Überschreitung.
@@ -504,7 +445,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMargin_Max (java.math.BigDecimal Margin_Max);
+	void setMargin_Max (BigDecimal Margin_Max);
 
 	/**
 	 * Get Korridor - Überschreitung.
@@ -513,12 +454,10 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.math.BigDecimal getMargin_Max();
+	BigDecimal getMargin_Max();
 
-    /** Column definition for Margin_Max */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
-    /** Column name Margin_Max */
-    String COLUMNNAME_Margin_Max = "Margin_Max";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
+	String COLUMNNAME_Margin_Max = "Margin_Max";
 
 	/**
 	 * Set Korridor - Unterschreitung.
@@ -527,7 +466,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMargin_Min (java.math.BigDecimal Margin_Min);
+	void setMargin_Min (BigDecimal Margin_Min);
 
 	/**
 	 * Get Korridor - Unterschreitung.
@@ -536,41 +475,30 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.math.BigDecimal getMargin_Min();
+	BigDecimal getMargin_Min();
 
-    /** Column definition for Margin_Min */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
-    /** Column name Margin_Min */
-    String COLUMNNAME_Margin_Min = "Margin_Min";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
+	String COLUMNNAME_Margin_Min = "Margin_Min";
 
 	/**
-	 * Set Preissystem.
-	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 * Set Pricing System.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setM_PricingSystem_ID (int M_PricingSystem_ID);
 
 	/**
-	 * Get Preissystem.
-	 * Ein Preissystem enthält beliebig viele, Länder-abhängige Preislisten.
+	 * Get Pricing System.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_PricingSystem_ID();
 
-	org.compiere.model.I_M_PricingSystem getM_PricingSystem();
-
-	void setM_PricingSystem(org.compiere.model.I_M_PricingSystem M_PricingSystem);
-
-    /** Column definition for M_PricingSystem_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_M_PricingSystem> COLUMN_M_PricingSystem_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "M_PricingSystem_ID", org.compiere.model.I_M_PricingSystem.class);
-    /** Column name M_PricingSystem_ID */
-    String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
+	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
 	 * Set Produkt für Verrechnung.
@@ -592,14 +520,7 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getM_Product_Actual_ID();
 
-	org.compiere.model.I_M_Product getM_Product_Actual();
-
-	void setM_Product_Actual(org.compiere.model.I_M_Product M_Product_Actual);
-
-    /** Column definition for M_Product_Actual_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_M_Product> COLUMN_M_Product_Actual_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "M_Product_Actual_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_Actual_ID */
-    String COLUMNNAME_M_Product_Actual_ID = "M_Product_Actual_ID";
+	String COLUMNNAME_M_Product_Actual_ID = "M_Product_Actual_ID";
 
 	/**
 	 * Set Produkt für Abschlusskorrektur.
@@ -621,14 +542,7 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getM_Product_Correction_ID();
 
-	org.compiere.model.I_M_Product getM_Product_Correction();
-
-	void setM_Product_Correction(org.compiere.model.I_M_Product M_Product_Correction);
-
-    /** Column definition for M_Product_Correction_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_M_Product> COLUMN_M_Product_Correction_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "M_Product_Correction_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_Correction_ID */
-    String COLUMNNAME_M_Product_Correction_ID = "M_Product_Correction_ID";
+	String COLUMNNAME_M_Product_Correction_ID = "M_Product_Correction_ID";
 
 	/**
 	 * Set Produkt für pauschale Berechnung.
@@ -650,14 +564,10 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getM_Product_Flatrate_ID();
 
-    /** Column definition for M_Product_Flatrate_ID */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_M_Product> COLUMN_M_Product_Flatrate_ID = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "M_Product_Flatrate_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_Flatrate_ID */
-    String COLUMNNAME_M_Product_Flatrate_ID = "M_Product_Flatrate_ID";
+	String COLUMNNAME_M_Product_Flatrate_ID = "M_Product_Flatrate_ID";
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -667,7 +577,6 @@ public interface I_C_Flatrate_Conditions
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -675,13 +584,11 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.lang.String getName();
 
-    /** Column definition for Name */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Name", null);
-    /** Column name Name */
-    String COLUMNNAME_Name = "Name";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Name = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Behaviour when extending contract.
+	 * Set When extending contract.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -690,7 +597,7 @@ public interface I_C_Flatrate_Conditions
 	void setOnFlatrateTermExtend (java.lang.String OnFlatrateTermExtend);
 
 	/**
-	 * Get Behaviour when extending contract.
+	 * Get When extending contract.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -698,10 +605,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.lang.String getOnFlatrateTermExtend();
 
-    /** Column definition for OnFlatrateTermExtend */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_OnFlatrateTermExtend = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "OnFlatrateTermExtend", null);
-    /** Column name OnFlatrateTermExtend */
-    String COLUMNNAME_OnFlatrateTermExtend = "OnFlatrateTermExtend";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_OnFlatrateTermExtend = new ModelColumn<>(I_C_Flatrate_Conditions.class, "OnFlatrateTermExtend", null);
+	String COLUMNNAME_OnFlatrateTermExtend = "OnFlatrateTermExtend";
 
 	/**
 	 * Set Drucktext.
@@ -711,7 +616,7 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPrintName (java.lang.String PrintName);
+	void setPrintName (@Nullable java.lang.String PrintName);
 
 	/**
 	 * Get Drucktext.
@@ -721,16 +626,13 @@ public interface I_C_Flatrate_Conditions
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getPrintName();
+	@Nullable java.lang.String getPrintName();
 
-    /** Column definition for PrintName */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_PrintName = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "PrintName", null);
-    /** Column name PrintName */
-    String COLUMNNAME_PrintName = "PrintName";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_PrintName = new ModelColumn<>(I_C_Flatrate_Conditions.class, "PrintName", null);
+	String COLUMNNAME_PrintName = "PrintName";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -739,8 +641,7 @@ public interface I_C_Flatrate_Conditions
 	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -748,10 +649,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isProcessed();
 
-    /** Column definition for Processed */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Processed", null);
-    /** Column name Processed */
-    String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Processed = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Process Now.
@@ -771,10 +670,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	boolean isProcessing();
 
-    /** Column definition for Processing */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Processing", null);
-    /** Column name Processing */
-    String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Processing = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Verrechnungsmodus.
@@ -794,10 +691,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.lang.String getType_Clearing();
 
-    /** Column definition for Type_Clearing */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Clearing = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Clearing", null);
-    /** Column name Type_Clearing */
-    String COLUMNNAME_Type_Clearing = "Type_Clearing";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Clearing = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Clearing", null);
+	String COLUMNNAME_Type_Clearing = "Type_Clearing";
 
 	/**
 	 * Set Vertragsart.
@@ -817,10 +712,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.lang.String getType_Conditions();
 
-    /** Column definition for Type_Conditions */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Conditions = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Conditions", null);
-    /** Column name Type_Conditions */
-    String COLUMNNAME_Type_Conditions = "Type_Conditions";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Conditions = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Conditions", null);
+	String COLUMNNAME_Type_Conditions = "Type_Conditions";
 
 	/**
 	 * Set Verrechnungsart.
@@ -842,10 +735,8 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.lang.String getType_Flatrate();
 
-    /** Column definition for Type_Flatrate */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Flatrate = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Flatrate", null);
-    /** Column name Type_Flatrate */
-    String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Type_Flatrate = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Type_Flatrate", null);
+	String COLUMNNAME_Type_Flatrate = "Type_Flatrate";
 
 	/**
 	 * Set Einheiten-Typ.
@@ -867,14 +758,12 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.lang.String getUOMType();
 
-    /** Column definition for UOMType */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_UOMType = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "UOMType", null);
-    /** Column name UOMType */
-    String COLUMNNAME_UOMType = "UOMType";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_UOMType = new ModelColumn<>(I_C_Flatrate_Conditions.class, "UOMType", null);
+	String COLUMNNAME_UOMType = "UOMType";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -882,14 +771,12 @@ public interface I_C_Flatrate_Conditions
 	 */
 	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "Updated", null);
-    /** Column name Updated */
-    String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Updated = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -897,8 +784,5 @@ public interface I_C_Flatrate_Conditions
 	 */
 	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    org.adempiere.model.ModelColumn<I_C_Flatrate_Conditions, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<>(I_C_Flatrate_Conditions.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

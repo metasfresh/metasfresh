@@ -259,6 +259,7 @@
     height: calc(100% - 55px);
     background-color: #fff;
     z-index: 99;
+    overflow-y: overlay;
 
     &.container-fluid {
         height: calc(100% - 55px);
@@ -308,3 +309,96 @@
     display: flex;
     flex-direction: column;
 }
+
+/** Inline TAB **/
+.inline-tab-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+    .main-label {
+      font-weight: bold; 
+      color: #495057;
+    }
+    .inlinetab-action-button {
+      float:left;
+    }
+    .inlinetab-showmore {
+      float: right;
+    }
+    .bottom-offset {
+      margin-bottom: 5px;
+    }
+}
+.inline-tab-fullscreen-top-offset {
+  padding-top: 20px !important;
+}
+.inline-tab {
+    background: #E3E1E2;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 15px 10px 15px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-bottom:5px;
+
+    .arrow-pointer {
+      display: block;
+      float: left;
+      margin: 6px 8px 8px 0px;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid #000;
+      border-left: 2px solid #000;
+      transform: rotate(135deg);
+    }
+    .offset-left {
+      margin-left:15px;
+    }
+}
+
+.inline-tab:hover {
+  background-color: light-gray;
+}
+
+.inline-tab-offset-top {
+  margin-top: -5px;
+}
+
+.inline-tab-active {
+  background: #F6F4EF;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 15px 10px 15px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-bottom:5px;
+
+  .arrow-pointer {
+    display: block;
+    float: left;
+    margin: 4px 8px 8px 0px;
+    width: 8px;
+    height: 8px;
+    border-top: 2px solid #000;
+    border-left: 2px solid #000;
+    transform: rotate(224deg);
+  }
+  .offset-left {
+    margin-left:15px;
+  }
+  .inline-tab-separator {
+    width:100%;
+    border-top: 1px solid $brand-light-color;
+    margin: 10px 0px 10px 0px;
+    box-sizing: border-box;
+  }
+  .full-width {
+    width: 100%;
+  }
+  .inlinetab-form-header {
+    float:left;
+  }
+  .inlinetab-close {
+    float: right;
+  }
+}
+/** END Inline TAB **/

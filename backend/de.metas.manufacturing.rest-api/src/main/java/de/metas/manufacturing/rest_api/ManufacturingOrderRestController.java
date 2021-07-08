@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.util.Env;
 import org.slf4j.MDC;
@@ -21,7 +22,6 @@ import de.metas.common.manufacturing.JsonRequestManufacturingOrdersReport;
 import de.metas.common.manufacturing.JsonRequestSetOrdersExportStatusBulk;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.JsonResponseManufacturingOrdersReport;
-import de.metas.util.time.SystemTime;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
@@ -48,13 +48,14 @@ import lombok.NonNull;
  * #L%
  */
 
-@RequestMapping(ManufacturingOrderRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/manufacturing/orders",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/manufacturing/orders",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/manufacturing/orders" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class ManufacturingOrderRestController
 {
-	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/manufacturing/orders";
-
 	private final ManufacturingOrderAPIService manufacturingOrderAPIService;
 
 	public ManufacturingOrderRestController(

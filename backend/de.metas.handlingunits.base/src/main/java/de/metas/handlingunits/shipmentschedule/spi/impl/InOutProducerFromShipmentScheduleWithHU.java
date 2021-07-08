@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -63,7 +64,6 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
@@ -74,7 +74,7 @@ import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.apache.log4j.MDC;
+import org.slf4j.MDC;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
@@ -278,14 +278,14 @@ public class InOutProducerFromShipmentScheduleWithHU
 			shipment = createShipmentHeader(candidate, shipmentDate);
 		}
 
-		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID());
+		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, Integer.toString(shipment.getM_InOut_ID()));
 		return shipment;
 	}
 
 	@VisibleForTesting
 	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule,@NonNull final CalculateShippingDateRule calculateShippingDateType)
 	{
-		final LocalDate today = SystemTime.asLocalDate();
+		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
 
 		if (FORCE_SHIPMENT_DATE_TODAY.equals(calculateShippingDateType))
 		{

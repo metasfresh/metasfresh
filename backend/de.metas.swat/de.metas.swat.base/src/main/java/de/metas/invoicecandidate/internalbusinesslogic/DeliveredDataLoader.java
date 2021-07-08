@@ -279,7 +279,7 @@ public class DeliveredDataLoader
 					.negateIf(negateQtys);
 			deliveredQtyItem.qtyInStockUom(qtyInStockUom);
 
-			final UomId deliveryUomId = UomId.ofRepoId(icIolAssociationRecord.getC_UOM_ID());
+			final UomId deliveryUomId = UomId.optionalOfRepoId(icIolAssociationRecord.getC_UOM_ID()).orElse(stockUomId);
 			final Quantity qtyNominal = Quantitys
 					.create(
 							icIolAssociationRecord.getQtyDeliveredInUOM_Nominal(),

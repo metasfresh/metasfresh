@@ -16,12 +16,35 @@
  *****************************************************************************/
 package org.compiere.server;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessExecutionResult;
+import de.metas.process.ProcessExecutor;
+import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import it.sauronsoftware.cron4j.Predictor;
+import it.sauronsoftware.cron4j.SchedulingPattern;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -51,39 +74,14 @@ import org.compiere.print.ReportEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
-import de.metas.process.PInstanceId;
-import de.metas.process.ProcessExecutionResult;
-import de.metas.process.ProcessExecutor;
-import de.metas.process.ProcessInfo;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import it.sauronsoftware.cron4j.Predictor;
-import it.sauronsoftware.cron4j.SchedulingPattern;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Scheduler
@@ -100,12 +98,12 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * <code>AD_Message_ID = 441</code>.
 	 */
-	private static final String MSG_PROCESS_OK = "ProcessOK";
+	private static final AdMessageKey MSG_PROCESS_OK = AdMessageKey.of("ProcessOK");
 
 	/**
 	 * <code>AD_Message_ID=442</code>.
 	 */
-	private static final String MSG_PROCESS_RUN_ERROR = "ProcessRunError";
+	private static final AdMessageKey MSG_PROCESS_RUN_ERROR = AdMessageKey.of("ProcessRunError");
 
 	public Scheduler(final MScheduler model)
 	{
@@ -418,10 +416,6 @@ public class Scheduler extends AdempiereServer
 
 	/**
 	 * Run Process
-	 *
-	 * @param process process
-	 * @return summary
-	 * @throws Exception
 	 */
 	private final String runProcess(final ProcessInfo pi) throws Exception
 	{
@@ -451,9 +445,6 @@ public class Scheduler extends AdempiereServer
 
 	/**
 	 * Creates and setup the {@link ProcessInfo}.
-	 *
-	 * @param process
-	 * @see org.compiere.wf.MWFActivity#performWork(Trx)
 	 */
 	private static final ProcessInfo createProcessInfo(final Properties schedulerCtx, final MScheduler adScheduler)
 	{
@@ -518,9 +509,6 @@ public class Scheduler extends AdempiereServer
 
 	/**
 	 * Fill Parameter
-	 *
-	 * @param pInstance process instance
-	 * @return
 	 */
 	private static List<ProcessInfoParameter> createProcessInfoParameters(final Properties schedulerCtx, final MScheduler adScheduler)
 	{
@@ -656,14 +644,6 @@ public class Scheduler extends AdempiereServer
 	/**
 	 * metas: c.ghita@metas.ro
 	 * notify trough mail in case of abnormal termination
-	 *
-	 * @param ok
-	 * @param from
-	 * @param subject
-	 * @param summary
-	 * @param logInfo
-	 * @param adTableId
-	 * @param recordId
 	 */
 
 	private void notify(

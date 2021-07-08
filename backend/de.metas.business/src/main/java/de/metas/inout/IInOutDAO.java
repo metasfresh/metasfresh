@@ -96,6 +96,7 @@ public interface IInOutDAO extends ISingletonService
 	/**
 	 * Retrieve the M_InOutLine that is in dispute (has qty with issues) and is based on the same order line as the inout line given as parameter.
 	 */
+	@Nullable
 	I_M_InOutLine retrieveLineWithQualityDiscount(@NonNull I_M_InOutLine originInOutLine);
 
 	LocalDate getLastInOutDate(BPartnerId bpartnerId, ProductId productId, SOTrx soTrx);
@@ -118,4 +119,8 @@ public interface IInOutDAO extends ISingletonService
 	I_M_InOut getInOutByDocumentNumber(String documentNo, DocTypeId docTypeId, OrgId orgId);
 
 	ImmutableMap<InOutLineId,I_M_InOut> retrieveInOutByLineIds(Set<InOutLineId> inOutLineIds);
+
+	void save(@NonNull I_M_InOut inout);
+
+	void save(@NonNull I_M_InOutLine inoutLine);
 }

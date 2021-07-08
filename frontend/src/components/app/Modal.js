@@ -15,18 +15,23 @@ import {
   fetchChangeLog,
   callAPI,
   patch,
+  resetPrintingOptions,
 } from '../../actions/WindowActions';
+import { openFile } from '../../actions/GenericActions';
+
 import { getTableId, getSelection } from '../../reducers/tables';
+import { findViewByViewId } from '../../reducers/viewHandler';
 
 import keymap from '../../shortcuts/keymap';
 import ChangeLogModal from '../ChangeLogModal';
 import Process from '../Process';
-import Window from '../Window';
+import SectionGroup from '../SectionGroup';
 import ModalContextShortcuts from '../keyshortcuts/ModalContextShortcuts';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import OverlayField from './OverlayField';
 import CommentsPanel from '../comments/CommentsPanel';
+import PrintingOptions from './PrintingOptions';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -52,10 +57,10 @@ class Modal extends Component {
     };
   }
 
-  async componentDidMount() {
+  componentDidMount() {
     this.mounted = true;
 
-    await this.init();
+    this.init();
 
     // Dirty solution, but use only if you need to
     // there is no way to affect body
@@ -77,12 +82,12 @@ class Modal extends Component {
     this.removeEventListeners();
   }
 
-  async componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps) {
     const { windowId, viewId, indicator } = this.props;
     const { waitingFetch } = this.state;
 
     if (prevProps.windowId !== windowId || prevProps.viewId !== viewId) {
-      await this.init();
+      this.init();
     }
 
     // Case when we have to trigger pending start request
@@ -145,9 +150,9 @@ class Modal extends Component {
       tabId,
       rowId,
       modalType,
+      documentType,
       staticModalType,
       parentSelection,
-      parentWindowId,
       isAdvanced,
       viewId,
       modalViewDocumentIds,
@@ -156,7 +161,9 @@ class Modal extends Component {
       childViewSelectedIds,
       parentViewId,
       viewDocumentIds,
+      title,
     } = this.props;
+
     let request = null;
 
     switch (modalType) {
@@ -191,7 +198,15 @@ class Modal extends Component {
       case 'window':
         try {
           await dispatch(
-            createWindow(windowId, dataId, tabId, rowId, true, isAdvanced)
+            createWindow({
+              windowId,
+              docId: dataId,
+              tabId,
+              rowId,
+              isModal: true,
+              isAdvanced,
+              title,
+            })
           );
         } catch (error) {
           this.handleClose();
@@ -210,7 +225,7 @@ class Modal extends Component {
           const options = {
             processType: windowId,
             viewId,
-            type: parentWindowId,
+            documentType,
             ids: viewId
               ? modalViewDocumentIds
               : dataId
@@ -263,11 +278,11 @@ class Modal extends Component {
       closeCallback,
       dataId,
       windowId,
-      parentWindowId,
       parentDataId,
       triggerField,
       rowId,
       tabId,
+      documentType,
     } = this.props;
     const { isNew, isNewDoc } = this.state;
 
@@ -276,7 +291,7 @@ class Modal extends Component {
         dispatch(
           patch(
             'window',
-            parentWindowId,
+            documentType,
             parentDataId,
             null,
             null,
@@ -324,7 +339,7 @@ class Modal extends Component {
    * @summary Handle closing modal when the `done` button is clicked or `{esc}` key pressed
    */
   handleClose = () => {
-    const { modalSaveStatus, modalType } = this.props;
+    const { modalSaveStatus, modalType, dispatch } = this.props;
 
     if (modalType === 'process') {
       return this.closeModal(modalSaveStatus);
@@ -333,6 +348,7 @@ class Modal extends Component {
     if (modalSaveStatus || window.confirm('Do you really want to leave?')) {
       this.closeModal(modalSaveStatus);
     }
+    dispatch(resetPrintingOptions());
   };
 
   /**
@@ -353,10 +369,10 @@ class Modal extends Component {
 
   /**
    * @method handleStart
-   * @summary ToDo: Describe the method
+   * @summary Handler for starting process from a modal
    */
   handleStart = () => {
-    const { dispatch, layout, windowId, indicator } = this.props;
+    const { dispatch, layout, windowId, indicator, parentId } = this.props;
 
     if (indicator === 'pending') {
       this.setState({ waitingFetch: true, pending: true });
@@ -376,7 +392,8 @@ class Modal extends Component {
           const action = handleProcessResponse(
             response,
             windowId,
-            layout.pinstanceId
+            layout.pinstanceId,
+            parentId
           );
 
           await dispatch(action);
@@ -395,6 +412,37 @@ class Modal extends Component {
         }
       }
     );
+  };
+
+  /**
+   * @method handlePrinting
+   * @summary before printing we check the available parameters from the store and we use those for forming the final printing URI
+   */
+  handlePrinting = () => {
+    const {
+      windowId,
+      modalViewDocumentIds,
+      dataId,
+      printingOptions,
+    } = this.props;
+    const docNo = modalViewDocumentIds[0];
+    const docId = dataId;
+    const { options } = printingOptions;
+
+    let extraParams = '';
+    options.map((item) => {
+      extraParams += `${item.internalName}=${item.value}&`;
+    });
+    extraParams = extraParams ? extraParams.slice(0, -1) : extraParams;
+
+    openFile(
+      'window',
+      windowId,
+      docId,
+      'print',
+      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf?${extraParams}`
+    );
+    this.handleClose();
   };
 
   /**
@@ -424,6 +472,9 @@ class Modal extends Component {
         if (staticModalType === 'comments') {
           content = <CommentsPanel windowId={windowId} docId={dataId} />;
         }
+        if (staticModalType === 'printing') {
+          content = <PrintingOptions windowId={windowId} docId={dataId} />;
+        }
         return (
           <div className="window-wrapper">
             <div className="document-file-dropzone">
@@ -436,7 +487,7 @@ class Modal extends Component {
       }
       case 'window':
         return (
-          <Window
+          <SectionGroup
             data={data}
             dataId={dataId}
             layout={layout}
@@ -471,11 +522,18 @@ class Modal extends Component {
       isDocumentNotSaved,
       layout,
       indicator,
+      staticModalType,
+      printingOptions,
     } = this.props;
+
+    const { okButtonCaption: printBtnCaption } = printingOptions;
     const { scrolled, pending, isNewDoc, isTooltipShow } = this.state;
 
-    const applyHandler =
+    const isNotSaved =
+      staticModalType === 'printing' ? true : isDocumentNotSaved;
+    let applyHandler =
       modalType === 'process' ? this.handleStart : this.handleClose;
+    if (staticModalType === 'printing') applyHandler = this.handlePrinting;
     const cancelHandler = isNewDoc ? this.removeModal : this.handleClose;
 
     return (
@@ -532,7 +590,7 @@ class Modal extends Component {
                 }
                 onMouseLeave={this.toggleTooltip}
               >
-                {modalType === 'process'
+                {modalType === 'process' || staticModalType === 'printing'
                   ? counterpart.translate('modal.actions.cancel')
                   : counterpart.translate('modal.actions.done')}
 
@@ -574,10 +632,26 @@ class Modal extends Component {
                   )}
                 </button>
               )}
+
+              {/* Printing button caption value comes form the store */}
+              {staticModalType === 'printing' && printBtnCaption && (
+                <button
+                  className={classnames(
+                    'btn btn-meta-outline-secondary btn-distance-3 btn-md',
+                    {
+                      'tag-disabled disabled ': pending,
+                    }
+                  )}
+                  onClick={this.handlePrinting}
+                  tabIndex={0}
+                >
+                  {printBtnCaption}
+                </button>
+              )}
             </div>
           </div>
 
-          <Indicator {...{ isDocumentNotSaved, indicator }} />
+          <Indicator {...{ isNotSaved, indicator }} />
 
           <div
             className="panel-modal-content js-panel-modal-content
@@ -715,6 +789,7 @@ class Modal extends Component {
  * @prop {*} [triggerField]
  * @prop {string} [viewId]
  * @prop {string} [windowId]
+ * @prop {string} [documentType]
  */
 Modal.propTypes = {
   dispatch: PropTypes.func.isRequired,
@@ -745,15 +820,24 @@ Modal.propTypes = {
   triggerField: PropTypes.any,
   viewId: PropTypes.string,
   windowId: PropTypes.string,
+  parentId: PropTypes.string,
+  documentType: PropTypes.string,
   viewDocumentIds: PropTypes.array,
+  printBtnCaption: PropTypes.string,
+  printingOptions: PropTypes.object,
+  title: PropTypes.string,
 };
 
 const mapStateToProps = (state, props) => {
-  const { tabId, dataId, rawModalWindowId } = props;
+  const { tabId, dataId, rawModalWindowId, viewId, documentType } = props;
 
   const parentViewId = state.windowHandler.modal.parentViewId
     ? state.windowHandler.modal.parentViewId
     : props.parentViewId;
+
+  const id = parentViewId ? parentViewId : viewId;
+  const parentView = id && findViewByViewId(state, id);
+  const parentId = parentView ? parentView.windowId : documentType;
 
   const parentViewTableId = getTableId({
     windowId: rawModalWindowId,
@@ -769,7 +853,11 @@ const mapStateToProps = (state, props) => {
     activeTabId: state.windowHandler.master.layout.activeTab,
     indicator: state.windowHandler.indicator,
     parentViewId,
+    parentId,
+    printingOptions: state.windowHandler.printingOptions,
   };
 };
+
+export { Modal as DisconnectedModal };
 
 export default connect(mapStateToProps)(Modal);

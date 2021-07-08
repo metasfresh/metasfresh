@@ -22,6 +22,30 @@
 
 package org.compiere.model;
 
+ import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
+import de.metas.dao.selection.pagination.QueryResultPage;
+import de.metas.money.Money;
+import de.metas.process.PInstanceId;
+import de.metas.security.permissions.Access;
+import de.metas.util.collections.IteratorUtils;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.IQueryInsertExecutor;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.dao.ISqlQueryUpdater;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.model.util.Model2IdFunction;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -35,34 +59,6 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ICompositeQueryUpdaterExecutor;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryInsertExecutor;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.dao.ISqlQueryUpdater;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.model.util.Model2IdFunction;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.ModelColumn;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ListMultimap;
-
-import de.metas.dao.selection.pagination.QueryResultPage;
-import de.metas.money.Money;
-import de.metas.process.PInstanceId;
-import de.metas.security.permissions.Access;
-import de.metas.util.collections.IteratorUtils;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Getter;
-import lombok.NonNull;
 
 public interface IQuery<T>
 {
@@ -114,7 +110,6 @@ public interface IQuery<T>
 	 *
 	 * @param clazz all resulting POs will be converted to this interface
 	 * @return List
-	 * @throws DBException
 	 */
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
 
@@ -122,7 +117,7 @@ public interface IQuery<T>
 	 * Same as {@link #list(Class)} returns an {@link ImmutableList}. Note: you can update or delete the included records.
 	 * If you want read-only records, see {@link #OPTION_ReturnReadOnlyRecords}.
 	 */
-	default <ET extends T> ImmutableList<ET> listImmutable(Class<ET> clazz) throws DBException
+	default <ET extends T> ImmutableList<ET> listImmutable(final Class<ET> clazz) throws DBException
 	{
 		return ImmutableList.copyOf(list(clazz));
 	}
@@ -130,9 +125,7 @@ public interface IQuery<T>
 	/**
 	 * Same as {@link #list(Class)} but instead of returning a list it will return a Map indexed by model's ID.
 	 *
-	 * @param clazz
 	 * @return Map of Model ID to Model.
-	 * @throws DBException
 	 */
 	<ET extends T> Map<Integer, ET> mapById(Class<ET> clazz) throws DBException;
 
@@ -168,12 +161,19 @@ public interface IQuery<T>
 	 *         An exception is thrown if multiple results exist.
 	 */
 	@Nullable
-	default <ID extends RepoIdAware> ID firstIdOnly(final java.util.function.Function<Integer, ID> idMapper)
+	default <ID extends RepoIdAware> ID firstIdOnly(@NonNull final java.util.function.Function<Integer, ID> idMapper)
 	{
 		return idMapper.apply(firstIdOnly());
 	}
 
-	<ET extends T> ET first() throws DBException;
+	@NonNull
+	default <ID extends RepoIdAware> Optional<ID> firstIdOnlyOptional(@NonNull final java.util.function.Function<Integer, ID> idMapper)
+	{
+		return Optional.ofNullable(firstIdOnly(idMapper));
+	}
+
+
+	@Nullable <ET extends T> ET first() throws DBException;
 
 	/**
 	 * @return first record or null
@@ -194,10 +194,6 @@ public interface IQuery<T>
 
 	/**
 	 * Same as {@link #first(Class)}, but in case there is no record found an exception will be thrown too.
-	 *
-	 * @param clazz
-	 * @return
-	 * @throws DBException
 	 */
 	@NonNull
 	<ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
@@ -206,18 +202,13 @@ public interface IQuery<T>
 	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
 	 *
 	 * @return first PO or null.
-	 * @throws DBMoreThanOneRecordsFoundException
-	 * @see {@link #first()}
+	 * @see #first()
 	 */
 	@Nullable
 	<ET extends T> ET firstOnly(Class<ET> clazz) throws DBException;
 
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there is no record found an exception will be thrown too.
-	 *
-	 * @param clazz
-	 * @return
-	 * @throws DBException
 	 */
 	@NonNull
 	<ET extends T> ET firstOnlyNotNull(Class<ET> clazz) throws DBException;
@@ -225,18 +216,13 @@ public interface IQuery<T>
 	/**
 	 * Same as {@link #firstOnly(Class)}, but in case there are more then one record <code>null</code> will be returned instead of throwing exception.
 	 *
-	 * @param clazz
 	 * @return model or null if not found or if there were more then one record found.
-	 * @throws DBException
 	 */
 	@Nullable
 	<ET extends T> ET firstOnlyOrNull(Class<ET> clazz) throws DBException;
 
 	/**
 	 * Count items that match query criteria
-	 *
-	 * @return count
-	 * @throws DBException
 	 */
 	int count() throws DBException;
 
@@ -246,9 +232,6 @@ public interface IQuery<T>
 	 * Using this method you can combine pure SQL where clause with pure Java filters in a seamless way.
 	 * <p>
 	 * NOTE: using post-filters is introducing some limitations mainly on {@link #setLimit(int)} and {@link #iterate(Class)} methods.
-	 *
-	 * @param postQueryFilter
-	 * @return this
 	 */
 	IQuery<T> setPostQueryFilter(IQueryFilter<T> postQueryFilter);
 
@@ -262,7 +245,6 @@ public interface IQuery<T>
 	 * Check if there items for query criteria.
 	 *
 	 * @return true if exists, false otherwise
-	 * @throws DBException
 	 */
 	boolean anyMatch() throws DBException;
 
@@ -289,27 +271,23 @@ public interface IQuery<T>
 	/**
 	 * Only records that are in T_Selection with AD_PInstance_ID.
 	 * <p>
-	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
+	 * NOTE: This method and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
 	 */
 	IQuery<T> setOnlySelection(PInstanceId pisntanceId);
 
 	/**
 	 * Only records that are NOT in T_Selection with AD_PInstance_ID.
 	 * <p>
-	 * NOTE: {@link #setOnlySelection(PInstanceId)} and {@link #setNotInSelection(PInstanceId)} are complementary and NOT exclusive.
-	 *
-	 * @param AD_PInstance_ID
+	 * NOTE: {@link #setOnlySelection(PInstanceId)} and this method are complementary and NOT exclusive.
 	 */
 	IQuery<T> setNotInSelection(PInstanceId pinstanceId);
 
 	/**
 	 * Select only active records (i.e. IsActive='Y')
-	 *
-	 * @param onlyActiveRecords
 	 */
 	IQuery<T> setOnlyActiveRecords(boolean onlyActiveRecords);
 
-	public enum Aggregate
+	enum Aggregate
 	{
 		COUNT("COUNT", false), //
 		SUM("SUM", false), //
@@ -320,12 +298,13 @@ public interface IQuery<T>
 		FIRST(null, true);
 
 		@Getter
-		private String sqlFunction;
+		@Nullable
+		private final String sqlFunction;
 
 		@Getter
-		private boolean useOrderByClause;
+		private final boolean useOrderByClause;
 
-		private Aggregate(final String sqlFunction, final boolean useOrderByClause)
+		Aggregate(@Nullable final String sqlFunction, final boolean useOrderByClause)
 		{
 			this.sqlFunction = sqlFunction;
 			this.useOrderByClause = useOrderByClause;
@@ -335,12 +314,7 @@ public interface IQuery<T>
 	/**
 	 * Aggregate given expression on this criteria
 	 *
-	 * @param <T>
-	 * @param columnName
-	 * @param sqlFunction
-	 * @param returnType
 	 * @return aggregated value
-	 * @throws DBException
 	 */
 	<AT> AT aggregate(String columnName, Aggregate aggregateType, Class<AT> returnType) throws DBException;
 
@@ -374,14 +348,14 @@ public interface IQuery<T>
 	 * <p>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
-	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
+	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate(Class)} method is used and the underlying database supports paging, then the limit value (if set) is used as
 	 *            page size.
 	 * @return this
 	 */
 	IQuery<T> setLimit(QueryLimit limit);
 
 	@Deprecated
-	default IQuery<T> setLimit(int limit)
+	default IQuery<T> setLimit(final int limit)
 	{
 		return setLimit(QueryLimit.ofInt(limit));
 	}
@@ -391,7 +365,7 @@ public interface IQuery<T>
 	 * <p>
 	 * For a detailed description about LIMIT and OFFSET concepts, please take a look <a href="http://www.postgresql.org/docs/9.1/static/queries-limit.html">here</a>.
 	 *
-	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate()} method is used and the underlying database supports paging, then the limit value (if set) is used as
+	 * @param limit integer greater than zero or {@link #NO_LIMIT}. Note: if the {@link #iterate(Class)} method is used and the underlying database supports paging, then the limit value (if set) is used as
 	 *            page size.
 	 * @param offset integer greater than zero or {@link #NO_LIMIT}
 	 * @return this
@@ -399,7 +373,7 @@ public interface IQuery<T>
 	IQuery<T> setLimit(QueryLimit limit, int offset);
 
 	@Deprecated
-	default IQuery<T> setLimit(int limit, int offset)
+	default IQuery<T> setLimit(final int limit, final int offset)
 	{
 		return setLimit(QueryLimit.ofInt(limit), offset);
 	}
@@ -449,7 +423,6 @@ public interface IQuery<T>
 	 * <p>
 	 * Else, records will be updated one by one, by using {@link #update(IQueryUpdater)}.
 	 *
-	 * @param queryUpdater
 	 * @return how many records were updated
 	 */
 	int updateDirectly(IQueryUpdater<T> queryUpdater);
@@ -480,7 +453,6 @@ public interface IQuery<T>
 	/**
 	 * Selects given columns and return the result as a list of ColumnName to Value map.
 	 *
-	 * @param columnNames
 	 * @return a list of rows, where each row is a {@link Map} having the required columns as keys.
 	 */
 	List<Map<String, Object>> listColumns(String... columnNames);
@@ -488,7 +460,6 @@ public interface IQuery<T>
 	/**
 	 * Selects DISTINCT given columns and return the result as a list of ColumnName to Value map.
 	 *
-	 * @param columnNames
 	 * @return a list of rows, where each row is a {@link Map} having the required columns as keys.
 	 * @see #listColumns(String...)
 	 */
@@ -497,15 +468,12 @@ public interface IQuery<T>
 	/**
 	 * Selects DISTINCT given column and return the result as a list.
 	 *
-	 * @param columnName
 	 * @param valueType value type
 	 * @see #listColumns(String...)
 	 */
 	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
 
 	/**
-	 * @param columnName
-	 * @param valueType
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
 	 */
 	@Nullable
@@ -514,7 +482,6 @@ public interface IQuery<T>
 	/**
 	 * Gets an immutable {@link Map} of records.
 	 *
-	 * @param modelClass
 	 * @param keyFunction function which will be used to create the map key based on result model.
 	 * @return key to model map
 	 * @see #list(Class)
@@ -524,7 +491,6 @@ public interface IQuery<T>
 	/**
 	 * Gets an immutable ID to model map.
 	 *
-	 * @param modelClass
 	 * @return ID to model map
 	 * @see #map(Class, Function)
 	 * @see Model2IdFunction
@@ -534,7 +500,6 @@ public interface IQuery<T>
 	/**
 	 * Retrieves the records as {@link ListMultimap}.
 	 *
-	 * @param modelClass
 	 * @param keyFunction function used to generate the key used to group records in lists.
 	 * @return list multimap indexed by a key provided by <code>keyFunction</code>.
 	 */
@@ -543,7 +508,6 @@ public interface IQuery<T>
 	/**
 	 * Retrieves the records and then splits them in groups based on the indexing key provided by <code>keyFunction</code>.
 	 *
-	 * @param modelClass
 	 * @param keyFunction key function used to provide the key used to split the returned records.
 	 * @return collection of record groups.
 	 */
@@ -554,7 +518,7 @@ public interface IQuery<T>
 	 * <p>
 	 * WARNING: atm, the implementation is minimal and was tested only with {@link #list()} methods.
 	 */
-	IQuery<T> addUnion(IQuery<T> query, boolean distinct);
+	void addUnion(IQuery<T> query, boolean distinct);
 
 	default IQuery<T> addUnions(final Collection<IQuery<T>> queries, final boolean distinct)
 	{
@@ -598,16 +562,12 @@ public interface IQuery<T>
 	/**
 	 * Use the result of this query and insert it in given <code>toModelClass</code>'s table.
 	 *
-	 * @param toModelClass
 	 * @return executor which will assist you with the INSERT.
 	 */
 	<ToModelType> IQueryInsertExecutor<ToModelType, T> insertDirectlyInto(Class<ToModelType> toModelClass);
 
 	/**
 	 * Return a stream of all records that match the query criteria.
-	 *
-	 * @return Stream
-	 * @throws DBException
 	 */
 	default Stream<T> stream() throws DBException
 	{
@@ -633,7 +593,6 @@ public interface IQuery<T>
 	 *
 	 * @param clazz all resulting models will be converted to this interface
 	 * @return Stream
-	 * @throws DBException
 	 */
 	default <ET extends T> Stream<ET> stream(final Class<ET> clazz) throws DBException
 	{

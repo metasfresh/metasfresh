@@ -1,0 +1,10 @@
+de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_misc_Test.toJsonAttachment_Type_URL=[
+  {
+    "externalReference" : "externalReference",
+    "dataSourceName" : "dataSourceName",
+    "attachmentId" : "10",
+    "type" : "URL",
+    "filename" : "?",
+    "url" : "https://metasfresh.com"
+  }
+]

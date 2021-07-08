@@ -1,138 +1,125 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Order_Qty
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_PP_Order_Qty 
 {
 
-    /** TableName=PP_Order_Qty */
-    public static final String Table_Name = "PP_Order_Qty";
+	String Table_Name = "PP_Order_Qty";
 
-    /** AD_Table_ID=540807 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540807 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object>(I_PP_Order_Qty.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_Created = new ModelColumn<>(I_PP_Order_Qty.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object>(I_PP_Order_Qty.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_Order_Qty.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Handling Unit.
@@ -141,7 +128,7 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_ID (int M_HU_ID);
+	void setM_HU_ID (int M_HU_ID);
 
 	/**
 	 * Get Handling Unit.
@@ -150,39 +137,36 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_ID();
+	int getM_HU_ID();
 
-	public de.metas.handlingunits.model.I_M_HU getM_HU();
+	de.metas.handlingunits.model.I_M_HU getM_HU();
 
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
+	void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU);
 
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_HU>(I_PP_Order_Qty.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
+	ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_PP_Order_Qty.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
-	 * Set Lagerort.
-	 * Lagerort im Lager
+	 * Set Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: Locator
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Locator_ID (int M_Locator_ID);
+	void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Lagerort.
-	 * Lagerort im Lager
+	 * Get Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: Locator
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Locator_ID();
+	int getM_Locator_ID();
 
-    /** Column name M_Locator_ID */
-    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
 	 * Set Picking candidate.
@@ -191,7 +175,7 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID);
+	void setM_Picking_Candidate_ID (int M_Picking_Candidate_ID);
 
 	/**
 	 * Get Picking candidate.
@@ -200,64 +184,59 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Picking_Candidate_ID();
+	int getM_Picking_Candidate_ID();
 
-	public de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
+	@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate getM_Picking_Candidate();
 
-	public void setM_Picking_Candidate(de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
+	void setM_Picking_Candidate(@Nullable de.metas.handlingunits.model.I_M_Picking_Candidate M_Picking_Candidate);
 
-    /** Column definition for M_Picking_Candidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_Picking_Candidate> COLUMN_M_Picking_Candidate_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_Picking_Candidate>(I_PP_Order_Qty.class, "M_Picking_Candidate_ID", de.metas.handlingunits.model.I_M_Picking_Candidate.class);
-    /** Column name M_Picking_Candidate_ID */
-    public static final String COLUMNNAME_M_Picking_Candidate_ID = "M_Picking_Candidate_ID";
+	ModelColumn<I_PP_Order_Qty, de.metas.handlingunits.model.I_M_Picking_Candidate> COLUMN_M_Picking_Candidate_ID = new ModelColumn<>(I_PP_Order_Qty.class, "M_Picking_Candidate_ID", de.metas.handlingunits.model.I_M_Picking_Candidate.class);
+	String COLUMNNAME_M_Picking_Candidate_ID = "M_Picking_Candidate_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Bewegungsdatum.
+	 * Set Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setMovementDate (java.sql.Timestamp MovementDate);
+	void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungsdatum.
+	 * Get Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getMovementDate();
+	java.sql.Timestamp getMovementDate();
 
-    /** Column definition for MovementDate */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object> COLUMN_MovementDate = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object>(I_PP_Order_Qty.class, "MovementDate", null);
-    /** Column name MovementDate */
-    public static final String COLUMNNAME_MovementDate = "MovementDate";
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_MovementDate = new ModelColumn<>(I_PP_Order_Qty.class, "MovementDate", null);
+	String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
 	 * Set Manufacturing Cost Collector.
@@ -266,7 +245,7 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID);
+	void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID);
 
 	/**
 	 * Get Manufacturing Cost Collector.
@@ -275,16 +254,14 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Cost_Collector_ID();
+	int getPP_Cost_Collector_ID();
 
-	public org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
+	@Nullable org.eevolution.model.I_PP_Cost_Collector getPP_Cost_Collector();
 
-	public void setPP_Cost_Collector(org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector);
+	void setPP_Cost_Collector(@Nullable org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector);
 
-    /** Column definition for PP_Cost_Collector_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Cost_Collector>(I_PP_Order_Qty.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
-    /** Column name PP_Cost_Collector_ID */
-    public static final String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
+	ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Cost_Collector> COLUMN_PP_Cost_Collector_ID = new ModelColumn<>(I_PP_Order_Qty.class, "PP_Cost_Collector_ID", org.eevolution.model.I_PP_Cost_Collector.class);
+	String COLUMNNAME_PP_Cost_Collector_ID = "PP_Cost_Collector_ID";
 
 	/**
 	 * Set Manufacturing Order BOM Line.
@@ -293,7 +270,7 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID);
+	void setPP_Order_BOMLine_ID (int PP_Order_BOMLine_ID);
 
 	/**
 	 * Get Manufacturing Order BOM Line.
@@ -302,43 +279,41 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_BOMLine_ID();
+	int getPP_Order_BOMLine_ID();
 
-	public org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine();
+	@Nullable org.eevolution.model.I_PP_Order_BOMLine getPP_Order_BOMLine();
 
-	public void setPP_Order_BOMLine(org.eevolution.model.I_PP_Order_BOMLine PP_Order_BOMLine);
+	void setPP_Order_BOMLine(@Nullable org.eevolution.model.I_PP_Order_BOMLine PP_Order_BOMLine);
 
-    /** Column definition for PP_Order_BOMLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Order_BOMLine> COLUMN_PP_Order_BOMLine_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Order_BOMLine>(I_PP_Order_Qty.class, "PP_Order_BOMLine_ID", org.eevolution.model.I_PP_Order_BOMLine.class);
-    /** Column name PP_Order_BOMLine_ID */
-    public static final String COLUMNNAME_PP_Order_BOMLine_ID = "PP_Order_BOMLine_ID";
+	ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Order_BOMLine> COLUMN_PP_Order_BOMLine_ID = new ModelColumn<>(I_PP_Order_Qty.class, "PP_Order_BOMLine_ID", org.eevolution.model.I_PP_Order_BOMLine.class);
+	String COLUMNNAME_PP_Order_BOMLine_ID = "PP_Order_BOMLine_ID";
 
 	/**
-	 * Set Produktionsauftrag.
+	 * Set Manufacturing Order.
+	 * Manufacturing Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_ID (int PP_Order_ID);
+	void setPP_Order_ID (int PP_Order_ID);
 
 	/**
-	 * Get Produktionsauftrag.
+	 * Get Manufacturing Order.
+	 * Manufacturing Order
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_ID();
+	int getPP_Order_ID();
 
-	public org.eevolution.model.I_PP_Order getPP_Order();
+	org.eevolution.model.I_PP_Order getPP_Order();
 
-	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
+	void setPP_Order(org.eevolution.model.I_PP_Order PP_Order);
 
-    /** Column definition for PP_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Order>(I_PP_Order_Qty.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
-    /** Column name PP_Order_ID */
-    public static final String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
+	ModelColumn<I_PP_Order_Qty, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new ModelColumn<>(I_PP_Order_Qty.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
 
 	/**
 	 * Set Manufacturing order Issue/Receipt quantity.
@@ -347,7 +322,7 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Order_Qty_ID (int PP_Order_Qty_ID);
+	void setPP_Order_Qty_ID (int PP_Order_Qty_ID);
 
 	/**
 	 * Get Manufacturing order Issue/Receipt quantity.
@@ -356,88 +331,77 @@ public interface I_PP_Order_Qty
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Order_Qty_ID();
+	int getPP_Order_Qty_ID();
 
-    /** Column definition for PP_Order_Qty_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object> COLUMN_PP_Order_Qty_ID = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object>(I_PP_Order_Qty.class, "PP_Order_Qty_ID", null);
-    /** Column name PP_Order_Qty_ID */
-    public static final String COLUMNNAME_PP_Order_Qty_ID = "PP_Order_Qty_ID";
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_PP_Order_Qty_ID = new ModelColumn<>(I_PP_Order_Qty.class, "PP_Order_Qty_ID", null);
+	String COLUMNNAME_PP_Order_Qty_ID = "PP_Order_Qty_ID";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object>(I_PP_Order_Qty.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_Processed = new ModelColumn<>(I_PP_Order_Qty.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Menge.
-	 * Menge
+	 * Set Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQty (java.math.BigDecimal Qty);
+	void setQty (BigDecimal Qty);
 
 	/**
-	 * Get Menge.
-	 * Menge
+	 * Get Quantity.
+	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty();
+	BigDecimal getQty();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object>(I_PP_Order_Qty.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_Qty = new ModelColumn<>(I_PP_Order_Qty.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_PP_Order_Qty, Object>(I_PP_Order_Qty.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_PP_Order_Qty, Object> COLUMN_Updated = new ModelColumn<>(I_PP_Order_Qty.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -1,20 +1,9 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
-import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
@@ -30,6 +19,15 @@ import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDes
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -135,7 +133,10 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			{
 				if (headerCandidate != null)
 				{
-					throw new AdempiereException("More than one header candidate found: " + headerCandidate + ", " + candidate);
+					throw new AdempiereException("More than one header candidate found. " + headerCandidate + ", " + candidate)
+							.appendParametersToMessage()
+							.setParameter("1stHeaderCandidate", headerCandidate)
+							.setParameter("2ndHeaderCandidate", candidate);
 				}
 
 				headerCandidate = candidate;

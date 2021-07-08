@@ -1,43 +1,5 @@
 package org.eevolution.mrp.spi.impl.ddorder;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.api.ASICopy;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.I_DD_OrderLine_Alternative;
-import org.eevolution.model.I_PP_MRP;
-import org.eevolution.model.I_PP_MRP_Alternative;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.eevolution.model.X_DD_Order;
-import org.eevolution.mrp.api.IMRPBL;
-import org.eevolution.mrp.api.IMRPCreateSupplyRequest;
-import org.eevolution.mrp.api.IMRPDAO;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -53,6 +15,32 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.mm.attributes.api.ASICopy;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.model.X_DD_Order;
+import org.springframework.stereotype.Service;
+
+import java.sql.Timestamp;
+import java.util.Date;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -80,8 +68,6 @@ public class DDOrderProducer
 {
 	private final IDDOrderDAO ddOrdersRepo = Services.get(IDDOrderDAO.class);
 	private final IProductPlanningDAO productPlanningsRepo = Services.get(IProductPlanningDAO.class);
-	private final IMRPBL mrpBL = Services.get(IMRPBL.class);
-	private final IMRPDAO mrpDAO = Services.get(IMRPDAO.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
@@ -90,31 +76,8 @@ public class DDOrderProducer
 			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_GroupId", MaterialDispoGroupId.class);
 
 	public I_DD_Order createDDOrder(
-			@NonNull final DDOrder pojo,
-			@NonNull final Date dateOrdered)
-	{
-		return createDDOrder(pojo, dateOrdered, null);
-	}
-
-	public I_DD_Order createDDOrder(
-			@NonNull final DDOrder pojo,
-			@NonNull final IMRPCreateSupplyRequest request)
-	{
-		return createDDOrder(pojo,
-				request.getMrpContext().getDate(),
-				request);
-	}
-
-	/**
-	 *
-	 * @param ddOrder
-	 * @param request may be {@code null}. If not-null, then the method also does some {@link I_PP_MRP} related stuff that is likely to become obsolete soon.
-	 * @return
-	 */
-	private I_DD_Order createDDOrder(
 			@NonNull final DDOrder ddOrder,
-			@NonNull final Date dateOrdered,
-			@Nullable final IMRPCreateSupplyRequest request)
+			@NonNull final Date dateOrdered)
 	{
 		final ProductPlanningId productPlanningId = ProductPlanningId.ofRepoId(ddOrder.getProductPlanningId());
 		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
@@ -212,61 +175,9 @@ public class DDOrderProducer
 			//
 			// Save DD Order Line
 			ddOrdersRepo.save(ddOrderline);
-
-			if (request != null)
-			{
-				//
-				// Create DD_OrderLine_Alternatives
-				// NOTE: demand MRP line is available only in lot-for-lot order policy
-				// TODO: i think we shall get all MRP demands, retrieve their alternatives, aggregate them and create DD_OrderLine_Alternatives
-				final I_PP_MRP parentMRPDemand = request.getMRPDemandRecordOrNull();
-				if (parentMRPDemand != null)
-				{
-					final List<I_PP_MRP_Alternative> mrpAlternatives = mrpDAO.retrieveMRPAlternativesQuery(parentMRPDemand).create().list();
-					for (final I_PP_MRP_Alternative mrpAlternative : mrpAlternatives)
-					{
-						createDD_OrderLine_Alternative(ddOrderline, mrpAlternative);
-					}
-				}
-				final Timestamp supplyDateFinishSchedule = TimeUtil.asTimestamp(request.getDemandDate());
-
-				//
-				// Set Correct Planning Dates
-				final Timestamp supplyDateStartSchedule = TimeUtil.addDays(supplyDateFinishSchedule, 0 - linePojo.getDurationDays());
-
-				final List<I_PP_MRP> mrpList = mrpDAO.retrieveMRPRecords(ddOrderline);
-				for (final I_PP_MRP mrp : mrpList)
-				{
-					mrp.setDateStartSchedule(supplyDateStartSchedule);
-					mrp.setDateFinishSchedule(supplyDateFinishSchedule);
-					mrpDAO.save(mrp);
-				}
-			}
 		}
 
 		return ddOrderRecord;
-	}
-
-	private void createDD_OrderLine_Alternative(
-			final I_DD_OrderLine ddOrderLine,
-			final I_PP_MRP_Alternative mrpAlternative)
-	{
-		final I_DD_OrderLine_Alternative ddOrderLineAlt = InterfaceWrapperHelper.newInstance(I_DD_OrderLine_Alternative.class, ddOrderLine);
-		ddOrderLineAlt.setAD_Org_ID(mrpAlternative.getAD_Org_ID());
-		ddOrderLineAlt.setDD_OrderLine(ddOrderLine);
-
-		final I_M_Product product = mrpAlternative.getM_Product();
-		final I_C_UOM uom = mrpBL.getC_UOM(mrpAlternative);
-		final BigDecimal qty = mrpAlternative.getQty();
-
-		ddOrderLineAlt.setM_Product(product);
-		ddOrderLineAlt.setM_AttributeSetInstance(ddOrderLine.getM_AttributeSetInstance());
-		ddOrderLineAlt.setC_UOM(uom);
-		ddOrderLineAlt.setQtyOrdered(qty);
-		ddOrderLineAlt.setQtyDelivered(BigDecimal.ZERO);
-		ddOrderLineAlt.setQtyInTransit(BigDecimal.ZERO);
-
-		ddOrdersRepo.save(ddOrderLineAlt);
 	}
 
 	private DocTypeId getDocTypeId(final OrgId orgId)

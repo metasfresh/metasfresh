@@ -110,6 +110,8 @@ public class ModelInterfaceGenerator
 			//
 			.add("org.compiere.model.I_AD_Note")
 			.add("org.compiere.model.I_AD_Table")
+			.add("org.compiere.model.I_AD_Message")
+			.add("org.compiere.model.I_AD_Issue")
 			.add("org.compiere.model.I_C_Activity")
 			.add("org.compiere.model.I_C_Charge")
 			//
@@ -119,6 +121,20 @@ public class ModelInterfaceGenerator
 			.add("de.metas.banking.model.I_C_BankStatementLine_Ref")
 			.add("org.compiere.model.I_C_BP_BankAccount")
 			.add("org.compiere.model.I_C_Bank")
+			//
+			.add("org.compiere.model.I_AD_WF_Activity")
+			.add("org.compiere.model.I_AD_WF_ActivityResult")
+			.add("org.compiere.model.I_AD_WF_Block")
+			.add("org.compiere.model.I_AD_WF_EventAudit")
+			.add("org.compiere.model.I_AD_WF_NextCondition")
+			.add("org.compiere.model.I_AD_Workflow")
+			.add("org.compiere.model.I_AD_WF_Node")
+			.add("org.compiere.model.I_AD_WF_Node_Para")
+			.add("org.compiere.model.I_AD_WF_Node_Template")
+			.add("org.compiere.model.I_AD_WF_NodeNext")
+			.add("org.compiere.model.I_AD_WF_Process")
+			.add("org.compiere.model.I_AD_WF_ProcessData")
+			.add("org.compiere.model.I_AD_WF_Responsible")
 			//
 			.build();
 
@@ -169,7 +185,8 @@ public class ModelInterfaceGenerator
 		start.append("/** Generated Interface for ").append(tableName).append("\n")
 				.append(" *  @author metasfresh (generated) \n")
 				.append(" */\n")
-				.append("@SuppressWarnings(\"javadoc\")\n") // metas
+				//.append("@SuppressWarnings(\"javadoc\")\n")  // commented out because it gives warnings in intelliJ
+				.append("@SuppressWarnings(\"unused\")\n")
 				.append("public interface ").append(className).append(" {").append("\n")
 
 				.append("\tString Table_Name = \"").append(tableName).append("\";\n");
@@ -270,6 +287,7 @@ public class ModelInterfaceGenerator
 
 			final NullableType nullableType = dataTypeInfo.getNullableValueSetter();
 			addImportClasses(nullableType.getClassesToImport());
+			addImportClass(dataTypeInfo);
 
 			generateJavaComment(sb, columnInfo, "Set", deprecatedSetter);
 			appendDeprecatedIfNotNull(sb, deprecatedSetter);
@@ -289,6 +307,7 @@ public class ModelInterfaceGenerator
 
 			final NullableType nullableType = dataTypeInfo.getNullableValueGetter();
 			addImportClasses(nullableType.getClassesToImport());
+			addImportClass(dataTypeInfo);
 
 			generateJavaComment(sb, columnInfo, "Get", deprecatedGetter);
 			appendDeprecatedIfNotNull(sb, deprecatedGetter);
@@ -551,9 +570,6 @@ public class ModelInterfaceGenerator
 		}
 	}
 
-	/**
-	 * Add class to class import list
-	 */
 	private void addImportClass(@NonNull final Class<?> clazz)
 	{
 		Class<?> actualClass = clazz;
@@ -567,6 +583,20 @@ public class ModelInterfaceGenerator
 		}
 
 		addImportClass(actualClass.getCanonicalName());
+	}
+
+	private void addImportClass(@NonNull final DataTypeInfo dataTypeInfo)
+	{
+		if(dataTypeInfo.isJavaCodeFullyQualified())
+		{
+			return;
+		}
+		if(dataTypeInfo.isPrimitiveType())
+		{
+			return;
+		}
+
+		addImportClass(dataTypeInfo.getTypeClass());
 	}
 
 	/**

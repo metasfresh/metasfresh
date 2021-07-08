@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -23,7 +24,6 @@ import de.metas.contracts.model.X_C_SubscriptionProgress;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -83,7 +83,7 @@ public class SubscriptionShipmentScheduleHandler_RetrieveModelsWithMissingCandid
 
 		secondRecord = newInstance(I_C_SubscriptionProgress.class);
 		secondRecord.setC_Flatrate_Term(secondTerm);
-		secondRecord.setEventDate(TimeUtil.addDays(SystemTime.asTimestamp(), 4));
+		secondRecord.setEventDate(TimeUtil.addDays(de.metas.common.util.time.SystemTime.asTimestamp(), 4));
 		secondRecord.setEventType(X_C_SubscriptionProgress.EVENTTYPE_Delivery);
 		secondRecord.setStatus(X_C_SubscriptionProgress.STATUS_Planned);
 		save(secondRecord);

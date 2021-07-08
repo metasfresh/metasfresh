@@ -26,7 +26,7 @@ import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

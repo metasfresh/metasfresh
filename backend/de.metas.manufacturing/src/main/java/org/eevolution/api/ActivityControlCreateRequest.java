@@ -5,11 +5,11 @@ import java.time.ZonedDateTime;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.eevolution.model.I_PP_Order;
 
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,12 +39,12 @@ import lombok.Value;
 @Value
 public class ActivityControlCreateRequest
 {
-	I_PP_Order order;
-	PPOrderRoutingActivity orderActivity;
-	ZonedDateTime movementDate;
-	Quantity qtyMoved;
-	Duration durationSetup;
-	Duration duration;
+	@NonNull I_PP_Order order;
+	@NonNull PPOrderRoutingActivity orderActivity;
+	@NonNull ZonedDateTime movementDate;
+	@NonNull Quantity qtyMoved;
+	@NonNull Duration durationSetup;
+	@NonNull Duration duration;
 
 	@Builder
 	private ActivityControlCreateRequest(

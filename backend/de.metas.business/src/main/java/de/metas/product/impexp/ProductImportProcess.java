@@ -1,12 +1,8 @@
-package de.metas.product.impexp;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +19,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.product.impexp;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -122,8 +122,8 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 
 	@Override
 	protected ImportRecordResult importRecord(
-			final IMutable<Object> state_NOTUSED,
-			final I_I_Product importRecord,
+			final @NonNull IMutable<Object> state_NOTUSED,
+			final @NonNull I_I_Product importRecord,
 			final boolean isInsertOnly)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;

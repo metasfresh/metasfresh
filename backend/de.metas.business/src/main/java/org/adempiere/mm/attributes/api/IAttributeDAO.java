@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -187,7 +188,7 @@ public interface IAttributeDAO extends ISingletonService
 	/**
 	 * @return attribute; never return null
 	 */
-	default I_M_Attribute retrieveAttributeByValue(final AttributeCode attributeCode)
+	default I_M_Attribute retrieveAttributeByValue(@NonNull final AttributeCode attributeCode)
 	{
 		return retrieveAttributeByValue(attributeCode, I_M_Attribute.class);
 	}
@@ -195,9 +196,16 @@ public interface IAttributeDAO extends ISingletonService
 	/**
 	 * @return attribute; never return null
 	 */
-	default I_M_Attribute retrieveAttributeByValue(final String value)
+	default I_M_Attribute retrieveAttributeByValue(@NonNull final String value)
 	{
 		return retrieveAttributeByValue(AttributeCode.ofString(value), I_M_Attribute.class);
+	}
+
+	<T extends I_M_Attribute> T retrieveAttributeByValueOrNull(AttributeCode attributeCode, Class<T> clazz);
+
+	default I_M_Attribute retrieveAttributeByValueOrNull(@NonNull final AttributeCode attributeCode)
+	{
+		return retrieveAttributeByValueOrNull(attributeCode, I_M_Attribute.class);
 	}
 
 	/**

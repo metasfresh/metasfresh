@@ -20,7 +20,7 @@ import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAudit;
 import de.metas.manufacturing.order.exportaudit.ManufacturingOrderExportAuditItem;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.AccessLevel;

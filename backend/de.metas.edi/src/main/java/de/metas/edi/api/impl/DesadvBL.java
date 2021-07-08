@@ -9,6 +9,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -28,15 +29,18 @@ import de.metas.handlingunits.attributes.sscc18.SSCC18;
 import de.metas.handlingunits.generichumodel.HU;
 import de.metas.handlingunits.generichumodel.HURepository;
 import de.metas.handlingunits.generichumodel.PackagingCode;
+import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.organization.OrgId;
@@ -70,7 +74,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -83,7 +89,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isEmpty;
+import static de.metas.util.Check.isNotBlank;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -94,6 +102,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Service
 public class DesadvBL implements IDesadvBL
 {
+	private final static transient Logger logger = LogManager.getLogger(DesadvBL.class);
+
 	private static final AdMessageKey MSG_EDI_DESADV_RefuseSending = AdMessageKey.of("EDI_DESADV_RefuseSending");
 
 	/**
@@ -117,11 +127,19 @@ public class DesadvBL implements IDesadvBL
 	private final transient ISSCC18CodeBL sscc18CodeService = Services.get(ISSCC18CodeBL.class);
 	private final transient HURepository huRepository;
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 
 	// @VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
 	{
 		this.huRepository = huRepository;
+	}
+
+	@Override
+	public List<I_EDI_DesadvLine> retrieveLinesByIds(final Collection<Integer> desadvLineIds)
+	{
+		return desadvDAO.retrieveLinesByIds(desadvLineIds);
 	}
 
 	@Override
@@ -301,8 +319,7 @@ public class DesadvBL implements IDesadvBL
 			desadv.setDropShip_BPartner_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_BPartner_ID(), order.getC_BPartner_ID()));
 			desadv.setDropShip_Location_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()));
 
-			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationIdOrNull(order)));
-
+			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationId(order)));
 			// note: the minimal acceptable fulfillment is currently set by a model interceptor
 			InterfaceWrapperHelper.save(desadv);
 		}
@@ -344,6 +361,8 @@ public class DesadvBL implements IDesadvBL
 
 		inOut.setEDI_Desadv(desadv);
 
+		final BPartnerId recipientBPartnerId = BPartnerId.ofRepoId(inOut.getC_BPartner_ID());
+
 		final List<I_M_InOutLine> inOutLines = inOutDAO.retrieveLines(inOut, I_M_InOutLine.class);
 		for (final I_M_InOutLine inOutLine : inOutLines)
 		{
@@ -351,13 +370,15 @@ public class DesadvBL implements IDesadvBL
 			{
 				continue;
 			}
-			addInOutLine(inOutLine);
+			addInOutLine(inOutLine, recipientBPartnerId);
 		}
 		return desadv;
 	}
 
 	@VisibleForTesting
-	void addInOutLine(@NonNull final I_M_InOutLine inOutLineRecord)
+	void addInOutLine(
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final BPartnerId recipientBPartnerId)
 	{
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 		final I_EDI_DesadvLine desadvLineRecord = orderLineRecord.getEDI_DesadvLine();
@@ -370,7 +391,7 @@ public class DesadvBL implements IDesadvBL
 		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord);
 		for (final I_M_HU topLevelHU : topLevelHUs)
 		{
-			final StockQtyAndUOMQty addedPackQty = addPackRecordToLineUsingHU(desadvLineRecord, inOutLineRecord, topLevelHU);
+			final StockQtyAndUOMQty addedPackQty = addPackRecordToLineUsingHU(desadvLineRecord, inOutLineRecord, topLevelHU, recipientBPartnerId);
 			remainingQtyToAdd = StockQtyAndUOMQtys.subtract(remainingQtyToAdd, addedPackQty);
 		}
 
@@ -421,11 +442,13 @@ public class DesadvBL implements IDesadvBL
 		final I_C_Order orderRecord = create(orderLineRecord.getC_Order(), I_C_Order.class);
 		final I_M_HU_PI_Item_Product tuPIItemProduct = extractHUPIItemProduct(orderRecord, orderLineRecord);
 
+		final BPartnerId bpartnerId = BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID());
+
 		final I_M_HU_LUTU_Configuration lutuConfigurationInStockUOM = lutuConfigurationFactory.createLUTUConfiguration(
 				tuPIItemProduct,
 				productId,
 				qtyToAdd.getStockQty().getUomId(),
-				BPartnerId.ofRepoId(orderRecord.getC_BPartner_ID()),
+				bpartnerId,
 				false/* noLUForVirtualTU */);
 
 		final StockQtyAndUOMQty maxQtyCUsPerLU;
@@ -484,12 +507,32 @@ public class DesadvBL implements IDesadvBL
 			packRecord.setIPA_SSCC18(sscc18);
 			packRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
 
-			// PackagingCodes
+			// PackagingCodes and PackagingGTINs
 			final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
 			packRecord.setM_HU_PackagingCode_LU_ID(packagingCodeLU_ID);
+			packRecord.setGTIN_LU_PackingMaterial(tuPIItemProduct.getGTIN_LU_PackingMaterial_Fallback());
 
 			final int packagingCodeTU_ID = tuPIItemProduct.getM_HU_PI_Item().getM_HU_PI_Version().getM_HU_PackagingCode_ID();
 			packRecord.setM_HU_PackagingCode_TU_ID(packagingCodeTU_ID);
+
+			final List<I_M_HU_PackingMaterial> huPackingMaterials = packingMaterialDAO.retrievePackingMaterials(tuPIItemProduct);
+			if (huPackingMaterials.size() == 1)
+			{
+				final I_C_BPartner_Product bPartnerProductRecord = partnerProductDAO
+						.retrieveBPartnerProductAssociation(Env.getCtx(),
+								bpartnerId,
+								ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
+								OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
+				if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
+				{
+					packRecord.setGTIN_TU_PackingMaterial(bPartnerProductRecord.getGTIN());
+				}
+			}
+			else
+			{
+				logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_DesadvLine_Pack_ID={}",
+						tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), packRecord.getEDI_DesadvLine_Pack_ID());
+			}
 
 			final StockQtyAndUOMQty qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
 
@@ -508,13 +551,14 @@ public class DesadvBL implements IDesadvBL
 	private String computeSSCC18(@NonNull final OrgId orgId)
 	{
 		final SSCC18 sscc18 = sscc18CodeService.generate(orgId);
-		return sscc18CodeService.toString(sscc18, false);
+		return sscc18.asString();
 	}
 
 	private StockQtyAndUOMQty addPackRecordToLineUsingHU(
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
 			@NonNull final I_M_InOutLine inOutLineRecord,
-			@NonNull final I_M_HU huRecord)
+			@NonNull final I_M_HU huRecord,
+			@NonNull final BPartnerId bPartnerId)
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
 
@@ -565,20 +609,9 @@ public class DesadvBL implements IDesadvBL
 			packRecord.setIsManual_IPA_SSCC18(false);
 		}
 
-		final Optional<PackagingCode> packagingCode = rootHU.getPackagingCode();
-		if (packagingCode.isPresent())
-		{
-			packRecord.setM_HU_PackagingCode_LU_ID(packagingCode.get().getId().getRepoId());
+		extractAndSetPackagingCodes(rootHU, packRecord);
+		extractAndSetPackagingGTINs(rootHU, bPartnerId, packRecord);
 
-			final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
-					rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
-					hu -> hu.getPackagingCode().orElse(null),
-					null);
-			if (tuPackagingCode != null)
-			{
-				packRecord.setM_HU_PackagingCode_TU_ID(tuPackagingCode.getId().getRepoId());
-			}
-		}
 		packRecord.setQtyTU(rootHU.getChildHUs().size());
 
 		// note that rootHU only contains children, quantities and weights for productId
@@ -606,10 +639,52 @@ public class DesadvBL implements IDesadvBL
 		return quantity;
 	}
 
+	private void extractAndSetPackagingCodes(
+			@NonNull final HU rootHU,
+			@NonNull final I_EDI_DesadvLine_Pack packRecord)
+	{
+		final Optional<PackagingCode> packagingCode = rootHU.getPackagingCode();
+		if (packagingCode.isPresent())
+		{
+			packRecord.setM_HU_PackagingCode_LU_ID(packagingCode.get().getId().getRepoId());
+		}
+
+		final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
+				rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
+				hu -> hu.getPackagingCode().orElse(PackagingCode.NONE), // don't use null because CollectionUtils runs with ImmutableList
+				PackagingCode.NONE);
+		if (!tuPackagingCode.isNone())
+		{
+			packRecord.setM_HU_PackagingCode_TU_ID(tuPackagingCode.getId().getRepoId());
+		}
+	}
+
+	private void extractAndSetPackagingGTINs(
+			@NonNull final HU rootHU,
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final I_EDI_DesadvLine_Pack packRecord)
+	{
+		final String packagingGTIN = rootHU.getPackagingGTINs().get(bPartnerId);
+		if (isNotBlank(packagingGTIN))
+		{
+			packRecord.setGTIN_LU_PackingMaterial(packagingGTIN);
+		}
+
+		final String tuPackagingGTIN = CollectionUtils.extractSingleElementOrDefault(
+				rootHU.getChildHUs(), // don't iterate all HUs; we just care for the level below our LU (aka TU level).
+				hu -> coalesce(hu.getPackagingGTINs().get(bPartnerId), ""),
+				"");
+		if (isNotBlank(tuPackagingGTIN))
+		{
+			packRecord.setGTIN_TU_PackingMaterial(tuPackagingGTIN);
+		}
+
+	}
+
 	private String computeSSCC18ForHUId(@NonNull final OrgId orgId, @NonNull final HuId huId)
 	{
 		final SSCC18 sscc18 = sscc18CodeService.generate(orgId, huId.getRepoId());
-		return sscc18CodeService.toString(sscc18, false);
+		return sscc18.asString();
 	}
 
 	private I_EDI_DesadvLine_Pack createNewPackRecord(@NonNull final I_EDI_DesadvLine desadvLineRecord)
@@ -891,7 +966,7 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public ReportResultData printSSCC18_Labels(
 			@NonNull final Properties ctx,
-			@NonNull final Collection<Integer> desadvLinePack_IDs_ToPrint)
+			@NonNull final Collection<EDIDesadvLinePackId> desadvLinePack_IDs_ToPrint)
 	{
 		Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
 
@@ -915,11 +990,7 @@ public class DesadvBL implements IDesadvBL
 				.executeSync()
 				.getResult();
 
-		return ReportResultData.builder()
-				.reportData(result.getReportData())
-				.reportFilename(result.getReportFilename())
-				.reportContentType(result.getReportContentType())
-				.build();
+		return result.getReportData();
 	}
 
 	@Override

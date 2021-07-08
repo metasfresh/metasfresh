@@ -76,7 +76,7 @@ public class SubscriptionPricingTestHelper extends PricingTestHelper
 	public final I_C_Flatrate_Conditions createFlatrateTermConditions()
 	{
 		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
-		flatrateConditions.setM_PricingSystem(getDefaultPricingSystem());
+		flatrateConditions.setM_PricingSystem_ID(getDefaultPricingSystem().getM_PricingSystem_ID());
 		save(flatrateConditions);
 		return flatrateConditions;
 	}

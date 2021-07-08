@@ -9,6 +9,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionService;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
@@ -29,7 +31,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGa
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -61,6 +62,8 @@ public class PurchaseCandidateRepositoryTest
 
 	private ReferenceGenerator referenceGenerator;
 
+	private DimensionService dimensionService;
+
 	private PurchaseCandidateRepository purchaseCandidateRepository;
 
 	private I_C_UOM uom;
@@ -76,10 +79,13 @@ public class PurchaseCandidateRepositoryTest
 
 		referenceGenerator = Mockito.mock(ReferenceGenerator.class);
 
+		dimensionService = Mockito.mock(DimensionService.class);
+
 		purchaseCandidateRepository = new PurchaseCandidateRepository(
 				new PurchaseItemRepository(),
 				referenceGenerator,
-				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()));
+				new BPPurchaseScheduleService(new BPPurchaseScheduleRepository()),
+				dimensionService);
 
 		uom = newInstance(I_C_UOM.class);
 		saveRecord(uom);
@@ -93,11 +99,13 @@ public class PurchaseCandidateRepositoryTest
 		purchaseCandidateRecord.setVendor_ID(VENDOR_ID);
 		purchaseCandidateRecord.setProcessed(true);
 		purchaseCandidateRecord.setM_WarehousePO_ID(30);
-		purchaseCandidateRecord.setM_Product(productRecord);
+		purchaseCandidateRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		purchaseCandidateRecord.setDemandReference("DemandReference");
-		purchaseCandidateRecord.setC_UOM(uom);
+		purchaseCandidateRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		purchaseCandidateRecord.setQtyToPurchase(TEN);
 		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
+		purchaseCandidateRecord.setExternalHeaderId("H1");
+		purchaseCandidateRecord.setExternalLineId("H1");
 		saveRecord(purchaseCandidateRecord);
 	}
 
@@ -142,7 +150,7 @@ public class PurchaseCandidateRepositoryTest
 		purchaseCandidateAllocRecord.setC_PurchaseCandidate(purchaseCandidateRecord);
 		purchaseCandidateAllocRecord.setC_OrderPO_ID(purchaseOrderLineRecord.getC_Order_ID());
 		purchaseCandidateAllocRecord.setC_OrderLinePO(purchaseOrderLineRecord);
-		purchaseCandidateAllocRecord.setDatePromised(SystemTime.asTimestamp());
+		purchaseCandidateAllocRecord.setDatePromised(de.metas.common.util.time.SystemTime.asTimestamp());
 		purchaseCandidateAllocRecord.setRemotePurchaseOrderId(NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		saveRecord(purchaseCandidateAllocRecord);
 

@@ -1,62 +1,54 @@
 package org.eevolution.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PP_Product_Planning
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_PP_Product_Planning 
 {
 
-    /** TableName=PP_Product_Planning */
-    public static final String Table_Name = "PP_Product_Planning";
+	String Table_Name = "PP_Product_Planning";
 
-    /** AD_Table_ID=53020 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=53020 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Workflow.
@@ -66,7 +58,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Workflow_ID (int AD_Workflow_ID);
+	void setAD_Workflow_ID (int AD_Workflow_ID);
 
 	/**
 	 * Get Workflow.
@@ -76,67 +68,54 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Workflow_ID();
+	int getAD_Workflow_ID();
 
-	public org.compiere.model.I_AD_Workflow getAD_Workflow();
-
-	public void setAD_Workflow(org.compiere.model.I_AD_Workflow AD_Workflow);
-
-    /** Column definition for AD_Workflow_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_Workflow> COLUMN_AD_Workflow_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_AD_Workflow>(I_PP_Product_Planning.class, "AD_Workflow_ID", org.compiere.model.I_AD_Workflow.class);
-    /** Column name AD_Workflow_ID */
-    public static final String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
+	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Created = new ModelColumn<>(I_PP_Product_Planning.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Network Distribution.
@@ -145,7 +124,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDD_NetworkDistribution_ID (int DD_NetworkDistribution_ID);
+	void setDD_NetworkDistribution_ID (int DD_NetworkDistribution_ID);
 
 	/**
 	 * Get Network Distribution.
@@ -154,16 +133,14 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDD_NetworkDistribution_ID();
+	int getDD_NetworkDistribution_ID();
 
-	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution();
+	@Nullable org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution();
 
-	public void setDD_NetworkDistribution(org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution);
+	void setDD_NetworkDistribution(@Nullable org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution);
 
-    /** Column definition for DD_NetworkDistribution_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.eevolution.model.I_DD_NetworkDistribution> COLUMN_DD_NetworkDistribution_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.eevolution.model.I_DD_NetworkDistribution>(I_PP_Product_Planning.class, "DD_NetworkDistribution_ID", org.eevolution.model.I_DD_NetworkDistribution.class);
-    /** Column name DD_NetworkDistribution_ID */
-    public static final String COLUMNNAME_DD_NetworkDistribution_ID = "DD_NetworkDistribution_ID";
+	ModelColumn<I_PP_Product_Planning, org.eevolution.model.I_DD_NetworkDistribution> COLUMN_DD_NetworkDistribution_ID = new ModelColumn<>(I_PP_Product_Planning.class, "DD_NetworkDistribution_ID", org.eevolution.model.I_DD_NetworkDistribution.class);
+	String COLUMNNAME_DD_NetworkDistribution_ID = "DD_NetworkDistribution_ID";
 
 	/**
 	 * Set Zugesicherte Lieferzeit.
@@ -173,7 +150,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryTime_Promised (java.math.BigDecimal DeliveryTime_Promised);
+	void setDeliveryTime_Promised (@Nullable BigDecimal DeliveryTime_Promised);
 
 	/**
 	 * Get Zugesicherte Lieferzeit.
@@ -183,37 +160,33 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getDeliveryTime_Promised();
+	BigDecimal getDeliveryTime_Promised();
 
-    /** Column definition for DeliveryTime_Promised */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_DeliveryTime_Promised = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "DeliveryTime_Promised", null);
-    /** Column name DeliveryTime_Promised */
-    public static final String COLUMNNAME_DeliveryTime_Promised = "DeliveryTime_Promised";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_DeliveryTime_Promised = new ModelColumn<>(I_PP_Product_Planning.class, "DeliveryTime_Promised", null);
+	String COLUMNNAME_DeliveryTime_Promised = "DeliveryTime_Promised";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsActive = new ModelColumn<>(I_PP_Product_Planning.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Attributabhängig.
@@ -222,7 +195,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAttributeDependant (boolean IsAttributeDependant);
+	void setIsAttributeDependant (boolean IsAttributeDependant);
 
 	/**
 	 * Get Attributabhängig.
@@ -231,62 +204,56 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAttributeDependant();
+	boolean isAttributeDependant();
 
-    /** Column definition for IsAttributeDependant */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsAttributeDependant = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsAttributeDependant", null);
-    /** Column name IsAttributeDependant */
-    public static final String COLUMNNAME_IsAttributeDependant = "IsAttributeDependant";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsAttributeDependant = new ModelColumn<>(I_PP_Product_Planning.class, "IsAttributeDependant", null);
+	String COLUMNNAME_IsAttributeDependant = "IsAttributeDependant";
 
 	/**
-	 * Set Beleg erstellen.
+	 * Set Create Plan.
 	 * Legt fest, ob das System die betreffenden Belege (z.B. Produktionsaufträge) gegebenenfalls direkt erstellen soll.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCreatePlan (boolean IsCreatePlan);
+	void setIsCreatePlan (boolean IsCreatePlan);
 
 	/**
-	 * Get Beleg erstellen.
+	 * Get Create Plan.
 	 * Legt fest, ob das System die betreffenden Belege (z.B. Produktionsaufträge) gegebenenfalls direkt erstellen soll.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCreatePlan();
+	boolean isCreatePlan();
 
-    /** Column definition for IsCreatePlan */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsCreatePlan = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsCreatePlan", null);
-    /** Column name IsCreatePlan */
-    public static final String COLUMNNAME_IsCreatePlan = "IsCreatePlan";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsCreatePlan = new ModelColumn<>(I_PP_Product_Planning.class, "IsCreatePlan", null);
+	String COLUMNNAME_IsCreatePlan = "IsCreatePlan";
 
 	/**
-	 * Set Beleg fertig stellen.
+	 * Set Complete Document.
 	 * Legt fest, ob ggf erstellte Belege (z.B. Produktionsaufträge) auch direkt automatisch fertig gestellt werden sollen.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDocComplete (boolean IsDocComplete);
+	void setIsDocComplete (boolean IsDocComplete);
 
 	/**
-	 * Get Beleg fertig stellen.
+	 * Get Complete Document.
 	 * Legt fest, ob ggf erstellte Belege (z.B. Produktionsaufträge) auch direkt automatisch fertig gestellt werden sollen.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDocComplete();
+	boolean isDocComplete();
 
-    /** Column definition for IsDocComplete */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsDocComplete = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsDocComplete", null);
-    /** Column name IsDocComplete */
-    public static final String COLUMNNAME_IsDocComplete = "IsDocComplete";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsDocComplete = new ModelColumn<>(I_PP_Product_Planning.class, "IsDocComplete", null);
+	String COLUMNNAME_IsDocComplete = "IsDocComplete";
 
 	/**
 	 * Set Wird produziert.
@@ -295,7 +262,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsManufactured (java.lang.String IsManufactured);
+	void setIsManufactured (@Nullable java.lang.String IsManufactured);
 
 	/**
 	 * Get Wird produziert.
@@ -304,12 +271,10 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIsManufactured();
+	@Nullable java.lang.String getIsManufactured();
 
-    /** Column definition for IsManufactured */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsManufactured = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsManufactured", null);
-    /** Column name IsManufactured */
-    public static final String COLUMNNAME_IsManufactured = "IsManufactured";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsManufactured = new ModelColumn<>(I_PP_Product_Planning.class, "IsManufactured", null);
+	String COLUMNNAME_IsManufactured = "IsManufactured";
 
 	/**
 	 * Set Is MPS.
@@ -318,7 +283,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsMPS (boolean IsMPS);
+	void setIsMPS (boolean IsMPS);
 
 	/**
 	 * Get Is MPS.
@@ -327,12 +292,10 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isMPS();
+	boolean isMPS();
 
-    /** Column definition for IsMPS */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsMPS = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsMPS", null);
-    /** Column name IsMPS */
-    public static final String COLUMNNAME_IsMPS = "IsMPS";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsMPS = new ModelColumn<>(I_PP_Product_Planning.class, "IsMPS", null);
+	String COLUMNNAME_IsMPS = "IsMPS";
 
 	/**
 	 * Set Sofort Kommissionieren wenn möglich.
@@ -342,7 +305,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible);
+	void setIsPickDirectlyIfFeasible (boolean IsPickDirectlyIfFeasible);
 
 	/**
 	 * Get Sofort Kommissionieren wenn möglich.
@@ -352,135 +315,167 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPickDirectlyIfFeasible();
+	boolean isPickDirectlyIfFeasible();
 
-    /** Column definition for IsPickDirectlyIfFeasible */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPickDirectlyIfFeasible = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPickDirectlyIfFeasible", null);
-    /** Column name IsPickDirectlyIfFeasible */
-    public static final String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPickDirectlyIfFeasible = new ModelColumn<>(I_PP_Product_Planning.class, "IsPickDirectlyIfFeasible", null);
+	String COLUMNNAME_IsPickDirectlyIfFeasible = "IsPickDirectlyIfFeasible";
 
 	/**
-	 * Set Kommissionierauftrag.
+	 * Set Picking Order.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPickingOrder (boolean IsPickingOrder);
+	void setIsPickingOrder (boolean IsPickingOrder);
 
 	/**
-	 * Get Kommissionierauftrag.
+	 * Get Picking Order.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPickingOrder();
+	boolean isPickingOrder();
 
-    /** Column definition for IsPickingOrder */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPickingOrder = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPickingOrder", null);
-    /** Column name IsPickingOrder */
-    public static final String COLUMNNAME_IsPickingOrder = "IsPickingOrder";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPickingOrder = new ModelColumn<>(I_PP_Product_Planning.class, "IsPickingOrder", null);
+	String COLUMNNAME_IsPickingOrder = "IsPickingOrder";
 
 	/**
-	 * Set Wird Eingekauft.
+	 * Set Eingekauft.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPurchased (java.lang.String IsPurchased);
+	void setIsPurchased (@Nullable java.lang.String IsPurchased);
 
 	/**
-	 * Get Wird Eingekauft.
+	 * Get Eingekauft.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIsPurchased();
+	@Nullable java.lang.String getIsPurchased();
 
-    /** Column definition for IsPurchased */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPurchased = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsPurchased", null);
-    /** Column name IsPurchased */
-    public static final String COLUMNNAME_IsPurchased = "IsPurchased";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsPurchased = new ModelColumn<>(I_PP_Product_Planning.class, "IsPurchased", null);
+	String COLUMNNAME_IsPurchased = "IsPurchased";
 
 	/**
-	 * Set Wird gehandelt (Bestellkontrolle).
-	 * Legt fest, ob mit dem bestreffenden Produkt gehandelt wird.
+	 * Set Trading Product.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsTraded (java.lang.String IsTraded);
+	void setIsTraded (@Nullable java.lang.String IsTraded);
 
 	/**
-	 * Get Wird gehandelt (Bestellkontrolle).
-	 * Legt fest, ob mit dem bestreffenden Produkt gehandelt wird.
+	 * Get Trading Product.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIsTraded();
+	@Nullable java.lang.String getIsTraded();
 
-    /** Column definition for IsTraded */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsTraded = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "IsTraded", null);
-    /** Column name IsTraded */
-    public static final String COLUMNNAME_IsTraded = "IsTraded";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_IsTraded = new ModelColumn<>(I_PP_Product_Planning.class, "IsTraded", null);
+	String COLUMNNAME_IsTraded = "IsTraded";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSetInstance_ID();
+	int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeSetInstance>(I_PP_Product_Planning.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_PP_Product_Planning.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Max. quantity per manufactoring order.
+	 * Optional;
+ steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxManufacturedQtyPerOrder (@Nullable BigDecimal MaxManufacturedQtyPerOrder);
+
+	/**
+	 * Get Max. quantity per manufactoring order.
+	 * Optional;
+ steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMaxManufacturedQtyPerOrder();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_MaxManufacturedQtyPerOrder = new ModelColumn<>(I_PP_Product_Planning.class, "MaxManufacturedQtyPerOrder", null);
+	String COLUMNNAME_MaxManufacturedQtyPerOrder = "MaxManufacturedQtyPerOrder";
+
+	/**
+	 * Set Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxManufacturedQtyPerOrder_UOM_ID (int MaxManufacturedQtyPerOrder_UOM_ID);
+
+	/**
+	 * Get Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMaxManufacturedQtyPerOrder_UOM_ID();
+
+	String COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID = "MaxManufacturedQtyPerOrder_UOM_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Product Planning Schema.
@@ -489,7 +484,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_PlanningSchema_ID (int M_Product_PlanningSchema_ID);
+	void setM_Product_PlanningSchema_ID (int M_Product_PlanningSchema_ID);
 
 	/**
 	 * Get Product Planning Schema.
@@ -498,35 +493,32 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_PlanningSchema_ID();
+	int getM_Product_PlanningSchema_ID();
 
-    /** Column definition for M_Product_PlanningSchema_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_M_Product_PlanningSchema_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "M_Product_PlanningSchema_ID", null);
-    /** Column name M_Product_PlanningSchema_ID */
-    public static final String COLUMNNAME_M_Product_PlanningSchema_ID = "M_Product_PlanningSchema_ID";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_M_Product_PlanningSchema_ID = new ModelColumn<>(I_PP_Product_Planning.class, "M_Product_PlanningSchema_ID", null);
+	String COLUMNNAME_M_Product_PlanningSchema_ID = "M_Product_PlanningSchema_ID";
 
 	/**
-	 * Set Lager.
+	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
+	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
+	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Warehouse_ID();
+	int getM_Warehouse_ID();
 
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set OnMaterialReceiptWithDestWarehouse.
@@ -535,7 +527,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOnMaterialReceiptWithDestWarehouse (java.lang.String OnMaterialReceiptWithDestWarehouse);
+	void setOnMaterialReceiptWithDestWarehouse (@Nullable java.lang.String OnMaterialReceiptWithDestWarehouse);
 
 	/**
 	 * Get OnMaterialReceiptWithDestWarehouse.
@@ -544,12 +536,10 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getOnMaterialReceiptWithDestWarehouse();
+	@Nullable java.lang.String getOnMaterialReceiptWithDestWarehouse();
 
-    /** Column definition for OnMaterialReceiptWithDestWarehouse */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_OnMaterialReceiptWithDestWarehouse = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "OnMaterialReceiptWithDestWarehouse", null);
-    /** Column name OnMaterialReceiptWithDestWarehouse */
-    public static final String COLUMNNAME_OnMaterialReceiptWithDestWarehouse = "OnMaterialReceiptWithDestWarehouse";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_OnMaterialReceiptWithDestWarehouse = new ModelColumn<>(I_PP_Product_Planning.class, "OnMaterialReceiptWithDestWarehouse", null);
+	String COLUMNNAME_OnMaterialReceiptWithDestWarehouse = "OnMaterialReceiptWithDestWarehouse";
 
 	/**
 	 * Set Planner.
@@ -558,7 +548,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPlanner_ID (int Planner_ID);
+	void setPlanner_ID (int Planner_ID);
 
 	/**
 	 * Get Planner.
@@ -567,10 +557,9 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPlanner_ID();
+	int getPlanner_ID();
 
-    /** Column name Planner_ID */
-    public static final String COLUMNNAME_Planner_ID = "Planner_ID";
+	String COLUMNNAME_Planner_ID = "Planner_ID";
 
 	/**
 	 * Set BOM & Formula.
@@ -580,7 +569,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
+	void setPP_Product_BOM_ID (int PP_Product_BOM_ID);
 
 	/**
 	 * Get BOM & Formula.
@@ -590,16 +579,14 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Product_BOM_ID();
+	int getPP_Product_BOM_ID();
 
-	public org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM();
+	@Nullable org.eevolution.model.I_PP_Product_BOM getPP_Product_BOM();
 
-	public void setPP_Product_BOM(org.eevolution.model.I_PP_Product_BOM PP_Product_BOM);
+	void setPP_Product_BOM(@Nullable org.eevolution.model.I_PP_Product_BOM PP_Product_BOM);
 
-    /** Column definition for PP_Product_BOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.eevolution.model.I_PP_Product_BOM> COLUMN_PP_Product_BOM_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.eevolution.model.I_PP_Product_BOM>(I_PP_Product_Planning.class, "PP_Product_BOM_ID", org.eevolution.model.I_PP_Product_BOM.class);
-    /** Column name PP_Product_BOM_ID */
-    public static final String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
+	ModelColumn<I_PP_Product_Planning, org.eevolution.model.I_PP_Product_BOM> COLUMN_PP_Product_BOM_ID = new ModelColumn<>(I_PP_Product_Planning.class, "PP_Product_BOM_ID", org.eevolution.model.I_PP_Product_BOM.class);
+	String COLUMNNAME_PP_Product_BOM_ID = "PP_Product_BOM_ID";
 
 	/**
 	 * Set Product Planning.
@@ -608,7 +595,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPP_Product_Planning_ID (int PP_Product_Planning_ID);
+	void setPP_Product_Planning_ID (int PP_Product_Planning_ID);
 
 	/**
 	 * Get Product Planning.
@@ -617,12 +604,35 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPP_Product_Planning_ID();
+	int getPP_Product_Planning_ID();
 
-    /** Column definition for PP_Product_Planning_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_PP_Product_Planning_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "PP_Product_Planning_ID", null);
-    /** Column name PP_Product_Planning_ID */
-    public static final String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_PP_Product_Planning_ID = new ModelColumn<>(I_PP_Product_Planning.class, "PP_Product_Planning_ID", null);
+	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Product_Planning.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Ressource.
@@ -632,7 +642,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setS_Resource_ID (int S_Resource_ID);
+	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
 	 * Get Ressource.
@@ -642,43 +652,14 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getS_Resource_ID();
+	int getS_Resource_ID();
 
-	public org.compiere.model.I_S_Resource getS_Resource();
+	@Nullable org.compiere.model.I_S_Resource getS_Resource();
 
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
 
-    /** Column definition for S_Resource_ID */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource>(I_PP_Product_Planning.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name S_Resource_ID */
-    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setSeqNo (int SeqNo);
-
-	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getSeqNo();
-
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_PP_Product_Planning, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Product_Planning.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Set StorageAttributesKey (technical).
@@ -687,7 +668,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setStorageAttributesKey (java.lang.String StorageAttributesKey);
+	void setStorageAttributesKey (@Nullable java.lang.String StorageAttributesKey);
 
 	/**
 	 * Get StorageAttributesKey (technical).
@@ -696,12 +677,10 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getStorageAttributesKey();
+	@Nullable java.lang.String getStorageAttributesKey();
 
-    /** Column definition for StorageAttributesKey */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_StorageAttributesKey = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "StorageAttributesKey", null);
-    /** Column name StorageAttributesKey */
-    public static final String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_StorageAttributesKey = new ModelColumn<>(I_PP_Product_Planning.class, "StorageAttributesKey", null);
+	String COLUMNNAME_StorageAttributesKey = "StorageAttributesKey";
 
 	/**
 	 * Set Transfert Time.
@@ -710,7 +689,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setTransfertTime (java.math.BigDecimal TransfertTime);
+	void setTransfertTime (@Nullable BigDecimal TransfertTime);
 
 	/**
 	 * Get Transfert Time.
@@ -719,40 +698,35 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getTransfertTime();
+	BigDecimal getTransfertTime();
 
-    /** Column definition for TransfertTime */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_TransfertTime = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "TransfertTime", null);
-    /** Column name TransfertTime */
-    public static final String COLUMNNAME_TransfertTime = "TransfertTime";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_TransfertTime = new ModelColumn<>(I_PP_Product_Planning.class, "TransfertTime", null);
+	String COLUMNNAME_TransfertTime = "TransfertTime";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Updated = new ModelColumn<>(I_PP_Product_Planning.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Working Time.
@@ -762,7 +736,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWorkingTime (java.math.BigDecimal WorkingTime);
+	void setWorkingTime (@Nullable BigDecimal WorkingTime);
 
 	/**
 	 * Get Working Time.
@@ -772,12 +746,10 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getWorkingTime();
+	BigDecimal getWorkingTime();
 
-    /** Column definition for WorkingTime */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_WorkingTime = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "WorkingTime", null);
-    /** Column name WorkingTime */
-    public static final String COLUMNNAME_WorkingTime = "WorkingTime";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_WorkingTime = new ModelColumn<>(I_PP_Product_Planning.class, "WorkingTime", null);
+	String COLUMNNAME_WorkingTime = "WorkingTime";
 
 	/**
 	 * Set Yield %.
@@ -787,7 +759,7 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setYield (int Yield);
+	void setYield (int Yield);
 
 	/**
 	 * Get Yield %.
@@ -797,10 +769,8 @@ public interface I_PP_Product_Planning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getYield();
+	int getYield();
 
-    /** Column definition for Yield */
-    public static final org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object> COLUMN_Yield = new org.adempiere.model.ModelColumn<I_PP_Product_Planning, Object>(I_PP_Product_Planning.class, "Yield", null);
-    /** Column name Yield */
-    public static final String COLUMNNAME_Yield = "Yield";
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Product_Planning.class, "Yield", null);
+	String COLUMNNAME_Yield = "Yield";
 }

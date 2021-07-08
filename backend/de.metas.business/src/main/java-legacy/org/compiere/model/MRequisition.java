@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.pricing.PriceListId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -42,7 +43,6 @@ import de.metas.requisition.RequisitionRepository;
 import de.metas.requisition.RequisitionService;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Requisition Model

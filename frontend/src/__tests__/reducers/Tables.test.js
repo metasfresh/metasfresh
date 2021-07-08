@@ -171,7 +171,6 @@ describe('Tables reducer', () => {
         [id]: expect.objectContaining({
           activeSort: false,
           columns: [],
-          collapsedArrayMap: [],
           collapsedParentRows: [],
           collapsedRows: [],
           docId: '1000037',

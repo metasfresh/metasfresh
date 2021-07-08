@@ -81,7 +81,7 @@ public class AD_User_ChangePassword extends JavaProcess implements IProcessPreco
 		}
 
 		final I_AD_User user = Services.get(IUserDAO.class).retrieveUserOrNull(Env.getCtx(), adUserId);
-		final de.metas.adempiere.model.I_AD_User userSystem = InterfaceWrapperHelper.create(user, de.metas.adempiere.model.I_AD_User.class);
+		final I_AD_User userSystem = InterfaceWrapperHelper.create(user, I_AD_User.class);
 		if (!userSystem.isSystemUser())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("not a system user");

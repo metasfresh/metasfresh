@@ -1,7 +1,9 @@
 package de.metas.dimension;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -108,8 +110,6 @@ public class DimensionSpec
 	 * Create a new {@link I_M_AttributeSetInstance} containing instances for relevant attributes in dimensionSpec and values from the given asi.<br>
 	 * In other words, create a "projection" of the given asi, with respect to the given dimensionSpec.
 	 *
-	 * @param asi
-	 * @param dimensionSpec
 	 * @return the new ASI if at least one of the relevant attribute/value couple in the given ASI, null otherwise
 	 *
 	 * @deprecated this method does not correctly handle dimensions with multiple M_AttributeValue_IDs in one group and is also only used by an oboslete feature.
@@ -153,10 +153,6 @@ public class DimensionSpec
 	/**
 	 * Create {@link KeyNamePair}s of attribute IDs and values taken from the given <code>asi</code> that are relevant for the given dimensionSpec.
 	 * In case of <code>null</code> asi or attributes not found or attributes with non relevant values, their values will be set to {@link DimensionConstants#DIM_EMPTY}.
-	 *
-	 * @param asi
-	 * @param dimensionSpec
-	 * @return
 	 *
 	 * @deprecated this method does not correctly handle dimensions with multiple M_AttributeValue_IDs in one group and is also only used by an oboslete feature.
 	 */
@@ -411,6 +407,7 @@ public class DimensionSpec
 		final Collection<Entry<IPair<String, AttributeId>, Collection<AttributeValueId>>> //
 		entrySet = groupNameToAttributeValueIds.asMap().entrySet();
 
+		final ArrayList<DimensionSpecGroup> newGroups = new ArrayList<>();
 		for (final Entry<IPair<String, AttributeId>, Collection<AttributeValueId>> entry : entrySet)
 		{
 			final String groupName = entry.getKey().getLeft();
@@ -422,8 +419,11 @@ public class DimensionSpec
 					() -> groupNameTrl,
 					attributesKey,
 					groupAttributeId);
-			list.add(newGroup);
+			newGroups.add(newGroup);
 		}
+		
+		newGroups.sort(Comparator.comparing(DimensionSpecGroup::getAttributesKey));
+		list.addAll(newGroups);
 	}
 
 	private static AttributesKey createAttributesKey(final Collection<AttributeValueId> values)

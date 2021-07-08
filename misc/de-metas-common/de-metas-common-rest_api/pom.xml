@@ -115,6 +115,14 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- https://github.com/hoereth/springfox-enum-plugin -->
+        <dependency>
+            <groupId>de.pentabyte</groupId>
+            <artifactId>springfox-enum-plugin</artifactId>
+            <version>${springfox-enum-plugin.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>

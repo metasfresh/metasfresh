@@ -14,11 +14,13 @@ import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 
+import javax.annotation.Nullable;
+
 /**
  * {@link IAllocationRequest} builder. Use it to create modified instances of your immutable {@link IAllocationRequest}.
  *
  * @author tsa
- * @see AllocationUtils#createAllocationRequestBuilder()
+ * @see AllocationUtils#builder()
  * @see AllocationUtils#derive(IAllocationRequest)
  *
  */
@@ -35,9 +37,6 @@ public interface IAllocationRequestBuilder
 	 * Sets base {@link IAllocationRequest}.
 	 *
 	 * When building the new allocation request, if there are some values which were not set then those values are fetched from this allocation.
-	 *
-	 * @param baseAllocationRequest
-	 * @return this
 	 */
 	IAllocationRequestBuilder setBaseAllocationRequest(final IAllocationRequest baseAllocationRequest);
 
@@ -72,15 +71,15 @@ public interface IAllocationRequestBuilder
 	 * @param referenceModel model, {@link ITableRecordReference} or null
 	 * @return this
 	 */
-	IAllocationRequestBuilder setFromReferencedModel(Object referenceModel);
+	IAllocationRequestBuilder setFromReferencedModel(@Nullable Object referenceModel);
 
 	/**
 	 * Sets referenced model to be set to {@link IAllocationRequest} which will be created.
 	 *
-	 * @param referenceModel {@link ITableRecordReference} or null
+	 * @param fromReferencedTableRecord {@link ITableRecordReference} or null
 	 * @return this
 	 */
-	IAllocationRequestBuilder setFromReferencedTableRecord(TableRecordReference fromReferencedTableRecord);
+	IAllocationRequestBuilder setFromReferencedTableRecord(@Nullable TableRecordReference fromReferencedTableRecord);
 
 	IAllocationRequestBuilder addEmptyHUListener(EmptyHUListener emptyHUListener);
 }

@@ -163,11 +163,6 @@ public class OrderFreightCostsService
 				Env.getClientId(),
 				Env.getOrgId());
 
-		if (freightAmtConverted == null)
-		{
-			throw new AdempiereException("Please, add a conversion between the following currencies: " + freightCostCurrencyId + ", " + orderCurrencyId);
-		}
-
 		final Money convertedFreightAmt = Money.of(freightAmtConverted, orderCurrencyId);
 
 		return convertedFreightAmt;

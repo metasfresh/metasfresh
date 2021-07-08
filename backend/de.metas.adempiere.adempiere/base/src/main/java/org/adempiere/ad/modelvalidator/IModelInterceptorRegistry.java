@@ -28,6 +28,8 @@ import org.compiere.model.I_AD_Client;
 
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 /**
  * Service used to register model interceptors
  * 
@@ -51,5 +53,5 @@ public interface IModelInterceptorRegistry extends ISingletonService
 	 * @param interceptorObj interceptor annotated with {@link Interceptor} or which is implementing {@link IModelInterceptor}.
 	 * @param client tenant on which we register given interceptor
 	 */
-	void addModelInterceptor(Object interceptorObj, I_AD_Client client);
+	void addModelInterceptor(Object interceptorObj, @Nullable I_AD_Client client);
 }

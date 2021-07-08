@@ -1,17 +1,16 @@
 package org.eevolution.api;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -46,12 +45,13 @@ public class PPOrderRoutingActivityId implements RepoIdAware
 		return new PPOrderRoutingActivityId(orderId, repoId);
 	}
 
+	@Nullable
 	public static PPOrderRoutingActivityId ofRepoIdOrNull(@NonNull final PPOrderId orderId, final int repoId)
 	{
 		return repoId > 0 ? new PPOrderRoutingActivityId(orderId, repoId) : null;
 	}
 
-	public static int toRepoId(final PPOrderRoutingActivityId id)
+	public static int toRepoId(@Nullable final PPOrderRoutingActivityId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
@@ -71,7 +71,7 @@ public class PPOrderRoutingActivityId implements RepoIdAware
 		return getRepoId();
 	}
 
-	public static boolean equals(final PPOrderRoutingActivityId id1, final PPOrderRoutingActivityId id2)
+	public static boolean equals(@Nullable final PPOrderRoutingActivityId id1, @Nullable final PPOrderRoutingActivityId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

@@ -1,14 +1,7 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice;
 
-import java.util.Optional;
-
-import org.compiere.model.I_C_Invoice;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import ch.qos.logback.classic.Level;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
@@ -18,11 +11,17 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfig;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ExportConfigRepository;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import lombok.NonNull;
+import org.compiere.model.I_C_Invoice;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -73,7 +72,7 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 	@Override
 	public Optional<InvoiceExportClient> newClientForInvoice(@NonNull final InvoiceToExport invoice)
 	{
-		try (final MDCCloseable invoiceMDC = TableRecordMDC.putTableRecordReference(I_C_Invoice.Table_Name, invoice.getId()))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_Invoice.Table_Name, invoice.getId()))
 		{
 			final String requiredAttachmentTag = ForumDatenaustauschChConstants.INVOICE_EXPORT_PROVIDER_ID;
 
@@ -90,9 +89,9 @@ public class InvoiceExportClientFactoryImpl implements InvoiceExportClientFactor
 			}
 
 			final BPartnerId recipientId = invoice.getRecipient().getId();
-			final ConfigQuery query = ConfigQuery
+			final BPartnerQuery query = BPartnerQuery
 					.builder()
-					.bpartnerId(recipientId)
+					.bPartnerId(de.metas.bpartner.BPartnerId.ofRepoId(recipientId.getRepoId()))
 					.build();
 			final ExportConfig config = configRepository.getForQueryOrNull(query);
 			if (config == null)

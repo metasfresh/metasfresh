@@ -23,6 +23,7 @@
 package de.metas.edi.esb.invoicexport.compudata;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 public class CctopInvoice500V implements Serializable
 {
@@ -37,14 +38,14 @@ public class CctopInvoice500V implements Serializable
 	private String eancomPriceUom;
 	private String isoCode;
 	private String line;
-	private String lineNetAmt;
+	private BigDecimal lineNetAmt;
 	private String name;
 	private String name2;
-	private String priceActual;
-	private String priceList;
-	private String qtyInvoiced;
-	private String rate;
-	private String lineGrossAmt;
+	private BigDecimal priceActual;
+	private BigDecimal priceList;
+	private BigDecimal qtyInvoiced;
+	private BigDecimal rate;
+	private BigDecimal lineGrossAmt;
 	private String taxfree;
 	private String upc;
 	private String value;
@@ -53,7 +54,7 @@ public class CctopInvoice500V implements Serializable
 	private String productDescription;
 	private String orderPOReference;
 	private String orderLine;
-	private String taxAmount;
+	private BigDecimal taxAmount;
 
 	public final String getcInvoiceID()
 	{
@@ -105,12 +106,12 @@ public class CctopInvoice500V implements Serializable
 		this.line = line;
 	}
 
-	public String getLineNetAmt()
+	public BigDecimal getLineNetAmt()
 	{
 		return lineNetAmt;
 	}
 
-	public void setLineNetAmt(final String lineNetAmt)
+	public void setLineNetAmt(final BigDecimal lineNetAmt)
 	{
 		this.lineNetAmt = lineNetAmt;
 	}
@@ -135,52 +136,52 @@ public class CctopInvoice500V implements Serializable
 		this.name2 = name2;
 	}
 
-	public String getPriceActual()
+	public BigDecimal getPriceActual()
 	{
 		return priceActual;
 	}
 
-	public void setPriceActual(final String priceActual)
+	public void setPriceActual(final BigDecimal priceActual)
 	{
 		this.priceActual = priceActual;
 	}
 
-	public String getPriceList()
+	public BigDecimal getPriceList()
 	{
 		return priceList;
 	}
 
-	public void setPriceList(final String priceList)
+	public void setPriceList(final BigDecimal priceList)
 	{
 		this.priceList = priceList;
 	}
 
-	public String getQtyInvoiced()
+	public BigDecimal getQtyInvoiced()
 	{
 		return qtyInvoiced;
 	}
 
-	public void setQtyInvoiced(final String qtyInvoiced)
+	public void setQtyInvoiced(final BigDecimal qtyInvoiced)
 	{
 		this.qtyInvoiced = qtyInvoiced;
 	}
 
-	public String getRate()
+	public BigDecimal getRate()
 	{
 		return rate;
 	}
 
-	public void setRate(final String rate)
+	public void setRate(final BigDecimal rate)
 	{
 		this.rate = rate;
 	}
 
-	public String getLineGrossAmt()
+	public BigDecimal getLineGrossAmt()
 	{
 		return lineGrossAmt;
 	}
 
-	public void setLineGrossAmt(final String lineGrossAmt)
+	public void setLineGrossAmt(final BigDecimal lineGrossAmt)
 	{
 		this.lineGrossAmt = lineGrossAmt;
 	}
@@ -265,12 +266,12 @@ public class CctopInvoice500V implements Serializable
 		this.orderLine = orderLine;
 	}
 
-	public String getTaxAmount()
+	public BigDecimal getTaxAmount()
 	{
 		return taxAmount;
 	}
 
-	public void setTaxAmount(final String taxAmtInfo)
+	public void setTaxAmount(final BigDecimal taxAmtInfo)
 	{
 		taxAmount = taxAmtInfo;
 	}

@@ -2,6 +2,7 @@ package de.metas.impexp;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.OptionalInt;
@@ -53,6 +54,7 @@ public class DataImportServiceTest
 		AdempiereTestHelper.get().init();
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private ByteArrayResource toResource(final String string)
 	{
 		return new ByteArrayResource(string.getBytes());
@@ -75,6 +77,7 @@ public class DataImportServiceTest
 							.manualImport(manualImport)
 							.stringColumn("Value")
 							.stringColumn("Name")
+							.charset(StandardCharsets.UTF_8)
 							.build())
 					.importProcessFactory(() -> MockedImportProcess.<I_I_Product> builder()
 							.importModelClass(I_I_Product.class)
@@ -220,7 +223,7 @@ public class DataImportServiceTest
 			assertThat(processRun.isCompleteDocuments()).isFalse();
 
 			importRecordsAsyncExecutor.assertOneCall();
-			ImportRecordsRequest scheduledRequest = importRecordsAsyncExecutor.getSingleScheduledRequest();
+			final ImportRecordsRequest scheduledRequest = importRecordsAsyncExecutor.getSingleScheduledRequest();
 			assertThat(scheduledRequest)
 					.usingRecursiveComparison()
 					.isEqualTo(ImportRecordsRequest.builder()

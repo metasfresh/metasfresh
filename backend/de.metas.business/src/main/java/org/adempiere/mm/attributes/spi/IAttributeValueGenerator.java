@@ -36,9 +36,7 @@ import org.compiere.model.I_M_Attribute;
  */
 public interface IAttributeValueGenerator extends IAttributeValueHandler
 {
-
 	/**
-	 *
 	 * See X_M_Attribute.ATTRIBUTEVALUETYPE_*.
 	 *
 	 * @return value type or null if information is not not available
@@ -58,9 +56,6 @@ public interface IAttributeValueGenerator extends IAttributeValueHandler
 	 *
 	 * NOTE: {@link #generateAttributeValue(Properties, int, int, boolean, String)} is NOT considered.
 	 *
-	 * @param ctx
-	 * @param attributeSet
-	 * @param attribute
 	 * @return true if a value can be generated
 	 */
 	boolean canGenerateValue(Properties ctx, IAttributeSet attributeSet, I_M_Attribute attribute);
@@ -79,7 +74,6 @@ public interface IAttributeValueGenerator extends IAttributeValueHandler
 	/**
 	 * Generate a numeric value. Will throw {@link UnsupportedOperationException} for attributes of different types.
 	 *
-	 * @param ctx
 	 * @param attributeSet attribute set
 	 * @param attribute attribute on which the value will be generated
 	 * @return generated numeric value
@@ -90,7 +84,6 @@ public interface IAttributeValueGenerator extends IAttributeValueHandler
 	/**
 	 * Generate a date value. Will throw {@link UnsupportedOperationException} for attributes of different types.
 	 *
-	 * @param ctx
 	 * @param attributeSet attribute set
 	 * @param attribute attribute on which the value will be generated
 	 * @return generated date value
@@ -103,12 +96,8 @@ public interface IAttributeValueGenerator extends IAttributeValueHandler
 	 *
 	 * Will be specific for each implementation. Will throw {@link UnsupportedOperationException} for attributes of different types.
 	 *
-	 * @param ctx
-	 * @param tableId
-	 * @param recordId
 	 * @param isSOTrx implementors might return different values for sales and purchase transactions
-	 * @param trxName
-	 * @return
+	 *
 	 * @throws UnsupportedOperationException if value cannot be generated
 	 */
 	AttributeListValue generateAttributeValue(Properties ctx, int tableId, int recordId, boolean isSOTrx, String trxName);

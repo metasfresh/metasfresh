@@ -5,7 +5,7 @@ import javax.annotation.Nullable;
 import org.eevolution.api.PPCostCollectorId;
 
 import de.metas.error.AdIssueId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import lombok.Builder;
 import lombok.Data;
 

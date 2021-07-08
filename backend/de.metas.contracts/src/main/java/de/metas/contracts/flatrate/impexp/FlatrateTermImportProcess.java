@@ -1,28 +1,8 @@
-package de.metas.contracts.flatrate.impexp;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
-import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.compiere.model.PO;
-import org.compiere.util.DB;
-
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_I_Flatrate_Term;
-import de.metas.contracts.model.X_I_Flatrate_Term;
-import de.metas.impexp.format.ImportTableDescriptor;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.impexp.processing.SimpleImportProcessTemplate;
-
 /*
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -39,6 +19,27 @@ import de.metas.impexp.processing.SimpleImportProcessTemplate;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.contracts.flatrate.impexp;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
+
+import lombok.NonNull;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.compiere.model.PO;
+import org.compiere.util.DB;
+
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_I_Flatrate_Term;
+import de.metas.contracts.model.X_I_Flatrate_Term;
+import de.metas.impexp.format.ImportTableDescriptor;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.impexp.processing.SimpleImportProcessTemplate;
 
 public class FlatrateTermImportProcess extends SimpleImportProcessTemplate<I_I_Flatrate_Term>
 {
@@ -91,8 +92,8 @@ public class FlatrateTermImportProcess extends SimpleImportProcessTemplate<I_I_F
 	}
 
 	@Override
-	protected ImportRecordResult importRecord(final IMutable<Object> state,
-			final I_I_Flatrate_Term importRecord,
+	protected ImportRecordResult importRecord(final @NonNull IMutable<Object> state,
+			final @NonNull I_I_Flatrate_Term importRecord,
 			final boolean isInsertOnly /* not used. This import always inserts*/)
 	{
 		flatRateImporter.importRecord(importRecord);

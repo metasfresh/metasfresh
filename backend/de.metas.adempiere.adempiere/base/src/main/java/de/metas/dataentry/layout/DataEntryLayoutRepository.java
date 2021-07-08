@@ -146,6 +146,7 @@ public class DataEntryLayoutRepository
 				.documentLinkColumnName(parentLinkColumnName)
 				.caption(captionTrl)
 				.description(descriptionTrl)
+				.availableInApi(tabRecord.isAvailableInAPI())
 				.internalName(I_DataEntry_Tab.COLUMNNAME_DataEntry_Tab_ID + "-" + tabRecord.getDataEntry_Tab_ID());
 
 		final ImmutableList<I_DataEntry_SubTab> subTabRecords = retrieveSubTabRecords(tabRecord);
@@ -220,6 +221,7 @@ public class DataEntryLayoutRepository
 				.caption(captionTrl)
 				.description(descriptionTrl)
 				.initiallyClosed(sectionRecord.isInitiallyClosed())
+				.availableInApi(sectionRecord.isAvailableInAPI())
 				.internalName(I_DataEntry_Section.COLUMNNAME_DataEntry_Section_ID + "-" + sectionRecord.getDataEntry_Section_ID());
 
 		final ImmutableList<I_DataEntry_Line> lineRecords = retrieveLineRecords(sectionRecord);

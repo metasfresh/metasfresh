@@ -1,17 +1,6 @@
 package de.metas.material.planning;
 
-import java.sql.Timestamp;
-import java.time.DayOfWeek;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.temporal.TemporalUnit;
-
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.product.ProductCategoryId;
 import de.metas.uom.UomId;
 import lombok.AccessLevel;
@@ -19,6 +8,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.util.TimeUtil;
+
+import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalUnit;
 
 /*
  * #%L
@@ -46,20 +44,14 @@ import lombok.Value;
 @Builder
 public class ResourceType
 {
-	@Getter(AccessLevel.PRIVATE)
-	boolean active;
+	@Getter(AccessLevel.PRIVATE) boolean active;
 
-	@NonNull
-	ProductCategoryId productCategoryId;
+	@NonNull ProductCategoryId productCategoryId;
 
-	@NonNull
-	UomId durationUomId;
-	@NonNull
-	TemporalUnit durationUnit;
+	@NonNull UomId durationUomId;
+	@NonNull TemporalUnit durationUnit;
 
-	@NonNull
-	@Getter(AccessLevel.NONE)
-	final ImmutableSet<DayOfWeek> availableDaysOfWeek;
+	@NonNull @Getter(AccessLevel.NONE) ImmutableSet<DayOfWeek> availableDaysOfWeek;
 
 	boolean timeSlot;
 	LocalTime timeSlotStart;

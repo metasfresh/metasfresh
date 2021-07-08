@@ -16,9 +16,11 @@ select bp.value,
                        (Select C_Currency_ID from c_Currency where iso_code = 'EUR') :: numeric,
                        i.DateInvoiced :: timestamp with time zone, 0 :: numeric, i.AD_Client_ID :: numeric,
                        i.AD_Org_ID :: numeric) as euro_amt,
-	   de_metas_endcustomer_fresh_reports.hasFreeEUTaxes(i.C_Invoice_ID) as IsEuTax
-
+	   de_metas_endcustomer_fresh_reports.hasFreeEUTaxes(i.C_Invoice_ID) as IsEuTax,
+	   i.AD_Org_ID,
+       o.Name          as OrgName
 from C_invoice i
+join AD_Org o on i.ad_org_id = o.ad_org_id
          join C_Bpartner bp on i.c_bpartner_id = bp.c_bpartner_id
          join c_bpartner_location bpl on bpl.c_bpartner_location_id = i.c_bpartner_location_id
          join c_location l on l.c_location_id = bpl.c_location_id

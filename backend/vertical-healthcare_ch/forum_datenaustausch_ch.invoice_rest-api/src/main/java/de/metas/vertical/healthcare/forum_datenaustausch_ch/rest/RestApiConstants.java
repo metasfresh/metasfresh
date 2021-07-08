@@ -26,9 +26,5 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
 
 public class RestApiConstants
 {
-	public static final String ENDPOINT_INVOICE_440 = MetasfreshRestAPIConstants.ENDPOINT_API + "/forum-datenaustausch.ch";
-
-	public static final String ENDPOINT_PDF_ATTACHMENT = MetasfreshRestAPIConstants.ENDPOINT_API + "/forum-datenaustausch.ch";
-
 	public static final String INPUT_SOURCE_INTERAL_NAME = "SOURCE.de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.ImportInvoice440RestController";
 }

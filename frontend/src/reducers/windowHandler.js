@@ -16,11 +16,9 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_QUICK_ACTIONS,
   DELETE_TOP_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
-  FETCHED_QUICK_ACTIONS,
   FETCH_TOP_ACTIONS,
   FETCH_TOP_ACTIONS_FAILURE,
   FETCH_TOP_ACTIONS_SUCCESS,
@@ -49,6 +47,16 @@ import {
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
+  SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
+  TOGGLE_PRINTING_OPTION,
+  SET_INLINE_TAB_LAYOUT_AND_DATA,
+  SET_INLINE_TAB_WRAPPER_DATA,
+  UPDATE_INLINE_TAB_WRAPPER_FIELDS,
+  UPDATE_INLINE_TAB_ITEM_FIELDS,
+  SET_INLINE_TAB_ADD_NEW,
+  SET_INLINE_TAB_SHOW_MORE,
+  SET_INLINE_TAB_ITEM_PROP,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -93,11 +101,22 @@ const initialModalState = {
   staticModalType: '',
 };
 
+/**
+ * In the initialState we have also the `inlineTab` which is the branch that holds the logic for the InlineTabWrapper & InlineTab components
+ * - wrapperData keys pattern ${windowId}_{$tabId}_${docId}
+ * - inlineTab keys ${windowId}_{$tabId}_${rowId}
+ */
 export const initialState = {
   connectionError: false,
-
+  printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
   modal: initialModalState,
+  inlineTab: {
+    wrapperData: {},
+    addNew: {},
+    showMore: {},
+  },
+
   overlay: {
     visible: false,
     data: null,
@@ -119,8 +138,6 @@ export const initialState = {
 
   // this only feeds data to details view now
   master: initialMasterState,
-
-  quickActions: {},
   indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
@@ -134,19 +151,6 @@ export const initialState = {
   filter: {},
 };
 
-export const NO_SELECTION = [];
-
-const getQuickactionsData = (state, { windowType, viewId }) => {
-  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
-
-  return state.windowHandler.quickActions[key] || NO_SELECTION;
-};
-
-export const getQuickactions = createSelector(
-  [getQuickactionsData],
-  (actions) => actions
-);
-
 /**
  * @method getData
  * @summary getter for master data
@@ -159,7 +163,7 @@ export const getData = (state, isModal = false) => {
   return state.windowHandler[selector].data;
 };
 
-const getElementLayout = (state, isModal, layoutPath) => {
+export const getElementLayout = (state, isModal, layoutPath) => {
   const selector = isModal ? 'modal' : 'master';
   const layout = state.windowHandler[selector].layout;
   const [
@@ -169,6 +173,33 @@ const getElementLayout = (state, isModal, layoutPath) => {
     elLineIdx,
     elIdx,
   ] = layoutPath.split('_');
+
+  return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
+    elGroupIdx
+  ].elementsLine[elLineIdx].elements[elIdx];
+};
+
+export const getInlineTabLayout = ({
+  state,
+  inlineTabId,
+  layoutId: layoutPath,
+}) => {
+  const layout = state.windowHandler.inlineTab[inlineTabId].layout;
+  const [
+    sectionIdx,
+    columnIdx,
+    elGroupIdx,
+    elLineIdx,
+    elIdx,
+  ] = layoutPath.split('_');
+  // console.log('Section:', sectionIdx);
+  // console.log('Column:', columnIdx);
+  // console.log('elGroupIndex:', elGroupIdx)
+  // console.log('ellineIdx:', elLineIdx);
+  // console.log('elIds:', elIdx)
+  // console.log('layoutContent:', layout)
+  // console.log('layoutPath:', layoutPath);
+  // console.log('LAYOUT_IN_SELECTOR:', layout.sections[sectionIdx].columns[columnIdx].elementGroups[elGroupIdx].elementsLine[elLineIdx].elements[elIdx])
 
   return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
     elGroupIdx
@@ -190,12 +221,14 @@ const getProcessLayout = (state, isModal, elementIndex) =>
 const selectWidgetData = (data, layout) => {
   let widgetData = null;
 
-  widgetData = layout.fields.reduce((result, item) => {
-    const values = get(data, [`${item.field}`], {});
-    result.push(values);
+  if (layout.fields) {
+    widgetData = layout.fields.reduce((result, item) => {
+      const values = get(data, [`${item.field}`], {});
+      result.push(values);
 
-    return result;
-  }, []);
+      return result;
+    }, []);
+  }
 
   if (!widgetData.length) {
     widgetData = [{}];
@@ -217,6 +250,19 @@ export const getElementWidgetData = createCachedSelector(
   getElementLayout,
   (data, layout) => selectWidgetData(data, layout)
 )((_state_, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getInlineTabWidgetFields
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getInlineTabWidgetFields = ({ state, inlineTabId }) => {
+  const data = state.windowHandler.inlineTab[`${inlineTabId}`].data;
+
+  return data.fieldsByName;
+};
 
 /**
  * @method getElementWidgetFields
@@ -290,20 +336,7 @@ export default function windowHandler(state = initialState, action) {
         modal: {
           ...state.modal,
           visible: true,
-          type: action.windowType,
-          staticModalType: action.staticModalType,
-          dataId: action.dataId,
-          tabId: action.tabId,
-          rowId: action.rowId,
-          viewId: action.viewId,
-          title: action.title,
-          modalType: action.modalType,
-          isAdvanced: action.isAdvanced,
-          viewDocumentIds: action.viewDocumentIds,
-          triggerField: action.triggerField,
-          parentViewId: action.parentViewId,
-          childViewId: action.childViewId,
-          childViewSelectedIds: action.childViewSelectedIds,
+          ...action.payload,
         },
       };
     case UPDATE_MODAL:
@@ -319,7 +352,6 @@ export default function windowHandler(state = initialState, action) {
       return {
         ...state,
         modal: {
-          ...state.modal,
           ...initialState.modal,
         },
       };
@@ -332,6 +364,7 @@ export default function windowHandler(state = initialState, action) {
           windowId: action.windowId,
           viewId: action.viewId,
           profileId: action.profileId,
+          title: action.title,
         },
       };
     case UPDATE_RAW_MODAL: {
@@ -399,7 +432,6 @@ export default function windowHandler(state = initialState, action) {
         return {
           ...state,
           modal: {
-            ...state.modal,
             ...initialState.modal,
           },
         };
@@ -685,30 +717,6 @@ export default function windowHandler(state = initialState, action) {
         indicator: action.state,
       };
 
-    // QUICK ACTIONS
-    case FETCHED_QUICK_ACTIONS:
-      return {
-        ...state,
-        quickActions: {
-          ...state.quickActions,
-          [`${action.payload.windowId}${
-            action.payload.id ? `-${action.payload.id}` : ''
-          }`]: action.payload.data,
-        },
-      };
-    case DELETE_QUICK_ACTIONS: {
-      const key = `${action.payload.windowId}${
-        action.payload.id ? `-${action.payload.id}` : ''
-      }`;
-      const newQuickActions = { ...state.quickActions };
-
-      delete newQuickActions[key];
-
-      return {
-        ...state,
-        quickActions: newQuickActions,
-      };
-    }
     // TOP ACTIONS
     case FETCH_TOP_ACTIONS:
       return {
@@ -753,6 +761,155 @@ export default function windowHandler(state = initialState, action) {
           topActions: {
             ...state.master.topActions,
             actions: [],
+          },
+        },
+      };
+    }
+    case SET_PRINTING_OPTIONS: {
+      return {
+        ...state,
+        printingOptions: action.payload,
+      };
+    }
+    case RESET_PRINTING_OPTIONS: {
+      return {
+        ...state,
+        printingOptions: {},
+      };
+    }
+    case TOGGLE_PRINTING_OPTION: {
+      const newPrintingOptions = [...state.printingOptions.options];
+
+      newPrintingOptions.map((item) => {
+        if (item.internalName === action.payload) item.value = !item.value;
+        return item;
+      });
+      return {
+        ...state,
+        printingOptions: {
+          ...state.printingOptions,
+          options: newPrintingOptions,
+        },
+      };
+    }
+    // INLINE TAB ACTIONS
+    case SET_INLINE_TAB_LAYOUT_AND_DATA: {
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${action.payload.inlineTabId}`]: {
+            ...state.inlineTab[`${action.payload.inlineTabId}`],
+            ...action.payload.data,
+          },
+        },
+      };
+    }
+    case SET_INLINE_TAB_WRAPPER_DATA: {
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          wrapperData: {
+            ...state.inlineTab.wrapperData,
+            [`${action.payload.inlineTabWrapperId}`]: action.payload.data,
+          },
+        },
+      };
+    }
+    case UPDATE_INLINE_TAB_WRAPPER_FIELDS: {
+      let indexWD;
+      const { inlineTabWrapperId, rowId, response } = action.payload;
+      if (!response) return { ...state };
+      const { fieldsByName, saveStatus, validStatus } = response;
+      state.inlineTab.wrapperData[inlineTabWrapperId].forEach((item, i) => {
+        if (item.rowId === rowId) indexWD = i;
+      });
+
+      const wrapperDataClone = { ...state.inlineTab.wrapperData };
+      if (wrapperDataClone[inlineTabWrapperId][indexWD]) {
+        wrapperDataClone[inlineTabWrapperId][indexWD].saveStatus = saveStatus;
+        wrapperDataClone[inlineTabWrapperId][indexWD].validStatus = validStatus;
+        wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName = {
+          ...wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName,
+          ...fieldsByName,
+        };
+      }
+
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          wrapperData: wrapperDataClone,
+        },
+      };
+    }
+
+    case UPDATE_INLINE_TAB_ITEM_FIELDS: {
+      const { inlineTabId, fieldsByName } = action.payload;
+
+      const targetTabData = { ...state.inlineTab[`${inlineTabId}`].data };
+
+      Object.keys(fieldsByName).forEach((fieldItem) => {
+        targetTabData.fieldsByName[fieldItem] = {
+          ...targetTabData.fieldsByName[fieldItem],
+          ...fieldsByName[fieldItem],
+        };
+      });
+
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${inlineTabId}`]: {
+            ...state.inlineTab[`${inlineTabId}`],
+            data: targetTabData,
+          },
+        },
+      };
+    }
+
+    case SET_INLINE_TAB_ADD_NEW: {
+      const { visible, windowId, tabId, rowId, docId } = action.payload;
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          addNew: {
+            ...state.inlineTab.addNew,
+            [`${windowId}_${tabId}_${docId}`]: {
+              visible,
+              windowId,
+              tabId,
+              rowId,
+            },
+          },
+        },
+      };
+    }
+    case SET_INLINE_TAB_SHOW_MORE: {
+      const { inlineTabWrapperId, showMore } = action.payload;
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          showMore: {
+            ...state.inlineTab.showMore,
+            [`${inlineTabWrapperId}`]: showMore,
+          },
+        },
+      };
+    }
+    case SET_INLINE_TAB_ITEM_PROP: {
+      const { inlineTabId, targetProp, targetValue } = action.payload;
+
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${inlineTabId}`]: {
+            ...state.inlineTab[`${inlineTabId}`],
+            [`${targetProp}`]: targetValue,
           },
         },
       };

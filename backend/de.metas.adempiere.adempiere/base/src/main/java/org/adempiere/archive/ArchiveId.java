@@ -42,15 +42,15 @@ public class ArchiveId implements RepoIdAware
 		return repoId > 0 ? new ArchiveId(repoId) : null;
 	}
 
-	public static int toRepoId(final ArchiveId printingQueueItemId)
+	public static int toRepoId(final ArchiveId id)
 	{
-		return printingQueueItemId != null ? printingQueueItemId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 	int repoId;
 
 	private ArchiveId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "AD_Archive_ID");
 	}
 
 	@Override

@@ -36,13 +36,13 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.rtf.RTFEditorKit;
 
+import de.metas.common.util.time.SystemTime;
 import org.compiere.model.MBPartner;
 import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.process.JavaProcess;
-import de.metas.util.time.SystemTime;
 
 @Deprecated // TODO delete it
 public class ConvertBPartnerMemo extends JavaProcess {

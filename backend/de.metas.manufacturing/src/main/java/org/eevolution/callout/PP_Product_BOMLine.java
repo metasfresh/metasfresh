@@ -1,5 +1,7 @@
 package org.eevolution.callout;
 
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.exceptions.AdempiereException;
@@ -38,8 +40,6 @@ public class PP_Product_BOMLine
 {
 	/**
 	 * Validates and them updates the BOM line fields from selected product, if any.
-	 *
-	 * @param bomLine
 	 */
 	@CalloutMethod(columnNames = I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID)
 	public void onProductChanged(final I_PP_Product_BOMLine bomLine)
@@ -57,7 +57,8 @@ public class PP_Product_BOMLine
 		}
 
 		// Set BOM Line defaults
-		final I_M_Product product = bomLine.getM_Product();
+		final ProductId productId = ProductId.ofRepoId(bomLine.getM_Product_ID());
+		final I_M_Product product = Services.get(IProductBL.class).getById(productId);
 		bomLine.setDescription(product.getDescription());
 		bomLine.setHelp(product.getHelp());
 		bomLine.setC_UOM_ID(product.getC_UOM_ID());

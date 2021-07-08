@@ -153,9 +153,7 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	public ListMultimap<AdTableId, Integer> extractTableId2RecordIds()
 	{
 		final ImmutableListMultimap<AdTableId, TableRecordReference> tableName2References = Multimaps.index(recordRefs, TableRecordReference::getAdTableId);
-		final ListMultimap<AdTableId, Integer> tableName2RecordIds = Multimaps.transformValues(tableName2References, TableRecordReference::getRecord_ID);
-
-		return tableName2RecordIds;
+		return Multimaps.transformValues(tableName2References, TableRecordReference::getRecord_ID);
 	}
 
 	public <T extends RepoIdAware> Stream<T> streamIds(@NonNull final String tableName, @NonNull final IntFunction<T> idMapper)

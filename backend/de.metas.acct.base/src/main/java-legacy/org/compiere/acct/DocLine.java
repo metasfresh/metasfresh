@@ -903,7 +903,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return null;
 	}
 
-	private final String getValueAsString(final String columnName)
+	public final String getValueAsString(final String columnName)
 	{
 		final PO po = getPO();
 		final int index = po.get_ColumnIndex(columnName);

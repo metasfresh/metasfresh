@@ -2,11 +2,11 @@ package de.metas.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.service.ClientId;
 import org.junit.Test;
 
 import de.metas.user.UserId;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

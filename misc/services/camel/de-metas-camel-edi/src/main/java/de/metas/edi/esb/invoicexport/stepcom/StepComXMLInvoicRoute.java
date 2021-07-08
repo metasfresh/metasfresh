@@ -30,7 +30,7 @@ import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
-import de.metas.edi.esb.jaxb.stepcom.invoice.ObjectFactory;
+import de.metas.edi.esb.jaxb.stepcom.invoic.ObjectFactory;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;

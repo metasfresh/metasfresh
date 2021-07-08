@@ -1,0 +1,524 @@
+{
+  "renderMaster": true,
+  "dataSource": "inline-wrapper",
+  "layoutId": "2_0_0_0_0",
+  "entity": "window",
+  "windowId": "123",
+  "dataId": "2156425",
+  "isModal": false,
+  "tabIndex": 2,
+  "autoFocus": false,
+  "fullScreen": null,
+  "fieldName": "",
+  "caption": "",
+  "description": "",
+  "widgetType": "InlineTab",
+  "inlineTab": {
+    "windowId": "123",
+    "tabId": "AD_Tab-222",
+    "internalName": "C_BPartner_Location",
+    "caption": "Location",
+    "description": "Define Location",
+    "emptyResultText": "There are no detail rows",
+    "emptyResultHint": "You can create them in this window.",
+    "elements": [
+      {
+        "caption": "Name",
+        "description": "",
+        "widgetType": "Text",
+        "maxLength": 60,
+        "size": "L",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "Name",
+            "caption": "Name",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "GLN",
+        "description": "",
+        "widgetType": "Text",
+        "maxLength": 20,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "GLN",
+            "caption": "GLN",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Active",
+        "description": "The record is active in the system",
+        "widgetType": "Switch",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsActive",
+            "caption": "Active",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Ship Address",
+        "description": "Business Partner Shipment Address",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsShipTo",
+            "caption": "Ship Address",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Is Ship To Default",
+        "description": "",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsShipToDefault",
+            "caption": "Is Ship To Default",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Invoice Address",
+        "description": "Business Partner Invoice/Bill Address",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsBillTo",
+            "caption": "Invoice Address",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Is Invoice Default",
+        "description": "",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsBillToDefault",
+            "caption": "Is Invoice Default",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Handover Location",
+        "description": "",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsHandOverLocation",
+            "caption": "Handover Location",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Remit-To Address",
+        "description": "Business Partner payment address",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsRemitTo",
+            "caption": "Remit-To Address",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Replication Lookup Default",
+        "description": "",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "IsReplicationLookupDefault",
+            "caption": "Replication Lookup Default",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Visitors Address",
+        "description": "",
+        "widgetType": "YesNo",
+        "gridAlign": "center",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "VisitorsAddress",
+            "caption": "Visitors Address",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      },
+      {
+        "caption": "Organisation",
+        "description": "Organisational entity within client",
+        "widgetType": "Lookup",
+        "size": "M",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "AD_Org_ID",
+            "caption": "Organisation",
+            "emptyText": "none",
+            "clearValueText": "none",
+            "source": "lookup",
+            "lookupSearchStringMinLength": -1,
+            "lookupSearchStartDelayMillis": 500,
+            "supportZoomInto": true
+          }
+        ]
+      }
+    ],
+    "defaultOrderBys": [
+      {
+        "fieldName": "Name",
+        "ascending": true
+      },
+      {
+        "fieldName": "C_BPartner_Location_ID",
+        "ascending": true
+      }
+    ],
+    "supportQuickInput": false,
+    "queryOnActivate": true
+  },
+  "fields": [
+    
+  ],
+  "relativeDocId": 2156425,
+  "widgetData": [
+    {
+      
+    }
+  ],
+  "activeTab": "AD_Tab-540829",
+  "modalVisible": false,
+  "timeZone": "Europe/Berlin",
+  "tabData": [
+    {
+      "windowId": "123",
+      "id": "2156425",
+      "tabId": "AD_Tab-222",
+      "tabid": "AD_Tab-222",
+      "rowId": "2205175",
+      "fieldsByName": {
+        "ID": {
+          "field": "ID",
+          "value": 2205175,
+          "widgetType": "Integer"
+        },
+        "AD_Client_ID": {
+          "field": "AD_Client_ID",
+          "value": {
+            "key": "1000000",
+            "caption": "metasfresh"
+          },
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "AD_Client_ID"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "AD_Org_ID": {
+          "field": "AD_Org_ID",
+          "value": {
+            "key": "1000000",
+            "caption": "metasfresh AG"
+          },
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "AD_Org_ID"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "Name": {
+          "field": "Name",
+          "value": "Testadresse 3",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Name"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "GLN": {
+          "field": "GLN",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "GLN"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "IsActive": {
+          "field": "IsActive",
+          "value": true,
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "Switch",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsActive"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "C_Location_ID": {
+          "field": "C_Location_ID",
+          "value": {
+            "key": "2192327",
+            "caption": "teststadt 3_Germany - Deutschland"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Address",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_Location_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "Address": {
+          "field": "Address",
+          "value": "teststraße 996\n45678 teststadt 3",
+          "readonly": true,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "LongText",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Address"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "IsShipTo": {
+          "field": "IsShipTo",
+          "value": true,
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsShipTo"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "IsShipToDefault": {
+          "field": "IsShipToDefault",
+          "value": true,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsShipToDefault"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "IsBillTo": {
+          "field": "IsBillTo",
+          "value": true,
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsBillTo"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "IsBillToDefault": {
+          "field": "IsBillToDefault",
+          "value": true,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsBillToDefault"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "IsHandOverLocation": {
+          "field": "IsHandOverLocation",
+          "value": false,
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsHandOverLocation"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "IsRemitTo": {
+          "field": "IsRemitTo",
+          "value": false,
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsRemitTo"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "IsReplicationLookupDefault": {
+          "field": "IsReplicationLookupDefault",
+          "value": true,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsReplicationLookupDefault"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "VisitorsAddress": {
+          "field": "VisitorsAddress",
+          "value": false,
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "VisitorsAddress"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "BPartnerName": {
+          "field": "BPartnerName",
+          "value": "",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "BPartnerName"
+          },
+          "viewEditorRenderMode": "always"
+        }
+      },
+      "validStatus": {
+        "valid": true
+      },
+      "saveStatus": {
+        "deleted": false,
+        "saved": true,
+        "hasChanges": false,
+        "error": false,
+        "reason": "just loaded"
+      },
+      "standardActions": [
+        "new",
+        "advancedEdit",
+        "email",
+        "letter",
+        "delete",
+        "comments"
+      ],
+      "websocketEndpoint": "/document/123/2156425"
+    }
+  ],
+  "addNewFormVisible": false,
+  "showMore": false
+}

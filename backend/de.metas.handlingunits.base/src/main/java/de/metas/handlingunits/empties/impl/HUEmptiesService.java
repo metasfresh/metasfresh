@@ -23,7 +23,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.empties.EmptiesMovementProducer;
 import de.metas.handlingunits.empties.EmptiesMovementProducer.EmptiesMovementDirection;
 import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.handlingunits.inout.IReturnsInOutProducer;
+import de.metas.handlingunits.inout.returns.IReturnsInOutProducer;
 import de.metas.handlingunits.model.I_DD_NetworkDistribution;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Locator;

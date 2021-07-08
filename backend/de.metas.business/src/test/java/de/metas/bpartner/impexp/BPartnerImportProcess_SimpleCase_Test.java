@@ -76,8 +76,6 @@ public class BPartnerImportProcess_SimpleCase_Test
 	 * <br>
 	 * <code>value	 FirstName	LastName  IsShipToContact	IsBillToContact	address1	city	countryCode	groupValue	IsBillToDefault	IsShipToDefault	language</code><br>
 	 * <code>G0022	 FNTest1	LNTest1	  Y					N				street 997	Berlin	DE			Standard	Y				N				de_CH</code><br>
-	 *
-	 * @param lines
 	 */
 	private I_I_BPartner prepareImportSingleBPartner()
 	{

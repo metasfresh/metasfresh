@@ -69,7 +69,7 @@ public class AttributeDAO implements IAttributeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private CCache<Integer, AttributesMap> attributesMapCache = CCache.<Integer, AttributesMap> builder()
+	private CCache<Integer, AttributesMap> attributesMapCache = CCache.<Integer, AttributesMap>builder()
 			.tableName(I_M_Attribute.Table_Name)
 			.build();
 
@@ -164,7 +164,7 @@ public class AttributeDAO implements IAttributeDAO
 
 		// preserve the M_AttributeUse order!
 		final FixedOrderByKeyComparator<I_M_Attribute, AttributeId> //
-		order = FixedOrderByKeyComparator.<I_M_Attribute, AttributeId> notMatchedAtTheEnd(
+				order = FixedOrderByKeyComparator.notMatchedAtTheEnd(
 				attributeIds,
 				a -> AttributeId.ofRepoId(a.getM_Attribute_ID()));
 
@@ -203,6 +203,18 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	public <T extends I_M_Attribute> T retrieveAttributeByValueOrNull(@NonNull final AttributeCode attributeCode, @NonNull final Class<T> clazz)
+	{
+		final AttributeId attributeId = getAttributesMap().getAttributeIdByCodeOrNull(attributeCode);
+		if (attributeId == null)
+		{
+			return null;
+		}
+		final I_M_Attribute attribute = getAttributeById(attributeId);
+		return InterfaceWrapperHelper.create(attribute, clazz);
+	}
+
+	@Override
 	public Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull final String value)
 	{
 		final AttributeCode attributeCode = AttributeCode.ofString(value);
@@ -235,7 +247,7 @@ public class AttributeDAO implements IAttributeDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(attributeRecord -> toAttribute(attributeRecord))
+				.map(AttributeDAO::toAttribute)
 				.collect(ImmutableList.toImmutableList());
 
 		return new AttributesMap(attributes);
@@ -294,7 +306,7 @@ public class AttributeDAO implements IAttributeDAO
 				.orderBy(I_M_AttributeValue.COLUMN_M_AttributeValue_ID)
 				.create()
 				.stream()
-				.map(record -> toAttributeListValue(record))
+				.map(AttributeDAO::toAttributeListValue)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -399,7 +411,7 @@ public class AttributeDAO implements IAttributeDAO
 			return ImmutableList.of();
 		}
 
-		I_M_AttributeSetInstance asi = getAttributeSetInstanceById(attributeSetInstanceId);
+		final I_M_AttributeSetInstance asi = getAttributeSetInstanceById(attributeSetInstanceId);
 		return retrieveAttributeInstances(asi);
 	}
 
@@ -491,11 +503,6 @@ public class AttributeDAO implements IAttributeDAO
 				.getMatchingSOTrx(soTrx);
 	}
 
-	/**
-	 *
-	 * @param attribute
-	 * @param includeInactive
-	 */
 	private AttributeListValueMap retrieveAttributeValuesMap(@NonNull final I_M_Attribute attribute, final boolean includeInactive)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(attribute);
@@ -801,7 +808,7 @@ public class AttributeDAO implements IAttributeDAO
 		Check.assumeNotEmpty(asiIds, "asiIds is not empty");
 
 		final Map<AttributeSetInstanceId, List<I_M_AttributeInstance>> //
-		instancesByAsiId = queryBL
+				instancesByAsiId = queryBL
 				.createQueryBuilder(I_M_AttributeInstance.class)
 				.addInArrayFilter(I_M_AttributeInstance.COLUMNNAME_M_AttributeSetInstance_ID, asiIds)
 				.create()

@@ -110,7 +110,7 @@ public class C_Invoice_Candidate_CreateOrUpdateCommissionInstance
 		while (invoiceCandidateIds.hasNext())
 		{
 			final InvoiceCandidateId invoiceCandidateId = invoiceCandidateIds.next();
-			try (final MDCCloseable invoiceCandidateIdMDC = TableRecordMDC.putTableRecordReference(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId))
+			try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_Invoice_Candidate.Table_Name, invoiceCandidateId))
 			{
 				trxManager.runInNewTrx(() -> {
 					logger.debug("Processing invoiceCandidate");

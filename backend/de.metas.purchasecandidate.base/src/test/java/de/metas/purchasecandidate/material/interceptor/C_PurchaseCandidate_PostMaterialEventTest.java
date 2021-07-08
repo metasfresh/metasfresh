@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.material.interceptor;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -9,7 +10,6 @@ import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.product.ProductId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.uom.UomId;
-import de.metas.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;

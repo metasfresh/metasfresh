@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+import de.metas.tax.api.TaxId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
@@ -94,7 +95,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final BigDecimal qty = Services.get(IContractsDAO.class).retrieveSubscriptionProgressQtyForTerm(term);
 		ic.setQtyOrdered(qty);
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				Env.getCtx(),
 				term,
 				taxCategoryId,
@@ -104,7 +105,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 				(WarehouseId)null,
 				CoalesceUtil.firstGreaterThanZero(term.getDropShip_Location_ID(), term.getBill_Location_ID()), // ship location id
 				isSOTrx);
-		ic.setC_Tax_ID(taxId);
+		ic.setC_Tax_ID(taxId.getRepoId());
 	}
 
 	@Override

@@ -22,6 +22,7 @@
 
 package de.metas.money;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
@@ -41,7 +42,6 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;

@@ -107,14 +107,14 @@ public class TraceHUTrxListener implements IHUTrxListener
 						afterTrxProcessed0(trxLines, trxHdr);
 					});
 				});
-		logger.info("Enqueued M_HU_Trx_Hdr and _M_HU_Trx_Lines for HU-tracing after the next commit; trxHdr={}; trxLines={}", trxHdr, trxLines);
+		logger.debug("Enqueued M_HU_Trx_Hdr and _M_HU_Trx_Lines for HU-tracing after the next commit; trxHdr={}; trxLines={}", trxHdr, trxLines);
 	}
 
 	private void afterTrxProcessed0(
 			@NonNull final List<I_M_HU_Trx_Line> trxLines,
 			@NonNull final I_M_HU_Trx_Hdr trxHdr)
 	{
-		logger.info("Invoke HUTraceEventsService; trxHdr={}; trxLines={}", trxHdr, trxLines);
+		logger.debug("Invoke HUTraceEventsService; trxHdr={}; trxLines={}", trxHdr, trxLines);
 
 		final HUTraceEventsService huTraceEventService = HUTraceModuleInterceptor.INSTANCE.getHUTraceEventsService();
 		huTraceEventService.createAndAddFor(trxHdr, trxLines);

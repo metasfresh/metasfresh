@@ -1,62 +1,55 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for RV_M_HU_Storage_InvoiceHistory
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_RV_M_HU_Storage_InvoiceHistory 
 {
 
-    /** TableName=RV_M_HU_Storage_InvoiceHistory */
-    public static final String Table_Name = "RV_M_HU_Storage_InvoiceHistory";
+	String Table_Name = "RV_M_HU_Storage_InvoiceHistory";
 
-    /** AD_Table_ID=540602 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540602 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set ASIKey for HUStorage.
@@ -65,7 +58,7 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHUStorageASIKey (java.lang.String HUStorageASIKey);
+	void setHUStorageASIKey (@Nullable java.lang.String HUStorageASIKey);
 
 	/**
 	 * Get ASIKey for HUStorage.
@@ -74,83 +67,77 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHUStorageASIKey();
+	@Nullable java.lang.String getHUStorageASIKey();
 
-    /** Column definition for HUStorageASIKey */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_HUStorageASIKey = new org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object>(I_RV_M_HU_Storage_InvoiceHistory.class, "HUStorageASIKey", null);
-    /** Column name HUStorageASIKey */
-    public static final String COLUMNNAME_HUStorageASIKey = "HUStorageASIKey";
+	ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_HUStorageASIKey = new ModelColumn<>(I_RV_M_HU_Storage_InvoiceHistory.class, "HUStorageASIKey", null);
+	String COLUMNNAME_HUStorageASIKey = "HUStorageASIKey";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object>(I_RV_M_HU_Storage_InvoiceHistory.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_IsActive = new ModelColumn<>(I_RV_M_HU_Storage_InvoiceHistory.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lagerort.
-	 * Lagerort im Lager
+	 * Set Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Locator_ID (int M_Locator_ID);
+	void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Lagerort.
-	 * Lagerort im Lager
+	 * Get Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Locator_ID();
+	int getM_Locator_ID();
 
-    /** Column name M_Locator_ID */
-    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Bestand.
@@ -160,7 +147,7 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyOnHand (java.math.BigDecimal QtyOnHand);
+	void setQtyOnHand (@Nullable BigDecimal QtyOnHand);
 
 	/**
 	 * Get Bestand.
@@ -170,60 +157,54 @@ public interface I_RV_M_HU_Storage_InvoiceHistory
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyOnHand();
+	BigDecimal getQtyOnHand();
 
-    /** Column definition for QtyOnHand */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_QtyOnHand = new org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object>(I_RV_M_HU_Storage_InvoiceHistory.class, "QtyOnHand", null);
-    /** Column name QtyOnHand */
-    public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
+	ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_QtyOnHand = new ModelColumn<>(I_RV_M_HU_Storage_InvoiceHistory.class, "QtyOnHand", null);
+	String COLUMNNAME_QtyOnHand = "QtyOnHand";
 
 	/**
-	 * Set Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Set Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
+	void setQtyOrdered (@Nullable BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Get Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyOrdered();
+	BigDecimal getQtyOrdered();
 
-    /** Column definition for QtyOrdered */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_QtyOrdered = new org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object>(I_RV_M_HU_Storage_InvoiceHistory.class, "QtyOrdered", null);
-    /** Column name QtyOrdered */
-    public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
+	ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_QtyOrdered = new ModelColumn<>(I_RV_M_HU_Storage_InvoiceHistory.class, "QtyOrdered", null);
+	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set Offen.
-	 * Offene Menge
+	 * Set Open Qty.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyReserved (java.math.BigDecimal QtyReserved);
+	void setQtyReserved (@Nullable BigDecimal QtyReserved);
 
 	/**
-	 * Get Offen.
-	 * Offene Menge
+	 * Get Open Qty.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyReserved();
+	BigDecimal getQtyReserved();
 
-    /** Column definition for QtyReserved */
-    public static final org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_QtyReserved = new org.adempiere.model.ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object>(I_RV_M_HU_Storage_InvoiceHistory.class, "QtyReserved", null);
-    /** Column name QtyReserved */
-    public static final String COLUMNNAME_QtyReserved = "QtyReserved";
+	ModelColumn<I_RV_M_HU_Storage_InvoiceHistory, Object> COLUMN_QtyReserved = new ModelColumn<>(I_RV_M_HU_Storage_InvoiceHistory.class, "QtyReserved", null);
+	String COLUMNNAME_QtyReserved = "QtyReserved";
 }

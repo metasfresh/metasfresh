@@ -38,7 +38,6 @@ import de.metas.util.Check;
  */
 public class BPartnerBL implements IBPartnerBL
 {
-
 	@Override
 	public boolean isInvoiceEmailEnabled(final I_C_BPartner bpartner, final I_AD_User user)
 	{

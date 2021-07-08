@@ -219,7 +219,7 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
-		final I_C_BPartner_Location billBPLocation = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
+		final I_C_BPartner_Location billBPLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
 		Check.assumeNotNull(billBPLocation, "billBPLocation not null for {}", ic);
 
 		// We use the language of the bill location to determine the number format.

@@ -1,94 +1,68 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_Attribute
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_Attribute, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1829878132L;
+	private static final long serialVersionUID = 489210147L;
 
     /** Standard Constructor */
-    public X_M_HU_Attribute (Properties ctx, int M_HU_Attribute_ID, String trxName)
+    public X_M_HU_Attribute (final Properties ctx, final int M_HU_Attribute_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_Attribute_ID, trxName);
-      /** if (M_HU_Attribute_ID == 0)
-        {
-			setM_Attribute_ID (0);
-			setM_HU_Attribute_ID (0);
-			setM_HU_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_Attribute (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_Attribute (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Merkmal.
-		@param M_Attribute_ID 
-		Produkt-Merkmal
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setM_Attribute_ID (int M_Attribute_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setM_Attribute_ID (final int M_Attribute_ID)
 	{
 		if (M_Attribute_ID < 1) 
 			set_Value (COLUMNNAME_M_Attribute_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Attribute_ID, Integer.valueOf(M_Attribute_ID));
+			set_Value (COLUMNNAME_M_Attribute_ID, M_Attribute_ID);
 	}
 
-	/** Get Merkmal.
-		@return Produkt-Merkmal
-	  */
 	@Override
-	public int getM_Attribute_ID () 
+	public int getM_Attribute_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Attribute_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Attribute_ID);
 	}
 
-	/** Set Handling Unit Attribute.
-		@param M_HU_Attribute_ID Handling Unit Attribute	  */
 	@Override
-	public void setM_HU_Attribute_ID (int M_HU_Attribute_ID)
+	public void setM_HU_Attribute_ID (final int M_HU_Attribute_ID)
 	{
 		if (M_HU_Attribute_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_Attribute_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_Attribute_ID, Integer.valueOf(M_HU_Attribute_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_Attribute_ID, M_HU_Attribute_ID);
 	}
 
-	/** Get Handling Unit Attribute.
-		@return Handling Unit Attribute	  */
 	@Override
-	public int getM_HU_Attribute_ID () 
+	public int getM_HU_Attribute_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Attribute_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_Attribute_ID);
 	}
 
 	@Override
@@ -98,166 +72,112 @@ public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_At
 	}
 
 	@Override
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
+	public void setM_HU(final de.metas.handlingunits.model.I_M_HU M_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_Value (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
-	/** Get Handling Unit.
-		@return Handling Unit	  */
 	@Override
-	public int getM_HU_ID () 
+	public int getM_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
 	}
 
-	/** Set Handling Units Packing Instructions Attribute.
-		@param M_HU_PI_Attribute_ID Handling Units Packing Instructions Attribute	  */
 	@Override
-	public void setM_HU_PI_Attribute_ID (int M_HU_PI_Attribute_ID)
+	public void setM_HU_PI_Attribute_ID (final int M_HU_PI_Attribute_ID)
 	{
 		if (M_HU_PI_Attribute_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PI_Attribute_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PI_Attribute_ID, Integer.valueOf(M_HU_PI_Attribute_ID));
+			set_Value (COLUMNNAME_M_HU_PI_Attribute_ID, M_HU_PI_Attribute_ID);
 	}
 
-	/** Get Handling Units Packing Instructions Attribute.
-		@return Handling Units Packing Instructions Attribute	  */
 	@Override
-	public int getM_HU_PI_Attribute_ID () 
+	public int getM_HU_PI_Attribute_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_PI_Attribute_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Attribute_ID);
 	}
 
-	/** Set Suchschlüssel.
-		@param Value 
-		Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setValue (final @Nullable java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Suchschlüssel.
-		@return Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
-	  */
 	@Override
-	public java.lang.String getValue () 
+	public java.lang.String getValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return get_ValueAsString(COLUMNNAME_Value);
 	}
 
-	/** Set Datum.
-		@param ValueDate Datum	  */
 	@Override
-	public void setValueDate (java.sql.Timestamp ValueDate)
+	public void setValueDate (final @Nullable java.sql.Timestamp ValueDate)
 	{
 		set_Value (COLUMNNAME_ValueDate, ValueDate);
 	}
 
-	/** Get Datum.
-		@return Datum	  */
 	@Override
-	public java.sql.Timestamp getValueDate () 
+	public java.sql.Timestamp getValueDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValueDate);
+		return get_ValueAsTimestamp(COLUMNNAME_ValueDate);
 	}
 
-	/** Set Datum (initial).
-		@param ValueDateInitial Datum (initial)	  */
 	@Override
-	public void setValueDateInitial (java.sql.Timestamp ValueDateInitial)
+	public void setValueDateInitial (final @Nullable java.sql.Timestamp ValueDateInitial)
 	{
 		set_Value (COLUMNNAME_ValueDateInitial, ValueDateInitial);
 	}
 
-	/** Get Datum (initial).
-		@return Datum (initial)	  */
 	@Override
-	public java.sql.Timestamp getValueDateInitial () 
+	public java.sql.Timestamp getValueDateInitial() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ValueDateInitial);
+		return get_ValueAsTimestamp(COLUMNNAME_ValueDateInitial);
 	}
 
-	/** Set Merkmals-Wert (initial).
-		@param ValueInitial 
-		Initial Value of the Attribute
-	  */
 	@Override
-	public void setValueInitial (java.lang.String ValueInitial)
+	public void setValueInitial (final @Nullable java.lang.String ValueInitial)
 	{
 		set_ValueNoCheck (COLUMNNAME_ValueInitial, ValueInitial);
 	}
 
-	/** Get Merkmals-Wert (initial).
-		@return Initial Value of the Attribute
-	  */
 	@Override
-	public java.lang.String getValueInitial () 
+	public java.lang.String getValueInitial() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ValueInitial);
+		return get_ValueAsString(COLUMNNAME_ValueInitial);
 	}
 
-	/** Set Zahlwert.
-		@param ValueNumber 
-		Numeric Value
-	  */
 	@Override
-	public void setValueNumber (java.math.BigDecimal ValueNumber)
+	public void setValueNumber (final @Nullable BigDecimal ValueNumber)
 	{
 		set_Value (COLUMNNAME_ValueNumber, ValueNumber);
 	}
 
-	/** Get Zahlwert.
-		@return Numeric Value
-	  */
 	@Override
-	public java.math.BigDecimal getValueNumber () 
+	public BigDecimal getValueNumber() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumber);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ValueNumber);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Zahlwert (initial).
-		@param ValueNumberInitial 
-		Initial Numeric Value
-	  */
 	@Override
-	public void setValueNumberInitial (java.math.BigDecimal ValueNumberInitial)
+	public void setValueNumberInitial (final @Nullable BigDecimal ValueNumberInitial)
 	{
 		set_ValueNoCheck (COLUMNNAME_ValueNumberInitial, ValueNumberInitial);
 	}
 
-	/** Get Zahlwert (initial).
-		@return Initial Numeric Value
-	  */
 	@Override
-	public java.math.BigDecimal getValueNumberInitial () 
+	public BigDecimal getValueNumberInitial() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_ValueNumberInitial);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ValueNumberInitial);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

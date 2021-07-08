@@ -1,15 +1,15 @@
 package de.metas.material.planning;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.Duration;
-import java.time.temporal.TemporalUnit;
-
 import de.metas.quantity.Quantity;
 import de.metas.util.time.DurationUtils;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.Duration;
 
 /*
  * #%L
@@ -36,11 +36,11 @@ import lombok.Value;
 @Value
 public class WorkingTime
 {
-	Duration duration;
+	@NonNull Duration duration;
 	int cycles;
 
-	TemporalUnit activityTimeUnit;
-	Duration durationPerOneUnit;
+	@NonNull WFDurationUnit activityTimeUnit;
+	@NonNull Duration durationPerOneUnit;
 	int unitsPerCycle;
 	@NonNull Quantity qty;
 
@@ -49,7 +49,7 @@ public class WorkingTime
 			@NonNull final Duration durationPerOneUnit,
 			final int unitsPerCycle,
 			@NonNull final Quantity qty,
-			@NonNull final TemporalUnit activityTimeUnit)
+			@NonNull final WFDurationUnit activityTimeUnit)
 	{
 		this.durationPerOneUnit = durationPerOneUnit;
 		this.unitsPerCycle = unitsPerCycle;
@@ -78,14 +78,8 @@ public class WorkingTime
 		}
 	}
 
-	public long toLongUsingActivityTimeUnit()
-	{
-		return DurationUtils.toLong(getDuration(), activityTimeUnit);
-	}
-
 	public BigDecimal toBigDecimalUsingActivityTimeUnit()
 	{
-		return DurationUtils.toBigDecimal(getDuration(), activityTimeUnit);
+		return activityTimeUnit.toBigDecimal(getDuration());
 	}
-
 }

@@ -37,7 +37,7 @@ import org.springframework.stereotype.Component;
 import de.metas.edi.esb.ordersimport.AbstractEDIOrdersBean;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.stepcom.order.ObjectFactory;
+import de.metas.edi.esb.jaxb.stepcom.orders.ObjectFactory;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 
 @Component

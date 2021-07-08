@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -34,7 +35,6 @@ import de.metas.invoice.service.InvoiceScheduleRepository;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.util.lang.Percent;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -108,7 +108,7 @@ public class RefundInvoiceCandidateFactoryTest
 
 		refundContractRecord = newInstance(I_C_Flatrate_Term.class);
 		refundContractRecord.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Refund);
-		refundContractRecord.setBill_BPartner(bPartnerRecord);
+		refundContractRecord.setBill_BPartner_ID(bPartnerRecord.getC_BPartner_ID());
 		refundContractRecord.setC_Flatrate_Conditions(conditionsRecord);
 		refundContractRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		refundContractRecord.setC_Currency_ID(currencyId.getRepoId());

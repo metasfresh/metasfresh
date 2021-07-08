@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 
 /*
@@ -81,10 +80,13 @@ public final class PPOrderCreatedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingSupplyCandidateQuery(
-			@NonNull final PPOrder ppOrder,
-			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor)
+	protected CandidatesQuery createPreExistingSupplyCandidateQuery(@NonNull final AbstractPPOrderEvent abstractPPOrderEvent)
 	{
+		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.cast(abstractPPOrderEvent);
+
+		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderCreatedEvent.getSupplyRequiredDescriptor();
+
 		if (supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() > 0)
 		{
 			return CandidatesQuery.fromId(CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));

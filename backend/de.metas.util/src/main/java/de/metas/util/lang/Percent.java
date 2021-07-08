@@ -49,6 +49,7 @@ public class Percent
 	/**
 	 * @param value 100 based percent
 	 */
+	@JsonCreator
 	public static Percent of(@NonNull final BigDecimal value)
 	{
 		if (value.signum() == 0)
@@ -73,6 +74,7 @@ public class Percent
 	/**
 	 * @param value 100 based percent
 	 */
+	@JsonCreator
 	public static Percent of(final int value)
 	{
 		return of(BigDecimal.valueOf(value));

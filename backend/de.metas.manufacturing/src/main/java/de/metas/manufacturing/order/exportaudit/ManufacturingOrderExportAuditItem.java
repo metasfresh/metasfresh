@@ -3,7 +3,7 @@ package de.metas.manufacturing.order.exportaudit;
 import javax.annotation.Nullable;
 
 import de.metas.error.AdIssueId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Data;

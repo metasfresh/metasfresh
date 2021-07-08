@@ -23,6 +23,7 @@ package de.metas.edi.api;
  */
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import com.google.common.collect.ImmutableList;
@@ -40,6 +41,8 @@ import de.metas.util.ISingletonService;
 
 public interface IDesadvBL extends ISingletonService
 {
+	List<I_EDI_DesadvLine> retrieveLinesByIds(Collection<Integer> desadvLineIds);
+
 	/**
 	 * Creates a new desadv for the given <code>order</code>'s POReference, or retrieves an existing one. <br>
 	 * If a new one is created, then values are taken from this order.<br>
@@ -86,7 +89,7 @@ public interface IDesadvBL extends ISingletonService
 	/**
 	 * Print SSCC18 labels for given {@link I_EDI_DesadvLine_Pack} IDs by invoking a jasper-process, and forwarding its binary report data.
 	 */
-	ReportResultData printSSCC18_Labels(Properties ctx, Collection<Integer> desadvLineSSCC_IDs_ToPrint);
+	ReportResultData printSSCC18_Labels(Properties ctx, Collection<EDIDesadvLinePackId> desadvLineSSCC_IDs_ToPrint);
 
 	/**
 	 * Set the current minimum sum percentage taken from the sys config 'de.metas.esb.edi.DefaultMinimumPercentage'

@@ -10,6 +10,7 @@ import java.time.Month;
 import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -25,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -698,7 +698,7 @@ public class CustomsInvoiceServiceTest
 
 	private UserId createUser(final BPartnerId bpartnerId, final String userName)
 	{
-		final I_AD_User userRecord = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		userRecord.setName(userName);
 		save(userRecord);

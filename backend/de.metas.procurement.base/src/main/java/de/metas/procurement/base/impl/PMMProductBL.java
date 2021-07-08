@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import de.metas.product.ProductId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,6 +21,8 @@ import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -122,12 +125,18 @@ public class PMMProductBL implements IPMMProductBL
 		}
 	}
 
+	@Nullable
 	@Override
-	public I_PMM_Product getPMMProductForDateProductAndASI(final Date date, final int productId, final int partnerId, final int huPIPId, final I_M_AttributeSetInstance asi)
+	public I_PMM_Product getPMMProductForDateProductAndASI(final Date date,
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId partnerId,
+			final int huPIPId,
+			final I_M_AttributeSetInstance asi)
 	{
 		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+		final IPMMProductDAO productDAO = Services.get(IPMMProductDAO.class);
 
-		final List<I_PMM_Product> pmmProducts = Services.get(IPMMProductDAO.class).retrieveForDateAndProduct(date, productId, partnerId, huPIPId);
+		final List<I_PMM_Product> pmmProducts = productDAO.retrieveForDateAndProduct(date, productId, partnerId, huPIPId);
 
 		if (pmmProducts.isEmpty())
 		{
@@ -159,9 +168,7 @@ public class PMMProductBL implements IPMMProductBL
 			}
 
 		}
-
 		return resultPMMProduct;
-
 	}
 
 	/**
@@ -170,10 +177,6 @@ public class PMMProductBL implements IPMMProductBL
 	 * If both the lists contain an instance but with different values the result will be -1.
 	 * In case the first list is empty, the result will be 0.
 	 * The results > 0 will be the number of instances from the second list that are set and have matchings in the first list.
-	 *
-	 * @param pmmAttributeInstances
-	 * @param instances
-	 * @return
 	 */
 	private int countInstanceMatchings(final List<I_M_AttributeInstance> pmmAttributeInstances, final List<I_M_AttributeInstance> instances)
 	{

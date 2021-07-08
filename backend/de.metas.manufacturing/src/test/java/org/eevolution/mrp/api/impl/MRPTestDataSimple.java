@@ -1,5 +1,8 @@
 package org.eevolution.mrp.api.impl;
 
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_AD_Org;
@@ -12,10 +15,6 @@ import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.X_PP_Product_Planning;
-
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import lombok.NonNull;
 
 /**
  * Simple MRP master data definition.
@@ -175,7 +174,6 @@ public class MRPTestDataSimple
 		// => grab it from plant01
 		helper.newProductPlanning()
 				.product(pSalad_2xTomato_1xOnion).warehouse(warehouse_picking01).plant(helper.plant_any)
-				.setIsRequireDRP(true)
 				.setDD_NetworkDistribution(ddNetwork)
 				.setDeliveryTime_Promised(1)
 				.build();
@@ -192,7 +190,6 @@ public class MRPTestDataSimple
 		// => grab it from RawMaterials01
 		helper.newProductPlanning()
 				.product(pTomato).warehouse(warehouse_plant01).plant(plant01)
-				.setIsRequireDRP(true)
 				.setDD_NetworkDistribution(ddNetwork)
 				.setDeliveryTime_Promised(1)
 				.build();
@@ -200,7 +197,6 @@ public class MRPTestDataSimple
 		// => grab it from RawMaterials01
 		helper.newProductPlanning()
 				.product(pOnion).warehouse(warehouse_plant01).plant(plant01)
-				.setIsRequireDRP(true)
 				.setDD_NetworkDistribution(ddNetwork)
 				.setDeliveryTime_Promised(1)
 				.build();

@@ -12,6 +12,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -43,6 +45,7 @@ public class OrderLineId implements RepoIdAware
 		return new OrderLineId(repoId);
 	}
 
+	@Nullable
 	public static OrderLineId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new OrderLineId(repoId) : null;
@@ -53,7 +56,7 @@ public class OrderLineId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final OrderLineId orderLineId)
+	public static int toRepoId(@Nullable final OrderLineId orderLineId)
 	{
 		return orderLineId != null ? orderLineId.getRepoId() : -1;
 	}

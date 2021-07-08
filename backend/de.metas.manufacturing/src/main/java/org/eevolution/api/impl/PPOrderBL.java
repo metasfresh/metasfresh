@@ -22,51 +22,11 @@
 
 package org.eevolution.api.impl;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_WF_Node_Template;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.eevolution.api.ActivityControlCreateRequest;
-import org.eevolution.api.IPPCostCollectorBL;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.IPPOrderRoutingRepository;
-import org.eevolution.api.PPOrderCreateRequest;
-import org.eevolution.api.PPOrderPlanningStatus;
-import org.eevolution.api.PPOrderRouting;
-import org.eevolution.api.PPOrderRoutingActivity;
-import org.eevolution.api.PPOrderRoutingActivityStatus;
-import org.eevolution.api.PPOrderScheduleChangeRequest;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.I_PP_Order_Node;
-import org.eevolution.model.X_PP_Order;
-import org.slf4j.Logger;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -80,13 +40,11 @@ import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingId;
-import de.metas.material.planning.pporder.impl.QtyCalculationsBOM;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -96,12 +54,52 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_WF_Node_Template;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.eevolution.api.ActivityControlCreateRequest;
+import org.eevolution.api.IPPCostCollectorBL;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.IPPOrderRoutingRepository;
+import org.eevolution.api.PPOrderCreateRequest;
+import org.eevolution.api.PPOrderDocBaseType;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.api.PPOrderRouting;
+import org.eevolution.api.PPOrderRoutingActivity;
+import org.eevolution.api.PPOrderRoutingActivityStatus;
+import org.eevolution.api.PPOrderScheduleChangeRequest;
+import org.eevolution.api.QtyCalculationsBOM;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.eevolution.model.I_PP_Order_Node;
+import org.eevolution.model.X_PP_Order;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PPOrderBL implements IPPOrderBL
 {
 	private static final Logger logger = LogManager.getLogger(PPOrderBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPPOrderDAO ppOrdersRepo = Services.get(IPPOrderDAO.class);
 	private final IPPOrderBOMBL orderBOMService = Services.get(IPPOrderBOMBL.class);
@@ -115,6 +113,12 @@ public class PPOrderBL implements IPPOrderBL
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
+
+	@Override
+	public I_PP_Order getById(@NonNull final PPOrderId id)
+	{
+		return ppOrdersRepo.getById(id);
+	}
 
 	@Override
 	public I_PP_Order createOrder(@NonNull final PPOrderCreateRequest request)
@@ -141,7 +145,7 @@ public class PPOrderBL implements IPPOrderBL
 		ppOrder.setProcessed(false);
 		ppOrder.setProcessing(false);
 		ppOrder.setPosted(false);
-		setDocType(ppOrder, X_C_DocType.DOCBASETYPE_ManufacturingOrder, /* docSubType */null);
+		setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, /* docSubType */null);
 		ppOrder.setDocStatus(X_PP_Order.DOCSTATUS_Drafted);
 		ppOrder.setDocAction(X_PP_Order.DOCACTION_Complete);
 	}
@@ -190,7 +194,7 @@ public class PPOrderBL implements IPPOrderBL
 		}
 		else
 		{
-			final Quantity qtyRequiredToProduce = orderBOMService.getQuantities(order).getQtyRequiredToProduce();
+			final Quantity qtyRequiredToProduce = getQuantities(order).getQtyRequiredToProduce();
 			numberOfBatches = qtyRequiredToProduce.divide(qtyBatchSize, 0, RoundingMode.UP).toBigDecimal().intValueExact();
 		}
 		order.setQtyBatchs(BigDecimal.valueOf(numberOfBatches));
@@ -218,7 +222,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order order = ppOrdersRepo.getById(request.getPpOrderId());
 
-		PPOrderQuantities qtys = orderBOMService.getQuantities(order);
+		PPOrderQuantities qtys = getQuantities(order);
 
 		final ProductId productId = ProductId.ofRepoId(order.getM_Product_ID());
 		final UomId uomId = qtys.getUomId();
@@ -242,6 +246,12 @@ public class PPOrderBL implements IPPOrderBL
 		}
 
 		ppOrdersRepo.save(order);
+	}
+
+	@Override
+	public PPOrderQuantities getQuantities(@NonNull final I_PP_Order order)
+	{
+		return orderBOMService.getQuantities(order);
 	}
 
 	@Override
@@ -282,11 +292,11 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void setDocType(
 			@NonNull final I_PP_Order ppOrder,
-			@NonNull final String docBaseType,
+			@NonNull final PPOrderDocBaseType docBaseType,
 			@Nullable final String docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType)
+				.docBaseType(docBaseType.getCode())
 				.docSubType(docSubType)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())
@@ -335,7 +345,7 @@ public class PPOrderBL implements IPPOrderBL
 				.routingId(PPRoutingId.ofRepoId(ppOrderRecord.getAD_Workflow_ID()))
 				.ppOrderId(PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID()))
 				.dateStartSchedule(TimeUtil.asLocalDateTime(ppOrderRecord.getDateStartSchedule()))
-				.qtyOrdered(orderBOMService.getQuantities(ppOrderRecord).getQtyRequiredToProduce())
+				.qtyOrdered(getQuantities(ppOrderRecord).getQtyRequiredToProduce())
 				.build()
 				.execute();
 
@@ -382,7 +392,7 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void closeAllActivities(@NonNull final PPOrderId orderId)
 	{
-		reportQtyToProcessOnNotStartedActivities(orderId);
+		reportQtyToProcessOnNotStartedActivitiesIfApplies(orderId);
 
 		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 
@@ -399,11 +409,17 @@ public class PPOrderBL implements IPPOrderBL
 		orderRoutingRepo.save(orderRouting);
 	}
 
-	private void reportQtyToProcessOnNotStartedActivities(final PPOrderId orderId)
+	private void reportQtyToProcessOnNotStartedActivitiesIfApplies(final PPOrderId orderId)
 	{
-		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
-		final ZonedDateTime reportDate = SystemTime.asZonedDateTime();
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(orderRecord.getDocBaseType());
+		if(docBaseType.isRepairOrder())
+		{
+			return;
+		}
+
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
+		final ZonedDateTime reportDate = de.metas.common.util.time.SystemTime.asZonedDateTime();
 
 		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
 		{
@@ -435,6 +451,23 @@ public class PPOrderBL implements IPPOrderBL
 						.build());
 			}
 		}
+	}
+
+	@Override
+	public void uncloseActivities(@NonNull final PPOrderId orderId)
+	{
+		final PPOrderRouting orderRouting = orderRoutingRepo.getByOrderId(orderId);
+
+		for (final PPOrderRoutingActivity activity : orderRouting.getActivities())
+		{
+			final PPOrderRoutingActivityStatus activityStatus = activity.getStatus();
+			if (activityStatus == PPOrderRoutingActivityStatus.CLOSED)
+			{
+				orderRouting.uncloseActivity(activity.getId());
+			}
+		}
+
+		orderRoutingRepo.save(orderRouting);
 	}
 
 	@Override
@@ -492,8 +525,6 @@ public class PPOrderBL implements IPPOrderBL
 	@Override
 	public void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final AtomicInteger allCounter = new AtomicInteger(0);
 		final AtomicInteger updatedCounter = new AtomicInteger(0);
 
@@ -516,10 +547,6 @@ public class PPOrderBL implements IPPOrderBL
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} PP_Order", updatedCounter.get(), allCounter.get());
 	}
-
-
-
-
 
 	@Override
 	public void updateCanBeExportedFrom(@NonNull final I_PP_Order ppOrder)
@@ -544,6 +571,5 @@ public class PPOrderBL implements IPPOrderBL
 			logger.debug("canBeExportedAfterSeconds={}; -> set CanBeExportedFrom={}", canBeExportedAfterSeconds, ppOrder.getCanBeExportedFrom());
 		}
 	}
-
 
 }

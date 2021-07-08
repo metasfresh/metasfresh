@@ -32,6 +32,8 @@ import org.slf4j.MDC;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 /**
  * Transaction Management. - Create new Transaction by Trx.get(name); - ..transactions.. - commit(); ---- start(); ---- commit(); - close();
  *
@@ -48,7 +50,7 @@ import de.metas.util.Services;
 public class Trx extends AbstractTrx
 {
 	@Deprecated
-	public static Trx get(String trxName, boolean createNew)
+	public static Trx get(final String trxName, final boolean createNew)
 	{
 		final ITrx trx = Services.get(ITrxManager.class).get(trxName, createNew);
 		return (Trx)trx;
@@ -62,7 +64,7 @@ public class Trx extends AbstractTrx
 
 	private static final String MDC_TRX_NAME = "TrxName";
 	private static final Logger logger = LogManager.getLogger(Trx.class);
-	private Connection m_connection = null;
+	@Nullable private Connection m_connection = null;
 
 	public Trx(final ITrxManager trxManager, final String trxName, final boolean autocommit)
 	{
@@ -93,7 +95,7 @@ public class Trx extends AbstractTrx
 			{
 				isClosed = m_connection.isClosed();
 			}
-			catch (SQLException e)
+			catch (final SQLException e)
 			{
 				logger.warn("Error checking if the connection is closed. Assume closed.", e);
 				isClosed = true;
@@ -118,7 +120,7 @@ public class Trx extends AbstractTrx
 		{
 			m_connection.setAutoCommit(isAutoCommit());
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw DBException.wrapIfNeeded(e);
 		}
@@ -131,7 +133,7 @@ public class Trx extends AbstractTrx
 	 *
 	 * @param conn connection
 	 */
-	private void setConnection(Connection conn)
+	private void setConnection(final Connection conn)
 	{
 		if (conn == null)
 		{
@@ -158,7 +160,7 @@ public class Trx extends AbstractTrx
 			// NOTE: works with c3p0 from version 0.9.5 (released on 02.01.2015)
 			m_connection.setClientInfo("ApplicationName", "adempiere/" + getTrxName()); // task 08353
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			logger.warn("Failed setting the connection. Ignored.", e);
 		}
@@ -215,7 +217,7 @@ public class Trx extends AbstractTrx
 	}
 
 	@Override
-	protected boolean rollbackNative(ITrxSavepoint savepoint) throws SQLException
+	protected boolean rollbackNative(final ITrxSavepoint savepoint) throws SQLException
 	{
 		if (m_connection == null || m_connection.getAutoCommit())
 		{
@@ -236,7 +238,7 @@ public class Trx extends AbstractTrx
 				return true;
 			}
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			// Do nothing. The Savepoint might have been discarded because of an intermediate commit or rollback
 			// FIXME: track in AbstractTrx which savepoints where implicitly discarded in this way and don't call rollbackNative in such a case.
@@ -273,7 +275,7 @@ public class Trx extends AbstractTrx
 				// m_active = false;
 				return true;
 			}
-			catch (SQLException e)
+			catch (final SQLException e)
 			{
 				if (throwException)
 				{
@@ -318,7 +320,7 @@ public class Trx extends AbstractTrx
 			m_connection.close();
 			logger.debug("closeNative - closed m_connection={}", m_connection);
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			logger.warn("closeNative - failed closing connection={}, trxName={} but IGNORED.", m_connection, getTrxName());
 		}

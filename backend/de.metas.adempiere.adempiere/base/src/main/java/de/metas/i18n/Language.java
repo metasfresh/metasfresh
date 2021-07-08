@@ -15,7 +15,9 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import javax.print.attribute.standard.MediaSize;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.util.Env;
@@ -371,6 +373,7 @@ public final class Language implements Serializable
 	 * @return Base Language
 	 * @throws AdempiereException if the base language was not already configured
 	 */
+	@NonNull
 	public static String getBaseAD_Language()
 	{
 		// return s_languages[0].getAD_Language();
@@ -568,10 +571,16 @@ public final class Language implements Serializable
 	/** Locale */
 	private final Locale m_locale;
 	//
+	@JsonIgnore
 	private Boolean _decimalPoint; // might be lazy
+
+	@JsonIgnore
 	private Boolean _leftToRight; // might be lazy
 
+	@JsonIgnore
 	private String _dateFormatPattern; // might be lazy
+
+	@JsonIgnore
 	private ThreadLocal<SimpleDateFormat> _dateFormatThreadLocal = null;
 
 	private final MediaSize _mediaSize;

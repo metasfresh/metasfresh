@@ -1,27 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for EDI_DesadvLine_Pack
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_EDI_DesadvLine_Pack, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1066215605L;
+	private static final long serialVersionUID = 1690473119L;
 
     /** Standard Constructor */
-    public X_EDI_DesadvLine_Pack (Properties ctx, int EDI_DesadvLine_Pack_ID, String trxName)
+    public X_EDI_DesadvLine_Pack (final Properties ctx, final int EDI_DesadvLine_Pack_ID, @Nullable final String trxName)
     {
       super (ctx, EDI_DesadvLine_Pack_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_EDI_DesadvLine_Pack (Properties ctx, ResultSet rs, String trxName)
+    public X_EDI_DesadvLine_Pack (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,13 +29,13 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setBestBeforeDate (java.sql.Timestamp BestBeforeDate)
+	public void setBestBeforeDate (final java.sql.Timestamp BestBeforeDate)
 	{
 		set_Value (COLUMNNAME_BestBeforeDate, BestBeforeDate);
 	}
@@ -47,12 +47,12 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
@@ -68,18 +68,18 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setEDI_Desadv(de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv)
+	public void setEDI_Desadv(final de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv)
 	{
 		set_ValueFromPO(COLUMNNAME_EDI_Desadv_ID, de.metas.esb.edi.model.I_EDI_Desadv.class, EDI_Desadv);
 	}
 
 	@Override
-	public void setEDI_Desadv_ID (int EDI_Desadv_ID)
+	public void setEDI_Desadv_ID (final int EDI_Desadv_ID)
 	{
 		if (EDI_Desadv_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, Integer.valueOf(EDI_Desadv_ID));
+			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, EDI_Desadv_ID);
 	}
 
 	@Override
@@ -95,18 +95,18 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setEDI_DesadvLine(de.metas.esb.edi.model.I_EDI_DesadvLine EDI_DesadvLine)
+	public void setEDI_DesadvLine(final de.metas.esb.edi.model.I_EDI_DesadvLine EDI_DesadvLine)
 	{
 		set_ValueFromPO(COLUMNNAME_EDI_DesadvLine_ID, de.metas.esb.edi.model.I_EDI_DesadvLine.class, EDI_DesadvLine);
 	}
 
 	@Override
-	public void setEDI_DesadvLine_ID (int EDI_DesadvLine_ID)
+	public void setEDI_DesadvLine_ID (final int EDI_DesadvLine_ID)
 	{
 		if (EDI_DesadvLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, Integer.valueOf(EDI_DesadvLine_ID));
+			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_ID, EDI_DesadvLine_ID);
 	}
 
 	@Override
@@ -116,12 +116,12 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setEDI_DesadvLine_Pack_ID (int EDI_DesadvLine_Pack_ID)
+	public void setEDI_DesadvLine_Pack_ID (final int EDI_DesadvLine_Pack_ID)
 	{
 		if (EDI_DesadvLine_Pack_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_Pack_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_Pack_ID, Integer.valueOf(EDI_DesadvLine_Pack_ID));
+			set_ValueNoCheck (COLUMNNAME_EDI_DesadvLine_Pack_ID, EDI_DesadvLine_Pack_ID);
 	}
 
 	@Override
@@ -131,7 +131,31 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setIPA_SSCC18 (java.lang.String IPA_SSCC18)
+	public void setGTIN_LU_PackingMaterial (final java.lang.String GTIN_LU_PackingMaterial)
+	{
+		set_Value (COLUMNNAME_GTIN_LU_PackingMaterial, GTIN_LU_PackingMaterial);
+	}
+
+	@Override
+	public java.lang.String getGTIN_LU_PackingMaterial() 
+	{
+		return get_ValueAsString(COLUMNNAME_GTIN_LU_PackingMaterial);
+	}
+
+	@Override
+	public void setGTIN_TU_PackingMaterial (final java.lang.String GTIN_TU_PackingMaterial)
+	{
+		set_Value (COLUMNNAME_GTIN_TU_PackingMaterial, GTIN_TU_PackingMaterial);
+	}
+
+	@Override
+	public java.lang.String getGTIN_TU_PackingMaterial() 
+	{
+		return get_ValueAsString(COLUMNNAME_GTIN_TU_PackingMaterial);
+	}
+
+	@Override
+	public void setIPA_SSCC18 (final java.lang.String IPA_SSCC18)
 	{
 		set_Value (COLUMNNAME_IPA_SSCC18, IPA_SSCC18);
 	}
@@ -139,13 +163,13 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	@Override
 	public java.lang.String getIPA_SSCC18() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_IPA_SSCC18);
+		return get_ValueAsString(COLUMNNAME_IPA_SSCC18);
 	}
 
 	@Override
-	public void setIsManual_IPA_SSCC18 (boolean IsManual_IPA_SSCC18)
+	public void setIsManual_IPA_SSCC18 (final boolean IsManual_IPA_SSCC18)
 	{
-		set_Value (COLUMNNAME_IsManual_IPA_SSCC18, Boolean.valueOf(IsManual_IPA_SSCC18));
+		set_Value (COLUMNNAME_IsManual_IPA_SSCC18, IsManual_IPA_SSCC18);
 	}
 
 	@Override
@@ -155,7 +179,7 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setLotNumber (java.lang.String LotNumber)
+	public void setLotNumber (final java.lang.String LotNumber)
 	{
 		set_Value (COLUMNNAME_LotNumber, LotNumber);
 	}
@@ -163,16 +187,16 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	@Override
 	public java.lang.String getLotNumber() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_LotNumber);
+		return get_ValueAsString(COLUMNNAME_LotNumber);
 	}
 
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_Value (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
 	@Override
@@ -182,12 +206,12 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setM_HU_PackagingCode_LU_ID (int M_HU_PackagingCode_LU_ID)
+	public void setM_HU_PackagingCode_LU_ID (final int M_HU_PackagingCode_LU_ID)
 	{
 		if (M_HU_PackagingCode_LU_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, Integer.valueOf(M_HU_PackagingCode_LU_ID));
+			set_Value (COLUMNNAME_M_HU_PackagingCode_LU_ID, M_HU_PackagingCode_LU_ID);
 	}
 
 	@Override
@@ -197,23 +221,23 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setM_HU_PackagingCode_LU_Text (java.lang.String M_HU_PackagingCode_LU_Text)
+	public void setM_HU_PackagingCode_LU_Text (final java.lang.String M_HU_PackagingCode_LU_Text)
 	{
 		throw new IllegalArgumentException ("M_HU_PackagingCode_LU_Text is virtual column");	}
 
 	@Override
 	public java.lang.String getM_HU_PackagingCode_LU_Text() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_M_HU_PackagingCode_LU_Text);
+		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_LU_Text);
 	}
 
 	@Override
-	public void setM_HU_PackagingCode_TU_ID (int M_HU_PackagingCode_TU_ID)
+	public void setM_HU_PackagingCode_TU_ID (final int M_HU_PackagingCode_TU_ID)
 	{
 		if (M_HU_PackagingCode_TU_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_PackagingCode_TU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_PackagingCode_TU_ID, Integer.valueOf(M_HU_PackagingCode_TU_ID));
+			set_Value (COLUMNNAME_M_HU_PackagingCode_TU_ID, M_HU_PackagingCode_TU_ID);
 	}
 
 	@Override
@@ -223,14 +247,14 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setM_HU_PackagingCode_TU_Text (java.lang.String M_HU_PackagingCode_TU_Text)
+	public void setM_HU_PackagingCode_TU_Text (final java.lang.String M_HU_PackagingCode_TU_Text)
 	{
 		throw new IllegalArgumentException ("M_HU_PackagingCode_TU_Text is virtual column");	}
 
 	@Override
 	public java.lang.String getM_HU_PackagingCode_TU_Text() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_M_HU_PackagingCode_TU_Text);
+		return get_ValueAsString(COLUMNNAME_M_HU_PackagingCode_TU_Text);
 	}
 
 	@Override
@@ -240,18 +264,18 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut)
+	public void setM_InOut(final org.compiere.model.I_M_InOut M_InOut)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
 	}
 
 	@Override
-	public void setM_InOut_ID (int M_InOut_ID)
+	public void setM_InOut_ID (final int M_InOut_ID)
 	{
 		if (M_InOut_ID < 1) 
 			set_Value (COLUMNNAME_M_InOut_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
+			set_Value (COLUMNNAME_M_InOut_ID, M_InOut_ID);
 	}
 
 	@Override
@@ -267,18 +291,18 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
+	public void setM_InOutLine(final org.compiere.model.I_M_InOutLine M_InOutLine)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
 	}
 
 	@Override
-	public void setM_InOutLine_ID (int M_InOutLine_ID)
+	public void setM_InOutLine_ID (final int M_InOutLine_ID)
 	{
 		if (M_InOutLine_ID < 1) 
 			set_Value (COLUMNNAME_M_InOutLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
+			set_Value (COLUMNNAME_M_InOutLine_ID, M_InOutLine_ID);
 	}
 
 	@Override
@@ -288,61 +312,61 @@ public class X_EDI_DesadvLine_Pack extends org.compiere.model.PO implements I_ED
 	}
 
 	@Override
-	public void setMovementQty (java.math.BigDecimal MovementQty)
+	public void setMovementQty (final BigDecimal MovementQty)
 	{
 		set_Value (COLUMNNAME_MovementQty, MovementQty);
 	}
 
 	@Override
-	public java.math.BigDecimal getMovementQty() 
+	public BigDecimal getMovementQty() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyCU (java.math.BigDecimal QtyCU)
+	public void setQtyCU (final BigDecimal QtyCU)
 	{
 		set_Value (COLUMNNAME_QtyCU, QtyCU);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyCU() 
+	public BigDecimal getQtyCU() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCU);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyCUsPerLU (java.math.BigDecimal QtyCUsPerLU)
+	public void setQtyCUsPerLU (final BigDecimal QtyCUsPerLU)
 	{
 		set_Value (COLUMNNAME_QtyCUsPerLU, QtyCUsPerLU);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyCUsPerLU() 
+	public BigDecimal getQtyCUsPerLU() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCUsPerLU);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCUsPerLU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyItemCapacity (java.math.BigDecimal QtyItemCapacity)
+	public void setQtyItemCapacity (final BigDecimal QtyItemCapacity)
 	{
 		set_Value (COLUMNNAME_QtyItemCapacity, QtyItemCapacity);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyItemCapacity() 
+	public BigDecimal getQtyItemCapacity() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyTU (int QtyTU)
+	public void setQtyTU (final int QtyTU)
 	{
-		set_Value (COLUMNNAME_QtyTU, Integer.valueOf(QtyTU));
+		set_Value (COLUMNNAME_QtyTU, QtyTU);
 	}
 
 	@Override

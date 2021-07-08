@@ -164,7 +164,7 @@ public class RemoveQtyFromHUCommand
 
 		final I_C_UOM uom = uomDAO.getById(product.getC_UOM_ID());
 
-		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
+		final IAllocationRequest request = AllocationUtils.builder()
 				.setHUContext(huContext)
 				.setProduct(product)
 				.setQuantity(Quantity.of(qtyCU, uom))

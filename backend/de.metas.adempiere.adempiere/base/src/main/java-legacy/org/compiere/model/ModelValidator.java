@@ -1,20 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- * Contributor(s) : Layda Salas - globalqss                                   *
- *****************************************************************************/
 package org.compiere.model;
 
 import org.adempiere.ad.modelvalidator.DocTimingType;
@@ -22,6 +5,8 @@ import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxManager;
 
 import com.google.common.collect.ImmutableMap;
+
+import javax.annotation.Nullable;
 
 /**
  * Model Validator
@@ -49,7 +34,7 @@ public interface ModelValidator
 	/**
 	 * When saving a PO, in case we create a local transaction, fire first TYPE_BEFORE_SAVE_TRX event we trigger the event only if was not started in other place, like in a process for example.
 	 *
-	 * @task 02380
+	 * Task 02380
 	 */
 	int TYPE_BEFORE_SAVE_TRX = 1000 + 1; // metas: tsa: 02380
 
@@ -61,7 +46,7 @@ public interface ModelValidator
 	 * </ul>
 	 *
 	 * @deprecated if you want the code invoked right after the PO is saved, then please use {@link ITrxManager#getTrxListenerManagerOrAutoCommit(String)} to get a
-	 *             {@link ITrxListenerManager} and then call {@link ITrxListenerManager#registerListener(ITrxListener)} to
+	 *             {@link ITrxListenerManager} and then call {@link ITrxListenerManager#registerListener(ITrxListenerManager.RegisterListenerRequest)} to
 	 *             register a listener with an <code>afterCommit()</code> implementation.
 	 *             <p>
 	 *             If you want the code invoked later, then please use async.
@@ -155,7 +140,7 @@ public interface ModelValidator
 	 * @param engine validation engine
 	 * @param client client
 	 */
-	void initialize(ModelValidationEngine engine, MClient client);
+	void initialize(ModelValidationEngine engine, @Nullable MClient client);
 
 	/**
 	 * Get Client to be monitored
@@ -173,6 +158,7 @@ public interface ModelValidator
 	 * @param AD_User_ID user
 	 * @return error message or null
 	 */
+	@Nullable
 	String login(int AD_Org_ID, int AD_Role_ID, int AD_User_ID);
 
 	/**
@@ -185,6 +171,7 @@ public interface ModelValidator
 	 * @return error message or null
 	 * @exception Exception if the recipient wishes the change to be not accept.
 	 */
+	@Nullable
 	String modelChange(PO po, int type) throws Exception;
 
 	/**
@@ -199,6 +186,7 @@ public interface ModelValidator
 	 * @return error message or null -
 	 *         if not null, the document will be marked as Invalid.
 	 */
+	@Nullable
 	String docValidate(PO po, int timing) throws Exception;
 
 }	// ModelValidator

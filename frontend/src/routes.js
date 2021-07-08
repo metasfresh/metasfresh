@@ -3,7 +3,12 @@ import { IndexRoute, NoMatch, Route } from 'react-router';
 import { push } from 'react-router-redux';
 
 import { loginSuccess, logoutSuccess } from './actions/AppActions';
-import { localLoginRequest, logoutRequest, getResetPasswordInfo } from './api';
+import {
+  localLoginRequest,
+  logoutRequest,
+  getResetPasswordInfo,
+  loginWithToken,
+} from './api';
 import { clearNotifications, enableTutorial } from './actions/AppActions';
 import { createWindow } from './actions/WindowActions';
 import { setBreadcrumb } from './actions/MenuActions';
@@ -62,6 +67,21 @@ export const getRoutes = (store, auth, plugins) => {
     }
   };
 
+  /**
+   * @method tokenAuthentication
+   * @summary - method executed when we authenticate directly by using a `token` without the need to supply a `username` and a `password`
+   * @param {object} - tokenId prop given as param to the /token path i.e  /token/xxxxxxx   (`xxxxxxx` will be the value of the tokenId )
+   */
+  const tokenAuthentication = ({ params: { tokenId } }) => {
+    loginWithToken(tokenId)
+      .then(() => {
+        store.dispatch(push('/'));
+      })
+      .catch(() => {
+        store.dispatch(push('/login?redirect=true'));
+      });
+  };
+
   const onResetEnter = (nextState, replace, callback) => {
     const token = nextState.location.query.token;
 
@@ -79,7 +99,10 @@ export const getRoutes = (store, auth, plugins) => {
   const logout = () => {
     logoutRequest()
       .then(() => logoutSuccess(auth))
-      .then(() => store.dispatch(push('/login')));
+      .then(() => {
+        store.dispatch(setBreadcrumb([]));
+        store.dispatch(push('/login'));
+      });
   };
 
   function setPluginBreadcrumbHandlers(routesArray, currentBreadcrumb) {
@@ -143,7 +166,12 @@ export const getRoutes = (store, auth, plugins) => {
       path: '/window/:windowType/:docId',
       component: MasterWindow,
       onEnter: ({ params }) =>
-        store.dispatch(createWindow(params.windowType, params.docId)),
+        store.dispatch(
+          createWindow({
+            windowId: params.windowType,
+            docId: params.docId,
+          })
+        ),
     },
     {
       path: '/sitemap',
@@ -170,6 +198,7 @@ export const getRoutes = (store, auth, plugins) => {
       <Route onEnter={authRequired} childRoutes={childRoutes}>
         <IndexRoute component={Dashboard} />
       </Route>
+      <Route path="/token/:tokenId" onEnter={tokenAuthentication} />
       <Route
         path="/login"
         component={({ location }) => (

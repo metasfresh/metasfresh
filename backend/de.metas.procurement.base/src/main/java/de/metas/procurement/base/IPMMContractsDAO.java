@@ -50,11 +50,6 @@ public interface IPMMContractsDAO extends ISingletonService
 	 * Retrieve the running procurement contract for the given Date, Partner and Product.
 	 * No matter if there are {@link I_C_Flatrate_DataEntry}s or not.
 	 * In case there are many, choose the one with the latest start date that is yet before the given {@code date}.
-	 * 
-	 * @param date
-	 * @param bPartnerID
-	 * @param pmmProductId
-	 * @return
 	 */
 	I_C_Flatrate_Term retrieveTermForPartnerAndProduct(Date date, int bPartnerID, int pmmProductId);
 

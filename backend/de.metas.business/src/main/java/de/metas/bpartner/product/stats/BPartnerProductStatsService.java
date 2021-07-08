@@ -1,13 +1,18 @@
 package de.metas.bpartner.product.stats;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.springframework.stereotype.Service;
+
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.money.CurrencyId;
+import de.metas.product.ProductId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -49,8 +54,8 @@ public class BPartnerProductStatsService
 		return statsRepo.getByPartnerAndProducts(bpartnerId, productIds);
 	}
 
-	public List<BPartnerProductStats> getByProductIds(@NonNull final Set<ProductId> productIds)
+	public List<BPartnerProductStats> getByProductIds(@NonNull final Set<ProductId> productIds, @Nullable final CurrencyId currencyId)
 	{
-		return statsRepo.getByProductIds(productIds);
+		return statsRepo.getByProductIds(productIds, currencyId);
 	}
 }

@@ -57,6 +57,7 @@ class Section extends PureComponent {
       addRefToWidgets,
       onBlurWidget,
       requestElementGroupFocus,
+      disconnected,
     } = this.props;
     const maxRows = 12;
     const colWidth = Math.floor(maxRows / columns.length);
@@ -85,6 +86,7 @@ class Section extends PureComponent {
           onBlurWidget={onBlurWidget}
           addRefToWidgets={addRefToWidgets}
           requestElementGroupFocus={requestElementGroupFocus}
+          disconnected={disconnected}
         />
       );
     });
@@ -109,6 +111,7 @@ Section.propTypes = {
   requestElementGroupFocus: PropTypes.func.isRequired,
   isSectionCollapsed: PropTypes.bool,
   toggleSectionCollapsed: PropTypes.func.isRequired,
+  disconnected: PropTypes.string,
 };
 
 export default Section;

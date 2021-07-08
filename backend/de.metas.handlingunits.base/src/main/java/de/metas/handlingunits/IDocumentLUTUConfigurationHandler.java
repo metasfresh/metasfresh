@@ -28,6 +28,8 @@ import java.util.List;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 
+import javax.annotation.Nullable;
+
 /**
  * Implementations of this interface are able to manage the relation between {@link I_M_HU_LUTU_Configuration} and particular document line.
  *
@@ -74,6 +76,7 @@ public interface IDocumentLUTUConfigurationHandler<T>
 	 * @param documentLine
 	 * @return current LU/TU configuration or <code>null</code>.
 	 */
+	@Nullable
 	I_M_HU_LUTU_Configuration getCurrentLUTUConfigurationOrNull(final T documentLine);
 
 	/**

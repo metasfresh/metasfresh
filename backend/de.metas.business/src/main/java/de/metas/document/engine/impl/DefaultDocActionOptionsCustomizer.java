@@ -141,7 +141,9 @@ import de.metas.util.Check;
 
 				final String orderType = optionsCtx.getOrderType();
 				if (optionsCtx.getSoTrx().isSales()
-						&& (X_C_DocType.DOCSUBTYPE_Quotation.equals(orderType) || X_C_DocType.DOCSUBTYPE_Proposal.equals(orderType)))
+						&& (X_C_DocType.DOCSUBTYPE_Quotation.equals(orderType)
+						|| X_C_DocType.DOCSUBTYPE_Proposal.equals(orderType)
+						|| (X_C_DocType.DOCSUBTYPE_FrameAgrement.equals(orderType))))
 				{
 					optionsCtx.setDocActionToUse(IDocument.ACTION_Prepare);
 				}

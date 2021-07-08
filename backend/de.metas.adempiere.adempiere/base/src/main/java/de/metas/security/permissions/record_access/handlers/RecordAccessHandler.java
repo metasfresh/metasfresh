@@ -32,8 +32,4 @@ public interface RecordAccessHandler
 	Set<RecordAccessFeature> getHandledFeatures();
 	
 	Set<String> getHandledTableNames();
-
-	void onAccessGranted(RecordAccess request);
-
-	void onAccessRevoked(RecordAccess request);
 }

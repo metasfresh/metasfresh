@@ -1,12 +1,15 @@
 package de.metas.document;
 
-import org.compiere.model.I_C_DocType;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_DocType;
 
 public interface IDocTypeBL extends ISingletonService
 {
+	I_C_DocType getById(DocTypeId docTypeId);
+
+	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
+
 	ITranslatableString getNameById(DocTypeId docTypeId);
 
 	/**
@@ -45,4 +48,7 @@ public interface IDocTypeBL extends ISingletonService
 
 	boolean isPrepay(I_C_DocType dt);
 
+	boolean hasRequestType(DocTypeId docTypeId);
+
+	boolean isRequisition(DocTypeId docTypeId);
 }

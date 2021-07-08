@@ -28,22 +28,23 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Data
-@Builder
+@Value
+@Builder(toBuilder = true)
 public class ShipmentScheduleExportAuditItem implements APIExportAuditItem<ShipmentScheduleId>
 {
 	@NonNull
-	private final ShipmentScheduleId repoIdAware;
+	ShipmentScheduleId repoIdAware;
 
 	@NonNull
-	private final OrgId orgId;
+	OrgId orgId;
 
 	@NonNull
-	private APIExportStatus exportStatus;
+	APIExportStatus exportStatus;
 
 	@Nullable
-	private AdIssueId issueId;
+	AdIssueId issueId;
 }

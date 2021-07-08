@@ -6,6 +6,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { find } from 'lodash';
+
 import { allowShortcut, disableShortcut } from '../../actions/WindowActions';
 import RawWidget from '../widget/RawWidget';
 import { convertDateToReadable } from '../../utils/dateHelpers';
@@ -15,16 +17,26 @@ class InlineFilterItem extends Component {
   state = { filter: this.props.parentFilter, searchString: '' };
 
   static getDerivedStateFromProps(props) {
-    const { active } = props;
-    if (active.length && active[0].parameters) {
-      return { searchString: active[0].parameters[0].value };
+    const {
+      active,
+      parentFilter: { filterId },
+    } = props;
+    const filterActive = active.length && find(active, { filterId });
+
+    if (filterActive && filterActive.parameters.length) {
+      return { searchString: filterActive.parameters[0].value };
     }
     return null;
   }
 
   setValue = (property, value, id, valueTo) => {
-    const { filterId, updateInlineFilter } = this.props;
-    updateInlineFilter({ filterId, value });
+    const {
+      filterId,
+      updateInlineFilter,
+      parentFilter: { filterId: parentFilterId },
+    } = this.props;
+    updateInlineFilter({ filterId, parentFilterId, data: value });
+
     this.setState({ searchString: value });
     //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
     // IT HAS TO BE UNIFIED
@@ -41,6 +53,7 @@ class InlineFilterItem extends Component {
 
   mergeData = (property, value, valueTo) => {
     this.setState((prevState) => ({
+      // @TODO: This has to be rewritten to just use object spread
       filter: Object.assign({}, prevState.filter, {
         parameters: prevState.filter.parameters.map((param) => {
           if (param.parameterName === property) {
@@ -61,10 +74,8 @@ class InlineFilterItem extends Component {
   handleApply = () => {
     const { applyFilters, clearFilters } = this.props;
     const { filter } = this.state;
-    clearFilters(filter);
-    if (filter && !filter.parameters[0].value) {
-      return this.handleClear();
-    }
+
+    clearFilters(filter, true);
     applyFilters(filter);
   };
 

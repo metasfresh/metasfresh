@@ -4,16 +4,17 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -25,7 +26,6 @@ import de.metas.order.DeliveryRule;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -38,7 +38,7 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 	public I_C_BPartner_Location getBPartnerLocation(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final BPartnerLocationId locationId = getBPartnerLocationId(sched);
-		return Services.get(IBPartnerDAO.class).getBPartnerLocationById(locationId);
+		return Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(locationId);
 	}
 
 	@Override
@@ -146,9 +146,9 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 
 	@Deprecated
 	@Override
-	public I_AD_User getBPartnerContact(final I_M_ShipmentSchedule sched)
+	public org.compiere.model.I_AD_User getBPartnerContact(final I_M_ShipmentSchedule sched)
 	{
-		final I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_ID(), I_AD_User.class) : InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_Override_ID(), I_AD_User.class);
+		final org.compiere.model.I_AD_User user = sched.getAD_User_Override_ID() <= 0 ? InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_ID(), I_AD_User.class) : InterfaceWrapperHelper.loadOutOfTrx(sched.getAD_User_Override_ID(), I_AD_User.class);
 		return user;
 	}
 

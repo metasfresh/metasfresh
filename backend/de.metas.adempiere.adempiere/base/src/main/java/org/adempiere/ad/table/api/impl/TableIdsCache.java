@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.metas.adempiere.service.impl.TooltipType;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -123,6 +124,19 @@ public class TableIdsCache
 		}
 	}
 
+	@NonNull
+	public TooltipType getTooltipType(@NonNull final String tableName)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			throw new UnsupportedOperationException();
+		}
+		else
+		{
+			return getTableInfoMap().getTableInfo(tableName).getTooltipType();
+		}
+	}
+
 	private TableInfoMap getTableInfoMap()
 	{
 		return tableInfoMapHolder.getOrLoad(0, this::retrieveTableInfoMap);
@@ -132,9 +146,9 @@ public class TableIdsCache
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		final String sql = "SELECT AD_Table_ID, TableName, EntityType FROM AD_Table";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
+		final String sql = "SELECT AD_Table_ID, TableName, EntityType, TooltipType FROM AD_Table";
+		final PreparedStatement pstmt;
+		final ResultSet rs;
 		try
 		{
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
@@ -147,6 +161,7 @@ public class TableIdsCache
 						.adTableId(AdTableId.ofRepoId(rs.getInt("AD_Table_ID")))
 						.tableName(rs.getString("TableName"))
 						.entityType(rs.getString("EntityType"))
+						.tooltipType(TooltipType.ofCode(rs.getString("TooltipType")))
 						.build());
 			}
 
@@ -202,6 +217,9 @@ public class TableIdsCache
 
 		@NonNull
 		String entityType;
+
+		@NonNull
+		TooltipType tooltipType;
 	}
 
 	private static class TableInfoMap
@@ -212,9 +230,10 @@ public class TableIdsCache
 		TableInfoMap(@NonNull final List<TableInfo> list)
 		{
 			tableInfoByTableName = Maps.uniqueIndex(list, tableInfo -> TableNameKey.of(tableInfo.getTableName()));
-			tableInfoByTableId = Maps.uniqueIndex(list, tableInfo -> tableInfo.getAdTableId());
+			tableInfoByTableId = Maps.uniqueIndex(list, TableInfo::getAdTableId);
 		}
 
+		@Override
 		public String toString()
 		{
 			return MoreObjects.toStringHelper(this)
@@ -239,7 +258,7 @@ public class TableIdsCache
 		}
 
 		@NonNull
-		public TableInfo getTableInfo(@NonNull AdTableId adTableId)
+		public TableInfo getTableInfo(@NonNull final AdTableId adTableId)
 		{
 			final TableInfo tableInfo = tableInfoByTableId.get(adTableId);
 			if (tableInfo == null)
@@ -267,6 +286,7 @@ public class TableIdsCache
 						.adTableId(AdTableId.ofRepoId(nextTableId2.getAndIncrement()))
 						.tableName(tableName)
 						.entityType("D")
+						.tooltipType(TooltipType.DEFAULT)
 						.build();
 
 				tableInfoByTableName.put(tableNameKey, tableInfo);
@@ -278,13 +298,13 @@ public class TableIdsCache
 
 		public String getTableName(@NonNull final AdTableId adTableId)
 		{
-			TableInfo tableInfo = tableInfoByTableId.get(adTableId);
+			final TableInfo tableInfo = tableInfoByTableId.get(adTableId);
 			if (tableInfo != null)
 			{
 				return tableInfo.getTableName();
 			}
 
-			//
+			//noinspection ConstantConditions
 			final I_AD_Table adTable = POJOLookupMap.get().lookup("AD_Table", adTableId.getRepoId());
 			if (adTable != null)
 			{

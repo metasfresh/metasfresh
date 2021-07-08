@@ -57,6 +57,7 @@ class Column extends PureComponent {
       requestElementGroupFocus,
       columnIndex,
       sectionIndex,
+      disconnected,
     } = this.props;
 
     return groups.map((elementGroupLayout, elementGroupIndex) => {
@@ -85,6 +86,7 @@ class Column extends PureComponent {
           onBlurWidget={onBlurWidget}
           addRefToWidgets={addRefToWidgets}
           requestElementGroupFocus={requestElementGroupFocus}
+          disconnected={disconnected}
         />
       );
     });
@@ -161,6 +163,7 @@ Column.propTypes = {
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
   requestElementGroupFocus: PropTypes.func.isRequired,
+  disconnected: PropTypes.string,
 };
 
 export default Column;

@@ -8,7 +8,6 @@ import org.eevolution.model.X_PP_Cost_Collector;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
 import lombok.Getter;
 import lombok.NonNull;
 

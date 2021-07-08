@@ -2,7 +2,6 @@ package org.eevolution.model.validator;
 
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.uom.UomId;
-import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 
@@ -37,11 +36,9 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
-import org.eevolution.model.I_PP_Order_BOMLine;
 
-import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderBOMLineId;
 import de.metas.util.Services;
 
 @Interceptor(I_PP_Cost_Collector.class)

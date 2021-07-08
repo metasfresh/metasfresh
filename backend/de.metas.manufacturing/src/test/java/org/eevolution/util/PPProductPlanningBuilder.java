@@ -23,8 +23,9 @@ package org.eevolution.util;
  */
 
 
-import java.math.BigDecimal;
-
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_AD_Workflow;
@@ -36,9 +37,7 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
-import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.math.BigDecimal;
 
 public class PPProductPlanningBuilder
 {
@@ -57,7 +56,6 @@ public class PPProductPlanningBuilder
 	private I_AD_Workflow _workflow;
 	// DRP
 	private I_DD_NetworkDistribution _ddNetwork;
-	private boolean _requireDRP;
 
 	public PPProductPlanningBuilder setContext(IContextAware context)
 	{
@@ -113,7 +111,10 @@ public class PPProductPlanningBuilder
 		// Manufacturing
 		productPlanning.setIsManufactured(_manufactured);
 		productPlanning.setPP_Product_BOM(_productBOM);
-		productPlanning.setAD_Workflow(_workflow);
+		if (_workflow != null)
+		{
+			productPlanning.setAD_Workflow_ID(_workflow.getAD_Workflow_ID());
+		}
 		//
 		// DRP
 		productPlanning.setDD_NetworkDistribution(_ddNetwork);
@@ -179,12 +180,6 @@ public class PPProductPlanningBuilder
 	public PPProductPlanningBuilder setDeliveryTime_Promised(final int deliveryTime)
 	{
 		this._deliveryTime = new BigDecimal(deliveryTime);
-		return this;
-	}
-
-	public PPProductPlanningBuilder setIsRequireDRP(final boolean requireDRP)
-	{
-		this._requireDRP = requireDRP;
 		return this;
 	}
 

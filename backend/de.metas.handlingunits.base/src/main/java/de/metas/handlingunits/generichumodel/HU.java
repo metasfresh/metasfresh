@@ -1,17 +1,8 @@
 package de.metas.handlingunits.generichumodel;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-
-import org.adempiere.mm.attributes.api.IAttributeSet;
-import org.adempiere.util.lang.Mutable;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -22,6 +13,15 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.util.lang.Mutable;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -60,6 +60,10 @@ public class HU
 
 	@NonNull
 	Optional<PackagingCode> packagingCode;
+
+	@NonNull
+	@Singular
+	Map<BPartnerId, String> packagingGTINs;
 
 	@NonNull
 	@Singular("productQtyInStockUOM")

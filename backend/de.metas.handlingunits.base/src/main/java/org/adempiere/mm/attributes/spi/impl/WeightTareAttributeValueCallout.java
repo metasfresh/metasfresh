@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Properties;
 
+import de.metas.handlingunits.HUItemType;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.compiere.model.I_M_Attribute;
@@ -86,7 +87,6 @@ public class WeightTareAttributeValueCallout
 	 * <p>
 	 * NOTE: this method calculates PI's tare weight without considering included HUs because we don't know how many are.
 	 *
-	 * @param piVersion
 	 * @return weight tare
 	 */
 	public static BigDecimal calculateWeightTare(final I_M_HU hu)
@@ -100,9 +100,9 @@ public class WeightTareAttributeValueCallout
 		{
 			final BigDecimal qty = hu.getM_HU_Item_Parent().getQty();
 
-			weightTare = handlingUnitsDAO.retrieveItems(hu).stream()
+			weightTare = handlingUnitsDAO
 					// only packing material items..
-					.filter(item -> Objects.equals(handlingUnitsBL.getItemType(item), X_M_HU_Item.ITEMTYPE_PackingMaterial))
+					.retrieveItems(hu, HUItemType.PackingMaterial).stream()
 
 					// .. get their M_HU_PackingMaterial and Qty, if they have both
 					.map(item -> packingMaterialDAO.retrieveHUPackingMaterialOrNull(item))

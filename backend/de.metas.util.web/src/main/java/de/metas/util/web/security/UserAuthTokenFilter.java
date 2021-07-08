@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import de.metas.security.UserNotAuthorizedException;
 import de.metas.util.Check;
@@ -42,15 +42,18 @@ import de.metas.util.web.MetasfreshRestAPIConstants;
  * #L%
  */
 
-@WebFilter({ UserAuthTokenFilter.URL_PATTERN_API })
+@WebFilter({ MetasfreshRestAPIConstants.URL_PATTERN_API })
 public class UserAuthTokenFilter implements Filter
 {
-	static final String URL_PATTERN_API = MetasfreshRestAPIConstants.ENDPOINT_API + "/*";
-
 	public static final String HEADER_Authorization = "Authorization";
 
-	@Autowired
-	private UserAuthTokenService userAuthTokenService;
+	private final UserAuthTokenService userAuthTokenService;
+
+	public UserAuthTokenFilter(
+			@NonNull final UserAuthTokenService userAuthTokenService)
+	{
+		this.userAuthTokenService = userAuthTokenService;
+	}
 
 	@Override
 	public void init(final FilterConfig filterConfig) throws ServletException

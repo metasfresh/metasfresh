@@ -141,7 +141,7 @@ public abstract class ShipmentScheduleHandler
 
 	/**
 	 * (Re-)sync the given shipment schedule from the record that it references. Use-case: sales order is re-completed after reactivation.
-	 * In that case, we need to sync the potentially changed properties from the sales order lines to their repsective shipment schedules.
+	 * In that case, we need to sync the potentially changed properties from the sales order lines to their respective shipment schedules.
 	 */
 	public abstract void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentSchedule);
 
@@ -153,8 +153,6 @@ public abstract class ShipmentScheduleHandler
 	 * <li>can be handled by {@link InterfaceWrapperHelper} and</li>
 	 * <li>belong to the table that is returned by {@link #getSourceTable()}</li>
 	 * </ul>
-	 *
-	 * @param model
 	 */
 	public abstract void invalidateCandidatesFor(Object model);
 

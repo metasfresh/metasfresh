@@ -12,8 +12,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.mm.attributes.api.impl.ModelProductDescriptorExtractorUsingAttributeSetInstanceFactory;
 import org.adempiere.service.ClientId;
@@ -34,6 +36,7 @@ import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.ProductBOMId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -66,7 +69,6 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -98,8 +100,6 @@ public class PPOrderRequestedEventHandlerTests
 
 	private final ClientId adClientId = ClientId.ofRepoId(123);
 	private OrgId orgId;
-
-	private I_C_UOM uom;
 
 	private I_M_Product bomMainProduct;
 
@@ -133,7 +133,7 @@ public class PPOrderRequestedEventHandlerTests
 
 		final PPRoutingId routingId = createRouting();
 
-		uom = newInstance(I_C_UOM.class);
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		save(uom);
 
 		bomMainProduct = newInstance(I_M_Product.class);
@@ -160,7 +160,7 @@ public class PPOrderRequestedEventHandlerTests
 		save(warehouse);
 
 		docType = newInstance(I_C_DocType.class);
-		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_ManufacturingOrder);
+		docType.setDocBaseType(PPOrderDocBaseType.MANUFACTURING_ORDER.getCode());
 		save(docType);
 
 		final I_PP_Product_BOMLine bomCoProductLine;
@@ -173,7 +173,7 @@ public class PPOrderRequestedEventHandlerTests
 			bomCoProductLine = newInstance(I_PP_Product_BOMLine.class);
 			bomCoProductLine.setComponentType(BOMComponentType.CoProduct.getCode());
 			bomCoProductLine.setPP_Product_BOM(productBom);
-			bomCoProductLine.setM_Product(bomCoProduct);
+			bomCoProductLine.setM_Product_ID(bomCoProduct.getM_Product_ID());
 			bomCoProductLine.setDescription("supposed to become the co-product line");
 			bomCoProductLine.setC_UOM_ID(uom.getC_UOM_ID());
 			save(bomCoProductLine);
@@ -188,7 +188,7 @@ public class PPOrderRequestedEventHandlerTests
 			bomComponentLine = newInstance(I_PP_Product_BOMLine.class);
 			bomComponentLine.setComponentType(BOMComponentType.Component.getCode());
 			bomComponentLine.setPP_Product_BOM(productBom);
-			bomComponentLine.setM_Product(bomComponentProduct);
+			bomComponentLine.setM_Product_ID(bomComponentProduct.getM_Product_ID());
 			bomComponentLine.setDescription("supposed to become the component line");
 			bomComponentLine.setC_UOM_ID(uom.getC_UOM_ID());
 			save(bomComponentLine);
@@ -201,8 +201,8 @@ public class PPOrderRequestedEventHandlerTests
 		ppOrderPojo = PPOrder.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(adClientId, orgId))
 				.materialDispoGroupId(PPORDER_POJO_GROUPID)
-				.datePromised(SystemTime.asInstant())
-				.dateStartSchedule(SystemTime.asInstant())
+				.datePromised(de.metas.common.util.time.SystemTime.asInstant())
+				.dateStartSchedule(de.metas.common.util.time.SystemTime.asInstant())
 				.plantId(ResourceId.ofRepoId(110))
 				.orderLineId(orderLine.getC_OrderLine_ID())
 				.productDescriptor(productDescriptor)
@@ -293,7 +293,7 @@ public class PPOrderRequestedEventHandlerTests
 
 		final PPOrderRequestedEvent ppOrderRequestedEvent = PPOrderRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(0, 10))
-				.dateOrdered(SystemTime.asInstant())
+				.dateOrdered(de.metas.common.util.time.SystemTime.asInstant())
 				.ppOrder(ppOrderPojo)
 				.build();
 
@@ -332,7 +332,8 @@ public class PPOrderRequestedEventHandlerTests
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new PP_Order(
 				ppOrderConverter,
 				postMaterialEventService,
-				new DocumentNoBuilderFactory(Optional.empty())));
+				new DocumentNoBuilderFactory(Optional.empty()),
+				new PPOrderBOMBL()));
 	}
 
 	private List<I_PP_Order_BOMLine> filter(final I_PP_Order ppOrder, final BOMComponentType componentType)

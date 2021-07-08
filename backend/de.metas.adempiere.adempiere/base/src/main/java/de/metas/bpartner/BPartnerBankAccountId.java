@@ -81,4 +81,6 @@ public class BPartnerBankAccountId implements RepoIdAware
 	{
 		return Objects.equals(id1, id2);
 	}
+	
+	
 }

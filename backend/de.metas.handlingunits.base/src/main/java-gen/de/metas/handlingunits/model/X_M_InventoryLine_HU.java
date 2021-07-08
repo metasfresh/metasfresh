@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_InventoryLine_HU
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_InventoryLine_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2046922925L;
+	private static final long serialVersionUID = -1755209737L;
 
     /** Standard Constructor */
-    public X_M_InventoryLine_HU (Properties ctx, int M_InventoryLine_HU_ID, String trxName)
+    public X_M_InventoryLine_HU (final Properties ctx, final int M_InventoryLine_HU_ID, @Nullable final String trxName)
     {
       super (ctx, M_InventoryLine_HU_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_InventoryLine_HU (Properties ctx, ResultSet rs, String trxName)
+    public X_M_InventoryLine_HU (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,18 +30,18 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
@@ -56,18 +57,18 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
+	public void setM_HU(final de.metas.handlingunits.model.I_M_HU M_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
 	@Override
@@ -83,18 +84,18 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public void setM_Inventory(org.compiere.model.I_M_Inventory M_Inventory)
+	public void setM_Inventory(final org.compiere.model.I_M_Inventory M_Inventory)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class, M_Inventory);
 	}
 
 	@Override
-	public void setM_Inventory_ID (int M_Inventory_ID)
+	public void setM_Inventory_ID (final int M_Inventory_ID)
 	{
 		if (M_Inventory_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Inventory_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Inventory_ID, Integer.valueOf(M_Inventory_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Inventory_ID, M_Inventory_ID);
 	}
 
 	@Override
@@ -104,12 +105,12 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public void setM_InventoryLine_HU_ID (int M_InventoryLine_HU_ID)
+	public void setM_InventoryLine_HU_ID (final int M_InventoryLine_HU_ID)
 	{
 		if (M_InventoryLine_HU_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_HU_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_HU_ID, Integer.valueOf(M_InventoryLine_HU_ID));
+			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_HU_ID, M_InventoryLine_HU_ID);
 	}
 
 	@Override
@@ -125,18 +126,18 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public void setM_InventoryLine(org.compiere.model.I_M_InventoryLine M_InventoryLine)
+	public void setM_InventoryLine(final org.compiere.model.I_M_InventoryLine M_InventoryLine)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InventoryLine_ID, org.compiere.model.I_M_InventoryLine.class, M_InventoryLine);
 	}
 
 	@Override
-	public void setM_InventoryLine_ID (int M_InventoryLine_ID)
+	public void setM_InventoryLine_ID (final int M_InventoryLine_ID)
 	{
 		if (M_InventoryLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_ID, Integer.valueOf(M_InventoryLine_ID));
+			set_ValueNoCheck (COLUMNNAME_M_InventoryLine_ID, M_InventoryLine_ID);
 	}
 
 	@Override
@@ -146,41 +147,41 @@ public class X_M_InventoryLine_HU extends org.compiere.model.PO implements I_M_I
 	}
 
 	@Override
-	public void setQtyBook (java.math.BigDecimal QtyBook)
+	public void setQtyBook (final @Nullable BigDecimal QtyBook)
 	{
 		set_Value (COLUMNNAME_QtyBook, QtyBook);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyBook() 
+	public BigDecimal getQtyBook() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyBook);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyBook);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyCount (java.math.BigDecimal QtyCount)
+	public void setQtyCount (final @Nullable BigDecimal QtyCount)
 	{
 		set_Value (COLUMNNAME_QtyCount, QtyCount);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyCount() 
+	public BigDecimal getQtyCount() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCount);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCount);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyInternalUse (java.math.BigDecimal QtyInternalUse)
+	public void setQtyInternalUse (final @Nullable BigDecimal QtyInternalUse)
 	{
 		set_Value (COLUMNNAME_QtyInternalUse, QtyInternalUse);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyInternalUse() 
+	public BigDecimal getQtyInternalUse() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInternalUse);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyInternalUse);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

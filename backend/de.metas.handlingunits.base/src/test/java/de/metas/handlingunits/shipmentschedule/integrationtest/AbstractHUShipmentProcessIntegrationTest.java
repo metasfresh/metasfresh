@@ -23,7 +23,6 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  */
 
 import ch.qos.logback.classic.Level;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.handlingunits.AbstractHUTest;
@@ -64,6 +63,7 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -425,7 +425,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		//
 		// Make sure the current user is configured to receive notifications
-		final I_AD_User user = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User user = newInstance(I_AD_User.class);
 		user.setAD_User_ID(0);
 		user.setNotificationType(X_AD_User.NOTIFICATIONTYPE_Notice);
 		save(user);

@@ -22,16 +22,6 @@ package de.metas.handlingunits.allocation.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ObjectUtils;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
@@ -62,49 +52,72 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IPair;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+@ToString(of = { "source", "destination", "allowPartialUnloads", "allowPartialLoads", "forceLoad", "skipAttributesTransfer" })
 public class HULoader
 {
-	public static final HULoader of(final IAllocationSource source, final IAllocationDestination destination)
+	public static HULoader of(@NonNull final IAllocationSource source, @NonNull final IAllocationDestination destination)
 	{
-		return new HULoader(source, destination);
+		return HULoader.builder()
+				.source(source)
+				.destination(destination)
+				.build();
 	}
 
-	private final IAllocationSource source;
-	private final IAllocationDestination destination;
-
-	private boolean allowPartialUnloads = false;
-	private boolean allowPartialLoads = false;
-	private boolean forceLoad = false;
-	private boolean skipAttributesTransfer = false;
-
-	/**
-	 * The current executor. Will be <code>null</code> while no loading is taking place.
-	 */
-	private IHUContextProcessorExecutor currentInContextExecutor = null;
-
-	//
-	// Services that we use
+	// services
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	private HULoader(final IAllocationSource source, final IAllocationDestination destination)
+	private final IAllocationSource source;
+	private final IAllocationDestination destination;
+	private boolean allowPartialUnloads;
+	private boolean allowPartialLoads;
+	private boolean forceLoad;
+	private boolean skipAttributesTransfer;
+
+	/**
+	 * The current executor. Will be <code>null</code> while no loading is taking place.
+	 */
+	@Nullable
+	private IHUContextProcessorExecutor currentInContextExecutor = null;
+
+	@Builder
+	private HULoader(
+			@NonNull final IAllocationSource source,
+			@NonNull final IAllocationDestination destination,
+			final boolean allowPartialUnloads,
+			final boolean allowPartialLoads,
+			final boolean forceLoad,
+			final boolean skipAttributesTransfer)
 	{
 		this.source = source;
 		this.destination = destination;
+		this.allowPartialUnloads = allowPartialUnloads;
+		this.allowPartialLoads = allowPartialLoads;
+		this.forceLoad = forceLoad;
+		this.skipAttributesTransfer = skipAttributesTransfer;
 	}
 
-	@Override
-	public String toString()
+	public static class HULoaderBuilder
 	{
-		return ObjectUtils.toString(this);
+		public IAllocationResult load(final IAllocationRequest request) { return build().load(request); }
 	}
 
 	/**
-	 *
 	 * @return true true if partial unloads are allowed (i.e. source does not have all the requested qty)
 	 */
 	public boolean isAllowPartialUnloads()
@@ -113,7 +126,6 @@ public class HULoader
 	}
 
 	/**
-	 *
 	 * @param allowPartialUnloads true if partial unloads are allowed (i.e. source does not have all the requested qty)
 	 */
 	public HULoader setAllowPartialUnloads(final boolean allowPartialUnloads)
@@ -123,7 +135,6 @@ public class HULoader
 	}
 
 	/**
-	 *
 	 * @return true if partial loads are allowed (i.e. destination can not accept all qty that was unloaded from source)
 	 */
 	public boolean isAllowPartialLoads()
@@ -132,7 +143,6 @@ public class HULoader
 	}
 
 	/**
-	 *
 	 * @param allowPartialLoads true if partial loads are allowed (i.e. if it is OK in case the destination can not accept all qty that was unloaded from source).
 	 */
 	public HULoader setAllowPartialLoads(final boolean allowPartialLoads)
@@ -145,8 +155,6 @@ public class HULoader
 	 * If this setter is called with {@code true}, then the loader will load into the destination whatever was unloaded from the source, no matter what the destination's capacity is.
 	 * <p>
 	 * The default if this setter is not called is {@code false}.
-	 *
-	 * @param forceLoad
 	 */
 	public HULoader setForceLoad(final boolean forceLoad)
 	{
@@ -157,7 +165,7 @@ public class HULoader
 	/**
 	 * Transfer request qty from <code>source</code> to <code>destination</code>. If the <code>Qty</code> of the given <code>request</code> is zero, then the method does nothing and just return
 	 * {@link AllocationUtils#nullResult()}.
-	 *
+	 * <p>
 	 * Note that transactions from result will be already processed.
 	 */
 	public IAllocationResult load(@NonNull final IAllocationRequest request)
@@ -184,7 +192,7 @@ public class HULoader
 
 	/**
 	 * Execute given <code>processor</code> in HU context.
-	 *
+	 * <p>
 	 * Mainly this will take care of
 	 * <ul>
 	 * <li>managing database transaction</li>
@@ -192,7 +200,7 @@ public class HULoader
 	 * <li>creating packing materials/empties movements if needed (see {@link IHUContext#getHUPackingMaterialsCollector()})</li>
 	 * </ul>
 	 */
-	private final IAllocationResult processInHUContext(final IHUContext huContext, final IHUContextProcessor processor)
+	private IAllocationResult processInHUContext(final IHUContext huContext, final IHUContextProcessor processor)
 	{
 		currentInContextExecutor = huTrxBL.createHUContextProcessorExecutor(huContext);
 		try
@@ -217,10 +225,8 @@ public class HULoader
 	 * <li>a database transaction was already setup
 	 * <li>attribute transactions collector was already setup
 	 * </ul>
-	 *
-	 * @param huContext
 	 */
-	private final void assertValidProcessingContext(@NonNull final IHUContext huContext)
+	private void assertValidProcessingContext(@NonNull final IHUContext huContext)
 	{
 		Check.assume(!trxManager.isNull(huContext.getTrxName()),
 				"HU Context shall not have null transaction: {}", huContext);
@@ -235,7 +241,7 @@ public class HULoader
 	 * background-info: depending on the used {@link IAllocationSource}, everything the request's full qty might be unloaded from the source (i.e. {@link IHUTransactionCandidate}s are created).<br>
 	 * If not all from the given {@code unloadRequest} is unloaded, then the it will only try to load the lesser qtys which were unloaded.<br>
 	 * However, in the end, only the stuff that will be "accepted" by the {@link IAllocationDestination} will really be moved.<br>
-	 *
+	 * <p>
 	 * NOTEs:
 	 * <ul>
 	 * <li>that transactions from result will be already processed.
@@ -243,10 +249,9 @@ public class HULoader
 	 * <li>this method assumes we are running in a valid processing context (see {@link #assertValidProcessingContext(IHUContext)})
 	 * </ul>
 	 *
-	 * @param unloadRequest
 	 * @return result (already processed)
 	 */
-	private final IMutableAllocationResult unloadSourceThenLoadDestination(final IAllocationRequest unloadRequest)
+	private IMutableAllocationResult unloadSourceThenLoadDestination(final IAllocationRequest unloadRequest)
 	{
 		//
 		// HU Context to use
@@ -294,22 +299,21 @@ public class HULoader
 	 * Loads from <code>unloadResult</code> to our destination. It does so by iterating the unloadResults {@link IHUTransactionCandidate}s trx candidates.
 	 * For each trx candidates, the code will attempts to loadto the {@link IAllocationDestination}.
 	 * After those trx candidates are iterated and loading was attempted, the <b>actual</b> unload {@link IHUTransactionCandidate}s will be created based of what was actually loaded to the destination.
-	 *
+	 * <p>
 	 * After running this method:
 	 * <ul>
 	 * <li>resulting unload/load transactions will be already processed
 	 * <li>attribute transactions will be also already processed
 	 * </ul>
-	 *
+	 * <p>
 	 * NOTEs:
 	 * <ul>
 	 * <li>this method assumes we are running in a valid processing context (see {@link #assertValidProcessingContext(IHUContext)})
 	 * </ul>
 	 *
-	 * @param huContext
-	 * @param unloadResult unload result to be loaded (see {@link IAllocationSource#unload(IAllocationRequest)})
+	 * @param unloadResult        unload result to be loaded (see {@link IAllocationSource#unload(IAllocationRequest)})
 	 * @param unloadRequestActual actual unloadRequest that was issued on source in order to get the unloadResult; we are using it only to propagate context values from it to requests that will be
-	 *            created to load on destination
+	 *                            created to load on destination
 	 * @return load result (will contain also unload transactions); the result will be already processed
 	 */
 	private IMutableAllocationResult loadToDestination(
@@ -430,7 +434,7 @@ public class HULoader
 		return finalResult;
 	}
 
-	private final IAllocationRequest createQtyLoadRequest(
+	private IAllocationRequest createQtyLoadRequest(
 			@NonNull final IAllocationRequest unloadRequestActual,
 			final IHUTransactionCandidate unloadTrx)
 	{
@@ -477,8 +481,7 @@ public class HULoader
 		final I_M_HU hu = getM_HU(trx, useVHU);
 		if (hu != null)
 		{
-			final IAttributeStorage huAttributeStorage = attributeStorageFactory.getAttributeStorage(hu); // createNew=true
-			return huAttributeStorage;
+			return attributeStorageFactory.getAttributeStorage(hu);
 		}
 
 		//

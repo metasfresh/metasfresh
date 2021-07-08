@@ -1,14 +1,17 @@
 package de.metas;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map.Entry;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
+import de.metas.CommandLineParser.CommandLineOptions;
+import de.metas.dao.selection.QuerySelectionToDeleteHelper;
+import de.metas.dao.selection.model.I_T_Query_Selection;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ConnectionUtil;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -19,10 +22,12 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Ini.IfMissingMetasfreshProperties;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -32,18 +37,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Stopwatch;
-
-import de.metas.dao.selection.QuerySelectionToDeleteHelper;
-import de.metas.dao.selection.model.I_T_Query_Selection;
-import de.metas.elasticsearch.ESLoggingInit;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
+import javax.annotation.Nullable;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -90,20 +92,29 @@ public class ServerBoot implements InitializingBean
 	@Autowired
 	private ApplicationContext applicationContext;
 
+	@Getter
+	private CommandLineOptions commandLineOptions;
+
 	@Value("${metasfresh.query.clearQuerySelectionRateInSeconds:60}")
 	private int clearQuerySelectionsRateInSeconds;
 
 	public static void main(final String[] args)
 	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		
-		// Make sure slf4j is used (by default, log4j is used)
-		ESLoggingInit.init();
+		logger.info("Begin of {} main-method ", ServerBoot.class);
 
-		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
+		logger.info("Parse command line arguments (if any!)");
+		final CommandLineOptions commandLineOptions = CommandLineParser.parse(args);
+
+		final ConnectionUtil.ConfigureConnectionsResult configureConnectionsResult = ConnectionUtil.configureConnectionsIfArgsProvided(commandLineOptions);
+
+		try (final IAutoCloseable ignore = ModelValidationEngine.postponeInit())
 		{
 			// important because in Ini, there is a org.springframework.context.annotation.Condition that otherwise wouldn't e.g. let the jasper servlet start
 			Ini.setRunMode(RunMode.BACKEND);
+			Ini.setIfMissingMetasfreshProperties(configureConnectionsResult.isCconnectionConfigured() ? IfMissingMetasfreshProperties.IGNORE : IfMissingMetasfreshProperties.SHOW_DIALOG);
+
 			Adempiere.instance.startup(RunMode.BACKEND);
 
 			final ArrayList<String> activeProfiles = retrieveActiveProfilesFromSysConfig();
@@ -115,14 +126,14 @@ public class ServerBoot implements InitializingBean
 			final String headless = System.getProperty(SYSTEM_PROPERTY_HEADLESS, Boolean.toString(true));
 			new SpringApplicationBuilder(ServerBoot.class)
 					.headless(StringUtils.toBoolean(headless)) // we need headless=false for initial connection setup popup (if any), usually this only applies on dev workstations.
-					.web(true)
+					.web(WebApplicationType.SERVLET)
 					// consider removing the jasper profile
 					// if we did that, then to also have jasper within the backend, we would start it with -Dspring.profiles.active=metasfresh-jasper-server
-					// same goes for PrintService
 					.profiles(activeProfiles.toArray(new String[0]))
 					.beanNameGenerator(new MetasfreshBeanNameGenerator())
 					.run(args);
 		}
+		SpringContextHolder.instance.getBean(ServerBoot.class).commandLineOptions = commandLineOptions;
 
 		// now init the model validation engine
 		ModelValidationEngine.get();
@@ -132,30 +143,29 @@ public class ServerBoot implements InitializingBean
 		houseKeepingService.runStartupHouseKeepingTasks();
 
 		logger.info("Metasfresh Server started in {}", stopwatch);
+		logger.info("End of {} main-method ", ServerBoot.class);
 	}
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
 	{
-		final ArrayList<String> activeProfiles = Services
-				.get(ISysConfigBL.class)
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		return new ArrayList<>(sysConfigBL
 				.getValuesForPrefix(SYSCONFIG_PREFIX_APP_SPRING_PROFILES_ACTIVE, 0, 0)
-				.entrySet()
-				.stream()
-				.map(Entry::getValue)
-				.collect(Collectors.toCollection(ArrayList::new));
-		return activeProfiles;
+				.values());
 	}
 
 	@Configuration
-	public static class StaticResourceConfiguration extends WebMvcConfigurerAdapter
+	public static class StaticResourceConfiguration implements WebMvcConfigurer
 	{
 		private static final Logger LOG = LogManager.getLogger(StaticResourceConfiguration.class);
 
+		@Nullable
 		@Value("${metasfresh.serverRoot.downloads:}")
 		private String downloadsPath;
 
 		@Override
-		public void addResourceHandlers(final ResourceHandlerRegistry registry)
+		public void addResourceHandlers(final @NonNull ResourceHandlerRegistry registry)
 		{
 			if (Check.isEmpty(downloadsPath, true))
 			{
@@ -179,6 +189,7 @@ public class ServerBoot implements InitializingBean
 			}
 		}
 
+		@Nullable
 		private String defaultDownloadsPath()
 		{
 			try
@@ -206,12 +217,11 @@ public class ServerBoot implements InitializingBean
 	public Adempiere adempiere()
 	{
 		// when this is done, Adempiere.getBean(...) is ready to use
-		final Adempiere adempiere = Env.getSingleAdempiereInstance(applicationContext);
-		return adempiere;
+		return Env.getSingleAdempiereInstance(applicationContext);
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception
+	public void afterPropertiesSet()
 	{
 		if (clearQuerySelectionsRateInSeconds > 0)
 		{
@@ -222,13 +232,14 @@ public class ServerBoot implements InitializingBean
 							.setThreadNamePrefix("cleanup-" + I_T_Query_Selection.Table_Name)
 							.build());
 
+			// note: "If any execution of this task takes longer than its period, then subsequent executions may start late, but will not concurrently execute."
 			scheduledExecutor.scheduleAtFixedRate(
 					QuerySelectionToDeleteHelper::deleteScheduledSelectionsNoFail, // command, don't fail because on failure the task won't be re-scheduled so it's game over
 					clearQuerySelectionsRateInSeconds, // initialDelay
 					clearQuerySelectionsRateInSeconds, // period
 					TimeUnit.SECONDS // timeUnit
 			);
-			logger.info("Clearing query selection table each {} seconds", clearQuerySelectionsRateInSeconds);
+			logger.info("Clearing query selection tables each {} seconds", clearQuerySelectionsRateInSeconds);
 		}
 	}
 }

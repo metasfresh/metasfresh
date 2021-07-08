@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -75218417L;
+	private static final long serialVersionUID = 1004704805L;
 
     /** Standard Constructor */
-    public X_M_Product (Properties ctx, int M_Product_ID, String trxName)
+    public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
     {
       super (ctx, M_Product_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_Product (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Product (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,13 +30,13 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setAdditional_produktinfos (java.lang.String Additional_produktinfos)
+	public void setAdditional_produktinfos (final @Nullable java.lang.String Additional_produktinfos)
 	{
 		set_Value (COLUMNNAME_Additional_produktinfos, Additional_produktinfos);
 	}
@@ -43,7 +44,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getAdditional_produktinfos() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Additional_produktinfos);
+		return get_ValueAsString(COLUMNNAME_Additional_produktinfos);
+	}
+
+	@Override
+	public void setClassification (final @Nullable java.lang.String Classification)
+	{
+		set_Value (COLUMNNAME_Classification, Classification);
+	}
+
+	@Override
+	public java.lang.String getClassification() 
+	{
+		return get_ValueAsString(COLUMNNAME_Classification);
 	}
 
 	@Override
@@ -53,18 +66,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setC_RevenueRecognition(org.compiere.model.I_C_RevenueRecognition C_RevenueRecognition)
+	public void setC_RevenueRecognition(final org.compiere.model.I_C_RevenueRecognition C_RevenueRecognition)
 	{
 		set_ValueFromPO(COLUMNNAME_C_RevenueRecognition_ID, org.compiere.model.I_C_RevenueRecognition.class, C_RevenueRecognition);
 	}
 
 	@Override
-	public void setC_RevenueRecognition_ID (int C_RevenueRecognition_ID)
+	public void setC_RevenueRecognition_ID (final int C_RevenueRecognition_ID)
 	{
 		if (C_RevenueRecognition_ID < 1) 
 			set_Value (COLUMNNAME_C_RevenueRecognition_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_RevenueRecognition_ID, Integer.valueOf(C_RevenueRecognition_ID));
+			set_Value (COLUMNNAME_C_RevenueRecognition_ID, C_RevenueRecognition_ID);
 	}
 
 	@Override
@@ -74,12 +87,12 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
@@ -89,19 +102,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setClassification (java.lang.String Classification)
-	{
-		set_Value (COLUMNNAME_Classification, Classification);
-	}
-
-	@Override
-	public java.lang.String getClassification() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_Classification);
-	}
-
-	@Override
-	public void setCustomerLabelName (java.lang.String CustomerLabelName)
+	public void setCustomerLabelName (final @Nullable java.lang.String CustomerLabelName)
 	{
 		set_Value (COLUMNNAME_CustomerLabelName, CustomerLabelName);
 	}
@@ -109,11 +110,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getCustomerLabelName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CustomerLabelName);
+		return get_ValueAsString(COLUMNNAME_CustomerLabelName);
 	}
 
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -121,11 +122,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
-	public void setDescriptionURL (java.lang.String DescriptionURL)
+	public void setDescriptionURL (final @Nullable java.lang.String DescriptionURL)
 	{
 		set_Value (COLUMNNAME_DescriptionURL, DescriptionURL);
 	}
@@ -133,13 +134,34 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getDescriptionURL() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DescriptionURL);
+		return get_ValueAsString(COLUMNNAME_DescriptionURL);
+	}
+
+	/** 
+	 * DietType AD_Reference_ID=541270
+	 * Reference name: Ernährungsart
+	 */
+	public static final int DIETTYPE_AD_Reference_ID=541270;
+	/** Vegan = Vegan */
+	public static final String DIETTYPE_Vegan = "Vegan";
+	/** Vegetarian = Vegetarian */
+	public static final String DIETTYPE_Vegetarian = "Vegetarian";
+	@Override
+	public void setDietType (final @Nullable java.lang.String DietType)
+	{
+		set_Value (COLUMNNAME_DietType, DietType);
 	}
 
 	@Override
-	public void setDiscontinued (boolean Discontinued)
+	public java.lang.String getDietType() 
 	{
-		set_Value (COLUMNNAME_Discontinued, Boolean.valueOf(Discontinued));
+		return get_ValueAsString(COLUMNNAME_DietType);
+	}
+
+	@Override
+	public void setDiscontinued (final boolean Discontinued)
+	{
+		set_Value (COLUMNNAME_Discontinued, Discontinued);
 	}
 
 	@Override
@@ -149,7 +171,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setDiscontinuedBy (java.sql.Timestamp DiscontinuedBy)
+	public void setDiscontinuedBy (final @Nullable java.sql.Timestamp DiscontinuedBy)
 	{
 		set_Value (COLUMNNAME_DiscontinuedBy, DiscontinuedBy);
 	}
@@ -161,7 +183,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setDocumentNote (java.lang.String DocumentNote)
+	public void setDocumentNote (final @Nullable java.lang.String DocumentNote)
 	{
 		set_Value (COLUMNNAME_DocumentNote, DocumentNote);
 	}
@@ -169,11 +191,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getDocumentNote() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentNote);
+		return get_ValueAsString(COLUMNNAME_DocumentNote);
 	}
 
 	@Override
-	public void setExternalId (java.lang.String ExternalId)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
@@ -181,11 +203,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getExternalId() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExternalId);
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	@Override
-	public void setGroup1 (java.lang.String Group1)
+	public void setGroup1 (final @Nullable java.lang.String Group1)
 	{
 		set_Value (COLUMNNAME_Group1, Group1);
 	}
@@ -193,11 +215,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getGroup1() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Group1);
+		return get_ValueAsString(COLUMNNAME_Group1);
 	}
 
 	@Override
-	public void setGroup2 (java.lang.String Group2)
+	public void setGroup2 (final @Nullable java.lang.String Group2)
 	{
 		set_Value (COLUMNNAME_Group2, Group2);
 	}
@@ -205,7 +227,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getGroup2() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Group2);
+		return get_ValueAsString(COLUMNNAME_Group2);
 	}
 
 	/** 
@@ -218,16 +240,15 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** PriceAndQty = Q */
 	public static final String GROUPCOMPENSATIONAMTTYPE_PriceAndQty = "Q";
 	@Override
-	public void setGroupCompensationAmtType (java.lang.String GroupCompensationAmtType)
+	public void setGroupCompensationAmtType (final @Nullable java.lang.String GroupCompensationAmtType)
 	{
-
 		set_Value (COLUMNNAME_GroupCompensationAmtType, GroupCompensationAmtType);
 	}
 
 	@Override
 	public java.lang.String getGroupCompensationAmtType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationAmtType);
+		return get_ValueAsString(COLUMNNAME_GroupCompensationAmtType);
 	}
 
 	/** 
@@ -240,20 +261,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** Discount = D */
 	public static final String GROUPCOMPENSATIONTYPE_Discount = "D";
 	@Override
-	public void setGroupCompensationType (java.lang.String GroupCompensationType)
+	public void setGroupCompensationType (final @Nullable java.lang.String GroupCompensationType)
 	{
-
 		set_Value (COLUMNNAME_GroupCompensationType, GroupCompensationType);
 	}
 
 	@Override
 	public java.lang.String getGroupCompensationType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_GroupCompensationType);
+		return get_ValueAsString(COLUMNNAME_GroupCompensationType);
 	}
 
 	@Override
-	public void setGTIN (java.lang.String GTIN)
+	public void setGTIN (final @Nullable java.lang.String GTIN)
 	{
 		set_Value (COLUMNNAME_GTIN, GTIN);
 	}
@@ -261,13 +281,13 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getGTIN() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_GTIN);
+		return get_ValueAsString(COLUMNNAME_GTIN);
 	}
 
 	@Override
-	public void setGuaranteeDaysMin (int GuaranteeDaysMin)
+	public void setGuaranteeDaysMin (final int GuaranteeDaysMin)
 	{
-		set_Value (COLUMNNAME_GuaranteeDaysMin, Integer.valueOf(GuaranteeDaysMin));
+		set_Value (COLUMNNAME_GuaranteeDaysMin, GuaranteeDaysMin);
 	}
 
 	@Override
@@ -276,8 +296,43 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsInt(COLUMNNAME_GuaranteeDaysMin);
 	}
 
+	/** 
+	 * GuaranteeMonths AD_Reference_ID=541258
+	 * Reference name: GuaranteeMonths
+	 */
+	public static final int GUARANTEEMONTHS_AD_Reference_ID=541258;
+	/** 12 = 12 */
+	public static final String GUARANTEEMONTHS_12 = "12";
+	/** 24 = 24 */
+	public static final String GUARANTEEMONTHS_24 = "24";
+	/** 36 = 36 */
+	public static final String GUARANTEEMONTHS_36 = "36";
 	@Override
-	public void setHelp (java.lang.String Help)
+	public void setGuaranteeMonths (final @Nullable java.lang.String GuaranteeMonths)
+	{
+		set_Value (COLUMNNAME_GuaranteeMonths, GuaranteeMonths);
+	}
+
+	@Override
+	public java.lang.String getGuaranteeMonths() 
+	{
+		return get_ValueAsString(COLUMNNAME_GuaranteeMonths);
+	}
+
+	@Override
+	public void setHaddexCheck (final boolean HaddexCheck)
+	{
+		set_Value (COLUMNNAME_HaddexCheck, HaddexCheck);
+	}
+
+	@Override
+	public boolean isHaddexCheck() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_HaddexCheck);
+	}
+
+	@Override
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
@@ -285,11 +340,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getHelp() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
 	@Override
-	public void setImageURL (java.lang.String ImageURL)
+	public void setImageURL (final @Nullable java.lang.String ImageURL)
 	{
 		set_Value (COLUMNNAME_ImageURL, ImageURL);
 	}
@@ -297,11 +352,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getImageURL() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ImageURL);
+		return get_ValueAsString(COLUMNNAME_ImageURL);
 	}
 
 	@Override
-	public void setIngredients (java.lang.String Ingredients)
+	public void setIngredients (final @Nullable java.lang.String Ingredients)
 	{
 		set_Value (COLUMNNAME_Ingredients, Ingredients);
 	}
@@ -309,13 +364,13 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getIngredients() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Ingredients);
+		return get_ValueAsString(COLUMNNAME_Ingredients);
 	}
 
 	@Override
-	public void setIsBOM (boolean IsBOM)
+	public void setIsBOM (final boolean IsBOM)
 	{
-		set_Value (COLUMNNAME_IsBOM, Boolean.valueOf(IsBOM));
+		set_Value (COLUMNNAME_IsBOM, IsBOM);
 	}
 
 	@Override
@@ -325,9 +380,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsCommissioned (boolean IsCommissioned)
+	public void setIsCommissioned (final boolean IsCommissioned)
 	{
-		set_Value (COLUMNNAME_IsCommissioned, Boolean.valueOf(IsCommissioned));
+		set_Value (COLUMNNAME_IsCommissioned, IsCommissioned);
 	}
 
 	@Override
@@ -337,9 +392,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsDropShip (boolean IsDropShip)
+	public void setIsDropShip (final boolean IsDropShip)
 	{
-		set_Value (COLUMNNAME_IsDropShip, Boolean.valueOf(IsDropShip));
+		set_Value (COLUMNNAME_IsDropShip, IsDropShip);
 	}
 
 	@Override
@@ -349,9 +404,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsExcludeAutoDelivery (boolean IsExcludeAutoDelivery)
+	public void setIsExcludeAutoDelivery (final boolean IsExcludeAutoDelivery)
 	{
-		set_Value (COLUMNNAME_IsExcludeAutoDelivery, Boolean.valueOf(IsExcludeAutoDelivery));
+		set_Value (COLUMNNAME_IsExcludeAutoDelivery, IsExcludeAutoDelivery);
 	}
 
 	@Override
@@ -361,9 +416,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsInvoicePrintDetails (boolean IsInvoicePrintDetails)
+	public void setIsInvoicePrintDetails (final boolean IsInvoicePrintDetails)
 	{
-		set_Value (COLUMNNAME_IsInvoicePrintDetails, Boolean.valueOf(IsInvoicePrintDetails));
+		set_Value (COLUMNNAME_IsInvoicePrintDetails, IsInvoicePrintDetails);
 	}
 
 	@Override
@@ -373,7 +428,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsManufactured (boolean IsManufactured)
+	public void setIsManufactured (final boolean IsManufactured)
 	{
 		throw new IllegalArgumentException ("IsManufactured is virtual column");	}
 
@@ -384,9 +439,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsPickListPrintDetails (boolean IsPickListPrintDetails)
+	public void setIsPickListPrintDetails (final boolean IsPickListPrintDetails)
 	{
-		set_Value (COLUMNNAME_IsPickListPrintDetails, Boolean.valueOf(IsPickListPrintDetails));
+		set_Value (COLUMNNAME_IsPickListPrintDetails, IsPickListPrintDetails);
 	}
 
 	@Override
@@ -396,9 +451,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsPurchased (boolean IsPurchased)
+	public void setIsPurchased (final boolean IsPurchased)
 	{
-		set_Value (COLUMNNAME_IsPurchased, Boolean.valueOf(IsPurchased));
+		set_Value (COLUMNNAME_IsPurchased, IsPurchased);
 	}
 
 	@Override
@@ -408,9 +463,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsQuotationGroupping (boolean IsQuotationGroupping)
+	public void setIsQuotationGroupping (final boolean IsQuotationGroupping)
 	{
-		set_Value (COLUMNNAME_IsQuotationGroupping, Boolean.valueOf(IsQuotationGroupping));
+		set_Value (COLUMNNAME_IsQuotationGroupping, IsQuotationGroupping);
 	}
 
 	@Override
@@ -420,9 +475,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsSelfService (boolean IsSelfService)
+	public void setIsSelfService (final boolean IsSelfService)
 	{
-		set_Value (COLUMNNAME_IsSelfService, Boolean.valueOf(IsSelfService));
+		set_Value (COLUMNNAME_IsSelfService, IsSelfService);
 	}
 
 	@Override
@@ -432,21 +487,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsShowEG (boolean IsShowEG)
+	public void setIsSold (final boolean IsSold)
 	{
-		set_Value (COLUMNNAME_IsShowEG, Boolean.valueOf(IsShowEG));
-	}
-
-	@Override
-	public boolean isShowEG() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsShowEG);
-	}
-
-	@Override
-	public void setIsSold (boolean IsSold)
-	{
-		set_Value (COLUMNNAME_IsSold, Boolean.valueOf(IsSold));
+		set_Value (COLUMNNAME_IsSold, IsSold);
 	}
 
 	@Override
@@ -456,9 +499,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsStocked (boolean IsStocked)
+	public void setIsStocked (final boolean IsStocked)
 	{
-		set_Value (COLUMNNAME_IsStocked, Boolean.valueOf(IsStocked));
+		set_Value (COLUMNNAME_IsStocked, IsStocked);
 	}
 
 	@Override
@@ -468,9 +511,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsSummary (boolean IsSummary)
+	public void setIsSummary (final boolean IsSummary)
 	{
-		set_Value (COLUMNNAME_IsSummary, Boolean.valueOf(IsSummary));
+		set_Value (COLUMNNAME_IsSummary, IsSummary);
 	}
 
 	@Override
@@ -480,9 +523,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsVerified (boolean IsVerified)
+	public void setIsVerified (final boolean IsVerified)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsVerified, Boolean.valueOf(IsVerified));
+		set_ValueNoCheck (COLUMNNAME_IsVerified, IsVerified);
 	}
 
 	@Override
@@ -492,9 +535,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setIsWebStoreFeatured (boolean IsWebStoreFeatured)
+	public void setIsWebStoreFeatured (final boolean IsWebStoreFeatured)
 	{
-		set_Value (COLUMNNAME_IsWebStoreFeatured, Boolean.valueOf(IsWebStoreFeatured));
+		set_Value (COLUMNNAME_IsWebStoreFeatured, IsWebStoreFeatured);
 	}
 
 	@Override
@@ -504,9 +547,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setLowLevel (int LowLevel)
+	public void setLowLevel (final int LowLevel)
 	{
-		set_Value (COLUMNNAME_LowLevel, Integer.valueOf(LowLevel));
+		set_Value (COLUMNNAME_LowLevel, LowLevel);
 	}
 
 	@Override
@@ -516,24 +559,51 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setManufacturerArticleNumber (final @Nullable java.lang.String ManufacturerArticleNumber)
+	{
+		set_Value (COLUMNNAME_ManufacturerArticleNumber, ManufacturerArticleNumber);
+	}
+
+	@Override
+	public java.lang.String getManufacturerArticleNumber() 
+	{
+		return get_ValueAsString(COLUMNNAME_ManufacturerArticleNumber);
+	}
+
+	@Override
+	public void setManufacturer_ID (final int Manufacturer_ID)
+	{
+		if (Manufacturer_ID < 1) 
+			set_Value (COLUMNNAME_Manufacturer_ID, null);
+		else 
+			set_Value (COLUMNNAME_Manufacturer_ID, Manufacturer_ID);
+	}
+
+	@Override
+	public int getManufacturer_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Manufacturer_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_M_AttributeSet getM_AttributeSet()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
 	}
 
 	@Override
-	public void setM_AttributeSet(org.compiere.model.I_M_AttributeSet M_AttributeSet)
+	public void setM_AttributeSet(final org.compiere.model.I_M_AttributeSet M_AttributeSet)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class, M_AttributeSet);
 	}
 
 	@Override
-	public void setM_AttributeSet_ID (int M_AttributeSet_ID)
+	public void setM_AttributeSet_ID (final int M_AttributeSet_ID)
 	{
 		if (M_AttributeSet_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSet_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSet_ID, Integer.valueOf(M_AttributeSet_ID));
+			set_Value (COLUMNNAME_M_AttributeSet_ID, M_AttributeSet_ID);
 	}
 
 	@Override
@@ -549,18 +619,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
 	@Override
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
 	@Override
@@ -570,24 +640,39 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setM_CommodityNumber_ID (final int M_CommodityNumber_ID)
+	{
+		if (M_CommodityNumber_ID < 1) 
+			set_Value (COLUMNNAME_M_CommodityNumber_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_CommodityNumber_ID, M_CommodityNumber_ID);
+	}
+
+	@Override
+	public int getM_CommodityNumber_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_CommodityNumber_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_M_CustomsTariff getM_CustomsTariff()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_CustomsTariff_ID, org.compiere.model.I_M_CustomsTariff.class);
 	}
 
 	@Override
-	public void setM_CustomsTariff(org.compiere.model.I_M_CustomsTariff M_CustomsTariff)
+	public void setM_CustomsTariff(final org.compiere.model.I_M_CustomsTariff M_CustomsTariff)
 	{
 		set_ValueFromPO(COLUMNNAME_M_CustomsTariff_ID, org.compiere.model.I_M_CustomsTariff.class, M_CustomsTariff);
 	}
 
 	@Override
-	public void setM_CustomsTariff_ID (int M_CustomsTariff_ID)
+	public void setM_CustomsTariff_ID (final int M_CustomsTariff_ID)
 	{
 		if (M_CustomsTariff_ID < 1) 
 			set_Value (COLUMNNAME_M_CustomsTariff_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_CustomsTariff_ID, Integer.valueOf(M_CustomsTariff_ID));
+			set_Value (COLUMNNAME_M_CustomsTariff_ID, M_CustomsTariff_ID);
 	}
 
 	@Override
@@ -603,18 +688,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setM_FreightCategory(org.compiere.model.I_M_FreightCategory M_FreightCategory)
+	public void setM_FreightCategory(final org.compiere.model.I_M_FreightCategory M_FreightCategory)
 	{
 		set_ValueFromPO(COLUMNNAME_M_FreightCategory_ID, org.compiere.model.I_M_FreightCategory.class, M_FreightCategory);
 	}
 
 	@Override
-	public void setM_FreightCategory_ID (int M_FreightCategory_ID)
+	public void setM_FreightCategory_ID (final int M_FreightCategory_ID)
 	{
 		if (M_FreightCategory_ID < 1) 
 			set_Value (COLUMNNAME_M_FreightCategory_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_FreightCategory_ID, Integer.valueOf(M_FreightCategory_ID));
+			set_Value (COLUMNNAME_M_FreightCategory_ID, M_FreightCategory_ID);
 	}
 
 	@Override
@@ -624,12 +709,12 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setM_Locator_ID (int M_Locator_ID)
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
 	@Override
@@ -639,12 +724,12 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setM_Product_Category_ID (int M_Product_Category_ID)
+	public void setM_Product_Category_ID (final int M_Product_Category_ID)
 	{
 		if (M_Product_Category_ID < 1) 
 			set_Value (COLUMNNAME_M_Product_Category_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
+			set_Value (COLUMNNAME_M_Product_Category_ID, M_Product_Category_ID);
 	}
 
 	@Override
@@ -654,12 +739,12 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
@@ -678,31 +763,15 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** QuotationBOMProduct = Q */
 	public static final String M_PRODUCTPLANNINGSCHEMA_SELECTOR_QuotationBOMProduct = "Q";
 	@Override
-	public void setM_ProductPlanningSchema_Selector (java.lang.String M_ProductPlanningSchema_Selector)
+	public void setM_ProductPlanningSchema_Selector (final @Nullable java.lang.String M_ProductPlanningSchema_Selector)
 	{
-
 		set_Value (COLUMNNAME_M_ProductPlanningSchema_Selector, M_ProductPlanningSchema_Selector);
 	}
 
 	@Override
 	public java.lang.String getM_ProductPlanningSchema_Selector() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_M_ProductPlanningSchema_Selector);
-	}
-
-	@Override
-	public void setManufacturer_ID (int Manufacturer_ID)
-	{
-		if (Manufacturer_ID < 1) 
-			set_Value (COLUMNNAME_Manufacturer_ID, null);
-		else 
-			set_Value (COLUMNNAME_Manufacturer_ID, Integer.valueOf(Manufacturer_ID));
-	}
-
-	@Override
-	public int getManufacturer_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Manufacturer_ID);
+		return get_ValueAsString(COLUMNNAME_M_ProductPlanningSchema_Selector);
 	}
 
 	/** 
@@ -715,20 +784,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** No = N */
 	public static final String MRP_EXCLUDE_No = "N";
 	@Override
-	public void setMRP_Exclude (java.lang.String MRP_Exclude)
+	public void setMRP_Exclude (final @Nullable java.lang.String MRP_Exclude)
 	{
-
 		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
 	}
 
 	@Override
 	public java.lang.String getMRP_Exclude() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_MRP_Exclude);
+		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
 	}
 
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -736,29 +804,41 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override
-	public void setNetWeight (java.math.BigDecimal NetWeight)
+	public void setNetWeight (final @Nullable BigDecimal NetWeight)
 	{
 		set_Value (COLUMNNAME_NetWeight, NetWeight);
 	}
 
 	@Override
-	public java.math.BigDecimal getNetWeight() 
+	public BigDecimal getNetWeight() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_NetWeight);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_NetWeight);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setPackage_UOM_ID (int Package_UOM_ID)
+	public void setPackageSize (final @Nullable java.lang.String PackageSize)
+	{
+		set_Value (COLUMNNAME_PackageSize, PackageSize);
+	}
+
+	@Override
+	public java.lang.String getPackageSize() 
+	{
+		return get_ValueAsString(COLUMNNAME_PackageSize);
+	}
+
+	@Override
+	public void setPackage_UOM_ID (final int Package_UOM_ID)
 	{
 		if (Package_UOM_ID < 1) 
 			set_Value (COLUMNNAME_Package_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_Package_UOM_ID, Integer.valueOf(Package_UOM_ID));
+			set_Value (COLUMNNAME_Package_UOM_ID, Package_UOM_ID);
 	}
 
 	@Override
@@ -768,21 +848,9 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setPackageSize (java.lang.String PackageSize)
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_PackageSize, PackageSize);
-	}
-
-	@Override
-	public java.lang.String getPackageSize() 
-	{
-		return (java.lang.String)get_Value(COLUMNNAME_PackageSize);
-	}
-
-	@Override
-	public void setProcessing (boolean Processing)
-	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
 	@Override
@@ -809,43 +877,15 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	/** FreightCost = F */
 	public static final String PRODUCTTYPE_FreightCost = "F";
 	@Override
-	public void setProductType (java.lang.String ProductType)
+	public void setProductType (final java.lang.String ProductType)
 	{
-
 		set_Value (COLUMNNAME_ProductType, ProductType);
 	}
 
 	@Override
 	public java.lang.String getProductType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ProductType);
-	}
-
-	@Override
-	public org.compiere.model.I_R_MailText getR_MailText()
-	{
-		return get_ValueAsPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class);
-	}
-
-	@Override
-	public void setR_MailText(org.compiere.model.I_R_MailText R_MailText)
-	{
-		set_ValueFromPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class, R_MailText);
-	}
-
-	@Override
-	public void setR_MailText_ID (int R_MailText_ID)
-	{
-		if (R_MailText_ID < 1) 
-			set_Value (COLUMNNAME_R_MailText_ID, null);
-		else 
-			set_Value (COLUMNNAME_R_MailText_ID, Integer.valueOf(R_MailText_ID));
-	}
-
-	@Override
-	public int getR_MailText_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_R_MailText_ID);
+		return get_ValueAsString(COLUMNNAME_ProductType);
 	}
 
 	@Override
@@ -855,18 +895,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setRawMaterialOrigin(org.compiere.model.I_C_Country RawMaterialOrigin)
+	public void setRawMaterialOrigin(final org.compiere.model.I_C_Country RawMaterialOrigin)
 	{
 		set_ValueFromPO(COLUMNNAME_RawMaterialOrigin_ID, org.compiere.model.I_C_Country.class, RawMaterialOrigin);
 	}
 
 	@Override
-	public void setRawMaterialOrigin_ID (int RawMaterialOrigin_ID)
+	public void setRawMaterialOrigin_ID (final int RawMaterialOrigin_ID)
 	{
 		if (RawMaterialOrigin_ID < 1) 
 			set_Value (COLUMNNAME_RawMaterialOrigin_ID, null);
 		else 
-			set_Value (COLUMNNAME_RawMaterialOrigin_ID, Integer.valueOf(RawMaterialOrigin_ID));
+			set_Value (COLUMNNAME_RawMaterialOrigin_ID, RawMaterialOrigin_ID);
 	}
 
 	@Override
@@ -876,66 +916,39 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public org.compiere.model.I_S_ExpenseType getS_ExpenseType()
+	public org.compiere.model.I_R_MailText getR_MailText()
 	{
-		return get_ValueAsPO(COLUMNNAME_S_ExpenseType_ID, org.compiere.model.I_S_ExpenseType.class);
+		return get_ValueAsPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class);
 	}
 
 	@Override
-	public void setS_ExpenseType(org.compiere.model.I_S_ExpenseType S_ExpenseType)
+	public void setR_MailText(final org.compiere.model.I_R_MailText R_MailText)
 	{
-		set_ValueFromPO(COLUMNNAME_S_ExpenseType_ID, org.compiere.model.I_S_ExpenseType.class, S_ExpenseType);
+		set_ValueFromPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class, R_MailText);
 	}
 
 	@Override
-	public void setS_ExpenseType_ID (int S_ExpenseType_ID)
+	public void setR_MailText_ID (final int R_MailText_ID)
 	{
-		if (S_ExpenseType_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_S_ExpenseType_ID, null);
+		if (R_MailText_ID < 1) 
+			set_Value (COLUMNNAME_R_MailText_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_S_ExpenseType_ID, Integer.valueOf(S_ExpenseType_ID));
+			set_Value (COLUMNNAME_R_MailText_ID, R_MailText_ID);
 	}
 
 	@Override
-	public int getS_ExpenseType_ID() 
+	public int getR_MailText_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_S_ExpenseType_ID);
+		return get_ValueAsInt(COLUMNNAME_R_MailText_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
-	}
-
-	@Override
-	public void setS_Resource_ID (int S_Resource_ID)
-	{
-		if (S_Resource_ID < 1) 
-			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Resource_ID, Integer.valueOf(S_Resource_ID));
-	}
-
-	@Override
-	public int getS_Resource_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
-	}
-
-	@Override
-	public void setSalesRep_ID (int SalesRep_ID)
+	public void setSalesRep_ID (final int SalesRep_ID)
 	{
 		if (SalesRep_ID < 1) 
 			set_Value (COLUMNNAME_SalesRep_ID, null);
 		else 
-			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
+			set_Value (COLUMNNAME_SalesRep_ID, SalesRep_ID);
 	}
 
 	@Override
@@ -945,9 +958,36 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setShelfDepth (int ShelfDepth)
+	public org.compiere.model.I_S_ExpenseType getS_ExpenseType()
 	{
-		set_Value (COLUMNNAME_ShelfDepth, Integer.valueOf(ShelfDepth));
+		return get_ValueAsPO(COLUMNNAME_S_ExpenseType_ID, org.compiere.model.I_S_ExpenseType.class);
+	}
+
+	@Override
+	public void setS_ExpenseType(final org.compiere.model.I_S_ExpenseType S_ExpenseType)
+	{
+		set_ValueFromPO(COLUMNNAME_S_ExpenseType_ID, org.compiere.model.I_S_ExpenseType.class, S_ExpenseType);
+	}
+
+	@Override
+	public void setS_ExpenseType_ID (final int S_ExpenseType_ID)
+	{
+		if (S_ExpenseType_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_S_ExpenseType_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_S_ExpenseType_ID, S_ExpenseType_ID);
+	}
+
+	@Override
+	public int getS_ExpenseType_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_ExpenseType_ID);
+	}
+
+	@Override
+	public void setShelfDepth (final int ShelfDepth)
+	{
+		set_Value (COLUMNNAME_ShelfDepth, ShelfDepth);
 	}
 
 	@Override
@@ -957,22 +997,22 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setShelfHeight (java.math.BigDecimal ShelfHeight)
+	public void setShelfHeight (final @Nullable BigDecimal ShelfHeight)
 	{
 		set_Value (COLUMNNAME_ShelfHeight, ShelfHeight);
 	}
 
 	@Override
-	public java.math.BigDecimal getShelfHeight() 
+	public BigDecimal getShelfHeight() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShelfHeight);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShelfHeight);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setShelfWidth (int ShelfWidth)
+	public void setShelfWidth (final int ShelfWidth)
 	{
-		set_Value (COLUMNNAME_ShelfWidth, Integer.valueOf(ShelfWidth));
+		set_Value (COLUMNNAME_ShelfWidth, ShelfWidth);
 	}
 
 	@Override
@@ -982,7 +1022,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setSKU (java.lang.String SKU)
+	public void setSKU (final @Nullable java.lang.String SKU)
 	{
 		set_Value (COLUMNNAME_SKU, SKU);
 	}
@@ -990,25 +1030,40 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getSKU() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_SKU);
+		return get_ValueAsString(COLUMNNAME_SKU);
 	}
 
 	@Override
-	public void setStorageDetails (java.lang.String StorageDetails)
+	public org.compiere.model.I_S_Resource getS_Resource()
 	{
-		set_Value (COLUMNNAME_StorageDetails, StorageDetails);
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
 	}
 
 	@Override
-	public java.lang.String getStorageDetails() 
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_StorageDetails);
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
 	}
 
 	@Override
-	public void setUnitsPerPack (int UnitsPerPack)
+	public void setS_Resource_ID (final int S_Resource_ID)
 	{
-		set_Value (COLUMNNAME_UnitsPerPack, Integer.valueOf(UnitsPerPack));
+		if (S_Resource_ID < 1) 
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+	}
+
+	@Override
+	public int getS_Resource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public void setUnitsPerPack (final int UnitsPerPack)
+	{
+		set_Value (COLUMNNAME_UnitsPerPack, UnitsPerPack);
 	}
 
 	@Override
@@ -1018,20 +1073,20 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setUnitsPerPallet (java.math.BigDecimal UnitsPerPallet)
+	public void setUnitsPerPallet (final @Nullable BigDecimal UnitsPerPallet)
 	{
 		set_Value (COLUMNNAME_UnitsPerPallet, UnitsPerPallet);
 	}
 
 	@Override
-	public java.math.BigDecimal getUnitsPerPallet() 
+	public BigDecimal getUnitsPerPallet() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UnitsPerPallet);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UnitsPerPallet);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setUPC (java.lang.String UPC)
+	public void setUPC (final @Nullable java.lang.String UPC)
 	{
 		set_Value (COLUMNNAME_UPC, UPC);
 	}
@@ -1039,11 +1094,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getUPC() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_UPC);
+		return get_ValueAsString(COLUMNNAME_UPC);
 	}
 
 	@Override
-	public void setValue (java.lang.String Value)
+	public void setValue (final java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
@@ -1051,11 +1106,11 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getValue() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Value);
+		return get_ValueAsString(COLUMNNAME_Value);
 	}
 
 	@Override
-	public void setVersionNo (java.lang.String VersionNo)
+	public void setVersionNo (final @Nullable java.lang.String VersionNo)
 	{
 		set_Value (COLUMNNAME_VersionNo, VersionNo);
 	}
@@ -1063,24 +1118,24 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getVersionNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_VersionNo);
+		return get_ValueAsString(COLUMNNAME_VersionNo);
 	}
 
 	@Override
-	public void setVolume (java.math.BigDecimal Volume)
+	public void setVolume (final @Nullable BigDecimal Volume)
 	{
 		set_Value (COLUMNNAME_Volume, Volume);
 	}
 
 	@Override
-	public java.math.BigDecimal getVolume() 
+	public BigDecimal getVolume() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Volume);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Volume);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setWarehouse_temperature (java.lang.String Warehouse_temperature)
+	public void setWarehouse_temperature (final @Nullable java.lang.String Warehouse_temperature)
 	{
 		set_Value (COLUMNNAME_Warehouse_temperature, Warehouse_temperature);
 	}
@@ -1088,35 +1143,19 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	@Override
 	public java.lang.String getWarehouse_temperature() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Warehouse_temperature);
+		return get_ValueAsString(COLUMNNAME_Warehouse_temperature);
 	}
 
 	@Override
-	public void setWeight (java.math.BigDecimal Weight)
+	public void setWeight (final @Nullable BigDecimal Weight)
 	{
 		set_Value (COLUMNNAME_Weight, Weight);
 	}
 
 	@Override
-	public java.math.BigDecimal getWeight() 
+	public BigDecimal getWeight() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Weight);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-	
-	
-	@Override
-	public void setM_CommodityNumber_ID (int M_CommodityNumber_ID) 
-	{
-		if (M_CommodityNumber_ID < 1)
-			set_Value (COLUMNNAME_M_CommodityNumber_ID, null);
-		else
-			set_Value (COLUMNNAME_M_CommodityNumber_ID, Integer.valueOf(M_CommodityNumber_ID));
-	}
-
-	@Override
-	public int getM_CommodityNumber_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_M_CommodityNumber_ID);
 	}
 }

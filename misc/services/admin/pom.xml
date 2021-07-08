@@ -1,103 +1,148 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<artifactId>de.metas.parent.general</artifactId>
-		<groupId>de.metas</groupId>
-		<version>10.0.0</version>
-		<relativePath>../../parent-pom/pom.xml</relativePath>
-	</parent>
+    <parent>
+        <artifactId>de.metas.parent.general</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+        <relativePath>../../parent-pom/pom.xml</relativePath>
+    </parent>
 
-	<groupId>de.metas.admin</groupId>
-	<artifactId>metasfresh-admin</artifactId>
+    <groupId>de.metas.admin</groupId>
+    <artifactId>metasfresh-admin</artifactId>
 
-	<!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
-	<version>1.0.0</version>
+    <!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin can't set it to another version -->
+    <version>10.0.0</version>
 
-	<properties>
-		<spring-boot.version>1.5.3.RELEASE</spring-boot.version>
-		<start-class>de.metas.admin.SpringBootAdminApplication</start-class>
-	</properties>
+    <properties>
+        <spring-boot.version>2.4.3</spring-boot.version>
+        <spring-cloud.version>2020.0.3</spring-cloud.version>
+        <start-class>de.metas.admin.SpringBootAdminApplication</start-class>
+    </properties>
 
-	<dependencyManagement>
-		<dependencies>
-			<!-- Import dependency management from Spring Boot -->
-			<dependency>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-dependencies</artifactId>
-				<version>${spring-boot.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>de.codecentric</groupId>
-			<artifactId>spring-boot-admin-server</artifactId>
-			<version>${spring-boot-admin.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>de.codecentric</groupId>
-			<artifactId>spring-boot-admin-server-ui</artifactId>
-			<version>${spring-boot-admin.version}</version>
-		</dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-		<!-- logging -->
-		<!-- logstash-logback-encoder and janino are related to https://github.com/metasfresh/metasfresh/issues/1504 -->
-		<dependency>
-			<groupId>net.logstash.logback</groupId>
-			<artifactId>logstash-logback-encoder</artifactId>
-		</dependency>
-		<!-- we need janino for the conditional that we have in the logback config -->
-		<dependency>
-			<groupId>org.codehaus.janino</groupId>
-			<artifactId>janino</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.codecentric</groupId>
+            <artifactId>spring-boot-admin-starter-server</artifactId>
+            <version>${spring-boot-admin.version}</version>
+        </dependency>
+        <dependency> <!-- with this we can statically specify the instances of interest in application.yml -->
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter</artifactId>
+        </dependency>
+    </dependencies>
 
-	</dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                    <source>14</source>
+                    <target>14</target>
+                </configuration>
+            </plugin>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<version>${spring-boot.version}</version>
-				<executions>
-					<execution>
-						<id>spring-boot-admin-repackage</id>
-						<goals>
-							<goal>repackage</goal>
-						</goals>
-						<configuration>
-							<executable>true</executable>
-							<mainClass>${start-class}</mainClass>
-						</configuration>
-					</execution>
-					<execution>
-						<id>spring-boot-admin-build-info</id>
-						<goals>
-							<goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
-						</goals>
-							<configuration>
-								<additionalProperties>
-									<jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
-									<jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
-									<jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
-									<jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
-								</additionalProperties>
-							</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-	<description>A standalone spring-boot service with spring-boot-admin. See https://github.com/codecentric/spring-boot-admin/blob/master/README.md for further infos</description>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${spring-boot.version}</version>
+                <executions>
+                    <execution>
+                        <id>spring-boot-admin-repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <executable>true</executable>
+                            <mainClass>${start-class}</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>spring-boot-admin-build-info</id>
+                        <goals>
+                            <goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
+                        </goals>
+                        <configuration>
+                            <additionalProperties>
+                                <jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+                                <jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+                                <jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+                                <jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+                            </additionalProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <configuration>
+                    <to>
+                        <!-- we expect those environment variables to be set from the outside world -->
+                        <!-- without specifying the tag in the image name, jib will push "latest", thx https://github.com/GoogleContainerTools/jib/issues/2237#issuecomment-575967019 -->
+                        <image>docker.metasfresh.com/metasfresh/de-metas-admin:${env.MF_VERSION_DOCKERIZED}
+                        </image>
+                        <tags>
+                            <tag>${env.BRANCH_NAME_DOCKERIZED}_LATEST</tag>
+                        </tags>
+                        <auth>
+                            <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <username>${env.DOCKER_PUSH_REGISTRY_USERNAME}</username>
+                            <password>${env.DOCKER_PUSH_REGISTRY_PASSWORD}</password>
+                        </auth>
+                    </to>
+                    <from>
+                        <!-- specify the exact base image for a reproducible build-->
+                        <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                    </from>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>build</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <description>A standalone spring-boot service with spring-boot-admin. See https://github.com/codecentric/spring-boot-admin/blob/master/README.md for further infos</description>
 </project>

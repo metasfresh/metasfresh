@@ -21,6 +21,9 @@
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<parameter name="C_Period_ID" class="java.lang.Integer"/>
+	<parameter name="AD_Org_ID" class="java.lang.Integer">
+		<defaultValueExpression><![CDATA[1000000]]></defaultValueExpression>
+	</parameter>
 	<queryString>
 		<![CDATA[select *
 from (
@@ -28,7 +31,7 @@ from (
                 over (order by deliveryCountry, commoditynumber, deliveredFromCountry,  OriginCountry, ProductName, UOMSymbol, cursymbol, C_Period_ID),
                 *
          from de_metas_endcustomer_fresh_reports.M_InOut_V i
-         where C_Period_ID = $P{C_Period_ID}
+         where C_Period_ID = $P{C_Period_ID} and AD_Org_ID = $P{AD_Org_ID}
      ) as v 
 order by row_number;]]>
 	</queryString>
@@ -71,10 +74,16 @@ order by row_number;]]>
 	<field name="period" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="period"/>
 	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="orgname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="orgname"/>
+	</field>
 	<pageHeader>
-		<band height="94">
+		<band height="121">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="50" y="67" width="26" height="22" forecolor="#000000" uuid="bc0c873c-2d79-4802-a06e-fe6d51c8b562"/>
+				<reportElement key="textField-13" x="50" y="94" width="26" height="22" forecolor="#000000" uuid="bc0c873c-2d79-4802-a06e-fe6d51c8b562"/>
 				<box>
 					<pen lineWidth="0.0"/>
 				</box>
@@ -85,7 +94,7 @@ order by row_number;]]>
 				<textFieldExpression><![CDATA["Pos."]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="200" y="67" width="56" height="22" forecolor="#000000" uuid="1c58aa42-8a29-473a-9002-c37f38659eed"/>
+				<reportElement key="textField-13" x="200" y="94" width="56" height="22" forecolor="#000000" uuid="1c58aa42-8a29-473a-9002-c37f38659eed"/>
 				<box>
 					<pen lineWidth="0.0"/>
 				</box>
@@ -96,7 +105,7 @@ order by row_number;]]>
 				<textFieldExpression><![CDATA[$R{commoditynumber}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="302" y="67" width="46" height="22" forecolor="#000000" uuid="531a54d9-7974-442c-b2b9-f3524f16eb57"/>
+				<reportElement key="textField-13" x="302" y="94" width="46" height="22" forecolor="#000000" uuid="531a54d9-7974-442c-b2b9-f3524f16eb57"/>
 				<box>
 					<pen lineWidth="0.0"/>
 				</box>
@@ -106,7 +115,7 @@ order by row_number;]]>
 				<textFieldExpression><![CDATA[$R{deliverycountry}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="349" y="67" width="52" height="22" forecolor="#000000" uuid="cf4fefa3-119d-4eda-a0b7-1df443d731ab"/>
+				<reportElement key="textField-13" x="349" y="94" width="52" height="22" forecolor="#000000" uuid="cf4fefa3-119d-4eda-a0b7-1df443d731ab"/>
 				<box>
 					<pen lineWidth="0.0"/>
 				</box>
@@ -116,7 +125,7 @@ order by row_number;]]>
 				<textFieldExpression><![CDATA[$R{origincountry}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="400" y="67" width="41" height="22" forecolor="#000000" uuid="1b72454c-4e56-44f8-91cd-50d698f79923"/>
+				<reportElement key="textField-13" x="400" y="94" width="41" height="22" forecolor="#000000" uuid="1b72454c-4e56-44f8-91cd-50d698f79923"/>
 				<box>
 					<pen lineWidth="0.0"/>
 				</box>
@@ -126,7 +135,7 @@ order by row_number;]]>
 				<textFieldExpression><![CDATA[$R{Qty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="532" y="67" width="51" height="22" forecolor="#000000" uuid="bf1caf75-0b46-41f1-808d-38f4614d8bc2"/>
+				<reportElement key="textField-13" x="532" y="94" width="51" height="22" forecolor="#000000" uuid="bf1caf75-0b46-41f1-808d-38f4614d8bc2"/>
 				<box>
 					<pen lineWidth="0.0"/>
 				</box>
@@ -136,7 +145,7 @@ order by row_number;]]>
 				<textFieldExpression><![CDATA[$R{Currency}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="463" y="67" width="67" height="22" forecolor="#000000" uuid="1c133352-75e0-4289-ba94-8e06886ddd1e"/>
+				<reportElement key="textField-13" x="463" y="94" width="67" height="22" forecolor="#000000" uuid="1c133352-75e0-4289-ba94-8e06886ddd1e"/>
 				<box>
 					<pen lineWidth="0.0"/>
 				</box>
@@ -146,7 +155,7 @@ order by row_number;]]>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="442" y="67" width="27" height="22" forecolor="#000000" uuid="8d52decb-b741-486c-a51b-c8dbc77bf074"/>
+				<reportElement key="textField-13" x="442" y="94" width="27" height="22" forecolor="#000000" uuid="8d52decb-b741-486c-a51b-c8dbc77bf074"/>
 				<box>
 					<pen lineWidth="0.0"/>
 				</box>
@@ -156,7 +165,7 @@ order by row_number;]]>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="256" y="67" width="45" height="22" forecolor="#000000" uuid="1e455e49-2461-4882-b8e3-38bc6d7e1dae"/>
+				<reportElement key="textField-13" x="256" y="95" width="45" height="22" forecolor="#000000" uuid="1e455e49-2461-4882-b8e3-38bc6d7e1dae"/>
 				<box>
 					<pen lineWidth="0.0"/>
 				</box>
@@ -166,11 +175,11 @@ order by row_number;]]>
 				<textFieldExpression><![CDATA[$R{deliveredfromcountry}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="50" y="45" width="523" height="14" uuid="285aba6a-0a15-4208-af82-b6562c35578b"/>
+				<reportElement x="50" y="56" width="523" height="14" uuid="285aba6a-0a15-4208-af82-b6562c35578b"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{Month}+"  " + $F{period}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{orgname}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy">
 				<reportElement x="0" y="32" width="594" height="20" uuid="f3b07e64-f172-4ce1-84e7-9287af047df0"/>
@@ -189,6 +198,24 @@ order by row_number;]]>
 					<paragraph leftIndent="5"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Product}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="76" y="94" width="124" height="22" forecolor="#000000" uuid="d2c60a71-2e7f-4fca-8b81-d4457e64beef"/>
+				<box>
+					<pen lineWidth="0.0"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top" markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Product}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="50" y="71" width="523" height="14" uuid="07d48a3c-c365-45a1-8223-a1b741ea1d76"/>
+				<textElement>
+					<font fontName="Arial" size="10" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Month}+"  " + $F{period}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

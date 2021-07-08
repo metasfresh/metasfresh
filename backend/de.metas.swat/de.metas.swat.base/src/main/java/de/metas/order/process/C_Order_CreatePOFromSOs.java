@@ -1,23 +1,20 @@
 package de.metas.order.process;
 
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.List;
-
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
+import de.metas.order.model.I_C_Order;
+import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregationKeyBuilder;
+import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
+import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_C_OrderLine;
 
-import de.metas.document.engine.DocStatus;
-import de.metas.order.model.I_C_Order;
-import de.metas.order.process.impl.CreatePOFromSOsAggregationKeyBuilder;
-import de.metas.order.process.impl.CreatePOFromSOsAggregator;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.List;
 
 /*
  * #%L
@@ -46,11 +43,10 @@ import de.metas.util.Services;
  * This process is to replace the old org.compiere.process.OrderPOCreate.
  *
  * @author metas-dev <dev@metasfresh.com>
- * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
+ * Task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
  */
 public class C_Order_CreatePOFromSOs
 		extends JavaProcess
-		implements IProcessPrecondition
 {
 
 	private Timestamp p_DatePromised_From;
@@ -72,7 +68,7 @@ public class C_Order_CreatePOFromSOs
 	private final IC_Order_CreatePOFromSOsBL orderCreatePOFromSOsBL = Services.get(IC_Order_CreatePOFromSOsBL.class);
 
 	/**
-	 * @task http://dewiki908/mediawiki/index.php/07228_Create_bestellung_from_auftrag_more_than_once_%28100300573628%29
+	 * Task http://dewiki908/mediawiki/index.php/07228_Create_bestellung_from_auftrag_more_than_once_%28100300573628%29
 	 */
 	private final boolean p_allowMultiplePOOrders = true;
 
@@ -126,28 +122,6 @@ public class C_Order_CreatePOFromSOs
 		}
 		workpackageAggregator.closeAllGroups();
 
-		return "Success";
+		return MSG_OK;
 	}
-
-	/**
-	 * @return <code>true</code> if the given gridTab is a completed sales order.
-	 */
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
-	{
-		if (!I_C_Order.Table_Name.equals(context.getTableName()))
-		{
-			return ProcessPreconditionsResolution.reject();
-		}
-
-		final I_C_Order order = context.getSelectedModel(I_C_Order.class);
-		if (order == null)
-		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("context contains no order");
-		}
-
-		final DocStatus docStatus = DocStatus.ofCode(order.getDocStatus());
-		return ProcessPreconditionsResolution.acceptIf(order.isSOTrx() && docStatus.isCompleted());
-	}
-
 }

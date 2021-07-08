@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.currency.Amount;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -386,4 +387,11 @@ public class TranslatableStrings
 
 		return builder.build();
 	}
+
+	public static ITranslatableString adMessage(@NonNull final AdMessageKey adMessage, @Nullable final Object ... msgParameters)
+	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class);
+		return msgBL.getTranslatableMsgText(adMessage, msgParameters);
+	}
+
 }

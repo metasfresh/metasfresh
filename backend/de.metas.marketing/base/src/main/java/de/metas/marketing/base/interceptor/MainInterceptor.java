@@ -32,7 +32,8 @@ public class MainInterceptor extends AbstractModuleInterceptor
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
 		engine.addModelValidator(MKTG_Campaign_ContactPerson.INSTANCE);
-
+		engine.addModelValidator(MKTG_Channel.INSTANCE);
+		engine.addModelValidator(AD_User_MKTG_Channels.INSTANCE);
 	}
 
 	@Override

@@ -3,8 +3,8 @@ package org.eevolution.api;
 import java.time.Duration;
 import java.time.LocalDateTime;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.quantity.Quantity;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;

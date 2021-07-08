@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOM;
 import org.eevolution.model.I_PP_Order_BOMLine;

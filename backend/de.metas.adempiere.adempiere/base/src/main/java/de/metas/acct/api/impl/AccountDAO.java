@@ -3,6 +3,7 @@ package de.metas.acct.api.impl;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.util.NumberUtils;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -48,24 +49,24 @@ import lombok.NonNull;
 public class AccountDAO implements IAccountDAO
 {
 	/** Maps {@link AcctSegmentType} to {@link I_C_ValidCombination}'s column name */
-	private static final Map<AcctSegmentType, ModelColumn<I_C_ValidCombination, ?>> segmentType2column = ImmutableMap.<AcctSegmentType, ModelColumn<I_C_ValidCombination, ?>> builder()
-			.put(AcctSegmentType.Client, I_C_ValidCombination.COLUMN_AD_Client_ID)
-			.put(AcctSegmentType.Organization, I_C_ValidCombination.COLUMN_AD_Org_ID)
-			.put(AcctSegmentType.Account, I_C_ValidCombination.COLUMN_Account_ID)
-			.put(AcctSegmentType.SubAccount, I_C_ValidCombination.COLUMN_C_SubAcct_ID)
-			.put(AcctSegmentType.Product, I_C_ValidCombination.COLUMN_M_Product_ID)
-			.put(AcctSegmentType.BPartner, I_C_ValidCombination.COLUMN_C_BPartner_ID)
-			.put(AcctSegmentType.OrgTrx, I_C_ValidCombination.COLUMN_AD_OrgTrx_ID)
-			.put(AcctSegmentType.LocationFrom, I_C_ValidCombination.COLUMN_C_LocFrom_ID)
-			.put(AcctSegmentType.LocationTo, I_C_ValidCombination.COLUMN_C_LocTo_ID)
-			.put(AcctSegmentType.SalesRegion, I_C_ValidCombination.COLUMN_C_SalesRegion_ID)
-			.put(AcctSegmentType.Project, I_C_ValidCombination.COLUMN_C_Project_ID)
-			.put(AcctSegmentType.Campaign, I_C_ValidCombination.COLUMN_C_Campaign_ID)
-			.put(AcctSegmentType.Activity, I_C_ValidCombination.COLUMN_C_Activity_ID)
-			.put(AcctSegmentType.UserList1, I_C_ValidCombination.COLUMN_User1_ID)
-			.put(AcctSegmentType.UserList2, I_C_ValidCombination.COLUMN_User2_ID)
-			.put(AcctSegmentType.UserElement1, I_C_ValidCombination.COLUMN_UserElement1_ID)
-			.put(AcctSegmentType.UserElement2, I_C_ValidCombination.COLUMN_UserElement2_ID)
+	private static final Map<AcctSegmentType, String> segmentType2column = ImmutableMap.<AcctSegmentType, String> builder()
+			.put(AcctSegmentType.Client, I_C_ValidCombination.COLUMNNAME_AD_Client_ID)
+			.put(AcctSegmentType.Organization, I_C_ValidCombination.COLUMNNAME_AD_Org_ID)
+			.put(AcctSegmentType.Account, I_C_ValidCombination.COLUMNNAME_Account_ID)
+			.put(AcctSegmentType.SubAccount, I_C_ValidCombination.COLUMNNAME_C_SubAcct_ID)
+			.put(AcctSegmentType.Product, I_C_ValidCombination.COLUMNNAME_M_Product_ID)
+			.put(AcctSegmentType.BPartner, I_C_ValidCombination.COLUMNNAME_C_BPartner_ID)
+			.put(AcctSegmentType.OrgTrx, I_C_ValidCombination.COLUMNNAME_AD_OrgTrx_ID)
+			.put(AcctSegmentType.LocationFrom, I_C_ValidCombination.COLUMNNAME_C_LocFrom_ID)
+			.put(AcctSegmentType.LocationTo, I_C_ValidCombination.COLUMNNAME_C_LocTo_ID)
+			.put(AcctSegmentType.SalesRegion, I_C_ValidCombination.COLUMNNAME_C_SalesRegion_ID)
+			.put(AcctSegmentType.Project, I_C_ValidCombination.COLUMNNAME_C_Project_ID)
+			.put(AcctSegmentType.Campaign, I_C_ValidCombination.COLUMNNAME_C_Campaign_ID)
+			.put(AcctSegmentType.Activity, I_C_ValidCombination.COLUMNNAME_C_Activity_ID)
+			.put(AcctSegmentType.UserList1, I_C_ValidCombination.COLUMNNAME_User1_ID)
+			.put(AcctSegmentType.UserList2, I_C_ValidCombination.COLUMNNAME_User2_ID)
+			.put(AcctSegmentType.UserElement1, I_C_ValidCombination.COLUMNNAME_UserElement1_ID)
+			.put(AcctSegmentType.UserElement2, I_C_ValidCombination.COLUMNNAME_UserElement2_ID)
 			.build();
 
 	@Override
@@ -93,30 +94,42 @@ public class AccountDAO implements IAccountDAO
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_C_ValidCombination> queryBuilder = queryBL.createQueryBuilder(I_C_ValidCombination.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_ValidCombination.COLUMN_C_AcctSchema_ID, dimension.getAcctSchemaId());
+				.addEqualsFilter(I_C_ValidCombination.COLUMNNAME_C_AcctSchema_ID, dimension.getAcctSchemaId());
 
-		for (final Map.Entry<AcctSegmentType, org.adempiere.model.ModelColumn<I_C_ValidCombination, ?>> e : segmentType2column.entrySet())
+		for (final Map.Entry<AcctSegmentType, String> e : segmentType2column.entrySet())
 		{
 			final AcctSegmentType segmentType = e.getKey();
-			final ModelColumn<I_C_ValidCombination, ?> column = e.getValue();
-			final int valueInt = dimension.getSegmentValue(segmentType);
+			final String columnName = e.getValue();
 
-			if (valueInt > 0)
+			final Object value = dimension.getSegmentValue(segmentType);
+
+			if(value instanceof String)
 			{
-				queryBuilder.addEqualsFilter(column, valueInt);
+				queryBuilder.addEqualsFilter(columnName, String.valueOf(value));
 			}
-			else
+
+			else if (value instanceof Integer)
 			{
-				final boolean mandatorySegment = segmentType == AcctSegmentType.Client
-						|| segmentType == AcctSegmentType.Organization
-						|| segmentType == AcctSegmentType.Account;
-				if (mandatorySegment)
+				final int valueInt = NumberUtils.asInt(value, 0);
+
+				if (valueInt > 0)
 				{
-					queryBuilder.addEqualsFilter(column, valueInt);
+					queryBuilder.addEqualsFilter(columnName, valueInt);
 				}
+
 				else
 				{
-					queryBuilder.addEqualsFilter(column, null);
+					final boolean mandatorySegment = segmentType == AcctSegmentType.Client
+							|| segmentType == AcctSegmentType.Organization
+							|| segmentType == AcctSegmentType.Account;
+					if (mandatorySegment)
+					{
+						queryBuilder.addEqualsFilter(columnName, valueInt);
+					}
+					else
+					{
+						queryBuilder.addEqualsFilter(columnName, null);
+					}
 				}
 			}
 		}

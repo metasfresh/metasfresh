@@ -52,7 +52,7 @@ import com.google.common.collect.HashMultimap;
 
 import de.metas.document.engine.DocStatus;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;

@@ -1,77 +1,53 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_Trace
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1347172278L;
+	private static final long serialVersionUID = 974446899L;
 
     /** Standard Constructor */
-    public X_M_HU_Trace (Properties ctx, int M_HU_Trace_ID, String trxName)
+    public X_M_HU_Trace (final Properties ctx, final int M_HU_Trace_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_Trace_ID, trxName);
-      /** if (M_HU_Trace_ID == 0)
-        {
-			setEventTime (new Timestamp( System.currentTimeMillis() ));
-			setHUTraceType (null);
-			setM_HU_ID (0);
-			setM_HU_Trace_ID (0);
-			setM_Product_ID (0);
-			setQty (BigDecimal.ZERO);
-			setVHU_ID (0);
-			setVHUStatus (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_Trace (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_Trace (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Belegart.
-		@param C_DocType_ID 
-		Belegart oder Verarbeitungsvorgaben
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_DocType_ID (int C_DocType_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_DocType_ID (final int C_DocType_ID)
 	{
 		if (C_DocType_ID < 0) 
 			set_Value (COLUMNNAME_C_DocType_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
+			set_Value (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
-	/** Get Belegart.
-		@return Belegart oder Verarbeitungsvorgaben
-	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
 	/** 
@@ -103,40 +79,28 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus (final @Nullable java.lang.String DocStatus)
 	{
-
 		set_Value (COLUMNNAME_DocStatus, DocStatus);
 	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
-	/** Set Zeitpunkt.
-		@param EventTime Zeitpunkt	  */
 	@Override
-	public void setEventTime (java.sql.Timestamp EventTime)
+	public void setEventTime (final java.sql.Timestamp EventTime)
 	{
 		set_ValueNoCheck (COLUMNNAME_EventTime, EventTime);
 	}
 
-	/** Get Zeitpunkt.
-		@return Zeitpunkt	  */
 	@Override
-	public java.sql.Timestamp getEventTime () 
+	public java.sql.Timestamp getEventTime() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_EventTime);
+		return get_ValueAsTimestamp(COLUMNNAME_EventTime);
 	}
 
 	/** 
@@ -160,21 +124,16 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public static final String HUTRACETYPE_TRANSFORM_LOAD = "TRANSFORM_LOAD";
 	/** TRANSFORM_PARENT = TRANSFORM_PARENT */
 	public static final String HUTRACETYPE_TRANSFORM_PARENT = "TRANSFORM_PARENT";
-	/** Set Typ.
-		@param HUTraceType Typ	  */
 	@Override
-	public void setHUTraceType (java.lang.String HUTraceType)
+	public void setHUTraceType (final java.lang.String HUTraceType)
 	{
-
 		set_Value (COLUMNNAME_HUTraceType, HUTraceType);
 	}
 
-	/** Get Typ.
-		@return Typ	  */
 	@Override
-	public java.lang.String getHUTraceType () 
+	public java.lang.String getHUTraceType() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_HUTraceType);
+		return get_ValueAsString(COLUMNNAME_HUTraceType);
 	}
 
 	@Override
@@ -184,53 +143,39 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
-	public void setM_HU(de.metas.handlingunits.model.I_M_HU M_HU)
+	public void setM_HU(final de.metas.handlingunits.model.I_M_HU M_HU)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_ID, de.metas.handlingunits.model.I_M_HU.class, M_HU);
 	}
 
-	/** Set Handling Unit.
-		@param M_HU_ID Handling Unit	  */
 	@Override
-	public void setM_HU_ID (int M_HU_ID)
+	public void setM_HU_ID (final int M_HU_ID)
 	{
 		if (M_HU_ID < 1) 
 			set_Value (COLUMNNAME_M_HU_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_HU_ID, Integer.valueOf(M_HU_ID));
+			set_Value (COLUMNNAME_M_HU_ID, M_HU_ID);
 	}
 
-	/** Get Handling Unit.
-		@return Handling Unit	  */
 	@Override
-	public int getM_HU_ID () 
+	public int getM_HU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_ID);
 	}
 
-	/** Set Rückverfolgbarkeit.
-		@param M_HU_Trace_ID Rückverfolgbarkeit	  */
 	@Override
-	public void setM_HU_Trace_ID (int M_HU_Trace_ID)
+	public void setM_HU_Trace_ID (final int M_HU_Trace_ID)
 	{
 		if (M_HU_Trace_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_Trace_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_Trace_ID, Integer.valueOf(M_HU_Trace_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_Trace_ID, M_HU_Trace_ID);
 	}
 
-	/** Get Rückverfolgbarkeit.
-		@return Rückverfolgbarkeit	  */
 	@Override
-	public int getM_HU_Trace_ID () 
+	public int getM_HU_Trace_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Trace_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_Trace_ID);
 	}
 
 	@Override
@@ -240,31 +185,24 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
-	public void setM_HU_Trx_Line(de.metas.handlingunits.model.I_M_HU_Trx_Line M_HU_Trx_Line)
+	public void setM_HU_Trx_Line(final de.metas.handlingunits.model.I_M_HU_Trx_Line M_HU_Trx_Line)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_Trx_Line_ID, de.metas.handlingunits.model.I_M_HU_Trx_Line.class, M_HU_Trx_Line);
 	}
 
-	/** Set HU-Transaktionszeile.
-		@param M_HU_Trx_Line_ID HU-Transaktionszeile	  */
 	@Override
-	public void setM_HU_Trx_Line_ID (int M_HU_Trx_Line_ID)
+	public void setM_HU_Trx_Line_ID (final int M_HU_Trx_Line_ID)
 	{
 		if (M_HU_Trx_Line_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_Trx_Line_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_Trx_Line_ID, Integer.valueOf(M_HU_Trx_Line_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_Trx_Line_ID, M_HU_Trx_Line_ID);
 	}
 
-	/** Get HU-Transaktionszeile.
-		@return HU-Transaktionszeile	  */
 	@Override
-	public int getM_HU_Trx_Line_ID () 
+	public int getM_HU_Trx_Line_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Trx_Line_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_Trx_Line_ID);
 	}
 
 	@Override
@@ -274,34 +212,24 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
-	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut)
+	public void setM_InOut(final org.compiere.model.I_M_InOut M_InOut)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
 	}
 
-	/** Set Lieferung/Wareneingang.
-		@param M_InOut_ID 
-		Material Shipment Document
-	  */
 	@Override
-	public void setM_InOut_ID (int M_InOut_ID)
+	public void setM_InOut_ID (final int M_InOut_ID)
 	{
 		if (M_InOut_ID < 1) 
 			set_Value (COLUMNNAME_M_InOut_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
+			set_Value (COLUMNNAME_M_InOut_ID, M_InOut_ID);
 	}
 
-	/** Get Lieferung/Wareneingang.
-		@return Material Shipment Document
-	  */
 	@Override
-	public int getM_InOut_ID () 
+	public int getM_InOut_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
 
 	@Override
@@ -311,81 +239,54 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
-	public void setM_Movement(org.compiere.model.I_M_Movement M_Movement)
+	public void setM_Movement(final org.compiere.model.I_M_Movement M_Movement)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Movement_ID, org.compiere.model.I_M_Movement.class, M_Movement);
 	}
 
-	/** Set Warenbewegung.
-		@param M_Movement_ID 
-		Bewegung von Warenbestand
-	  */
 	@Override
-	public void setM_Movement_ID (int M_Movement_ID)
+	public void setM_Movement_ID (final int M_Movement_ID)
 	{
 		if (M_Movement_ID < 1) 
 			set_Value (COLUMNNAME_M_Movement_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Movement_ID, Integer.valueOf(M_Movement_ID));
+			set_Value (COLUMNNAME_M_Movement_ID, M_Movement_ID);
 	}
 
-	/** Get Warenbewegung.
-		@return Bewegung von Warenbestand
-	  */
 	@Override
-	public int getM_Movement_ID () 
+	public int getM_Movement_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Movement_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Movement_ID);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Lieferdisposition.
-		@param M_ShipmentSchedule_ID Lieferdisposition	  */
 	@Override
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID)
+	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
 	{
 		if (M_ShipmentSchedule_ID < 1) 
 			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, Integer.valueOf(M_ShipmentSchedule_ID));
+			set_Value (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
 	}
 
-	/** Get Lieferdisposition.
-		@return Lieferdisposition	  */
 	@Override
-	public int getM_ShipmentSchedule_ID () 
+	public int getM_ShipmentSchedule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ShipmentSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
 
 	@Override
@@ -395,31 +296,24 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
-	public void setPP_Cost_Collector(org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector)
+	public void setPP_Cost_Collector(final org.eevolution.model.I_PP_Cost_Collector PP_Cost_Collector)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Cost_Collector_ID, org.eevolution.model.I_PP_Cost_Collector.class, PP_Cost_Collector);
 	}
 
-	/** Set Manufacturing Cost Collector.
-		@param PP_Cost_Collector_ID Manufacturing Cost Collector	  */
 	@Override
-	public void setPP_Cost_Collector_ID (int PP_Cost_Collector_ID)
+	public void setPP_Cost_Collector_ID (final int PP_Cost_Collector_ID)
 	{
 		if (PP_Cost_Collector_ID < 1) 
 			set_Value (COLUMNNAME_PP_Cost_Collector_ID, null);
 		else 
-			set_Value (COLUMNNAME_PP_Cost_Collector_ID, Integer.valueOf(PP_Cost_Collector_ID));
+			set_Value (COLUMNNAME_PP_Cost_Collector_ID, PP_Cost_Collector_ID);
 	}
 
-	/** Get Manufacturing Cost Collector.
-		@return Manufacturing Cost Collector	  */
 	@Override
-	public int getPP_Cost_Collector_ID () 
+	public int getPP_Cost_Collector_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Cost_Collector_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Cost_Collector_ID);
 	}
 
 	@Override
@@ -429,53 +323,37 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
-	public void setPP_Order(org.eevolution.model.I_PP_Order PP_Order)
+	public void setPP_Order(final org.eevolution.model.I_PP_Order PP_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
 	}
 
-	/** Set Produktionsauftrag.
-		@param PP_Order_ID Produktionsauftrag	  */
 	@Override
-	public void setPP_Order_ID (int PP_Order_ID)
+	public void setPP_Order_ID (final int PP_Order_ID)
 	{
 		if (PP_Order_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_PP_Order_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_PP_Order_ID, Integer.valueOf(PP_Order_ID));
+			set_ValueNoCheck (COLUMNNAME_PP_Order_ID, PP_Order_ID);
 	}
 
-	/** Get Produktionsauftrag.
-		@return Produktionsauftrag	  */
 	@Override
-	public int getPP_Order_ID () 
+	public int getPP_Order_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PP_Order_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_PP_Order_ID);
 	}
 
-	/** Set Menge.
-		@param Qty 
-		Menge
-	  */
 	@Override
-	public void setQty (java.math.BigDecimal Qty)
+	public void setQty (final BigDecimal Qty)
 	{
 		set_ValueNoCheck (COLUMNNAME_Qty, Qty);
 	}
 
-	/** Get Menge.
-		@return Menge
-	  */
 	@Override
-	public java.math.BigDecimal getQty () 
+	public BigDecimal getQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -485,34 +363,24 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
-	public void setVHU(de.metas.handlingunits.model.I_M_HU VHU)
+	public void setVHU(final de.metas.handlingunits.model.I_M_HU VHU)
 	{
 		set_ValueFromPO(COLUMNNAME_VHU_ID, de.metas.handlingunits.model.I_M_HU.class, VHU);
 	}
 
-	/** Set CU.
-		@param VHU_ID 
-		Customer Unit
-	  */
 	@Override
-	public void setVHU_ID (int VHU_ID)
+	public void setVHU_ID (final int VHU_ID)
 	{
 		if (VHU_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_VHU_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_VHU_ID, Integer.valueOf(VHU_ID));
+			set_ValueNoCheck (COLUMNNAME_VHU_ID, VHU_ID);
 	}
 
-	/** Get CU.
-		@return Customer Unit
-	  */
 	@Override
-	public int getVHU_ID () 
+	public int getVHU_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_VHU_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_VHU_ID);
 	}
 
 	@Override
@@ -522,31 +390,24 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	}
 
 	@Override
-	public void setVHU_Source(de.metas.handlingunits.model.I_M_HU VHU_Source)
+	public void setVHU_Source(final de.metas.handlingunits.model.I_M_HU VHU_Source)
 	{
 		set_ValueFromPO(COLUMNNAME_VHU_Source_ID, de.metas.handlingunits.model.I_M_HU.class, VHU_Source);
 	}
 
-	/** Set Ursprungs-VHU.
-		@param VHU_Source_ID Ursprungs-VHU	  */
 	@Override
-	public void setVHU_Source_ID (int VHU_Source_ID)
+	public void setVHU_Source_ID (final int VHU_Source_ID)
 	{
 		if (VHU_Source_ID < 1) 
 			set_Value (COLUMNNAME_VHU_Source_ID, null);
 		else 
-			set_Value (COLUMNNAME_VHU_Source_ID, Integer.valueOf(VHU_Source_ID));
+			set_Value (COLUMNNAME_VHU_Source_ID, VHU_Source_ID);
 	}
 
-	/** Get Ursprungs-VHU.
-		@return Ursprungs-VHU	  */
 	@Override
-	public int getVHU_Source_ID () 
+	public int getVHU_Source_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_VHU_Source_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_VHU_Source_ID);
 	}
 
 	/** 
@@ -566,20 +427,15 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public static final String VHUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String VHUSTATUS_Issued = "I";
-	/** Set CU (VHU) Gebindestatus.
-		@param VHUStatus CU (VHU) Gebindestatus	  */
 	@Override
-	public void setVHUStatus (java.lang.String VHUStatus)
+	public void setVHUStatus (final java.lang.String VHUStatus)
 	{
-
 		set_ValueNoCheck (COLUMNNAME_VHUStatus, VHUStatus);
 	}
 
-	/** Get CU (VHU) Gebindestatus.
-		@return CU (VHU) Gebindestatus	  */
 	@Override
-	public java.lang.String getVHUStatus () 
+	public java.lang.String getVHUStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_VHUStatus);
+		return get_ValueAsString(COLUMNNAME_VHUStatus);
 	}
 }

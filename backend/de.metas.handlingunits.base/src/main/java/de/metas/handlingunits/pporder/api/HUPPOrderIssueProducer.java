@@ -45,13 +45,15 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreateDraftIssuesCommand;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
-import de.metas.material.planning.pporder.PPOrderUtil;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 
 /**
  * Issues given HUs to configured Order BOM Lines.
@@ -251,8 +253,6 @@ public class HUPPOrderIssueProducer
 
 	/**
 	 * Convenient way of calling {@link #targetOrderBOMLines(List)} with one bom line.
-	 *
-	 * @param targetOrderBOMLine
 	 */
 	public HUPPOrderIssueProducer targetOrderBOMLine(@NonNull final I_PP_Order_BOMLine targetOrderBOMLine)
 	{
@@ -265,13 +265,13 @@ public class HUPPOrderIssueProducer
 		return targetOrderBOMLine(targetOrderBOMLine);
 	}
 
-	public HUPPOrderIssueProducer fixedQtyToIssue(@NonNull final Quantity fixedQtyToIssue)
+	public HUPPOrderIssueProducer fixedQtyToIssue(@Nullable final Quantity fixedQtyToIssue)
 	{
 		this.fixedQtyToIssue = fixedQtyToIssue;
 		return this;
 	}
 
-	public HUPPOrderIssueProducer considerIssueMethodForQtyToIssueCalculation(boolean considerIssueMethodForQtyToIssueCalculation)
+	public HUPPOrderIssueProducer considerIssueMethodForQtyToIssueCalculation(final boolean considerIssueMethodForQtyToIssueCalculation)
 	{
 		this.considerIssueMethodForQtyToIssueCalculation = considerIssueMethodForQtyToIssueCalculation;
 		return this;

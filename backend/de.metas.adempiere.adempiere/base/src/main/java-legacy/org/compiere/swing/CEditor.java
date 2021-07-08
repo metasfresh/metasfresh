@@ -86,9 +86,6 @@ public interface CEditor
 
 	/**
 	 * Set custom property to underlying UI component.
-	 * 
-	 * @param key
-	 * @param value
 	 */
 	public void putClientProperty(final Object key, final Object value);
 }   //  CEditor

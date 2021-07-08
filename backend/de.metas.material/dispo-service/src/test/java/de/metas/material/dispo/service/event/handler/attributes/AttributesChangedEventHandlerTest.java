@@ -1,22 +1,6 @@
 package de.metas.material.dispo.service.event.handler.attributes;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -27,7 +11,22 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -148,7 +147,9 @@ public class AttributesChangedEventHandlerTest
 		}
 
 		@Override
-		public Candidate onCandidateNewOrChange(final Candidate candidate)
+		public Candidate onCandidateNewOrChange(
+				@NonNull final Candidate candidate,
+				final OnNewOrChangeAdvise onNewOrChangeAdvise)
 		{
 			final Candidate candidateToReturn = candidate.getGroupId() != null
 					? candidate

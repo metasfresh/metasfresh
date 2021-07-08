@@ -18,7 +18,7 @@ import de.metas.manufacturing.order.exportaudit.APITransactionId;
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAudit;
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAudit.ManufacturingOrderReportAuditBuilder;
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditItem;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

@@ -13,6 +13,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -219,6 +220,7 @@ final class BPartnerCompositesLoader
 				.active(bpartnerRecord.isActive())
 				.value(bpartnerRecord.getValue())
 				.companyName(trimBlankToNull(bpartnerRecord.getCompanyName()))
+				.company(bpartnerRecord.isCompany())
 				.externalId(ExternalId.ofOrNull(bpartnerRecord.getExternalId()))
 				.globalId(bpartnerRecord.getGlobalId())
 				.groupId(BPGroupId.ofRepoId(bpartnerRecord.getC_BP_Group_ID()))
@@ -237,6 +239,7 @@ final class BPartnerCompositesLoader
 				.customer(bpartnerRecord.isCustomer())
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
 				.shipmentAllocationBestBeforePolicy(bpartnerRecord.getShipmentAllocation_BestBefore_Policy())
+				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bpartnerRecord.getAD_Org_Mapping_ID()))
 				//
 				.changeLog(recordChangeLog)
 				//
@@ -292,6 +295,7 @@ final class BPartnerCompositesLoader
 				.poBox(trimBlankToNull(locationRecord.getPOBox()))
 				.postal(trimBlankToNull(locationRecord.getPostal()))
 				.region(trimBlankToNull(locationRecord.getRegionName()))
+				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bPartnerLocationRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog);
 
 		if (locationRecord.getC_Postal_ID() > 0)
@@ -353,6 +357,7 @@ final class BPartnerCompositesLoader
 				.description(trimBlankToNull(contactRecord.getDescription()))
 				.fax(trimBlankToNull(contactRecord.getFax()))
 				.greetingId(GreetingId.ofRepoIdOrNull(contactRecord.getC_Greeting_ID()))
+				.orgMappingId(OrgMappingId.ofRepoIdOrNull(contactRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
 				.build();
 	}
@@ -398,6 +403,7 @@ final class BPartnerCompositesLoader
 				.active(bankAccountRecord.isActive())
 				.iban(iban)
 				.currencyId(CurrencyId.ofRepoId(bankAccountRecord.getC_Currency_ID()))
+				.orgMappingId(OrgMappingId.ofRepoIdOrNull(bankAccountRecord.getAD_Org_Mapping_ID()))
 				.changeLog(changeLog)
 				.build();
 	}

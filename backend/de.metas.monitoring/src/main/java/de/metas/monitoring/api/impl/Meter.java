@@ -27,8 +27,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.concurrent.atomic.AtomicLong;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.monitoring.api.IMeter;
-import de.metas.util.time.SystemTime;
 
 public class Meter implements IMeter
 {

@@ -54,15 +54,12 @@ import java.util.List;
 public final class CandidatesQuery
 {
 	/**
-	 * This query matches no candidate
+	 * This query matches no candidate.
 	 */
 	public static final CandidatesQuery FALSE = CandidatesQuery.fromId(CandidateId.ofRepoId(Integer.MAX_VALUE - 3));
 
 	/**
-	 *
-	 * @param candidate
 	 * @param includeParentId if true, we include the given candidate's parent ID in the query.
-	 * @return
 	 */
 	public static CandidatesQuery fromCandidate(
 			@NonNull final Candidate candidate,
@@ -101,6 +98,7 @@ public final class CandidatesQuery
 				.orgId(candidate.getOrgId())
 				//.status(candidate.getStatus())
 				.businessCase(candidate.getBusinessCase())
+
 				.type(candidate.getType());
 
 		if (includeParentId)

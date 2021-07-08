@@ -4,6 +4,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 
 import de.metas.util.Services;
+import org.adempiere.ad.window.api.WindowCopyRequest;
 
 /*
  * #%L
@@ -33,13 +34,19 @@ public class AD_Window_CopyWindow extends JavaProcess
 	@Param(parameterName = PARAM_Source_AD_Window_ID, mandatory = true)
 	private AdWindowId sourceWindowId;
 
+	@Param(parameterName = "IsCustomizationWindow", mandatory = true)
+	private boolean isCustomizationWindow;
+
 	private final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
 
 	@Override
 	protected String doIt()
 	{
-		final AdWindowId targetWindowId = AdWindowId.ofRepoId(getProcessInfo().getRecord_ID());
-		windowDAO.copyWindow(targetWindowId, sourceWindowId);
+		windowDAO.copyWindow(WindowCopyRequest.builder()
+				.sourceWindowId(sourceWindowId)
+				.targetWindowId(AdWindowId.ofRepoId(getProcessInfo().getRecord_ID()))
+				.isCustomizationWindow(isCustomizationWindow)
+				.build());
 
 		return MSG_OK;
 	}

@@ -25,6 +25,7 @@ package de.metas.printing.api.impl;
 
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
@@ -36,7 +37,6 @@ import de.metas.printing.api.IPrintClientsBL;
 import de.metas.printing.api.IPrintingDAO;
 import de.metas.printing.model.I_AD_Print_Clients;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 import javax.annotation.Nullable;
 

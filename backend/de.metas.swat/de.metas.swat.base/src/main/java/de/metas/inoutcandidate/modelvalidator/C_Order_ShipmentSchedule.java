@@ -8,6 +8,7 @@ import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackagePr
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -47,6 +48,7 @@ public class C_Order_ShipmentSchedule
 		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderDAO
 				.retrieveAllOrderLineIds(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.stream()
+				.map(OrderAndLineId::getOrderLineId)
 				.map(orderLineId -> TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId))
 				.collect(ImmutableList.toImmutableList());
 
@@ -59,6 +61,7 @@ public class C_Order_ShipmentSchedule
 		final ImmutableList<TableRecordReference> orderLineRecordRefs = orderDAO
 				.retrieveAllOrderLineIds(OrderId.ofRepoId(orderRecord.getC_Order_ID()))
 				.stream()
+				.map(OrderAndLineId::getOrderLineId)
 				.map(orderLineId -> TableRecordReference.of(I_C_OrderLine.Table_Name, orderLineId))
 				.collect(ImmutableList.toImmutableList());
 

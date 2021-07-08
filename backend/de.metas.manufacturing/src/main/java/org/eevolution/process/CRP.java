@@ -26,7 +26,7 @@ import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.ResourceTypeId;
 import de.metas.material.planning.WorkingTime;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ResourceId;

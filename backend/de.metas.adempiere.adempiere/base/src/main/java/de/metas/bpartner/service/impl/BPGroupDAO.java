@@ -13,6 +13,7 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -45,6 +46,12 @@ public class BPGroupDAO implements IBPGroupDAO
 	public I_C_BP_Group getById(@NonNull final BPGroupId bpGroupId)
 	{
 		return loadOutOfTrx(bpGroupId, I_C_BP_Group.class);
+	}
+
+	@Override
+	public I_C_BP_Group getByIdInInheritedTrx(BPGroupId bpGroupId)
+	{
+		return load(bpGroupId, I_C_BP_Group.class);
 	}
 
 	@Override

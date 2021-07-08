@@ -13,6 +13,7 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseReposito
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -51,8 +52,6 @@ import java.util.Collection;
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class StockUpCandiateHandler implements CandidateHandler
 {
-	@NonNull
-	private final CandidateRepositoryRetrieval candidateRepository;
 
 	private final PostMaterialEventService materialEventService;
 
@@ -61,14 +60,12 @@ public class StockUpCandiateHandler implements CandidateHandler
 	private final AvailableToPromiseRepository availableToPromiseRepository;
 
 	public StockUpCandiateHandler(
-			@NonNull final CandidateRepositoryRetrieval candidateRepository,
 			@NonNull final CandidateRepositoryWriteService candidateRepositoryWriteService,
 			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final AvailableToPromiseRepository availableToPromiseRepository)
 	{
 		this.availableToPromiseRepository = availableToPromiseRepository;
 		this.candidateRepositoryWriteService = candidateRepositoryWriteService;
-		this.candidateRepository = candidateRepository;
 		this.materialEventService = materialEventService;
 	}
 
@@ -79,8 +76,17 @@ public class StockUpCandiateHandler implements CandidateHandler
 	}
 
 	@Override
-	public Candidate onCandidateNewOrChange(@NonNull final Candidate candidate)
+	public Candidate onCandidateNewOrChange(
+			@NonNull final Candidate candidate,
+			@NonNull final OnNewOrChangeAdvise advise)
 	{
+		if (!advise.isAttemptUpdate())
+		{
+			throw new AdempiereException("This handler does not how to deal with isAttemptUpdate=false").appendParametersToMessage()
+					.setParameter("handler", candidate)
+					.setParameter("candidate", candidate);
+		}
+
 		assertCorrectCandidateType(candidate);
 
 		final SaveResult candidateSaveResult = candidateRepositoryWriteService

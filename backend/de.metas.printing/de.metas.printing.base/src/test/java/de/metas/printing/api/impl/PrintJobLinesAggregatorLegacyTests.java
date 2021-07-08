@@ -288,7 +288,7 @@ public class PrintJobLinesAggregatorLegacyTests extends AbstractPrintingTest
 		// Setup Mocked Archive Storage
 		archiveStorageFactory.removeAllArchiveStorages(); // make sure there are no other storages registered
 		archiveStorageFactory.registerArchiveStorage(
-				IArchiveStorageFactory.STORAGETYPE_Database,
+				IArchiveStorageFactory.StorageType.Database,
 				IArchiveStorageFactory.AccessMode.ALL, // match for Client and Server, to not bother about Ini.setClient (there are other tests which are checking this)
 				MockedDBArchiveStorage.class);
 

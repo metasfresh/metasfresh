@@ -1,12 +1,12 @@
 package de.metas.contracts.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 import java.time.LocalDate;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -32,7 +32,6 @@ import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -260,9 +259,10 @@ public class CustomerRetentionRepository
 
 	public void deleteCustomerRetention(@NonNull final BPartnerId bpartnerId)
 	{
-		final I_C_Customer_Retention customerRetention = retrieveExistingCustomerRetention(bpartnerId);
-
-		delete(customerRetention);
+		queryBL.createQueryBuilder(I_C_Customer_Retention.class)
+				.addEqualsFilter(I_C_Customer_Retention.COLUMNNAME_C_BPartner_ID, bpartnerId) // don't care if active or no
+				.create()
+				.delete();
 	}
 
 	public void updateCustomerRetentionOnOrderComplete(@NonNull final OrderId orderId)

@@ -9,6 +9,8 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 public interface ISysConfigBL extends ISingletonService
 {
 	/**
@@ -91,7 +93,7 @@ public interface ISysConfigBL extends ISingletonService
 	/**
 	 * Get client configuration property of type string
 	 */
-	String getValue(String Name, String defaultValue, int AD_Client_ID, int AD_Org_ID);
+	String getValue(String Name, @Nullable String defaultValue, int AD_Client_ID, int AD_Org_ID);
 
 	/**
 	 * Get system configuration property of type string

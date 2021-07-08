@@ -1,4 +1,12 @@
 
+## Workspace based tool
+
+* See startup log messages and `migrate.properties_template`
+* The whole metasfresh-repo is by default labeled as "common" by the file `.workspace-sql-scripts.properties`
+  * gotcha: `.workspace-sql-scripts.properties` needs to be in a sub-folder. So if you put it into `metasfresh/backend`,
+  then your workspace needs to be `metasfresh`.
+
+## Non-Workspace
 
 The eclipse launch config `apply_migration_scripts_print_help.launch` just prints the tool's help text to console and exits.
 

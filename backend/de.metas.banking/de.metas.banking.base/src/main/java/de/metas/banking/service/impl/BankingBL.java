@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -47,7 +48,6 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class BankingBL implements IBankingBL
 {

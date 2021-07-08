@@ -181,7 +181,7 @@ public class C_Invoice_Candidate
 		// Case: the IC is linked to a record => invalidate all ICs (including this one) which links to that record
 		else
 		{
-			invoiceCandDAO.invalidateCandsWithSameReference(ic);
+			invoiceCandDAO.invalidateCandsWithSameTableReference(ic);
 		}
 	}
 

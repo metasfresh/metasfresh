@@ -1,6 +1,7 @@
 package de.metas.banking.payment.paymentallocation;
 
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
@@ -44,7 +45,7 @@ public class InvoiceToAllocateQuery
 	 */
 	@NonNull
 	ZonedDateTime evaluationDate;
-
+	
 	@Nullable
 	BPartnerId bpartnerId;
 

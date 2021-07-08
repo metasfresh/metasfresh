@@ -1,13 +1,13 @@
 package de.metas.document;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -40,14 +40,17 @@ public class DocTypeId implements RepoIdAware
 		return new DocTypeId(repoId);
 	}
 
+	@Nullable
 	public static DocTypeId ofRepoIdOrNull(int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static Optional<DocTypeId> optionalOfRepoId(final int repoId)
+	public static Optional<DocTypeId> optionalOfRepoId(@Nullable final Integer repoId)
 	{
-		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+		return repoId != null
+				? Optional.ofNullable(ofRepoIdOrNull(repoId))
+				: Optional.empty();
 	}
 
 	int repoId;
@@ -64,7 +67,7 @@ public class DocTypeId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final DocTypeId docTypeId)
+	public static int toRepoId(@Nullable final DocTypeId docTypeId)
 	{
 		return docTypeId != null ? docTypeId.getRepoId() : -1;
 	}

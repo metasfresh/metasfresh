@@ -1,5 +1,37 @@
 package de.metas.document.impl;
 
+import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CCache;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.IDocTypeDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DocTypeNotFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_Sequence;
+import org.compiere.model.I_C_DocBaseType_Counter;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_GL_Category;
+import org.compiere.model.MSequence;
+import org.compiere.util.Env;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
@@ -24,49 +56,15 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
  * #L%
  */
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DocTypeNotFoundException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_Sequence;
-import org.compiere.model.I_C_DocBaseType_Counter;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_GL_Category;
-import org.compiere.model.MSequence;
-import org.compiere.util.Env;
-
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.cache.CCache;
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.IDocTypeBL;
-import de.metas.document.IDocTypeDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-
 public class DocTypeDAO implements IDocTypeDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private CCache<DocTypeQuery, Optional<DocTypeId>> docTypeIdsByQuery = CCache.<DocTypeQuery, Optional<DocTypeId>> builder()
+	private CCache<DocTypeQuery, Optional<DocTypeId>> docTypeIdsByQuery = CCache.<DocTypeQuery, Optional<DocTypeId>>builder()
 			.tableName(I_C_DocType.Table_Name)
 			.build();
 
-	private CCache<Integer, DocBaseTypeCountersMap> docBaseTypeCountersMapCache = CCache.<Integer, DocBaseTypeCountersMap> builder()
+	private CCache<Integer, DocBaseTypeCountersMap> docBaseTypeCountersMapCache = CCache.<Integer, DocBaseTypeCountersMap>builder()
 			.tableName(I_C_DocBaseType_Counter.Table_Name)
 			.build();
 
@@ -137,8 +135,8 @@ public class DocTypeDAO implements IDocTypeDAO
 
 		final ICompositeQueryFilter<I_C_DocType> filters = queryBuilder.getCompositeFilter();
 		filters.addOnlyActiveRecordsFilter();
-		filters.addEqualsFilter(I_C_DocType.COLUMN_AD_Client_ID, query.getAdClientId());
-		filters.addInArrayOrAllFilter(I_C_DocType.COLUMN_AD_Org_ID, 0, query.getAdOrgId());
+		filters.addEqualsFilter(I_C_DocType.COLUMNNAME_AD_Client_ID, query.getAdClientId());
+		filters.addInArrayOrAllFilter(I_C_DocType.COLUMNNAME_AD_Org_ID, 0, query.getAdOrgId());
 		filters.addEqualsFilter(I_C_DocType.COLUMN_DocBaseType, query.getDocBaseType());
 
 		final String docSubType = query.getDocSubType();
@@ -240,7 +238,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		dt.setPrintName(name);
 		dt.setGL_Category_ID(retrieveDefaultGL_Category_ID());
 
-//		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
+		//		final MDocType dt = new MDocType(ctx, request.getDocBaseType(), name, trxName);
 		dt.setEntityType(request.getEntityType());
 		if (request.getAdOrgId() > 0)
 		{

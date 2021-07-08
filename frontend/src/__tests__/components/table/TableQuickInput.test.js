@@ -18,7 +18,7 @@ const initialProps = {
 // leaving this so that I won't have to look it up again in case we need it
 // nock.recorder.rec({
 //   output_objects: true,
-// }) 
+// })
 
 describe('TableQuickInput', () => {
   beforeEach(() => {
@@ -32,13 +32,11 @@ describe('TableQuickInput', () => {
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .get(`/window/${docType}/${docId}/${tabId}/quickInput/layout`)
-      .reply(200, quickInputData.layout1); 
+      .reply(200, quickInputData.layout1);
   });
 
   it('renders without errors', () => {
-    const wrapperTableCMenu = shallow(
-      <TableQuickInput {...initialProps} />
-    );
+    const wrapperTableCMenu = shallow(<TableQuickInput {...initialProps} />);
 
     expect(wrapperTableCMenu.find('.quick-input-container').length).toBe(1);
 
@@ -49,9 +47,9 @@ describe('TableQuickInput', () => {
   });
 
   it('renders without error 22s', () => {
-    const wrapperTableCMenu = render(
-      <TableQuickInput {...initialProps} />
+    const wrapperTableCMenu = render(<TableQuickInput {...initialProps} />);
+    expect(wrapperTableCMenu.find('.hint').text()).toBe(
+      `(Press 'Enter' to add)`
     );
-    expect(wrapperTableCMenu.find('.hint').text()).toBe(`(Press 'Enter' to add)`);
   });
 });

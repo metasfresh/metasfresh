@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.exportaudit;
 import de.metas.error.AdIssueId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit_Item;
 import de.metas.organization.OrgId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -35,7 +36,8 @@ import java.util.List;
 
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Exported;
 import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndError;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 class ShipmentScheduleAuditRepositoryTest
 {
@@ -69,8 +71,11 @@ class ShipmentScheduleAuditRepositoryTest
 		// given
 		final ShipmentScheduleId shipmentScheduleId1 = ShipmentScheduleId.ofRepoId(11);
 		final ShipmentScheduleId shipmentScheduleId2 = ShipmentScheduleId.ofRepoId(21);
+
 		final APIExportAudit audit = APIExportAudit.builder()
 				.transactionId("transactionId")
+				.orgId(OrgId.ANY)
+				.exportStatus(ExportedAndError)
 				.item(
 						shipmentScheduleId1,
 						ShipmentScheduleExportAuditItem.builder()
@@ -82,25 +87,31 @@ class ShipmentScheduleAuditRepositoryTest
 				.item(
 						shipmentScheduleId2,
 						ShipmentScheduleExportAuditItem.builder()
-								.orgId(OrgId.ofRepoId(10))
+								.orgId(OrgId.ofRepoId(11))
 								.exportStatus(ExportedAndError)
 								.repoIdAware(shipmentScheduleId2)
 								.build())
 				.build();
+		audit.setForwardedData("forwardedData");
+		audit.setIssueId(AdIssueId.ofRepoId(30));
 
 		// when
 		shipmentScheduleAuditRepository.save(audit);
 
 		// then
 		final List<I_M_ShipmentSchedule_ExportAudit> exportAudits = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
-		assertThat(exportAudits).hasSize(2);
-		assertThat(exportAudits.get(0).getTransactionIdAPI()).isEqualTo("transactionId");
-
-		final List<I_M_ShipmentSchedule_ExportAudit> exportAuditLines = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit.class);
-		assertThat(exportAuditLines).extracting("TransactionIdAPI", "AD_Org_ID", "AD_Issue_ID", "ExportStatus", "M_ShipmentSchedule_ID")
+		assertThat(exportAudits).hasSize(1);
+		final I_M_ShipmentSchedule_ExportAudit exportAudit = exportAudits.get(0);
+		assertThat(exportAudit.getTransactionIdAPI()).isEqualTo("transactionId");
+		assertThat(exportAudits).extracting("TransactionIdAPI", "AD_Org_ID", "AD_Issue_ID", "ExportStatus", "ForwardedData")
 				.containsExactlyInAnyOrder(
-						tuple("transactionId", 10, 20, Exported.getCode(), 11),
-						tuple("transactionId", 10, -1, ExportedAndError.getCode(), 21)
+						tuple("transactionId", 0, 30, ExportedAndError.getCode(), "forwardedData"));
+
+		final List<I_M_ShipmentSchedule_ExportAudit_Item> exportAuditLines = POJOLookupMap.get().getRecords(I_M_ShipmentSchedule_ExportAudit_Item.class);
+		assertThat(exportAuditLines).extracting("M_ShipmentSchedule_ExportAudit_ID", "AD_Org_ID", "AD_Issue_ID", "ExportStatus", "M_ShipmentSchedule_ID")
+				.containsExactlyInAnyOrder(
+						tuple(exportAudit.getM_ShipmentSchedule_ExportAudit_ID(), 10, 20, Exported.getCode(), 11),
+						tuple(exportAudit.getM_ShipmentSchedule_ExportAudit_ID(), 11, -1, ExportedAndError.getCode(), 21)
 				);
 
 		return audit;

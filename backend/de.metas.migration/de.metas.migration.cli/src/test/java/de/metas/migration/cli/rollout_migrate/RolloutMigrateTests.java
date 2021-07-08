@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import de.metas.migration.cli.rollout_migrate.Config.ConfigBuilder;
+import de.metas.migration.cli.rollout_migrate.RolloutMigrationConfig.RolloutMigrationConfigBuilder;
 import lombok.NonNull;
 
 /*
@@ -35,12 +35,12 @@ import lombok.NonNull;
 
 public class RolloutMigrateTests
 {
-	private ConfigBuilder configBuilder;
+	private RolloutMigrationConfigBuilder configBuilder;
 
 	@BeforeEach
 	public void beforeEach()
 	{
-		configBuilder = Config.builder()
+		configBuilder = RolloutMigrationConfig.builder()
 				.canRun(true)
 				.rolloutDirName("rolloutDirName");
 	}
@@ -118,19 +118,19 @@ public class RolloutMigrateTests
 			@NonNull final String dbVersion,
 			final boolean expectApplyMigrationScripts)
 	{
-		final Config config = configBuilder.build();
+		final RolloutMigrationConfig config = configBuilder.build();
 		performTest(config, dbVersion, expectApplyMigrationScripts);
 	}
 
 	private void performTest(
-			@NonNull final Config config,
+			@NonNull final RolloutMigrationConfig config,
 			@NonNull final String dbVersion,
 			final boolean expectApplyMigrationScripts)
 	{
 		final Properties properties = new Properties();
 		final String dbName = "dbName";
-		properties.setProperty(Settings.PROP_DB_NAME, dbName);
-		final Settings settings = new Settings(properties);
+		properties.setProperty(DBConnectionSettingProperties.PROP_DB_NAME, dbName);
+		final DBConnectionSettingProperties settings = new DBConnectionSettingProperties(properties);
 
 		final DirectoryChecker directoryChecker = new DirectoryChecker();
 
@@ -141,7 +141,7 @@ public class RolloutMigrateTests
 		Mockito.doReturn("1.1.1-24+master").when(rolloutVersionLoader).loadRolloutVersionString(config.getRolloutDirName());
 
 		final DBVersionGetter dbVersionGetter = Mockito.mock(DBVersionGetter.class);
-		Mockito.doReturn(dbVersion).when(dbVersionGetter).retrieveDBVersion(settings, dbName);
+		Mockito.doReturn(dbVersion).when(dbVersionGetter).retrieveDBVersion(settings.toDBConnectionSettings(), dbName);
 
 		final MigrationScriptApplier migrationScriptApplier = Mockito.mock(MigrationScriptApplier.class);
 
@@ -167,7 +167,7 @@ public class RolloutMigrateTests
 		rolloutMigrate.run0(config);
 
 		Mockito.verify(migrationScriptApplier, Mockito.times(expectApplyMigrationScripts ? 1 : 0))
-				.applyMigrationScripts(config, settings, dbName);
+				.applyMigrationScripts(config, settings.toDBConnectionSettings(), dbName);
 
 	}
 }

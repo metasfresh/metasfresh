@@ -165,23 +165,17 @@ public interface AdempiereDatabase
 
 	/**
 	 * Return next sequence this Sequence
-	 *
-	 * @param Sequence Name
 	 */
 	public int getNextID(String Name);
 
 	/**
 	 * Creates SQL for retrieving next sequence value.
-	 *
-	 * @param sequenceName
-	 * @return
 	 */
 	public String TO_SEQUENCE_NEXTVAL(final String sequenceName);
 
 	/**
 	 * Create Native Sequence
 	 *
-	 * @param Sequence Name
 	 * @return true if sequence was created or updated
 	 */
 	public boolean createSequence(String name, int increment, int minvalue, int maxvalue, int start, String trxName);
@@ -290,13 +284,6 @@ public interface AdempiereDatabase
 	 * @param connection
 	 * @param throwDBException if the connection is closed or an {@link SQLException} is caught, then this parameter decides if an {@link DBException} shall be thrown. Set to <code>false</code> if you
 	 *            are already exception handling and just want to use this method to get whatever info you can (and not to throw yet another exception).
-	 * @return
 	 */
 	String getConnectionBackendId(Connection connection, boolean throwDBException);
-
-	/**
-	 * @param tableName
-	 * @return SQL code for getting the ROW ID of a given table.
-	 */
-	String getRowIdSql(final String tableName);
 }   // AdempiereDatabase

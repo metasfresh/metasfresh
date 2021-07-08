@@ -24,8 +24,10 @@ package de.metas.mforecast.impl;
 
 import java.util.List;
 
+import de.metas.interfaces.I_C_OrderLine;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_ForecastLine;
 
 import de.metas.mforecast.IForecastDAO;
@@ -47,5 +49,11 @@ public class ForecastDAO implements IForecastDAO
 				.orderBy(I_M_ForecastLine.COLUMNNAME_M_ForecastLine_ID)
 				.create()
 				.list();
+	}
+
+	@Override
+	public I_M_ForecastLine getForecastLineById (final int forecastLineRecordId)
+	{
+			return InterfaceWrapperHelper.load(forecastLineRecordId, I_M_ForecastLine.class);
 	}
 }

@@ -10,6 +10,10 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonInvoiceRule;
+import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.detail.InvoiceDetailItem;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -22,7 +26,6 @@ import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate.
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgIdNotFoundException;
@@ -36,15 +39,6 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.rest_api.bpartner.impl.bpartnercomposite.BPartnerCompositeRestUtils;
-import de.metas.rest_api.common.JsonDocTypeInfo;
-import de.metas.rest_api.common.JsonExternalId;
-import de.metas.rest_api.common.JsonInvoiceRule;
-import de.metas.rest_api.common.JsonPrice;
-import de.metas.rest_api.common.MetasfreshId;
-import de.metas.rest_api.exception.InvalidEntityException;
-import de.metas.rest_api.exception.MissingPropertyException;
-import de.metas.rest_api.exception.MissingResourceException;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
 import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
@@ -56,12 +50,17 @@ import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.DocTypeService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonExternalIds;
+import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v1.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.web.exception.InvalidEntityException;
+import de.metas.util.web.exception.MissingPropertyException;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.apache.commons.collections4.CollectionUtils;
@@ -458,31 +457,7 @@ public class CreateInvoiceCandidatesService
 			@NonNull final NewManualInvoiceCandidateBuilder candidate,
 			@Nullable final JsonInvoiceRule invoiceRuleOverride)
 	{
-		candidate.invoiceRuleOverride(createInvoiceRule(invoiceRuleOverride));
-	}
-
-	private InvoiceRule createInvoiceRule(@Nullable final JsonInvoiceRule jsonInvoiceRule)
-	{
-		if (jsonInvoiceRule == null)
-		{
-			return null;
-		}
-		final InvoiceRule invoiceRule;
-		switch (jsonInvoiceRule)
-		{
-			case AfterDelivery:
-				invoiceRule = InvoiceRule.AfterDelivery;
-				break;
-			case CustomerScheduleAfterDelivery:
-				invoiceRule = InvoiceRule.CustomerScheduleAfterDelivery;
-				break;
-			case Immediate:
-				invoiceRule = InvoiceRule.Immediate;
-				break;
-			default:
-				throw new AdempiereException("Unsupported JsonInvliceRule " + jsonInvoiceRule);
-		}
-		return invoiceRule;
+		candidate.invoiceRuleOverride(BPartnerCompositeRestUtils.getInvoiceRule(invoiceRuleOverride));
 	}
 
 	private void syncPriceEnteredOverrideToCandidate(

@@ -1,62 +1,53 @@
 package de.metas.handlingunits.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_PI_Attribute
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_PI_Attribute 
 {
 
-    /** TableName=M_HU_PI_Attribute */
-    public static final String Table_Name = "M_HU_PI_Attribute";
+	String Table_Name = "M_HU_PI_Attribute";
 
-    /** AD_Table_ID=540507 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540507 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Aggregation Strategy.
@@ -65,7 +56,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAggregationStrategy_JavaClass_ID (int AggregationStrategy_JavaClass_ID);
+	void setAggregationStrategy_JavaClass_ID (int AggregationStrategy_JavaClass_ID);
 
 	/**
 	 * Get Aggregation Strategy.
@@ -74,63 +65,57 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAggregationStrategy_JavaClass_ID();
+	int getAggregationStrategy_JavaClass_ID();
 
-    /** Column definition for AggregationStrategy_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_AggregationStrategy_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "AggregationStrategy_JavaClass_ID", null);
-    /** Column name AggregationStrategy_JavaClass_ID */
-    public static final String COLUMNNAME_AggregationStrategy_JavaClass_ID = "AggregationStrategy_JavaClass_ID";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_AggregationStrategy_JavaClass_ID = new ModelColumn<>(I_M_HU_PI_Attribute.class, "AggregationStrategy_JavaClass_ID", null);
+	String COLUMNNAME_AggregationStrategy_JavaClass_ID = "AggregationStrategy_JavaClass_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_PI_Attribute.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set HU Transfer Attribute Strategy.
@@ -140,7 +125,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setHU_TansferStrategy_JavaClass_ID (int HU_TansferStrategy_JavaClass_ID);
+	void setHU_TansferStrategy_JavaClass_ID (int HU_TansferStrategy_JavaClass_ID);
 
 	/**
 	 * Get HU Transfer Attribute Strategy.
@@ -150,37 +135,33 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getHU_TansferStrategy_JavaClass_ID();
+	int getHU_TansferStrategy_JavaClass_ID();
 
-    /** Column definition for HU_TansferStrategy_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_HU_TansferStrategy_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "HU_TansferStrategy_JavaClass_ID", null);
-    /** Column name HU_TansferStrategy_JavaClass_ID */
-    public static final String COLUMNNAME_HU_TansferStrategy_JavaClass_ID = "HU_TansferStrategy_JavaClass_ID";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_HU_TansferStrategy_JavaClass_ID = new ModelColumn<>(I_M_HU_PI_Attribute.class, "HU_TansferStrategy_JavaClass_ID", null);
+	String COLUMNNAME_HU_TansferStrategy_JavaClass_ID = "HU_TansferStrategy_JavaClass_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_PI_Attribute.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Displayed.
@@ -190,7 +171,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDisplayed (boolean IsDisplayed);
+	void setIsDisplayed (boolean IsDisplayed);
 
 	/**
 	 * Get Displayed.
@@ -200,37 +181,33 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDisplayed();
+	boolean isDisplayed();
 
-    /** Column definition for IsDisplayed */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsDisplayed = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "IsDisplayed", null);
-    /** Column name IsDisplayed */
-    public static final String COLUMNNAME_IsDisplayed = "IsDisplayed";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsDisplayed = new ModelColumn<>(I_M_HU_PI_Attribute.class, "IsDisplayed", null);
+	String COLUMNNAME_IsDisplayed = "IsDisplayed";
 
 	/**
-	 * Set Instanz Merkmal.
+	 * Set Instanz-Attribut.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInstanceAttribute (boolean IsInstanceAttribute);
+	void setIsInstanceAttribute (boolean IsInstanceAttribute);
 
 	/**
-	 * Get Instanz Merkmal.
+	 * Get Instanz-Attribut.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isInstanceAttribute();
+	boolean isInstanceAttribute();
 
-    /** Column definition for IsInstanceAttribute */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsInstanceAttribute = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "IsInstanceAttribute", null);
-    /** Column name IsInstanceAttribute */
-    public static final String COLUMNNAME_IsInstanceAttribute = "IsInstanceAttribute";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsInstanceAttribute = new ModelColumn<>(I_M_HU_PI_Attribute.class, "IsInstanceAttribute", null);
+	String COLUMNNAME_IsInstanceAttribute = "IsInstanceAttribute";
 
 	/**
 	 * Set Pflichtangabe.
@@ -240,7 +217,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsMandatory (boolean IsMandatory);
+	void setIsMandatory (boolean IsMandatory);
 
 	/**
 	 * Get Pflichtangabe.
@@ -250,12 +227,10 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isMandatory();
+	boolean isMandatory();
 
-    /** Column definition for IsMandatory */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsMandatory = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "IsMandatory", null);
-    /** Column name IsMandatory */
-    public static final String COLUMNNAME_IsMandatory = "IsMandatory";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsMandatory = new ModelColumn<>(I_M_HU_PI_Attribute.class, "IsMandatory", null);
+	String COLUMNNAME_IsMandatory = "IsMandatory";
 
 	/**
 	 * Set OnlyIfInProductAttributeSet.
@@ -264,7 +239,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsOnlyIfInProductAttributeSet (boolean IsOnlyIfInProductAttributeSet);
+	void setIsOnlyIfInProductAttributeSet (boolean IsOnlyIfInProductAttributeSet);
 
 	/**
 	 * Get OnlyIfInProductAttributeSet.
@@ -273,12 +248,10 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isOnlyIfInProductAttributeSet();
+	boolean isOnlyIfInProductAttributeSet();
 
-    /** Column definition for IsOnlyIfInProductAttributeSet */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsOnlyIfInProductAttributeSet = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "IsOnlyIfInProductAttributeSet", null);
-    /** Column name IsOnlyIfInProductAttributeSet */
-    public static final String COLUMNNAME_IsOnlyIfInProductAttributeSet = "IsOnlyIfInProductAttributeSet";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsOnlyIfInProductAttributeSet = new ModelColumn<>(I_M_HU_PI_Attribute.class, "IsOnlyIfInProductAttributeSet", null);
+	String COLUMNNAME_IsOnlyIfInProductAttributeSet = "IsOnlyIfInProductAttributeSet";
 
 	/**
 	 * Set Schreibgeschützt.
@@ -288,7 +261,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsReadOnly (boolean IsReadOnly);
+	void setIsReadOnly (boolean IsReadOnly);
 
 	/**
 	 * Get Schreibgeschützt.
@@ -298,12 +271,10 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isReadOnly();
+	boolean isReadOnly();
 
-    /** Column definition for IsReadOnly */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsReadOnly = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "IsReadOnly", null);
-    /** Column name IsReadOnly */
-    public static final String COLUMNNAME_IsReadOnly = "IsReadOnly";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_IsReadOnly = new ModelColumn<>(I_M_HU_PI_Attribute.class, "IsReadOnly", null);
+	String COLUMNNAME_IsReadOnly = "IsReadOnly";
 
 	/**
 	 * Set Merkmal.
@@ -313,7 +284,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Attribute_ID (int M_Attribute_ID);
+	void setM_Attribute_ID (int M_Attribute_ID);
 
 	/**
 	 * Get Merkmal.
@@ -323,10 +294,9 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Attribute_ID();
+	int getM_Attribute_ID();
 
-    /** Column name M_Attribute_ID */
-    public static final String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
+	String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
 
 	/**
 	 * Set Handling Units Packing Instructions Attribute.
@@ -335,7 +305,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PI_Attribute_ID (int M_HU_PI_Attribute_ID);
+	void setM_HU_PI_Attribute_ID (int M_HU_PI_Attribute_ID);
 
 	/**
 	 * Get Handling Units Packing Instructions Attribute.
@@ -344,12 +314,10 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PI_Attribute_ID();
+	int getM_HU_PI_Attribute_ID();
 
-    /** Column definition for M_HU_PI_Attribute_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_M_HU_PI_Attribute_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "M_HU_PI_Attribute_ID", null);
-    /** Column name M_HU_PI_Attribute_ID */
-    public static final String COLUMNNAME_M_HU_PI_Attribute_ID = "M_HU_PI_Attribute_ID";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_M_HU_PI_Attribute_ID = new ModelColumn<>(I_M_HU_PI_Attribute.class, "M_HU_PI_Attribute_ID", null);
+	String COLUMNNAME_M_HU_PI_Attribute_ID = "M_HU_PI_Attribute_ID";
 
 	/**
 	 * Set Packvorschrift Version.
@@ -358,7 +326,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID);
+	void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID);
 
 	/**
 	 * Get Packvorschrift Version.
@@ -367,16 +335,14 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PI_Version_ID();
+	int getM_HU_PI_Version_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version();
+	de.metas.handlingunits.model.I_M_HU_PI_Version getM_HU_PI_Version();
 
-	public void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version);
+	void setM_HU_PI_Version(de.metas.handlingunits.model.I_M_HU_PI_Version M_HU_PI_Version);
 
-    /** Column definition for M_HU_PI_Version_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.handlingunits.model.I_M_HU_PI_Version> COLUMN_M_HU_PI_Version_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, de.metas.handlingunits.model.I_M_HU_PI_Version>(I_M_HU_PI_Attribute.class, "M_HU_PI_Version_ID", de.metas.handlingunits.model.I_M_HU_PI_Version.class);
-    /** Column name M_HU_PI_Version_ID */
-    public static final String COLUMNNAME_M_HU_PI_Version_ID = "M_HU_PI_Version_ID";
+	ModelColumn<I_M_HU_PI_Attribute, de.metas.handlingunits.model.I_M_HU_PI_Version> COLUMN_M_HU_PI_Version_ID = new ModelColumn<>(I_M_HU_PI_Attribute.class, "M_HU_PI_Version_ID", de.metas.handlingunits.model.I_M_HU_PI_Version.class);
+	String COLUMNNAME_M_HU_PI_Version_ID = "M_HU_PI_Version_ID";
 
 	/**
 	 * Set Propagation Type.
@@ -385,7 +351,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPropagationType (java.lang.String PropagationType);
+	void setPropagationType (java.lang.String PropagationType);
 
 	/**
 	 * Get Propagation Type.
@@ -394,39 +360,35 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPropagationType();
+	java.lang.String getPropagationType();
 
-    /** Column definition for PropagationType */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_PropagationType = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "PropagationType", null);
-    /** Column name PropagationType */
-    public static final String COLUMNNAME_PropagationType = "PropagationType";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_PropagationType = new ModelColumn<>(I_M_HU_PI_Attribute.class, "PropagationType", null);
+	String COLUMNNAME_PropagationType = "PropagationType";
 
 	/**
-	 * Set Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSeqNo (int SeqNo);
+	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Reihenfolge.
-	 * Zur Bestimmung der Reihenfolge der Einträge;
- die kleinste Zahl kommt zuerst
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSeqNo();
+	int getSeqNo();
 
-    /** Column definition for SeqNo */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_SeqNo = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "SeqNo", null);
-    /** Column name SeqNo */
-    public static final String COLUMNNAME_SeqNo = "SeqNo";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_SeqNo = new ModelColumn<>(I_M_HU_PI_Attribute.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Splitter Strategy.
@@ -435,7 +397,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSplitterStrategy_JavaClass_ID (int SplitterStrategy_JavaClass_ID);
+	void setSplitterStrategy_JavaClass_ID (int SplitterStrategy_JavaClass_ID);
 
 	/**
 	 * Get Splitter Strategy.
@@ -444,40 +406,35 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSplitterStrategy_JavaClass_ID();
+	int getSplitterStrategy_JavaClass_ID();
 
-    /** Column definition for SplitterStrategy_JavaClass_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_SplitterStrategy_JavaClass_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "SplitterStrategy_JavaClass_ID", null);
-    /** Column name SplitterStrategy_JavaClass_ID */
-    public static final String COLUMNNAME_SplitterStrategy_JavaClass_ID = "SplitterStrategy_JavaClass_ID";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_SplitterStrategy_JavaClass_ID = new ModelColumn<>(I_M_HU_PI_Attribute.class, "SplitterStrategy_JavaClass_ID", null);
+	String COLUMNNAME_SplitterStrategy_JavaClass_ID = "SplitterStrategy_JavaClass_ID";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_PI_Attribute.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Use in ASI.
@@ -487,7 +444,7 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setUseInASI (boolean UseInASI);
+	void setUseInASI (boolean UseInASI);
 
 	/**
 	 * Get Use in ASI.
@@ -497,10 +454,8 @@ public interface I_M_HU_PI_Attribute
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isUseInASI();
+	boolean isUseInASI();
 
-    /** Column definition for UseInASI */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_UseInASI = new org.adempiere.model.ModelColumn<I_M_HU_PI_Attribute, Object>(I_M_HU_PI_Attribute.class, "UseInASI", null);
-    /** Column name UseInASI */
-    public static final String COLUMNNAME_UseInASI = "UseInASI";
+	ModelColumn<I_M_HU_PI_Attribute, Object> COLUMN_UseInASI = new ModelColumn<>(I_M_HU_PI_Attribute.class, "UseInASI", null);
+	String COLUMNNAME_UseInASI = "UseInASI";
 }

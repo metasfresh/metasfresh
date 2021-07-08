@@ -14,7 +14,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -52,7 +52,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -90,7 +90,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -128,7 +128,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -166,7 +166,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -204,7 +204,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -242,7 +242,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -280,7 +280,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -318,7 +318,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -356,7 +356,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",
@@ -394,7 +394,7 @@
         "stocked": true,
         "weight": 0.250000000000
       },
-      "customer": {
+      "shipBPartner": {
         "companyName": "Testkunde Kunde 1",
         "street": "teststraße",
         "streetNo": "996",

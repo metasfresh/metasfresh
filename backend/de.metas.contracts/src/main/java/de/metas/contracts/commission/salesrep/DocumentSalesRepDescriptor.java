@@ -1,7 +1,5 @@
 package de.metas.contracts.commission.salesrep;
 
-import javax.annotation.Nullable;
-
 import de.metas.contracts.commission.Beneficiary;
 import de.metas.contracts.commission.Customer;
 import de.metas.lang.SOTrx;
@@ -9,6 +7,8 @@ import de.metas.organization.OrgId;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -78,7 +78,7 @@ public abstract class DocumentSalesRepDescriptor
 	{
 		if (soTrx.isPurchase())
 		{
-			return true; // we don'T have any business with purchase documents
+			return true; // we don't have any business with purchase documents
 		}
 
 		if (!isSalesRepRequired())

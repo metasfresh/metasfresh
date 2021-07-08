@@ -28,9 +28,16 @@ import java.math.BigDecimal;
  * #L%
  */
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -78,7 +85,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 	protected final Properties ctx = Env.getCtx();
 	protected final String trxName = ITrx.TRXNAME_None;
 
-	protected final C_OrderLine_Handler olHandler = new C_OrderLine_Handler();
+	protected C_OrderLine_Handler olHandler;
 	protected I_C_ILCandHandler handler;
 
 	// task 07442
@@ -103,6 +110,15 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		AdempiereTestHelper.get().init();
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, clientId.getRepoId());
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		olHandler = new C_OrderLine_Handler();
 		initHandlers();
 
 		final I_C_UOM stockUom = newInstance(I_C_UOM.class);
@@ -133,6 +149,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		mockTaxAndProductAcctServices();
 
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+
 	}
 
 	private void mockTaxAndProductAcctServices()
@@ -146,16 +163,18 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		Mockito.doReturn(activityId).when(productAcctDAO).retrieveActivityForAcct(clientId, orgId, productId);
 
 		final Properties ctx = Env.getCtx();
-		Mockito.doReturn(3).when(taxBL).getTax(
-				ctx,
-				order,
-				(TaxCategoryId)null, // taxCategoryId
-				orderLine.getM_Product_ID(),
-				order.getDatePromised(),
-				OrgId.ofRepoId(order.getAD_Org_ID()),
-				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				order.getC_BPartner_Location_ID(),
-				order.isSOTrx());
+		Mockito
+				.when(taxBL.getTaxNotNull(
+						ctx,
+						order,
+						(TaxCategoryId)null, // taxCategoryId
+						orderLine.getM_Product_ID(),
+						order.getDatePromised(),
+						OrgId.ofRepoId(order.getAD_Org_ID()),
+						WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
+						order.getC_BPartner_Location_ID(),
+						order.isSOTrx()))
+				.thenReturn(TaxId.ofRepoId(3));
 	}
 
 	private void initC_BPartner()

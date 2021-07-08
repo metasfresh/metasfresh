@@ -72,7 +72,7 @@ public class PurchaseCandidateToOrderWorkflow
 	private final VendorGatewayInvokerFactory vendorGatewayInvokerFactory;
 	private final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator;
 
-	private final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
+	private final List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<>());
 
 	@Builder
 	private PurchaseCandidateToOrderWorkflow(
@@ -91,7 +91,7 @@ public class PurchaseCandidateToOrderWorkflow
 		try
 		{
 			final ArrayList<PurchaseCandidate> purchaseCandidatesSorted = new ArrayList<>(purchaseCandidates);
-			Collections.sort(purchaseCandidatesSorted, Comparator.comparing(PurchaseOrderAggregationKey::fromPurchaseCandidate));
+			purchaseCandidatesSorted.sort(Comparator.comparing(PurchaseOrderAggregationKey::fromPurchaseCandidate));
 
 			createPurchaseOrder0(vendorId, purchaseCandidatesSorted);
 		}
@@ -142,9 +142,10 @@ public class PurchaseCandidateToOrderWorkflow
 		final VendorGatewayInvoker vendorGatewayInvoker = vendorGatewayInvokerFactory.createForVendorId(vendorId);
 
 		final List<PurchaseItem> remotePurchaseItems = vendorGatewayInvoker.placeRemotePurchaseOrder(purchaseCandidatesWithVendorId);
-		loggable.addLog("vendorId={} - placeRemotePurchaseOrder returned remotePurchaseItem={}", vendorId, remotePurchaseItems);
+		loggable.addLog("vendorId={} - placeRemotePurchaseOrder (vendorGatewayInvoker-impl={}) returned remotePurchaseItems={}",
+				vendorId, vendorGatewayInvoker.getClass().getSimpleName(), remotePurchaseItems);
 
-		thowExceptionIfEmptyResult(remotePurchaseItems, purchaseCandidatesWithVendorId, vendorId);
+		throwExceptionIfEmptyResult(remotePurchaseItems, purchaseCandidatesWithVendorId, vendorId);
 
 		final List<PurchaseOrderItem> purchaseOrderItems = remotePurchaseItems.stream()
 				.map(PurchaseOrderItem::castOrNull)
@@ -164,7 +165,7 @@ public class PurchaseCandidateToOrderWorkflow
 		throwExceptionIfErrorItemsExist(remotePurchaseItems, purchaseCandidatesWithVendorId, vendorId);
 	}
 
-	private void thowExceptionIfEmptyResult(
+	private void throwExceptionIfEmptyResult(
 			final List<PurchaseItem> remotePurchaseItems,
 			final Collection<PurchaseCandidate> purchaseCandidatesWithVendorId,
 			final BPartnerId vendorId)
@@ -175,9 +176,9 @@ public class PurchaseCandidateToOrderWorkflow
 
 			throw new AdempiereException(
 					MSG_NO_REMOTE_PURCHASE_ORDER_WAS_PLACED,
-					new Object[] { vendor.getValue(), vendor.getName() })
-							.appendParametersToMessage()
-							.setParameter("purchaseCandidatesWithVendorId", purchaseCandidatesWithVendorId);
+					vendor.getValue(), vendor.getName())
+					.appendParametersToMessage()
+					.setParameter("purchaseCandidatesWithVendorId", purchaseCandidatesWithVendorId);
 		}
 	}
 
@@ -199,10 +200,10 @@ public class PurchaseCandidateToOrderWorkflow
 		final I_C_BPartner vendor = Services.get(IBPartnerDAO.class).getById(vendorId);
 		throw new AdempiereException(
 				MSG_ERROR_WHILE_PLACING_REMOTE_PURCHASE_ORDER,
-				new Object[] { vendor.getValue(), vendor.getName() })
-						.appendParametersToMessage()
-						.setParameter("purchaseCandidatesWithVendorId", purchaseCandidatesWithVendorId)
-						.setParameter("purchaseErrorItems", purchaseErrorItems);
+				vendor.getValue(), vendor.getName())
+				.appendParametersToMessage()
+				.setParameter("purchaseCandidatesWithVendorId", purchaseCandidatesWithVendorId)
+				.setParameter("purchaseErrorItems", purchaseErrorItems);
 	}
 
 	private void logAndRethrow(

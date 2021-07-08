@@ -22,7 +22,7 @@ package org.adempiere.test;
  * #L%
  */
 
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.time.SystemTime;
 
 import java.lang.reflect.Method;
 import java.sql.Timestamp;

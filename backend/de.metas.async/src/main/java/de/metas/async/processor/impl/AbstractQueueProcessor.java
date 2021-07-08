@@ -24,6 +24,7 @@ package de.metas.async.processor.impl;
 
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
@@ -44,7 +45,6 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public abstract class AbstractQueueProcessor implements IQueueProcessor

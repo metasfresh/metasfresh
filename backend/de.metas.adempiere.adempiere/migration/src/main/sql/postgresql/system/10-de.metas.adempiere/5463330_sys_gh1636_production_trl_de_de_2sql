@@ -1,2 +1,0 @@
-UPDATE AD_Process SET Name='Status: Fertig ',Updated=TO_TIMESTAMP('2017-05-24 08:30:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=540783
-;

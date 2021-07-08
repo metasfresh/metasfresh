@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Iterator;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
@@ -17,7 +18,6 @@ import de.metas.fresh.model.I_X_MRP_ProductInfo_Detail_MV;
 import de.metas.fresh.mrp_productinfo.IMRPProductInfoBL;
 import de.metas.process.Param;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import de.metas.process.JavaProcess;
 
 /*

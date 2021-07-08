@@ -1,20 +1,6 @@
 package de.metas.handlingunits.pporder.api.impl;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.IPPOrderBL;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.PPOrderPlanningStatus;
-import org.eevolution.model.I_PP_Order_BOMLine;
-
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableMultimap;
-
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -29,12 +15,27 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.handlingunits.pporder.api.PPOrderIssueServiceProductRequest;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.PPOrderPlanningStatus;
+import org.eevolution.model.I_PP_Order_BOMLine;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class HUPPOrderBL implements IHUPPOrderBL
 {
@@ -75,11 +76,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	public IAllocationSource createAllocationSourceForPPOrder(final I_PP_Order ppOrder)
 	{
 		final PPOrderProductStorage ppOrderProductStorage = new PPOrderProductStorage(ppOrder);
-		final IAllocationSource ppOrderAllocationSource = new GenericAllocationSourceDestination(
+		return new GenericAllocationSourceDestination(
 				ppOrderProductStorage,
 				ppOrder // referenced model
 		);
-		return ppOrderAllocationSource;
 	}
 
 	@Override
@@ -103,6 +103,18 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
+	public void issueServiceProduct(final PPOrderIssueServiceProductRequest request)
+	{
+		final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService = SpringContextHolder.instance.getBean(ManufacturingComponentGeneratorService.class);
+
+		PPOrderIssueServiceProductCommand.builder()
+				.manufacturingComponentGeneratorService(manufacturingComponentGeneratorService)
+				.request(request)
+				.build()
+				.execute();
+	}
+
+	@Override
 	public IHUQueryBuilder createHUsAvailableToIssueQuery(@NonNull final I_PP_Order_BOMLine ppOrderBomLine)
 	{
 		return handlingUnitsDAO
@@ -115,7 +127,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 				.onlyNotLocked();
 	}
 
-	private static final ImmutableMultimap<PPOrderPlanningStatus, PPOrderPlanningStatus> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<PPOrderPlanningStatus, PPOrderPlanningStatus> builder()
+	private static final ImmutableMultimap<PPOrderPlanningStatus, PPOrderPlanningStatus> fromPlanningStatus2toPlanningStatusAllowed = ImmutableMultimap.<PPOrderPlanningStatus, PPOrderPlanningStatus>builder()
 			.put(PPOrderPlanningStatus.PLANNING, PPOrderPlanningStatus.REVIEW)
 			.put(PPOrderPlanningStatus.PLANNING, PPOrderPlanningStatus.COMPLETE)
 			.put(PPOrderPlanningStatus.REVIEW, PPOrderPlanningStatus.PLANNING)
@@ -136,7 +148,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 
 		final I_PP_Order ppOrder = getById(ppOrderId);
 		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(ppOrder.getPlanningStatus());
-		if (Objects.equal(planningStatus, targetPlanningStatus))
+		if (Objects.equals(planningStatus, targetPlanningStatus))
 		{
 			throw new IllegalStateException("Already " + targetPlanningStatus);
 		}
@@ -171,15 +183,15 @@ public class HUPPOrderBL implements IHUPPOrderBL
 	}
 
 	@Override
-	public void setAssignedHandlingUnits(@NonNull final I_PP_Order ppOrder, @NonNull final Collection<I_M_HU> hus)
+	public void addAssignedHandlingUnits(@NonNull final I_PP_Order ppOrder, @NonNull final Collection<I_M_HU> hus)
 	{
-		huAssignmentBL.setAssignedHandlingUnits(ppOrder, hus);
+		huAssignmentBL.addAssignedHandlingUnits(ppOrder, hus);
 	}
 
 	@Override
-	public void setAssignedHandlingUnits(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final Collection<I_M_HU> hus)
+	public void addAssignedHandlingUnits(@NonNull final I_PP_Order_BOMLine ppOrderBOMLine, @NonNull final Collection<I_M_HU> hus)
 	{
-		huAssignmentBL.setAssignedHandlingUnits(ppOrderBOMLine, hus);
+		huAssignmentBL.addAssignedHandlingUnits(ppOrderBOMLine, hus);
 	}
 
 	@Override

@@ -1,19 +1,17 @@
 package de.metas.document.engine;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_Order;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_Order;
+
+import javax.annotation.Nullable;
+import java.util.Set;
 
 /*
  * #%L
@@ -67,7 +65,7 @@ public enum DocStatus implements ReferenceListAwareEnum
 
 	public static DocStatus ofNullableCode(@Nullable final String code)
 	{
-		return code != null ? ofCode(code) : null;
+		return Check.isNotBlank(code) ? ofCode(code) : null;
 	}
 
 	public static DocStatus ofNullableCodeOrUnknown(@Nullable final String code)

@@ -42,4 +42,7 @@ public interface ICalloutMethodPointcut
 
 	/** @return true if we shall skip invoking this callout if we are in record copying mode */
 	boolean isSkipIfCopying();
+
+	/** @return true if we shall skip invoking this callout if it's called not directly but via another callout */
+	boolean isSkipIfIndirectlyCalled();
 }

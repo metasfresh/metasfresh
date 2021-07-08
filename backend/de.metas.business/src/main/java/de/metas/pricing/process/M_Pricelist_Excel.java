@@ -66,13 +66,7 @@ public class M_Pricelist_Excel extends JavaProcess
 				.executeSync()
 				.getResult();
 
-		ReportResultData resultReport = ReportResultData.builder()
-				.reportData(result.getReportData())
-				.reportFilename(result.getReportFilename())
-				.reportContentType(result.getReportContentType())
-				.build();
-
-		getProcessInfo().getResult().setReportData(resultReport);
+		getProcessInfo().getResult().setReportData(result.getReportData());
 
 		return MSG_OK;
 	}

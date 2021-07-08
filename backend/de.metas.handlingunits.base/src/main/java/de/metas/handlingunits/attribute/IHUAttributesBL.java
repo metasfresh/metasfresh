@@ -1,41 +1,23 @@
 package de.metas.handlingunits.attribute;
 
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_M_Attribute;
 
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 public interface IHUAttributesBL extends ISingletonService
 {
 
 	/**
 	 * Gets underlying {@link I_M_HU} from given <code>attributeSet</code>.
-	 *
+	 * <p>
 	 * If there is no underlying HU, this method will throw an exception
 	 *
 	 * @param attributeSet not null
@@ -46,7 +28,7 @@ public interface IHUAttributesBL extends ISingletonService
 
 	/**
 	 * Gets underlying {@link I_M_HU} from given <code>attributeSet</code>.
-	 *
+	 * <p>
 	 * If there is no underlying HU, this method will return <code>null</code>.
 	 *
 	 * @return underlying HU or <code>null</code> if given <code>attributeSet</code> does not support HUs.
@@ -56,19 +38,30 @@ public interface IHUAttributesBL extends ISingletonService
 	/**
 	 * Iterates the HU-tree of the given HU and sets the given attribute to the given attributeValue.
 	 *
-	 * @param hu
-	 * @param attribute
-	 * @param attributeValue
 	 * @param onlyHUStatus may be <code>null</code> or empty. Otherwise, only HUs with the given status are updated. However, all HUs are iterated.
+	 * @deprecated
 	 */
+	@Deprecated
 	void updateHUAttributeRecursive(
 			I_M_HU hu,
 			I_M_Attribute attribute,
-			Object attributeValue,
-			String onlyHUStatus);
+			@Nullable Object attributeValue,
+			@Nullable String onlyHUStatus);
 
 	/**
-	 * @param hu
+	 * Iterates the HU-tree of the given HU and sets the given attribute to the given attributeValue.
+	 *
+	 * Note: for complex scenarios (distributing a weight onto an HU-tree), see {@link de.metas.handlingunits.attribute.propagation.IHUAttributePropagator} and {@link de.metas.handlingunits.attribute.strategy.IAttributeStrategy}.
+	 *
+	 * @param onlyHUStatus may be <code>null</code> or empty. Otherwise, only HUs with the given status are updated. However, all HUs are iterated.
+	 */
+	void updateHUAttributeRecursive(
+			@NonNull HuId huId,
+			@NonNull AttributeCode attributeId,
+			@Nullable Object attributeValue,
+			@Nullable String onlyHUStatus);
+
+	/**
 	 * @return quality discount percent (between 0...100); never return null
 	 */
 	BigDecimal getQualityDiscountPercent(I_M_HU hu);

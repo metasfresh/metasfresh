@@ -2,10 +2,10 @@ package de.metas.dlm.partitioner.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.dlm.partitioner.IIterateResultHandler;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
-import de.metas.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -67,7 +67,7 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 		if (tableName.startsWith("M_HU") && !tableName.startsWith("M_HU_Assign"))
 		{
 			lastHUReference = r;
-			lastHUReferenceSeen = SystemTime.asDate();
+			lastHUReferenceSeen = de.metas.common.util.time.SystemTime.asDate();
 		}
 		else
 		{
@@ -136,7 +136,7 @@ public class SalesPurchaseWatchDog implements IIterateResultHandler
 		if (soTrx)
 		{
 			lastSalesReference = r;
-			lastSalesReferenceSeen = SystemTime.asDate();
+			lastSalesReferenceSeen = de.metas.common.util.time.SystemTime.asDate();
 		}
 		else
 		{

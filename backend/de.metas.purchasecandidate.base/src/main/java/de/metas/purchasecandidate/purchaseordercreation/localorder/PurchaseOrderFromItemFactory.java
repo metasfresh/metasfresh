@@ -1,28 +1,19 @@
 package de.metas.purchasecandidate.purchaseordercreation.localorder;
 
-import java.time.ZonedDateTime;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
+import de.metas.i18n.ADMessageAndParams;
+import de.metas.i18n.AdMessageKey;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.event.OrderUserNotifications;
-import de.metas.order.event.OrderUserNotifications.ADMessageAndParams;
 import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.uom.UomId;
@@ -30,6 +21,17 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * #%L
@@ -57,23 +59,24 @@ import lombok.NonNull;
  * Creates one purchase order from given candidates.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */ final class PurchaseOrderFromItemFactory
 {
 	@VisibleForTesting
-	final static String MSG_Different_DatePromised = //
-			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_DatePromised";
+	final static AdMessageKey MSG_Different_DatePromised = //
+			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_DatePromised");
 
 	@VisibleForTesting
-	final static String MSG_Different_Quantity = //
-			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity";
+	final static AdMessageKey MSG_Different_Quantity = //
+			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity");
 
 	@VisibleForTesting
-	final static String MSG_Different_Quantity_AND_DatePromised = //
-			"de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised";
+	final static AdMessageKey MSG_Different_Quantity_AND_DatePromised = //
+			AdMessageKey.of("de.metas.purchasecandidate.Event_PurchaseOrderCreated_Different_Quantity_And_DatePromised");
 
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 	private final OrderFactory orderFactory;
 
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
@@ -82,32 +85,43 @@ import lombok.NonNull;
 	@Builder
 	private PurchaseOrderFromItemFactory(
 			@NonNull final PurchaseOrderAggregationKey orderAggregationKey,
-			@NonNull OrderUserNotifications userNotifications)
+			@NonNull final OrderUserNotifications userNotifications,
+			@Nullable final DocTypeId docType)
 	{
 		final BPartnerId vendorId = orderAggregationKey.getVendorId();
 
 		this.orderFactory = OrderFactory.newPurchaseOrder()
-				.orgId(orderAggregationKey.getOrgId().getRepoId())
-				.warehouseId(orderAggregationKey.getWarehouseId().getRepoId())
+				.orgId(orderAggregationKey.getOrgId())
+				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
 				.datePromised(orderAggregationKey.getDatePromised());
+		if (docType != null)
+		{
+			orderFactory.docType(docType);
+		}
 
 		this.userNotifications = userNotifications;
 	}
 
-	public void addCandidate(final PurchaseOrderItem pruchaseOrderItem)
+	public void addCandidate(final PurchaseOrderItem purchaseOrderItem)
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
 				.orderLineByProductAndUom(
-						pruchaseOrderItem.getProductId(),
-						UomId.ofRepoId(pruchaseOrderItem.getUomId()))
-				.orElseGet(() -> orderFactory
-						.newOrderLine()
-						.productId(pruchaseOrderItem.getProductId()));
+						purchaseOrderItem.getProductId(),
+						UomId.ofRepoId(purchaseOrderItem.getUomId()))
+				.orElseGet(orderFactory::newOrderLine)
+				.productId(purchaseOrderItem.getProductId());
 
-		orderLineBuilder.addQty(pruchaseOrderItem.getPurchasedQty());
+		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
-		purchaseItem2OrderLine.put(pruchaseOrderItem, orderLineBuilder);
+		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
+		if (purchaseOrderItem.getDiscount() != null)
+		{
+			orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
+		}
+		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
+
+		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}
 
 	public I_C_Order createAndComplete()
@@ -137,12 +151,22 @@ import lombok.NonNull;
 	}
 
 	private void updatePurchaseCandidateFromOrderLineBuilder(
-			@NonNull final PurchaseOrderItem pruchaseOrderItem,
+			@NonNull final PurchaseOrderItem purchaseOrderItem,
 			@NonNull final OrderLineBuilder orderLineBuilder)
 	{
-		pruchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(orderLineBuilder.getCreatedOrderAndLineId());
+		purchaseOrderItem.setPurchaseOrderLineId(orderLineBuilder.getCreatedOrderAndLineId());
+		final DocTypeId docTypeTargetId = orderFactory.getDocTypeTargetId();
+		if (docTypeTargetId != null && docTypeBL.isRequisition(docTypeTargetId))
+		{
+			purchaseOrderItem.markReqCreatedIfNeeded();
+		}
+		else
+		{
+			purchaseOrderItem.markPurchasedIfNeeded();
+		}
 	}
 
+	@Nullable
 	private ADMessageAndParams createMessageAndParamsOrNull(@NonNull final I_C_Order order)
 	{
 		boolean deviatingDatePromised = false;

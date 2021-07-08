@@ -6,6 +6,7 @@
 		<groupId>de.metas.adempiere.adempiere</groupId>
 		<artifactId>de.metas.adempiere.adempiere.serverRoot</artifactId>
 		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>de.metas.adempiere.adempiere.serverRoot.base</artifactId>
@@ -13,7 +14,7 @@
 
 	<properties>
 		<start-class>de.metas.ServerBoot</start-class>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
+		<metasfresh.version>10.0.0</metasfresh.version>
 	</properties>
 
 	<dependencyManagement>
@@ -44,6 +45,15 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
 
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.security</groupId>-->
+<!--			<artifactId>spring-security-config</artifactId>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>org.springframework.security</groupId>-->
+<!--			<artifactId>spring-security-web</artifactId>-->
+<!--		</dependency>-->
+		
 		<dependency>
 			<groupId>org.apache.tomcat.embed</groupId>
 			<artifactId>tomcat-embed-jasper</artifactId>
@@ -67,35 +77,6 @@
 			</exclusions>
 		</dependency>
 
-<!-- see http://codecentric.github.io/spring-boot-admin/1.5.0/#client-applications -->
-		<!-- 
-		there are exclusions to avoid dependency version convergence issues
-		(i.e. to satisfy the enforcer plugin)
-		-->
-		<dependency>
-			<groupId>de.codecentric</groupId>
-			<artifactId>spring-boot-admin-starter-client</artifactId>
-			<version>${spring-boot-admin.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>spring-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-web</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-boot</artifactId>
-					<groupId>org.springframework.boot</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-boot-starter-web</artifactId>
-					<groupId>org.springframework.boot</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
 		<!-- in development, used to disable thymeleaf caching etc -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -103,7 +84,6 @@
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Servlet API -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
@@ -140,32 +120,16 @@
 		</dependency>
 
 		<dependency>
-			<groupId>de.metas.jax.rs</groupId>
-			<artifactId>de.metas.jax.rs</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-
-		<dependency>
 			<!-- Required for org.compiere.server.AcctProcessor -->
 			<groupId>de.metas.acct</groupId>
 			<artifactId>de.metas.acct.base</artifactId>
 			<version>${metasfresh.version}</version>
 		</dependency>
 
-		<!--the app server needs ActiveMQ to offer REST-over-JMS endpoints.
-			Those are used by the swing client and the procurement-webui.
-		-->
 		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-broker</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-client</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-kahadb-store</artifactId>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Logging -->
@@ -180,6 +144,6 @@
 			<artifactId>janino</artifactId>
 		</dependency>
 
-	</dependencies>
+    </dependencies>
 
 </project>

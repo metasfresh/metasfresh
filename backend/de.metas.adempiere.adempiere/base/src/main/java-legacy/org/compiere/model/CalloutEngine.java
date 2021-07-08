@@ -85,7 +85,7 @@ public class CalloutEngine implements Callout
 		}
 	}	// start
 
-	private static final GridField extractGridFieldOrNull(final ICalloutField calloutField)
+	private static GridField extractGridFieldOrNull(final ICalloutField calloutField)
 	{
 		if (calloutField instanceof GridField)
 		{
@@ -136,7 +136,7 @@ public class CalloutEngine implements Callout
 	 * @param methodName method name
 	 * @return method or null
 	 */
-	private static final Method findMethod(final Class<?> clazz, final String methodName)
+	private static Method findMethod(final Class<?> clazz, final String methodName)
 	{
 		if (methodName == null || methodName.isEmpty())
 		{
@@ -160,13 +160,13 @@ public class CalloutEngine implements Callout
 		String execute(final CalloutEngine instance, final ICalloutField calloutField) throws Exception;
 	}
 
-	private final CalloutMethodExecutor getCalloutMethodExecutor(final Class<?> clazz, final String methodName)
+	private CalloutMethodExecutor getCalloutMethodExecutor(final Class<?> clazz, final String methodName)
 	{
 		final String key = clazz.getName() + "." + methodName;
 		return _calloutMethodExecutorsCache.getOrLoad(key, ()->createCalloutMethodExecutor(clazz, methodName));
 	}
 
-	private static final CalloutMethodExecutor createCalloutMethodExecutor(final Class<?> clazz, final String methodName)
+	private static CalloutMethodExecutor createCalloutMethodExecutor(final Class<?> clazz, final String methodName)
 	{
 		final Method method = findMethod(clazz, methodName);
 		final int argLength = method.getParameterTypes().length;
@@ -189,9 +189,7 @@ public class CalloutEngine implements Callout
 		}
 		else if (argLength == 1)
 		{
-			return (instance, calloutField) -> {
-				return (String)method.invoke(instance, calloutField);
-			};
+			return (instance, calloutField) -> (String)method.invoke(instance, calloutField);
 		}
 		else
 		{
@@ -199,8 +197,6 @@ public class CalloutEngine implements Callout
 		}
 
 	}
-
-	/*************************************************************************/
 
 	/**
 	 * Is the current callout being called in the middle of
@@ -233,11 +229,6 @@ public class CalloutEngine implements Callout
 	 * Set Account Date Value.
 	 * org.compiere.model.CalloutEngine.dateAcct
 	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param mTab tab
-	 * @param mField field
-	 * @param value value
 	 * @return null or error message
 	 */
 	public String dateAcct(final ICalloutField field)
@@ -248,7 +239,7 @@ public class CalloutEngine implements Callout
 		}
 
 		final Object value = field.getValue();
-		if (value == null || !(value instanceof java.util.Date))
+		if (!(value instanceof java.util.Date)/*this also covers value=null*/)
 		{
 			return NO_ERROR;
 		}
@@ -265,11 +256,6 @@ public class CalloutEngine implements Callout
 	 * Rate - set Multiply Rate from Divide Rate and vice versa
 	 * org.compiere.model.CalloutEngine.rate
 	 *
-	 * @param ctx context
-	 * @param WindowNo window no
-	 * @param mTab tab
-	 * @param mField field
-	 * @param value value
 	 * @return null or error message
 	 */
 	@Deprecated
@@ -304,7 +290,7 @@ public class CalloutEngine implements Callout
 		{
 			InterfaceWrapperHelper.setValue(model, "MultiplyRate", rate2);
 		}
-		log.info("{} = {} => ", columnName, rate1, rate2);
+		log.info("columnName={}; value={} => result={}", columnName, rate1, rate2);
 
 		return NO_ERROR;
 	}	// rate

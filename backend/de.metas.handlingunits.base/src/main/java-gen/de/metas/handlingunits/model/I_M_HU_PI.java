@@ -1,18 +1,19 @@
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_PI
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_PI 
 {
 
-    /** TableName=M_HU_PI */
-    public static final String Table_Name = "M_HU_PI";
+	String Table_Name = "M_HU_PI";
 
-    /** AD_Table_ID=540511 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540511 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +24,9 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +36,7 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +46,9 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Get Created.
@@ -59,12 +58,10 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_PI, Object>(I_M_HU_PI.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_PI, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_PI.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -74,10 +71,9 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
@@ -86,7 +82,7 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -95,12 +91,10 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_M_HU_PI, Object>(I_M_HU_PI.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_M_HU_PI, Object> COLUMN_Description = new ModelColumn<>(I_M_HU_PI.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Active.
@@ -110,7 +104,7 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -120,12 +114,10 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_PI, Object>(I_M_HU_PI.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_PI, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_PI.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Default For Picking.
@@ -134,7 +126,7 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDefaultForPicking (boolean IsDefaultForPicking);
+	void setIsDefaultForPicking (boolean IsDefaultForPicking);
 
 	/**
 	 * Get Default For Picking.
@@ -143,12 +135,10 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDefaultForPicking();
+	boolean isDefaultForPicking();
 
-    /** Column definition for IsDefaultForPicking */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI, Object> COLUMN_IsDefaultForPicking = new org.adempiere.model.ModelColumn<I_M_HU_PI, Object>(I_M_HU_PI.class, "IsDefaultForPicking", null);
-    /** Column name IsDefaultForPicking */
-    public static final String COLUMNNAME_IsDefaultForPicking = "IsDefaultForPicking";
+	ModelColumn<I_M_HU_PI, Object> COLUMN_IsDefaultForPicking = new ModelColumn<>(I_M_HU_PI.class, "IsDefaultForPicking", null);
+	String COLUMNNAME_IsDefaultForPicking = "IsDefaultForPicking";
 
 	/**
 	 * Set Standard-LU.
@@ -157,7 +147,7 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDefaultLU (boolean IsDefaultLU);
+	void setIsDefaultLU (boolean IsDefaultLU);
 
 	/**
 	 * Get Standard-LU.
@@ -166,35 +156,31 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDefaultLU();
+	boolean isDefaultLU();
 
-    /** Column definition for IsDefaultLU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI, Object> COLUMN_IsDefaultLU = new org.adempiere.model.ModelColumn<I_M_HU_PI, Object>(I_M_HU_PI.class, "IsDefaultLU", null);
-    /** Column name IsDefaultLU */
-    public static final String COLUMNNAME_IsDefaultLU = "IsDefaultLU";
+	ModelColumn<I_M_HU_PI, Object> COLUMN_IsDefaultLU = new ModelColumn<>(I_M_HU_PI.class, "IsDefaultLU", null);
+	String COLUMNNAME_IsDefaultLU = "IsDefaultLU";
 
 	/**
-	 * Set Packvorschrift.
+	 * Set Packing Instruction.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PI_ID (int M_HU_PI_ID);
+	void setM_HU_PI_ID (int M_HU_PI_ID);
 
 	/**
-	 * Get Packvorschrift.
+	 * Get Packing Instruction.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PI_ID();
+	int getM_HU_PI_ID();
 
-    /** Column definition for M_HU_PI_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI, Object> COLUMN_M_HU_PI_ID = new org.adempiere.model.ModelColumn<I_M_HU_PI, Object>(I_M_HU_PI.class, "M_HU_PI_ID", null);
-    /** Column name M_HU_PI_ID */
-    public static final String COLUMNNAME_M_HU_PI_ID = "M_HU_PI_ID";
+	ModelColumn<I_M_HU_PI, Object> COLUMN_M_HU_PI_ID = new ModelColumn<>(I_M_HU_PI.class, "M_HU_PI_ID", null);
+	String COLUMNNAME_M_HU_PI_ID = "M_HU_PI_ID";
 
 	/**
 	 * Set Name.
@@ -203,7 +189,7 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -212,12 +198,10 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_M_HU_PI, Object>(I_M_HU_PI.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_M_HU_PI, Object> COLUMN_Name = new ModelColumn<>(I_M_HU_PI.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Get Updated.
@@ -227,12 +211,10 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_PI, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_PI, Object>(I_M_HU_PI.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_PI, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_PI.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -242,8 +224,7 @@ public interface I_M_HU_PI
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

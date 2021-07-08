@@ -54,13 +54,6 @@ public interface ISSCC18CodeBL extends ISingletonService
 	SSCC18 generate(OrgId orgId);
 
 	/**
-	 * Converts given {@link SSCC18} code to String representation
-	 *
-	 * @return SSCC18 string representation
-	 */
-	String toString(SSCC18 sscc18, boolean humanReadable);
-
-	/**
 	 * From the right to left, start with odd position, assign the odd/even position to each digit. Sum all digits in odd position and multiply the result by 3. Sum all digits in even position. Sum
 	 * the results of step 3 and step 4. Divide the result of step 4 by 10. The check digit is the number which adds the remainder to 10.
 	 *

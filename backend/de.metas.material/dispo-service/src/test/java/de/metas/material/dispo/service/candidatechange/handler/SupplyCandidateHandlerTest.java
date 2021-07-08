@@ -1,5 +1,34 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.dispo.service.candidatechange.StockCandidateService;
+import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler.OnNewOrChangeAdvise;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.MaterialDescriptor;
+import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+
 import static de.metas.material.dispo.commons.DispoTestUtils.filter;
 import static de.metas.material.dispo.commons.DispoTestUtils.retrieveAllRecords;
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
@@ -9,31 +38,7 @@ import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
 import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
-import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.material.dispo.service.candidatechange.StockCandidateService;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -67,14 +72,20 @@ public class SupplyCandidateHandlerTest
 	private SupplyCandidateHandler supplyCandiateHandler;
 
 	private CandidateRepositoryWriteService candidateRepositoryWriteService;
+	private DimensionService dimensionService;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionFactories);
+
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService);
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepository,
@@ -100,7 +111,7 @@ public class SupplyCandidateHandlerTest
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(materialDescriptor)
 				.build();
-		supplyCandiateHandler.onCandidateNewOrChange(candidate);
+		supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		final List<I_MD_Candidate> records = retrieveAllRecords();
 		assertThat(records).hasSize(2);
@@ -135,7 +146,7 @@ public class SupplyCandidateHandlerTest
 
 		final Consumer<Candidate> doTest = candidate -> {
 
-			supplyCandiateHandler.onCandidateNewOrChange(candidate);
+			supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 			final List<I_MD_Candidate> records = retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -174,7 +185,7 @@ public class SupplyCandidateHandlerTest
 
 		final BiConsumer<Candidate, BigDecimal> doTest = (candidate, exptectedQty) -> {
 
-			supplyCandiateHandler.onCandidateNewOrChange(candidate);
+			supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 			final List<I_MD_Candidate> records = retrieveAllRecords();
 			assertThat(records).hasSize(2);
@@ -194,7 +205,7 @@ public class SupplyCandidateHandlerTest
 	}
 
 	/**
-	 * If this test fails, please first verify whether {@link #testOnStockCandidateNewOrChanged()} and {@link #testOnSupplyCandidateNewOrChange_noOlderRecords()} work.
+	 * If this test fails, please first verify whether {@link #testOnSupplyCandidateNewOrChange_noOlderRecords()} works.
 	 */
 	@Test
 	public void onCandidateNewOrChange()
@@ -228,7 +239,7 @@ public class SupplyCandidateHandlerTest
 				.materialDescriptor(materialDescriptoriptor)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.build();
-		supplyCandiateHandler.onCandidateNewOrChange(candidate);
+		supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		final List<I_MD_Candidate> records = retrieveAllRecords();
 		assertThat(records).hasSize(3);
@@ -248,7 +259,7 @@ public class SupplyCandidateHandlerTest
 	{
 		final Candidate candidate = createCandidateWithType(CandidateType.UNEXPECTED_INCREASE);
 
-		supplyCandiateHandler.onCandidateNewOrChange(candidate);
+		supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		final List<I_MD_Candidate> allRecords = retrieveAllRecords();
 		assertThat(allRecords).hasSize(2);
@@ -279,7 +290,7 @@ public class SupplyCandidateHandlerTest
 				.materialDescriptor(materialDescriptor)
 				.businessCase(CandidateBusinessCase.PURCHASE)
 				.build();
-		final Candidate persistendCandidate = supplyCandiateHandler.onCandidateNewOrChange(candidate);
+		final Candidate persistendCandidate = supplyCandiateHandler.onCandidateNewOrChange(candidate, OnNewOrChangeAdvise.DEFAULT);
 
 		assertThat(filter(CandidateType.SUPPLY)).hasSize(1); // guard
 		assertThat(filter(CandidateType.STOCK)).hasSize(1); // guard
@@ -296,8 +307,8 @@ public class SupplyCandidateHandlerTest
 		final Candidate updatedCandidate = persistendCandidate.withQuantity(ZERO);
 
 		// invoke the method under test
-		supplyCandiateHandler.onCandidateNewOrChange(alternativeAttribsCandidate);
-		supplyCandiateHandler.onCandidateNewOrChange(updatedCandidate);
+		supplyCandiateHandler.onCandidateNewOrChange(alternativeAttribsCandidate, OnNewOrChangeAdvise.DEFAULT);
+		supplyCandiateHandler.onCandidateNewOrChange(updatedCandidate, OnNewOrChangeAdvise.DEFAULT);
 
 		assertThat(filter(CandidateType.SUPPLY)).hasSize(2);
 		assertThat(filter(CandidateType.STOCK)).hasSize(2);

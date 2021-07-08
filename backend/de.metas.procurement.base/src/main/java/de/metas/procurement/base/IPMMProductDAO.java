@@ -3,6 +3,8 @@ package de.metas.procurement.base;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.product.ProductId;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_M_Product;
 
@@ -10,6 +12,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.procurement.base.model.I_PMM_Product;
 import de.metas.util.ISingletonService;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -38,9 +42,6 @@ public interface IPMMProductDAO extends ISingletonService
 	/**
 	 * Create a query builder  retrieve to all active {@link I_PMM_Product}s that have a {@code M_HU_PI_Item_Product_ID} and {@code M_Warehouse_ID} set
 	 * and whose {@code ValidFrom} and {@code ValidTo} dates are either {@code null} or lie within the given {@code date}.
-	 *
-	 * @param date
-	 * @return
 	 */
 	IQueryBuilder<I_PMM_Product> retrievePMMProductsValidOnDateQuery(Date date);
 
@@ -48,19 +49,13 @@ public interface IPMMProductDAO extends ISingletonService
 
 	List<I_PMM_Product> retrieveByProduct(I_M_Product product);
 
-	List<I_PMM_Product> retrieveByBPartner(final BPartnerId bpartnerId);
+	List<I_PMM_Product> retrieveByBPartner(BPartnerId bpartnerId);
 
 	/**
 	 * Retrieve the PMM Products for the given product, date and M_HU_PI_Item_Product.
 	 * The PMM products must be for the given partner or not have a partner set at all.
 	 * The PMM Products will be sorted by SeqNo.
-	 *
-	 * @param date
-	 * @param productId
-	 * @param partnerId
-	 * @param huPIPId
-	 * @return
 	 */
-	List<I_PMM_Product> retrieveForDateAndProduct(Date date, int productId, int partnerId, int huPIPId);
+	List<I_PMM_Product> retrieveForDateAndProduct(Date date, @NonNull ProductId productId, @Nullable BPartnerId partnerId, int huPIPId);
 
 }

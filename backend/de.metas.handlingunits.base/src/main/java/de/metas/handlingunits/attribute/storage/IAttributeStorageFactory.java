@@ -22,10 +22,13 @@ package de.metas.handlingunits.attribute.storage;
  * #L%
  */
 
-
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+
+import javax.annotation.Nullable;
 
 /**
  * Attribute Storage Factory. Hint: use {@link IAttributeStorageFactoryService} to get an instance.
@@ -39,16 +42,12 @@ public interface IAttributeStorageFactory
 
 	/**
 	 * Removes {@link IAttributeStorageListener} if it was registered.
-	 *
+	 * <p>
 	 * If it was not, this method silently ignores it.
-	 *
-	 * @param listener
 	 */
 	void removeAttributeStorageListener(IAttributeStorageListener listener);
 
 	/**
-	 *
-	 * @param model
 	 * @return true if given model can be handled by this factory
 	 */
 	boolean isHandled(Object model);
@@ -58,14 +57,19 @@ public interface IAttributeStorageFactory
 	 */
 	IAttributeStorage getAttributeStorage(Object model);
 
+	default ImmutableAttributeSet getImmutableAttributeSet(final I_M_HU hu)
+	{
+		return ImmutableAttributeSet.copyOf(getAttributeStorage(hu));
+	}
+
 	/**
 	 * Gets {@link IAttributeStorage} if <code>model</code> is handled or <code>null</code> otherwise.
-	 *
+	 * <p>
 	 * NOTE: this method was introduced for the sake of optimizations, because some factories cannot tell if the model is handled until they fetch them.
 	 *
-	 * @param model
 	 * @return attribute storage or null
 	 */
+	@Nullable
 	IAttributeStorage getAttributeStorageIfHandled(Object model);
 
 	IHUAttributesDAO getHUAttributesDAO();
@@ -77,4 +81,6 @@ public interface IAttributeStorageFactory
 	IHUStorageFactory getHUStorageFactory();
 
 	void setHUStorageFactory(IHUStorageFactory huStorageFactory);
+
+	void flush();
 }

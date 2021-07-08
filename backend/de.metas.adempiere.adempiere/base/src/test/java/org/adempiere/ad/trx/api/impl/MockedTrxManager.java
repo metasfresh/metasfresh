@@ -28,19 +28,21 @@ import java.util.List;
 import org.adempiere.ad.trx.api.ITrx;
 import org.junit.Ignore;
 
+import javax.annotation.Nullable;
+
 @Ignore
 public class MockedTrxManager extends PlainTrxManager
 {
 	private final List<ITrx> removedTransactions = new ArrayList<>();
 
 	@Override
-	protected MockedTrx createTrx(String trxName, final boolean autoCommit)
+	protected MockedTrx createTrx(final String trxName, final boolean autoCommit)
 	{
 		return new MockedTrx(this, trxName, autoCommit);
 	}
 
 	@Override
-	public boolean remove(ITrx trx)
+	public boolean remove(final ITrx trx)
 	{
 		final boolean removed = super.remove(trx);
 		if (removed)
@@ -55,6 +57,7 @@ public class MockedTrxManager extends PlainTrxManager
 		return removedTransactions;
 	}
 
+	@Nullable
 	public ITrx getRemovedTransactionByName(final String trxName)
 	{
 		return removedTransactions

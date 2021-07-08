@@ -74,7 +74,6 @@ public class SupportInfo
 			sb = new StringBuilder();
 		}
 		final String eq = " = ";
-		sb.append(getMsg("Host")).append(eq).append(getServerInfo()).append(NL);
 		sb.append(getMsg("Database")).append(eq).append(getDatabaseInfo()).append(NL);
 		sb.append(getMsg("Schema")).append(eq).append(CConnection.get().getDbUid()).append(NL);
 		//
@@ -162,7 +161,7 @@ public class SupportInfo
 				.append(Adempiere.getCheckSum()).append(NL)
 				.append(Adempiere.getSummaryAscii()).append(NL)
 				.append(getLocalHost()).append(NL)
-				.append(cc.getName() + " " + cc.getDbUid() + "@" + cc.getConnectionURL()).append(NL)
+				.append(cc.getDbUid() + "@" + cc.getConnectionURL()).append(NL)
 				.append(cc.getInfo()).append(NL);
 		// Context
 		sb.append(NL)
@@ -186,41 +185,6 @@ public class SupportInfo
 		}
 		return sb;
 	}   // getInfoDetail
-
-	/**
-	 * Get Server Info.
-	 *
-	 * @return host : port (NotActive) via CMhost : port
-	 */
-	private static String getServerInfo()
-	{
-		final StringBuilder sb = new StringBuilder();
-		final CConnection cc = CConnection.get();
-		if (cc == null)
-		{
-			return "unknown";
-		}
-
-		// Host
-		sb.append(cc.getAppsHost()).append(" : ")
-				.append(cc.getAppsPort())
-				.append(" (");
-
-		// Server
-		if (cc.isAppsServerOK(false))
-		{
-			final String serverVersion = cc.getServerVersionInfo();
-			sb.append("version ").append(serverVersion);
-		}
-		else
-		{
-			sb.append(getMsg("NotActive"));
-		}
-		//
-		sb.append(")");
-		//
-		return sb.toString();
-	}   // getServerInfo
 
 	/**
 	 * Get Database Info

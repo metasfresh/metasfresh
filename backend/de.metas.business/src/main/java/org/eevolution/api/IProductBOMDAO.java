@@ -1,25 +1,27 @@
 package org.eevolution.api;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-
 import com.google.common.collect.ImmutableList;
-import org.compiere.model.IQuery;
+import de.metas.product.ProductId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
-import de.metas.product.ProductId;
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 public interface IProductBOMDAO extends ISingletonService
 {
+	Optional<I_PP_Product_BOM> getDefaultBOM(@NonNull I_M_Product product, @NonNull BOMType bomType);
+
 	I_PP_Product_BOM getById(ProductBOMId bomId);
 
 	@Deprecated
+	@Nullable
 	default I_PP_Product_BOM getById(final int productBomId)
 	{
 		return productBomId > 0 ? getById(ProductBOMId.ofRepoId(productBomId)) : null;
@@ -43,7 +45,7 @@ public interface IProductBOMDAO extends ISingletonService
 
 	boolean hasBOMs(ProductId productId);
 
-	IQuery<I_PP_Product_BOMLine> retrieveBOMLinesForProductQuery(Properties ctx, int productId, String trxName);
+	List<I_PP_Product_BOMLine> retrieveBOMLinesByComponentIdInTrx(ProductId productId);
 
 	List<I_PP_Product_BOM> retrieveBOMsContainingExactProducts(Collection<Integer> productIds);
 

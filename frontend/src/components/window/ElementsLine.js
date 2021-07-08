@@ -38,6 +38,7 @@ class ElementsLine extends PureComponent {
       elementGroupIndex,
       sectionIndex,
       columnIndex,
+      disconnected,
     } = this.props;
 
     return elements.map((elementLayout, elementIndex) => (
@@ -60,6 +61,7 @@ class ElementsLine extends PureComponent {
         isFullScreen={isFullScreen}
         onBlurWidget={onBlurWidget}
         addRefToWidgets={addRefToWidgets}
+        disconnected={disconnected}
       />
     ));
   };
@@ -82,6 +84,7 @@ ElementsLine.propTypes = {
   isFullScreen: PropTypes.bool,
   onBlurWidget: PropTypes.func.isRequired,
   addRefToWidgets: PropTypes.func.isRequired,
+  disconnected: PropTypes.string,
 };
 
 export default ElementsLine;

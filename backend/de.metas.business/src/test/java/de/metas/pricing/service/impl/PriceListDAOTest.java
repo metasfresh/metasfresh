@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -27,8 +28,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.util.TimeUtil;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -45,9 +44,9 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 /*
  * #%L
@@ -80,7 +79,7 @@ public class PriceListDAOTest
 
 	private final IPriceListDAO priceListDAO = new PlainPriceListDAO();
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -91,7 +90,7 @@ public class PriceListDAOTest
 
 		EURO = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
-		SystemTime.setTimeSource(new FixedTimeSource(2019, 8, 27, 14, 17, 23));
+		de.metas.common.util.time.SystemTime.setFixedTimeSource("2019-08-27T14:17:23+01:00[Europe/Berlin]");
 	}
 
 	@Test
@@ -281,7 +280,7 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				SystemTime.asDayTimestamp(),
+				de.metas.common.util.time.SystemTime.asDayTimestamp(),
 				baseSchema.getM_DiscountSchema_ID(),
 				originalBasePLV.getM_PriceList_Version_ID());
 
@@ -303,7 +302,7 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
-		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
+		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
 				ImmutableSet.of());
@@ -479,7 +478,7 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				SystemTime.asDayTimestamp(),
+				de.metas.common.util.time.SystemTime.asDayTimestamp(),
 				baseSchema.getM_DiscountSchema_ID(),
 				originalBasePLV.getM_PriceList_Version_ID());
 
@@ -502,7 +501,7 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
-		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
+		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
 				ImmutableSet.of());
@@ -553,7 +552,7 @@ public class PriceListDAOTest
 
 		assertThat(newestCustomer2PriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
-		assertThat(newestCustomer2PriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
+		assertThat(newestCustomer2PriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newCustomer2ProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestCustomer2PriceListVersion.getM_PriceList_Version_ID()),
 				ImmutableSet.of());
@@ -710,7 +709,7 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
-		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
+		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
 				ImmutableSet.of());
@@ -830,7 +829,7 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				SystemTime.asDayTimestamp(),
+				de.metas.common.util.time.SystemTime.asDayTimestamp(),
 				baseSchema.getM_DiscountSchema_ID(),
 				originalBasePLV.getM_PriceList_Version_ID());
 
@@ -854,7 +853,7 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
-		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
+		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
 				ImmutableSet.of());
@@ -1019,7 +1018,7 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				SystemTime.asDayTimestamp(),
+				de.metas.common.util.time.SystemTime.asDayTimestamp(),
 				baseSchema.getM_DiscountSchema_ID(),
 				originalBasePLV.getM_PriceList_Version_ID());
 
@@ -1046,7 +1045,7 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_Pricelist_Version_Base_ID()).isEqualByComparingTo(customerIntermediatePLV.getM_PriceList_Version_ID());
 
-		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
+		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
 				ImmutableSet.of());
@@ -1198,7 +1197,7 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				SystemTime.asDayTimestamp(),
+				de.metas.common.util.time.SystemTime.asDayTimestamp(),
 				baseSchema.getM_DiscountSchema_ID(),
 				originalBasePLV.getM_PriceList_Version_ID());
 
@@ -1318,7 +1317,7 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				SystemTime.asDayTimestamp(),
+				de.metas.common.util.time.SystemTime.asDayTimestamp(),
 				baseSchema.getM_DiscountSchema_ID(),
 				originalBasePLV.getM_PriceList_Version_ID());
 
@@ -1340,7 +1339,7 @@ public class PriceListDAOTest
 
 		assertThat(newestPriceListVersion.getM_DiscountSchema_ID()).isEqualByComparingTo(baseSchema.getM_DiscountSchema_ID());
 
-		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(SystemTime.asDayTimestamp());
+		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
 				ImmutableSet.of());

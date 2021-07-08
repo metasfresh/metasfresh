@@ -26,12 +26,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.receipt.JsonCreateReceiptInfo;
 import de.metas.common.receipt.JsonCreateReceiptsRequest;
-import de.metas.common.rest_api.JsonAttributeInstance;
-import de.metas.common.rest_api.JsonAttributeSetInstance;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
-import de.metas.common.rest_api.JsonQuantity;
+import de.metas.common.rest_api.v1.JsonAttributeInstance;
+import de.metas.common.rest_api.v1.JsonAttributeSetInstance;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.common.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipment.JsonCreateShipmentResponse;
@@ -142,13 +142,23 @@ class JsonSerializeDeserializeTests
 				.orderDocumentNo("orderDocumentNo")
 				.deliveryInfo("deliveryInfo")
 				.product(createJsonProduct())
-				.customer(JsonCustomer.builder()
+				.shipBPartner(JsonCustomer.builder()
 						.companyName("companyName")
+						.company(true)
 						.street("street").streetNo("streetNo")
 						.addressSuffix1("addressSuffix1")
 						.addressSuffix2("addressSuffix2")
 						.addressSuffix3("addressSuffix3")
 						.postal("postal").city("city").shipmentAllocationBestBeforePolicy("E").build())
+				.billBPartner(JsonCustomer.builder()
+						.companyName("companyName")
+						.company(false)
+						.street("street").streetNo("streetNo")
+						.addressSuffix1("addressSuffix1")
+						.addressSuffix2("addressSuffix2")
+						.addressSuffix3("addressSuffix3")
+						.postal("postal").city("city").shipmentAllocationBestBeforePolicy("E")
+						.contactEmail("contactEmail").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.ONE).uomCode("PCE").build())
 				.quantity(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build())
 				.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
@@ -187,7 +197,7 @@ class JsonSerializeDeserializeTests
 						.deliveryInfo("deliveryInfo")
 						.product(JsonProduct.builder().productNo("productNo_1").name("name_1").stocked(true).documentNote("documentNote_1").build())
 						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
-						.customer(JsonCustomer.builder().street("street_1").streetNo("streetNo_1").postal("postal_1").city("city_1").shipmentAllocationBestBeforePolicy("E").build())
+						.shipBPartner(JsonCustomer.builder().street("street_1").streetNo("streetNo_1").postal("postal_1").city("city_1").shipmentAllocationBestBeforePolicy("E").build())
 						.orderedQtyNetPrice(BigDecimal.ONE)
 						.qtyToDeliverNetPrice(BigDecimal.ONE)
 						.deliveredQtyNetPrice(BigDecimal.TEN)
@@ -201,7 +211,7 @@ class JsonSerializeDeserializeTests
 						.deliveryInfo("deliveryInfo")
 						.product(JsonProduct.builder().productNo("productNo_2").name("name_2").stocked(true).build())
 						.orderedQty(ImmutableList.of(JsonQuantity.builder().qty(BigDecimal.TEN).uomCode("KG").build()))
-						.customer(JsonCustomer.builder().street("street_2").streetNo("streetNo_2").postal("postal_2").city("city_2").shipmentAllocationBestBeforePolicy("E").build())
+						.shipBPartner(JsonCustomer.builder().street("street_2").streetNo("streetNo_2").postal("postal_2").city("city_2").shipmentAllocationBestBeforePolicy("E").build())
 						.orderedQtyNetPrice(BigDecimal.ONE)
 						.qtyToDeliverNetPrice(BigDecimal.ONE)
 						.deliveredQtyNetPrice(BigDecimal.TEN)

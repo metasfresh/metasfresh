@@ -225,7 +225,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 * If the given <code>cl</code> has a table name (see {@link #getTableNameOrNull(Class)}), then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be
+	 * If the given <code>cl</code> has a table name - see {@link InterfaceWrapperHelper#getTableNameOrNull(Class)} then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be
 	 * assumed when running against a DB and should also be made sure when running unti tests in decoupled mode.
 	 */
 	private static <T> void createADTableInstanceIfNeccesary(final Properties ctx, final Class<T> cl)
@@ -656,7 +656,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		final String propertyNameLowerCase = methodName.substring(3);
 
-		if (propertyNameLowerCase.equals(idColumnName))
+		if (propertyNameLowerCase.equalsIgnoreCase(idColumnName))
 		{
 			return getId();
 		}
@@ -1454,7 +1454,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	public static void setInstanceName(final Object model, final String instanceName)
+	public static void setInstanceName(final Object model, @Nullable final String instanceName)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		if (wrapper == null)
@@ -1465,6 +1465,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		wrapper.instanceName = instanceName;
 	}
 
+	@Nullable
 	public static String getInstanceName(final Object model)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
@@ -1507,9 +1508,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 * Set if we shall allow to {@link #refresh(Object)} an object which has changes.
-	 *
-	 * @param allow
+	 * Set if we shall allow to {@link #refresh(String)}  an object which has changes.
 	 */
 	public static void setAllowRefreshingChangedModels(final boolean allow)
 	{
@@ -1648,8 +1647,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 * @param model
-	 * @param columnNames
 	 * @return true if any of given column names where changed
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> propertyNames)

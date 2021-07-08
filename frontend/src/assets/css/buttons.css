@@ -253,3 +253,7 @@ button, .btn {
 .hidden-up {
     display: none !important;
 }
+
+.btn-pull-right {
+  float: right !important;
+}

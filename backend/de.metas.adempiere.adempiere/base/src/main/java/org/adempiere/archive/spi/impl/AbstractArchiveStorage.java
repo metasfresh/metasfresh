@@ -27,9 +27,11 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Archive;
 
 import de.metas.util.Services;
@@ -43,7 +45,7 @@ import de.metas.util.Services;
 public abstract class AbstractArchiveStorage implements IArchiveStorage
 {
 	@Override
-	public void init(final Properties ctx, final int adClientId)
+	public void init(@NonNull final ClientId adClientId)
 	{
 		// nothing at this level
 	}
@@ -51,8 +53,7 @@ public abstract class AbstractArchiveStorage implements IArchiveStorage
 	@Override
 	public I_AD_Archive newArchive(final Properties ctx, final String trxName)
 	{
-		final I_AD_Archive archive = InterfaceWrapperHelper.create(ctx, I_AD_Archive.class, trxName);
-		return archive;
+		return InterfaceWrapperHelper.create(ctx, I_AD_Archive.class, trxName);
 	}
 
 	@Override
@@ -64,10 +65,5 @@ public abstract class AbstractArchiveStorage implements IArchiveStorage
 			return null;
 		}
 		return new ByteArrayInputStream(inflatedData);
-	}
-
-	protected IArchiveStorageFactory getArchiveStorageFactory()
-	{
-		return Services.get(IArchiveStorageFactory.class);
 	}
 }

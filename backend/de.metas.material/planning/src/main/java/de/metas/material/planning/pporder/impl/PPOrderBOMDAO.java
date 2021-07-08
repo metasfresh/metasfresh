@@ -17,8 +17,8 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 

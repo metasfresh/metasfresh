@@ -1,28 +1,16 @@
 package de.metas.purchasecandidate.async;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
-
 import com.google.common.base.Functions;
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
-
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.document.DocTypeId;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -34,6 +22,20 @@ import de.metas.purchasecandidate.purchaseordercreation.PurchaseCandidateToOrder
 import de.metas.purchasecandidate.purchaseordercreation.localorder.PurchaseOrderFromItemsAggregator;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.VendorGatewayInvokerFactory;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 
 /*
  * #%L
@@ -59,18 +61,23 @@ import de.metas.util.Services;
 
 /**
  * Aggregates enqueued {@link PurchaseCandidate}s and generates purchase orders.
- *
+ * <p>
  * Also, {@link #enqueue(Collection)} method is used to enqueue purchase candidates.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProcessorAdapter
 {
+	public static final String DOC_TYPE_ID = "C_Doctype_Target_ID";
 	private final PurchaseCandidateRepository purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
 	private final VendorGatewayInvokerFactory vendorGatewayInvokerFactory = SpringContextHolder.instance.getBean(VendorGatewayInvokerFactory.class);
 
-	public static void enqueue(final Collection<PurchaseCandidateId> purchaseCandidateIds)
+	public static void enqueue(@NonNull final Collection<PurchaseCandidateId> purchaseCandidateIds)
+	{
+		enqueue(purchaseCandidateIds, null);
+	}
+
+	public static void enqueue(@NonNull final Collection<PurchaseCandidateId> purchaseCandidateIds, @Nullable final DocTypeId docTypeId)
 	{
 		final Multimap<Integer, I_C_PurchaseCandidate> vendorId2purchaseCandidate = //
 				loadByIds(PurchaseCandidateId.toIntSet(purchaseCandidateIds), I_C_PurchaseCandidate.class)
@@ -103,15 +110,18 @@ public class C_PurchaseCandidates_GeneratePurchaseOrders extends WorkpackageProc
 					.bindToThreadInheritedTrx()
 					.addElements(candidateRecordReferences)
 					.setUserInChargeId(Env.getLoggedUserIdIfExists().orElse(null))
+					.parameter(DOC_TYPE_ID, docTypeId)
 					.build();
 		}
 	}
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
+	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage_IGNORED, final String localTrxName_IGNORED)
 	{
+		final BigDecimal docTypeRepoId = getParameters().getParameterAsBigDecimal(DOC_TYPE_ID);
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(docTypeRepoId != null ? docTypeRepoId.intValue() : 0);
 		final PurchaseOrderFromItemsAggregator purchaseOrderFromItemsAggregator = //
-				PurchaseOrderFromItemsAggregator.newInstance();
+				PurchaseOrderFromItemsAggregator.newInstance(docTypeId);
 
 		PurchaseCandidateToOrderWorkflow.builder()
 				.purchaseCandidateRepo(purchaseCandidateRepo)

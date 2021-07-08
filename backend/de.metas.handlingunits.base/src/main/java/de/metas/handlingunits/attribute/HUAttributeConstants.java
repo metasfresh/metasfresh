@@ -38,6 +38,7 @@ public final class HUAttributeConstants
 	 * The <code>M_Attribute.Value</code> for the HU-attribute referencing the receipt M_InOutLine_ID on which the given HU was received.
 	 */
 	public static final AttributeCode ATTR_ReceiptInOutLine_ID = AttributeCode.ofString("HU_ReceiptInOutLine_ID");
+	public static final AttributeCode ATTR_PP_Order_ID = AttributeCode.ofString("PP_Order_ID");
 
 	public static final AttributeCode ATTR_Expired = AttributeCode.ofString("HU_Expired");
 	public static final String ATTR_Expired_Value_Expired = "expired";

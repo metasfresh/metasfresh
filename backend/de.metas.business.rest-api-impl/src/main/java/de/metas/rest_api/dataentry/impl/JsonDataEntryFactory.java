@@ -83,6 +83,7 @@ final class JsonDataEntryFactory
 	{
 		return layout.getTabs()
 				.stream()
+				.filter(DataEntryTab::isAvailableInApi)
 				.map(this::toJsonDataEntryTab)
 				.filter(tab -> !tab.getSubTabs().isEmpty())
 				.collect(ImmutableList.toImmutableList());
@@ -141,6 +142,10 @@ final class JsonDataEntryFactory
 		final ImmutableList.Builder<JsonDataEntrySection> sections = ImmutableList.builder();
 		for (final DataEntrySection layoutSection : layoutSubTab.getSections())
 		{
+			if (!layoutSection.isAvailableInApi())
+			{
+				continue;
+			}
 			final JsonDataEntrySection section = toJsonDataEntrySection(layoutSection, dataEntryRecord);
 			sections.add(section);
 		}

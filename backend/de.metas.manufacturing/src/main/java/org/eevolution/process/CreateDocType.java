@@ -6,7 +6,7 @@ import org.compiere.model.MSequence;
 import org.compiere.util.Env;
 
 import de.metas.process.JavaProcess;
-
+import org.eevolution.api.PPOrderDocBaseType;
 
 /**
  *	AddLiberoRecords
@@ -49,17 +49,17 @@ public class CreateDocType extends JavaProcess
 			//Payroll GLCategory created in 140_FB1935325HRProcess.sql
 			//int GL_Payroll = createGLCategory("Payroll", MGLCategory.CATEGORYTYPE_Document, false);
 			
-			createDocType("Manufacturing Order", "Manufacturing Order", 
-				MDocType.DOCBASETYPE_ManufacturingOrder, null,
+			createDocType("Manufacturing Order", "Manufacturing Order",
+					PPOrderDocBaseType.MANUFACTURING_ORDER.getCode(), null,
 				0, 0, 80000, GL_Manufacturing);
 			createDocType("Manufacturing Cost Collector","Cost Collector", 
 				MDocType.DOCBASETYPE_ManufacturingCostCollector, null, 
 				0, 0, 81000, GL_Manufacturing);
 			createDocType("Maintenance Order","Maintenance Order",
-				MDocType.DOCBASETYPE_MaintenanceOrder, null,
+					PPOrderDocBaseType.MAINTENANCE_ORDER.getCode(), null,
 				0, 0, 86000, GL_Manufacturing);
 			createDocType("Quality Order","Quality Order",
-					MDocType.DOCBASETYPE_QualityOrder, null,
+					PPOrderDocBaseType.QUALITY_ORDER.getCode(), null,
 				0, 0, 87000, GL_Manufacturing);
 			createDocType("Distribution Order","Distribution Orde", 
 				MDocType.DOCBASETYPE_DistributionOrder, null,

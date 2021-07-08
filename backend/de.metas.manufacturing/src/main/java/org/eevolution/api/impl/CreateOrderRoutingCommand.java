@@ -1,31 +1,33 @@
 package org.eevolution.api.impl;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.temporal.TemporalUnit;
-
-import org.eevolution.api.PPOrderRouting;
-import org.eevolution.api.PPOrderRouting.PPOrderRoutingBuilder;
-import org.eevolution.api.PPOrderRoutingActivity;
-import org.eevolution.api.PPOrderRoutingActivityCode;
-import org.eevolution.api.PPOrderRoutingActivityStatus;
-import org.eevolution.exceptions.RoutingExpiredException;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSetMultimap;
-
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.material.planning.pporder.PPOrderId;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.PPRoutingProduct;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;
 import lombok.NonNull;
+import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRouting;
+import org.eevolution.api.PPOrderRouting.PPOrderRoutingBuilder;
+import org.eevolution.api.PPOrderRoutingActivity;
+import org.eevolution.api.PPOrderRoutingActivityCode;
+import org.eevolution.api.PPOrderRoutingActivityId;
+import org.eevolution.api.PPOrderRoutingActivityStatus;
+import org.eevolution.api.PPOrderRoutingProduct;
+import org.eevolution.api.PPOrderRoutingProductId;
+import org.eevolution.exceptions.RoutingExpiredException;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 /*
  * #%L
@@ -101,13 +103,22 @@ final class CreateOrderRoutingCommand
 			orderActivities.add(orderActivity);
 		}
 		orderRoutingBuilder.activities(orderActivities.build());
-
 		//
 		// Set first activity
 		{
 			final PPOrderRoutingActivityCode firstActivityCode = PPOrderRoutingActivityCode.ofString(routing.getFirstActivity().getCode());
 			orderRoutingBuilder.firstActivityCode(firstActivityCode);
 		}
+
+		//
+		// Order Products
+		final ImmutableList.Builder<PPOrderRoutingProduct> orderProducts = ImmutableList.builder();
+		for (final PPRoutingProduct product : routing.getProducts())
+		{
+			final PPOrderRoutingProduct orderActivity = createPPOrderRoutingProduct(product);
+			orderProducts.add(orderActivity);
+		}
+		orderRoutingBuilder.products(orderProducts.build());
 
 		//
 		// Activity Transitions
@@ -145,9 +156,22 @@ final class CreateOrderRoutingCommand
 				.qtyPerBatch(routing.getQtyPerBatch());
 	}
 
+	public PPOrderRoutingProduct createPPOrderRoutingProduct(final PPRoutingProduct product)
+	{
+		final PPOrderRoutingProductId productId = product.getActivityId() != null ? PPOrderRoutingProductId.ofRepoId(PPOrderRoutingActivityId.ofRepoIdOrNull(ppOrderId, product.getActivityId().getRepoId()), product.getId()) : null;
+		return PPOrderRoutingProduct.builder()
+				.qty(product.getQty())
+				.seqNo(product.getSeqNo())
+				.subcontracting(product.isSubcontracting())
+				.id(productId)
+				.productId(product.getProductId())
+				.specification(product.getSpecification())
+				.build();
+	}
+
 	public PPOrderRoutingActivity createPPOrderRoutingActivity(final PPRoutingActivity activity)
 	{
-		final TemporalUnit durationUnit = activity.getDurationUnit();
+		final WFDurationUnit durationUnit = activity.getDurationUnit();
 		final Duration durationPerOneUnit = activity.getDurationPerOneUnit();
 		final int unitsPerCycle = activity.getUnitsPerCycle();
 		final Duration durationRequired = WorkingTime.builder()

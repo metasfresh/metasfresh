@@ -30,8 +30,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * If annotated parameter is true, triggers cache to be refreshed/reloaded using method's return value.
- * If annotated parameter is NOT true, the caching will work as usual.
+ * If a boolean parameter annonotated with this annotation is {@code true}, it triggers tje cache to be refreshed/reloaded using the method's return value.
+ * If the annotated parameter is NOT true, the caching will work as usual.
  * 
  * NOTE: internally, this annotated parameter won't be part of the caching key, because makes no sense.
  * 

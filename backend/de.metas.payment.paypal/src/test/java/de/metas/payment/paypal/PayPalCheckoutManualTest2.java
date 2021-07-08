@@ -10,12 +10,12 @@ import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_MailText;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -73,7 +73,7 @@ import lombok.NonNull;
 
 public class PayPalCheckoutManualTest2
 {
-	public static void main(final String[] args) throws Exception
+	public static void main(final String[] args)
 	{
 		AdempiereTestHelper.get().init();
 
@@ -173,7 +173,7 @@ public class PayPalCheckoutManualTest2
 		bpartnerRecord.setName("payer");
 		saveRecord(bpartnerRecord);
 
-		final I_AD_User contactRecord = newInstanceOutOfTrx(I_AD_User.class);
+		final org.compiere.model.I_AD_User contactRecord = newInstanceOutOfTrx(I_AD_User.class);
 		contactRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 		contactRecord.setName("payer contact");
 		saveRecord(contactRecord);

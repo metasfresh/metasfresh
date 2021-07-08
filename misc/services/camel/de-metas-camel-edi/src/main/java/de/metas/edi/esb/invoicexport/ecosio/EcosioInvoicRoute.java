@@ -75,8 +75,6 @@ public class EcosioInvoicRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		final String charset = Util.resolveProperty(getContext(), AbstractEDIRoute.EDI_STEPCOM_CHARSET_NAME);
-
 		final JaxbDataFormat dataFormat = new JaxbDataFormat(EDICctopInvoicVType.class.getPackage().getName());
 		dataFormat.setCamelContext(getContext());
 		dataFormat.setEncoding(StandardCharsets.UTF_8.name());

@@ -34,6 +34,7 @@ import de.metas.edi.esb.invoicexport.ecosio.EcosioInvoicRoute;
 import de.metas.edi.esb.commons.InvoicSettings;
 import de.metas.edi.esb.commons.ClearingCenter;
 import de.metas.edi.esb.invoicexport.stepcom.StepComXMLInvoicRoute;
+import lombok.NonNull;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
@@ -47,7 +48,7 @@ import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 public class EDIExportCommonRoute extends AbstractEDIRoute
 {
 	@Override
-	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
+	public void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)
 	{
 		// disable spooling to disk
 		// i believe our ram is sufficient, and when we don'T disable we get (at least in unit tests on windows) an exception
@@ -84,7 +85,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.STEPcom.toString()))
 								.to(StepComXMLInvoicRoute.EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.CompuData.toString()))
-								.to(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOICE_CONSUMER)
+								.to(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOIC_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.ecosio.toString()))
 								.to(EcosioInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 						.endChoice()

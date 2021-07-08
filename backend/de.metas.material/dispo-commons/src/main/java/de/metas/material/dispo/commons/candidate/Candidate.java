@@ -1,6 +1,7 @@
 package de.metas.material.dispo.commons.candidate;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.dimension.Dimension;
 import de.metas.material.dispo.commons.candidate.businesscase.BusinessCaseDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.event.commons.EventDescriptor;
@@ -76,6 +77,8 @@ public class Candidate
 
 	/**
 	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
+	 * We have this for historic reasons.
+	 * On the longer run, stock-candidates will be merged into "normal" candidates and we won't need the parent-id anymore.
 	 */
 	CandidateId parentId;
 
@@ -99,6 +102,8 @@ public class Candidate
 
 	List<TransactionDetail> transactionDetails;
 
+	Dimension dimension;
+
 	@Builder(toBuilder = true)
 	private Candidate(
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -112,7 +117,8 @@ public class Candidate
 			final MinMaxDescriptor minMaxDescriptor,
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
-			@Singular @NonNull final List<TransactionDetail> transactionDetails)
+			@Singular @NonNull final List<TransactionDetail> transactionDetails,
+			Dimension dimension)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.type = type;
@@ -139,6 +145,8 @@ public class Candidate
 		{
 			validateNonStockCandidate();
 		}
+
+		this.dimension = dimension;
 	}
 
 	public static class CandidateBuilder
@@ -189,8 +197,8 @@ public class Candidate
 		}
 
 		Check.errorIf((businessCase == null) != (businessCaseDetail == null),
-				"The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
-				businessCase, businessCaseDetail, this);
+					  "The given paramters businessCase and businessCaseDetail need to be both null or both not-null; businessCase={}; businessCaseDetail={}; this={}",
+					  businessCase, businessCaseDetail, this);
 
 		Check.errorIf(
 				businessCase != null && !businessCase.getDetailClass().isAssignableFrom(businessCaseDetail.getClass()),

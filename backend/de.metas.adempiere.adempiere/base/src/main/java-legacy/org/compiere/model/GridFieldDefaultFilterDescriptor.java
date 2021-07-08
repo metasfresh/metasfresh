@@ -1,11 +1,10 @@
 package org.compiere.model;
 
-import java.util.OptionalInt;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -30,24 +29,26 @@ import lombok.Value;
  */
 
 @Value
-public final class GridFieldDefaultFilterDescriptor
+public class GridFieldDefaultFilterDescriptor
 {
-	private final boolean defaultFilter;
-	private final int defaultFilterSeqNo;
-	private final boolean rangeFilter;
-	private final boolean showFilterIncrementButtons;
-	private final String defaultValue;
+	boolean defaultFilter;
+	int defaultFilterSeqNo;
+	String operator;
+	boolean showFilterIncrementButtons;
+	boolean showFilterInline;
+	String defaultValue;
 
-	private final boolean facetFilter;
-	private final int facetFilterSeqNo;
-	private final OptionalInt maxFacetsToFetch;
+	boolean facetFilter;
+	int facetFilterSeqNo;
+	OptionalInt maxFacetsToFetch;
 
 	@Builder
 	public GridFieldDefaultFilterDescriptor(
 			final boolean defaultFilter,
 			final int defaultFilterSeqNo,
-			final boolean rangeFilter,
+			final String operator,
 			final boolean showFilterIncrementButtons,
+			final boolean showFilterInline,
 			final String defaultValue,
 			//
 			final boolean facetFilter,
@@ -65,16 +66,18 @@ public final class GridFieldDefaultFilterDescriptor
 		{
 			this.defaultFilter = true;
 			this.defaultFilterSeqNo = defaultFilterSeqNo;
-			this.rangeFilter = rangeFilter;
+			this.operator = operator;
 			this.showFilterIncrementButtons = showFilterIncrementButtons;
+			this.showFilterInline = showFilterInline;
 			this.defaultValue = defaultValue;
 		}
 		else
 		{
 			this.defaultFilter = false;
 			this.defaultFilterSeqNo = 0;
-			this.rangeFilter = false;
+			this.operator = null; // default
 			this.showFilterIncrementButtons = false;
+			this.showFilterInline = false;
 			this.defaultValue = null;
 		}
 

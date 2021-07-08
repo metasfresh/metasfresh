@@ -38,7 +38,7 @@ public interface PerformanceMonitoringService
 	/** Invoke the given {@code callable} as a span. Capture exception and re-throw it, wrapped as RuntimeException if required. */
 	<V> V monitorSpan(Callable<V> callable, SpanMetadata metadata);
 
-	default void monitorSpan(Runnable runnable, SpanMetadata metadata)
+	default void monitorSpan(final Runnable runnable, final SpanMetadata metadata)
 	{
 		monitorSpan(
 				() -> {
@@ -50,7 +50,7 @@ public interface PerformanceMonitoringService
 
 	@Value
 	@Builder
-	public static class SpanMetadata
+	class SpanMetadata
 	{
 		@NonNull
 		String name;
@@ -88,7 +88,7 @@ public interface PerformanceMonitoringService
 
 	@Value
 	@Builder
-	public static class TransactionMetadata
+	class TransactionMetadata
 	{
 		@NonNull
 		String name;
@@ -103,7 +103,7 @@ public interface PerformanceMonitoringService
 		Map<String, String> distributedTransactionHeaders;
 	}
 
-	public enum Type
+	enum Type
 	{
 		MODEL_INTERCEPTOR("modelInterceptor"),
 
@@ -119,16 +119,16 @@ public interface PerformanceMonitoringService
 
 		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint");
 
-		private Type(String code)
+		Type(final String code)
 		{
 			this.code = code;
 		}
 
 		@Getter
-		private String code;
+		private final String code;
 	}
 
-	public enum SubType
+	enum SubType
 	{
 		MODEL_CHANGE("modelChange"),
 
@@ -142,12 +142,12 @@ public interface PerformanceMonitoringService
 
 		EVENT_RECEIVE("event-receive");
 
-		private SubType(String code)
+		SubType(final String code)
 		{
 			this.code = code;
 		}
 
 		@Getter
-		private String code;
+		private final String code;
 	}
 }
