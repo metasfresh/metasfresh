@@ -107,6 +107,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<UserId> getDefaultContactId(BPartnerId bpartnerId);
 
+	Stream<UserId> getUserIdsForBpartnerLocation(BPartnerLocationId bpartnerId);
+
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, GLN gln);
@@ -123,7 +125,7 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
 
 	@Nullable
-	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(BPartnerLocationId bpartnerLocationId);
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);

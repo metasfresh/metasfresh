@@ -158,6 +158,7 @@ public class GetProductsCommand
 				.id(JsonMetasfreshId.of(productId.getRepoId()))
 				.externalId(productRecord.getExternalId())
 				.productNo(productRecord.getValue())
+				.productCategoryId(JsonMetasfreshId.of(productRecord.getM_Product_Category_ID()))
 				.manufacturerId(manufacturerId)
 				.manufacturerNumber(productRecord.getManufacturerArticleNumber())
 				.name(trls.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()).translate(adLanguage))
@@ -278,6 +279,7 @@ public class GetProductsCommand
 				.fixedPrice(albertaCompositeProductInfo.getFixedPrice())
 				.billableTherapies(albertaCompositeProductInfo.getBillableTherapyIds())
 				.packagingUnits(jsonPackagingUnitList)
+				.productGroupId(albertaCompositeProductInfo.getProductGroupId())
 				.build();
 	}
 

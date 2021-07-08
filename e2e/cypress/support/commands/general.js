@@ -36,6 +36,43 @@ import nextTabbable from './nextTabbable';
 import { humanReadableNow } from '../utils/utils';
 import { RewriteURL } from '../utils/constants';
 
+Cypress.Commands.add('loginViaForm', (username, password) => {
+  let user = username;
+  let pass = password;
+
+  if (!username || !password) {
+    user = config.username;
+    pass = config.password;
+  }
+  Cypress.log({
+    name: 'loginViaForm',
+    message: user + ' | ' + '****' /*pass*/,
+  });
+
+  cy.on('emit:reduxStore', (store) => {
+    Cypress.reduxStore = store;
+  });
+
+  cy.visit('/login').then(() => {
+    cy.location().then((location) => {
+      const WAIT_FOR_LOGIN = 5000;
+      if (location.pathname === '/login') {
+        cy.get(':nth-child(1) > .input-primary').type(user);
+        cy.get(':nth-child(2) > .input-primary').type(pass);
+        cy.get('.btn').click();
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            Cypress.Cookies.defaults({
+              preserve: ['SESSION', 'isLogged'],
+            });
+            resolve('Authenticated');
+          }, WAIT_FOR_LOGIN);
+        });
+      }
+    });
+  });
+});
+
 context('Reusable "login" custom command using API', function () {
   Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
     let user = username;
@@ -87,7 +124,7 @@ context('Reusable "login" custom command using API', function () {
 
     const auth = new Auth();
 
-    cy.on('emit:reduxStore', store => {
+    cy.on('emit:reduxStore', (store) => {
       Cypress.reduxStore = store;
     });
 
@@ -104,7 +141,7 @@ context('Reusable "login" custom command using API', function () {
           password: pass,
         },
       })
-      .then(response => {
+      .then((response) => {
         if (!response.isOkStatusCode) {
           if (response.body.message === 'User already logged in') {
             return cy.wrap(true);
@@ -144,8 +181,8 @@ Cypress.Commands.add('tab', { prevSubject: 'optional' }, ($subject, direction = 
   const thenable = $subject ? cy.wrap($subject, { log: false }) : cy.focused({ log: options.log !== false });
 
   thenable
-    .then($el => nextTabbable($el, direction))
-    .then($el => {
+    .then(($el) => nextTabbable($el, direction))
+    .then(($el) => {
       if (options.log !== false) {
         Cypress.log({
           $el,
@@ -165,8 +202,8 @@ Cypress.Commands.add('tab', { prevSubject: 'optional' }, ($subject, direction = 
  */
 Cypress.Commands.add('active', (options = {}) => {
   cy.document({ log: false })
-    .then(document => cy.wrap(document.activeElement, { log: false }))
-    .then($el => {
+    .then((document) => cy.wrap(document.activeElement, { log: false }))
+    .then(($el) => {
       if (options.log !== false) {
         Cypress.log({
           $el,
@@ -191,13 +228,9 @@ Cypress.Commands.add('active', (options = {}) => {
  *
  */
 Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
-  describe('Wait for page name visible in the header', function() {
+  describe('Wait for page name visible in the header', function () {
     if (pageName) {
-      cy.get('.header-breadcrumb')
-        .find('.header-item-container')
-        .should('not.have.length', 1)
-        .get('.header-item')
-        .should('contain', pageName);
+      cy.get('.header-breadcrumb').find('.header-item-container').should('not.have.length', 1).get('.header-item').should('contain', pageName);
     } else {
       const breadcrumbNumber = breadcrumbNr || 0;
 
@@ -213,7 +246,7 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
         .its('store')
         .invoke('getState')
         .its('menuHandler.breadcrumb')
-        .then(breadcrumbs => {
+        .then((breadcrumbs) => {
           cy.get('.header-item').should('contain', breadcrumbs[breadcrumbNumber].caption);
         });
     }
@@ -231,8 +264,8 @@ function visitTableWindow(windowId) {
 }
 
 function visitDetailWindow(windowId, recordId) {
-  describe('Open metasfresh single-record window and wait for layout and data', function() {
-    performDocumentViewAction(windowId, function() {
+  describe('Open metasfresh single-record window and wait for layout and data', function () {
+    performDocumentViewAction(windowId, function () {
       cy.visit(`/window/${windowId}/${recordId}`);
     });
   });
@@ -278,7 +311,7 @@ Cypress.Commands.add('visitWindow', (windowId, recordId) => {
 });
 
 Cypress.Commands.add('readAllNotifications', () => {
-  describe('Mark all current notifications as read in the API and reset counter', function() {
+  describe('Mark all current notifications as read in the API and reset counter', function () {
     return cy
       .request({
         method: 'PUT',
@@ -287,22 +320,20 @@ Cypress.Commands.add('readAllNotifications', () => {
         followRedirect: false,
       })
       .then(() => {
-        cy.window()
-          .its('store')
-          .invoke('dispatch', {
-            type: 'READ_ALL_NOTIFICATIONS',
-          });
+        cy.window().its('store').invoke('dispatch', {
+          type: 'READ_ALL_NOTIFICATIONS',
+        });
       });
   });
 });
 
-Cypress.Commands.add('expectNumberOfDOMNotifications', expectedNumber => {
+Cypress.Commands.add('expectNumberOfDOMNotifications', (expectedNumber) => {
   const timeout = { timeout: 15000 };
 
   return cy
     .get('.header-item-badge', timeout)
     .find('.notification-number', timeout)
-    .then(el => {
+    .then((el) => {
       if (el[0]) {
         const val = el[0].textContent;
 
@@ -315,22 +346,19 @@ Cypress.Commands.add('expectNumberOfDOMNotifications', expectedNumber => {
 /*
  * if `optionalText` is given it will look for it inside the notification element
  */
-Cypress.Commands.add('getNotificationModal', optionalText => {
+Cypress.Commands.add('getNotificationModal', (optionalText) => {
   const timeout = { timeout: 15000 };
 
   if (!optionalText) {
     return cy.get('.notification-handler', timeout).find('.notification-content', timeout);
   } else {
-    return cy
-      .get('.notification-handler', timeout)
-      .find('.notification-content', timeout)
-      .contains(optionalText);
+    return cy.get('.notification-handler', timeout).find('.notification-content', timeout).contains(optionalText);
   }
 });
 /**
  * Opens the inbox notification with the given text
  */
-Cypress.Commands.add('openInboxNotificationWithText', text => {
+Cypress.Commands.add('openInboxNotificationWithText', (text) => {
   const timeout = { timeout: 20000 };
   cy.get('.header-item-badge.icon-lg .notification-number', timeout).click();
   cy.get('.inbox-item-unread .inbox-item-title', timeout)
@@ -383,7 +411,7 @@ Cypress.Commands.add('openInboxNotificationWithText', text => {
 // may be useful to wait for the response to a particular patch where a particular field value was set
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
 Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue, expectEmptyRequest = false) => {
-  cy.wait(alias).then(function(xhr) {
+  cy.wait(alias).then(function (xhr) {
     const responseBody = xhr.responseBody;
 
     if (!responseBody.documents) {
@@ -437,7 +465,7 @@ Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue,
 });
 
 Cypress.Commands.add('getCurrentWindowRecordId', () => {
-  return cy.url().then(ulrr => {
+  return cy.url().then((ulrr) => {
     // noinspection UnnecessaryLocalVariableJS
     const currentRecordId = ulrr.split('/').pop();
     return currentRecordId;
@@ -446,7 +474,7 @@ Cypress.Commands.add('getCurrentWindowRecordId', () => {
 
 Cypress.Commands.add('getSalesInvoiceTotalAmount', () => {
   cy.waitForSaveIndicator();
-  return cy.get('.header-breadcrumb-sitename').then(function(si) {
+  return cy.get('.header-breadcrumb-sitename').then(function (si) {
     // noinspection UnnecessaryLocalVariableJS
     const newTotalAmount = parseFloat(si.html().split(' ')[2]); // the format is "DOC_NO MM/DD/YYYY total"
     return newTotalAmount;
@@ -467,7 +495,7 @@ Cypress.Commands.add('waitForSaveIndicator', (expectIndicator = false) => {
   cy.get('.indicator-saved', timeout).should('exist');
 });
 
-Cypress.Commands.add('selectNotificationContaining', expectedValue => {
+Cypress.Commands.add('selectNotificationContaining', (expectedValue) => {
   cy.get('.header-item-badge.icon-lg i').click(); // notification icon
   return cy
     .get('.inbox-item-title') // search for text
@@ -483,24 +511,24 @@ Cypress.Commands.add('openNotificationContaining', (expectedValue, destinationWi
   cy.waitForSaveIndicator();
 });
 
-Cypress.Commands.add('selectLeftTable', function(isModal = false) {
+Cypress.Commands.add('selectLeftTable', function (isModal = false) {
   cy.log('Select left table');
   cy.waitForSaveIndicator();
 
   const parentWrapperPath = isModal ? '.modal-content-wrapper' : '.document-lists-wrapper';
 
-  cy.get(`${parentWrapperPath} .document-list-has-included`).within(el => {
+  cy.get(`${parentWrapperPath} .document-list-has-included`).within((el) => {
     return cy.wrap(el);
   });
 });
 
-Cypress.Commands.add('selectRightTable', function(isModal = false) {
+Cypress.Commands.add('selectRightTable', function (isModal = false) {
   cy.log('Select right table');
   cy.waitForSaveIndicator();
 
   const parentWrapperPath = isModal ? '.modal-content-wrapper' : '.document-lists-wrapper';
 
-  cy.get(`${parentWrapperPath} .document-list-is-included`).within(el => {
+  cy.get(`${parentWrapperPath} .document-list-is-included`).within((el) => {
     return cy.wrap(el);
   });
 });

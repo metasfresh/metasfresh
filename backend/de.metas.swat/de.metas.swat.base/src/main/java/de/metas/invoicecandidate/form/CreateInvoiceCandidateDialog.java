@@ -452,7 +452,7 @@ public class CreateInvoiceCandidateDialog
 					OrgId.ofRepoId(product.getAD_Org_ID()), // orgId
 					(WarehouseId)null,
 					locationField.getValueAsInt(), // shipC_BPartner_Location_ID
-					soTrx.toBoolean());
+					soTrx);
 		}
 		catch (final ProductPriceNotFoundException ppnfe)
 		{

@@ -100,10 +100,10 @@ public interface IProductDAO extends ISingletonService
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
+	
+	void clearIndividualMasterDataFromProduct(ProductId productId);
 
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
-
-	void clearIndividualMasterDataFromProduct(ProductId productId);
 
 	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
 			@NonNull GroupCategoryId groupCategoryId,

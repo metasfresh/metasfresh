@@ -48,6 +48,13 @@ before(function () {
     cy.log('logged in successfully');
   });
 
+  // const autoLogin = function () {
+  //   return cy.loginViaForm();
+  // };
+  // autoLogin().then((msg) => {
+  //   cy.log(msg);
+  // });
+
   Cypress.Cookies.defaults({
     preserve: ['SESSION', 'isLogged'],
   });

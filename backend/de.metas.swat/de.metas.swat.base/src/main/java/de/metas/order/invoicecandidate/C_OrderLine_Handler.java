@@ -32,6 +32,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.lang.SOTrx;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -233,7 +234,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
 				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
-				order.isSOTrx());
+				SOTrx.ofBoolean(order.isSOTrx()));
 		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 
 		//DocType
