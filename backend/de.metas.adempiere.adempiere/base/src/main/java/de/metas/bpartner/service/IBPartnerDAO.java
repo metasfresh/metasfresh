@@ -107,6 +107,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<UserId> getDefaultContactId(BPartnerId bpartnerId);
 
+	Stream<UserId> getUserIdsForBpartnerLocation(BPartnerLocationId bpartnerId);
+
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, GLN gln);

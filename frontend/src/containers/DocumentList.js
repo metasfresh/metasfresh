@@ -764,9 +764,7 @@ class DocumentListContainer extends Component {
       includedView &&
       includedView.windowId &&
       includedView.viewId;
-    const triggerSpinner = layout.supportAttributes
-      ? layoutPending
-      : layoutPending || pending;
+    const triggerSpinner = layoutPending || pending;
 
     return (
       <DocumentList
