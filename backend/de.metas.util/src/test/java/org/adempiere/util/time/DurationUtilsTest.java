@@ -42,6 +42,13 @@ public class DurationUtilsTest
 	}
 
 	@Test
+	public void testNegative()
+	{
+		Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(-0.5), ChronoUnit.HOURS));		
+	}
+	
+	
+	@Test
 	public void testRoundingHalfDay()
 	{
 		final Duration duration = DurationUtils.toWorkDuration(BigDecimal.valueOf(0.5), ChronoUnit.DAYS);
