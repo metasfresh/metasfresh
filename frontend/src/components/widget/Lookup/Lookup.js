@@ -614,12 +614,9 @@ Lookup.propTypes = {
   scannerElement: PropTypes.any,
   advSearchCaption: PropTypes.string,
   advSearchWindowId: PropTypes.string,
-<<<<<<<<< Temporary merge branch 1
+  forwardedRef: PropTypes.any,
   isFilterActive: PropTypes.bool,
   updateItems: PropTypes.func,
-=========
-  forwardedRef: PropTypes.any,
->>>>>>>>> Temporary merge branch 2
 };
 
 export default withForwardedRef(BarcodeScanner(onClickOutside(Lookup)));

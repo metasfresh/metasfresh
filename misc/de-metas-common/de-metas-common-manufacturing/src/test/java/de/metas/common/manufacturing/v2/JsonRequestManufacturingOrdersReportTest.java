@@ -26,6 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 
+import de.metas.common.JsonTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -43,11 +44,7 @@ public class JsonRequestManufacturingOrdersReportTest
 	@BeforeEach
 	public void beforeEach()
 	{
-		jsonObjectMapper = new ObjectMapper()
-				.findAndRegisterModules()
-				.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-				.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
-				.enable(MapperFeature.USE_ANNOTATIONS);
+		jsonObjectMapper = JsonTestHelper.newJsonObjectMapper();
 	}
 
 	@Test

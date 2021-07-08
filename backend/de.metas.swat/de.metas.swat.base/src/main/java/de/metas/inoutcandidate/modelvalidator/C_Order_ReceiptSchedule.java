@@ -215,11 +215,11 @@ public class C_Order_ReceiptSchedule
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
-		for (I_C_OrderLine orderLine : orderLines)
+		for (final I_C_OrderLine orderLine : orderLines)
 		{
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleDAO.retrieveForRecord(orderLine);
 
-			if (receiptScheduleBL.isClosed(receiptSchedule))
+			if (receiptSchedule == null || receiptScheduleBL.isClosed(receiptSchedule))
 			{
 				continue;
 			}

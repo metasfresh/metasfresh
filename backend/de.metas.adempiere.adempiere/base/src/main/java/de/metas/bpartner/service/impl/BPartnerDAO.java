@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.service.impl;
 
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -1721,7 +1722,8 @@ public class BPartnerDAO implements IBPartnerDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(record -> toBPartnerPrintFormat(record))
+				.map(BPartnerDAO::toBPartnerPrintFormat)
+				.filter(Predicates.notNull())
 				.collect(ImmutableList.toImmutableList());
 
 		return BPartnerPrintFormatMap.ofList(printFormats);
@@ -1729,6 +1731,12 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	private static BPartnerPrintFormat toBPartnerPrintFormat(final I_C_BP_PrintFormat record)
 	{
+		if (record.getC_DocType_ID() <= 0 || record.getAD_PrintFormat_ID() <= 0)
+		{
+			logger.debug("getPrintFormats - C_BP_PrintFormat_ID={} has C_DocType_ID={} and AD_PrintFormat_ID={}; -> skipping it", 
+						 record.getC_BP_PrintFormat_ID(), record.getC_DocType_ID(), record.getAD_PrintFormat_ID());
+			return null;
+		}
 		return BPartnerPrintFormat.builder()
 				.docTypeId(DocTypeId.ofRepoId(record.getC_DocType_ID()))
 				.adTableId(AdTableId.ofRepoIdOrNull(record.getAD_Table_ID()))

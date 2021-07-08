@@ -30,6 +30,7 @@ function addBarcodeScanner(WrappedComponent) {
     static propTypes = {
       layout: PropTypes.object,
       closeOverlay: PropTypes.any,
+      postDetectionExec: PropTypes.func,
     };
 
     constructor(props) {
@@ -67,6 +68,11 @@ function addBarcodeScanner(WrappedComponent) {
      * @prop {*} result - either resulting code, or null for reset
      */
     onBarcodeDetected = (result) => {
+      const { postDetectionExec } = this.props;
+
+      // runs the function from the props after the QR is detected
+      postDetectionExec && postDetectionExec(result);
+
       this.setState({
         codeSelected: result || null,
         scanning: false,

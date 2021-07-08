@@ -56,6 +56,7 @@ public class ReceiptScheduleAuditRepository implements APIExportAuditRepository<
 		final StagingData stagingData = retrieveStagingData(transactionId);
 		final APIExportAuditBuilder<ReceiptScheduleExportAuditItem> result = APIExportAudit
 				.<ReceiptScheduleExportAuditItem>builder()
+				.orgId(OrgId.ANY) // avoid NPE; TODO: make a change similar to I_M_ShipmentSchedule_ExportAudit_Item.java	
 				.transactionId(transactionId);
 		for (final I_M_ReceiptSchedule_ExportAudit record : stagingData.getRecords())
 		{

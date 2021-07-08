@@ -1,26 +1,20 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_RelationType
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_AD_RelationType 
 {
 
-    /** TableName=AD_RelationType */
-    public static final String Table_Name = "AD_RelationType";
+	String Table_Name = "AD_RelationType";
 
-    /** AD_Table_ID=53246 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=53246 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
-
-    /** Load Meta Data */
 
 	/**
 	 * Get Client.
@@ -30,43 +24,31 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Client>(I_AD_RelationType.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Org>(I_AD_RelationType.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Source Reference.
@@ -76,7 +58,7 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Reference_Source_ID (int AD_Reference_Source_ID);
+	void setAD_Reference_Source_ID (int AD_Reference_Source_ID);
 
 	/**
 	 * Get Source Reference.
@@ -86,16 +68,14 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Reference_Source_ID();
+	int getAD_Reference_Source_ID();
 
-	public org.compiere.model.I_AD_Reference getAD_Reference_Source();
+	@Nullable org.compiere.model.I_AD_Reference getAD_Reference_Source();
 
-	public void setAD_Reference_Source(org.compiere.model.I_AD_Reference AD_Reference_Source);
+	void setAD_Reference_Source(@Nullable org.compiere.model.I_AD_Reference AD_Reference_Source);
 
-    /** Column definition for AD_Reference_Source_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Source_ID = new org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Reference>(I_AD_RelationType.class, "AD_Reference_Source_ID", org.compiere.model.I_AD_Reference.class);
-    /** Column name AD_Reference_Source_ID */
-    public static final String COLUMNNAME_AD_Reference_Source_ID = "AD_Reference_Source_ID";
+	ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Source_ID = new ModelColumn<>(I_AD_RelationType.class, "AD_Reference_Source_ID", org.compiere.model.I_AD_Reference.class);
+	String COLUMNNAME_AD_Reference_Source_ID = "AD_Reference_Source_ID";
 
 	/**
 	 * Set Target Reference.
@@ -105,7 +85,7 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Reference_Target_ID (int AD_Reference_Target_ID);
+	void setAD_Reference_Target_ID (int AD_Reference_Target_ID);
 
 	/**
 	 * Get Target Reference.
@@ -115,16 +95,14 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Reference_Target_ID();
+	int getAD_Reference_Target_ID();
 
-	public org.compiere.model.I_AD_Reference getAD_Reference_Target();
+	@Nullable org.compiere.model.I_AD_Reference getAD_Reference_Target();
 
-	public void setAD_Reference_Target(org.compiere.model.I_AD_Reference AD_Reference_Target);
+	void setAD_Reference_Target(@Nullable org.compiere.model.I_AD_Reference AD_Reference_Target);
 
-    /** Column definition for AD_Reference_Target_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Target_ID = new org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Reference>(I_AD_RelationType.class, "AD_Reference_Target_ID", org.compiere.model.I_AD_Reference.class);
-    /** Column name AD_Reference_Target_ID */
-    public static final String COLUMNNAME_AD_Reference_Target_ID = "AD_Reference_Target_ID";
+	ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Target_ID = new ModelColumn<>(I_AD_RelationType.class, "AD_Reference_Target_ID", org.compiere.model.I_AD_Reference.class);
+	String COLUMNNAME_AD_Reference_Target_ID = "AD_Reference_Target_ID";
 
 	/**
 	 * Set Relation Type.
@@ -133,7 +111,7 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_RelationType_ID (int AD_RelationType_ID);
+	void setAD_RelationType_ID (int AD_RelationType_ID);
 
 	/**
 	 * Get Relation Type.
@@ -142,12 +120,10 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_RelationType_ID();
+	int getAD_RelationType_ID();
 
-    /** Column definition for AD_RelationType_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_AD_RelationType_ID = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "AD_RelationType_ID", null);
-    /** Column name AD_RelationType_ID */
-    public static final String COLUMNNAME_AD_RelationType_ID = "AD_RelationType_ID";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_AD_RelationType_ID = new ModelColumn<>(I_AD_RelationType.class, "AD_RelationType_ID", null);
+	String COLUMNNAME_AD_RelationType_ID = "AD_RelationType_ID";
 
 	/**
 	 * Get Created.
@@ -157,12 +133,10 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_Created = new ModelColumn<>(I_AD_RelationType.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -172,35 +146,30 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_User>(I_AD_RelationType.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_Description = new ModelColumn<>(I_AD_RelationType.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Entitäts-Art.
@@ -211,7 +180,7 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEntityType (java.lang.String EntityType);
+	void setEntityType (java.lang.String EntityType);
 
 	/**
 	 * Get Entitäts-Art.
@@ -222,37 +191,33 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEntityType();
+	java.lang.String getEntityType();
 
-    /** Column definition for EntityType */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "EntityType", null);
-    /** Column name EntityType */
-    public static final String COLUMNNAME_EntityType = "EntityType";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_EntityType = new ModelColumn<>(I_AD_RelationType.class, "EntityType", null);
+	String COLUMNNAME_EntityType = "EntityType";
 
 	/**
-	 * Set Interner Name.
+	 * Set Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setInternalName (java.lang.String InternalName);
+	void setInternalName (@Nullable java.lang.String InternalName);
 
 	/**
-	 * Get Interner Name.
+	 * Get Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getInternalName();
+	@Nullable java.lang.String getInternalName();
 
-    /** Column definition for InternalName */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "InternalName", null);
-    /** Column name InternalName */
-    public static final String COLUMNNAME_InternalName = "InternalName";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_InternalName = new ModelColumn<>(I_AD_RelationType.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
 
 	/**
 	 * Set Active.
@@ -262,7 +227,7 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -272,85 +237,52 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_RelationType.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Directed.
-	 * Tells whether one "sees" the other end of the relation from each end or just from the source.
+	 * Set IsReferenceTarget.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDirected (boolean IsDirected);
+	void setIsTableRecordIdTarget (boolean IsTableRecordIdTarget);
 
 	/**
-	 * Get Directed.
-	 * Tells whether one "sees" the other end of the relation from each end or just from the source.
+	 * Get IsReferenceTarget.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDirected();
+	boolean isTableRecordIdTarget();
 
-    /** Column definition for IsDirected */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_IsDirected = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "IsDirected", null);
-    /** Column name IsDirected */
-    public static final String COLUMNNAME_IsDirected = "IsDirected";
-
-	/**
-	 * Set IsTableRecordIdTarget .
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsTableRecordIdTarget (boolean IsTableRecordIdTarget);
-
-	/**
-	 * Get IsTableRecordIdTarget .
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isTableRecordIdTarget();
-
-    /** Column definition for IsTableRecordIdTarget */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_IsTableRecordIdTarget = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "IsTableRecordIdTarget", null);
-    /** Column name IsTableRecordIdTarget */
-    public static final String COLUMNNAME_IsTableRecordIdTarget = "IsTableRecordIdTarget";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_IsTableRecordIdTarget = new ModelColumn<>(I_AD_RelationType.class, "IsTableRecordIdTarget", null);
+	String COLUMNNAME_IsTableRecordIdTarget = "IsTableRecordIdTarget";
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_Name = new ModelColumn<>(I_AD_RelationType.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Source Role.
@@ -359,7 +291,7 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRole_Source (java.lang.String Role_Source);
+	void setRole_Source (@Nullable java.lang.String Role_Source);
 
 	/**
 	 * Get Source Role.
@@ -368,12 +300,10 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRole_Source();
+	@Nullable java.lang.String getRole_Source();
 
-    /** Column definition for Role_Source */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_Role_Source = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "Role_Source", null);
-    /** Column name Role_Source */
-    public static final String COLUMNNAME_Role_Source = "Role_Source";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_Role_Source = new ModelColumn<>(I_AD_RelationType.class, "Role_Source", null);
+	String COLUMNNAME_Role_Source = "Role_Source";
 
 	/**
 	 * Set Target Role.
@@ -382,7 +312,7 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRole_Target (java.lang.String Role_Target);
+	void setRole_Target (@Nullable java.lang.String Role_Target);
 
 	/**
 	 * Get Target Role.
@@ -391,12 +321,10 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRole_Target();
+	@Nullable java.lang.String getRole_Target();
 
-    /** Column definition for Role_Target */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_Role_Target = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "Role_Target", null);
-    /** Column name Role_Target */
-    public static final String COLUMNNAME_Role_Target = "Role_Target";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_Role_Target = new ModelColumn<>(I_AD_RelationType.class, "Role_Target", null);
+	String COLUMNNAME_Role_Target = "Role_Target";
 
 	/**
 	 * Get Updated.
@@ -406,12 +334,10 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_RelationType, Object>(I_AD_RelationType.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_RelationType, Object> COLUMN_Updated = new ModelColumn<>(I_AD_RelationType.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -421,10 +347,7 @@ public interface I_AD_RelationType
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_RelationType, org.compiere.model.I_AD_User>(I_AD_RelationType.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

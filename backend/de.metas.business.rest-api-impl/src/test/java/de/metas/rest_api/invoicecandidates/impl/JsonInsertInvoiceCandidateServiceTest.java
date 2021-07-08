@@ -49,7 +49,9 @@ import java.util.List;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -149,6 +151,7 @@ class JsonInsertInvoiceCandidateServiceTest
 		taxRecord.setC_TaxCategory_ID(pricingTestHelper.getTaxCategoryId().getRepoId());
 		taxRecord.setC_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
 		taxRecord.setTo_Country_ID(pricingTestHelper.getDefaultPriceList().getC_Country_ID());
+		taxRecord.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
 		taxRecord.setSOPOType(X_C_Tax.SOPOTYPE_Both);
 		taxRecord.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
 		saveRecord(taxRecord);

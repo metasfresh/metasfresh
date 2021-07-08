@@ -2503,6 +2503,16 @@ public final class Env
 	}
 
 	/**
+	 * Gets Login/System date using the current context
+	 *
+	 * @return login/system date; never return null
+	 */
+	public static Timestamp getDate()
+	{
+		return getContextAsDate(getCtx(), WINDOW_MAIN, CTXNAME_Date);
+	}
+
+	/**
 	 * Gets Login/System date
 	 *
 	 * @return login/system date; never return null

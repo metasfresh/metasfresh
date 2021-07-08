@@ -41,6 +41,7 @@ import de.metas.document.interceptor.C_DocType;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.lang.SOTrx;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -186,7 +187,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 						OrgId.ofRepoId(order.getAD_Org_ID()),
 						WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
 						order.getC_BPartner_Location_ID(),
-						order.isSOTrx()))
+						SOTrx.ofBoolean(order.isSOTrx())))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 

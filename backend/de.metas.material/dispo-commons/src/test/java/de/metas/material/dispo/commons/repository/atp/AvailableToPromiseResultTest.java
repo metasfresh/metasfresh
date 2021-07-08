@@ -491,7 +491,7 @@ public class AvailableToPromiseResultTest
 			final ProductId testProductId = ProductId.ofRepoId(1);
 
 			//the attributes key of the group
-			final AttributesKey emptyAttributesKey = AttributesKey.ofString("1=");
+			final AttributesKey emptyAttributesKey = AttributesKey.ALL;
 
 			final AvailableToPromiseResultBucket testBucket = AvailableToPromiseResultBucket.builder()
 				.bpartner(BPartnerClassifier.any())
@@ -533,7 +533,7 @@ public class AvailableToPromiseResultTest
 			assertThat(groups).hasSize(1);
 
 			final AvailableToPromiseResultGroup group = groups.get(0);
-			assertThat(group.getProductId()).isEqualTo(testProductId);
+			assertThat(group.getProductId()).isEqualTo(testProductId.getRepoId());
 			assertThat(group.getQty()).isEqualByComparingTo("20");
 			assertThat(group.getStorageAttributesKey()).isEqualTo(emptyAttributesKey);
 		}

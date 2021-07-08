@@ -71,12 +71,12 @@ public class AvailableForSaleResultTest
 		assertThat(groups).hasSize(2);
 
 		assertThat(groups.get(0).getProductId().getRepoId()).isEqualTo(100001);
-		assertThat(groups.get(0).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("1"));
+		assertThat(groups.get(0).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("1").getAsString());
 		assertThat(groups.get(0).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("2");
 		assertThat(groups.get(0).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("1");
 
 		assertThat(groups.get(1).getProductId().getRepoId()).isEqualTo(100001);
-		assertThat(groups.get(1).getStorageAttributesKey()).isEqualTo(AttributesKey.ofString("2"));
+		assertThat(groups.get(1).getStorageAttributesKey().getAsString()).isEqualTo(AttributesKey.ofString("2").getAsString());
 		assertThat(groups.get(1).getQuantities().getQtyOnHandStock()).isEqualByComparingTo("4");
 		assertThat(groups.get(1).getQuantities().getQtyToBeShipped()).isEqualByComparingTo("2");
 	}
@@ -106,14 +106,14 @@ public class AvailableForSaleResultTest
 				.qtyToBeShipped(BigDecimal.valueOf(1))
 				.queryNo(0);
 
-		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1=")).build());
+		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1=1")).build());
 		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("1=11" + delim + "2")).build());
 		resultBuilder.addQtyToAllMatchingGroups(requestBuilder.storageAttributesKey(AttributesKey.ofString("2")).build());
 
 		final List<AvailableForSalesLookupBucketResult> groups = resultBuilder.build().getAvailableForSalesResults();
 		assertThat(groups).hasSize(3);
 		assertThat(groups).extracting("storageAttributesKey", "quantities.qtyOnHandStock", "quantities.qtyToBeShipped")
-				.containsExactlyInAnyOrder(tuple(AttributesKey.ofString("1="), TWO, BigDecimal.ONE),
+				.containsExactlyInAnyOrder(tuple(AttributesKey.ofString("1=1"), TWO, BigDecimal.ONE),
 						tuple(AttributesKey.ofString("1=11"), TWO, BigDecimal.ONE),
 						tuple(AttributesKey.ofString("2"), BigDecimal.valueOf(4), TWO));
 	}
