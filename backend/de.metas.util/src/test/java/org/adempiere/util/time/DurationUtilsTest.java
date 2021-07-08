@@ -68,5 +68,10 @@ public class DurationUtilsTest
 		Assertions.assertThatExceptionOfType(RuntimeException.class).isThrownBy(() -> DurationUtils.toWorkDuration(BigDecimal.valueOf(0.0001), ChronoUnit.SECONDS));
 	}
 
-
+	@Test
+	public void testRoundingUpHalfHour()
+	{
+		final Duration duration = DurationUtils.toWorkDurationRoundUp(BigDecimal.valueOf(0.5), ChronoUnit.HOURS);
+		Assertions.assertThat(duration.getSeconds()).isCloseTo((60 * 60), ACCURACY_PERCENTAGE);
+	}
 }

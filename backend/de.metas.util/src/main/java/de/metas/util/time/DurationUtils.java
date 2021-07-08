@@ -40,12 +40,7 @@ public class DurationUtils
 {
 	private static final List<TemporalUnit> supportedTemporalUnits = ImmutableList.of(ChronoUnit.YEARS, ChronoUnit.MONTHS, ChronoUnit.DAYS, ChronoUnit.HOURS, ChronoUnit.MINUTES, ChronoUnit.SECONDS, ChronoUnit.NANOS);
 
-	public static Duration toWorkDuration(@NonNull final BigDecimal durationBD, @NonNull final TemporalUnit unit)
-	{
-		return toWorkDuration(durationBD, unit, 4, RoundingMode.UNNECESSARY);
-	}
-
-	public static Duration toWorkDuration(final @NonNull BigDecimal durationBD, final @NonNull TemporalUnit unit, final int precision, final RoundingMode roundingMode)
+	public static Duration toWorkDuration(final @NonNull BigDecimal durationBD, final @NonNull TemporalUnit unit)
 	{
 		BigDecimal duration = durationBD;
 		TemporalUnit currentUnit = unit;
@@ -54,10 +49,9 @@ public class DurationUtils
 		{
 			try
 			{
-				durationLong = duration.setScale(precision, roundingMode).longValueExact();
+				durationLong = duration.longValueExact();
 			}
-			catch
-			(final ArithmeticException ae)
+			catch (final ArithmeticException ae)
 			{
 				duration = getEquivalentInSmallerTemporalUnit(duration, currentUnit);
 				currentUnit = supportedTemporalUnits.get(supportedTemporalUnits.indexOf(currentUnit) + 1);
@@ -69,7 +63,7 @@ public class DurationUtils
 
 	public static Duration toWorkDurationRoundUp(@NonNull final BigDecimal durationBD, @NonNull final TemporalUnit unit)
 	{
-		return toWorkDuration(durationBD, unit, 0, RoundingMode.UP);
+		return toWorkDuration(durationBD.setScale(0, RoundingMode.UP), unit);
 	}
 
 	public static BigDecimal toBigDecimal(@NonNull final Duration duration, @NonNull final TemporalUnit unit)
