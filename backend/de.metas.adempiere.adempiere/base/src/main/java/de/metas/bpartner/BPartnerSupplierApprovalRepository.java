@@ -76,31 +76,31 @@ public class BPartnerSupplierApprovalRepository
 
 	}
 
-	public ImmutableList<I_C_BP_SupplierApproval> retrieveBPSupplierApprovalsAboutToExpire()
+	public ImmutableList<I_C_BP_SupplierApproval> retrieveBPSupplierApprovalsAboutToExpire(final int maxMonthsUntilExpirationDate)
 	{
 		final LocalDate today = SystemTime.asLocalDate();
-		final LocalDate threeMonthsFromNow = today.plusMonths(3);
+		final LocalDate maxExpirationDate = today.plusMonths(maxMonthsUntilExpirationDate);
 
 		final IQueryFilter<I_C_BP_SupplierApproval> filterThreeYears =
 				queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)
 						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval, SupplierApproval.ThreeYears)
 						.addCompareFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval_Date,
 										  CompareQueryFilter.Operator.LESS_OR_EQUAL,
-										  threeMonthsFromNow.minusYears(3));
+										  maxExpirationDate.minusYears(3));
 
 		final IQueryFilter<I_C_BP_SupplierApproval> filterTwoYears =
 				queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)
 						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval, SupplierApproval.TwoYears)
 						.addCompareFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval_Date,
 										  CompareQueryFilter.Operator.LESS_OR_EQUAL,
-										  threeMonthsFromNow.minusYears(2));
+										  maxExpirationDate.minusYears(2));
 
 		final IQueryFilter<I_C_BP_SupplierApproval> filterOneYear =
 				queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)
 						.addEqualsFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval, SupplierApproval.OneYear)
 						.addCompareFilter(I_C_BP_SupplierApproval.COLUMNNAME_SupplierApproval_Date,
 										  CompareQueryFilter.Operator.LESS_OR_EQUAL,
-										  threeMonthsFromNow.minusYears(1));
+										  maxExpirationDate.minusYears(1));
 
 		final IQueryFilter<I_C_BP_SupplierApproval> supplierApprovalOptionFilter
 				= queryBL.createCompositeQueryFilter(I_C_BP_SupplierApproval.class)

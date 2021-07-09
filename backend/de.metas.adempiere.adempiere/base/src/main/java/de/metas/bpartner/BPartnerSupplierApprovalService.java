@@ -66,6 +66,8 @@ public class BPartnerSupplierApprovalService
 
 	private static final String SYS_CONFIG_C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID = "C_BP_SupplierApproval_Expiration_Notify_UserGroup_ID";
 
+	private static final int MAX_MONTHS_UNTIL_EXPIRATION_DATE = 3;
+
 	public BPartnerSupplierApprovalService(@NonNull final BPartnerSupplierApprovalRepository repo, final UserGroupRepository userGroupRepository)
 	{
 		this.repo = repo;
@@ -172,7 +174,7 @@ public class BPartnerSupplierApprovalService
 
 	public void notifyUserGroupAboutSupplierApprovalExpiration()
 	{
-		final ImmutableList<I_C_BP_SupplierApproval> bpSupplierApprovals = repo.retrieveBPSupplierApprovalsAboutToExpire();
+		final ImmutableList<I_C_BP_SupplierApproval> bpSupplierApprovals = repo.retrieveBPSupplierApprovalsAboutToExpire(MAX_MONTHS_UNTIL_EXPIRATION_DATE);
 
 		for (final I_C_BP_SupplierApproval supplierApprovalRecord : bpSupplierApprovals)
 		{
