@@ -42,7 +42,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(orderLineDetailRepository)); // FRESH-348
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(orderLineDetailRepository, bPartnerSupplierApprovalService)); // FRESH-348
 		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository, bPartnerSupplierApprovalService));
 
 		setupElasticsearchIndexing();
