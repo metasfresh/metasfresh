@@ -31,7 +31,7 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVListLineItemExte
 import at.erpel.schemas._1p0.documents.extensions.edifact.TaxType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.VATType;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import lombok.Getter;
 import lombok.NonNull;
@@ -51,6 +51,9 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_19;
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_67;
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_90;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOCUMENT_ZONE_ID;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOC_PREFIX;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.GLN_PREFIX;
@@ -91,14 +94,14 @@ public class JsonRemittanceAdviceLineProducer
 
 					.dateInvoiced(getDateInvoiced().orElse(null))
 
-					.remittedAmount(asBigDecimal(monetaryAmounts.getRemittedAmount())
+					.remittedAmount(asBigDecimal(monetaryAmounts.getRemittedAmount(), true)
 							.orElseThrow(() -> new RuntimeException("RemittedAmount not found on line!")))
 
-					.invoiceGrossAmount(asBigDecimal(monetaryAmounts.getInvoiceGrossAmount()).orElse(null))
+					.invoiceGrossAmount(asBigDecimal(monetaryAmounts.getInvoiceGrossAmount(), true).orElse(null))
 
-					.paymentDiscountAmount(asBigDecimal(monetaryAmounts.getPaymentDiscountAmount()).orElse(null))
+					.paymentDiscountAmount(getPaymentDiscountAmount(monetaryAmounts))
 
-					.serviceFeeAmount(asBigDecimal(monetaryAmounts.getCommissionAmount()).orElse(null))
+					.serviceFeeAmount(getServiceFeeAmount(monetaryAmounts))
 
 					.serviceFeeVatRate(getServiceFeeVATRate(monetaryAmounts).orElse(null))
 					.build();
@@ -108,6 +111,64 @@ public class JsonRemittanceAdviceLineProducer
 			logger.log(Level.SEVERE, "Unexpected exception while building JsonRemittanceAdviceLine for line: " + remadvLineItemExtension, e);
 			throw e;
 		}
+	}
+
+	@Nullable
+	private BigDecimal getServiceFeeAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
+	{
+		final BigDecimal adjustmentServiceFeeAmountTerm1 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_67).orElse(null);
+		final BigDecimal adjustmentServiceFeeAmountTerm2 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_90).orElse(null);
+
+		if( adjustmentServiceFeeAmountTerm1 == null)
+		{
+			return adjustmentServiceFeeAmountTerm2;
+		}
+
+		if (adjustmentServiceFeeAmountTerm2 == null)
+		{
+			return adjustmentServiceFeeAmountTerm1;
+		}
+
+		return adjustmentServiceFeeAmountTerm1.add(adjustmentServiceFeeAmountTerm2);
+	}
+
+	@Nullable
+	private BigDecimal getPaymentDiscountAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
+	{
+		final BigDecimal paymentDiscountAmount = asBigDecimal(monetaryAmounts.getPaymentDiscountAmount(),true).orElse(null);
+		final BigDecimal adjustmentDiscountAmount = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_19).orElse(null);
+
+		if( adjustmentDiscountAmount == null)
+		{
+			return paymentDiscountAmount;
+		}
+
+		if (paymentDiscountAmount == null)
+		{
+			return adjustmentDiscountAmount;
+		}
+
+		return paymentDiscountAmount.add(adjustmentDiscountAmount.abs());
+	}
+
+	@NonNull
+	private Optional<BigDecimal> getAdjustmentAmount(
+			@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts,
+			@NonNull final String adjustmentCode)
+	{
+
+		final AdjustmentType adjustmentType = monetaryAmounts
+				.getAdjustment().stream()
+				.filter(adjustment -> adjustment.getReasonCode().equals(adjustmentCode))
+				.findFirst()
+				.orElse(null);
+
+		if (adjustmentType == null)
+		{
+			return Optional.empty();
+		}
+
+		return asBigDecimal(adjustmentType.getAdjustmentMonetaryAmount(), false);
 	}
 
 	@NonNull
@@ -191,14 +252,14 @@ public class JsonRemittanceAdviceLineProducer
 	}
 
 	@NonNull
-	private Optional<BigDecimal> asBigDecimal(@Nullable final MonetaryAmountType monetaryAmountType)
+	private Optional<BigDecimal> asBigDecimal(@Nullable final MonetaryAmountType monetaryAmountType, final boolean abs)
 	{
 		if (monetaryAmountType == null)
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(monetaryAmountType.getAmount().abs());
+		return abs ? Optional.of(monetaryAmountType.getAmount().abs()) : Optional.of(monetaryAmountType.getAmount());
 	}
 
 	@VisibleForTesting
@@ -210,8 +271,11 @@ public class JsonRemittanceAdviceLineProducer
 			return Optional.empty();
 		}
 
-		final ImmutableSet<BigDecimal> vatTaxRateSet = monetaryAmounts.getAdjustment()
+		final List<String> targetAdjustmentCodes = Arrays.asList(ADJUSTMENT_CODE_67, ADJUSTMENT_CODE_90);
+
+		final ImmutableList<BigDecimal> vatTaxRateList = monetaryAmounts.getAdjustment()
 				.stream()
+				.filter(adjustmentType -> targetAdjustmentCodes.contains(adjustmentType.getReasonCode()))
 				.map(AdjustmentType::getTax)
 				.filter(Objects::nonNull)
 				.map(TaxType::getVAT)
@@ -220,20 +284,20 @@ public class JsonRemittanceAdviceLineProducer
 				.flatMap(List::stream)
 				.map(ItemType::getTaxRate)
 				.filter(type -> !TAX_RATES_TO_IGNORE.contains(type.toString()))
-				.collect(ImmutableSet.toImmutableSet());
+				.collect(ImmutableList.toImmutableList());
 
-		if (vatTaxRateSet.size() > 1)
+		if (vatTaxRateList.stream().distinct().count() > 1)
 		{
-			throw new RuntimeException("Multiple vatTax rates found on the line! TaxRates: " + vatTaxRateSet);
+			throw new RuntimeException("Multiple vatTax rates found on the line! TaxRates: " + vatTaxRateList);
 		}
-		else if (vatTaxRateSet.isEmpty())
+		else if (vatTaxRateList.isEmpty())
 		{
 			logger.log(Level.INFO, "No vat tax rates found on line! Line:" + remadvLineItemExtension);
 			return Optional.empty();
 		}
 		else
 		{
-			return vatTaxRateSet.stream().findFirst();
+			return vatTaxRateList.stream().findFirst();
 		}
 	}
 

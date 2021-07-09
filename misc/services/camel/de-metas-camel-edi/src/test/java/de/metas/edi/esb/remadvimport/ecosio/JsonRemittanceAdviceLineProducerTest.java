@@ -46,8 +46,8 @@ class JsonRemittanceAdviceLineProducerTest
 		final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts = objectFactory.createREMADVListLineItemExtensionTypeMonetaryAmounts();
 
 		monetaryAmounts.getAdjustment().add(createAdjustmentType("19", "2.5"));
-		monetaryAmounts.getAdjustment().add(createAdjustmentType("23", "2.5"));
 		monetaryAmounts.getAdjustment().add(createAdjustmentType("67", "7.7"));
+		monetaryAmounts.getAdjustment().add(createAdjustmentType("90", "2.5"));
 
 		remadvListLineItemExtensionType.setMonetaryAmounts(monetaryAmounts);
 
