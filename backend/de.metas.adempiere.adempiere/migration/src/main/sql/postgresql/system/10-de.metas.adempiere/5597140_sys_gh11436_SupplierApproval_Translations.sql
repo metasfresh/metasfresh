@@ -632,5 +632,10 @@ UPDATE AD_Message SET MsgText='Der Geschäftspartner {0} hat keine Lieferantenfr
 
 
 
+-- 2021-07-09T10:52:34.908Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Die Lieferantenfreigabe des Geschäftspartners {0} für die Norm {1} hat das Ablaufdatum {2}.',Updated=TO_TIMESTAMP('2021-07-09 13:52:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545045
+;
+
 
 
