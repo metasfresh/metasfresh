@@ -1,7 +1,7 @@
 -- USER GROUP
 
 INSERT INTO public.ad_usergroup (ad_client_id, ad_org_id, ad_usergroup_id, created, createdby, description, isactive, name, updated, updatedby)
-VALUES (1000000, 1000000, 540000, '2021-07-06 16:26:44.000000', 100, NULL, 'Y', 'Supplier Approval Expiration Notification Group', '2021-07-06 16:26:44.000000', 100)
+VALUES (1000000, 1000000, 540000, '2021-07-06 16:26:44.000000', 100, NULL, 'Y', 'Benachrichtigungsgruppe bei Ablauf der Lieferantenfreigabe', '2021-07-06 16:26:44.000000', 100)
 ;
 
 
