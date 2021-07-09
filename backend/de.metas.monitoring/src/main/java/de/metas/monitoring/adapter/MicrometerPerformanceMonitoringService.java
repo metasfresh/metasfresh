@@ -101,6 +101,11 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		final ArrayList<Tag> tags = new ArrayList<>();
 		for (final Entry<String, String> entry : labels.entrySet())
 		{
+			if (PerformanceMonitoringService.VOLATILE_LABELS.contains(entry.getKey()))
+			{
+				// Avoid OOME: if we included e.g. the recordId, then every recordId would cause a new meter to be created.
+				continue;
+			}
 			mkTagIfNotNull(entry.getKey(), entry.getValue()).ifPresent(tags::add);
 		}
 		return tags;
