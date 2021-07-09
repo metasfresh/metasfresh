@@ -122,6 +122,12 @@ public class BPartnerSupplierApprovalService
 			{
 				partnerLacksSupplierApproval(partnerName, norm);
 			}
+
+			if (supplierApprovalDateToUse.isAfter(datePromised))
+			{
+				partnerLacksSupplierApproval(partnerName, norm);
+				return;
+			}
 			if (supplierApprovalExpired(supplierApprovalDateToUse, datePromised, numberOfYearsForApproval))
 			{
 				partnerLacksSupplierApproval(partnerName, norm);
