@@ -637,5 +637,35 @@ UPDATE AD_Message SET MsgText='Der Geschäftspartner {0} hat keine Lieferantenfr
 UPDATE AD_Message SET MsgText='Die Lieferantenfreigabe des Geschäftspartners {0} für die Norm {1} hat das Ablaufdatum {2}.',Updated=TO_TIMESTAMP('2021-07-09 13:52:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545045
 ;
 
+-- 2021-07-09T13:01:12.608Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='3 Jahre',Updated=TO_TIMESTAMP('2021-07-09 16:01:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542703
+;
+
+-- 2021-07-09T13:01:24.975Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='2 Jahre',Updated=TO_TIMESTAMP('2021-07-09 16:01:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542704
+;
+
+-- 2021-07-09T13:01:35.986Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='1 Jahr',Updated=TO_TIMESTAMP('2021-07-09 16:01:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542705
+;
+
+-- 2021-07-09T13:02:00.791Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='Einkauf',Updated=TO_TIMESTAMP('2021-07-09 16:02:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542700
+;
+
+-- 2021-07-09T13:02:06.010Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET IsActive='Y',Updated=TO_TIMESTAMP('2021-07-09 16:02:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542699
+;
+
+-- 2021-07-09T13:02:21.243Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='Verkauf',Updated=TO_TIMESTAMP('2021-07-09 16:02:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542699
+;
+
 
 
