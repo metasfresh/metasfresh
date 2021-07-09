@@ -1,3 +1,14 @@
+-- USER GROUP
+
+INSERT INTO public.ad_usergroup (ad_client_id, ad_org_id, ad_usergroup_id, created, createdby, description, isactive, name, updated, updatedby)
+VALUES (1000000, 1000000, 540000, '2021-07-06 16:26:44.000000', 100, NULL, 'Y', 'Supplier Approval Expiration Notification Group', '2021-07-06 16:26:44.000000', 100)
+;
+
+
+
+-----------------------
+
+
 -- 2021-07-06T08:07:43.215Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,584855,'Y','de.metas.bpartner.process.C_BPartner_Modify_SupplierApproval','N',TO_TIMESTAMP('2021-07-06 11:07:43','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','N','N','N','Y','Y',0,'Modify Supplier Approval','json','N','N','Java',TO_TIMESTAMP('2021-07-06 11:07:43','YYYY-MM-DD HH24:MI:SS'),100,'C_BPartner_Modify_SupplierApproval')
