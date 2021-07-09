@@ -31,7 +31,7 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVListLineItemExte
 import at.erpel.schemas._1p0.documents.extensions.edifact.TaxType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.VATType;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import lombok.Getter;
 import lombok.NonNull;
@@ -94,10 +94,10 @@ public class JsonRemittanceAdviceLineProducer
 
 					.dateInvoiced(getDateInvoiced().orElse(null))
 
-					.remittedAmount(asBigDecimal(monetaryAmounts.getRemittedAmount(), true)
+					.remittedAmount(asBigDecimalAbs(monetaryAmounts.getRemittedAmount())
 							.orElseThrow(() -> new RuntimeException("RemittedAmount not found on line!")))
 
-					.invoiceGrossAmount(asBigDecimal(monetaryAmounts.getInvoiceGrossAmount(), true).orElse(null))
+					.invoiceGrossAmount(asBigDecimalAbs(monetaryAmounts.getInvoiceGrossAmount()).orElse(null))
 
 					.paymentDiscountAmount(getPaymentDiscountAmount(monetaryAmounts))
 
@@ -135,7 +135,7 @@ public class JsonRemittanceAdviceLineProducer
 	@Nullable
 	private BigDecimal getPaymentDiscountAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
 	{
-		final BigDecimal paymentDiscountAmount = asBigDecimal(monetaryAmounts.getPaymentDiscountAmount(),true).orElse(null);
+		final BigDecimal paymentDiscountAmount = asBigDecimalAbs(monetaryAmounts.getPaymentDiscountAmount()).orElse(null);
 		final BigDecimal adjustmentDiscountAmount = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_19).orElse(null);
 
 		if( adjustmentDiscountAmount == null)
@@ -168,7 +168,7 @@ public class JsonRemittanceAdviceLineProducer
 			return Optional.empty();
 		}
 
-		return asBigDecimal(adjustmentType.getAdjustmentMonetaryAmount(), false);
+		return asBigDecimal(adjustmentType.getAdjustmentMonetaryAmount());
 	}
 
 	@NonNull
@@ -252,14 +252,20 @@ public class JsonRemittanceAdviceLineProducer
 	}
 
 	@NonNull
-	private Optional<BigDecimal> asBigDecimal(@Nullable final MonetaryAmountType monetaryAmountType, final boolean abs)
+	private Optional<BigDecimal> asBigDecimalAbs(@Nullable final MonetaryAmountType monetaryAmountType)
+	{
+		return asBigDecimal(monetaryAmountType).map(BigDecimal::abs);
+	}
+
+	@NonNull
+	private Optional<BigDecimal> asBigDecimal(@Nullable final MonetaryAmountType monetaryAmountType)
 	{
 		if (monetaryAmountType == null)
 		{
 			return Optional.empty();
 		}
 
-		return abs ? Optional.of(monetaryAmountType.getAmount().abs()) : Optional.of(monetaryAmountType.getAmount());
+		return Optional.of(monetaryAmountType.getAmount());
 	}
 
 	@VisibleForTesting
@@ -273,7 +279,7 @@ public class JsonRemittanceAdviceLineProducer
 
 		final List<String> targetAdjustmentCodes = Arrays.asList(ADJUSTMENT_CODE_67, ADJUSTMENT_CODE_90);
 
-		final ImmutableList<BigDecimal> vatTaxRateList = monetaryAmounts.getAdjustment()
+		final ImmutableSet<BigDecimal> vatTaxRateSet = monetaryAmounts.getAdjustment()
 				.stream()
 				.filter(adjustmentType -> targetAdjustmentCodes.contains(adjustmentType.getReasonCode()))
 				.map(AdjustmentType::getTax)
@@ -284,20 +290,20 @@ public class JsonRemittanceAdviceLineProducer
 				.flatMap(List::stream)
 				.map(ItemType::getTaxRate)
 				.filter(type -> !TAX_RATES_TO_IGNORE.contains(type.toString()))
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 
-		if (vatTaxRateList.stream().distinct().count() > 1)
+		if (vatTaxRateSet.size() > 1)
 		{
-			throw new RuntimeException("Multiple vatTax rates found on the line! TaxRates: " + vatTaxRateList);
+			throw new RuntimeException("Multiple vatTax rates found on the line! TaxRates: " + vatTaxRateSet);
 		}
-		else if (vatTaxRateList.isEmpty())
+		else if (vatTaxRateSet.isEmpty())
 		{
 			logger.log(Level.INFO, "No vat tax rates found on line! Line:" + remadvLineItemExtension);
 			return Optional.empty();
 		}
 		else
 		{
-			return vatTaxRateList.stream().findFirst();
+			return vatTaxRateSet.stream().findFirst();
 		}
 	}
 

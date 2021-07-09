@@ -76,21 +76,23 @@ public class InvoiceProcessingServiceCompanyConfig
 			return Optional.empty();
 		}
 
-		if(invoiceDocTypeId != null){
-			final Optional<InvoiceProcessingServiceCompanyConfigBPartnerDetails> matchingDocTypeDetails = detailsList.stream()
+		if (invoiceDocTypeId != null)
+		{
+			final Optional<Percent> matchingDocTypePercent = detailsList.stream()
 					.filter(details -> invoiceDocTypeId.equals(details.getDocTypeId()))
+					.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
 					.findFirst();
 
-			if(matchingDocTypeDetails.isPresent()){
-				return Optional.of(matchingDocTypeDetails.get().getPercent());
+			if (matchingDocTypePercent.isPresent())
+			{
+				return matchingDocTypePercent;
 			}
 		}
 
-		final Optional<InvoiceProcessingServiceCompanyConfigBPartnerDetails> noDocTypeDetails = detailsList.stream()
+		return detailsList.stream()
 				.filter(details -> details.getDocTypeId() == null)
+				.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
 				.findFirst();
-
-		return noDocTypeDetails.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent);
 	}
 }
 

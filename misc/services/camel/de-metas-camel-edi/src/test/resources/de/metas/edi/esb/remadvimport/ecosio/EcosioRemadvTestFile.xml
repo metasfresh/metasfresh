@@ -145,12 +145,12 @@
                                             </edifact:VAT>
                                         </edifact:Tax>
                                     </edifact:Adjustment>
-                                    <edifact:Adjustment><!-- ignore -->
+                                    <edifact:Adjustment>
                                         <edifact:ReasonCode>90</edifact:ReasonCode>
-                                        <edifact:AdjustmentMonetaryAmount><!-- ignore -->
+                                        <edifact:AdjustmentMonetaryAmount>
                                             <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
                                             <edifact:Amount>3</edifact:Amount><!-- JsonRemittanceAdviceLine.serviceFeeAmount computation term -->
-                                        </edifact:AdjustmentMonetaryAmount><!-- ignore -->
+                                        </edifact:AdjustmentMonetaryAmount>
                                         <edifact:Tax>
                                             <edifact:VAT>
                                                 <edifact:Item>
