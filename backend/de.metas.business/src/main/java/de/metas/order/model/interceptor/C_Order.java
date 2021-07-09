@@ -495,6 +495,12 @@ public class C_Order
 
 	private void validateSupplierApprovals(final I_C_Order order)
 	{
+		if (order.isSOTrx())
+		{
+			// Only purchase orders are relevant
+			return;
+		}
+
 		final ImmutableList<ProductId> productIds = orderDAO.retrieveOrderLines(order)
 				.stream()
 				.map(line -> ProductId.ofRepoId(line.getM_Product_ID()))
