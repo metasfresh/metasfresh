@@ -16,11 +16,9 @@
  *****************************************************************************/
 package org.compiere.server;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.server.rpl.api.IIMPProcessorBL;
@@ -35,8 +33,10 @@ import org.compiere.util.Env;
 import org.compiere.wf.MWorkflowProcessor;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Adempiere Server Manager
@@ -310,7 +310,7 @@ public final class AdempiereServerMgr
 			int index = m_servers.indexOf(server);
 			server = AdempiereServer.create(server.getModel());
 			if (server == null)
-				m_servers.remove(index);
+				m_servers.remove(index);//
 			else
 				m_servers.set(index, server);
 			server.start();
@@ -521,6 +521,26 @@ public final class AdempiereServerMgr
 		}
 		return null;
 	}	// getServer
+
+	public void removeServerWithId(@NonNull final String serverID)
+	{
+		int matchedIndex = -1;
+
+		for (int i = 0; i < m_servers.size(); i++)
+		{
+			final AdempiereServer server = m_servers.get(i);
+			if (serverID.equals(server.getServerID()))
+			{
+				matchedIndex = i;
+				break;
+			}
+		}
+
+		if (matchedIndex > -1)
+		{
+			m_servers.remove(matchedIndex);
+		}
+	}
 
 	/**
 	 * String Representation

@@ -107,7 +107,8 @@ public class Scheduler extends AdempiereServer
 
 	public Scheduler(final MScheduler model)
 	{
-		super(model, 240);		// nap
+		//todo fp
+		super(model, 1);		// nap
 		m_model = model;
 
 		// metas us1030 updating status

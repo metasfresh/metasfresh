@@ -2874,7 +2874,7 @@ public abstract class PO
 		}
 
 		final ITrxManager trxManager = get_TrxManager();
-		final String trxNameInitial = m_trxName;
+		final String trxNameInitial = m_trxName;//todo cp: here we had null
 		final boolean newRecordInitial = m_createNew;
 		trxManager.run(trxNameInitial, new TrxRunnable2()
 		{
