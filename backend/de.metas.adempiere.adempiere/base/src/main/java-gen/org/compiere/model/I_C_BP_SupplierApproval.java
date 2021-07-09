@@ -203,7 +203,7 @@ public interface I_C_BP_SupplierApproval
 	String COLUMNNAME_SupplierApproval_Norm = "SupplierApproval_Norm";
 
 	/**
-	 * Set Supplier Approval Type.
+	 * Set Approved for.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -212,7 +212,7 @@ public interface I_C_BP_SupplierApproval
 	void setSupplierApproval_Type (@Nullable java.lang.String SupplierApproval_Type);
 
 	/**
-	 * Get Supplier Approval Type.
+	 * Get Approved for.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false

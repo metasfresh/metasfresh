@@ -400,6 +400,236 @@ UPDATE AD_UI_Element SET Name='Lieferantenfreigabe Norm',Updated=TO_TIMESTAMP('2
 
 
 
+-- 2021-07-09T08:34:50.286Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Approved for', PrintName='Approved for',Updated=TO_TIMESTAMP('2021-07-09 11:34:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579450 AND AD_Language='en_US'
+;
+
+-- 2021-07-09T08:34:50.342Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579450,'en_US') 
+;
+
+-- 2021-07-09T08:35:00.936Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Freigabe für', PrintName='Freigabe für',Updated=TO_TIMESTAMP('2021-07-09 11:35:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579450 AND AD_Language='de_DE'
+;
+
+-- 2021-07-09T08:35:00.938Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579450,'de_DE') 
+;
+
+-- 2021-07-09T08:35:00.949Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579450,'de_DE') 
+;
+
+-- 2021-07-09T08:35:00.956Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='SupplierApproval_Type', Name='Freigabe für', Description=NULL, Help=NULL WHERE AD_Element_ID=579450
+;
+
+-- 2021-07-09T08:35:00.960Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='SupplierApproval_Type', Name='Freigabe für', Description=NULL, Help=NULL, AD_Element_ID=579450 WHERE UPPER(ColumnName)='SUPPLIERAPPROVAL_TYPE' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-07-09T08:35:00.975Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='SupplierApproval_Type', Name='Freigabe für', Description=NULL, Help=NULL WHERE AD_Element_ID=579450 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-07-09T08:35:00.978Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Freigabe für', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579450) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579450)
+;
+
+-- 2021-07-09T08:35:01.029Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Freigabe für', Name='Freigabe für' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579450)
+;
+
+-- 2021-07-09T08:35:01.031Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Freigabe für', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579450
+;
+
+-- 2021-07-09T08:35:01.034Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Freigabe für', Description=NULL, Help=NULL WHERE AD_Element_ID = 579450
+;
+
+-- 2021-07-09T08:35:01.036Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Freigabe für', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579450
+;
+
+-- 2021-07-09T08:35:05.966Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Freigabe für', PrintName='Freigabe für',Updated=TO_TIMESTAMP('2021-07-09 11:35:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579450 AND AD_Language='de_CH'
+;
+
+-- 2021-07-09T08:35:05.967Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579450,'de_CH') 
+;
+
+-- 2021-07-09T08:46:52.625Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Description='Products with the relevant standard may be purchased from the business partner.', IsActive='Y', Name='Sales',Updated=TO_TIMESTAMP('2021-07-09 11:46:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542699
+;
+
+-- 2021-07-09T08:47:05.018Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Description='Products with the relevant standard may be sold to the business partner.',Updated=TO_TIMESTAMP('2021-07-09 11:47:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542699
+;
+
+-- 2021-07-09T08:47:25.398Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Produkte mit der betreffenden Norm dürfen an den Geschäftspartner verkauft werden.',Updated=TO_TIMESTAMP('2021-07-09 11:47:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542699
+;
+
+-- 2021-07-09T08:47:44.511Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Produkte mit der betreffenden Norm dürfen an den Geschäftspartner verkauft werden.', Name='Verkauf',Updated=TO_TIMESTAMP('2021-07-09 11:47:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=542699
+;
+
+-- 2021-07-09T08:48:01.556Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Name='Verkauf',Updated=TO_TIMESTAMP('2021-07-09 11:48:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542699
+;
+
+-- 2021-07-09T08:48:15.115Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Products with the relevant standard may be sold to the business partner.', Name='Sales',Updated=TO_TIMESTAMP('2021-07-09 11:48:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=542699
+;
+
+-- 2021-07-09T08:48:22.896Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET IsActive='N',Updated=TO_TIMESTAMP('2021-07-09 11:48:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542699
+;
+
+-- 2021-07-09T08:48:58.051Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Description='Products with the relevant standard may be purchased from the business partner.', Name='Purchase',Updated=TO_TIMESTAMP('2021-07-09 11:48:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=542700
+;
+
+-- 2021-07-09T08:49:27.325Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Products with the relevant standard may be purchased from the business partner.', Name='Purchase',Updated=TO_TIMESTAMP('2021-07-09 11:49:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=542700
+;
+
+-- 2021-07-09T08:49:38.067Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Produkte mit der betreffenden Norm dürfen bei dem Geschäftspartner eingekauft werden.',Updated=TO_TIMESTAMP('2021-07-09 11:49:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542700
+;
+
+-- 2021-07-09T08:49:52.869Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET Description='Produkte mit der betreffenden Norm dürfen bei dem Geschäftspartner eingekauft werden.', Name='Einkauf',Updated=TO_TIMESTAMP('2021-07-09 11:49:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=542700
+;
+
+-- 2021-07-09T08:49:59.112Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Einkauf',Updated=TO_TIMESTAMP('2021-07-09 11:49:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=542700
+;
+
+-- 2021-07-09T08:50:02.675Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-07-09 11:50:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=542700
+;
+
+-- 2021-07-09T08:50:05.652Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-07-09 11:50:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=542700
+;
+
+-- 2021-07-09T08:50:28.076Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_bp_supplierapproval','SupplierApproval_Type','VARCHAR(25)',null,'V')
+;
+
+-- 2021-07-09T09:05:21.651Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Freigabe Dauer', PrintName='Freigabe Dauer',Updated=TO_TIMESTAMP('2021-07-09 12:05:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579460 AND AD_Language='de_CH'
+;
+
+-- 2021-07-09T09:05:21.653Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579460,'de_CH') 
+;
+
+-- 2021-07-09T09:05:30.781Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Freigabe Dauer', PrintName='Freigabe Dauer',Updated=TO_TIMESTAMP('2021-07-09 12:05:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579460 AND AD_Language='de_DE'
+;
+
+-- 2021-07-09T09:05:30.783Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579460,'de_DE') 
+;
+
+-- 2021-07-09T09:05:30.793Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(579460,'de_DE') 
+;
+
+-- 2021-07-09T09:05:30.795Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='SupplierApproval_Parameter', Name='Freigabe Dauer', Description=NULL, Help=NULL WHERE AD_Element_ID=579460
+;
+
+-- 2021-07-09T09:05:30.797Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='SupplierApproval_Parameter', Name='Freigabe Dauer', Description=NULL, Help=NULL, AD_Element_ID=579460 WHERE UPPER(ColumnName)='SUPPLIERAPPROVAL_PARAMETER' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2021-07-09T09:05:30.799Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='SupplierApproval_Parameter', Name='Freigabe Dauer', Description=NULL, Help=NULL WHERE AD_Element_ID=579460 AND IsCentrallyMaintained='Y'
+;
+
+-- 2021-07-09T09:05:30.800Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Freigabe Dauer', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=579460) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 579460)
+;
+
+-- 2021-07-09T09:05:30.807Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Freigabe Dauer', Name='Freigabe Dauer' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=579460)
+;
+
+-- 2021-07-09T09:05:30.810Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Freigabe Dauer', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 579460
+;
+
+-- 2021-07-09T09:05:30.812Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Freigabe Dauer', Description=NULL, Help=NULL WHERE AD_Element_ID = 579460
+;
+
+-- 2021-07-09T09:05:30.814Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Freigabe Dauer', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579460
+;
+
+-- 2021-07-09T09:07:59.925Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Supplier Approval Duration', PrintName='Supplier Approval Duration',Updated=TO_TIMESTAMP('2021-07-09 12:07:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579460 AND AD_Language='en_US'
+;
+
+-- 2021-07-09T09:07:59.929Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579460,'en_US') 
+;
+
+-- 2021-07-09T09:09:16.381Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Der Geschäftspartner {0} hat keine Lieferantenfreigabe für die Norm {1}.',Updated=TO_TIMESTAMP('2021-07-09 12:09:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545046
+;
+
 
 
 

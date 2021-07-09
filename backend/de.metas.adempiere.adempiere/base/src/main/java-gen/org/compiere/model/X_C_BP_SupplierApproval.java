@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_SupplierApproval extends org.compiere.model.PO implements I_C_BP_SupplierApproval, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -208483909L;
+	private static final long serialVersionUID = -539082694L;
 
     /** Standard Constructor */
     public X_C_BP_SupplierApproval (final Properties ctx, final int C_BP_SupplierApproval_ID, @Nullable final String trxName)
@@ -111,7 +111,7 @@ public class X_C_BP_SupplierApproval extends org.compiere.model.PO implements I_
 	@Override
 	public void setSupplierApproval_Norm (final java.lang.String SupplierApproval_Norm)
 	{
-		set_ValueNoCheck (COLUMNNAME_SupplierApproval_Norm, SupplierApproval_Norm);
+		set_Value (COLUMNNAME_SupplierApproval_Norm, SupplierApproval_Norm);
 	}
 
 	@Override
