@@ -61,7 +61,10 @@ public class AcctSchemaBL implements IAcctSchemaBL
 			return;
 		}
 		final IQueryBuilder<I_C_BPartner> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter();
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_CreditorId, null)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_DebtorId, null)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, null);
 		final Collection<OrgId> orgIdsToUse = getOrgIdsToUse(acctSchema, orgId);
 		if (!orgIdsToUse.contains(OrgId.ANY))
 		{
