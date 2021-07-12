@@ -151,7 +151,7 @@ public class OrderLineBuilder
 		}
 	}
 
-	public OrderFactory getParent() { return parent; }
+	private OrderFactory getParent() { return parent; }
 
 	public OrderFactory endOrderLine() { return getParent(); }
 
