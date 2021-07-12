@@ -218,7 +218,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(10)
 				.productDescriptor(productDescriptor)
 				.quantity(new BigDecimal(huQty))
-				.quantityDelta(new BigDecimal(huQty))
 				.build();
 
 		return new HUDescriptorsFromHUAssignmentService(new HUDescriptorService())
@@ -350,7 +349,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(20)
 				.productDescriptor(productDescriptor1)
 				.quantity(SEVEN)
-				.quantityDelta(SEVEN)
 				.build();
 
 		final AttributesKey attributesKey = AttributesKey.ofAttributeValueIds(10, 20);
@@ -359,7 +357,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(20)
 				.productDescriptor(productDescriptor2)
 				.quantity(THREE)
-				.quantityDelta(THREE)
 				.build();
 
 		final I_M_Transaction transaction = createReceiptTransaction();
@@ -405,7 +402,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(20)
 				.productDescriptor(productDescriptor1)
 				.quantity(SEVEN)
-				.quantityDelta(SEVEN)
 				.build();
 
 		// despite the different ASI-ID we will expect just one result.
@@ -414,7 +410,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.huId(20)
 				.productDescriptor(productDescriptor2)
 				.quantity(THREE)
-				.quantityDelta(THREE)
 				.build();
 
 		final I_M_Transaction transaction = createReceiptTransaction();

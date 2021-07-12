@@ -1245,8 +1245,6 @@ public class InterfaceWrapperHelper
 	/**
 	 * Gets [columnName]_Override if the override column is available and not null, else column name value is returned.
 	 *
-	 * @param model
-	 * @param columnName
 	 * @return value of [columnName]_Override or [columnName]; <b>might return null</b>, so don't blindly use as int.
 	 * @throws AdempiereException if neither the "normal" value nor the override value is available.
 	 *

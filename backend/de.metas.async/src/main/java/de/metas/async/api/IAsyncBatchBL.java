@@ -33,8 +33,6 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	/**
 	 * update last processed and count processed
-	 *
-	 * @param workPackage
 	 */
 	void increaseProcessed(final I_C_Queue_WorkPackage workPackage);
 
@@ -61,8 +59,6 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	/**
 	 * create notification records in async batch has notification of type WPP
-	 *
-	 * @param workPackage
 	 */
 	void createNotificationRecord(I_C_Queue_WorkPackage workPackage);
 
@@ -70,16 +66,12 @@ public interface IAsyncBatchBL extends ISingletonService
 	 * check is the given workpackage can be notified
 	 * if there is one below it, that can be notified, return that
 	 *
-	 * @param asyncBatch
-	 * @param workpackage
 	 * @return workpackage
 	 */
 	I_C_Queue_WorkPackage notify(I_C_Async_Batch asyncBatch, I_C_Queue_WorkPackage workpackage);
 
 	/**
 	 * mark workpackage as notified
-	 *
-	 * @param workpackageNotified
 	 */
 	void markWorkpackageNotified(I_C_Queue_WorkPackage_Notified workpackageNotified);
 
