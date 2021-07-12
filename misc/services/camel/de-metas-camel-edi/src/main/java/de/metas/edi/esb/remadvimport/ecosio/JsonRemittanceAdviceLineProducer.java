@@ -31,6 +31,7 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVListLineItemExte
 import at.erpel.schemas._1p0.documents.extensions.edifact.TaxType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.VATType;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import lombok.Getter;
@@ -119,17 +120,7 @@ public class JsonRemittanceAdviceLineProducer
 		final BigDecimal adjustmentServiceFeeAmountTerm1 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_67).orElse(null);
 		final BigDecimal adjustmentServiceFeeAmountTerm2 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_90).orElse(null);
 
-		if( adjustmentServiceFeeAmountTerm1 == null)
-		{
-			return adjustmentServiceFeeAmountTerm2;
-		}
-
-		if (adjustmentServiceFeeAmountTerm2 == null)
-		{
-			return adjustmentServiceFeeAmountTerm1;
-		}
-
-		return adjustmentServiceFeeAmountTerm1.add(adjustmentServiceFeeAmountTerm2);
+		return sumNullableBigDecimals(adjustmentServiceFeeAmountTerm1, adjustmentServiceFeeAmountTerm2);
 	}
 
 	@Nullable
@@ -138,17 +129,25 @@ public class JsonRemittanceAdviceLineProducer
 		final BigDecimal paymentDiscountAmount = asBigDecimalAbs(monetaryAmounts.getPaymentDiscountAmount()).orElse(null);
 		final BigDecimal adjustmentDiscountAmount = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_19).orElse(null);
 
-		if( adjustmentDiscountAmount == null)
+		final BigDecimal paymentDiscountTotalAmount = sumNullableBigDecimals(paymentDiscountAmount, adjustmentDiscountAmount);
+
+		return paymentDiscountTotalAmount != null ? paymentDiscountTotalAmount.abs() : paymentDiscountTotalAmount;
+	}
+
+	@Nullable
+	private BigDecimal sumNullableBigDecimals(@Nullable final BigDecimal term1, @Nullable final BigDecimal term2)
+	{
+		if (term1 == null)
 		{
-			return paymentDiscountAmount;
+			return term2;
 		}
 
-		if (paymentDiscountAmount == null)
+		if (term2 == null)
 		{
-			return adjustmentDiscountAmount;
+			return term1;
 		}
 
-		return paymentDiscountAmount.add(adjustmentDiscountAmount.abs());
+		return term1.add(term2);
 	}
 
 	@NonNull
@@ -157,18 +156,20 @@ public class JsonRemittanceAdviceLineProducer
 			@NonNull final String adjustmentCode)
 	{
 
-		final AdjustmentType adjustmentType = monetaryAmounts
+		final ImmutableList<BigDecimal> adjustmentTypeList = monetaryAmounts
 				.getAdjustment().stream()
-				.filter(adjustment -> adjustment.getReasonCode().equals(adjustmentCode))
-				.findFirst()
-				.orElse(null);
+				.filter(adjustment -> adjustmentCode.equals(adjustment.getReasonCode()))
+				.map(adjustmentType -> asBigDecimal(adjustmentType.getAdjustmentMonetaryAmount()))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
 
-		if (adjustmentType == null)
+		if (CollectionUtils.isEmpty(adjustmentTypeList))
 		{
 			return Optional.empty();
 		}
 
-		return asBigDecimal(adjustmentType.getAdjustmentMonetaryAmount());
+		return Optional.of(adjustmentTypeList.stream().reduce(BigDecimal.ZERO, BigDecimal::add));
 	}
 
 	@NonNull
