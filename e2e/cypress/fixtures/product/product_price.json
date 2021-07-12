@@ -3,6 +3,6 @@
   "listPriceAmount": 1.2345678,
   "standardPriceAmount": 1.2345678,
   "limitPriceAmount": 1.2345678,
-  "taxCategory": "Regular Tax Rate 19% (Germany)",
-  "de_DE__taxCategory": "Normaler Steuersatz 19% (Deutschland)"
+  "taxCategory": "Reduced VAT",
+  "de_DE__taxCategory": "Reduced VAT"
 }
