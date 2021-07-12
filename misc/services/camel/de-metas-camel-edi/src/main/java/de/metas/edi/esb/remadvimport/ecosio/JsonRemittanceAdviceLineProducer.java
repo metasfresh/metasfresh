@@ -31,6 +31,7 @@ import at.erpel.schemas._1p0.documents.extensions.edifact.REMADVListLineItemExte
 import at.erpel.schemas._1p0.documents.extensions.edifact.TaxType;
 import at.erpel.schemas._1p0.documents.extensions.edifact.VATType;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
 import lombok.Getter;
@@ -51,6 +52,9 @@ import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_19;
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_67;
+import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTMENT_CODE_90;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOCUMENT_ZONE_ID;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOC_PREFIX;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.GLN_PREFIX;
@@ -91,14 +95,14 @@ public class JsonRemittanceAdviceLineProducer
 
 					.dateInvoiced(getDateInvoiced().orElse(null))
 
-					.remittedAmount(asBigDecimal(monetaryAmounts.getRemittedAmount())
+					.remittedAmount(asBigDecimalAbs(monetaryAmounts.getRemittedAmount())
 							.orElseThrow(() -> new RuntimeException("RemittedAmount not found on line!")))
 
-					.invoiceGrossAmount(asBigDecimal(monetaryAmounts.getInvoiceGrossAmount()).orElse(null))
+					.invoiceGrossAmount(asBigDecimalAbs(monetaryAmounts.getInvoiceGrossAmount()).orElse(null))
 
-					.paymentDiscountAmount(asBigDecimal(monetaryAmounts.getPaymentDiscountAmount()).orElse(null))
+					.paymentDiscountAmount(getPaymentDiscountAmount(monetaryAmounts))
 
-					.serviceFeeAmount(asBigDecimal(monetaryAmounts.getCommissionAmount()).orElse(null))
+					.serviceFeeAmount(getServiceFeeAmount(monetaryAmounts))
 
 					.serviceFeeVatRate(getServiceFeeVATRate(monetaryAmounts).orElse(null))
 					.build();
@@ -108,6 +112,64 @@ public class JsonRemittanceAdviceLineProducer
 			logger.log(Level.SEVERE, "Unexpected exception while building JsonRemittanceAdviceLine for line: " + remadvLineItemExtension, e);
 			throw e;
 		}
+	}
+
+	@Nullable
+	private BigDecimal getServiceFeeAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
+	{
+		final BigDecimal adjustmentServiceFeeAmountTerm1 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_67).orElse(null);
+		final BigDecimal adjustmentServiceFeeAmountTerm2 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_90).orElse(null);
+
+		return sumNullableBigDecimals(adjustmentServiceFeeAmountTerm1, adjustmentServiceFeeAmountTerm2);
+	}
+
+	@Nullable
+	private BigDecimal getPaymentDiscountAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
+	{
+		final BigDecimal paymentDiscountAmount = asBigDecimalAbs(monetaryAmounts.getPaymentDiscountAmount()).orElse(null);
+		final BigDecimal adjustmentDiscountAmount = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_19).orElse(null);
+
+		final BigDecimal paymentDiscountTotalAmount = sumNullableBigDecimals(paymentDiscountAmount, adjustmentDiscountAmount);
+
+		return paymentDiscountTotalAmount != null ? paymentDiscountTotalAmount.abs() : paymentDiscountTotalAmount;
+	}
+
+	@Nullable
+	private BigDecimal sumNullableBigDecimals(@Nullable final BigDecimal term1, @Nullable final BigDecimal term2)
+	{
+		if (term1 == null)
+		{
+			return term2;
+		}
+
+		if (term2 == null)
+		{
+			return term1;
+		}
+
+		return term1.add(term2);
+	}
+
+	@NonNull
+	private Optional<BigDecimal> getAdjustmentAmount(
+			@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts,
+			@NonNull final String adjustmentCode)
+	{
+
+		final ImmutableList<BigDecimal> adjustmentTypeList = monetaryAmounts
+				.getAdjustment().stream()
+				.filter(adjustment -> adjustmentCode.equals(adjustment.getReasonCode()))
+				.map(adjustmentType -> asBigDecimal(adjustmentType.getAdjustmentMonetaryAmount()))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
+
+		if (CollectionUtils.isEmpty(adjustmentTypeList))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(adjustmentTypeList.stream().reduce(BigDecimal.ZERO, BigDecimal::add));
 	}
 
 	@NonNull
@@ -191,6 +253,12 @@ public class JsonRemittanceAdviceLineProducer
 	}
 
 	@NonNull
+	private Optional<BigDecimal> asBigDecimalAbs(@Nullable final MonetaryAmountType monetaryAmountType)
+	{
+		return asBigDecimal(monetaryAmountType).map(BigDecimal::abs);
+	}
+
+	@NonNull
 	private Optional<BigDecimal> asBigDecimal(@Nullable final MonetaryAmountType monetaryAmountType)
 	{
 		if (monetaryAmountType == null)
@@ -198,7 +266,7 @@ public class JsonRemittanceAdviceLineProducer
 			return Optional.empty();
 		}
 
-		return Optional.of(monetaryAmountType.getAmount().abs());
+		return Optional.of(monetaryAmountType.getAmount());
 	}
 
 	@VisibleForTesting
@@ -210,8 +278,11 @@ public class JsonRemittanceAdviceLineProducer
 			return Optional.empty();
 		}
 
+		final List<String> targetAdjustmentCodes = Arrays.asList(ADJUSTMENT_CODE_67, ADJUSTMENT_CODE_90);
+
 		final ImmutableSet<BigDecimal> vatTaxRateSet = monetaryAmounts.getAdjustment()
 				.stream()
+				.filter(adjustmentType -> targetAdjustmentCodes.contains(adjustmentType.getReasonCode()))
 				.map(AdjustmentType::getTax)
 				.filter(Objects::nonNull)
 				.map(TaxType::getVAT)

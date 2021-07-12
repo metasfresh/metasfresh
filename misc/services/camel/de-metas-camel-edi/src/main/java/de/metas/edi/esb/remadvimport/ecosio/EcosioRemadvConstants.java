@@ -45,4 +45,9 @@ public interface EcosioRemadvConstants
 	String DOCUMENT_ZONE_ID = "Europe/Vienna";
 	
 	Set<String> TAX_RATES_TO_IGNORE = ImmutableSet.of("7.7");
+
+	String ADJUSTMENT_CODE_19 = "19";
+	String ADJUSTMENT_CODE_67 = "67";
+	String ADJUSTMENT_CODE_90 = "90";
+
 }

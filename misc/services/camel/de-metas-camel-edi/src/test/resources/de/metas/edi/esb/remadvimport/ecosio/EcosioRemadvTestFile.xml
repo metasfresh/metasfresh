@@ -145,6 +145,26 @@
                                             </edifact:VAT>
                                         </edifact:Tax>
                                     </edifact:Adjustment>
+                                    <edifact:Adjustment>
+                                        <edifact:ReasonCode>90</edifact:ReasonCode>
+                                        <edifact:AdjustmentMonetaryAmount>
+                                            <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
+                                            <edifact:Amount>3</edifact:Amount><!-- JsonRemittanceAdviceLine.serviceFeeAmount computation term -->
+                                        </edifact:AdjustmentMonetaryAmount>
+                                        <edifact:Tax>
+                                            <edifact:VAT>
+                                                <edifact:Item>
+                                                    <edifact:TaxedAmount>-1.62</edifact:TaxedAmount><!-- ignore -->
+                                                    <edifact:TaxRate>7</edifact:TaxRate>
+                                                    <edifact:Amount>-0.12</edifact:Amount><!-- ignore -->
+                                                    <edifact:CommissionBaseAmount><!-- ignore -->
+                                                        <edifact:AmountTypeCode>178</edifact:AmountTypeCode>
+                                                        <edifact:Amount>161.15</edifact:Amount>
+                                                    </edifact:CommissionBaseAmount>
+                                                </edifact:Item>
+                                            </edifact:VAT>
+                                        </edifact:Tax>
+                                    </edifact:Adjustment>
                                 </edifact:MonetaryAmounts>
                             </edifact:REMADVListLineItemExtension>
                         </edifact:ListLineItemExtension>
