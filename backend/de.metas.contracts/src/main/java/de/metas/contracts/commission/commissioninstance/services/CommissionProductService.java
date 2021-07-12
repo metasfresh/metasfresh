@@ -43,6 +43,7 @@ public class CommissionProductService
 {
 	private static final Logger logger = LogManager.getLogger(CommissionProductService.class);
 
+	@NonNull
 	public ProductId getCommissionProduct(@NonNull final ConditionsId conditionsId)
 	{
 		final I_C_Flatrate_Conditions conditionsRecord = InterfaceWrapperHelper.loadOutOfTrx(conditionsId, I_C_Flatrate_Conditions.class);

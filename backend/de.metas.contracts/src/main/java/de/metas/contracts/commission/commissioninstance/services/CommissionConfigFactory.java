@@ -24,7 +24,9 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService.StagingData;
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.process.FlatrateTermCreator;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
@@ -39,19 +41,28 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
+
+import static de.metas.contracts.commission.CommissionConstants.NO_COMMISSION_PERCENT_DEFAULT_CONTRACT_DURATION;
 
 /*
  * #%L
@@ -81,14 +92,18 @@ public class CommissionConfigFactory
 	private static final Logger logger = LogManager.getLogger(CommissionConfigFactory.class);
 
 	private final CommissionConfigStagingDataService commissionConfigStagingDataService;
+	private final CommissionProductService commissionProductService;
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-	public CommissionConfigFactory(@NonNull final CommissionConfigStagingDataService commissionConfigStagingDataService)
+	public CommissionConfigFactory(
+			@NonNull final CommissionConfigStagingDataService commissionConfigStagingDataService,
+			@NonNull final CommissionProductService commissionProductService)
 	{
 		this.commissionConfigStagingDataService = commissionConfigStagingDataService;
+		this.commissionProductService = commissionProductService;
 	}
 
 	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final ConfigRequestForNewInstance contractRequest)
@@ -112,18 +127,64 @@ public class CommissionConfigFactory
 				.orgId(contractRequest.getOrgId())
 				.dateOrdered(contractRequest.getCommissionDate())
 				.build();
-		final ImmutableList<I_C_Flatrate_Term> commissionTermRecords = flatrateDAO
+		final ImmutableList.Builder<I_C_Flatrate_Term> commissionTermRecordsBuilder = ImmutableList.builder();
+
+		flatrateDAO
 				.retrieveTerms(termsQuery)
 				.stream()
 				.filter(termRecord -> CommissionConstants.TYPE_CONDITIONS_COMMISSION.equals(termRecord.getType_Conditions()))
-				.collect(ImmutableList.toImmutableList());
+				.forEach(commissionTermRecordsBuilder::add);
+
+		getConditionsForSalesRepWithoutContract()
+				.map(flatrateConditions -> createGenericContract(flatrateConditions, commissionTermRecordsBuilder.build(), allBPartnerIds, beneficiary))
+				.ifPresent(contractTermList -> contractTermList.forEach(commissionTermRecordsBuilder::add));
 
 		final ImmutableMap<FlatrateTermId, CommissionConfig> contractId2Config = createCommissionConfigsFor(
-				commissionTermRecords,
+				commissionTermRecordsBuilder.build(),
 				contractRequest.getCustomerBPartnerId(),
 				contractRequest.getSalesProductId());
 
 		return CollectionUtils.extractDistinctElements(contractId2Config.values(), Function.identity());
+	}
+
+	@NonNull
+	private ImmutableList<I_C_Flatrate_Term> createGenericContract(
+			@NonNull final I_C_Flatrate_Conditions flatrateCondition,
+			@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords,
+			@NonNull final ImmutableList<BPartnerId> allBPartnerIds,
+			@NonNull final Beneficiary endCustomer)
+	{
+		final ImmutableSet<Integer> salesRepIdsWithContract = commissionTermRecords.stream()
+				.map(I_C_Flatrate_Term::getBill_BPartner_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<BPartnerId> salesRepIdsWithoutContract = allBPartnerIds.stream()
+				.filter(c -> !salesRepIdsWithContract.contains(c.getRepoId()))
+				.filter(b -> b.getRepoId() != endCustomer.getBPartnerId().getRepoId())
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (salesRepIdsWithoutContract.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<I_C_BPartner> bPartnersNoContracts = bPartnerDAO.retrieveByIds(salesRepIdsWithoutContract);
+
+		final ProductId commissionProductId = commissionProductService.getCommissionProduct(CommissionConstants.FLATRATE_CONDITION_0_COMMISSION_ID);
+
+		final I_M_Product commissionProductRecord = productDAO.getById(commissionProductId);
+
+		final FlatrateTermCreator termCreator = FlatrateTermCreator.builder()
+				.ctx(Env.getCtx())
+				.products(ImmutableList.of(commissionProductRecord))
+				.startDate(Timestamp.from(Instant.now()))
+				.endDate(Timestamp.from(Instant.now().plus(NO_COMMISSION_PERCENT_DEFAULT_CONTRACT_DURATION)))
+				.conditions(flatrateCondition)
+				.bPartners(bPartnersNoContracts)
+				.isCompleteDocument(true)
+				.build();
+
+		return termCreator.createTermsForBPartners();
 	}
 
 	public ImmutableMap<FlatrateTermId, CommissionConfig> createForExisingInstance(
@@ -318,6 +379,21 @@ public class CommissionConfigFactory
 		final boolean settingsLineMatches = customerMatches && productMatches;
 		logger.debug(logMessagePrefix + "customerMatches={}; productMatches={}; -> settingsLineMatches={}", customerMatches, productMatches, settingsLineMatches);
 		return settingsLineMatches;
+	}
+
+	@NonNull
+	private Optional<I_C_Flatrate_Conditions> getConditionsForSalesRepWithoutContract()
+	{
+		final I_C_Flatrate_Conditions flatrateConditions = flatrateDAO.getConditionsById(CommissionConstants.FLATRATE_CONDITION_0_COMMISSION_ID);
+
+		if (flatrateConditions == null
+				|| !flatrateConditions.isActive()
+				|| !flatrateConditions.getDocStatus().equals("CO"))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(flatrateConditions);
 	}
 
 	@Builder

@@ -1,18 +1,28 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
+import static de.metas.contracts.commission.CommissionConstants.FLATRATE_CONDITION_0_COMMISSION_ID;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
+import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.organization.OrgId;
+import de.metas.util.lang.Percent;
+import lombok.Builder;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +76,7 @@ import lombok.NonNull;
  * #L%
  */
 
-class CommissionConfigFactoryTest
+public class CommissionConfigFactoryTest
 {
 	private CommissionHierarchyFactory commissionHierarchyFactory;
 	private CommissionConfigFactory commissionConfigFactory;
@@ -81,6 +91,7 @@ class CommissionConfigFactoryTest
 
 	private ProductId commissionProduct1Id;
 	private ProductId commissionProduct2Id;
+	private I_C_Flatrate_Conditions noContractFlatrateConditions;
 
 	@BeforeEach
 	void beforeEach()
@@ -98,8 +109,9 @@ class CommissionConfigFactoryTest
 		commissionProduct2Id = ProductId.ofRepoId(commissionProduct2Record.getM_Product_ID());
 
 		commissionHierarchyFactory = new CommissionHierarchyFactory();
+
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService);
+		commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
 
 		final I_C_BP_Group customerBPGroupRecord = newInstance(I_C_BP_Group.class);
 		saveRecord(customerBPGroupRecord);
@@ -120,6 +132,16 @@ class CommissionConfigFactoryTest
 		salesProductId = ProductId.ofRepoId(salesProductRecord.getM_Product_ID());
 
 		date = LocalDate.now();
+
+		noContractFlatrateConditions = flatrateConditionsBuilder()
+				.name("Default for `Missing commission contract`")
+				.isSubtractLowerLevelCommissionFromBase(true)
+				.noContractCommissionProductId(1)
+				.percentageOfBasePoint(BigDecimal.ZERO)
+				.flatrateConditionsId(FLATRATE_CONDITION_0_COMMISSION_ID.getRepoId())
+				.docStatus("CO")
+				.isActive(false)
+				.build();
 	}
 
 	@BeforeAll
@@ -218,7 +240,7 @@ class CommissionConfigFactoryTest
 				.build()
 				.createConfigData();
 
-		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(1); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(3); // guard
 
 		TestCommissionConfig.builder()
@@ -234,7 +256,7 @@ class CommissionConfigFactoryTest
 				.build()
 				.createConfigData();
 
-		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(3); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(6); // guard
 
 		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
@@ -257,6 +279,211 @@ class CommissionConfigFactoryTest
 	}
 
 	@Test
+	void createForNewCommissionInstances_no_contract()
+	{
+		//given
+		noContractFlatrateConditions.setIsActive(true);
+		saveRecord(noContractFlatrateConditions);
+
+		final ConfigData configData1 = TestCommissionConfig.builder()
+				.orgId(orgId)
+				.commissionProductId(commissionProduct1Id)
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
+				.build()
+				.createConfigData();
+
+		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
+		final BPartnerId salesRepLvl2Id = configData1.getName2BPartnerId().get("salesSupervisor");
+
+		final I_C_BPartner salesRepLvl1 = bPartnerBuilder()
+				.salesRepId(salesRepLvl2Id)
+				.name("noContractSalesRep")
+				.isVendor(true)
+				.build();
+
+		final BPartnerId salesRepLvl1Id = BPartnerId.ofRepoId(salesRepLvl1.getC_BPartner_ID());
+
+		final I_C_BPartner salesRepLvl0 = InterfaceWrapperHelper.load(salesRepLvl0Id, I_C_BPartner.class);
+		salesRepLvl0.setC_BPartner_SalesRep_ID(salesRepLvl1.getC_BPartner_ID());
+
+		InterfaceWrapperHelper.saveRecord(salesRepLvl0);
+
+		setSalesRepOfEndCustomerTo(salesRepLvl0Id);
+
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
+
+		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.orgId(orgId)
+				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
+				.customerBPartnerId(endCustomerId)
+				.salesRepBPartnerId(salesRepLvl0Id)
+				.salesProductId(salesProductId)
+				.commissionDate(date)
+				.build();
+
+		// when
+		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+
+		// then
+		assertThat(configs).hasSize(2);
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(3);
+
+		final CommissionConfig noContractConfig = configs.stream()
+				.map(HierarchyConfig::cast)
+				.filter(config -> config.getId().getRepoId() == noContractFlatrateConditions.getC_HierarchyCommissionSettings_ID())
+				.findFirst()
+				.orElse(null);
+
+		assertThat(noContractConfig).isNotNull();
+
+		assertThat(noContractConfig.getCommissionType()).isEqualTo(CommissionType.HIERARCHY_COMMISSION);
+
+		final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(noContractConfig);
+
+		assertThat(hierarchyConfig.getCommissionProductId().getRepoId()).isEqualTo(noContractFlatrateConditions.getM_Product_Flatrate_ID());
+
+		final HierarchyContract zeroPercentHierarchyContract = HierarchyContract.cast(hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id)));
+
+		assertThat(zeroPercentHierarchyContract).isNotNull();
+		assertThat(zeroPercentHierarchyContract.getCommissionPercent()).isEqualTo(Percent.ZERO);
+	}
+
+	@Test
+	void createForNewCommissionInstances_no_contract_inactive_GenericCommissionTerm()
+	{
+		// given
+		final ConfigData configData1 = TestCommissionConfig.builder()
+				.orgId(orgId)
+				.commissionProductId(commissionProduct1Id)
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
+				.build()
+				.createConfigData();
+
+		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
+		final BPartnerId salesRepLvl2Id = configData1.getName2BPartnerId().get("salesSupervisor");
+
+		final I_C_BPartner salesRepLvl1 = bPartnerBuilder()
+				.salesRepId(salesRepLvl2Id)
+				.name("noContractSalesRep")
+				.isVendor(true)
+				.build();
+
+		final BPartnerId salesRepLvl1Id = BPartnerId.ofRepoId(salesRepLvl1.getC_BPartner_ID());
+
+		final I_C_BPartner salesRepLvl0 = InterfaceWrapperHelper.load(salesRepLvl0Id, I_C_BPartner.class);
+		salesRepLvl0.setC_BPartner_SalesRep_ID(salesRepLvl1.getC_BPartner_ID());
+
+		InterfaceWrapperHelper.saveRecord(salesRepLvl0);
+
+		setSalesRepOfEndCustomerTo(salesRepLvl0Id);
+
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
+
+		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.orgId(orgId)
+				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
+				.customerBPartnerId(endCustomerId)
+				.salesRepBPartnerId(salesRepLvl0Id)
+				.salesProductId(salesProductId)
+				.commissionDate(date)
+				.build();
+		// when
+		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+
+		// then
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
+		assertThat(configs).hasSize(1);
+
+		final CommissionConfig config = configs.get(0);
+
+		assertThat(config.getCommissionType()).isEqualTo(CommissionType.HIERARCHY_COMMISSION);
+
+		final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(config);
+
+		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id));
+		assertThat(contractLvl1).isNull();
+	}
+
+	@Test
+	void createForNewCommissionInstances_no_contract_drafted_GenericCommissionTerm()
+	{
+		// given
+		noContractFlatrateConditions.setIsActive(true);
+		noContractFlatrateConditions.setDocStatus("DR");
+		saveRecord(noContractFlatrateConditions);
+
+		final ConfigData configData1 = TestCommissionConfig.builder()
+				.orgId(orgId)
+				.commissionProductId(commissionProduct1Id)
+				.pointsPrecision(3)
+				.subtractLowerLevelCommissionFromBase(true)
+				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
+				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
+				.build()
+				.createConfigData();
+
+		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
+		final BPartnerId salesRepLvl2Id = configData1.getName2BPartnerId().get("salesSupervisor");
+
+		final I_C_BPartner salesRepLvl1 = bPartnerBuilder()
+				.salesRepId(salesRepLvl2Id)
+				.name("noContractSalesRep")
+				.isVendor(true)
+				.build();
+
+		final BPartnerId salesRepLvl1Id = BPartnerId.ofRepoId(salesRepLvl1.getC_BPartner_ID());
+
+		final I_C_BPartner salesRepLvl0 = InterfaceWrapperHelper.load(salesRepLvl0Id, I_C_BPartner.class);
+		salesRepLvl0.setC_BPartner_SalesRep_ID(salesRepLvl1.getC_BPartner_ID());
+
+		InterfaceWrapperHelper.saveRecord(salesRepLvl0);
+
+		setSalesRepOfEndCustomerTo(salesRepLvl0Id);
+
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
+
+		final ConfigRequestForNewInstance contractRequest = ConfigRequestForNewInstance.builder()
+				.orgId(orgId)
+				.commissionHierarchy(commissionHierarchyFactory.createFor(endCustomerId))
+				.customerBPartnerId(endCustomerId)
+				.salesRepBPartnerId(salesRepLvl0Id)
+				.salesProductId(salesProductId)
+				.commissionDate(date)
+				.build();
+		// when
+		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+
+		// then
+		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
+
+		assertThat(configs).hasSize(1);
+
+		final CommissionConfig config = configs.get(0);
+
+		assertThat(config.getCommissionType()).isEqualTo(CommissionType.HIERARCHY_COMMISSION);
+
+		final HierarchyConfig hierarchyConfig = HierarchyConfig.cast(config);
+
+		final CommissionContract contractLvl1 = hierarchyConfig.getContractFor(Beneficiary.of(salesRepLvl1Id));
+		assertThat(contractLvl1).isNull();
+	}
+
+	@Test
 	void createForNewCommissionInstances_multiple_contracts_shareOnOwnRevenue()
 	{
 		final ConfigData configData1 = TestCommissionConfig.builder()
@@ -273,7 +500,7 @@ class CommissionConfigFactoryTest
 				.build()
 				.createConfigData();
 
-		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(1); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(3); // guard
 
 		TestCommissionConfig.builder()
@@ -289,7 +516,7 @@ class CommissionConfigFactoryTest
 				.build()
 				.createConfigData();
 
-		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(3); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(6); // guard
 
 		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
@@ -386,7 +613,7 @@ class CommissionConfigFactoryTest
 				.build()
 				.createConfigData();
 
-		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(1); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(3); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(4); // guard - 3 new sales reps
 
@@ -403,7 +630,7 @@ class CommissionConfigFactoryTest
 				.build()
 				.createConfigData();
 
-		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(2); // guard
+		assertThat(POJOLookupMap.get().getRecords(I_C_HierarchyCommissionSettings.class)).hasSize(3); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(6); // guard
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(4); // guard - no additional new sales reps
 
@@ -441,4 +668,70 @@ class CommissionConfigFactoryTest
 		SnapshotMatcher.expect(result).toMatchSnapshot();
 	}
 
+	@Builder(builderMethodName = "flatrateConditionsBuilder", builderClassName = "FlatrateConditionsBuilder")
+	public static I_C_Flatrate_Conditions buildCommissionContractConditions(
+			final boolean isSubtractLowerLevelCommissionFromBase,
+			final int noContractCommissionProductId,
+			final int flatrateConditionsId,
+			final boolean isActive,
+			final String name,
+			final BigDecimal percentageOfBasePoint,
+			final String docStatus
+	)
+	{
+		final I_M_Product noContractCommissionProduct = newInstance(I_M_Product.class);
+		noContractCommissionProduct.setM_Product_ID(noContractCommissionProductId);
+		noContractCommissionProduct.setM_Product_Category_ID(1);
+		saveRecord(noContractCommissionProduct);
+
+		final I_C_HierarchyCommissionSettings noContractHierarchySettings = newInstance(I_C_HierarchyCommissionSettings.class);
+		noContractHierarchySettings.setName(name);
+		noContractHierarchySettings.setIsSubtractLowerLevelCommissionFromBase(isSubtractLowerLevelCommissionFromBase);
+		noContractHierarchySettings.setPointsPrecision(2);
+		noContractHierarchySettings.setCommission_Product_ID(noContractCommissionProductId);
+		saveRecord(noContractHierarchySettings);
+
+		final I_C_CommissionSettingsLine commissionSettingsLine = newInstance(I_C_CommissionSettingsLine.class);
+		commissionSettingsLine.setC_HierarchyCommissionSettings(noContractHierarchySettings);
+		commissionSettingsLine.setSeqNo(10);
+		commissionSettingsLine.setAD_Org_ID(0);
+		commissionSettingsLine.setPercentOfBasePoints(percentageOfBasePoint);
+		saveRecord(commissionSettingsLine);
+
+		final I_C_Flatrate_Conditions flatrateConditions = newInstance(I_C_Flatrate_Conditions.class);
+		flatrateConditions.setC_Flatrate_Conditions_ID(flatrateConditionsId);
+		flatrateConditions.setDocStatus(docStatus);
+		flatrateConditions.setIsActive(isActive);
+		flatrateConditions.setM_Product_Flatrate_ID(noContractCommissionProductId);
+		flatrateConditions.setC_HierarchyCommissionSettings_ID(noContractHierarchySettings.getC_HierarchyCommissionSettings_ID());
+		saveRecord(flatrateConditions);
+
+		return flatrateConditions;
+	}
+
+	@Builder(builderMethodName = "bPartnerBuilder", builderClassName = "BPartnerBuilder")
+	private I_C_BPartner createBPartner(
+			final BPartnerId salesRepId,
+			final String name,
+			final boolean isVendor)
+	{
+		final I_C_BPartner bPartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bPartner.setIsVendor(isVendor);
+		bPartner.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
+		bPartner.setName(name);
+		InterfaceWrapperHelper.saveRecord(bPartner);
+
+		final I_C_Location location = InterfaceWrapperHelper.newInstance(I_C_Location.class);
+		location.setC_Country_ID(1);
+		InterfaceWrapperHelper.saveRecord(location);
+
+		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		bPartnerLocation.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		bPartnerLocation.setIsBillTo(true);
+		bPartnerLocation.setC_Location_ID(location.getC_Location_ID());
+
+		InterfaceWrapperHelper.saveRecord(bPartnerLocation);
+
+		return bPartner;
+	}
 }

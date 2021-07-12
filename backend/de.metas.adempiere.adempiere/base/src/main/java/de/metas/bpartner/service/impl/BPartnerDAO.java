@@ -1741,4 +1741,13 @@ public class BPartnerDAO implements IBPartnerDAO
 				.firstId(this::getBPartnerLocationIdByRepoId);
 	}
 
+	@Override
+	public List<I_C_BPartner> retrieveByIds(final Set<BPartnerId> bpartnerIds)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds)
+				.create()
+				.list();
+	}
+
 }

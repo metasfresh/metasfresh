@@ -18,9 +18,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.AfterAll;
@@ -115,7 +117,7 @@ class CommissionInstanceRepositoryTest
 		commissionProductId = ProductId.ofRepoId(commissionProductRecord.getM_Product_ID());
 
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService);
+		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
 		final CommissionRecordStagingService commissionInstanceRecordStagingService = new CommissionRecordStagingService();
 		commissionInstanceRepository = new CommissionInstanceRepository(commissionConfigFactory, commissionInstanceRecordStagingService);
 	}
