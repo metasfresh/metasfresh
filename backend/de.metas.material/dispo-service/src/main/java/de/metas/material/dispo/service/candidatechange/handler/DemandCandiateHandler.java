@@ -156,12 +156,15 @@ public class DemandCandiateHandler implements CandidateHandler
 		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidatebyId(childStockCandidate.get().getId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
+
+		final BigDecimal previousQty = candidate.getQuantity().negate();
+
 		final SaveResult applyDeltaRequest = SaveResult.builder()
 				.candidate(candidate
-						.withQuantity(ZERO)
-						.withDate(timeOfDeletedStock.getDate())
-						.withSeqNo(timeOfDeletedStock.getSeqNo()))
-				.previousQty(stockDeleteResult.getPreviousQty())
+								   .withQuantity(ZERO)
+								   .withDate(timeOfDeletedStock.getDate())
+								   .withSeqNo(timeOfDeletedStock.getSeqNo()))
+				.previousQty(previousQty)
 				.build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(applyDeltaRequest);
 	}

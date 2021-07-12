@@ -13,6 +13,7 @@ import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService.SaveResult;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.NonNull;
@@ -23,7 +24,6 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -45,8 +45,7 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -96,11 +95,13 @@ public class StockCandidateServiceTests
 		dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
 		parentIdSequence = 1;
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService);
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService);
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		stockCandidateService = new StockCandidateService(
 				candidateRepository,
 				candidateRepositoryWriteService);

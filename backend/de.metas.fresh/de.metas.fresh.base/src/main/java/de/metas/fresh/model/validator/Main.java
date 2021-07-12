@@ -22,9 +22,12 @@ package de.metas.fresh.model.validator;
  * #L%
  */
 
-import java.text.DateFormat;
-
+import de.metas.fresh.model.I_Fresh_QtyOnHand;
+import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
 import de.metas.fresh.product.ProductPOCopyRecordSupport;
+import de.metas.i18n.Language;
+import de.metas.notification.INotificationBL;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
@@ -52,13 +55,9 @@ import org.adempiere.mm.attributes.listeners.inAusLand.InvoiceLineInAusLandModel
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.listeners.inAusLand.OrderLineInAusLandModelAttributeSetInstanceListener;
 import org.adempiere.model.CopyRecordFactory;
-
-import de.metas.fresh.model.I_Fresh_QtyOnHand;
-import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextProvider;
-import de.metas.i18n.Language;
-import de.metas.notification.INotificationBL;
-import de.metas.util.Services;
 import org.compiere.model.I_M_Product;
+
+import java.text.DateFormat;
 
 public class Main extends AbstractModuleInterceptor
 {
@@ -134,7 +133,6 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand());
 		engine.addModelValidator(new de.metas.fresh.freshQtyOnHand.model.validator.Fresh_QtyOnHand_Line());
 
-		engine.addModelValidator(de.metas.fresh.material.interceptor.Fresh_QtyOnHand.INSTANCE);
 		engine.addModelValidator(de.metas.fresh.material.interceptor.PMM_PurchaseCandidate.INSTANCE);
 
 		// these two are now spring components
