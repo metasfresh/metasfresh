@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem;
 
+import de.metas.common.util.CoalesceUtil;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
@@ -273,7 +274,7 @@ public class ExternalSystemConfigRepo
 		return ExternalSystemParentConfig.builder()
 				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
-				.camelUrl(externalSystemConfigRecord.getCamelURL())
+				.camelUrl(CoalesceUtil.coalesce(externalSystemConfigRecord.getCamelURL(), "NOT-SET")) // TODO: remove when this branch is updated
 				.name(externalSystemConfigRecord.getName());
 	}
 
