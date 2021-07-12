@@ -65,9 +65,9 @@ import de.metas.servicerepair.project.service.commands.CreateQuotationFromProjec
 import de.metas.servicerepair.project.service.commands.CreateServiceRepairProjectCommand;
 import de.metas.servicerepair.project.service.requests.AddQtyToProjectTaskRequest;
 import de.metas.servicerepair.project.service.requests.CreateQuotationFromProjectRequest;
-import de.metas.servicerepair.repair_order.RepairManufacturingCostCollector;
-import de.metas.servicerepair.repair_order.RepairManufacturingOrderInfo;
 import de.metas.servicerepair.repair_order.RepairManufacturingOrderService;
+import de.metas.servicerepair.repair_order.model.RepairManufacturingCostCollector;
+import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderInfo;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -438,6 +438,8 @@ public class ServiceRepairProjectService
 					.reservedVhuId(repairedVhuId)
 					.build());
 		}
+
+		// TODO: import from projectConsumptionSummaryRepository.getByRepairOrderId(...)
 
 		task = task.withRepairOrderDone(true);
 		projectTaskRepository.save(task);

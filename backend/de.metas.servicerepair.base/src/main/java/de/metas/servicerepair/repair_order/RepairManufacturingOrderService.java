@@ -40,6 +40,9 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectInfo;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTask;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
+import de.metas.servicerepair.repair_order.model.RepairManufacturingCostCollector;
+import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderInfo;
+import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderServicePerformed;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -70,17 +73,27 @@ public class RepairManufacturingOrderService
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final ProductPlanningService productPlanningService;
+	private final RepairManufacturingOrderServicePerformedRepository servicesPerformedRepository;
 
 	public RepairManufacturingOrderService(
-			@NonNull final ProductPlanningService productPlanningService)
+			@NonNull final ProductPlanningService productPlanningService,
+			@NonNull final RepairManufacturingOrderServicePerformedRepository servicesPerformedRepository)
 	{
 		this.productPlanningService = productPlanningService;
+		this.servicesPerformedRepository = servicesPerformedRepository;
+	}
+
+	public boolean isCompletedRepairOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		final I_PP_Order record = ppOrderBL.getById(ppOrderId);
+
+		return isRepairManufacturingOrder(record)
+				&& DocStatus.ofNullableCodeOrUnknown(record.getDocStatus()).isCompleted();
 	}
 
 	public Optional<RepairManufacturingOrderInfo> extractFromRecord(@NonNull final I_PP_Order record)
 	{
-		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofNullableCode(record.getDocBaseType());
-		if (docBaseType == null || !docBaseType.isRepairOrder())
+		if (!isRepairManufacturingOrder(record))
 		{
 			return Optional.empty();
 		}
@@ -102,6 +115,12 @@ public class RepairManufacturingOrderService
 				.build());
 	}
 
+	private boolean isRepairManufacturingOrder(final @NonNull I_PP_Order record)
+	{
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofNullableCode(record.getDocBaseType());
+		return docBaseType != null && docBaseType.isRepairOrder();
+	}
+
 	private ImmutableList<RepairManufacturingCostCollector> getCostCollectors(final PPOrderId repairOrderId)
 	{
 		return ppCostCollectorBL.getByOrderId(repairOrderId)
@@ -119,7 +138,7 @@ public class RepairManufacturingOrderService
 		{
 			return null;
 		}
-		
+
 		final CostCollectorType costCollectorType = CostCollectorType.ofCode(ppCostCollector.getCostCollectorType());
 		if (costCollectorType.isComponentIssue())
 		{
@@ -223,6 +242,21 @@ public class RepairManufacturingOrderService
 				.build());
 
 		return repairOrderId;
+	}
+
+	public Optional<RepairManufacturingOrderServicePerformed> getPerformedService(
+			@NonNull final PPOrderId repairOrderId,
+			@NonNull final ProductId serviceId)
+	{
+		return servicesPerformedRepository.getByRepairOrderAndServiceId(repairOrderId, serviceId);
+	}
+
+	public void updateServicePerformed(
+			@NonNull final PPOrderId repairOrderId,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qty)
+	{
+		servicesPerformedRepository.addOrUpdateServicePerformed(repairOrderId, productId, qty);
 	}
 
 }

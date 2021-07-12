@@ -20,38 +20,27 @@
  * #L%
  */
 
-package de.metas.servicerepair.repair_order;
+package de.metas.servicerepair.repair_order.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.eevolution.api.PPOrderAndCostCollectorId;
 import org.eevolution.api.PPOrderId;
 
+/**
+ * Service performed in manufacturing/repair order.
+ * This service will be imported to repair project when the repair order is done.
+ * <p>
+ * Latter on might be included on quotation and/or sales order,
+ * but that depends on other rules (warranty case etc).
+ */
 @Value
 @Builder
-public class RepairManufacturingOrderInfo
+public class RepairManufacturingOrderServicePerformed
 {
-	@NonNull PPOrderId id;
-	@NonNull ProjectId projectId;
-
-	@NonNull ProductId repairedProductId;
-	/**
-	 * shall be ONE
-	 */
-	@NonNull Quantity repairedQty;
-
-	@NonNull ImmutableList<RepairManufacturingCostCollector> costCollectors;
-
-	public ImmutableSet<PPOrderAndCostCollectorId> getCostCollectorIds()
-	{
-		return getCostCollectors().stream()
-				.map(RepairManufacturingCostCollector::getId)
-				.collect(ImmutableSet.toImmutableSet());
-	}
+	@NonNull PPOrderId repairOrderId;
+	@NonNull ProductId serviceId;
+	@NonNull Quantity qty;
 }

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.servicerepair.repair_order;
+package de.metas.servicerepair.repair_order.model;
 
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
