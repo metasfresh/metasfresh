@@ -25,7 +25,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -229,8 +228,8 @@ public class OrderLineBuilder
 
 	public boolean isProductAndUomMatching(@Nullable final ProductId productId, @Nullable final UomId uomId)
 	{
-		return Objects.equals(getProductId(), productId)
-				&& Objects.equals(getUomId(), uomId);
+		return ProductId.equals(getProductId(), productId)
+				&& UomId.equals(getUomId(), uomId);
 	}
 
 	public OrderLineBuilder details(@NonNull final Collection<OrderLineDetailCreateRequest> details)
