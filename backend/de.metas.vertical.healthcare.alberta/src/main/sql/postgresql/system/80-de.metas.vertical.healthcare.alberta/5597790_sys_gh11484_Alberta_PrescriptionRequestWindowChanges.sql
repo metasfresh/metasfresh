@@ -206,7 +206,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2021-07-12 10:5
 
 -- 2021-07-12T08:57:28.935Z
 -- URL zum Konzept
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='KostentrÃ¤ger', PrintName='KostentrÃ¤ger',Updated=TO_TIMESTAMP('2021-07-12 10:57:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579182 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Kostenträger', PrintName='Kostenträger',Updated=TO_TIMESTAMP('2021-07-12 10:57:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579182 AND AD_Language='nl_NL'
 ;
 
 -- 2021-07-12T08:57:28.938Z
@@ -216,7 +216,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='KostentrÃ¤ger', PrintName='K
 
 -- 2021-07-12T09:00:53.236Z
 -- URL zum Konzept
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,575014,579182,0,19,541622,'C_BPartner_Payer_ID','(SELECT C_BPartner_Payer_ID from C_BPartner_AlbertaPatient where C_BPartner_ID  = C_BPartner_AlbertaPatient=C_BPartner_Patient_ID)',TO_TIMESTAMP('2021-07-12 11:00:53','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.vertical.healthcare.alberta',0,10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N',0,'KostentrÃ¤ger',0,0,TO_TIMESTAMP('2021-07-12 11:00:53','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,575014,579182,0,19,541622,'C_BPartner_Payer_ID','(SELECT C_BPartner_Payer_ID from C_BPartner_AlbertaPatient where C_BPartner_ID  = C_BPartner_AlbertaPatient=C_BPartner_Patient_ID)',TO_TIMESTAMP('2021-07-12 11:00:53','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.vertical.healthcare.alberta',0,10,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N',0,'Kostenträger',0,0,TO_TIMESTAMP('2021-07-12 11:00:53','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2021-07-12T09:00:53.237Z
@@ -232,7 +232,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Create field for C_BPartner_Payer_ID
 -- 2021-07-12T09:01:44.569Z
 -- URL zum Konzept
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,575014,650281,0,543839,0,TO_TIMESTAMP('2021-07-12 11:01:44','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','KostentrÃ¤ger',50,50,0,1,1,TO_TIMESTAMP('2021-07-12 11:01:44','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,575014,650281,0,543839,0,TO_TIMESTAMP('2021-07-12 11:01:44','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Kostenträger',50,50,0,1,1,TO_TIMESTAMP('2021-07-12 11:01:44','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-07-12T09:01:44.570Z
@@ -258,7 +258,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=650281
 -- Display field C_BPartner_Payer_ID
 -- 2021-07-12T09:03:07.326Z
 -- URL zum Konzept
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,650281,0,543839,546196,587059,'F',TO_TIMESTAMP('2021-07-12 11:03:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'KostentrÃ¤ger',20,0,0,TO_TIMESTAMP('2021-07-12 11:03:07','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,650281,0,543839,546196,587059,'F',TO_TIMESTAMP('2021-07-12 11:03:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Kostenträger',20,0,0,TO_TIMESTAMP('2021-07-12 11:03:07','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2021-07-12T09:04:57.854Z
@@ -309,4 +309,9 @@ UPDATE AD_Column SET AD_Val_Rule_ID=540547,Updated=TO_TIMESTAMP('2021-07-12 11:3
 -- 2021-07-12T09:56:42.940Z
 -- URL zum Konzept
 UPDATE AD_Val_Rule SET Code='C_Order.C_Order_ID in ( SELECT C_Order.C_Order_ID from C_Order where C_Order.issotrx = ''Y'' and C_Order.C_BPartner_ID = @C_BPartner_Patient_ID@)',Updated=TO_TIMESTAMP('2021-07-12 11:56:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540547
+;
+
+-- 2021-07-12T12:34:55.130Z
+-- URL zum Konzept
+UPDATE AD_Val_Rule SET Code='C_Order.C_Order_ID in ( SELECT C_Order.C_Order_ID from C_Order where C_Order.issotrx = ''Y'' and C_Order.C_BPartner_ID = @C_BPartner_Patient_ID/-1@)',Updated=TO_TIMESTAMP('2021-07-12 14:34:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540547
 ;
