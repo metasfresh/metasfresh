@@ -1,5 +1,6 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -34,6 +35,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.Percent;
@@ -149,14 +151,17 @@ public class CommissionConfigFactory
 		return CollectionUtils.extractDistinctElements(contractId2Config.values(), Function.identity());
 	}
 
+	/**
+	 * Creates commission contracts for bpartners that don't have one yet
+	 */
 	@NonNull
 	private ImmutableList<I_C_Flatrate_Term> createGenericContract(
 			@NonNull final I_C_Flatrate_Conditions flatrateCondition,
-			@NonNull final ImmutableList<I_C_Flatrate_Term> commissionTermRecords,
+			@NonNull final ImmutableList<I_C_Flatrate_Term> existingCommissionTermRecords,
 			@NonNull final ImmutableList<BPartnerId> hierarchyBPartnerIds,
 			@NonNull final Beneficiary endCustomer)
 	{
-		final ImmutableSet<Integer> salesRepIdsWithContract = commissionTermRecords.stream()
+		final ImmutableSet<Integer> salesRepIdsWithContract = existingCommissionTermRecords.stream()
 				.map(I_C_Flatrate_Term::getBill_BPartner_ID)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -186,6 +191,7 @@ public class CommissionConfigFactory
 				.isCompleteDocument(true)
 				.build();
 
+		Loggables.withLogger(logger, Level.INFO).addLog("Commission contracts created for bPartners: {}", salesRepIdsWithoutContract);
 		return termCreator.createTermsForBPartners();
 	}
 
