@@ -77,6 +77,7 @@ import de.metas.util.JSONObjectMapper;
 import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.util.web.exception.MissingResourceException;
+import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
@@ -98,6 +99,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -107,6 +109,7 @@ import java.util.Optional;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_ID;
+import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.BP_EXTERNAL_VERSION;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.BP_GROUP_RECORD_NAME;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.C_BBPARTNER_LOCATION_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.C_BPARTNER_EXTERNAL_ID;
@@ -177,7 +180,8 @@ class BpartnerRestControllerTest
 				new BPGroupRepository(),
 				new GreetingRepository(),
 				currencyRepository,
-				externalReferenceRestControllerService);
+				externalReferenceRestControllerService,
+				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
@@ -342,6 +346,7 @@ class BpartnerRestControllerTest
 
 		final JsonRequestBPartnerUpsertItem requestItem = JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier(bPartnerIdentifier)
+				.externalVersion(BP_EXTERNAL_VERSION)
 				.bpartnerComposite(bpartnerComposite)
 				.build();
 

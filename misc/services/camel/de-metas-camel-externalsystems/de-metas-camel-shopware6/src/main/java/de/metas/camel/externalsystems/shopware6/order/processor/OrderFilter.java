@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.order.processor;
 
+import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransaction;

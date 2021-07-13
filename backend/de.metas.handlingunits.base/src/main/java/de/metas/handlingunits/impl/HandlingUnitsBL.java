@@ -252,8 +252,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public void markDestroyed(final IHUContext huContext, final I_M_HU hu)
+	public void markDestroyed(@NonNull final IHUContext huContext, final I_M_HU hu)
 	{
+		if(huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
+		{
+			logger.info("markDestroyed - the given M_HU_ID={} is temporarily protected from destruction; -> nothing to do", hu.getM_HU_ID());
+			return;
+		}
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
 		handlingUnitsRepo.saveHU(hu);

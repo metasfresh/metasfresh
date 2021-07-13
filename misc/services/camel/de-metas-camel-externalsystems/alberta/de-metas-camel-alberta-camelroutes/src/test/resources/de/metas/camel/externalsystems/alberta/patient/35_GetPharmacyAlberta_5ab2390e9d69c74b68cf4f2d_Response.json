@@ -5,8 +5,8 @@
   "postalCode": "99999",
   "city": "Testcity",
   "phone": "01234-5677",
-  "phone": "01234-5678",
+  "fax": "01234-5678",
   "email": "testapotheke@example.com",
-  "homepage": null,
+  "website": "www.pharmacy.com",
   "timestamp": "2018-07-11T09:52:55.235Z"
 }

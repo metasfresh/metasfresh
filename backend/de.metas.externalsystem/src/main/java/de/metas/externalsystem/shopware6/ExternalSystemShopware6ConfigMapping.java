@@ -42,6 +42,18 @@ public class ExternalSystemShopware6ConfigMapping
 	@NonNull
 	String paymentRule;
 
+	@NonNull
+	String bpartnerIfExists;
+
+	@NonNull
+	String bpartnerIfNotExists;
+
+	@NonNull
+	String bpartnerLocationIfExists;
+
+	@NonNull
+	String bpartnerLocationIfNotExists;
+
 	@Nullable
 	PaymentTermId paymentTermId;
 
@@ -60,6 +72,10 @@ public class ExternalSystemShopware6ConfigMapping
 			final int docTypeOrderId,
 			@NonNull final String paymentRule,
 			final int paymentTermId,
+			@NonNull final String bpartnerIfExists,
+			@NonNull final String bpartnerIfNotExists,
+			@NonNull final String bpartnerLocationIfExists,
+			@NonNull final String bpartnerLocationIfNotExists,
 			@Nullable final String sw6CustomerGroup,
 			@Nullable final String sw6PaymentMethod,
 			@Nullable final String description)
@@ -71,6 +87,10 @@ public class ExternalSystemShopware6ConfigMapping
 		this.sw6CustomerGroup = sw6CustomerGroup;
 		this.sw6PaymentMethod = sw6PaymentMethod;
 		this.description = description;
+		this.bpartnerIfExists = bpartnerIfExists;
+		this.bpartnerIfNotExists = bpartnerIfNotExists;
+		this.bpartnerLocationIfExists = bpartnerLocationIfExists;
+		this.bpartnerLocationIfNotExists = bpartnerLocationIfNotExists;
 	}
 
 }

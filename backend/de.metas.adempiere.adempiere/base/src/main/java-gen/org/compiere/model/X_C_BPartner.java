@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1695362700L;
+	private static final long serialVersionUID = -1002168590L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -116,6 +116,60 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getAddress1() 
 	{
 		return get_ValueAsString(COLUMNNAME_Address1);
+	}
+
+	/** 
+	 * AlbertaRole AD_Reference_ID=541322
+	 * Reference name: AlbertaRole
+	 */
+	public static final int ALBERTAROLE_AD_Reference_ID=541322;
+	/** Caregiver = CG */
+	public static final String ALBERTAROLE_Caregiver = "CG";
+	/** Caretaker = CT */
+	public static final String ALBERTAROLE_Caretaker = "CT";
+	/** General Practitioner = GP */
+	public static final String ALBERTAROLE_GeneralPractitioner = "GP";
+	/** Health Insurance = HI */
+	public static final String ALBERTAROLE_HealthInsurance = "HI";
+	/** Hostpital = HO */
+	public static final String ALBERTAROLE_Hostpital = "HO";
+	/** Main Producer = MP */
+	public static final String ALBERTAROLE_MainProducer = "MP";
+	/** Nursing Home = NH */
+	public static final String ALBERTAROLE_NursingHome = "NH";
+	/** Nursing Service = NS */
+	public static final String ALBERTAROLE_NursingService = "NS";
+	/** Payer = PA */
+	public static final String ALBERTAROLE_Payer = "PA";
+	/** Doctor = PD */
+	public static final String ALBERTAROLE_Doctor = "PD";
+	/** Pharmacy = PH */
+	public static final String ALBERTAROLE_Pharmacy = "PH";
+	/** Preferred Pharmacy = PP */
+	public static final String ALBERTAROLE_PreferredPharmacy = "PP";
+	/** Pacient = PT */
+	public static final String ALBERTAROLE_Pacient = "PT";
+	@Override
+	public void setAlbertaRole (final @Nullable java.lang.String AlbertaRole)
+	{
+		set_Value (COLUMNNAME_AlbertaRole, AlbertaRole);
+	}
+
+	@Override
+	public java.lang.String getAlbertaRole() 
+	{
+		return get_ValueAsString(COLUMNNAME_AlbertaRole);
+	}
+
+	@Override
+	public void setAlbertaTitle (final @Nullable java.lang.String AlbertaTitle)
+	{
+		throw new IllegalArgumentException ("AlbertaTitle is virtual column");	}
+
+	@Override
+	public java.lang.String getAlbertaTitle() 
+	{
+		return get_ValueAsString(COLUMNNAME_AlbertaTitle);
 	}
 
 	@Override
@@ -797,6 +851,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsAlbertaDoctor (final boolean IsAlbertaDoctor)
+	{
+		throw new IllegalArgumentException ("IsAlbertaDoctor is virtual column");	}
+
+	@Override
+	public boolean isAlbertaDoctor() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAlbertaDoctor);
+	}
+
+	@Override
 	public void setIsAllowActionPrice (final boolean IsAllowActionPrice)
 	{
 		set_Value (COLUMNNAME_IsAllowActionPrice, IsAllowActionPrice);
@@ -818,6 +883,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isAllowPriceMutation() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowPriceMutation);
+	}
+
+	@Override
+	public void setIsArchived (final boolean IsArchived)
+	{
+		throw new IllegalArgumentException ("IsArchived is virtual column");	}
+
+	@Override
+	public boolean isArchived() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsArchived);
 	}
 
 	@Override
@@ -1913,6 +1989,17 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getTaxID() 
 	{
 		return get_ValueAsString(COLUMNNAME_TaxID);
+	}
+
+	@Override
+	public void setTitleShort (final @Nullable java.lang.String TitleShort)
+	{
+		throw new IllegalArgumentException ("TitleShort is virtual column");	}
+
+	@Override
+	public java.lang.String getTitleShort() 
+	{
+		return get_ValueAsString(COLUMNNAME_TitleShort);
 	}
 
 	@Override

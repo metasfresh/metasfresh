@@ -2,6 +2,7 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPackingMaterialsCollector;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -18,12 +19,14 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IContextAware;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -46,6 +49,11 @@ import java.util.Properties;
 
 	private final List<EmptyHUListener> emptyHUListeners = new ArrayList<>();
 
+	/**
+	 * See javadoc for {@link de.metas.handlingunits.IHUContext#temporarilyDontDestroyHU(HuId)}.
+	 */
+	private final HashSet<HuId> huIdsToNotDestroy = new HashSet<>();
+	
 	public MutableHUContext(@NonNull final Object contextProvider)
 	{
 		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(contextProvider);
@@ -117,7 +125,9 @@ import java.util.Properties;
 		huContextCopy.setDate(getDate());
 		huContextCopy.setHUPackingMaterialsCollector(_huPackingMaterialsCollector.copy());
 		huContextCopy._trxListeners = getTrxListeners().copy(); // using the getter to make sure they are loaded
-
+		
+		huContextCopy.huIdsToNotDestroy.addAll(huIdsToNotDestroy);
+		
 		emptyHUListeners.forEach(huContextCopy::addEmptyHUListener);
 
 		return huContextCopy;
@@ -273,5 +283,18 @@ import java.util.Properties;
 		{
 			attributesStorageFactory.flush();
 		}
+	}
+
+	@Override
+	public IAutoCloseable temporarilyDontDestroyHU(@NonNull final HuId huId)
+	{
+		huIdsToNotDestroy.add(huId);
+		return () -> huIdsToNotDestroy.remove(huId);
+	}
+
+	@Override
+	public boolean isDontDestroyHu(@NonNull final HuId huId)
+	{
+		return huIdsToNotDestroy.contains(huId);
 	}
 }

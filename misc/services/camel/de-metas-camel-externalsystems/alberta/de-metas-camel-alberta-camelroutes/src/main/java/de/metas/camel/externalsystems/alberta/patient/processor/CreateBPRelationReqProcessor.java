@@ -22,9 +22,10 @@
 
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
+import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
 import de.metas.camel.externalsystems.common.BPRelationsCamelRequest;
-import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.bprelation.JsonBPRelationRole;
@@ -36,6 +37,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.RuntimeCamelException;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -46,8 +48,6 @@ public class CreateBPRelationReqProcessor implements Processor
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
-		final JsonResponseBPartnerCompositeUpsert bPartnerUpsertResult = exchange.getIn().getBody(JsonResponseBPartnerCompositeUpsert.class);
-
 		final String orgCode = exchange.getProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ORG_CODE, String.class);
 		if (orgCode == null)
 		{
@@ -60,15 +60,12 @@ public class CreateBPRelationReqProcessor implements Processor
 			throw new RuntimeException("Missing camel route property: " + GetPatientsRouteConstants.ROUTE_PROPERTY_BP_IDENTIFIER_TO_ROLE);
 		}
 
-		if (bPartnerUpsertResult == null
-				|| bPartnerUpsertResult.getResponseItems() == null
-				|| bPartnerUpsertResult.getResponseItems().isEmpty())
-		{
-			throw new RuntimeException("Empty JsonResponseBPartnerCompositeUpsert.ResponseItems! sourceBPartnerIdentifier:"
-					+ bPartnerRoleInfoProvider.getSourceBPartnerIdentifier());
-		}
+		final GetPatientsRouteContext routeContext = ProcessorHelper.getPropertyOrThrowError(exchange, GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, GetPatientsRouteContext.class);
 
-		exchange.getIn().setBody(buildBPRelationsUpsertRequest(orgCode, bPartnerRoleInfoProvider, bPartnerUpsertResult.getResponseItems()));
+		exchange.getIn().setBody(buildBPRelationsUpsertRequest(orgCode,
+															   bPartnerRoleInfoProvider,
+															   routeContext.getImportedBPartnerResponseList(),
+															   routeContext.getRootBPartnerIdForUsers()));
 
 		exchange.removeProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_CURRENT_PATIENT);
 		exchange.removeProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_BP_IDENTIFIER_TO_ROLE);
@@ -78,7 +75,8 @@ public class CreateBPRelationReqProcessor implements Processor
 	private BPRelationsCamelRequest buildBPRelationsUpsertRequest(
 			@NonNull final String orgCode,
 			@NonNull final BPartnerRoleInfoProvider bPartnerRoleInfoProvider,
-			@NonNull final List<JsonResponseBPartnerCompositeUpsertItem> responseItems)
+			@NonNull final List<JsonResponseBPartnerCompositeUpsertItem> responseItems,
+			@Nullable final JsonMetasfreshId rootBPartnerIdForUsers)
 	{
 		final JsonResponseBPartnerCompositeUpsertItem sourceBPUpsertItem =
 				getResponseItemBySourceBPIdentifier(bPartnerRoleInfoProvider.getSourceBPartnerIdentifier(), responseItems);
@@ -90,7 +88,7 @@ public class CreateBPRelationReqProcessor implements Processor
 
 		final List<JsonRequestBPRelationTarget> relatesTo = responseItems
 				.stream()
-				.map(responseItem -> buildBPRelationTarget(bPartnerRoleInfoProvider, responseItem))
+				.map(responseItem -> buildBPRelationTarget(bPartnerRoleInfoProvider, responseItem, rootBPartnerIdForUsers))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.collect(Collectors.toList());
@@ -110,7 +108,8 @@ public class CreateBPRelationReqProcessor implements Processor
 	@NonNull
 	private Optional<JsonRequestBPRelationTarget> buildBPRelationTarget(
 			@NonNull final BPartnerRoleInfoProvider bPartnerRoleInfoProvider,
-			@NonNull final JsonResponseBPartnerCompositeUpsertItem responseItem)
+			@NonNull final JsonResponseBPartnerCompositeUpsertItem responseItem,
+			@Nullable final JsonMetasfreshId rootBPartnerIdForUsers)
 	{
 		try
 		{
@@ -123,7 +122,8 @@ public class CreateBPRelationReqProcessor implements Processor
 
 			final String targetBPartnerIdentifier = responseItem.getResponseBPartnerItem().getIdentifier();
 
-			if (bPartnerRoleInfoProvider.getSourceBPartnerIdentifier().equals(targetBPartnerIdentifier))
+			if ((rootBPartnerIdForUsers != null && String.valueOf(rootBPartnerIdForUsers.getValue()).equals(targetBPartnerIdentifier))
+				|| bPartnerRoleInfoProvider.getSourceBPartnerIdentifier().equals(targetBPartnerIdentifier))
 			{
 				return Optional.empty();
 			}

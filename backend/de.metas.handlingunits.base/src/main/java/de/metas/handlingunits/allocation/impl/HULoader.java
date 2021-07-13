@@ -251,7 +251,7 @@ public class HULoader
 	 *
 	 * @return result (already processed)
 	 */
-	private IMutableAllocationResult unloadSourceThenLoadDestination(final IAllocationRequest unloadRequest)
+	private IMutableAllocationResult unloadSourceThenLoadDestination(@NonNull final IAllocationRequest unloadRequest)
 	{
 		//
 		// HU Context to use
@@ -471,7 +471,7 @@ public class HULoader
 				unloadTrx.getDate());
 	}
 
-	// static
+	@Nullable
 	private IAttributeStorage getAttributeStorageOrNull(final IHUTransactionAttributeBuilder attributeStorageBuilder, final IHUTransactionCandidate trx, final boolean useVHU)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageBuilder.getAttributeStorageFactory();

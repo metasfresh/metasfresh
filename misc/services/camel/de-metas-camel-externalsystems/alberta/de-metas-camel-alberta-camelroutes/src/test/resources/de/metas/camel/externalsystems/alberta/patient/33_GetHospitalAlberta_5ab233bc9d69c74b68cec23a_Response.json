@@ -10,7 +10,7 @@
   "fax": "01234-5678",
   "name": "Test-Hospital-Name",
   "phone": "01234-5677",
-  "postalCode": "99999",
+  "postalCode": "postalCode",
   "timestamp": "2019-02-20T21:58:14.000Z",
-  "website": "http://example.com/"
+  "website": "http://hospital.com/"
 }

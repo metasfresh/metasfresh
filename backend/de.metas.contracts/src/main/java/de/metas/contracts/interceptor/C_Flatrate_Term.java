@@ -511,8 +511,6 @@ public class C_Flatrate_Term
 	/**
 	 * task #1169
 	 * In case the term to be completed overlaps with other term regarding time period and product the user must be announced about this and the new term shall not be completed
-	 *
-	 * @param term
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void preventOverlappingTerms_OnComplete(final I_C_Flatrate_Term term)

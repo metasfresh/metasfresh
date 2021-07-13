@@ -1,14 +1,14 @@
 package de.metas.material.dispo.commons.repository.repohelpers;
 
-import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
-import static de.metas.testsupport.MetasfreshAssertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
+import de.metas.material.dispo.commons.candidate.CandidateId;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
+import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -17,15 +17,13 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.Test;
 
-import de.metas.material.dispo.commons.candidate.CandidateId;
-import de.metas.material.dispo.commons.repository.DateAndSeqNo;
-import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
+import static de.metas.testsupport.MetasfreshAssertions.assertThat;
 
 /*
  * #%L

@@ -378,15 +378,21 @@ public class MImage extends X_AD_Image
 
 	public byte[] getScaledImageData(final int maxWidth, final int maxHeight)
 	{
+		final byte[] data = getData();
+		if (data == null || data.length == 0)
+		{
+			return null;
+		}
+		
 		if (maxWidth <= 0 && maxHeight <= 0)
 		{
-			return getData();
+			return data;
 		}
 
 		final BufferedImage image;
 		try
 		{
-			image = ImageIO.read(new ByteArrayInputStream(getData()));
+			image = ImageIO.read(new ByteArrayInputStream(data));
 		}
 		catch (IOException ex)
 		{
@@ -401,7 +407,7 @@ public class MImage extends X_AD_Image
 		final Dimension sizeNew = getScaledDimension(sizeOrig, new Dimension(maxWidth, maxHeight));
 		if (sizeNew.equals(sizeOrig))
 		{
-			return getData();
+			return data;
 		}
 		else
 		{

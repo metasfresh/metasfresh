@@ -47,6 +47,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
@@ -88,6 +89,7 @@ public class ProductDAO implements IProductDAO
 	final static int ONE_YEAR_DAYS = 365;
 	final static int TWO_YEAR_DAYS = 730;
 	final static int THREE_YEAR_DAYS = 1095;
+	final static int FIVE_YEAR_DAYS = 1825;
 
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
@@ -545,6 +547,7 @@ public class ProductDAO implements IProductDAO
 				case X_M_Product.GUARANTEEMONTHS_12: return ONE_YEAR_DAYS;
 				case X_M_Product.GUARANTEEMONTHS_24: return TWO_YEAR_DAYS;
 				case X_M_Product.GUARANTEEMONTHS_36: return THREE_YEAR_DAYS;
+				case X_M_Product.GUARANTEEMONTHS_60: return FIVE_YEAR_DAYS;
 				default: return 0;
 			}
 		}
@@ -565,5 +568,23 @@ public class ProductDAO implements IProductDAO
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(productId);
+	}
+
+	// TODO uncoment again when merging master
+	// @Override
+	// public Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull final ProductId productId)
+	// {
+	// 	final I_M_Product product = getById(productId);
+	// 	return GroupTemplateId.optionalOfRepoId(product.getC_CompensationGroup_Schema_ID());
+	// }
+
+	@Override
+	public void clearIndividualMasterDataFromProduct(final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+
+		product.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
+
+		saveRecord(product);
 	}
 }

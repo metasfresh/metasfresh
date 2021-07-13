@@ -22,9 +22,13 @@
 
 package de.metas.camel.externalsystems.alberta.patient.processor;
 
+import de.metas.camel.externalsystems.alberta.patient.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
+import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteContext;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import io.swagger.client.ApiClient;
 import io.swagger.client.api.DoctorApi;
 import io.swagger.client.api.HospitalApi;
@@ -33,6 +37,7 @@ import io.swagger.client.api.NursingServiceApi;
 import io.swagger.client.api.PatientApi;
 import io.swagger.client.api.PayerApi;
 import io.swagger.client.api.PharmacyApi;
+import io.swagger.client.api.UserApi;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -49,14 +54,32 @@ public class PrepareApiClientsProcessor implements Processor
 		final var request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final var basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
+		final var apiKey = request.getParameters().get(ExternalSystemConstants.PARAM_API_KEY);
+		final var tenant = request.getParameters().get(ExternalSystemConstants.PARAM_TENANT);
+		final String rootBPartnerId = request.getParameters().get(ExternalSystemConstants.PARAM_ROOT_BPARTNER_ID_FOR_USERS);
+		final JsonMetasfreshId rootBPartnerMFId = Check.isNotBlank(rootBPartnerId) ? JsonMetasfreshId.of(Integer.parseInt(rootBPartnerId)) : null;
+
 		final var apiClient = new ApiClient().setBasePath(basePath);
 
-		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_PATIENT_API, new PatientApi(apiClient));
-		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_DOCTOR_API, new DoctorApi(apiClient));
-		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_NURSINGHOME_API, new NursingHomeApi(apiClient));
-		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_NURSINGSERVICE_API, new NursingServiceApi(apiClient));
-		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_HOSPITAL_API, new HospitalApi(apiClient));
-		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PAYER_API, new PayerApi(apiClient));
-		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PHARMACY_API, new PharmacyApi(apiClient));
+		final AlbertaConnectionDetails albertaConnectionDetails = AlbertaConnectionDetails.builder()
+				.apiKey(apiKey)
+				.basePath(basePath)
+				.tenant(tenant)
+				.build();
+
+		final GetPatientsRouteContext context = GetPatientsRouteContext.builder()
+				.doctorApi(new DoctorApi(apiClient))
+				.hospitalApi(new HospitalApi(apiClient))
+				.nursingHomeApi(new NursingHomeApi(apiClient))
+				.nursingServiceApi(new NursingServiceApi(apiClient))
+				.patientApi(new PatientApi(apiClient))
+				.payerApi(new PayerApi(apiClient))
+				.pharmacyApi(new PharmacyApi(apiClient))
+				.userApi(new UserApi(apiClient))
+				.albertaConnectionDetails(albertaConnectionDetails)
+				.rootBPartnerIdForUsers(rootBPartnerMFId)
+				.build();
+
+		exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_GET_PATIENTS_CONTEXT, context);
 	}
 }

@@ -176,7 +176,16 @@ class InlineTabWrapper extends PureComponent {
       inlineTab: { caption, tabId, elements },
       dataId,
       showMore,
+      includedTabsInfo,
     } = this.props;
+
+    // flag used to show or not the button that will render the form that allows new form creation
+    const allowCreateNew =
+      includedTabsInfo && includedTabsInfo.allowCreateNew ? true : false;
+
+    // flag used to show or not the delete button, also doing some extra safety check to make sure the correct boolean value is set
+    const allowDelete =
+      includedTabsInfo && includedTabsInfo.allowDelete ? true : false;
 
     if (!tabData) return false;
 
@@ -220,6 +229,7 @@ class InlineTabWrapper extends PureComponent {
                   key={`${index}_${tabItem.rowId}`}
                   fieldsOrder={inlineFieldsDisplayOrder}
                   updateTable={this.updateTable}
+                  allowDelete={allowDelete}
                   {...tabItem}
                 />
               ) : (
@@ -232,7 +242,7 @@ class InlineTabWrapper extends PureComponent {
         <div>
           <div>
             {/* `Add New` - button */}
-            {!addNewFormVisible && (
+            {!addNewFormVisible && allowCreateNew && (
               <div className="inlinetab-action-button">
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm"
@@ -310,6 +320,7 @@ InlineTabWrapper.propTypes = {
   setInlineTabShowMore: PropTypes.func.isRequired,
   updateDataValidStatus: PropTypes.func.isRequired,
   isDocumentValid: PropTypes.bool.isRequired,
+  includedTabsInfo: PropTypes.object,
 };
 
 /**
@@ -341,6 +352,10 @@ const mapStateToProps = (state, props) => {
   const addNewData = inlineTab[`${windowId}_${tabId}_${rowId}`];
   const inlineTabBranch = inlineTab;
   const isDocumentValid = master.validStatus ? master.validStatus.valid : false;
+  const includedTabsInfo =
+    master.includedTabsInfo && master.includedTabsInfo[tabId]
+      ? master.includedTabsInfo[tabId]
+      : null;
 
   return {
     tabData,
@@ -350,6 +365,7 @@ const mapStateToProps = (state, props) => {
     showMore,
     inlineTabBranch, // redux branch
     isDocumentValid,
+    includedTabsInfo, // this holds the allowCreateNew, allowDelete, stale props
   };
 };
 export default connect(
