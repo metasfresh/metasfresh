@@ -44,19 +44,19 @@ import java.util.List;
 @Value
 public class GroupTemplate
 {
-	GroupTemplateId id;
-	String name;
-	ActivityId activityId;
-	ProductCategoryId productCategoryId;
-	List<GroupTemplateLine> lines;
+	@Nullable GroupTemplateId id;
+	@NonNull String name;
+	@Nullable ActivityId activityId;
+	@Nullable ProductCategoryId productCategoryId;
+	@NonNull ImmutableList<GroupTemplateLine> lines;
 
 	@Builder
 	private GroupTemplate(
-			final GroupTemplateId id,
+			@Nullable final GroupTemplateId id,
 			@NonNull final String name,
-			@Nullable ActivityId activityId,
-			final ProductCategoryId productCategoryId,
-			final @Singular List<GroupTemplateLine> lines)
+			@Nullable final ActivityId activityId,
+			@Nullable final ProductCategoryId productCategoryId,
+			@NonNull @Singular final List<GroupTemplateLine> lines)
 	{
 
 		this.id = id;
