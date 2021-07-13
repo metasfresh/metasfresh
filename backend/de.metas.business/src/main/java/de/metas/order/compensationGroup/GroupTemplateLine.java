@@ -43,17 +43,17 @@ public class GroupTemplateLine
 				.build();
 	}
 
-	GroupTemplateLineId id;
-	ProductId productId;
-	private Percent percentage;
-	private GroupMatcher groupMatcher;
+	@Nullable GroupTemplateLineId id;
+	@NonNull ProductId productId;
+	@Nullable Percent percentage;
+	@Nullable GroupMatcher groupMatcher;
 
 	@Builder
 	private GroupTemplateLine(
 			@Nullable final GroupTemplateLineId id,
 			@NonNull final ProductId productId,
 			@Nullable final BigDecimal percentage,
-			@Nullable GroupMatcher groupMatcher)
+			@Nullable final GroupMatcher groupMatcher)
 	{
 		this.id = id;
 		this.productId = productId;
