@@ -1,21 +1,13 @@
 package de.metas.bpartner.composite;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.RecordChangeLog;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.greeting.GreetingId;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
@@ -23,6 +15,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.ad.table.RecordChangeLog;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 /*
  * #%L
@@ -60,50 +58,92 @@ public class BPartnerContact
 	public static final String FIRST_NAME = "firstName";
 	public static final String EMAIL = "email";
 	public static final String PHONE = "phone";
-	public static final String NEWSLETTER = "newsletter";
 	public static final String FAX = "fax";
 	public static final String MOBILE_PHONE = "mobilePhone";
 	public static final String DESCRIPTION = "description";
 	public static final String GREETING_ID = "greetingId";
 
+	public static final String SUBJECT_MATTER = "subjectMatter";
+	public static final String NEWSLETTER = "newsletter";
+	public static final String MEMBERSHIP = "membership";
+
+	@Nullable
 	private BPartnerContactId id;
 
-	/** A bit redundant because it's already part of the {@link BPartnerContactId}, but we use if for mapping purposes. */
+	/**
+	 * A bit redundant because it's already part of the {@link BPartnerContactId}, but we use if for mapping purposes.
+	 */
 	@Setter(lombok.AccessLevel.NONE)
 	@JsonIgnore
+	@Nullable
 	private BPartnerId bpartnerId;
 
+	@Nullable
 	private ExternalId externalId;
 
+	/**
+	 * An ID which is used only by caller API.
+	 * It's not persisted to database.
+	 * It's not loaded from database.
+	 */
+	@Nullable
+	@JsonInclude(Include.NON_NULL)
+	private final transient String transientId;
+
+	@Nullable
 	private String value;
 
 	private boolean active;
 
+	@Nullable
 	private String name;
 
+	@Nullable
 	private String lastName;
 
+	@Nullable
 	private String firstName;
 
 	@JsonInclude(Include.NON_NULL)
+	@Nullable
 	private String email;
 
 	@JsonInclude(Include.NON_NULL)
+	@Nullable
 	private String phone;
 
 	private boolean newsletter;
+	private boolean membershipContact;
+	private boolean subjectMatterContact;
 
+	@Nullable
+	private Boolean invoiceEmailEnabled;
+
+	@Nullable
 	private String fax;
 
+	@Nullable
 	private String mobilePhone;
 
+	@Nullable
 	private String description;
 
+	@Nullable
 	private GreetingId greetingId;
 
+	@Nullable
 	private BPartnerContactType contactType;
 
 	private final RecordChangeLog changeLog;
+
+	@Nullable
+	private OrgMappingId orgMappingId;
+
+	@Nullable
+	private LocalDate birthday;
+
+	@Nullable
+	private BPartnerLocationId bPartnerLocationId;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
@@ -120,6 +160,7 @@ public class BPartnerContact
 	private BPartnerContact(
 			@Nullable final BPartnerContactId id,
 			@Nullable final ExternalId externalId,
+			@Nullable final String transientId,
 			@Nullable final String value,
 			@Nullable final Boolean active,
 			@Nullable final String name,
@@ -127,27 +168,37 @@ public class BPartnerContact
 			@Nullable final String lastName,
 			@Nullable final String email,
 			@Nullable final Boolean newsletter,
+			@Nullable final Boolean membershipContact,
+			@Nullable final Boolean subjectMatterContact,
+			@Nullable final Boolean invoiceEmailEnabled,
 			@Nullable final String fax,
 			@Nullable final String mobilePhone,
 			@Nullable final String description,
 			@Nullable final GreetingId greetingId,
 			@Nullable final String phone,
 			@Nullable final BPartnerContactType contactType,
-			@Nullable final RecordChangeLog changeLog)
+			@Nullable final RecordChangeLog changeLog,
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final LocalDate birthday,
+			@Nullable final BPartnerLocationId bPartnerLocationId)
 	{
 		setId(id);
 
 		this.externalId = externalId;
+		this.transientId = transientId;
 		this.value = value;
 
-		this.newsletter = coalesce(newsletter, false);
+		this.newsletter = newsletter != null ? newsletter : false;
+		this.membershipContact = membershipContact != null ? membershipContact : false;
+		this.subjectMatterContact = subjectMatterContact != null ? subjectMatterContact : false;
+		this.invoiceEmailEnabled = invoiceEmailEnabled;
 		this.fax = fax;
 		this.mobilePhone = mobilePhone;
 		this.description = description;
 		this.greetingId = greetingId;
 
 		this.contactType = contactType;
-		this.active = coalesce(active, true);
+		this.active = active != null ? active : true;
 		this.name = name;
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -155,6 +206,10 @@ public class BPartnerContact
 		this.phone = phone;
 
 		this.changeLog = changeLog;
+
+		this.orgMappingId = orgMappingId;
+		this.bPartnerLocationId = bPartnerLocationId;
+		this.birthday = birthday;
 	}
 
 	public BPartnerContact deepCopy()

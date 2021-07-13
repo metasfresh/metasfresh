@@ -9,7 +9,7 @@ import de.metas.util.ISingletonService;
 /**
  * 
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/03120:_Error_in_DocumentLocation_callout_%282012080910000142%29
+ * task http://dewiki908/mediawiki/index.php/03120:_Error_in_DocumentLocation_callout_%282012080910000142%29
  */
 public interface IDocumentLocationBL extends ISingletonService
 {

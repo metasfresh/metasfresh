@@ -1,6 +1,6 @@
 package de.metas.material.cockpit.stock;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 import java.util.Collections;
 import java.util.HashSet;

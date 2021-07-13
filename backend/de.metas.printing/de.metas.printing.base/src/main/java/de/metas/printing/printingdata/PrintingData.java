@@ -28,7 +28,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.printing.OutputType;
 import de.metas.printing.PrintingQueueItemId;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

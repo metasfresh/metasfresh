@@ -22,33 +22,38 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IReceiptScheduleDAO extends ISingletonService
 {
 	/**
 	 * Retrieve an iterator over receipt schedules fetched by query.
-	 *
+	 * <p>
 	 * The receipt schedules will be ordered by {@link I_M_ReceiptSchedule#COLUMNNAME_HeaderAggregationKey}.
 	 *
-	 * @param query
-	 * @return
 	 */
-	Iterator<I_M_ReceiptSchedule> retrieve(final IQuery<I_M_ReceiptSchedule> query);
+	Iterator<I_M_ReceiptSchedule> retrieve(IQuery<I_M_ReceiptSchedule> query);
 
-	I_M_ReceiptSchedule retrieveForRecord(final Object model);
+	@Nullable I_M_ReceiptSchedule retrieveForRecord(@Nullable Object model);
 
 	List<I_M_ReceiptSchedule_Alloc> retrieveRsaForRs(I_M_ReceiptSchedule rs);
 
@@ -66,9 +71,6 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	/**
 	 * Retrieves completed receipts for given receipt schedule.
-	 *
-	 * @param receiptSchedule
-	 * @return
 	 */
 	List<I_M_InOut> retrieveCompletedReceipts(I_M_ReceiptSchedule receiptSchedule);
 
@@ -79,9 +81,14 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	/**
 	 * Retrieve all the receipt schedules that are linked with the given invoice candidate
-	 *
-	 * @param candidate
-	 * @return
 	 */
 	Set<I_M_ReceiptSchedule> retrieveForInvoiceCandidate(I_C_Invoice_Candidate candidate);
+
+	IQueryBuilder<I_M_ReceiptSchedule> createQueryForReceiptScheduleSelection(Properties ctx, IQueryFilter<I_M_ReceiptSchedule> userSelectionFilter);
+
+	boolean existsExportedReceiptScheduleForOrder(@NonNull OrderId orderId);
+
+	Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(ImmutableSet<ReceiptScheduleId> receiptScheduleIds);
+
+	I_M_ReceiptSchedule getById(ReceiptScheduleId receiptScheduleId);
 }

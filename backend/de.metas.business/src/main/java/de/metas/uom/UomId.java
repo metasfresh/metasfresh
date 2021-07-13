@@ -1,6 +1,7 @@
 package de.metas.uom;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -36,23 +37,38 @@ import lombok.Value;
 @Value
 public class UomId implements RepoIdAware
 {
-	int repoId;
+	public static final UomId EACH = new UomId(100);
 
 	@JsonCreator
 	public static UomId ofRepoId(final int repoId)
 	{
-		return new UomId(repoId);
+		if (repoId == EACH.repoId)
+		{
+			return EACH;
+		}
+		else
+		{
+			return new UomId(repoId);
+		}
 	}
 
+	@Nullable
 	public static UomId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new UomId(repoId) : null;
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	public static int toRepoId(final UomId uomId)
 	{
 		return uomId != null ? uomId.getRepoId() : -1;
 	}
+
+	public static Optional<UomId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
+	}
+
+	int repoId;
 
 	private UomId(final int repoId)
 	{

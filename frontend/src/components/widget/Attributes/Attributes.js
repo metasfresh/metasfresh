@@ -2,13 +2,22 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import classnames from 'classnames';
 
-import { getAttributesInstance, getLayout, patchRequest } from '../../../api';
-import { completeRequest } from '../../../actions/GenericActions';
+import {
+  getAttributesInstance,
+  getLayout,
+  patchRequest,
+  completeRequest,
+} from '../../../api';
 import {
   parseToDisplay,
   formatDateWithZeros,
 } from '../../../utils/documentListHelper';
 import AttributesDropdown from './AttributesDropdown';
+import {
+  DROPUP_START,
+  DROPDOWN_OFFSET_BIG,
+  DROPDOWN_OFFSET_SMALL,
+} from '../../../constants/Constants';
 
 /**
  * @file Class based component.
@@ -45,9 +54,10 @@ export default class Attributes extends Component {
       entity,
     } = this.props;
 
-    const templateId = widgetData.value.key
-      ? parseInt(widgetData.value.key, 10) // assume 'value' is a key/caption lookup value
-      : parseInt(widgetData.value, 10); // assume 'value' is string or int
+    const templateId =
+      widgetData.value && widgetData.value.key
+        ? parseInt(widgetData.value.key, 10) // assume 'value' is a key/caption lookup value
+        : parseInt(widgetData.value, 10); // assume 'value' is string or int
 
     let source;
     if (entity === 'window') {
@@ -121,8 +131,17 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handleToggle = (option) => {
-    const { handleBackdropLock } = this.props;
-    const { loading } = this.state;
+    const { handleBackdropLock, updateHeight, rowIndex, isModal } = this.props;
+    const { loading, dropdown } = this.state;
+
+    !dropdown &&
+      !isModal &&
+      rowIndex < DROPUP_START &&
+      updateHeight(DROPDOWN_OFFSET_BIG);
+    dropdown &&
+      !isModal &&
+      rowIndex < DROPUP_START &&
+      updateHeight(DROPDOWN_OFFSET_SMALL);
 
     if (!loading) {
       this.setState(
@@ -189,7 +208,7 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   handlePatch = (prop, value, id, cb) => {
-    const { attributeType, onBlur } = this.props;
+    const { attributeType } = this.props;
     const { data, loading } = this.state;
 
     if (!loading && data) {
@@ -216,7 +235,6 @@ export default class Attributes extends Component {
               }),
               () => {
                 cb && cb();
-                onBlur && onBlur();
               }
             );
           });
@@ -235,6 +253,7 @@ export default class Attributes extends Component {
    */
   handleCompletion = () => {
     const { data, loading } = this.state;
+    const { disconnected } = this.props;
 
     if (!loading && data) {
       const mandatory = Object.keys(data).filter(
@@ -244,8 +263,15 @@ export default class Attributes extends Component {
 
       //there are required values that are not set. just close
       if (mandatory.length && !valid) {
-        if (window.confirm('Do you really want to leave?')) {
+        /** we are treating the inlineTab differently - we don't show this confirm dialog  */
+        if (disconnected === 'inlineTab') {
+          /** TODO: here we might use a prompt explaining that the settings were not saved */
           this.handleToggle(false);
+        } else {
+          /** the generic case  */
+          if (window.confirm('Do you really want to leave?')) {
+            this.handleToggle(false);
+          }
         }
         return;
       }
@@ -261,12 +287,29 @@ export default class Attributes extends Component {
    * @todo Write the documentation
    */
   doCompleteRequest = () => {
-    const { attributeType, patch } = this.props;
+    const { attributeType, patch, openModal, closeModal } = this.props;
     const { data } = this.state;
     const attrId = data && data.ID ? data.ID.value : -1;
 
     completeRequest(attributeType, attrId).then((response) => {
-      patch(response.data);
+      patch(response.data).then(({ triggerActions }) => {
+        // post PATCH actions if we have `triggerActions` present
+        if (triggerActions) {
+          closeModal();
+          triggerActions.forEach((itemTriggerAction) => {
+            let {
+              selectedDocumentPath: { documentId },
+              processId,
+            } = itemTriggerAction;
+
+            openModal({
+              windowId: processId,
+              modalType: 'process',
+              viewDocumentIds: [`${documentId}`],
+            });
+          });
+        }
+      });
     });
   };
 
@@ -278,11 +321,12 @@ export default class Attributes extends Component {
       attributeType,
       tabIndex,
       readonly,
+      rowIndex,
     } = this.props;
 
     const { dropdown, data, layout } = this.state;
     const { value } = widgetData;
-    const label = value.caption;
+    const label = value ? value.caption : '';
     const attrId = data && data.ID ? data.ID.value : -1;
 
     return (
@@ -317,6 +361,7 @@ export default class Attributes extends Component {
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
             attrId={attrId}
+            rowIndex={rowIndex}
           />
         )}
       </div>
@@ -359,5 +404,10 @@ Attributes.propTypes = {
   viewId: PropTypes.any,
   fieldName: PropTypes.any,
   entity: PropTypes.any,
+  updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
+  rowIndex: PropTypes.number, // used for knowing the row index within the Table (used on AttributesDropdown component)
   widgetType: PropTypes.string,
+  disconnected: PropTypes.any, // this is used to differentiate in which type of parent widget we are rendering the SubSection elements (ie. `inlineTab`)
+  openModal: PropTypes.func,
+  closeModal: PropTypes.func,
 };

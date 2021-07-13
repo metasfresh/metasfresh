@@ -6,27 +6,18 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for M_ReceiptSchedule_Alloc
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements I_M_ReceiptSchedule_Alloc, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -82847932L;
+	private static final long serialVersionUID = -1961227194L;
 
     /** Standard Constructor */
     public X_M_ReceiptSchedule_Alloc (Properties ctx, int M_ReceiptSchedule_Alloc_ID, String trxName)
     {
       super (ctx, M_ReceiptSchedule_Alloc_ID, trxName);
-      /** if (M_ReceiptSchedule_Alloc_ID == 0)
-        {
-			setM_ReceiptSchedule_Alloc_ID (0);
-			setM_ReceiptSchedule_ID (0);
-			setQtyWithIssues (BigDecimal.ZERO); // 0
-        } */
     }
 
     /** Load Constructor */
@@ -36,18 +27,13 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
-	/** Set Catch Einheit.
-		@param Catch_UOM_ID 
-		Aus dem Produktstamm übenommene Catch Weight Einheit.
-	  */
 	@Override
 	public void setCatch_UOM_ID (int Catch_UOM_ID)
 	{
@@ -57,16 +43,10 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
 	}
 
-	/** Get Catch Einheit.
-		@return Aus dem Produktstamm übenommene Catch Weight Einheit.
-	  */
 	@Override
-	public int getCatch_UOM_ID () 
+	public int getCatch_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Catch_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
 	}
 
 	/** 
@@ -98,21 +78,14 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	public static final String DOCSTATUS_WaitingPayment = "WP";
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
-	/** Set Belegstatus.
-		@param DocStatus 
-		The current status of the document
-	  */
 	@Override
 	public void setDocStatus (java.lang.String DocStatus)
 	{
 
 		throw new IllegalArgumentException ("DocStatus is virtual column");	}
 
-	/** Get Belegstatus.
-		@return The current status of the document
-	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
@@ -129,25 +102,15 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
 	}
 
-	/** Set Lieferung/Wareneingang.
-		@param M_InOut_ID 
-		Material Shipment Document
-	  */
 	@Override
 	public void setM_InOut_ID (int M_InOut_ID)
 	{
 		throw new IllegalArgumentException ("M_InOut_ID is virtual column");	}
 
-	/** Get Lieferung/Wareneingang.
-		@return Material Shipment Document
-	  */
 	@Override
-	public int getM_InOut_ID () 
+	public int getM_InOut_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
 
 	@Override
@@ -162,10 +125,6 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
 	}
 
-	/** Set Versand-/Wareneingangsposition.
-		@param M_InOutLine_ID 
-		Position auf Versand- oder Wareneingangsbeleg
-	  */
 	@Override
 	public void setM_InOutLine_ID (int M_InOutLine_ID)
 	{
@@ -175,20 +134,12 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
 	}
 
-	/** Get Versand-/Wareneingangsposition.
-		@return Position auf Versand- oder Wareneingangsbeleg
-	  */
 	@Override
-	public int getM_InOutLine_ID () 
+	public int getM_InOutLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOutLine_ID);
 	}
 
-	/** Set Wareneingangsdispo - Wareneingangszeile.
-		@param M_ReceiptSchedule_Alloc_ID Wareneingangsdispo - Wareneingangszeile	  */
 	@Override
 	public void setM_ReceiptSchedule_Alloc_ID (int M_ReceiptSchedule_Alloc_ID)
 	{
@@ -198,15 +149,10 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 			set_ValueNoCheck (COLUMNNAME_M_ReceiptSchedule_Alloc_ID, Integer.valueOf(M_ReceiptSchedule_Alloc_ID));
 	}
 
-	/** Get Wareneingangsdispo - Wareneingangszeile.
-		@return Wareneingangsdispo - Wareneingangszeile	  */
 	@Override
-	public int getM_ReceiptSchedule_Alloc_ID () 
+	public int getM_ReceiptSchedule_Alloc_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_Alloc_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_ReceiptSchedule_Alloc_ID);
 	}
 
 	@Override
@@ -221,8 +167,6 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 		set_ValueFromPO(COLUMNNAME_M_ReceiptSchedule_ID, de.metas.inoutcandidate.model.I_M_ReceiptSchedule.class, M_ReceiptSchedule);
 	}
 
-	/** Set Wareneingangsdisposition.
-		@param M_ReceiptSchedule_ID Wareneingangsdisposition	  */
 	@Override
 	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
 	{
@@ -232,128 +176,83 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
 	}
 
-	/** Get Wareneingangsdisposition.
-		@return Wareneingangsdisposition	  */
 	@Override
-	public int getM_ReceiptSchedule_ID () 
+	public int getM_ReceiptSchedule_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_ReceiptSchedule_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_ReceiptSchedule_ID);
 	}
 
-	/** Set Zugewiesene Menge.
-		@param QtyAllocated Zugewiesene Menge	  */
 	@Override
 	public void setQtyAllocated (java.math.BigDecimal QtyAllocated)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyAllocated, QtyAllocated);
 	}
 
-	/** Get Zugewiesene Menge.
-		@return Zugewiesene Menge	  */
 	@Override
-	public java.math.BigDecimal getQtyAllocated () 
+	public java.math.BigDecimal getQtyAllocated() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyAllocated);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyAllocated);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Zugeordnet Catch.
-		@param QtyAllocatedInCatchUOM 
-		Tatsächlich zugeordnete Menge
-	  */
 	@Override
 	public void setQtyAllocatedInCatchUOM (java.math.BigDecimal QtyAllocatedInCatchUOM)
 	{
 		set_Value (COLUMNNAME_QtyAllocatedInCatchUOM, QtyAllocatedInCatchUOM);
 	}
 
-	/** Get Zugeordnet Catch.
-		@return Tatsächlich zugeordnete Menge
-	  */
 	@Override
-	public java.math.BigDecimal getQtyAllocatedInCatchUOM () 
+	public java.math.BigDecimal getQtyAllocatedInCatchUOM() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyAllocatedInCatchUOM);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyAllocatedInCatchUOM);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Minderwertige Menge.
-		@param QtyWithIssues 
-		Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
-	  */
 	@Override
 	public void setQtyWithIssues (java.math.BigDecimal QtyWithIssues)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyWithIssues, QtyWithIssues);
 	}
 
-	/** Get Minderwertige Menge.
-		@return Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
-	  */
 	@Override
-	public java.math.BigDecimal getQtyWithIssues () 
+	public java.math.BigDecimal getQtyWithIssues() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyWithIssues);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyWithIssues);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Minderwertige Catch-Menge.
-		@param QtyWithIssuesInCatchUOM Minderwertige Catch-Menge	  */
 	@Override
 	public void setQtyWithIssuesInCatchUOM (java.math.BigDecimal QtyWithIssuesInCatchUOM)
 	{
 		set_Value (COLUMNNAME_QtyWithIssuesInCatchUOM, QtyWithIssuesInCatchUOM);
 	}
 
-	/** Get Minderwertige Catch-Menge.
-		@return Minderwertige Catch-Menge	  */
 	@Override
-	public java.math.BigDecimal getQtyWithIssuesInCatchUOM () 
+	public java.math.BigDecimal getQtyWithIssuesInCatchUOM() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyWithIssuesInCatchUOM);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyWithIssuesInCatchUOM);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Qualitätsabzug %.
-		@param QualityDiscountPercent Qualitätsabzug %	  */
 	@Override
 	public void setQualityDiscountPercent (java.math.BigDecimal QualityDiscountPercent)
 	{
 		throw new IllegalArgumentException ("QualityDiscountPercent is virtual column");	}
 
-	/** Get Qualitätsabzug %.
-		@return Qualitätsabzug %	  */
 	@Override
-	public java.math.BigDecimal getQualityDiscountPercent () 
+	public java.math.BigDecimal getQualityDiscountPercent() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QualityDiscountPercent);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Qualität-Notiz.
-		@param QualityNote Qualität-Notiz	  */
 	@Override
 	public void setQualityNote (java.lang.String QualityNote)
 	{
 		throw new IllegalArgumentException ("QualityNote is virtual column");	}
 
-	/** Get Qualität-Notiz.
-		@return Qualität-Notiz	  */
 	@Override
-	public java.lang.String getQualityNote () 
+	public java.lang.String getQualityNote() 
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_QualityNote);
 	}

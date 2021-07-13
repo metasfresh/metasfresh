@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import java.time.LocalDate;
 import java.util.List;
 
+import de.metas.invoice.InvoiceDocBaseType;
 import org.compiere.model.I_C_DocType;
 
 import com.google.common.collect.ImmutableList;
@@ -22,14 +23,14 @@ import lombok.Setter;
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
 	/** @return builder */
-	public static final InvoiceHeaderImplBuilder builder()
+	public static InvoiceHeaderImplBuilder builder()
 	{
 		return new InvoiceHeaderImplBuilder();
 	}
 
 	private List<IInvoiceCandAggregate> lines;
 
-	private String docBaseType;
+	private InvoiceDocBaseType docBaseType;
 
 	private String poReference;
 
@@ -74,6 +75,7 @@ import lombok.Setter;
 	private I_C_DocType docTypeInvoice;
 
 	private boolean taxIncluded;
+	private String  externalId;
 
 	private int C_PaymentTerm_ID = -1;
 
@@ -96,6 +98,7 @@ import lombok.Setter;
 				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
 				+ ", docTypeInvoiceId=" + docTypeInvoice
+				+ ", externalID=" + externalId
 				+ ", lines=" + lines
 				+ "]";
 	}
@@ -116,7 +119,7 @@ import lombok.Setter;
 	}
 
 	@Override
-	public String getDocBaseType()
+	public InvoiceDocBaseType getDocBaseType()
 	{
 		return docBaseType;
 	}
@@ -168,7 +171,7 @@ import lombok.Setter;
 		this.lines = lines;
 	}
 
-	public void setDocBaseType(final String docBaseType)
+	public void setDocBaseType(final InvoiceDocBaseType docBaseType)
 	{
 		this.docBaseType = docBaseType;
 	}
@@ -317,5 +320,16 @@ import lombok.Setter;
 	public int getC_PaymentTerm_ID()
 	{
 		return C_PaymentTerm_ID;
+	}
+
+	@Override
+	public String getExternalId()
+	{
+		return externalId;
+	}
+
+	public String setExternalId(String externalId)
+	{
+		return this.externalId = externalId;
 	}
 }

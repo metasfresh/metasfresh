@@ -1,222 +1,349 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import org.compiere.util.KeyNamePair;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_UOM
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a
+ *  @author metasfresh (generated) 
  */
+@SuppressWarnings("javadoc")
 public interface I_C_UOM 
 {
 
-    /** TableName=C_UOM */
-    public static final String Table_Name = "C_UOM";
+	String Table_Name = "C_UOM";
 
-    /** AD_Table_ID=146 */
-    public static final int Table_ID = MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=146 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-    KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
 
-    /** AccessLevel = 6 - System - Client 
-     */
-    BigDecimal accessLevel = BigDecimal.valueOf(6);
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
 
-    /** Load Meta Data */
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
 
-	/** Get Client.
-	  * Client/Tenant for this installation.
-	  */
-	public int getAD_Client_ID();
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
-	/** Set Organization.
-	  * Organizational entity within client
-	  */
-	public void setAD_Org_ID (int AD_Org_ID);
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
 
-	/** Get Organization.
-	  * Organizational entity within client
-	  */
-	public int getAD_Org_ID();
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
 
-    /** Column name CostingPrecision */
-    public static final String COLUMNNAME_CostingPrecision = "CostingPrecision";
+	ModelColumn<I_C_UOM, Object> COLUMN_C_UOM_ID = new ModelColumn<>(I_C_UOM.class, "C_UOM_ID", null);
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
-	/** Set Costing Precision.
-	  * Rounding used costing calculations
-	  */
-	public void setCostingPrecision (int CostingPrecision);
+	/**
+	 * Set Kostenrechnungsgenauigkeit.
+	 * Rounding used costing calculations
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCostingPrecision (int CostingPrecision);
 
-	/** Get Costing Precision.
-	  * Rounding used costing calculations
-	  */
-	public int getCostingPrecision();
+	/**
+	 * Get Kostenrechnungsgenauigkeit.
+	 * Rounding used costing calculations
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCostingPrecision();
 
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_UOM, Object> COLUMN_CostingPrecision = new ModelColumn<>(I_C_UOM.class, "CostingPrecision", null);
+	String COLUMNNAME_CostingPrecision = "CostingPrecision";
 
-	/** Get Created.
-	  * Date this record was created
-	  */
-	public Timestamp getCreated();
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	ModelColumn<I_C_UOM, Object> COLUMN_Created = new ModelColumn<>(I_C_UOM.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
-	/** Get Created By.
-	  * User who created this records
-	  */
-	public int getCreatedBy();
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
-	/** Set UOM.
-	  * Unit of Measure
-	  */
-	public void setC_UOM_ID (int C_UOM_ID);
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
 
-	/** Get UOM.
-	  * Unit of Measure
-	  */
-	public int getC_UOM_ID();
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
 
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_UOM, Object> COLUMN_Description = new ModelColumn<>(I_C_UOM.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
-	/** Set Description.
-	  * Optional short description of the record
-	  */
-	public void setDescription (String Description);
+	/**
+	 * Set Imputed Unit.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHF134_IsImputedUnit (boolean HF134_IsImputedUnit);
 
-	/** Get Description.
-	  * Optional short description of the record
-	  */
-	public String getDescription();
+	/**
+	 * Get Imputed Unit.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHF134_IsImputedUnit();
 
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_UOM, Object> COLUMN_HF134_IsImputedUnit = new ModelColumn<>(I_C_UOM.class, "HF134_IsImputedUnit", null);
+	String COLUMNNAME_HF134_IsImputedUnit = "HF134_IsImputedUnit";
 
-	/** Set Active.
-	  * The record is active in the system
-	  */
-	public void setIsActive (boolean IsActive);
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
 
-	/** Get Active.
-	  * The record is active in the system
-	  */
-	public boolean isActive();
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
 
-    /** Column name IsDefault */
-    public static final String COLUMNNAME_IsDefault = "IsDefault";
+	ModelColumn<I_C_UOM, Object> COLUMN_IsActive = new ModelColumn<>(I_C_UOM.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
-	/** Set Default.
-	  * Default value
-	  */
-	public void setIsDefault (boolean IsDefault);
+	/**
+	 * Set Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefault (boolean IsDefault);
 
-	/** Get Default.
-	  * Default value
-	  */
-	public boolean isDefault();
+	/**
+	 * Get Default.
+	 * Default value
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefault();
 
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_C_UOM, Object> COLUMN_IsDefault = new ModelColumn<>(I_C_UOM.class, "IsDefault", null);
+	String COLUMNNAME_IsDefault = "IsDefault";
 
-	/** Set Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name);
+	/**
+	 * Set Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setName (java.lang.String Name);
 
-	/** Get Name.
-	  * Alphanumeric identifier of the entity
-	  */
-	public String getName();
+	/**
+	 * Get Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getName();
 
-    /** Column name StdPrecision */
-    public static final String COLUMNNAME_StdPrecision = "StdPrecision";
+	ModelColumn<I_C_UOM, Object> COLUMN_Name = new ModelColumn<>(I_C_UOM.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
-	/** Set Standard Precision.
-	  * Rule for rounding  calculated amounts
-	  */
-	public void setStdPrecision (int StdPrecision);
+	/**
+	 * Set Standardgenauigkeit.
+	 * Rule for rounding  calculated amounts
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setStdPrecision (int StdPrecision);
 
-	/** Get Standard Precision.
-	  * Rule for rounding  calculated amounts
-	  */
-	public int getStdPrecision();
+	/**
+	 * Get Standardgenauigkeit.
+	 * Rule for rounding  calculated amounts
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getStdPrecision();
 
-    /** Column name UOMSymbol */
-    public static final String COLUMNNAME_UOMSymbol = "UOMSymbol";
+	ModelColumn<I_C_UOM, Object> COLUMN_StdPrecision = new ModelColumn<>(I_C_UOM.class, "StdPrecision", null);
+	String COLUMNNAME_StdPrecision = "StdPrecision";
 
-	/** Set Symbol.
-	  * Symbol for a Unit of Measure
-	  */
-	public void setUOMSymbol (String UOMSymbol);
+	/**
+	 * Set Symbol.
+	 * Symbol for a Unit of Measure
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUOMSymbol (@Nullable java.lang.String UOMSymbol);
 
-	/** Get Symbol.
-	  * Symbol for a Unit of Measure
-	  */
-	public String getUOMSymbol();
+	/**
+	 * Get Symbol.
+	 * Symbol for a Unit of Measure
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUOMSymbol();
 
-    /** Column name UOMType */
-    public static final String COLUMNNAME_UOMType = "UOMType";
+	ModelColumn<I_C_UOM, Object> COLUMN_UOMSymbol = new ModelColumn<>(I_C_UOM.class, "UOMSymbol", null);
+	String COLUMNNAME_UOMSymbol = "UOMSymbol";
 
-	/** Set UOM Type	  */
-	public void setUOMType (String UOMType);
+	/**
+	 * Set Einheiten-Typ.
+	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUOMType (@Nullable java.lang.String UOMType);
 
-	/** Get UOM Type	  */
-	public String getUOMType();
+	/**
+	 * Get Einheiten-Typ.
+	 * Dient der Zusammenfassung ähnlicher Maßeinheiten
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUOMType();
 
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_UOM, Object> COLUMN_UOMType = new ModelColumn<>(I_C_UOM.class, "UOMType", null);
+	String COLUMNNAME_UOMType = "UOMType";
 
-	/** Get Updated.
-	  * Date this record was updated
-	  */
-	public Timestamp getUpdated();
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	ModelColumn<I_C_UOM, Object> COLUMN_Updated = new ModelColumn<>(I_C_UOM.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
-	/** Get Updated By.
-	  * User who updated this records
-	  */
-	public int getUpdatedBy();
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
 
-    /** Column name X12DE355 */
-    public static final String COLUMNNAME_X12DE355 = "X12DE355";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
-	/** Set UOM Code.
-	  * UOM EDI X12 Code
-	  */
-	public void setX12DE355 (String X12DE355);
+	/**
+	 * Set Kodierung der Mengeneinheit.
+	 * UOM EDI X12 Code
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setX12DE355 (java.lang.String X12DE355);
 
-	/** Get UOM Code.
-	  * UOM EDI X12 Code
-	  */
-	public String getX12DE355();
+	/**
+	 * Get Kodierung der Mengeneinheit.
+	 * UOM EDI X12 Code
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getX12DE355();
+
+	ModelColumn<I_C_UOM, Object> COLUMN_X12DE355 = new ModelColumn<>(I_C_UOM.class, "X12DE355", null);
+	String COLUMNNAME_X12DE355 = "X12DE355";
 }

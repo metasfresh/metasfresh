@@ -1,7 +1,5 @@
 package de.metas.material.dispo.commons.repository.query;
 
-import java.util.List;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -11,6 +9,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
@@ -19,7 +18,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-import lombok.experimental.Wither;
+import lombok.With;
+
+import java.util.List;
 
 /*
  * #%L
@@ -50,19 +51,16 @@ import lombok.experimental.Wither;
  *
  */
 @Value
-@Wither
+@With
 public final class CandidatesQuery
 {
 	/**
-	 * This query matches no candidate
+	 * This query matches no candidate.
 	 */
 	public static final CandidatesQuery FALSE = CandidatesQuery.fromId(CandidateId.ofRepoId(Integer.MAX_VALUE - 3));
 
 	/**
-	 *
-	 * @param candidate
 	 * @param includeParentId if true, we include the given candidate's parent ID in the query.
-	 * @return
 	 */
 	public static CandidatesQuery fromCandidate(
 			@NonNull final Candidate candidate,
@@ -89,6 +87,9 @@ public final class CandidatesQuery
 				candidate.getMaterialDescriptor(),
 				DateAndSeqNo.ofCandidate(candidate));
 
+		final StockChangeDetailQuery stockChangeDetailQuery = StockChangeDetailQuery
+				.ofStockChangeDetailOrNull(StockChangeDetail.castOrNull(candidate.getBusinessCaseDetail()));
+
 		final CandidatesQueryBuilder builder = CandidatesQuery.builder()
 				.materialDescriptorQuery(materialDescriptorQuery)
 				.matchExactStorageAttributesKey(true)
@@ -96,11 +97,13 @@ public final class CandidatesQuery
 				.distributionDetailsQuery(distributionDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)
 				.purchaseDetailsQuery(purchaseDetailsQuery)
+				.stockChangeDetailQuery(stockChangeDetailQuery)
 				.transactionDetails(candidate.getTransactionDetails())
 				.groupId(candidate.getGroupId())
 				.orgId(candidate.getOrgId())
 				//.status(candidate.getStatus())
 				.businessCase(candidate.getBusinessCase())
+
 				.type(candidate.getType());
 
 		if (includeParentId)
@@ -146,8 +149,7 @@ public final class CandidatesQuery
 	CandidateId id;
 
 	/**
-	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.<br>
-	 * -1 means {@link #PARENT_ID_UNSPECIFIED}
+	 * A supply candidate has a stock candidate as its parent. A demand candidate has a stock candidate as its child.
 	 */
 	CandidateId parentId;
 
@@ -183,6 +185,11 @@ public final class CandidatesQuery
 	 */
 	List<TransactionDetail> transactionDetails;
 
+	/**
+	 * Used for additional infos if this candidate has the business case {@link CandidateBusinessCase#STOCK_CHANGE}.
+	 */
+	StockChangeDetailQuery stockChangeDetailQuery;
+
 	@Builder
 	public CandidatesQuery(
 			final MaterialDescriptorQuery parentMaterialDescriptorQuery,
@@ -200,7 +207,8 @@ public final class CandidatesQuery
 			final DistributionDetailsQuery distributionDetailsQuery,
 			final PurchaseDetailsQuery purchaseDetailsQuery,
 			final DemandDetailsQuery demandDetailsQuery,
-			@Singular final List<TransactionDetail> transactionDetails)
+			@Singular final List<TransactionDetail> transactionDetails,
+			final StockChangeDetailQuery stockChangeDetailQuery)
 	{
 		this.parentMaterialDescriptorQuery = parentMaterialDescriptorQuery;
 		this.parentDemandDetailsQuery = parentDemandDetailsQuery;
@@ -221,5 +229,7 @@ public final class CandidatesQuery
 
 		this.demandDetailsQuery = demandDetailsQuery;
 		this.transactionDetails = transactionDetails;
+
+		this.stockChangeDetailQuery = stockChangeDetailQuery;
 	}
 }

@@ -139,6 +139,7 @@ public class PhonecallScheduleService
 		final UserId salesRepId = Services.get(IBPartnerBL.class).getSalesRepIdOrNull(bpartnerId);
 
 		final PhonecallSchedule schedule = PhonecallSchedule.builder()
+				.orgId(schemaVersionLine.getOrgId())
 				.bpartnerAndLocationId(bpartnerAndLocationId)
 				.contactId(schemaVersionLine.getContactId())
 				.schemaVersionLineId(schemaVersionLine.getId())

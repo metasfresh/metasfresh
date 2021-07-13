@@ -40,7 +40,7 @@ import com.google.common.base.Throwables;
 import de.metas.adempiere.form.AbstractClientUIInvoker;
 import de.metas.adempiere.form.IClientUIInstance;
 import de.metas.adempiere.form.IClientUIInvoker;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /* package */class SwingClientUIInvoker extends AbstractClientUIInvoker
 {

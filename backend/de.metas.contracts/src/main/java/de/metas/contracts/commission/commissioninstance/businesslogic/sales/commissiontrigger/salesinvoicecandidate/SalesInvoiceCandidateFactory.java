@@ -1,19 +1,11 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import org.compiere.model.I_C_Tax;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -26,10 +18,20 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.model.I_C_DocType;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -58,6 +60,8 @@ public class SalesInvoiceCandidateFactory
 {
 	private static final Logger logger = LogManager.getLogger(SalesInvoiceCandidateFactory.class);
 
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 	private final MoneyService moneyService;
 	private final CommissionProductService commissionProductService;
 
@@ -76,6 +80,7 @@ public class SalesInvoiceCandidateFactory
 			logger.debug("C_Invoice_Candidate has C_BPartner_SalesRep_ID={}; -> return empty", icRecord.getC_BPartner_SalesRep_ID());
 			return Optional.empty();
 		}
+
 		final ProductId productId = ProductId.ofRepoIdOrNull(icRecord.getM_Product_ID());
 		if (productId == null)
 		{
@@ -89,20 +94,31 @@ public class SalesInvoiceCandidateFactory
 			return Optional.empty();
 		}
 
+		final DocTypeId invoiceDocTypeId = DocTypeId.ofRepoIdOrNull(icRecord.getC_DocTypeInvoice_ID());
+		if (invoiceDocTypeId != null)
+		{
+			final I_C_DocType invoiceDocType = docTypeBL.getById(invoiceDocTypeId);
+			if (invoiceDocType.isExcludeFromCommision())
+			{
+				logger.debug("C_Invoice_Candidate has C_DocTypeInvoice_ID={} which has sExcludeFromCommission=true; -> return empty", invoiceDocType);
+				return Optional.empty();
+			}
+		}
+
 		return Optional.of(SalesInvoiceCandidate
-				.builder()
-				.orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
-				.id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
-				.salesRepBPartnerId(BPartnerId.ofRepoIdOrNull(icRecord.getC_BPartner_SalesRep_ID()))
-				.customerBPartnerId(BPartnerId.ofRepoIdOrNull(icRecord.getBill_BPartner_ID()))
-				.productId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
-				.commissionDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
-				.updated(TimeUtil.asInstant(icRecord.getUpdated()))
-				.forecastCommissionPoints(extractForecastCommissionPoints(icRecord))
-				.commissionPointsToInvoice(extractCommissionPointsToInvoice(icRecord))
-				.invoicedCommissionPoints(extractInvoicedCommissionPoints(icRecord))
-				.tradedCommissionPercent(extractTradedCommissionPercent(icRecord))
-				.build());
+								   .builder()
+								   .orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
+								   .id(InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID()))
+								   .salesRepBPartnerId(BPartnerId.ofRepoIdOrNull(icRecord.getC_BPartner_SalesRep_ID()))
+								   .customerBPartnerId(BPartnerId.ofRepoIdOrNull(icRecord.getBill_BPartner_ID()))
+								   .productId(ProductId.ofRepoId(icRecord.getM_Product_ID()))
+								   .commissionDate(TimeUtil.asLocalDate(icRecord.getDateOrdered()))
+								   .updated(TimeUtil.asInstant(icRecord.getUpdated()))
+								   .forecastCommissionPoints(extractForecastCommissionPoints(icRecord))
+								   .commissionPointsToInvoice(extractCommissionPointsToInvoice(icRecord))
+								   .invoicedCommissionPoints(extractInvoicedCommissionPoints(icRecord))
+								   .tradedCommissionPercent(extractTradedCommissionPercent(icRecord))
+								   .build());
 	}
 
 	private CommissionPoints extractForecastCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
@@ -185,12 +201,11 @@ public class SalesInvoiceCandidateFactory
 			return commissionPoints;
 		}
 
-		final I_C_Tax taxRecord = taxDAO.getTaxById(effectiveTaxRepoId);
+		final Tax taxRecord = taxDAO.getTaxById(effectiveTaxRepoId);
 
 		final CurrencyPrecision precision = invoiceCandBL.extractPricePrecision(icRecord);
 
-		final BigDecimal taxAdjustedAmount = taxBL.calculateBaseAmt(
-				taxRecord,
+		final BigDecimal taxAdjustedAmount = taxRecord.calculateBaseAmt(
 				commissionPoints.toBigDecimal(),
 				icRecord.isTaxIncluded(),
 				precision.toInt());
@@ -213,6 +228,6 @@ public class SalesInvoiceCandidateFactory
 	{
 		return (icRecord.getBase_Commission_Points_Per_Price_UOM().signum() == 0)
 				|| (icRecord.getPriceEntered_Override().signum() > 0
-						&& !icRecord.getPriceEntered_Override().equals(icRecord.getPriceEntered()));
+				&& !icRecord.getPriceEntered_Override().equals(icRecord.getPriceEntered()));
 	}
 }

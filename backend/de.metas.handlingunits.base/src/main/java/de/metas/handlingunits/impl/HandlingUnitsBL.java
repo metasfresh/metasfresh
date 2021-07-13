@@ -22,32 +22,8 @@
 
 package de.metas.handlingunits.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Transaction;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -58,11 +34,13 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUDisplayNameBuilder;
 import de.metas.handlingunits.IHUIterator;
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.LUTUCUPair;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.IHUContextProcessor;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -82,33 +60,67 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.storage.impl.DefaultHUStorageFactory;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.uom.IUOMDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Transaction;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class HandlingUnitsBL implements IHandlingUnitsBL
 {
 	private static final transient Logger logger = LogManager.getLogger(HandlingUnitsBL.class);
 
 	private final IHUStorageFactory storageFactory = new DefaultHUStorageFactory();
+	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@Override
 	public I_M_HU getById(@NonNull final HuId huId)
 	{
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsRepo.getById(huId);
 	}
 
 	@Override
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds)
 	{
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
 		return handlingUnitsRepo.getByIds(huIds);
 	}
 
@@ -119,60 +131,52 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public IMutableHUContext createMutableHUContext()
+	{
+		return huContextFactory.createMutableHUContext();
+	}
+
+	@Override
 	public IMutableHUContext createMutableHUContext(final IContextAware contextProvider)
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContext(contextProvider);
 	}
 
 	@Override
 	public IMutableHUContext createMutableHUContextForProcessing(final IContextAware contextProvider)
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContextForProcessing(contextProvider);
+	}
+
+	@Override
+	public IMutableHUContext createMutableHUContextForProcessing()
+	{
+		return huContextFactory.createMutableHUContextForProcessing(PlainContextAware.newWithThreadInheritedTrx());
 	}
 
 	@Override
 	public IMutableHUContext createMutableHUContext(final Properties ctx, final @NonNull ClientAndOrgId clientAndOrgId)
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContext(ctx, clientAndOrgId);
 	}
 
 	@Override
 	public IMutableHUContext createMutableHUContext(final Properties ctx, final String trxName)
 	{
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 		return huContextFactory.createMutableHUContext(ctx, trxName);
 	}
 
 	@Override
 	public I_C_UOM getHandlingUOM(final I_M_Product product)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		// FIXME: not sure that is correct
-		return uomDAO.getById(product.getC_UOM_ID());
-
+		return productBL.getStockUOM(product);
 	}
 
 	@Override
 	public I_C_UOM getC_UOM(final I_M_Transaction mtrx)
 	{
-		return getHandlingUOM(mtrx.getM_Product());
-	}
-
-	@Override
-	public boolean isListContainsCurrentVersion(final List<I_M_HU_PI_Version> versions)
-	{
-		for (final I_M_HU_PI_Version version : versions)
-		{
-			if (version.isCurrent())
-			{
-				return true;
-			}
-		}
-		return false;
+		final ProductId productId = ProductId.ofRepoId(mtrx.getM_Product_ID());
+		return productBL.getStockUOM(productId);
 	}
 
 	@Override
@@ -181,12 +185,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		//
 		// Create HU Context
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(huToDestroy);
-		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContext(context);
+		final IMutableHUContext huContextInitial = huContextFactory.createMutableHUContext(context);
 
 		//
 		// Try to destroy given HU (or some of it's children)
 		final Mutable<Boolean> destroyed = new Mutable<>(false);
-		Services.get(IHUTrxBL.class).createHUContextProcessorExecutor(huContextInitial)
+		huTrxBL.createHUContextProcessorExecutor(huContextInitial)
 				.run(huContext -> {
 					if (destroyIfEmptyStorage(huContext, huToDestroy))
 					{
@@ -203,10 +207,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU huToDestroy)
 	{
-		Services.get(ITrxManager.class).assertTrxNotNull(huContext);
-
-		// Service(s)
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+		trxManager.assertTrxNotNull(huContext);
 
 		//
 		// Check given HU and also iterate downstream and destroy all HUs which are empty
@@ -251,21 +252,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public void markDestroyed(final IHUContext huContext, final I_M_HU hu)
+	public void markDestroyed(@NonNull final IHUContext huContext, final I_M_HU hu)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
+		if(huContext.isDontDestroyHu(HuId.ofRepoId(hu.getM_HU_ID())))
+		{
+			logger.info("markDestroyed - the given M_HU_ID={} is temporarily protected from destruction; -> nothing to do", hu.getM_HU_ID());
+			return;
+		}
 		huStatusBL.setHUStatus(huContext, hu, X_M_HU.HUSTATUS_Destroyed);
 		hu.setIsActive(false);
-		handlingUnitsDAO.saveHU(hu);
+		handlingUnitsRepo.saveHU(hu);
 	}
 
 	@Override
 	public void markDestroyed(final IHUContext huContext, final Collection<I_M_HU> hus)
 	{
 		// services
-		final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 		huTrxBL.createHUContextProcessorExecutor(huContext)
 				.run(huContext1 -> {
 					for (final I_M_HU hu : hus)
@@ -335,6 +337,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isVirtual(@Nullable final I_M_HU_PI_Item piItem)
+	{
+		return piItem != null && HuPackingInstructionsItemId.isVirtualRepoId(piItem.getM_HU_PI_Item_ID());
+	}
+
+	@Override
 	public boolean isNoPI(final I_M_HU_PI_Item piItem)
 	{
 		if (piItem == null)
@@ -355,20 +363,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		final String huUnitType = getHU_UnitType(hu);
 		return X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit.equals(huUnitType);
-	}
-
-	@Override
-	public void assertLoadingUnit(final I_M_HU hu)
-	{
-		Check.assumeNotNull(hu, "hu not null");
-		if (isLoadingUnit(hu))
-		{
-			return;
-		}
-
-		final String huUnitType = getHU_UnitType(hu);
-		final String huUnitTypeStr = Check.isEmpty(huUnitType, true) ? "not set" : huUnitType;
-		throw new HUException("HU " + getDisplayName(hu) + " shall be a Loading Unit(LU) but it is '" + huUnitTypeStr + "'");
 	}
 
 	@Override
@@ -411,7 +405,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return true;
 		}
 
-		// If we are asked to stricly validate TUs and we reached this point, well our HU is not a TU
+		// If we are asked to strictly validate TUs and we reached this point, well our HU is not a TU
 		if (strict)
 		{
 			return false;
@@ -425,7 +419,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public String getHU_UnitType(@NonNull final I_M_HU_PI pi)
 	{
-		final I_M_HU_PI_Version piVersion = Services.get(IHandlingUnitsDAO.class).retrievePICurrentVersion(pi);
+		final I_M_HU_PI_Version piVersion = handlingUnitsRepo.retrievePICurrentVersion(pi);
 		if (piVersion == null)
 		{
 			return null;
@@ -472,8 +466,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(parentHU);
+		final I_M_HU_Item parentItem = handlingUnitsRepo.retrieveParentItem(parentHU);
 		if (parentItem == null || parentItem.getM_HU_Item_ID() <= 0)
 		{
 			return false;
@@ -499,7 +492,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return false;
 		}
 
-		final List<I_M_HU_Item> huItems = Services.get(IHandlingUnitsDAO.class).retrieveItems(hu);
+		final List<I_M_HU_Item> huItems = handlingUnitsRepo.retrieveItems(hu);
 		if (huItems.size() == 0)
 		{
 			return false; // we don't care
@@ -527,24 +520,26 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return itemType;
 		}
 
-		// FIXME: remove it after we migrate all HUs
-		return getPIItem(huItem).getItemType();
+		// FIXME: remove it after we migrate all HUs and we have M_HU_Item.ItemType always set
+		final I_M_HU_PI_Item piItem = getPIItem(huItem);
+		if (piItem != null)
+		{
+			return piItem.getItemType();
+		}
+		throw new HUException("Failed getting ItemType for " + huItem + " because neither ItemType nor M_HU_PI_Item_ID is set");
 	}
 
 	@Override
-	public boolean isTopLevel(final I_M_HU hu)
+	public boolean isTopLevel(@NonNull final I_M_HU hu)
 	{
-		Check.assumeNotNull(hu, "hu not null");
-
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		return handlingUnitsDAO.retrieveParentItem(hu) == null;
+		return handlingUnitsRepo.retrieveParentItem(hu) == null;
 	}
 
 	@Override
 	public boolean isAnonymousHuPickedOnTheFly(@NonNull final I_M_HU hu)
 	{
 		// this was done in extreme haste.
-		final List<I_M_ShipmentSchedule_QtyPicked> scheduleQtyPickeds = Services.get(IHUShipmentScheduleDAO.class).retrieveSchedsQtyPickedForHU(hu);
+		final List<I_M_ShipmentSchedule_QtyPicked> scheduleQtyPickeds = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
 
 		for (final I_M_ShipmentSchedule_QtyPicked scheduleQtyPicked : scheduleQtyPickeds)
 		{
@@ -583,8 +578,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	@Override
 	public List<I_M_HU> getTopLevelHUs(@NonNull final TopLevelHusQuery request)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		final Set<Integer> seenM_HU_IDs = new HashSet<>();
 		final List<I_M_HU> husResult = new ArrayList<>();
 
@@ -600,7 +593,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 					&& request.getFilter().test(parent) // our filter rejects the HU
 			)
 			{
-				final I_M_HU parentNew = handlingUnitsDAO.retrieveParent(parent);
+				final I_M_HU parentNew = handlingUnitsRepo.retrieveParent(parent);
 				final boolean parentIsTopLevel = parentNew == null;
 
 				if (request.isIncludeAll() || parentIsTopLevel)
@@ -625,15 +618,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 		else if (isTransportUnit(hu))
 		{
-			@SuppressWarnings("UnnecessaryLocalVariable")
-			final I_M_HU tuHU = hu;
+			@SuppressWarnings("UnnecessaryLocalVariable") final I_M_HU tuHU = hu;
 			final I_M_HU luHU = getLoadingUnitHU(tuHU);
 			return LUTUCUPair.ofTU(tuHU, luHU);
 		}
 		else // virtual or aggregate
 		{
-			@SuppressWarnings("UnnecessaryLocalVariable")
-			final I_M_HU vhu = hu;
+			@SuppressWarnings("UnnecessaryLocalVariable") final I_M_HU vhu = hu;
 			final I_M_HU tuHU = getTransportUnitHU(vhu);
 			final I_M_HU luHU = tuHU != null ? getLoadingUnitHU(tuHU) : null;
 			return LUTUCUPair.ofVHU(vhu, tuHU, luHU);
@@ -641,11 +632,10 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public @Nullable I_M_HU getLoadingUnitHU(final I_M_HU hu)
+	public @Nullable
+	I_M_HU getLoadingUnitHU(final I_M_HU hu)
 	{
 		Check.assumeNotNull(hu, "hu not null");
-
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 		I_M_HU lastLU = null;
 		I_M_HU currentHU = hu;
@@ -669,7 +659,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 			//
 			// Navigate one level up
-			currentHU = handlingUnitsDAO.retrieveParent(currentHU);
+			currentHU = handlingUnitsRepo.retrieveParent(currentHU);
 		}
 
 		// Make sure our LU does not have a parent
@@ -696,8 +686,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			return null;
 		}
 
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 		I_M_HU lastTU = null;
 		I_M_HU currentHU = hu;
 		int iterationsCount = 0;
@@ -720,7 +708,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 			//
 			// Navigate one level up
-			currentHU = handlingUnitsDAO.retrieveParent(currentHU);
+			currentHU = handlingUnitsRepo.retrieveParent(currentHU);
 		}
 
 		return lastTU;
@@ -743,6 +731,22 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType());
 	}
 
+	@Override
+	public QtyTU getTUsCount(@NonNull final I_M_HU tuOrAggregatedTU)
+	{
+		// NOTE: we assume the HU is an TU
+
+		final I_M_HU_Item parentItem = handlingUnitsRepo.retrieveParentItem(tuOrAggregatedTU);
+		if (parentItem != null && X_M_HU_Item.ITEMTYPE_HUAggregate.equals(parentItem.getItemType()))
+		{
+			return QtyTU.ofBigDecimal(parentItem.getQty());
+		}
+		else
+		{
+			return QtyTU.ONE;
+		}
+	}
+
 	@Nullable
 	@Override
 	public I_M_HU_PI getPI(final I_M_HU hu)
@@ -755,7 +759,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public I_M_HU_PI_Version getPIVersion(final I_M_HU hu)
 	{
 		final HuPackingInstructionsVersionId piVersionId = HuPackingInstructionsVersionId.ofRepoId(hu.getM_HU_PI_Version_ID());
-		return Services.get(IHandlingUnitsDAO.class).retrievePIVersionById(piVersionId);
+		return handlingUnitsRepo.retrievePIVersionById(piVersionId);
 	}
 
 	@Nullable
@@ -764,7 +768,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final HuPackingInstructionsItemId piItemId = HuPackingInstructionsItemId.ofRepoIdOrNull(huItem.getM_HU_PI_Item_ID());
 		return piItemId != null
-				? Services.get(IHandlingUnitsDAO.class).getPackingInstructionItemById(piItemId)
+				? handlingUnitsRepo.getPackingInstructionItemById(piItemId)
 				: null;
 	}
 
@@ -782,25 +786,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
+	public @NonNull I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_PI_Item piItem)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		return handlingUnitsDAO.getIncludedPI(piItem);
+		return handlingUnitsRepo.getIncludedPI(piItem);
 	}
 
 	@Override
-	public @Nullable HuPackingInstructionsVersionId getEffectivePIVersionId(final I_M_HU hu)
-	{
-		final I_M_HU_PI_Version piVersion = getEffectivePIVersion(hu);
-		if (piVersion == null)
-		{
-			return null; // this is the case while the aggregate HU is still "under construction" by the HUBuilder and LUTU producer.
-		}
-
-		return HuPackingInstructionsVersionId.ofRepoId(piVersion.getM_HU_PI_Version_ID());
-	}
-
-	@Override
+	@Nullable
 	public I_M_HU_PI_Version getEffectivePIVersion(final I_M_HU hu)
 	{
 		if (!isAggregateHU(hu))
@@ -809,8 +801,6 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		}
 		else
 		{
-			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
 			// note: if hu is an aggregate HU, then there won't be an NPE here.
 			final I_M_HU_PI_Item parentPIItem = getPIItem(hu.getM_HU_Item_Parent());
 			if (parentPIItem == null)
@@ -820,12 +810,13 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 			}
 
 			final HuPackingInstructionsId includedPIId = HuPackingInstructionsId.ofRepoId(parentPIItem.getIncluded_HU_PI_ID());
-			return handlingUnitsDAO.retrievePICurrentVersionOrNull(includedPIId);
+			return handlingUnitsRepo.retrievePICurrentVersionOrNull(includedPIId);
 		}
 	}
 
 	@Override
-	public @Nullable I_M_HU_PI getEffectivePI(final I_M_HU hu)
+	public @Nullable
+	I_M_HU_PI getEffectivePI(final I_M_HU hu)
 	{
 		if (!isAggregateHU(hu))
 		{
@@ -909,10 +900,14 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public IHUQueryBuilder createHUQueryBuilder()
+	{
+		return handlingUnitsRepo.createHUQueryBuilder();
+	}
+
+	@Override
 	public AttributesKey getStorageRelevantAttributesKey(@NonNull final I_M_HU hu)
 	{
-		final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
-
 		final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 
@@ -921,5 +916,62 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return AttributesKeys
 				.createAttributesKeyFromAttributeSet(storageRelevantSubSet)
 				.orElse(AttributesKey.NONE);
+	}
+
+	@Override
+	public void setHUStatus(@NonNull final I_M_HU hu, @NonNull final IContextAware contextProvider, @NonNull final String huStatus)
+	{
+		final IHUContext huContext = createMutableHUContext(contextProvider);
+
+		huStatusBL.setHUStatus(huContext, hu, huStatus);
+
+		handlingUnitsRepo.saveHU(hu);
+	}
+
+	@Override
+	public boolean isEmptyStorage(@NonNull final I_M_HU hu)
+	{
+		return getStorageFactory()
+				.streamHUProductStorages(hu)
+				.allMatch(IProductStorage::isEmpty);
+	}
+
+	@Override
+	public CopyHUsResponse copyAsPlannedHUs(@NonNull final Collection<HuId> huIdsToCopy)
+	{
+		return CopyHUsCommand.builder()
+				.huIdsToCopy(huIdsToCopy)
+				.build()
+				.execute();
+	}
+
+	@Override
+	public I_M_HU copyAsPlannedHU(@NonNull final HuId huId)
+	{
+		return copyAsPlannedHUs(ImmutableList.of(huId))
+				.getSingleItem()
+				.getNewHU();
+	}
+
+	@Override
+	public AttributeSetInstanceId createASIFromHUAttributes(@NonNull final ProductId productId, @NonNull final HuId huId)
+	{
+		final I_M_HU hu = getById(huId);
+		return createASIFromHUAttributes(productId, hu);
+	}
+
+	@Override
+	public AttributeSetInstanceId createASIFromHUAttributes(@NonNull final ProductId productId, @NonNull final I_M_HU hu)
+	{
+		final ImmutableAttributeSet attributes = getImmutableAttributeSet(hu);
+
+		final I_M_AttributeSetInstance asi = attributeSetInstanceBL.createASIWithASFromProductAndInsertAttributeSet(productId, attributes);
+		return AttributeSetInstanceId.ofRepoId(asi.getM_AttributeSetInstance_ID());
+	}
+
+	@Override
+	public ImmutableAttributeSet getImmutableAttributeSet(@NonNull final I_M_HU hu)
+	{
+		return attributeStorageFactoryService.createHUAttributeStorageFactory().getImmutableAttributeSet(hu);
 	}
 }

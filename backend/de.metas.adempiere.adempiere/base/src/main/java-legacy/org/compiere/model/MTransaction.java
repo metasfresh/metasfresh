@@ -16,12 +16,12 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.common.util.time.SystemTime;
+
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
-
-import de.metas.util.time.SystemTime;
 
 /**
  * Material Transaction Model

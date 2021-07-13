@@ -57,7 +57,7 @@ import de.metas.util.Check;
 import de.metas.util.Check.ExceptionWithOwnHeaderMessage;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.SoftwareVersion;
 import lombok.NonNull;
 
@@ -260,7 +260,7 @@ public class InvoiceToExportFactory
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoId(invoiceRecord.getC_BPartner_ID(), invoiceRecord.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoiceRecord.getC_BPartner_ID(), invoiceRecord.getC_BPartner_Location_ID()));
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
 

@@ -16,38 +16,33 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.lang.reflect.Constructor;
-import java.math.BigDecimal;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
+import de.metas.audit.request.log.StateType;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.cache.model.POCacheSourceModel;
+import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.document.sequence.IDocumentNoBL;
+import de.metas.document.sequence.IDocumentNoBuilder;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
+import de.metas.i18n.IModelTranslation;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.impl.NullModelTranslationMap;
+import de.metas.i18n.po.POTrlInfo;
+import de.metas.i18n.po.POTrlRepository;
+import de.metas.logging.LogManager;
+import de.metas.logging.MetasfreshLastError;
+import de.metas.process.PInstanceId;
+import de.metas.security.TableAccessLevel;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import de.metas.workflow.execution.DocWorkflowManager;
+import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.model.X_AD_MigrationStep;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -71,6 +66,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DB.OnFail;
@@ -88,30 +84,37 @@ import org.slf4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
-import de.metas.cache.model.POCacheSourceModel;
-import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.document.sequence.IDocumentNoBL;
-import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
-import de.metas.i18n.IModelTranslation;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.impl.NullModelTranslationMap;
-import de.metas.i18n.po.POTrlInfo;
-import de.metas.i18n.po.POTrlRepository;
-import de.metas.logging.LogManager;
-import de.metas.logging.MetasfreshLastError;
-import de.metas.process.PInstanceId;
-import de.metas.security.TableAccessLevel;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.math.BigDecimal;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Persistent Object.
@@ -154,20 +157,6 @@ public abstract class PO
 
 	private static final int QUERY_TIME_OUT = 10;
 
-	/**
-	 * Set Document Value Workflow Manager
-	 *
-	 * @param docWFMgr mgr
-	 */
-	public static void setDocWorkflowMgr(final DocWorkflowMgr docWFMgr)
-	{
-		s_docWFMgr = docWFMgr;
-		s_log.info("Document workflow manager set to {}", s_docWFMgr);
-	}	// setDocWorkflowMgr
-
-	/** Document Value Workflow Manager */
-	private static DocWorkflowMgr s_docWFMgr = null;
-
 	/** User Maintained Entity Type */
 	static protected final String ENTITYTYPE_UserMaintained = "U";
 	/** Dictionary Maintained Entity Type */
@@ -190,7 +179,7 @@ public abstract class PO
 	 * @param ctx context
 	 * @param trxName transaction name
 	 */
-	public PO(final Properties ctx, final int ID, final String trxName)
+	public PO(final Properties ctx, final int ID, @Nullable final String trxName)
 	{
 		this(ctx, ID, trxName, null);
 	}   // PO
@@ -203,7 +192,7 @@ public abstract class PO
 	 *            if null, a new record is created.
 	 * @param trxName transaction name
 	 */
-	public PO(final Properties ctx, final ResultSet rs, final String trxName)
+	public PO(final Properties ctx, final ResultSet rs, @Nullable final String trxName)
 	{
 		this(ctx, 0, trxName, rs);
 	}	// PO
@@ -228,13 +217,8 @@ public abstract class PO
 	 * @param trxName transaction name
 	 * @param rs optional - load from current result set position (no navigation, not closed)
 	 */
-	public PO(final Properties ctx, final int ID, final String trxName, final ResultSet rs)
+	public PO(@NonNull final Properties ctx, final int ID, @Nullable final String trxName, @Nullable final ResultSet rs)
 	{
-
-		if (ctx == null)
-		{
-			throw new IllegalArgumentException("No Context");
-		}
 		p_ctx = ctx;
 		m_trxName = trxName;
 
@@ -607,9 +591,8 @@ public abstract class PO
 	 *
 	 * @param ctx
 	 */
-	protected final void setCtx(final Properties ctx)
+	protected final void setCtx(@NonNull final Properties ctx)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
 		this.p_ctx = ctx;
 	}
 
@@ -731,7 +714,7 @@ public abstract class PO
 	 * @return
 	 *         <ul>
 	 *         <li>string value
-	 *         <li>empty string in case the underlying value is null
+	 *         <li>null in case the underlying value is null
 	 *         <li>"Y"/"N" in case the underlying value is {@link Boolean}
 	 *         </ul>
 	 */
@@ -741,7 +724,7 @@ public abstract class PO
 		final Object value = get_Value(variableName);
 		if (value == null)
 		{
-			return "";
+			return null;
 		}
 		//
 		// In case we deal with a boolean column we need to return "Y"/"N" instead of "true"/"false",
@@ -750,10 +733,12 @@ public abstract class PO
 		else if (value instanceof Boolean)
 		{
 			final boolean valueBoolean = (boolean)value;
-			return Env.toString(valueBoolean);
+			return StringUtils.ofBoolean(valueBoolean);
 		}
-
-		return value.toString();
+		else
+		{
+			return value.toString();
+		}
 	}	// get_ValueAsString
 
 	/**
@@ -994,7 +979,7 @@ public abstract class PO
 	 * @param value value
 	 * @return true if value set
 	 */
-	protected final boolean set_Value(final String ColumnName, Object value)
+	protected final boolean set_Value(final String ColumnName, @Nullable Object value)
 	{
 		if (value instanceof String && ColumnName.equals("WhereClause")
 				&& value.toString().toUpperCase().indexOf("=NULL") != -1)
@@ -1093,8 +1078,8 @@ public abstract class PO
 						|| sysConfigBL.getBooleanValue(sysConfigName, true, getAD_Client_ID(), getAD_Org_ID());
 
 				return new AdempiereException("Column not updateable: " + ColumnName + " - NewValue=" + valueToUse + " - OldValue=" + oldValue + "; "
-						+ "Note to developer: to bypass this checking you can"
-						+ "1. Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE)"
+						+ "Note to developer: to bypass this checking you can:\n"
+						+ "1. Set AD_SysConfig '" + sysConfigName + "' = 'N' to disable this exception (will still be logged with Level=SERVERE)\n"
 						+ "2. Set dynamic attribute " + InterfaceWrapperHelper.ATTR_ReadOnlyColumnCheckDisabled + " = true (no errors will be logged in this case)")
 								.throwOrLogSevere(throwException, log);
 			}
@@ -1233,7 +1218,7 @@ public abstract class PO
 	 * @return true if value set
 	 */
 	// metas: changed from protected to public
-	public final boolean set_ValueNoCheck(final String ColumnName, final Object value)
+	public final boolean set_ValueNoCheck(final String ColumnName, @Nullable final Object value)
 	{
 		final int index = get_ColumnIndex(ColumnName);
 		if (index < 0)
@@ -1336,7 +1321,7 @@ public abstract class PO
 	 * @param value
 	 * @returns boolean indicating success or failure
 	 */
-	public final boolean set_ValueOfColumn(final String columnName, final Object value)
+	public final boolean set_ValueOfColumn(final String columnName, @Nullable final Object value)
 	{
 		final int columnIndex = p_info.getColumnIndex(columnName);
 		if (columnIndex < 0)
@@ -1367,7 +1352,7 @@ public abstract class PO
 	 * @param columnName column
 	 * @param value value
 	 */
-	public final void set_CustomColumn(final String columnName, final Object value)
+	public final void set_CustomColumn(final String columnName, @Nullable final Object value)
 	{
 		set_CustomColumnReturningBoolean(columnName, value);
 	}	// set_CustomColumn
@@ -2280,7 +2265,7 @@ public abstract class PO
 		 * @todo defaults from Field
 		 */
 		// MField.getDefault(p_info.getDefaultLogic(i));
-	}	// loadDefaults
+	}
 
 	/**
 	 * Set Default values.
@@ -2341,7 +2326,7 @@ public abstract class PO
 				m_newValues[i] = Boolean.FALSE;
 			}
 		}
-	}   // setDefaults
+	}
 
 	/**
 	 * Set Key Info (IDs and KeyColumns).
@@ -2688,7 +2673,8 @@ public abstract class PO
 		boolean logIfKeyOnly = false;
 		if (isInsertChangeLogEvent)
 		{
-			final String insertChangeLogType = Services.get(ISysConfigBL.class).getValue("SYSTEM_INSERT_CHANGELOG", "Y", adClientId);
+			// note that i never needed this value to be Y, so i'm now setting the default to N
+			final String insertChangeLogType = Services.get(ISysConfigBL.class).getValue("SYSTEM_INSERT_CHANGELOG", "N", adClientId);
 			if ("Y".equals(insertChangeLogType))
 			{
 				// log everything allowed
@@ -3146,26 +3132,20 @@ public abstract class PO
 			}
 		}
 
+		final String state = newRecord ? StateType.CREATED.getCode() : StateType.UPDATED.getCode();
+
+		if (get_ID() > 0)
+		{
+			Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), state, get_TrxName());
+		}
+
 		// Return "success"
 		return success;
 	}	// saveFinish
 
-	private final void fireDocWorkflowManager()
+	private void fireDocWorkflowManager()
 	{
-		if (s_docWFMgr == null)
-		{
-			try
-			{
-				Class.forName("org.compiere.wf.DocWorkflowManager");
-			}
-			catch (final Exception e)
-			{
-			}
-		}
-		if (s_docWFMgr != null)
-		{
-			s_docWFMgr.process(this);
-		}
+		DocWorkflowManager.get().fireDocValueWorkflows(this);
 	}
 
 	/**
@@ -4047,6 +4027,8 @@ public abstract class PO
 			log.warn("Error while deleting " + this, e);
 		}
 
+		Loggables.get().addTableRecordReferenceLog(TableRecordReference.of(get_Table_ID(), get_ID()), StateType.DELETED.getCode(), get_TrxName());
+
 		return success;
 	}	// delete
 
@@ -4394,9 +4376,9 @@ public abstract class PO
 	 */
 	// task 05372: make method public so we can insert accountings from not-M-classes
 	public final boolean insert_Accounting(
-			final String acctTable,
-			final String acctBaseTable,
-			final String whereClause)
+			@NonNull final String acctTable,
+			@NonNull final String acctBaseTable,
+			@Nullable final String whereClause)
 	{
 		final POAccountingInfo acctInfo = POAccountingInfoRepository.instance.getPOAccountingInfo(acctTable).orElse(null);
 		if(acctInfo == null)
@@ -4405,6 +4387,8 @@ public abstract class PO
 			return false;
 		}
 
+		final POInfo acctBaseTableInfo = POInfo.getPOInfo(acctBaseTable);
+
 		// Create SQL Statement - INSERT
 		final StringBuilder sb = new StringBuilder("INSERT INTO ")
 				.append(acctTable)
@@ -4412,10 +4396,10 @@ public abstract class PO
 				.append("_ID, C_AcctSchema_ID, AD_Client_ID,AD_Org_ID,IsActive, Created,CreatedBy,Updated,UpdatedBy ");
 		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			sb.append(",").append(acctColumnName);
+			sb.append("\n, ").append(acctColumnName);
 		}
 		// .. SELECT
-		sb.append(") SELECT ")
+		sb.append("\n) SELECT ")
 				.append(get_ID())
 				.append(", p.C_AcctSchema_ID, p.AD_Client_ID,0,'Y', now(),")
 				.append(getUpdatedBy())
@@ -4423,17 +4407,24 @@ public abstract class PO
 				.append(getUpdatedBy());
 		for (final String acctColumnName : acctInfo.getAcctColumnNames())
 		{
-			sb.append(",p.").append(acctColumnName);
+			if(acctBaseTableInfo.hasColumnName(acctColumnName))
+			{
+				sb.append("\n, p.").append(acctColumnName);
+			}
+			else
+			{
+				sb.append("\n, NULL /* missing ").append(acctBaseTable).append(".").append(acctColumnName).append(" */");
+			}
 		}
 		// .. FROM
-		sb.append(" FROM ").append(acctBaseTable)
+		sb.append("\n FROM ").append(acctBaseTable)
 				.append(" p WHERE p.AD_Client_ID=").append(getAD_Client_ID());
 
 		if (whereClause != null && whereClause.length() > 0)
 		{
 			sb.append(" AND ").append(whereClause);
 		}
-		sb.append(" AND NOT EXISTS (SELECT 1 FROM ").append(acctTable)
+		sb.append("\n AND NOT EXISTS (SELECT 1 FROM ").append(acctTable)
 				.append(" e WHERE e.C_AcctSchema_ID=p.C_AcctSchema_ID AND e.")
 				.append(get_TableName()).append("_ID=").append(get_ID()).append(")");
 		//
@@ -5022,7 +5013,7 @@ public abstract class PO
 		final Object oo = get_Value(index);
 		return StringUtils.toBoolean(oo);
 	}
-	
+
 	public final BigDecimal get_ValueAsBigDecimal(final String columnName)
 	{
 		final Object valueObj = get_Value(columnName);
@@ -5042,7 +5033,7 @@ public abstract class PO
 	 * @param name
 	 * @param value
 	 */
-	public final Object setDynAttribute(final String name, final Object value)
+	public final Object setDynAttribute(final String name, @Nullable final Object value)
 	{
 		if (m_dynAttrs == null)
 		{

@@ -13,6 +13,15 @@ export default class DocumentListContextShortcuts extends PureComponent {
         this.handleOpenNewTab();
       }
     },
+    FAST_INLINE_EDIT: (event) => {
+      const { onFastInlineEdit } = this.props;
+
+      event.preventDefault();
+
+      if (onFastInlineEdit) {
+        onFastInlineEdit();
+      }
+    },
     REMOVE_SELECTED: (event) => {
       const { onDelete } = this.props;
 
@@ -86,6 +95,11 @@ export default class DocumentListContextShortcuts extends PureComponent {
           handler={this.handlers.OPEN_SELECTED}
         />
         <Shortcut
+          key="FAST_INLINE_EDIT"
+          name="FAST_INLINE_EDIT"
+          handler={this.handlers.FAST_INLINE_EDIT}
+        />
+        <Shortcut
           key="REMOVE_SELECTED"
           name="REMOVE_SELECTED"
           handler={this.handlers.REMOVE_SELECTED}
@@ -125,4 +139,5 @@ DocumentListContextShortcuts.propTypes = {
   windowId: PropTypes.string,
   tabId: PropTypes.string,
   selected: PropTypes.array,
+  onFastInlineEdit: PropTypes.func,
 };

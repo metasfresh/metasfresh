@@ -1,6 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -115,7 +115,7 @@ import lombok.NonNull;
 		return trxManager.callInThreadInheritedTrx(() -> lockAndEnqueueSelection(pinstanceId));
 	}
 
-	private final IInvoiceCandidateEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
+	private IInvoiceCandidateEnqueueResult lockAndEnqueueSelection(@NonNull final PInstanceId pinstanceId)
 	{
 		final ILock icLock = InvoiceCandidateLockingUtil.lockInvoiceCandidatesForSelection(pinstanceId);
 		try (final ILockAutoCloseable l = icLock.asAutocloseableOnTrxClose(ITrx.TRXNAME_ThreadInherited))
@@ -124,7 +124,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private final IInvoiceCandidateEnqueueResult enqueueSelectionInTrx(
+	private IInvoiceCandidateEnqueueResult enqueueSelectionInTrx(
 			@NonNull final ILock icLock,
 			@NonNull final PInstanceId pinstanceId)
 	{

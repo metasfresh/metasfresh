@@ -1,7 +1,7 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
 import static de.metas.util.Check.fail;
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 import java.math.BigDecimal;

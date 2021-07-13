@@ -21,7 +21,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -96,8 +96,10 @@ public class PPOrder
 	 */
 	Instant dateStartSchedule;
 
+	/** qty in stocking UOM */
 	BigDecimal qtyRequired;
 
+	/** qty in stocking UOM */
 	BigDecimal qtyDelivered;
 
 	/**

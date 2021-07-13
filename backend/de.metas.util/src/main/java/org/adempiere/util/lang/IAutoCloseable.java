@@ -36,5 +36,5 @@ package org.adempiere.util.lang;
 public interface IAutoCloseable extends AutoCloseable
 {
 	@Override
-	public void close();
+	void close();
 }

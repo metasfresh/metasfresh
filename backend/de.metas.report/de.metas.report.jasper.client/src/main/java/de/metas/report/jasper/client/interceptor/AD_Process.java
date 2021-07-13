@@ -1,5 +1,10 @@
 package de.metas.report.jasper.client.interceptor;
 
+import de.metas.process.ProcessType;
+import de.metas.report.jasper.client.process.JasperReportStarter;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -9,12 +14,6 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import de.metas.process.ProcessType;
-import de.metas.report.jasper.client.process.JasperReportStarter;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -53,13 +52,16 @@ public class AD_Process
 	public void setClassnameIfTypeJasperReportsSQL(final I_AD_Process process)
 	{
 		final ProcessType type = ProcessType.ofCode(process.getType());
+
 		if (type.isJasper())
 		{
 			process.setClassname(JasperReportStarter.class.getName());
 		}
-
 		final String JSONPath = process.getJSONPath();
-		if (type.isJasperJson() && Check.isEmpty(JSONPath, true))
+
+		final boolean requiresJSONPath = type.isJasperJson();
+
+		if ( requiresJSONPath && Check.isEmpty(JSONPath, true))
 		{
 			throw new FillMandatoryException(I_AD_Process.COLUMNNAME_JSONPath);
 		}

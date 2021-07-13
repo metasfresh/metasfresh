@@ -1,21 +1,28 @@
 package de.metas.order.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.junit.Assert.assertTrue;
-
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerSupplierApprovalRepository;
+import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.order.model.interceptor.C_Order;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.order.model.interceptor.C_Order;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -41,19 +48,23 @@ import de.metas.util.Services;
 
 public class OrderTest
 {
+
+	public static final String PARTNER_NAME_1 = "PartnerName1";
+	public static final String ENGLISH = "en_US";
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Order.INSTANCE);
+		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
+		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(orderLineDetailRepository, partnerSupplierApprovalService));
 	}
 
 	@Test
 	public void updateDescriptionFromDocType()
 	{
-		final String partnerName1 = "PartnerName1";
-		final String english = "en_US";
 
 		final String docTypeName1 = "DocType1";
 		final String descriptionDocType1 = "Description DocType1";
@@ -61,15 +72,15 @@ public class OrderTest
 
 		final I_C_DocType docType1 = createDocType(docTypeName1, descriptionDocType1, documentNoteDocType1);
 
-		final I_C_BPartner partner1 = createPartner(partnerName1, english);
+		final I_C_BPartner partner1 = createPartner(PARTNER_NAME_1, ENGLISH);
 
 		final I_C_Order order = createOrder(partner1);
 
 		order.setC_DocTypeTarget_ID(docType1.getC_DocType_ID());
 		save(order);
 
-		assertTrue(descriptionDocType1.equals(order.getDescription()));
-		assertTrue(documentNoteDocType1.equals(order.getDescriptionBottom()));
+		Assertions.assertEquals(order.getDescription(), descriptionDocType1);
+		Assertions.assertEquals(order.getDescriptionBottom(), documentNoteDocType1);
 
 		final String newOrderDescription = "New order description";
 
@@ -80,15 +91,16 @@ public class OrderTest
 
 		save(order);
 
-		assertTrue(newOrderDescription.equals(order.getDescription()));
-		assertTrue(newOrderDocumentNote.equals(order.getDescriptionBottom()));
+		Assertions.assertEquals(order.getDescription(), newOrderDescription);
+		Assertions.assertEquals(order.getDescriptionBottom(), newOrderDocumentNote);
 
 		Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_Complete);
 
-		assertTrue(newOrderDescription.equals(order.getDescription()));
-		assertTrue(newOrderDocumentNote.equals(order.getDescriptionBottom()));
+		Assertions.assertEquals(order.getDescription(), newOrderDescription);
+		Assertions.assertEquals(order.getDescriptionBottom(), newOrderDocumentNote);
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_C_BPartner createPartner(final String name, final String language)
 	{
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
@@ -100,6 +112,7 @@ public class OrderTest
 		return partner;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private I_C_DocType createDocType(final String name, final String description, final String documentNote)
 	{
 		final I_C_DocType doctype = newInstance(I_C_DocType.class);
@@ -122,5 +135,16 @@ public class OrderTest
 		save(order);
 
 		return order;
+	}
+
+	@Test
+	public void testSalesRepSameIdAsBPartner()
+	{
+		final I_C_BPartner partner = createPartner(PARTNER_NAME_1, ENGLISH);
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(partner.getC_BPartner_ID());
+		order.setC_BPartner_SalesRep_ID(partner.getC_BPartner_ID());
+
+		Assertions.assertThrows(AdempiereException.class, () -> save(order));
 	}
 }

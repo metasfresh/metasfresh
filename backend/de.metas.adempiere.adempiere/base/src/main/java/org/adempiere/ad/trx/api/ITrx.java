@@ -1,39 +1,15 @@
 package org.adempiere.ad.trx.api;
 
+import lombok.NonNull;
+import org.adempiere.exceptions.DBException;
+
+import javax.annotation.Nullable;
 import java.sql.Connection;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.function.Consumer;
 import java.util.function.Function;
-
-import org.adempiere.exceptions.DBException;
-
-import com.google.common.base.Supplier;
-
-import lombok.NonNull;
+import java.util.function.Supplier;
 
 /**
  * Transaction interface
@@ -100,8 +76,6 @@ public interface ITrx
 
 	/**
 	 * Then this trx obtains a connection, it will check and invoke {@link Connection#setAutoCommit(boolean)} if necessary.
-	 *
-	 * @return
 	 */
 	boolean isAutoCommit();
 
@@ -138,7 +112,6 @@ public interface ITrx
 	/**
 	 * Rollback to given savepoint
 	 *
-	 * @param savepoint
 	 * @return true if success
 	 * @throws DBException on fail
 	 */
@@ -146,17 +119,11 @@ public interface ITrx
 
 	/**
 	 * Create transaction savepoint
-	 *
-	 * @param name
-	 * @return
-	 * @throws DBException
 	 */
 	ITrxSavepoint createTrxSavepoint(String name) throws DBException;
 
 	/**
 	 * Release given savepoint
-	 *
-	 * @param savepoint
 	 */
 	void releaseSavepoint(ITrxSavepoint savepoint);
 
@@ -165,14 +132,12 @@ public interface ITrx
 	 *
 	 * @return {@link ITrxListenerManager}; never returns null
 	 *
-	 * @task 04265
+	 * Task 04265
 	 */
 	ITrxListenerManager getTrxListenerManager();
 
 	/**
 	 * Gets the {@link ITrxManager} which created this transaction and which is responsible for its lifecycle
-	 *
-	 * @return
 	 */
 	ITrxManager getTrxManager();
 
@@ -181,18 +146,16 @@ public interface ITrx
 	 *
 	 * NOTE: developer is free to use it as she/he wants.
 	 *
-	 * @param name
-	 * @param value
 	 * @return old value or null
 	 */
-	<T> T setProperty(final String name, Object value);
+	@Nullable
+	<T> T setProperty(final String name, @Nullable Object value);
 
 	/**
 	 * Gets custom transaction property.
 	 *
 	 * NOTE: developer is free to use it as she/he wants.
 	 *
-	 * @param name
 	 * @return property's value or null
 	 */
 	<T> T getProperty(final String name);
@@ -202,7 +165,6 @@ public interface ITrx
 	 *
 	 * NOTE: developer is free to use it as she/he wants.
 	 *
-	 * @param name
 	 * @param valueInitializer used to create the new value in case it does not already exist
 	 * @return property's value or null
 	 */
@@ -218,7 +180,6 @@ public interface ITrx
 	 * If the property does not exist it will call <code>valueInitializer</code>.
 	 * After transaction is committed the <code>afterCommitValueProcessor</code> will be called.
 	 * 
-	 * @param propertyName
 	 * @param valueInitializer used to create the new value in case it does not already exist.
 	 * @param afterCommitValueProcessor called after transaction is committed
 	 * @return property's value or null

@@ -24,7 +24,9 @@ package de.metas.handlingunits.test.misc.builders;
 
 import java.util.Properties;
 
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
@@ -47,12 +49,14 @@ import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 
 /**
  * Builder which eases the way {@link I_M_HU_PI_Attribute}s are created. <i>See constructor implementation(s) for initial parameter values.</i>
  *
  * @author al
  */
+@ToString
 public class HUPIAttributeBuilder
 {
 	public static HUPIAttributeBuilder newInstance(@NonNull final AttributeId attributeId)
@@ -164,6 +168,16 @@ public class HUPIAttributeBuilder
 
 	public I_M_HU_PI_Attribute create(final Properties ctx)
 	{
+		final boolean alreadyExists = Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_PI_Attribute.class)
+				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, huPIVersion.getM_HU_PI_Version_ID())
+				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
+				.create()
+				.anyMatch();
+		if (alreadyExists)
+		{
+			throw new AdempiereException("HU PI Attribute already exist for " + this);
+		}
+
 		final I_M_HU_PI_Attribute huPIAttr = InterfaceWrapperHelper.create(ctx, I_M_HU_PI_Attribute.class, ITrx.TRXNAME_None);
 		huPIAttr.setM_Attribute_ID(attributeId.getRepoId());
 

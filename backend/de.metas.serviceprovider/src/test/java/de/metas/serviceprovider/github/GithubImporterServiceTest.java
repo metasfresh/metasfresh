@@ -25,6 +25,9 @@ package de.metas.serviceprovider.github;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.GithubMilestone;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
@@ -35,7 +38,8 @@ import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.project.ExternalProjectRepository;
-import de.metas.serviceprovider.external.reference.ExternalReferenceRepository;
+
+import de.metas.serviceprovider.github.label.LabelService;
 import de.metas.serviceprovider.github.link.GithubIssueLinkMatcher;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
@@ -64,6 +68,7 @@ import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_OWNER
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_PROJECT_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE;
+import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_REFERENCE_TYPE;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_SYSTEM;
 import static de.metas.serviceprovider.TestConstants.MOCK_EXTERNAL_URL;
 import static de.metas.serviceprovider.TestConstants.MOCK_INSTANT;
@@ -92,18 +97,29 @@ public class GithubImporterServiceTest
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IModelCacheInvalidationService modelCacheInvalidationService =  Services.get(IModelCacheInvalidationService.class);
 
-	private final ExternalReferenceRepository externalReferenceRepository = new ExternalReferenceRepository(queryBL);
+	private ExternalReferenceRepository externalReferenceRepository;
 
 	private final IssueRepository issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 
 	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
 
+	private final LabelService labelService = new LabelService();
+
 	private final GithubImporterService githubImporterService =
-			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository);
+			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService);
 	@Before
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
+		externalReferenceTypes.registerType(MOCK_EXTERNAL_REFERENCE_TYPE);
+
+		final ExternalSystems externalSystems = new ExternalSystems();
+		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM);
+		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM_1);
+
+		externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystems, externalReferenceTypes);
 	}
 
 	@Test
@@ -262,7 +278,7 @@ public class GithubImporterServiceTest
 	{
 		final I_S_ExternalProjectReference projectRecord = InterfaceWrapperHelper.newInstance(I_S_ExternalProjectReference.class);
 		projectRecord.setProjectType(MOCK_EXTERNAL_PROJECT_TYPE.getValue());
-		projectRecord.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getValue());
+		projectRecord.setExternalSystem(MOCK_EXTERNAL_SYSTEM.getCode());
 		projectRecord.setAD_Org_ID(MOCK_ORG_ID.getRepoId());
 		projectRecord.setC_Project_ID(MOCK_PROJECT_ID.getRepoId());
 		projectRecord.setExternalReference(MOCK_EXTERNAL_REFERENCE);

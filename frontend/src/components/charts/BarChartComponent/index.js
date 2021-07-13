@@ -113,14 +113,8 @@ class BarChartComponent extends Component {
   }
 
   render() {
-    const {
-      chartClass,
-      isMaximized,
-      data,
-      fields,
-      groupBy,
-      chartTitle,
-    } = this.props;
+    const { chartClass, isMaximized, data, fields, groupBy, chartTitle } =
+      this.props;
 
     return (
       <div className={'chart-wrapper ' + chartClass + '-wrapper'}>
@@ -177,7 +171,7 @@ class BarChartComponent extends Component {
 BarChartComponent.propTypes = {
   chartClass: PropTypes.string,
   data: PropTypes.any,
-  groupBy: PropTypes.string,
+  groupBy: PropTypes.object,
   colors: PropTypes.any,
   fields: PropTypes.array,
   reRender: PropTypes.any,

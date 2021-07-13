@@ -1,41 +1,30 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
+import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
+import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
@@ -45,42 +34,32 @@ import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.ModelValidator;
 
-import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.DocStatus;
-import de.metas.i18n.AdMessageKey;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
-import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
-import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
-import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
-import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 /**
  * Shipment Schedule module: M_ShipmentSchedule
  *
  * @author tsa
- *
  */
 @Validator(I_M_ShipmentSchedule.class)
 public class M_ShipmentSchedule
 {
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
-	 *
-	 * @param schedule
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_M_ShipmentSchedule schedule)
@@ -99,7 +78,7 @@ public class M_ShipmentSchedule
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateHeaderAggregationKey(final I_M_ShipmentSchedule schedule)
 	{
-		 Services.get(IShipmentScheduleBL.class).updateHeaderAggregationKey(schedule);
+		shipmentScheduleBL.updateHeaderAggregationKey(schedule);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
@@ -110,9 +89,8 @@ public class M_ShipmentSchedule
 				|| InterfaceWrapperHelper.isValueChanged(schedule, I_M_ShipmentSchedule.COLUMNNAME_AD_User_Override_ID)
 				|| Check.isEmpty(schedule.getBPartnerAddress_Override(), true))
 		{
-			final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 			schedule.setBPartnerAddress_Override(null);
-			shipmentScheduleBL.updateBPArtnerAddressOverrideIfNotYetSet(schedule);
+			shipmentScheduleBL.updateBPartnerAddressOverrideIfNotYetSet(schedule);
 		}
 	}
 
@@ -120,7 +98,6 @@ public class M_ShipmentSchedule
 	 * If a shipment schedule is deleted, then this method makes sure that all {@link I_M_IolCandHandler_Log} records which refer to the same record as the schedule are also deleted.<br>
 	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
 	 *
-	 * @param schedule
 	 * @task 08288
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -161,7 +138,11 @@ public class M_ShipmentSchedule
 	public void invalidateIfBusinessPartnerChanged(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
-		if (Services.get(IShipmentScheduleUpdater.class).isRunning())
+		if (shipmentScheduleUpdater.isRunning())
+		{
+			return;
+		}
+		if (shipmentScheduleBL.isDoNotInvalidateOnChange(shipmentSchedule))
 		{
 			return;
 		}
@@ -208,8 +189,6 @@ public class M_ShipmentSchedule
 	/**
 	 * Note: it's important the the schedule is only invalidated on certain value changes.
 	 * For example, a change of lock status or valid status may not cause an invalidation
-	 *
-	 * @param schedule
 	 */
 	@ModelChange( //
 			timings = ModelValidator.TYPE_AFTER_CHANGE, //
@@ -226,7 +205,11 @@ public class M_ShipmentSchedule
 	public void invalidate(final I_M_ShipmentSchedule schedule)
 	{
 		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
-		if (Services.get(IShipmentScheduleUpdater.class).isRunning())
+		if (shipmentScheduleUpdater.isRunning())
+		{
+			return;
+		}
+		if (shipmentScheduleBL.isDoNotInvalidateOnChange(schedule))
 		{
 			return;
 		}
@@ -244,7 +227,11 @@ public class M_ShipmentSchedule
 	public void invalidateSchedulesWithOldAndNewHeaderAggregationKey(final I_M_ShipmentSchedule schedule)
 	{
 		// If shipment schedule updater is currently running in this thread, it means that updater changed this record so there is NO need to invalidate it again.
-		if (Services.get(IShipmentScheduleUpdater.class).isRunning())
+		if (shipmentScheduleUpdater.isRunning())
+		{
+			return;
+		}
+		if (shipmentScheduleBL.isDoNotInvalidateOnChange(schedule))
 		{
 			return;
 		}
@@ -263,8 +250,6 @@ public class M_ShipmentSchedule
 	 * Updates the given candidate's QtyOrdered.
 	 * <p>
 	 * IMPORTANT: we do not want to prohibit over-deliveries. That's why this method shall not be fired if e.g. QtyDelivered changed.
-	 *
-	 * @param shipmentSchedule
 	 */
 	@ModelChange( //
 			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
@@ -274,7 +259,6 @@ public class M_ShipmentSchedule
 			})
 	public void updateQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 		shipmentScheduleBL.updateQtyOrdered(shipmentSchedule);
 
 		final BigDecimal qtyDelivered = shipmentSchedule.getQtyDelivered();
@@ -323,5 +307,24 @@ public class M_ShipmentSchedule
 		orderPO.reserveStock(MDocType.get(orderPO.getCtx(), order.getC_DocType_ID()), ImmutableList.of(orderLinePO));
 
 		InterfaceWrapperHelper.save(orderLine);
+	}
+
+	/**
+	 * Note: keep {@code ifColumnsChanged} in sync with the changeable properties loaded at {@link de.metas.inoutcandidate.ShipmentScheduleRepository#ofRecord(I_M_ShipmentSchedule)}.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_ShipmentSchedule.COLUMNNAME_ExportStatus,
+					I_M_ShipmentSchedule.COLUMNNAME_POReference,
+					I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver,
+					I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Override_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_C_BP_Location_Override_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_AD_User_Override_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_DateOrdered }
+	)
+	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		shipmentScheduleBL.updateCanBeExportedAfter(sched);
 	}
 }

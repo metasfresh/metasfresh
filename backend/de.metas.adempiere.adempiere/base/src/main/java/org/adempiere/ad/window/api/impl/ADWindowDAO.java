@@ -1,45 +1,15 @@
 package org.adempiere.ad.window.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.copy;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
@@ -50,6 +20,7 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.ad.window.api.UIElementGroupId;
+import org.adempiere.ad.window.api.WindowCopyRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -69,22 +40,30 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.cache.CCache;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
-import lombok.NonNull;
-import lombok.ToString;
+import javax.annotation.Nullable;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class ADWindowDAO implements IADWindowDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(ADWindowDAO.class);
+	private static final Logger logger = LogManager.getLogger(ADWindowDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	private CCache<String, AdWindowId> windowIdsByInternalName = CCache.<String, AdWindowId> builder()
+	private final CCache<String, AdWindowId> windowIdsByInternalName = CCache.<String, AdWindowId>builder()
 			.tableName(I_AD_Window.Table_Name)
 			.build();
 
@@ -98,7 +77,7 @@ public class ADWindowDAO implements IADWindowDAO
 	public ITranslatableString retrieveWindowNameCached(final AdWindowId adWindowId)
 	{
 		// using a simple DB call would be faster, but this way it's less coupled and after all we have caching
-		final I_AD_Window window = Services.get(IQueryBL.class)
+		final I_AD_Window window = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Window.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
@@ -116,7 +95,7 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public String retrieveInternalWindowName(final AdWindowId adWindowId)
 	{
-		final I_AD_Window window = Services.get(IQueryBL.class)
+		final I_AD_Window window = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Window.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
@@ -134,7 +113,7 @@ public class ADWindowDAO implements IADWindowDAO
 	private AdWindowId retrieveWindowIdByInternalName(@NonNull final String internalName)
 	{
 		Check.assumeNotEmpty(internalName, "internalName is not empty");
-		final AdWindowId windowId = Services.get(IQueryBL.class)
+		final AdWindowId windowId = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Window.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Window.COLUMNNAME_InternalName, internalName)
@@ -156,18 +135,8 @@ public class ADWindowDAO implements IADWindowDAO
 				.list(I_AD_Tab.class);
 	}
 
-	@Override
-	public void deleteTabsByWindowId(@NonNull final AdWindowId adWindowId)
-	{
-		retrieveTabsQuery(adWindowId)
-				.create()
-				.delete();
-	}
-
 	private IQueryBuilder<I_AD_Tab> retrieveTabsQuery(final AdWindowId adWindowId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		return queryBL
 				.createQueryBuilder(I_AD_Tab.class)
 				.addOnlyActiveRecordsFilter()
@@ -208,7 +177,6 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private IQueryBuilder<I_AD_UI_Section> retrieveUISectionsQuery(final Properties ctx, final int AD_Tab_ID)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_AD_UI_Section.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
@@ -229,7 +197,6 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private IQueryBuilder<I_AD_UI_Column> retrieveUIColumnsQuery(final I_AD_UI_Section uiSection)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_AD_UI_Column.class, uiSection)
 				.addOnlyActiveRecordsFilter()
@@ -250,7 +217,6 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private IQueryBuilder<I_AD_UI_ElementGroup> retrieveUIElementGroupsQuery(final I_AD_UI_Column uiColumn)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_AD_UI_ElementGroup.class, uiColumn)
 				.addOnlyActiveRecordsFilter()
@@ -268,7 +234,7 @@ public class ADWindowDAO implements IADWindowDAO
 		return nextSeqNo(lastSeqNo);
 	}
 
-	private static final int nextSeqNo(final Integer lastSeqNo)
+	private static int nextSeqNo(final Integer lastSeqNo)
 	{
 		if (lastSeqNo == null || lastSeqNo <= 0)
 		{
@@ -301,7 +267,6 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQuery(final I_AD_UI_ElementGroup uiElementGroup)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_AD_UI_Element.class, uiElementGroup)
 				.addOnlyActiveRecordsFilter()
@@ -314,7 +279,6 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQueryByTabId(@NonNull final AdTabId adTabId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_AD_UI_Element.class)
 				.addOnlyActiveRecordsFilter()
@@ -334,7 +298,6 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private IQueryBuilder<I_AD_UI_ElementField> retrieveUIElementFieldsQuery(final I_AD_UI_Element uiElement)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		return queryBL
 				.createQueryBuilder(I_AD_UI_ElementField.class, uiElement)
 				.addOnlyActiveRecordsFilter()
@@ -384,7 +347,7 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public I_AD_Tab retrieveFirstTab(@NonNull final AdWindowId adWindowId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_AD_Tab.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, adWindowId)
@@ -394,8 +357,18 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public void copyWindow(@NonNull final AdWindowId targetWindowId, @NonNull final AdWindowId sourceWindowId)
+	public String getFirstTabWhereClause(@NonNull final AdWindowId adWindowId)
 	{
+		final I_AD_Tab firstTab = retrieveFirstTab(adWindowId);
+		return firstTab != null ? firstTab.getWhereClause() : null;
+	}
+
+	@Override
+	public void copyWindow(@NonNull final WindowCopyRequest request)
+	{
+		final AdWindowId targetWindowId = request.getTargetWindowId();
+		final AdWindowId sourceWindowId = request.getSourceWindowId();
+
 		final I_AD_Window targetWindow = getWindowByIdInTrx(targetWindowId);
 		final I_AD_Window sourceWindow = getWindowByIdInTrx(sourceWindowId);
 
@@ -412,6 +385,8 @@ public class ADWindowDAO implements IADWindowDAO
 				.setFrom(sourceWindow)
 				.setTo(targetWindow)
 				.copy();
+
+		targetWindow.setOverrides_Window_ID(request.isCustomizationWindow() ? sourceWindowId.getRepoId() : -1);
 
 		save(targetWindow);
 
@@ -497,7 +472,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private int retrieveUISectionLastSeqNo(@NonNull final AdTabId tabId)
 	{
-		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_Section.class)
+		final Integer lastSeqNo = queryBL.createQueryBuilder(I_AD_UI_Section.class)
 				.addEqualsFilter(I_AD_UI_Section.COLUMNNAME_AD_Tab_ID, tabId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -579,9 +554,9 @@ public class ADWindowDAO implements IADWindowDAO
 		return targetUIElementGroup;
 	}
 
-	private int retrieveUIElementGroupLastSeqNo(int uiColumnId)
+	private int retrieveUIElementGroupLastSeqNo(final int uiColumnId)
 	{
-		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_ElementGroup.class)
+		final Integer lastSeqNo = queryBL.createQueryBuilder(I_AD_UI_ElementGroup.class)
 				.addEqualsFilter(I_AD_UI_ElementGroup.COLUMNNAME_AD_UI_Column_ID, uiColumnId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -725,6 +700,16 @@ public class ADWindowDAO implements IADWindowDAO
 			targetElement.setLabels_Selector_Field_ID(targetLabelsSelectorFieldId);
 		}
 
+		//
+		// Inline Tab
+		{
+			final int sourceInlineTabId = sourceElement.getInline_Tab_ID();
+			final int targetInlineTabId = sourceInlineTabId > 0
+					? copyCtx.getTargetTabIdBySourceTabId(sourceInlineTabId)
+					: -1;
+			targetElement.setInline_Tab_ID(targetInlineTabId);
+		}
+
 		if (targetElement.getSeqNo() <= 0)
 		{
 			final int seqNo = getUIElementNextSeqNo(targetElementGroupId);
@@ -771,7 +756,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private int retrieveUIElementLastSeqNo(@NonNull final UIElementGroupId uiElementGroupId)
 	{
-		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_UI_Element.class)
+		final Integer lastSeqNo = queryBL.createQueryBuilder(I_AD_UI_Element.class)
 				.addEqualsFilter(I_AD_UI_Element.COLUMNNAME_AD_UI_ElementGroup_ID, uiElementGroupId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -962,9 +947,9 @@ public class ADWindowDAO implements IADWindowDAO
 		return targetTab;
 	}
 
-	private int retrieveTabLastSeqNo(int windowId)
+	private int retrieveTabLastSeqNo(final int windowId)
 	{
-		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
+		final Integer lastSeqNo = queryBL.createQueryBuilder(I_AD_Tab.class)
 				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Window_ID, windowId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -1072,9 +1057,9 @@ public class ADWindowDAO implements IADWindowDAO
 		copyFieldTrl(targetField.getAD_Field_ID(), sourceField.getAD_Field_ID());
 	}
 
-	private int retrieveFieldLastSeqNo(int tabId)
+	private int retrieveFieldLastSeqNo(final int tabId)
 	{
-		final Integer lastSeqNo = Services.get(IQueryBL.class).createQueryBuilder(I_AD_Field.class)
+		final Integer lastSeqNo = queryBL.createQueryBuilder(I_AD_Field.class)
 				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tabId)
 				.addOnlyActiveRecordsFilter()
 				.create()
@@ -1103,7 +1088,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 	@Override
 	@Cached(cacheName = I_AD_Tab_Callout.Table_Name + "#by#" + I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID)
-	public List<I_AD_Tab_Callout> retrieveTabCallouts(@NonNull AdTabId tabId)
+	public List<I_AD_Tab_Callout> retrieveTabCallouts(@NonNull final AdTabId tabId)
 	{
 		return retrieveTabCalloutsQuery(tabId)
 				.create()
@@ -1112,7 +1097,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private IQueryBuilder<I_AD_Tab_Callout> retrieveTabCalloutsQuery(@NonNull final AdTabId tabId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilderOutOfTrx(I_AD_Tab_Callout.class)
 				.addEqualsFilter(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_ID, tabId)
 				.orderBy(I_AD_Tab_Callout.COLUMNNAME_AD_Tab_Callout_ID);
@@ -1130,7 +1115,7 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		Check.assumeNotNull(tab, "adTab not null");
 
-		final IQueryBuilder<I_AD_Field> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_AD_Field> queryBuilder = queryBL
 				.createQueryBuilder(I_AD_Field.class, tab)
 				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tab.getAD_Tab_ID());
 
@@ -1142,7 +1127,7 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public void deleteFieldsByTabId(@NonNull final AdTabId tabId)
 	{
-		Services.get(IQueryBL.class)
+		queryBL
 				.createQueryBuilder(I_AD_Field.class)
 				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Tab_ID, tabId)
 				.create()
@@ -1154,7 +1139,7 @@ public class ADWindowDAO implements IADWindowDAO
 	{
 		Check.assumeGreaterThanZero(adColumnId, "adColumnId");
 
-		Services.get(IQueryBL.class)
+		queryBL
 				.createQueryBuilder(I_AD_Field.class)
 				.addEqualsFilter(I_AD_Field.COLUMNNAME_AD_Column_ID, adColumnId)
 				.create()
@@ -1164,7 +1149,7 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public Set<AdTabId> retrieveTabIdsWithMissingADElements()
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Tab.class)
+		return queryBL.createQueryBuilder(I_AD_Tab.class)
 				.addEqualsFilter(I_AD_Tab.COLUMN_AD_Element_ID, null)
 				.create()
 				.listIds(AdTabId::ofRepoId);
@@ -1173,7 +1158,7 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public Set<AdWindowId> retrieveWindowIdsWithMissingADElements()
 	{
-		return Services.get(IQueryBL.class).createQueryBuilder(I_AD_Window.class)
+		return queryBL.createQueryBuilder(I_AD_Window.class)
 				.addEqualsFilter(I_AD_Window.COLUMN_AD_Element_ID, null)
 				.create()
 				.listIds(AdWindowId::ofRepoId);
@@ -1202,7 +1187,6 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public void deleteUIElementsByFieldId(@NonNull final AdFieldId adFieldId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		queryBL.createQueryBuilder(I_AD_UI_Element.class)
 				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Field_ID, adFieldId)
 				.create()
@@ -1212,7 +1196,6 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public void deleteUISectionsByTabId(@NonNull final AdTabId adTabId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		queryBL.createQueryBuilder(I_AD_UI_Section.class)
 				.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, adTabId)
 				.create()
@@ -1225,8 +1208,7 @@ public class ADWindowDAO implements IADWindowDAO
 			@NonNull final SOTrx soTrx,
 			@NonNull final AdWindowId defaultValue)
 	{
-
-		final I_AD_Table adTableRecord = Services.get(IADTableDAO.class).retrieveTable(tableName);
+		final I_AD_Table adTableRecord = adTableDAO.retrieveTable(tableName);
 
 		switch (soTrx)
 		{
@@ -1238,5 +1220,4 @@ public class ADWindowDAO implements IADWindowDAO
 				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
 		}
 	}
-
 }

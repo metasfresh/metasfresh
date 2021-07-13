@@ -1,20 +1,20 @@
 package de.metas.handlingunits.trace;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Optional;
-import java.util.OptionalInt;
-
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.trace.HUTraceEventQuery.HUTraceEventQueryBuilder;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -112,7 +112,8 @@ public class HUTraceEvent
 				.ppOrderId(ppOrderId)
 				.docStatus(docStatus)
 				.docTypeId(docTypeId)
-				.huTrxLineId(huTrxLineId);
+				.huTrxLineId(huTrxLineId)
+		        .vhuSourceId(vhuSourceId);
 
 	}
 }

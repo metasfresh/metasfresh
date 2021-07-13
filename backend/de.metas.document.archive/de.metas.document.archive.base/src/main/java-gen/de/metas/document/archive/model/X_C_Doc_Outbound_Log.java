@@ -1,83 +1,84 @@
 /** Generated Model - DO NOT CHANGE */
 package de.metas.document.archive.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_Doc_Outbound_Log
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
-public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_Doc_Outbound_Log, org.compiere.model.I_Persistent 
+public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_Doc_Outbound_Log, org.compiere.model.I_Persistent
 {
 
 	/**
+		if (C_BPartner_ID < 1)
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
+		else
 	 *
 	 */
-	private static final long serialVersionUID = 575358176L;
+		private static final long serialVersionUID = 575358176L;
 
-    /** Standard Constructor */
+		/** Standard Constructor */
     public X_C_Doc_Outbound_Log (Properties ctx, int C_Doc_Outbound_Log_ID, String trxName)
-    {
-      super (ctx, C_Doc_Outbound_Log_ID, trxName);
-      /** if (C_Doc_Outbound_Log_ID == 0)
-        {
-			setAD_Table_ID (0);
-			setC_Doc_Outbound_Log_ID (0);
-			setRecord_ID (0);
-        } */
-    }
+		{
+			super (ctx, C_Doc_Outbound_Log_ID, trxName);
+			/** if (C_Doc_Outbound_Log_ID == 0)
+			 {
+			 setAD_Table_ID (0);
+			 setC_Doc_Outbound_Log_ID (0);
+			 setRecord_ID (0);
+			 } */
+		}
 
-    /** Load Constructor */
+		/** Load Constructor */
     public X_C_Doc_Outbound_Log (Properties ctx, ResultSet rs, String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+		{
+			super (ctx, rs, trxName);
+		}
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+		/** Load Meta Data */
+		@Override
+		protected org.compiere.model.POInfo initPO (Properties ctx)
+		{
+			org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
+			return poi;
+		}
 
-	/** Set DB-Tabelle.
-		@param AD_Table_ID 
-		Database Table information
-	  */
-	@Override
-	public void setAD_Table_ID (int AD_Table_ID)
-	{
-		if (AD_Table_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
-	}
+		/** Set DB-Tabelle.
+		 @param AD_Table_ID
+		 Database Table information
+		 */
+		@Override
+		public void setAD_Table_ID (int AD_Table_ID)
+		{
+			if (AD_Table_ID < 1)
+				set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
+			else
+				set_ValueNoCheck (COLUMNNAME_AD_Table_ID, Integer.valueOf(AD_Table_ID));
+		}
 
-	/** Get DB-Tabelle.
-		@return Database Table information
-	  */
-	@Override
-	public int getAD_Table_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
+		/** Get DB-Tabelle.
+		 @return Database Table information
+		 */
+		@Override
+		public int getAD_Table_ID ()
+		{
+			Integer ii = (Integer)get_Value(COLUMNNAME_AD_Table_ID);
+			if (ii == null)
+				return 0;
+			return ii.intValue();
+		}
 
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID 
-		Bezeichnet einen Geschäftspartner
-	  */
-	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		/** Set Geschäftspartner.
+		 @param C_BPartner_ID
+		 Bezeichnet einen Geschäftspartner
+		 */
+		@Override
+		public void setC_BPartner_ID (int C_BPartner_ID)
+		{
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
 	}
 
@@ -118,7 +119,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		@return Geschäftspartnergruppe
 	  */
 	@Override
-	public int getC_BP_Group_ID () 
+	public int getC_BP_Group_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_Group_ID);
 		if (ii == null)
@@ -131,16 +132,16 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	@Override
 	public void setC_Doc_Outbound_Log_ID (int C_Doc_Outbound_Log_ID)
 	{
-		if (C_Doc_Outbound_Log_ID < 1) 
+		if (C_Doc_Outbound_Log_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Doc_Outbound_Log_ID, Integer.valueOf(C_Doc_Outbound_Log_ID));
 	}
 
 	/** Get C_Doc_Outbound_Log.
 		@return C_Doc_Outbound_Log	  */
 	@Override
-	public int getC_Doc_Outbound_Log_ID () 
+	public int getC_Doc_Outbound_Log_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Doc_Outbound_Log_ID);
 		if (ii == null)
@@ -149,15 +150,15 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	/** Set Belegart.
-		@param C_DocType_ID 
+		@param C_DocType_ID
 		Belegart oder Verarbeitungsvorgaben
 	  */
 	@Override
 	public void setC_DocType_ID (int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
+		if (C_DocType_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, Integer.valueOf(C_DocType_ID));
 	}
 
@@ -165,7 +166,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		@return Belegart oder Verarbeitungsvorgaben
 	  */
 	@Override
-	public int getC_DocType_ID () 
+	public int getC_DocType_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
 		if (ii == null)
@@ -184,7 +185,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Derzeitige Mailadresse.
 		@return Derzeitige Mailadresse	  */
 	@Override
-	public java.lang.String getCurrentEMailAddress () 
+	public java.lang.String getCurrentEMailAddress ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CurrentEMailAddress);
 	}
@@ -194,16 +195,16 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	@Override
 	public void setCurrentEMailRecipient_ID (int CurrentEMailRecipient_ID)
 	{
-		if (CurrentEMailRecipient_ID < 1) 
+		if (CurrentEMailRecipient_ID < 1)
 			set_Value (COLUMNNAME_CurrentEMailRecipient_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_CurrentEMailRecipient_ID, Integer.valueOf(CurrentEMailRecipient_ID));
 	}
 
 	/** Get Derzeitiger Mailempfänger.
 		@return Derzeitiger Mailempfänger	  */
 	@Override
-	public int getCurrentEMailRecipient_ID () 
+	public int getCurrentEMailRecipient_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_CurrentEMailRecipient_ID);
 		if (ii == null)
@@ -212,7 +213,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	/** Set Belegdatum.
-		@param DateDoc 
+		@param DateDoc
 		Datum des Belegs
 	  */
 	@Override
@@ -225,7 +226,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		@return Datum des Belegs
 	  */
 	@Override
-	public java.sql.Timestamp getDateDoc () 
+	public java.sql.Timestamp getDateDoc ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateDoc);
 	}
@@ -241,7 +242,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Zuletzt gemailt.
 		@return Zuletzt gemailt	  */
 	@Override
-	public java.sql.Timestamp getDateLastEMail () 
+	public java.sql.Timestamp getDateLastEMail ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateLastEMail);
 	}
@@ -257,7 +258,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Zuletzt gedruckt.
 		@return Zuletzt gedruckt	  */
 	@Override
-	public java.sql.Timestamp getDateLastPrint () 
+	public java.sql.Timestamp getDateLastPrint ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateLastPrint);
 	}
@@ -273,12 +274,12 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Zuletzt gespeichert.
 		@return Zuletzt gespeichert	  */
 	@Override
-	public java.sql.Timestamp getDateLastStore () 
+	public java.sql.Timestamp getDateLastStore ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateLastStore);
 	}
 
-	/** 
+	/**
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
 	 */
@@ -308,7 +309,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
-		@param DocStatus 
+		@param DocStatus
 		The current status of the document
 	  */
 	@Override
@@ -322,13 +323,13 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		@return The current status of the document
 	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
 	/** Set Nr..
-		@param DocumentNo 
+		@param DocumentNo
 		Document sequence number of the document
 	  */
 	@Override
@@ -341,7 +342,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		@return Document sequence number of the document
 	  */
 	@Override
-	public java.lang.String getDocumentNo () 
+	public java.lang.String getDocumentNo ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
 	}
@@ -356,12 +357,24 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Anz. gemailt.
 		@return Anz. gemailt	  */
 	@Override
-	public int getEMailCount () 
+	public int getEMailCount ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_EMailCount);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	@Override
+	public void setFileName (final @Nullable java.lang.String FileName)
+	{
+		set_Value (COLUMNNAME_FileName, FileName);
+	}
+
+	@Override
+	public java.lang.String getFileName()
+	{
+		return get_ValueAsString(COLUMNNAME_FileName);
 	}
 
 	/** Set Beleg soll per EDI übermittelt werden.
@@ -374,13 +387,13 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Beleg soll per EDI übermittelt werden.
 		@return Beleg soll per EDI übermittelt werden	  */
 	@Override
-	public boolean isEdiEnabled () 
+	public boolean isEdiEnabled ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsEdiEnabled);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -397,13 +410,13 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Rechnung per eMail.
 		@return Rechnung per eMail	  */
 	@Override
-	public boolean isInvoiceEmailEnabled () 
+	public boolean isInvoiceEmailEnabled ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsInvoiceEmailEnabled);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -419,7 +432,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Anz. PDF.
 		@return Anz. PDF	  */
 	@Override
-	public int getPDFCount () 
+	public int getPDFCount ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PDFCount);
 		if (ii == null)
@@ -428,7 +441,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	/** Set Referenz.
-		@param POReference 
+		@param POReference
 		Referenz-Nummer des Kunden
 	  */
 	@Override
@@ -440,7 +453,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		@return Referenz-Nummer des Kunden
 	  */
 	@Override
-	public java.lang.String getPOReference () 
+	public java.lang.String getPOReference ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_POReference);
 	}
@@ -455,7 +468,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Anz. gedruckt.
 		@return Anz. gedruckt	  */
 	@Override
-	public int getPrintCount () 
+	public int getPrintCount ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_PrintCount);
 		if (ii == null)
@@ -464,15 +477,15 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	}
 
 	/** Set Datensatz-ID.
-		@param Record_ID 
+		@param Record_ID
 		Direct internal record ID
 	  */
 	@Override
 	public void setRecord_ID (int Record_ID)
 	{
-		if (Record_ID < 0) 
+		if (Record_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Integer.valueOf(Record_ID));
 	}
 
@@ -480,7 +493,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		@return Direct internal record ID
 	  */
 	@Override
-	public int getRecord_ID () 
+	public int getRecord_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Record_ID);
 		if (ii == null)
@@ -498,7 +511,7 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 	/** Get Anz. gespeichert.
 		@return Anz. gespeichert	  */
 	@Override
-	public int getStoreCount () 
+	public int getStoreCount ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_StoreCount);
 		if (ii == null)

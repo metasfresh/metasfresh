@@ -23,7 +23,7 @@ package de.metas.logging;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 
 import org.compiere.util.Ini;
 

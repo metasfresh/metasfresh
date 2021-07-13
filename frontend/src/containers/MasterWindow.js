@@ -4,6 +4,10 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { forEach, get } from 'lodash';
 
+import { connectWS, disconnectWS } from '../utils/websockets';
+import { getTabRequest, getRowsData } from '../api';
+import { getTab } from '../utils';
+
 import { getTableId } from '../reducers/tables';
 import { addNotification } from '../actions/AppActions';
 import {
@@ -11,14 +15,13 @@ import {
   clearMasterData,
   fireUpdateData,
   sortTab,
+  updateTabLayout,
 } from '../actions/WindowActions';
 import {
   deleteTable,
   updateTabTableData,
   updateTabRowsData,
 } from '../actions/TableActions';
-import { connectWS, disconnectWS } from '../utils/websockets';
-import { getTabRequest, getRowsData } from '../api';
 
 import MasterWindow from '../components/app/MasterWindow';
 
@@ -59,7 +62,6 @@ class MasterWindowContainer extends PureComponent {
 
     const activeTab = includedTabsInfo
       ? Object.values(includedTabsInfo).find((tabInfo) =>
-          // TODO: Why sometimes we use `tabid` and other times `tabId` ??!!
           this.isActiveTab(tabInfo.tabId)
         )
       : null;
@@ -71,7 +73,6 @@ class MasterWindowContainer extends PureComponent {
       fireUpdateData({
         windowId: params.windowType,
         documentId: params.docId,
-        doNotFetchIncludedTabs: true,
       });
     }
 
@@ -103,14 +104,9 @@ class MasterWindowContainer extends PureComponent {
       entity: 'window',
       docType: windowType,
       docId,
-      tabId: tabId,
+      tabId,
       rows,
-    }).catch(() => {
-      // since we're querying multiple rows, but can only catch one
-      // error, we'll focus on the case when row was deleted and the
-      // endpoint returns 404
-      return { rowId: rows[0], tabId };
-    });
+    }).then((response) => Promise.resolve({ response, tabId }));
   }
 
   isActiveTab(tabId) {
@@ -119,28 +115,27 @@ class MasterWindowContainer extends PureComponent {
     return tabId === master.layout.activeTab;
   }
 
-  mergeDataIntoIncludedTab(response) {
+  mergeDataIntoIncludedTab({ response, tabId }) {
     const {
       updateTabRowsData,
       params: { windowType, docId },
     } = this.props;
-    const { data } = response;
+    const {
+      data: { result, missingIds },
+    } = response;
     const changedTabs = {};
     let rowsById = null;
     let removedRows = null;
-    let tabId;
 
-    // removed row
-    if (!data) {
+    if (missingIds && missingIds.length) {
       removedRows = removedRows || {};
-      removedRows[response.rowId] = true;
-      tabId = response.tabId;
-    } else {
+      missingIds.forEach((rowId) => {
+        removedRows[rowId] = true;
+      });
+    }
+    if (result && result.length) {
       rowsById = rowsById || {};
-      const rowZero = data[0];
-      tabId = rowZero.tabId;
-
-      data.forEach((row) => {
+      result.forEach((row) => {
         rowsById[row.rowId] = { ...row };
       });
     }
@@ -171,6 +166,7 @@ class MasterWindowContainer extends PureComponent {
       master,
       params: { windowType, docId },
       updateTabTableData,
+      updateTabLayout,
     } = this.props;
 
     const activeTabId = master.layout.activeTab;
@@ -183,20 +179,22 @@ class MasterWindowContainer extends PureComponent {
       tabId: activeTabId,
     });
 
-    const tabLayout =
-      master.layout.tabs &&
-      master.layout.tabs.filter((tab) => tab.tabId === activeTabId)[0];
-
-    const orderBy = tabLayout.orderBy;
+    const tabLayout = getTab(master.layout, activeTabId);
+    const orderBy = tabLayout ? tabLayout.orderBy : null;
     let sortingOrder = null;
+
     if (orderBy && orderBy.length) {
       const ordering = orderBy[0];
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
 
-    getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) =>
-      updateTabTableData(tableId, rows)
-    );
+    updateTabLayout(windowType, activeTabId)
+      .then(() => {
+        getTabRequest(activeTabId, windowType, docId, sortingOrder).then(
+          (rows) => updateTabTableData(tableId, rows)
+        );
+      })
+      .catch((error) => error);
   };
 
   deleteTabsTables = () => {
@@ -219,9 +217,43 @@ class MasterWindowContainer extends PureComponent {
     }
   };
 
+  /**
+   * @method sort
+   * @summary Sort table data
+   */
+  sort = (asc, field, startPage, page, tabId) => {
+    const {
+      updateTabTableData,
+      sortTab,
+      master,
+      params: { windowType, docId },
+    } = this.props;
+    const orderBy = (asc ? '+' : '-') + field;
+    const dataId = master.docId;
+    const activeTabId = master.layout.activeTab;
+
+    if (!activeTabId) {
+      return;
+    }
+    const tableId = getTableId({
+      windowId: windowType,
+      docId,
+      tabId: activeTabId,
+    });
+
+    sortTab('master', tabId, field, asc);
+    getTabRequest(tabId, windowType, dataId, orderBy).then((rows) => {
+      updateTabTableData(tableId, rows);
+    });
+  };
+
   render() {
     return (
-      <MasterWindow onRefreshTab={this.refreshActiveTab} {...this.props} />
+      <MasterWindow
+        {...this.props}
+        onRefreshTab={this.refreshActiveTab}
+        onSortTable={this.sort}
+      />
     );
   }
 }
@@ -275,6 +307,7 @@ MasterWindowContainer.propTypes = {
   push: PropTypes.func.isRequired,
   deleteTable: PropTypes.func.isRequired,
   updateTabTableData: PropTypes.func.isRequired,
+  updateTabLayout: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({
@@ -284,7 +317,7 @@ const mapStateToProps = (state) => ({
   pluginModal: state.windowHandler.pluginModal,
   overlay: state.windowHandler.overlay,
   indicator: state.windowHandler.indicator,
-  includedView: state.listHandler.includedView,
+  includedView: state.viewHandler.includedView,
   allowShortcut: state.windowHandler.allowShortcut,
   enableTutorial: state.appHandler.enableTutorial,
   processStatus: state.appHandler.processStatus,
@@ -292,17 +325,15 @@ const mapStateToProps = (state) => ({
   breadcrumb: state.menuHandler.breadcrumb,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    addNotification,
-    attachFileAction,
-    clearMasterData,
-    fireUpdateData,
-    sortTab,
-    updateTabRowsData,
-    updateTabTableData,
-    push,
-    deleteTable,
-  }
-)(MasterWindowContainer);
+export default connect(mapStateToProps, {
+  addNotification,
+  attachFileAction,
+  clearMasterData,
+  fireUpdateData,
+  sortTab,
+  updateTabRowsData,
+  updateTabTableData,
+  push,
+  deleteTable,
+  updateTabLayout,
+})(MasterWindowContainer);

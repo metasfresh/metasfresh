@@ -22,11 +22,12 @@ package de.metas.invoice.service.impl;
  * #L%
  */
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_InvoiceTax;
@@ -39,13 +40,14 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.logging.LogManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class InvoiceDAO extends AbstractInvoiceDAO
 {
-
 	public static final Logger logger = LogManager.getLogger(InvoiceDAO.class);
 
 	public I_C_Invoice createInvoice(String trxName)
@@ -84,7 +86,6 @@ public class InvoiceDAO extends AbstractInvoiceDAO
 
 		try
 		{
-
 			pstmt.setInt(1, invoiceLine.getC_InvoiceLine_ID());
 			rs = pstmt.executeQuery();
 			while (rs.next())

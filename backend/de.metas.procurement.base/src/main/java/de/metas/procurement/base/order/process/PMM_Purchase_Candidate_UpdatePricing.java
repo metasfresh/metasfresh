@@ -1,15 +1,5 @@
 package de.metas.procurement.base.order.process;
 
-import java.util.Date;
-import java.util.Iterator;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
@@ -20,6 +10,15 @@ import de.metas.procurement.base.model.I_PMM_PurchaseCandidate;
 import de.metas.procurement.base.order.IPMMPurchaseCandidateBL;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+
+import java.util.Date;
+import java.util.Iterator;
 
 /*
  * #%L
@@ -59,7 +58,7 @@ public class PMM_Purchase_Candidate_UpdatePricing extends JavaProcess
 
 	// Parameters
 	//@Param(parameterName = "DatePromised", parameterTo = false)
-	private final Date p_DatePromisedFrom = Env.getDate(Env.getCtx()); // default: today
+	private final Date p_DatePromisedFrom = Env.getDate(); // default: today
 	//@Param(parameterName = "DatePromised", parameterTo = true)
 	private final Date p_DatePromisedTo = null;
 

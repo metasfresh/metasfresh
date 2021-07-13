@@ -23,6 +23,7 @@ package de.metas.printing.api;
  */
 
 import de.metas.adempiere.service.PrinterRoutingsQuery;
+import de.metas.printing.api.impl.PrintArchiveParameters;
 import de.metas.printing.model.I_C_Print_Job_Line;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.IPrintingQueueHandler;
@@ -44,25 +45,26 @@ public interface IPrintingQueueBL extends ISingletonService
 	 */
 	I_C_Printing_Queue enqueue(I_AD_Archive printOut);
 
+	void printArchive(PrintArchiveParameters printArchiveParameters);
+
 	void registerHandler(IPrintingQueueHandler handler);
 
 	/**
 	 * Cancel given printing queue if is not already printed.
-	 *
+	 * <p>
 	 * If the item is already printed, this method does nothing
 	 */
 	void cancel(I_C_Printing_Queue item);
 
 	/**
 	 * Re-enqueue for printing underlying archive of given printing queue item.
-	 *
+	 * <p>
 	 * This method is expected to run asynchronously so it's possible to not have the result immediate.
 	 *
-	 * @param recreateArchive
-	 *            <ul>
-	 *            <li>if true then the printout archive of underlying model will be generated (asynchronously) and then enqueued again;</li>
-	 *            <li>if false then current underlying archive is just re-enqueued
-	 *            </ul>
+	 * @param recreateArchive <ul>
+	 *                                   <li>if true then the printout archive of underlying model will be generated (asynchronously) and then enqueued again;</li>
+	 *                                   <li>if false then current underlying archive is just re-enqueued
+	 *                                   </ul>
 	 * @throws AdempiereException if <code>recreateArchive</code> is true and the underlying model could not be found
 	 */
 	void renqueue(I_C_Printing_Queue item, boolean recreateArchive);

@@ -25,12 +25,17 @@ package de.metas.serviceprovider.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.externalreference.ExternalReferenceTypes;
+import de.metas.externalreference.ExternalSystems;
 import de.metas.i18n.IMsgBL;
 import de.metas.serviceprovider.ImportQueue;
+import de.metas.serviceprovider.external.ExternalSystem;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.importer.info.ImportIssueInfo;
 import de.metas.serviceprovider.timebooking.importer.ImportTimeBookingInfo;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -46,6 +51,18 @@ import static de.metas.serviceprovider.timebooking.importer.ImportConstants.TIME
 @Configuration
 public class ApplicationConfiguration
 {
+	public ApplicationConfiguration(
+			@NonNull final ExternalReferenceTypes externalReferenceTypes,
+			@NonNull final ExternalSystems externalSystems)
+	{
+		externalReferenceTypes.registerType(ExternalServiceReferenceType.ISSUE_ID);
+		externalReferenceTypes.registerType(ExternalServiceReferenceType.TIME_BOOKING_ID);
+		externalReferenceTypes.registerType(ExternalServiceReferenceType.MILESTONE_ID);
+
+		externalSystems.registerExternalSystem(ExternalSystem.EVERHOUR);
+		externalSystems.registerExternalSystem(ExternalSystem.GITHUB);
+	}
+
 	@Bean
 	public IUserDAO userDAO()
 	{
@@ -83,12 +100,6 @@ public class ApplicationConfiguration
 	}
 
 	@Bean
-	public IADTableDAO adTableDAO()
-	{
-		return Services.get(IADTableDAO.class);
-	}
-
-	@Bean
 	public IMsgBL msgBL()
 	{
 		return Services.get(IMsgBL.class);
@@ -105,4 +116,6 @@ public class ApplicationConfiguration
 	{
 		return Services.get(IADReferenceDAO.class);
 	}
+
+
 }

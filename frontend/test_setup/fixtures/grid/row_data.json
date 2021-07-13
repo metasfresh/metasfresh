@@ -3,7 +3,7 @@
     "windowId": "143",
     "viewId": "143-F",
     "headerProperties": {
-      "entries": []
+      "groups": []
     },
     "size": 1,
     "orderBy": [
@@ -574,5 +574,775 @@
     "pageLength": 20,
     "queryLimit": 5000,
     "type": "143"
+  },
+  "data2_parent": {
+    "windowId": "540350",
+    "viewId": "540350-NP",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 3,
+    "result": [
+      {
+        "id": "1001023",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1001023",
+            "widgetType": "Integer"
+          },
+          "order": {
+            "field": "order",
+            "value": {
+              "key": "1001175",
+              "caption": "1077"
+            }
+          },
+          "qtyPicked": {
+            "field": "qtyPicked",
+            "value": "20"
+          },
+          "qtyOrdered": {
+            "field": "qtyOrdered",
+            "value": "30"
+          },
+          "bpartner": {
+            "field": "bpartner",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            }
+          },
+          "picked": {
+            "field": "picked",
+            "value": false
+          },
+          "product": {
+            "field": "product",
+            "value": {
+              "key": "2005577",
+              "caption": "Convenience Salat 250g_P002737"
+            }
+          },
+          "preparationDate": {
+            "field": "preparationDate",
+            "value": "2020-06-26T20:00:00.000+02:00"
+          }
+        },
+        "type": "LU",
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "pickingSlot",
+          "viewId": "pickingSlot-NP-1001023"
+        }
+      },
+      {
+        "id": "1001024",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1001024",
+            "widgetType": "Integer"
+          },
+          "order": {
+            "field": "order",
+            "value": {
+              "key": "1001175",
+              "caption": "1077"
+            }
+          },
+          "qtyPicked": {
+            "field": "qtyPicked",
+            "value": "38"
+          },
+          "qtyOrdered": {
+            "field": "qtyOrdered",
+            "value": "50"
+          },
+          "bpartner": {
+            "field": "bpartner",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            }
+          },
+          "picked": {
+            "field": "picked",
+            "value": false
+          },
+          "product": {
+            "field": "product",
+            "value": {
+              "key": "2005577",
+              "caption": "Convenience Salat 250g_P002737"
+            }
+          },
+          "preparationDate": {
+            "field": "preparationDate",
+            "value": "2020-06-26T20:00:00.000+02:00"
+          }
+        },
+        "type": "LU",
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "pickingSlot",
+          "viewId": "pickingSlot-NP-1001024"
+        }
+      },
+      {
+        "id": "1001025",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1001025",
+            "widgetType": "Integer"
+          },
+          "order": {
+            "field": "order",
+            "value": {
+              "key": "1001175",
+              "caption": "1077"
+            }
+          },
+          "qtyPicked": {
+            "field": "qtyPicked",
+            "value": "3.000"
+          },
+          "qtyOrdered": {
+            "field": "qtyOrdered",
+            "value": "15.000"
+          },
+          "bpartner": {
+            "field": "bpartner",
+            "value": {
+              "key": "2156425",
+              "caption": "G0001_Test Kunde 1"
+            }
+          },
+          "picked": {
+            "field": "picked",
+            "value": false
+          },
+          "product": {
+            "field": "product",
+            "value": {
+              "key": "2005572",
+              "caption": "Frisée Industrie_P002732"
+            }
+          },
+          "preparationDate": {
+            "field": "preparationDate",
+            "value": "2020-06-26T20:00:00.000+02:00"
+          }
+        },
+        "type": "LU",
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "pickingSlot",
+          "viewId": "pickingSlot-NP-1001025"
+        }
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "540350"
+  },
+  "data3_parent": {
+    "windowId": "540350",
+    "viewId": "540350-BQ",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 1,
+    "result": [
+      {
+        "id": "1000000",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000002",
+            "widgetType": "Integer"
+          },
+          "order": {
+            "field": "order",
+            "value": {
+              "key": "1000007",
+              "caption": "0006"
+            }
+          },
+          "qtyPicked": {
+            "field": "qtyPicked",
+            "value": "0"
+          },
+          "qtyOrdered": {
+            "field": "qtyOrdered",
+            "value": "1"
+          },
+          "bpartner": {
+            "field": "bpartner",
+            "value": {
+              "key": "2156448",
+              "caption": "1000022_CustomerTest_25T12_46_00_552"
+            }
+          },
+          "picked": {
+            "field": "picked",
+            "value": false
+          },
+          "product": {
+            "field": "product",
+            "value": {
+              "key": "2005632",
+              "caption": "BOM1-MainProduct_25T12_46_00_552_1000035",
+              "description": "Test Product"
+            }
+          },
+          "preparationDate": {
+            "field": "preparationDate",
+            "value": "2020-11-25T23:59:59.000+01:00"
+          }
+        },
+        "type": "LU",
+        "hasComments": false,
+        "supportAttributes": false,
+        "supportIncludedViews": true,
+        "includedView": {
+          "windowId": "pickingSlot",
+          "viewId": "pickingSlot-BQ-1000000"
+        }
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "540350"
+  },
+  "data3_child": {
+    "windowId": "pickingSlot",
+    "viewId": "pickingSlot-BQ-1000000",
+    "parentWindowId": "540350",
+    "parentViewId": "540350-BQ",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 5,
+    "result": [
+      {
+        "id": "1000104",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000104",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "includedDocuments": [
+          {
+            "id": "1000104-1000011",
+            "fieldsByName": {
+              "ID": {
+                "field": "ID",
+                "value": "1000104-1000011",
+                "widgetType": "Integer"
+              },
+              "huCode": {
+                "field": "huCode",
+                "value": "1000011"
+              },
+              "huQtyCU": {
+                "field": "huQtyCU",
+                "value": "10"
+              },
+              "huPackingInfo": {
+                "field": "huPackingInfo",
+                "value": ""
+              },
+              "huProduct": {
+                "field": "huProduct",
+                "value": {
+                  "key": "2005577",
+                  "caption": "P002737_Convenience Salat 250g"
+                }
+              }
+            },
+            "type": "CU",
+            "processed": true,
+            "hasComments": false,
+            "supportAttributes": false
+          }
+        ],
+        "colspan": true,
+        "caption": "101.0 G0002_Test Lieferant 1 Testadresse 1"
+      },
+      {
+        "id": "1000103",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000103",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "colspan": true,
+        "caption": "102.0  "
+      },
+      {
+        "id": "1000105",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000105",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "colspan": true,
+        "caption": "103.0  "
+      },
+      {
+        "id": "1000106",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000106",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "colspan": true,
+        "caption": "104.0  "
+      },
+      {
+        "id": "1000107",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000107",
+            "widgetType": "Integer"
+          },
+          "huCode": {
+            "field": "huCode",
+            "value": null
+          },
+          "huQtyCU": {
+            "field": "huQtyCU",
+            "value": null
+          },
+          "huPackingInfo": {
+            "field": "huPackingInfo",
+            "value": null
+          },
+          "huProduct": {
+            "field": "huProduct",
+            "value": null
+          }
+        },
+        "type": "M_Picking_Slot",
+        "hasComments": false,
+        "supportAttributes": false,
+        "colspan": true,
+        "caption": "105.0  "
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "pickingSlot"
+  },
+  "data4_payments": {
+    "windowId": "195",
+    "viewId": "195-Mr",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 5000,
+    "orderBy": [
+      {
+        "fieldName": "IsAllocated",
+        "ascending": true
+      }
+    ],
+    "result": [
+      {
+        "id": "1103186",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1103186",
+            "widgetType": "Integer",
+            "precision": 0
+          },
+          "C_DocType_ID": {
+            "field": "C_DocType_ID",
+            "value": {
+              "key": "1000009",
+              "caption": "Zahlungsausgang"
+            }
+          },
+          "AD_Org_ID": {
+            "field": "AD_Org_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "Spavetti AG"
+            }
+          },
+          "DocumentNo": {
+            "field": "DocumentNo",
+            "value": "2041003"
+          },
+          "IsReceipt": {
+            "field": "IsReceipt",
+            "value": false
+          },
+          "C_BP_BankAccount_ID": {
+            "field": "C_BP_BankAccount_ID",
+            "value": {
+              "key": "2000257",
+              "caption": "UBS CHF_235-710762.01H_UBS AG, Zürich_298"
+            }
+          },
+          "DateTrx": {
+            "field": "DateTrx",
+            "value": "2020-12-31"
+          },
+          "DateAcct": {
+            "field": "DateAcct",
+            "value": "2020-12-31"
+          },
+          "C_BPartner_ID": {
+            "field": "C_BPartner_ID",
+            "value": {
+              "key": "2156266",
+              "caption": "G1113_Gäumann Andreas"
+            }
+          },
+          "C_Invoice_ID": {
+            "field": "C_Invoice_ID",
+            "value": {
+              "key": "1483677",
+              "caption": "1075524_2020-12-31_9698.37_G1113_Gäumann Andreas",
+              "description": " | (1076558<-)"
+            }
+          },
+          "IsPrepayment": {
+            "field": "IsPrepayment",
+            "value": false
+          },
+          "PayAmt": {
+            "field": "PayAmt",
+            "value": "9698.37"
+          },
+          "C_Currency_ID": {
+            "field": "C_Currency_ID",
+            "value": {
+              "key": "318",
+              "caption": "CHF",
+              "description": "Schweizer Franken (100 Rappen)"
+            }
+          },
+          "DiscountAmt": {
+            "field": "DiscountAmt",
+            "value": "0.00"
+          },
+          "WriteOffAmt": {
+            "field": "WriteOffAmt",
+            "value": "0.00"
+          },
+          "IsOverUnderPayment": {
+            "field": "IsOverUnderPayment",
+            "value": false
+          },
+          "OverUnderAmt": {
+            "field": "OverUnderAmt",
+            "value": "0.00"
+          },
+          "TenderType": {
+            "field": "TenderType",
+            "value": {
+              "key": "A",
+              "caption": "<A>",
+              "active": false
+            }
+          },
+          "TrxType": {
+            "field": "TrxType",
+            "value": {
+              "key": "S",
+              "caption": "<S>",
+              "active": false
+            }
+          },
+          "TaxAmt": {
+            "field": "TaxAmt",
+            "value": "0.00"
+          },
+          "IsApproved": {
+            "field": "IsApproved",
+            "value": true
+          },
+          "IsOnlineApproved": {
+            "field": "IsOnlineApproved",
+            "value": false
+          },
+          "R_AvsZip": {
+            "field": "R_AvsZip",
+            "value": {
+              "key": "X",
+              "caption": "<X>",
+              "active": false
+            }
+          },
+          "R_AvsAddr": {
+            "field": "R_AvsAddr",
+            "value": {
+              "key": "X",
+              "caption": "<X>",
+              "active": false
+            }
+          },
+          "DocStatus": {
+            "field": "DocStatus",
+            "value": {
+              "key": "CO",
+              "caption": "Fertiggestellt"
+            }
+          },
+          "DocAction": {
+            "field": "DocAction",
+            "value": {
+              "key": "RC",
+              "caption": "<RC>",
+              "active": false
+            }
+          },
+          "IsSelfService": {
+            "field": "IsSelfService",
+            "value": false
+          },
+          "Posted": {
+            "field": "Posted",
+            "value": {
+              "key": "Y",
+              "caption": "Verbucht"
+            }
+          },
+          "IsAllocated": {
+            "field": "IsAllocated",
+            "value": false
+          },
+          "IsReconciled": {
+            "field": "IsReconciled",
+            "value": true
+          },
+          "C_BankStatement_ID": {
+            "field": "C_BankStatement_ID",
+            "value": {
+              "key": "1019338",
+              "caption": "<1019338>",
+              "active": false
+            }
+          },
+          "C_BankStatementLine_ID": {
+            "field": "C_BankStatementLine_ID",
+            "value": {
+              "key": "1025753",
+              "caption": "<1025753>",
+              "active": false
+            }
+          },
+          "C_BankStatementLine_Ref_ID": {
+            "field": "C_BankStatementLine_Ref_ID",
+            "value": {
+              "key": "1090055",
+              "caption": "<1090055>",
+              "active": false
+            }
+          },
+          "AD_Client_ID": {
+            "field": "AD_Client_ID",
+            "value": {
+              "key": "1000000",
+              "caption": "<1000000>",
+              "active": false
+            }
+          },
+          "C_Payment_ID": {
+            "field": "C_Payment_ID",
+            "value": 1103186
+          },
+          "IsActive": {
+            "field": "IsActive",
+            "value": true
+          },
+          "Processed": {
+            "field": "Processed",
+            "value": true
+          },
+          "Processing": {
+            "field": "Processing",
+            "value": "N"
+          },
+          "IsOnline": {
+            "field": "IsOnline",
+            "value": false
+          },
+          "IsDelayedCapture": {
+            "field": "IsDelayedCapture",
+            "value": false
+          },
+          "ChargeAmt": {
+            "field": "ChargeAmt",
+            "value": "0.00"
+          },
+          "R_CVV2Match": {
+            "field": "R_CVV2Match",
+            "value": false
+          },
+          "Updated": {
+            "field": "Updated",
+            "value": "2021-03-05T07:11:23.000+01:00"
+          },
+          "UpdatedBy": {
+            "field": "UpdatedBy",
+            "value": {
+              "key": "100",
+              "caption": "<100>",
+              "active": false
+            }
+          },
+          "Created": {
+            "field": "Created",
+            "value": "2021-01-14T09:51:09.000+01:00"
+          },
+          "CreatedBy": {
+            "field": "CreatedBy",
+            "value": {
+              "key": "2192172",
+              "caption": "<2192172>",
+              "active": false
+            }
+          },
+          "IsAutoAllocateAvailableAmt": {
+            "field": "IsAutoAllocateAvailableAmt",
+            "value": false
+          }
+        },
+        "type": "LU",
+        "hasComments": false,
+        "supportAttributes": false
+      }
+    ],
+    "columnsByFieldName": {
+      "PayAmt": {
+        "fieldName": "PayAmt",
+        "widgetType": "Amount",
+        "maxPrecision": 2
+      },
+      "DiscountAmt": {
+        "fieldName": "DiscountAmt",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      },
+      "WriteOffAmt": {
+        "fieldName": "WriteOffAmt",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      },
+      "OverUnderAmt": {
+        "fieldName": "OverUnderAmt",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      },
+      "TaxAmt": {
+        "fieldName": "TaxAmt",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      },
+      "ChargeAmt": {
+        "fieldName": "ChargeAmt",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      }
+    },
+    "firstRow": 0,
+    "pageLength": 20,
+    "queryLimit": 5000,
+    "queryLimitHit": true,
+    "type": "195"
   }
 }

@@ -23,6 +23,7 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.LinkedHashMultimap;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -45,6 +46,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemExecutorBuilder.OnItemErrorPolicy;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
@@ -61,6 +63,7 @@ import org.slf4j.MDC.MDCCloseable;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -186,15 +189,27 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 						@Override
 						public void process(final I_C_Invoice_Candidate icRecord)
 						{
-							try (final MDCCloseable icMDC = TableRecordMDC.putTableRecordReference(icRecord))
+							try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(icRecord))
 							{
+
+
 								chunkInvoiceCandidateIds.add(icRecord.getC_Invoice_Candidate_ID());
 
 								updateInvalid(icRecord);
 								if (!icRecord.isError())
 								{
-									logger.debug("Updated invoice canddiate");
+									logger.debug("Updated invoice candidate");
 									result.addInvoiceCandidate(icRecord);
+									final ITrx currentTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+									if (trxManager.isActive(currentTrx))
+									{
+										final InvoiceCandidateValidationCollector collector = currentTrx.getPropertyAndProcessAfterCommit(
+												InvoiceCandidateValidationCollector.class.getName(),
+												InvoiceCandidateValidationCollector::new,
+												InvoiceCandidateValidationCollector::processAsync);
+
+										collector.collect(icRecord);
+									}
 								}
 								else
 								{
@@ -243,6 +258,33 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Log the result
 		Loggables.addLog("Update invalid result: {}", result.getSummary());
+	}
+
+	private class InvoiceCandidateValidationCollector
+	{
+		private final LinkedHashMultimap<String, Integer> headerKeys = LinkedHashMultimap.create();
+
+		public void collect(
+				@NonNull final I_C_Invoice_Candidate icRecord)
+		{
+			if (invoiceCandBL.isCandidateForRecalculate(icRecord))
+			{
+				this.headerKeys.put(icRecord.getHeaderAggregationKey(), icRecord.getC_Invoice_Candidate_ID());
+			}
+		}
+
+		public void processAsync()
+		{
+			headerKeys.asMap().forEach(this::processAsync);
+		}
+
+		private void processAsync(String headerKey, Collection<Integer> processedRecords)
+		{
+			final Collection<I_C_Invoice_Candidate> refreshedAssociatedInvoiceCandidates = invoiceCandBL.getRefreshedAssociatedInvoiceCandidates(invoiceCandDAO.retrieveForHeaderAggregationKey(getCtx(), headerKey, getTrxName()), processedRecords);
+			invoiceCandDAO.saveAll(refreshedAssociatedInvoiceCandidates);
+			Loggables.addLog("For headerKey={}, updated {} associated records", headerKey, refreshedAssociatedInvoiceCandidates.size());
+		}
+
 	}
 
 	private void updateInvalid(@NonNull final I_C_Invoice_Candidate icRecord)

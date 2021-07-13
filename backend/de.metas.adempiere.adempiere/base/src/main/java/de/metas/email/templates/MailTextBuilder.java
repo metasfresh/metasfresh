@@ -280,6 +280,7 @@ public final class MailTextBuilder
 		return _bpartner;
 	}
 
+	@NonNull
 	public String getAdLanguage()
 	{
 		String adLanguageEffective = _adLanguageEffective;
@@ -290,6 +291,7 @@ public final class MailTextBuilder
 		return adLanguageEffective;
 	}
 
+	@NonNull
 	private String computeEffectiveAdLanguage()
 	{
 		if (_adLanguage != null)

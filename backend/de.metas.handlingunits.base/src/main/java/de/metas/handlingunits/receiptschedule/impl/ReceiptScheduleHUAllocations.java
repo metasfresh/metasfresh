@@ -1,6 +1,6 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L

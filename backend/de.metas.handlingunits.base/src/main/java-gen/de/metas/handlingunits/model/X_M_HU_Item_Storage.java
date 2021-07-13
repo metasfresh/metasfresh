@@ -1,73 +1,53 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_Item_Storage
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_HU_Item_Storage extends org.compiere.model.PO implements I_M_HU_Item_Storage, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1089216641L;
+	private static final long serialVersionUID = 1102427296L;
 
     /** Standard Constructor */
-    public X_M_HU_Item_Storage (Properties ctx, int M_HU_Item_Storage_ID, String trxName)
+    public X_M_HU_Item_Storage (final Properties ctx, final int M_HU_Item_Storage_ID, @Nullable final String trxName)
     {
       super (ctx, M_HU_Item_Storage_ID, trxName);
-      /** if (M_HU_Item_Storage_ID == 0)
-        {
-			setM_HU_Item_ID (0);
-			setM_HU_Item_Storage_ID (0);
-			setM_Product_ID (0);
-			setQty (BigDecimal.ZERO);
-        } */
     }
 
     /** Load Constructor */
-    public X_M_HU_Item_Storage (Properties ctx, ResultSet rs, String trxName)
+    public X_M_HU_Item_Storage (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_Value (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override
@@ -77,34 +57,24 @@ public class X_M_HU_Item_Storage extends org.compiere.model.PO implements I_M_HU
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	/** Set Merkmale.
-		@param M_AttributeSetInstance_ID 
-		Merkmals Ausprägungen zum Produkt
-	  */
 	@Override
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
-	/** Get Merkmale.
-		@return Merkmals Ausprägungen zum Produkt
-	  */
 	@Override
-	public int getM_AttributeSetInstance_ID () 
+	public int getM_AttributeSetInstance_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
 	@Override
@@ -114,99 +84,66 @@ public class X_M_HU_Item_Storage extends org.compiere.model.PO implements I_M_HU
 	}
 
 	@Override
-	public void setM_HU_Item(de.metas.handlingunits.model.I_M_HU_Item M_HU_Item)
+	public void setM_HU_Item(final de.metas.handlingunits.model.I_M_HU_Item M_HU_Item)
 	{
 		set_ValueFromPO(COLUMNNAME_M_HU_Item_ID, de.metas.handlingunits.model.I_M_HU_Item.class, M_HU_Item);
 	}
 
-	/** Set Handling Units Item.
-		@param M_HU_Item_ID Handling Units Item	  */
 	@Override
-	public void setM_HU_Item_ID (int M_HU_Item_ID)
+	public void setM_HU_Item_ID (final int M_HU_Item_ID)
 	{
 		if (M_HU_Item_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_Item_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_Item_ID, Integer.valueOf(M_HU_Item_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_Item_ID, M_HU_Item_ID);
 	}
 
-	/** Get Handling Units Item.
-		@return Handling Units Item	  */
 	@Override
-	public int getM_HU_Item_ID () 
+	public int getM_HU_Item_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Item_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_Item_ID);
 	}
 
-	/** Set Handling Units Item Storage.
-		@param M_HU_Item_Storage_ID Handling Units Item Storage	  */
 	@Override
-	public void setM_HU_Item_Storage_ID (int M_HU_Item_Storage_ID)
+	public void setM_HU_Item_Storage_ID (final int M_HU_Item_Storage_ID)
 	{
 		if (M_HU_Item_Storage_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_HU_Item_Storage_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_HU_Item_Storage_ID, Integer.valueOf(M_HU_Item_Storage_ID));
+			set_ValueNoCheck (COLUMNNAME_M_HU_Item_Storage_ID, M_HU_Item_Storage_ID);
 	}
 
-	/** Get Handling Units Item Storage.
-		@return Handling Units Item Storage	  */
 	@Override
-	public int getM_HU_Item_Storage_ID () 
+	public int getM_HU_Item_Storage_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_HU_Item_Storage_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_HU_Item_Storage_ID);
 	}
 
-	/** Set Produkt.
-		@param M_Product_ID 
-		Produkt, Leistung, Artikel
-	  */
 	@Override
-	public void setM_Product_ID (int M_Product_ID)
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Produkt.
-		@return Produkt, Leistung, Artikel
-	  */
 	@Override
-	public int getM_Product_ID () 
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Menge.
-		@param Qty 
-		Menge
-	  */
 	@Override
-	public void setQty (java.math.BigDecimal Qty)
+	public void setQty (final BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
 	}
 
-	/** Get Menge.
-		@return Menge
-	  */
 	@Override
-	public java.math.BigDecimal getQty () 
+	public BigDecimal getQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

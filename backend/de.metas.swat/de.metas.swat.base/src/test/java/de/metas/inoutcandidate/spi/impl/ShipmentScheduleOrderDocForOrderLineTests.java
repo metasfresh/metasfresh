@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZonedDateTime;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -22,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -106,7 +106,7 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 		final I_C_OrderLine orderLine = createOrderLine(order);
 		final I_M_ShipmentSchedule sched = createShipmentSchedule(order, orderLine);
 
-		final ZonedDateTime date_2017_09_26 = LocalDate.of(2017, Month.SEPTEMBER, 26).atStartOfDay(SystemTime.zoneId());
+		final ZonedDateTime date_2017_09_26 = LocalDate.of(2017, Month.SEPTEMBER, 26).atStartOfDay(de.metas.common.util.time.SystemTime.zoneId());
 		order.setDatePromised(TimeUtil.asTimestamp(date_2017_09_26));
 		saveRecord(order);
 
@@ -122,12 +122,12 @@ public class ShipmentScheduleOrderDocForOrderLineTests
 		final I_C_OrderLine orderLine = createOrderLine(order);
 		final I_M_ShipmentSchedule sched = createShipmentSchedule(order, orderLine);
 
-		final ZonedDateTime date_2019_09_01 = LocalDate.of(2019, Month.SEPTEMBER, 1).atStartOfDay(SystemTime.zoneId());
+		final ZonedDateTime date_2019_09_01 = LocalDate.of(2019, Month.SEPTEMBER, 1).atStartOfDay(de.metas.common.util.time.SystemTime.zoneId());
 		order.setDatePromised(TimeUtil.asTimestamp(date_2019_09_01));
 		saveRecord(order);
 
-		final ZonedDateTime date_2019_09_02 = LocalDate.of(2019, Month.SEPTEMBER, 2).atStartOfDay(SystemTime.zoneId());
-		final ZonedDateTime date_2019_09_03 = LocalDate.of(2019, Month.SEPTEMBER, 3).atStartOfDay(SystemTime.zoneId());
+		final ZonedDateTime date_2019_09_02 = LocalDate.of(2019, Month.SEPTEMBER, 2).atStartOfDay(de.metas.common.util.time.SystemTime.zoneId());
+		final ZonedDateTime date_2019_09_03 = LocalDate.of(2019, Month.SEPTEMBER, 3).atStartOfDay(de.metas.common.util.time.SystemTime.zoneId());
 		orderLine.setDatePromised(TimeUtil.asTimestamp(date_2019_09_02));
 		orderLine.setPresetDateShipped(TimeUtil.asTimestamp(date_2019_09_03));
 		orderLine.setPresetDateInvoiced(SystemTime.asTimestamp()); // just to make sure it's not used

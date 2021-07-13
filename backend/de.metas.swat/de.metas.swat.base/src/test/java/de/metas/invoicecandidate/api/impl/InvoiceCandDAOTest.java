@@ -26,7 +26,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;

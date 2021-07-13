@@ -1,15 +1,5 @@
 package de.metas.marketing.base.model.interceptor;
 
-import java.util.Optional;
-
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.ModelValidator;
-import org.springframework.stereotype.Component;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -18,10 +8,21 @@ import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.ContactPersonService;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.marketing.base.model.CampaignRepository;
+import de.metas.organization.IOrgDAO;
 import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -49,11 +50,15 @@ import lombok.NonNull;
 public class AD_User
 {
 	private final static AdMessageKey MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org = AdMessageKey.of("MKTG_Campaign_NewsletterGroup_Missing_For_Org");
+	private final static String SYS_CONFIG_CREATE_MARKETING_CONTACT = "de.metas.marketing.SyncUserNewsletterFlagToMarketingContact";
 
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final CampaignRepository campaignRepository;
 	private final CampaignService campaignService;
 	private final UserRepository userRepository;
 	private final ContactPersonService contactPersonService;
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public AD_User(@NonNull final ContactPersonService contactPersonService,
 			@NonNull final UserRepository userRepository,
@@ -66,9 +71,14 @@ public class AD_User
 		this.campaignService = campaignService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE}, ifColumnsChanged = { I_AD_User.COLUMNNAME_IsNewsletter })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_AD_User.COLUMNNAME_IsNewsletter })
 	public void onChangeNewsletter(final I_AD_User userRecord)
 	{
+		if (!isCreateMarketingContact(userRecord.getAD_Client_ID(), userRecord.getAD_Org_ID()))
+		{
+			return;
+		}
+
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 		final boolean isNewsletter = userRecord.isNewsletter();
@@ -79,9 +89,10 @@ public class AD_User
 		{
 			if (!defaultcampaignId.isPresent())
 			{
+				final String orgName = orgDAO.retrieveOrgName(userRecord.getAD_Org_ID());
 				final ITranslatableString translatableMsgText = msgBL.getTranslatableMsgText(
 						MRG_MKTG_Campaign_NewsletterGroup_Missing_For_Org,
-						userRecord.getAD_Org().getName());
+						orgName);
 
 				throw new AdempiereException(translatableMsgText);
 			}
@@ -111,5 +122,10 @@ public class AD_User
 		final Language oldLanguage = Language.asLanguage(oldUser.getAD_Language());
 
 		contactPersonService.updateContactPersonsEmailFromUser(user, oldEmail, oldLanguage);
+	}
+
+	private boolean isCreateMarketingContact(final int clientID, final int orgID)
+	{
+		return sysConfigBL.getBooleanValue(SYS_CONFIG_CREATE_MARKETING_CONTACT, false, clientID, orgID);
 	}
 }

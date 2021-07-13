@@ -1,48 +1,17 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.ModelColumnNameValue;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.IQuery;
-import org.compiere.model.MOrderLine;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
@@ -57,18 +26,50 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.ModelColumnNameValue;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.MOrderLine;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
 
 public class ShipmentSchedulePA implements IShipmentSchedulePA
 {
 	private final static Logger logger = LogManager.getLogger(ShipmentSchedulePA.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	/** When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS */
+	/**
+	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
+	 */
 	private static final int CACHE_INVALIDATE_ALL_THRESHOLD = 200;
 
 	/**
 	 * Order by clause used to fetch {@link I_M_ShipmentSchedule}s.
-	 *
+	 * <p>
 	 * NOTE: this ordering is VERY important because that's the order in which QtyOnHand will be allocated too.
 	 */
 	private static final String ORDER_CLAUSE = "\n ORDER BY " //
@@ -148,6 +149,19 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.firstIdOnly(ShipmentScheduleId::ofRepoIdOrNull);
 	}
 
+	@Override
+	public boolean existsExportedShipmentScheduleForOrder(@NonNull final OrderId orderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID, orderId)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addInArrayFilter(I_M_ShipmentSchedule.COLUMNNAME_ExportStatus, APIExportStatus.EXPORTED_STATES)
+				.create()
+				.anyMatch();
+	}
+
 	private IQueryBuilder<I_M_ShipmentSchedule> getByOrderLineIdQuery(@NonNull final OrderLineId orderLineId)
 	{
 		return queryBL
@@ -223,12 +237,18 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	private List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 		final Set<OrderAndLineId> orderLineIds = shipmentSchedules.stream()
 				.map(shipmentSchedule -> extractOrderAndLineId(shipmentSchedule))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<OrderAndLineId, I_C_OrderLine> orderLines = Services.get(IOrderDAO.class).getOrderLinesByIds(orderLineIds);
+		final Map<OrderAndLineId, I_C_OrderLine> orderLines = orderDAO.getOrderLinesByIds(orderLineIds);
+
+		final ImmutableSet<OrderId> orderIds = orderLineIds.stream().map(OrderAndLineId::getOrderId).collect(ImmutableSet.toImmutableSet());
+
+		final Map<OrderId, I_C_Order> orderId2record = Maps.uniqueIndex(orderDAO.getByIds(orderIds, I_C_Order.class), order -> OrderId.ofRepoId(order.getC_Order_ID()));
 
 		final List<OlAndSched> result = new ArrayList<>();
 
@@ -236,18 +256,22 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		{
 			final OrderAndLineId orderLineId = extractOrderAndLineId(schedule);
 			final I_C_OrderLine orderLine;
+			final I_C_Order order;
 			if (orderLineId == null)
 			{
 				orderLine = null;
+				order = null;
 			}
 			else
 			{
 				orderLine = orderLines.get(orderLineId);
+				order = orderId2record.get(orderLineId.getOrderId());
 			}
 
 			final OlAndSched olAndSched = OlAndSched.builder()
 					.shipmentSchedule(schedule)
 					.orderLineOrNull(orderLine)
+					.orderOrNull(order)
 					.build();
 			result.add(olAndSched);
 		}
@@ -287,14 +311,13 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 
 	/**
 	 * Mass-update a given shipment schedule column.
-	 *
+	 * <p>
 	 * If there were any changes and the invalidate parameter is on true, those shipment schedules will be invalidated.
 	 *
 	 * @param inoutCandidateColumnName {@link I_M_ShipmentSchedule}'s column to update
-	 * @param value value to set (you can also use {@link ModelColumnNameValue})
-	 * @param updateOnlyIfNull if true then it will update only if column value is null (not set)
-	 * @param selectionId ShipmentSchedule selection (AD_PInstance_ID)
-	 * @param trxName
+	 * @param value                    value to set (you can also use {@link ModelColumnNameValue})
+	 * @param updateOnlyIfNull         if true then it will update only if column value is null (not set)
+	 * @param selectionId              ShipmentSchedule selection (AD_PInstance_ID)
 	 */
 	private final <ValueType> void updateColumnForSelection(
 			final String inoutCandidateColumnName,
@@ -309,7 +332,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.setOnlySelection(selectionId)
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false) // do not touch the processed shipment schedules
-		;
+				;
 
 		if (updateOnlyIfNull)
 		{
@@ -567,5 +590,16 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return queryBuilder
 				.create()
 				.listImmutable(I_M_ShipmentSchedule.class);
+	}
+
+	@Override
+	public ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
+				.create()
+				.listIds(ShipmentScheduleId::ofRepoId);
 	}
 }

@@ -115,6 +115,19 @@ public class AccountImportTableSqlUpdater
 		no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_None);
 		logger.debug("Found Parent ElementValue=" + no);
 	}
+	
+	public void dbUpdateElementValueParentAndSeqNo(final int c_element_id)
+	{
+		final StringBuilder sql = new StringBuilder("update c_elementvalue set Parent_id = tn.parent_id, seqno = tn.seqno ")
+				.append(" from AD_treenode tn where tn.node_id = c_elementvalue.c_elementvalue_id and tn.ad_org_id = c_elementvalue.ad_org_id")
+				.append(" and exists ( select 1 from c_element e where e.c_element_id = c_elementvalue.c_element_id and e.ad_tree_id = tn.ad_tree_id) " )
+				.append(" and c_element_id = ? " )
+				.append("  " );
+		int no = DB.executeUpdateEx(sql.toString(), new Object[] {c_element_id}, ITrx.TRXNAME_None);
+		logger.debug("Updated Element values: {}",  no);
+
+	}
+
 
 	private void dbUpdateErrorMessages(final ImportRecordsSelection selection)
 	{

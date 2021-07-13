@@ -22,9 +22,12 @@ package de.metas.testsupport;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Objects;
-
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.impl.PlainCurrencyBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Org;
@@ -46,21 +49,14 @@ import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.currency.ICurrencyBL;
-import de.metas.currency.impl.PlainCurrencyBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
 
 public class AbstractTestSupport
 {
 	/**
 	 * Gets/creates an {@link I_M_Product} with given value.
-	 *
-	 * @param productValue
-	 * @param productId TODO
-	 * @return product
 	 */
 	public I_M_Product product(final String productValue, final int productId)
 	{
@@ -166,7 +162,7 @@ public class AbstractTestSupport
 
 	}
 
-	protected I_C_DocType docType(final String baseType, final String subType)
+	protected I_C_DocType docType(final String baseType, @Nullable final String subType)
 	{
 		final POJOLookupMap db = POJOLookupMap.get();
 		I_C_DocType docType = db.getFirstOnly(I_C_DocType.class, pojo -> Objects.equals(pojo.getDocBaseType(), baseType) && Objects.equals(pojo.getDocSubType(), baseType));
@@ -259,7 +255,7 @@ public class AbstractTestSupport
 	{
 		final I_C_DocType orderDocType = docType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
 		final I_C_DocType invoiceDocType = docType(X_C_DocType.DOCBASETYPE_ARInvoice, null);
-		orderDocType.setC_DocTypeInvoice(invoiceDocType);
+		orderDocType.setC_DocTypeInvoice_ID(invoiceDocType.getC_DocType_ID());
 		InterfaceWrapperHelper.save(orderDocType);
 
 		return orderDocType;

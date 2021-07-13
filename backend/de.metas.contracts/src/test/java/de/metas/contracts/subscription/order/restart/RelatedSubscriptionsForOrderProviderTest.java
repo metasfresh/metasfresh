@@ -68,12 +68,14 @@ public class RelatedSubscriptionsForOrderProviderTest
 
 		final I_C_Flatrate_Term flatrateTermRecord112 = newInstance(I_C_Flatrate_Term.class);
 		POJOWrapper.setInstanceName(flatrateTermRecord112, "flatrateTermRecord112");
-		flatrateTermRecord112.setC_OrderLine_Term(orderLineRecord11);
+		flatrateTermRecord112.setC_OrderLine_Term_ID(orderLineRecord11.getC_OrderLine_ID());
+		flatrateTermRecord112.setC_Order_Term_ID(orderLineRecord11.getC_Order_ID());
 		saveRecord(flatrateTermRecord112);
 
 		final I_C_Flatrate_Term flatrateTermRecord111 = newInstance(I_C_Flatrate_Term.class);
 		POJOWrapper.setInstanceName(flatrateTermRecord111, "flatrateTermRecord111");
-		flatrateTermRecord111.setC_OrderLine_Term(orderLineRecord11);
+		flatrateTermRecord111.setC_OrderLine_Term_ID(orderLineRecord11.getC_OrderLine_ID());
+		flatrateTermRecord111.setC_Order_Term_ID(orderLineRecord11.getC_Order_ID());
 		flatrateTermRecord111.setC_FlatrateTerm_Next(flatrateTermRecord112);
 		saveRecord(flatrateTermRecord111);
 

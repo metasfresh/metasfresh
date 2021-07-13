@@ -1,13 +1,12 @@
 package de.metas.bpartner;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -49,6 +48,7 @@ public class BPartnerLocationId implements RepoIdAware
 		return new BPartnerLocationId(BPartnerId.ofRepoId(bpartnerId), bpartnerLocationId);
 	}
 
+	@Nullable
 	public static BPartnerLocationId ofRepoIdOrNull(
 			@Nullable final Integer bpartnerId,
 			@Nullable final Integer bpartnerLocationId)
@@ -58,6 +58,7 @@ public class BPartnerLocationId implements RepoIdAware
 				: null;
 	}
 
+	@Nullable
 	public static BPartnerLocationId ofRepoIdOrNull(
 			@Nullable final BPartnerId bpartnerId,
 			final int bpartnerLocationId)
@@ -71,14 +72,9 @@ public class BPartnerLocationId implements RepoIdAware
 		this.bpartnerId = bpartnerId;
 	}
 
-	public static int toRepoId(final BPartnerLocationId bpLocationId)
+	public static int toRepoId(@Nullable final BPartnerLocationId bpLocationId)
 	{
-		return toRepoIdOr(bpLocationId, -1);
-	}
-
-	public static int toRepoIdOr(final BPartnerLocationId bpLocationId, final int defaultValue)
-	{
-		return bpLocationId != null ? bpLocationId.getRepoId() : defaultValue;
+		return bpLocationId != null ? bpLocationId.getRepoId() : -1;
 	}
 
 	public static boolean equals(final BPartnerLocationId id1, final BPartnerLocationId id2)

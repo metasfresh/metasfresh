@@ -27,6 +27,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
 
 /**
  *  Note Model
@@ -131,7 +132,7 @@ public class MNote extends X_AD_Note
 	 *	@param trxName transaction
 	 */
 	public MNote (Properties ctx, String AD_MessageValue, int AD_User_ID, 
-		int AD_Client_ID, int AD_Org_ID, String trxName) 
+		int AD_Client_ID, int AD_Org_ID, @Nullable String trxName)
 	{
 		this (ctx, retrieveAdMessageRepoIdByValue(ctx, AD_MessageValue), AD_User_ID, trxName);
 		setClientOrg(AD_Client_ID, AD_Org_ID);

@@ -1,29 +1,14 @@
 package de.metas.material.dispo.service.event.handler.receiptschedule;
 
-import static de.metas.material.event.EventTestHelper.*;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.Collection;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
@@ -31,6 +16,26 @@ import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHa
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -59,13 +64,22 @@ public class ReceiptsScheduleUpdatedHandlerTest
 	private ReceiptsScheduleCreatedHandler receiptsScheduleCreatedHandler;
 	private ReceiptsScheduleUpdatedHandler receiptsScheduleUpdatedHandler;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService();
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		final StockCandidateService stockCandidateService = new StockCandidateService(candidateRepositoryRetrieval, candidateRepositoryWriteService);
 		final Collection<CandidateHandler> candidateChangeHandlers = ImmutableList.of(new SupplyCandidateHandler(candidateRepositoryWriteService, stockCandidateService));
 		final CandidateChangeService candidateChangeHandler = new CandidateChangeService(candidateChangeHandlers);

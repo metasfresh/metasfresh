@@ -2,12 +2,12 @@ import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 
-import { discardNewRequest, getTabRequest } from '../../api';
+import { discardNewRequest } from '../../api';
 import { getTableId } from '../../reducers/tables';
 
 import BlankPage from '../BlankPage';
 import Container from '../Container';
-import Window from '../Window';
+import SectionGroup from '../SectionGroup';
 import Overlay from '../app/Overlay';
 import { introHints, introSteps } from '../intro/intro';
 
@@ -264,27 +264,6 @@ export default class MasterWindow extends PureComponent {
   };
 
   /**
-   * TODO: Move this to the container
-   * @method sort
-   * @summary ToDo: Describe the method.
-   */
-  sort = (asc, field, startPage, page, tabId) => {
-    const {
-      addRowData,
-      sortTab,
-      master,
-      params: { windowType },
-    } = this.props;
-    const orderBy = (asc ? '+' : '-') + field;
-    const dataId = master.docId;
-
-    sortTab('master', tabId, field, asc);
-    getTabRequest(tabId, windowType, dataId, orderBy).then((res) => {
-      addRowData({ [tabId]: res }, 'master');
-    });
-  };
-
-  /**
    * @method handleIntroExit
    * @summary ToDo: Describe the method.
    */
@@ -306,6 +285,7 @@ export default class MasterWindow extends PureComponent {
       processStatus,
       enableTutorial,
       onRefreshTab,
+      onSortTable,
     } = this.props;
     const {
       dropzoneFocused,
@@ -316,26 +296,8 @@ export default class MasterWindow extends PureComponent {
       introSteps,
       introHints,
     } = this.state;
-    const { docActionElement, documentSummaryElement } = master.layout;
-
-    // TODO: Do we need to have docId and dataId ?
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
-    let activeTab;
-
-    if (master.layout) {
-      activeTab = master.layout.activeTab;
-    }
-
-    // TODO: it'd be better to have flags instead of using fields for status
-    const docStatusData = {
-      status: master.data.DocStatus || -1,
-      action: master.data.DocAction || -1,
-      displayed: true,
-    };
-    const docSummaryData =
-      documentSummaryElement &&
-      master.data[documentSummaryElement.fields[0].field];
 
     // valid status for unsaved items with errors does not
     // have initialValue set, but does have the error message
@@ -353,8 +315,6 @@ export default class MasterWindow extends PureComponent {
       <Container
         entity="window"
         dropzoneFocused={dropzoneFocused}
-        docStatusData={docStatusData}
-        docSummaryData={docSummaryData}
         modal={modal}
         dataId={dataId}
         breadcrumb={breadcrumb}
@@ -365,27 +325,26 @@ export default class MasterWindow extends PureComponent {
         modalTitle={modalTitle}
         includedView={includedView}
         processStatus={processStatus}
-        activeTab={activeTab}
         closeModalCallback={this.closeModalCallback}
         setModalTitle={this.setModalTitle}
-        docActionElem={docActionElement}
         windowId={params.windowType}
         docId={params.docId}
         showSidelist
         modalHidden={!modal.visible}
         handleDeletedStatus={this.handleDeletedStatus}
+        hasComments={master.hasComments}
       >
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
         {dataId === 'notfound' ? (
           <BlankPage what="Document" />
         ) : (
-          <Window
+          <SectionGroup
             key="window"
             data={master.data}
             layout={master.layout}
             tabsInfo={master.includedTabsInfo}
-            sort={this.sort}
+            onSortTable={onSortTable}
             dataId={dataId}
             isModal={false}
             newRow={newRow}
@@ -437,6 +396,7 @@ MasterWindow.propTypes = {
   addRowData: PropTypes.func,
   attachFileAction: PropTypes.func,
   sortTab: PropTypes.func,
+  onSortTable: PropTypes.func,
   push: PropTypes.func,
   updateTabRowsData: PropTypes.func.isRequired,
 };

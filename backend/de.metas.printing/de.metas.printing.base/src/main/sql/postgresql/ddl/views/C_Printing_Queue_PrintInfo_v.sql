@@ -2,7 +2,7 @@ DROP VIEW IF EXISTS C_Printing_Queue_PrintInfo_v;
 
 CREATE OR REPLACE VIEW C_Printing_Queue_PrintInfo_v AS
 SELECT
-	(pq.C_Printing_Queue_ID +)C_Printing_Queue_PrintInfo_v_ID
+	pq.C_Printing_Queue_ID AS C_Printing_Queue_PrintInfo_v_ID,
 	pq.C_Printing_Queue_ID,
 	pp.AD_Session_ID AS AD_Session_PrintPackage_ID,
 	pq.AD_Archive_ID,
@@ -20,9 +20,9 @@ SELECT
 	ppi.AD_PrinterHW_MediaTray_ID,
 	phwt.TrayNumber AS TrayNumber,
 	phwt.Name AS PrintServiceTray,
-	pq.Created, 
+	pq.Created,
+    pq.AD_Org_ID,
 	pq.AD_Client_ID
-
 FROM C_Printing_Queue pq
 	LEFT JOIN C_Print_Job_Line pjl ON pjl.C_Printing_Queue_ID=pq.C_Printing_Queue_ID
 		LEFT JOIN C_Print_Job_Instructions pji ON pji.C_Print_Job_ID=pjl.C_Print_Job_ID

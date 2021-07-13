@@ -10,12 +10,12 @@ package de.metas.acct.api.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.util.NumberUtils;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -108,8 +109,8 @@ import lombok.NonNull;
 		if (AcctSchemaId.equals(accountDimension.getAcctSchemaId(), acctSchemaId))
 		{
 			throw new AdempiereException("C_AcctSchema_ID not matched"
-					+ "\n Expected: " + acctSchemaId
-					+ "\n Was: " + accountDimension.getAcctSchemaId());
+												 + "\n Expected: " + acctSchemaId
+												 + "\n Was: " + accountDimension.getAcctSchemaId());
 		}
 
 		//
@@ -136,10 +137,21 @@ import lombok.NonNull;
 		final AcctSchemaElementsMap elements = getAcctSchemaElements();
 		for (final AcctSchemaElement ase : elements.onlyDisplayedInEditor())
 		{
-			final AcctSchemaElementType elementType = ase.getElementType();
-			final int segmentId = getSegmentValueId(accountDimension, elementType);
-			if (ase.isMandatory() && segmentId <= 0)
+			if (!ase.isMandatory())
 			{
+				continue;
+			}
+			final AcctSchemaElementType elementType = ase.getElementType();
+			final Object segmentValue = getSegmentValue(accountDimension, elementType);
+
+			if (segmentValue instanceof Integer)
+			{
+				final int segmentId = NumberUtils.asInt(segmentValue, 0);
+
+				if (segmentId > 0)
+				{
+					continue;
+				}
 				mandatoryFieldsNotFilled.add(ase.getName());
 			}
 		}
@@ -160,12 +172,11 @@ import lombok.NonNull;
 	}
 
 	/**
-	 * 
 	 * @param accountDimension
-	 * @param elementType see {@link X_C_AcctSchema_Element}.ELEMENTTYPE_*
+	 * @param elementType      see {@link X_C_AcctSchema_Element}.ELEMENTTYPE_*
 	 * @return segment's value (ID)
 	 */
-	private final int getSegmentValueId(final AccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
+	private final Object getSegmentValue(final AccountDimension accountDimension, @NonNull final AcctSchemaElementType elementType)
 	{
 		Check.assumeNotNull(elementType, "elementType not null");
 
@@ -224,6 +235,34 @@ import lombok.NonNull;
 		else if (elementType.equals(AcctSchemaElementType.UserList2))
 		{
 			return accountDimension.getUser2_ID();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementString1))
+		{
+			return accountDimension.getUserElementString1();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementString2))
+		{
+			return accountDimension.getUserElementString2();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementString3))
+		{
+			return accountDimension.getUserElementString3();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementString4))
+		{
+			return accountDimension.getUserElementString4();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementString5))
+		{
+			return accountDimension.getUserElementString5();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementString6))
+		{
+			return accountDimension.getUserElementString6();
+		}
+		else if (elementType.equals(AcctSchemaElementType.UserElementString7))
+		{
+			return accountDimension.getUserElementString7();
 		}
 		else
 		{

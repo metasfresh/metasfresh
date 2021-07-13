@@ -104,13 +104,15 @@ export class Inventory {
       false /*typeList*/,
       true /*modal*/
     );
-    cy.writeIntoLookupListField(
-      'C_UOM_ID',
-      inventoryLine.uomName,
-      inventoryLine.uomName,
-      false /*typeList*/,
-      true /*modal*/
-    );
+    if (inventoryLine.uomName) {
+      cy.writeIntoLookupListField(
+        'C_UOM_ID',
+        inventoryLine.uomName,
+        inventoryLine.uomName,
+        false /*typeList*/,
+        true /*modal*/
+      );
+    }
     cy.writeIntoLookupListField(
       'M_Locator_ID',
       inventoryLine.M_Locator_ID,

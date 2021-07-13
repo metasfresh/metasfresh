@@ -1,6 +1,66 @@
 package de.metas.inout.impl;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.document.IDocTypeDAO;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
+import de.metas.inout.InOutId;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.lang.SOTrx;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.request.RequestTypeId;
+import de.metas.request.api.IRequestDAO;
+import de.metas.request.api.IRequestTypeDAO;
+import de.metas.request.api.RequestCandidate;
+import de.metas.uom.UomId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.comparator.ComparatorChain;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_R_Request;
+import org.compiere.model.X_M_InOut;
+import org.compiere.model.X_R_Request;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -24,57 +84,8 @@ import java.math.BigDecimal;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.comparator.ComparatorChain;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.X_M_InOut;
-import org.compiere.util.TimeUtil;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.inout.IInOutBL;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutAndLineId;
-import de.metas.inout.InOutId;
-import de.metas.invoice.service.IMatchInvDAO;
-import de.metas.lang.SOTrx;
-import de.metas.organization.OrgId;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantitys;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 public class InOutBL implements IInOutBL
 {
-	public static final String SYSCONFIG_CountryAttribute = "de.metas.swat.CountryAttribute";
-
 	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
@@ -83,12 +94,36 @@ public class InOutBL implements IInOutBL
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
+	private final IRequestDAO requestsRepo = Services.get(IRequestDAO.class);
+
+	@Override
+	public I_M_InOut getById(@NonNull final InOutId inoutId)
+	{
+		return inOutDAO.getById(inoutId);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_InOut inout)
+	{
+		inOutDAO.save(inout);
+	}
 
 	@Override
 	public List<I_M_InOutLine> getLines(@NonNull final I_M_InOut inout)
 	{
 		return inOutDAO.retrieveLines(inout);
 	}
+
+	@Override
+	public List<I_M_InOutLine> getLines(@NonNull final InOutId inoutId)
+	{
+		final I_M_InOut inout = getById(inoutId);
+		return getLines(inout);
+	}
+
 
 	@Override
 	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
@@ -156,6 +191,7 @@ public class InOutBL implements IInOutBL
 
 	}
 
+	@Override
 	public StockQtyAndUOMQty getStockQtyAndCatchQty(@NonNull final I_M_InOutLine inoutLine)
 	{
 		final UomId catchUomIdOrNull;
@@ -170,12 +206,11 @@ public class InOutBL implements IInOutBL
 
 		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
 
-		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.create(
+		return StockQtyAndUOMQtys.create(
 				inoutLine.getMovementQty(),
 				productId,
 				inoutLine.getQtyDeliveredCatch(),
 				catchUomIdOrNull);
-		return qtyToAllocate;
 	}
 
 	@Override
@@ -183,12 +218,11 @@ public class InOutBL implements IInOutBL
 	{
 		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
 		final UomId uomId = UomId.ofRepoId(inoutLine.getC_UOM_ID());
-		final StockQtyAndUOMQty qtyToAllocate = StockQtyAndUOMQtys.create(
+		return StockQtyAndUOMQtys.create(
 				inoutLine.getMovementQty(),
 				productId,
 				inoutLine.getQtyEntered(),
 				uomId);
-		return qtyToAllocate;
 	}
 
 	@Override
@@ -211,6 +245,7 @@ public class InOutBL implements IInOutBL
 	 * Find the pricing system based on the soTrx. This method will be used in the rare cases when we are not relying upon the SOTrx of the inout, because we need the pricing system for the opposite
 	 * SOTrx nature.
 	 */
+	@Nullable
 	private I_M_PricingSystem getPricingSystemOrNull(final I_M_InOut inOut, final SOTrx soTrx)
 	{
 		if (inOut.getC_Order_ID() > 0 && inOut.getC_Order().getM_PricingSystem_ID() > 0)
@@ -423,7 +458,7 @@ public class InOutBL implements IInOutBL
 		final Comparator<I_M_InOutLine> orderLineComparator = getOrderLineComparator(inoutLineId2orderId);
 		mainComparator.addComparator(orderLineComparator);
 
-		Collections.sort(lines, mainComparator);
+		lines.sort(mainComparator);
 
 		return lines;
 	}
@@ -448,15 +483,7 @@ public class InOutBL implements IInOutBL
 			final int line1No = line1.getLine();
 			final int line2No = line2.getLine();
 
-			if (line1No > line2No)
-			{
-				return 1;
-			}
-			if (line1No < line2No)
-			{
-				return -1;
-			}
-			return 0;
+			return Integer.compare(line1No, line2No);
 		};
 	}
 
@@ -507,5 +534,60 @@ public class InOutBL implements IInOutBL
 		{
 			CacheMgt.get().reset(VIEW_M_Shipment_Statistics_V, inoutLine.getM_InOutLine_ID());
 		}
+	}
+
+	@Override
+	@Nullable
+	public I_C_Order getOrderByInOutLine(@NonNull final I_M_InOutLine inOutLine)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(inOutLine.getC_OrderLine_ID());
+
+		if (orderLineId == null)
+		{
+			return null;
+		}
+
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+
+		return orderLine.getC_Order();
+	}
+
+	private RequestTypeId getRequestTypeId(final SOTrx soTrx)
+	{
+		return soTrx.isSales()
+				? requestTypeDAO.retrieveCustomerRequestTypeId()
+				: requestTypeDAO.retrieveVendorRequestTypeId();
+	}
+
+	@Override
+	public Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(@NonNull final I_M_InOut inOut)
+	{
+		final I_C_DocType docType = docTypeDAO.getById(inOut.getC_DocType_ID());
+
+		if (docType.getR_RequestType_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(RequestTypeId.ofRepoIdOrNull(docType.getR_RequestType_ID()));
+	}
+
+	@Override
+	public I_R_Request createRequestFromInOut(@NonNull final I_M_InOut inOut)
+	{
+		final Optional<RequestTypeId> requestType = getRequestTypeForCreatingNewRequestsAfterComplete(inOut);
+
+		final RequestCandidate requestCandidate = RequestCandidate.builder()
+				.summary(inOut.getDescription() != null ? inOut.getDescription() : " ")
+				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
+				.orgId(OrgId.ofRepoId(inOut.getAD_Org_ID()))
+				.recordRef(TableRecordReference.of(inOut))
+				.requestTypeId(requestType.orElseGet(() -> getRequestTypeId(SOTrx.ofBoolean(inOut.isSOTrx()))))
+				.partnerId(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()))
+				.userId(UserId.ofRepoIdOrNull(inOut.getAD_User_ID()))
+				.dateDelivered(TimeUtil.asZonedDateTime(inOut.getMovementDate()))
+				.build();
+
+		return requestsRepo.createRequest(requestCandidate);
 	}
 }

@@ -30,6 +30,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 
 import java.time.LocalDate;
 
@@ -51,12 +52,13 @@ public class EverhourImportProcess extends JavaProcess
 	{
 		final ImportTimeBookingsRequest timeBookingsRequest = ImportTimeBookingsRequest
 				.builder()
+				.orgId(Env.getOrgId())
 				.authToken(sysConfigBL.getValue(ACCESS_TOKEN.getName()))
 				.startDate(dateFrom)
 				.endDate(dateTo)
 				.build();
 
-		timeBookingsImporterService.importTimeBookings(everhourImporterService,timeBookingsRequest);
+		timeBookingsImporterService.importTimeBookings(everhourImporterService, timeBookingsRequest);
 
 		return MSG_OK;
 	}

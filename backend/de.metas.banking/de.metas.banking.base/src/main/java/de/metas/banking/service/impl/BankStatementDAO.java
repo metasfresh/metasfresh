@@ -337,6 +337,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setChargeAmt(request.getChargeAmt().toBigDecimal());
 		record.setInterestAmt(request.getInterestAmt().toBigDecimal());
 		record.setC_Charge_ID(ChargeId.toRepoId(request.getChargeId()));
+		record.setDebitorOrCreditorId(request.getDebitorOrCreditorId());
 
 		final BankStatementLineCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)

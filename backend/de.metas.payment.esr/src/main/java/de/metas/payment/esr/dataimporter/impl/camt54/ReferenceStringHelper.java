@@ -6,12 +6,13 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.camt054_001_02.EntryTransaction2;
 import de.metas.payment.camt054_001_06.EntryTransaction8;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.util.Services;
-
 import lombok.NonNull;
 
 /*
@@ -49,15 +50,11 @@ public class ReferenceStringHelper
 {
 
 	@VisibleForTesting
-	static final String MSG_AMBIGOUS_REFERENCE = "ESR_CAMT54_Ambigous_Reference";
+	static final AdMessageKey MSG_AMBIGOUS_REFERENCE = AdMessageKey.of("ESR_CAMT54_Ambigous_Reference");
 
 	@VisibleForTesting
-	static final String MSG_MISSING_ESR_REFERENCE = "ESR_CAMT54_Missing_ESR_Reference";
+	static final AdMessageKey MSG_MISSING_ESR_REFERENCE = AdMessageKey.of("ESR_CAMT54_Missing_ESR_Reference");
 
-	/**
-	 * This constant is used as value in {@code /BkToCstmrDbtCdtNtfctn/Ntfctn/Ntry/NtryDtls/TxDtls/RmtInf/Strd/CdtrRefInf/Tp/CdOrPrtry/Prtry} to indicate that the references given in {@code CdtrRefInf} is an ESR number.
-	 */
-	private static final String ISR_REFERENCE = "ISR Reference";
 
 	/**
 	 * extractAndSetEsrReference for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
@@ -120,6 +117,40 @@ public class ReferenceStringHelper
 			}
 		}
 	}
+	
+	
+	public void extractAndSetType(
+			@NonNull final EntryTransaction8 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		final Optional<ESRType> type = extractType(txDtls);
+		if (type.isPresent())
+		{
+			trxBuilder.type(type.get());
+		}
+		else
+		{
+			// fallback to esr type
+			trxBuilder.type(ESRType.TYPE_ESR);
+		}
+	}
+
+	public void extractAndSetType(
+			@NonNull final EntryTransaction2 txDtls,
+			@NonNull final ESRTransactionBuilder trxBuilder)
+	{
+		final Optional<ESRType> type = extractType(txDtls);
+		if (type.isPresent())
+		{
+			trxBuilder.type(type.get());
+		}
+		else
+		{
+			// fallback to esr type
+			trxBuilder.type(ESRType.TYPE_ESR);
+		}
+	}
+	
 
 	/**
 	 * Gets <code>TxDtls/RmtInf/Strd/CdtrRefInf/Ref</code><br>
@@ -138,12 +169,8 @@ public class ReferenceStringHelper
 		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
 				.map(strd -> strd.getCdtrRefInf())
 
-				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
-				.filter(cdtrRefInf -> cdtrRefInf != null
-						&& cdtrRefInf.getTp() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
-
+				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
+				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
 		return esrReferenceNumberString;
@@ -167,17 +194,13 @@ public class ReferenceStringHelper
 		final Optional<String> esrReferenceNumberString = txDtls.getRmtInf().getStrd().stream()
 				.map(strd -> strd.getCdtrRefInf())
 
-				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE
-				.filter(cdtrRefInf -> cdtrRefInf != null
-						&& cdtrRefInf.getTp() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry() != null
-						&& cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ISR_REFERENCE))
-
+				// it's stored in the cdtrRefInf records whose cdtrRefInf/tp/cdOrPrtry/prtr equals to ISR_REFERENCE or QRR_REFERENCE
+				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
 				.map(cdtrRefInf -> cdtrRefInf.getRef())
 				.findFirst();
 		return esrReferenceNumberString;
 	}
-	
+
 
 	/**
 	 * extractReferenceFallback for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
@@ -197,8 +220,48 @@ public class ReferenceStringHelper
 				.findFirst();
 		return esrReferenceNumberString;
 	}
-	
 
+	private Optional<ESRType> extractType(@NonNull final EntryTransaction8 txDtls)
+	{
+		return txDtls.getRmtInf().getStrd().stream()
+				.map(strd -> strd.getCdtrRefInf())
+				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
+				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
+				.map(r ->  ESRType.ofNullableCode(r))
+				.findFirst();
+
+	}
+
+	private Optional<ESRType> extractType(@NonNull final EntryTransaction2 txDtls)
+	{
+		
+		return txDtls.getRmtInf().getStrd().stream()
+				.map(strd -> strd.getCdtrRefInf())
+				.filter(cdtrRefInf -> isSupportedESRType(cdtrRefInf))
+				.map(cdtrRefInf -> cdtrRefInf.getTp().getCdOrPrtry().getPrtry())
+				.map(r ->  ESRType.ofNullableCode(r))
+				.findFirst();
+
+	}
+
+	private static boolean isSupportedESRType(de.metas.payment.camt054_001_02.CreditorReferenceInformation2 cdtrRefInf)
+	{
+		return cdtrRefInf != null
+				&& cdtrRefInf.getTp() != null
+				&& cdtrRefInf.getTp().getCdOrPrtry() != null
+				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
+						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
+	}
+
+	private static boolean isSupportedESRType(de.metas.payment.camt054_001_06.CreditorReferenceInformation2 cdtrRefInf)
+	{
+		return cdtrRefInf != null
+				&& cdtrRefInf.getTp() != null
+				&& cdtrRefInf.getTp().getCdOrPrtry() != null
+				&& (cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_ESR.getCode())
+						|| cdtrRefInf.getTp().getCdOrPrtry().getPrtry().equals(ESRType.TYPE_QRR.getCode()));
+	}
+	
 	/**
 	 * extractReferenceFallback for version 2 <code>BankToCustomerDebitCreditNotificationV02</code>
 	 * 

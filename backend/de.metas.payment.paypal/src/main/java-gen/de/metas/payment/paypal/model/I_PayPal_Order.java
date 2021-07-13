@@ -1,66 +1,54 @@
 package de.metas.payment.paypal.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for PayPal_Order
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_PayPal_Order 
 {
 
-    /** TableName=PayPal_Order */
-    public static final String Table_Name = "PayPal_Order";
+	String Table_Name = "PayPal_Order";
 
-    /** AD_Table_ID=541389 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541389 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_AD_Client>(I_PayPal_Order.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_AD_Org>(I_PayPal_Order.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Payment Reservation.
@@ -69,7 +57,7 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Payment_Reservation_ID (int C_Payment_Reservation_ID);
+	void setC_Payment_Reservation_ID (int C_Payment_Reservation_ID);
 
 	/**
 	 * Get Payment Reservation.
@@ -78,46 +66,39 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Payment_Reservation_ID();
+	int getC_Payment_Reservation_ID();
 
-	public org.compiere.model.I_C_Payment_Reservation getC_Payment_Reservation();
+	org.compiere.model.I_C_Payment_Reservation getC_Payment_Reservation();
 
-	public void setC_Payment_Reservation(org.compiere.model.I_C_Payment_Reservation C_Payment_Reservation);
+	void setC_Payment_Reservation(org.compiere.model.I_C_Payment_Reservation C_Payment_Reservation);
 
-    /** Column definition for C_Payment_Reservation_ID */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_C_Payment_Reservation> COLUMN_C_Payment_Reservation_ID = new org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_C_Payment_Reservation>(I_PayPal_Order.class, "C_Payment_Reservation_ID", org.compiere.model.I_C_Payment_Reservation.class);
-    /** Column name C_Payment_Reservation_ID */
-    public static final String COLUMNNAME_C_Payment_Reservation_ID = "C_Payment_Reservation_ID";
+	ModelColumn<I_PayPal_Order, org.compiere.model.I_C_Payment_Reservation> COLUMN_C_Payment_Reservation_ID = new ModelColumn<>(I_PayPal_Order.class, "C_Payment_Reservation_ID", org.compiere.model.I_C_Payment_Reservation.class);
+	String COLUMNNAME_C_Payment_Reservation_ID = "C_Payment_Reservation_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_PayPal_Order, Object> COLUMN_Created = new ModelColumn<>(I_PayPal_Order.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_AD_User>(I_PayPal_Order.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set External ID.
@@ -126,7 +107,7 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalId (java.lang.String ExternalId);
+	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
 	 * Get External ID.
@@ -135,37 +116,33 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalId();
+	@Nullable java.lang.String getExternalId();
 
-    /** Column definition for ExternalId */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "ExternalId", null);
-    /** Column name ExternalId */
-    public static final String COLUMNNAME_ExternalId = "ExternalId";
+	ModelColumn<I_PayPal_Order, Object> COLUMN_ExternalId = new ModelColumn<>(I_PayPal_Order.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_PayPal_Order, Object> COLUMN_IsActive = new ModelColumn<>(I_PayPal_Order.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set PayPal AuthorizationId.
@@ -174,7 +151,7 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPayPal_AuthorizationId (java.lang.String PayPal_AuthorizationId);
+	void setPayPal_AuthorizationId (@Nullable java.lang.String PayPal_AuthorizationId);
 
 	/**
 	 * Get PayPal AuthorizationId.
@@ -183,12 +160,10 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPayPal_AuthorizationId();
+	@Nullable java.lang.String getPayPal_AuthorizationId();
 
-    /** Column definition for PayPal_AuthorizationId */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_PayPal_AuthorizationId = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "PayPal_AuthorizationId", null);
-    /** Column name PayPal_AuthorizationId */
-    public static final String COLUMNNAME_PayPal_AuthorizationId = "PayPal_AuthorizationId";
+	ModelColumn<I_PayPal_Order, Object> COLUMN_PayPal_AuthorizationId = new ModelColumn<>(I_PayPal_Order.class, "PayPal_AuthorizationId", null);
+	String COLUMNNAME_PayPal_AuthorizationId = "PayPal_AuthorizationId";
 
 	/**
 	 * Set PayPal Order.
@@ -197,7 +172,7 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPayPal_Order_ID (int PayPal_Order_ID);
+	void setPayPal_Order_ID (int PayPal_Order_ID);
 
 	/**
 	 * Get PayPal Order.
@@ -206,12 +181,10 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPayPal_Order_ID();
+	int getPayPal_Order_ID();
 
-    /** Column definition for PayPal_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_PayPal_Order_ID = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "PayPal_Order_ID", null);
-    /** Column name PayPal_Order_ID */
-    public static final String COLUMNNAME_PayPal_Order_ID = "PayPal_Order_ID";
+	ModelColumn<I_PayPal_Order, Object> COLUMN_PayPal_Order_ID = new ModelColumn<>(I_PayPal_Order.class, "PayPal_Order_ID", null);
+	String COLUMNNAME_PayPal_Order_ID = "PayPal_Order_ID";
 
 	/**
 	 * Set Order JSON.
@@ -220,7 +193,7 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPayPal_OrderJSON (java.lang.String PayPal_OrderJSON);
+	void setPayPal_OrderJSON (@Nullable java.lang.String PayPal_OrderJSON);
 
 	/**
 	 * Get Order JSON.
@@ -229,12 +202,10 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPayPal_OrderJSON();
+	@Nullable java.lang.String getPayPal_OrderJSON();
 
-    /** Column definition for PayPal_OrderJSON */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_PayPal_OrderJSON = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "PayPal_OrderJSON", null);
-    /** Column name PayPal_OrderJSON */
-    public static final String COLUMNNAME_PayPal_OrderJSON = "PayPal_OrderJSON";
+	ModelColumn<I_PayPal_Order, Object> COLUMN_PayPal_OrderJSON = new ModelColumn<>(I_PayPal_Order.class, "PayPal_OrderJSON", null);
+	String COLUMNNAME_PayPal_OrderJSON = "PayPal_OrderJSON";
 
 	/**
 	 * Set Payer Approve URL.
@@ -243,7 +214,7 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPayPal_PayerApproveUrl (java.lang.String PayPal_PayerApproveUrl);
+	void setPayPal_PayerApproveUrl (@Nullable java.lang.String PayPal_PayerApproveUrl);
 
 	/**
 	 * Get Payer Approve URL.
@@ -252,12 +223,10 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPayPal_PayerApproveUrl();
+	@Nullable java.lang.String getPayPal_PayerApproveUrl();
 
-    /** Column definition for PayPal_PayerApproveUrl */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_PayPal_PayerApproveUrl = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "PayPal_PayerApproveUrl", null);
-    /** Column name PayPal_PayerApproveUrl */
-    public static final String COLUMNNAME_PayPal_PayerApproveUrl = "PayPal_PayerApproveUrl";
+	ModelColumn<I_PayPal_Order, Object> COLUMN_PayPal_PayerApproveUrl = new ModelColumn<>(I_PayPal_Order.class, "PayPal_PayerApproveUrl", null);
+	String COLUMNNAME_PayPal_PayerApproveUrl = "PayPal_PayerApproveUrl";
 
 	/**
 	 * Set Status.
@@ -266,7 +235,7 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setStatus (java.lang.String Status);
+	void setStatus (java.lang.String Status);
 
 	/**
 	 * Get Status.
@@ -275,40 +244,33 @@ public interface I_PayPal_Order
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getStatus();
+	java.lang.String getStatus();
 
-    /** Column definition for Status */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "Status", null);
-    /** Column name Status */
-    public static final String COLUMNNAME_Status = "Status";
+	ModelColumn<I_PayPal_Order, Object> COLUMN_Status = new ModelColumn<>(I_PayPal_Order.class, "Status", null);
+	String COLUMNNAME_Status = "Status";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_PayPal_Order, Object>(I_PayPal_Order.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_PayPal_Order, Object> COLUMN_Updated = new ModelColumn<>(I_PayPal_Order.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_PayPal_Order, org.compiere.model.I_AD_User>(I_PayPal_Order.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

@@ -93,7 +93,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	I_M_HU_PI_Item_Product retrieveMaterialItemProduct(ProductId productId, BPartnerId bpartner, ZonedDateTime date, String huUnitType, boolean allowInfiniteCapacity);
 
 	/**
-	 * Similar to {@link #retrieveMaterialItemProduct(ProductId, BPartnerId, Date, String, boolean)}, but with the additional condition that the PIIP also has the given <code>packagingProduct</code>.<br>
+	 * Similar to {@link #retrieveMaterialItemProduct(ProductId, BPartnerId, ZonedDateTime, String, boolean)}, but with the additional condition that the PIIP also has the given <code>packagingProduct</code>.<br>
 	 * Currently, this is useful if a counter order line and a counter packaging line was created, and now the counter order line's PIIP needs to be updated to the one that matches both the order line and packaging line.
 	 *
 	 * @param productId
@@ -102,7 +102,7 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	 * @param huUnitType
 	 * @param allowInfiniteCapacity
 	 * @param packagingProductId    optional, may be <code>null</code>. <br>
-	 *                              If <code>null</code> then this method behaves like {@link #retrieveMaterialItemProduct(ProductId, BPartnerId, Date, String, boolean)}.
+	 *                              If <code>null</code> then this method behaves like {@link #retrieveMaterialItemProduct(ProductId, BPartnerId, ZonedDateTime, String, boolean)}.
 	 * @return
 	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
@@ -149,4 +149,6 @@ public interface IHUPIItemProductDAO extends ISingletonService
 	List<I_M_HU_PI_Item_Product> retrieveTUs(Properties ctx, ProductId cuProductId, BPartnerId bpartnerId, boolean allowInfiniteCapacity);
 
 	Optional<I_M_HU_PI_Item_Product> retrieveDefaultForProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date);
+
+	Optional<HUPIItemProductId> retrieveDefaultIdForProduct(ProductId productId, BPartnerId bpartnerId, ZonedDateTime date);
 }

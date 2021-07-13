@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.Before;
@@ -28,7 +29,6 @@ import org.w3c.dom.Document;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.util.time.SystemTime;
 import de.metas.vendor.gateway.api.ProductAndQuantity;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequest;
 import de.metas.vendor.gateway.api.order.PurchaseOrderRequestItem;
@@ -208,7 +208,7 @@ public class MSV3PurchaseOrderClientTest
 			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.ObjectFactory objectFactory = new de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.ObjectFactory();
 
 			final GregorianCalendar c = new GregorianCalendar();
-			c.setTime(SystemTime.asDate());
+			c.setTime(de.metas.common.util.time.SystemTime.asDate());
 			final XMLGregorianCalendar lieferzeitpunkt = DatatypeFactory.newInstance().newXMLGregorianCalendar(c);
 
 			final de.metas.vertical.pharma.vendor.gateway.msv3.schema.v1.BestellungAnteil bestellungAnteil1 = objectFactory.createBestellungAnteil();

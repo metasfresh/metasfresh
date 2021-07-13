@@ -25,6 +25,7 @@ package de.metas.contracts.pricing.trade_margin;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
@@ -49,7 +50,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
@@ -60,6 +60,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+/**
+ * Allows a sales rep offer a lower price to a customer and in turn receive a lower commission.
+ */
 public class CustomerTradeMarginPricingRule implements IPricingRule
 {
 	private static final Logger logger = LogManager.getLogger(CustomerTradeMarginPricingRule.class);

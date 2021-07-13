@@ -1,159 +1,142 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_LUTU_Configuration
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_LUTU_Configuration 
 {
 
-    /** TableName=M_HU_LUTU_Configuration */
-    public static final String Table_Name = "M_HU_LUTU_Configuration";
+	String Table_Name = "M_HU_LUTU_Configuration";
 
-    /** AD_Table_ID=540605 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540605 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_Location_ID();
+	int getC_BPartner_Location_ID();
 
-    /** Column name C_BPartner_Location_ID */
-    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Gebinde Status.
@@ -162,7 +145,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHUStatus (java.lang.String HUStatus);
+	void setHUStatus (@Nullable java.lang.String HUStatus);
 
 	/**
 	 * Get Gebinde Status.
@@ -171,37 +154,33 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHUStatus();
+	@Nullable java.lang.String getHUStatus();
 
-    /** Column definition for HUStatus */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_HUStatus = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "HUStatus", null);
-    /** Column name HUStatus */
-    public static final String COLUMNNAME_HUStatus = "HUStatus";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_HUStatus = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "HUStatus", null);
+	String COLUMNNAME_HUStatus = "HUStatus";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Unendliche CU Menge.
@@ -210,7 +189,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInfiniteQtyCU (boolean IsInfiniteQtyCU);
+	void setIsInfiniteQtyCU (boolean IsInfiniteQtyCU);
 
 	/**
 	 * Get Unendliche CU Menge.
@@ -219,12 +198,10 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isInfiniteQtyCU();
+	boolean isInfiniteQtyCU();
 
-    /** Column definition for IsInfiniteQtyCU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_IsInfiniteQtyCU = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "IsInfiniteQtyCU", null);
-    /** Column name IsInfiniteQtyCU */
-    public static final String COLUMNNAME_IsInfiniteQtyCU = "IsInfiniteQtyCU";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_IsInfiniteQtyCU = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "IsInfiniteQtyCU", null);
+	String COLUMNNAME_IsInfiniteQtyCU = "IsInfiniteQtyCU";
 
 	/**
 	 * Set Unendliche LU Menge.
@@ -233,7 +210,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInfiniteQtyLU (boolean IsInfiniteQtyLU);
+	void setIsInfiniteQtyLU (boolean IsInfiniteQtyLU);
 
 	/**
 	 * Get Unendliche LU Menge.
@@ -242,12 +219,10 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isInfiniteQtyLU();
+	boolean isInfiniteQtyLU();
 
-    /** Column definition for IsInfiniteQtyLU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_IsInfiniteQtyLU = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "IsInfiniteQtyLU", null);
-    /** Column name IsInfiniteQtyLU */
-    public static final String COLUMNNAME_IsInfiniteQtyLU = "IsInfiniteQtyLU";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_IsInfiniteQtyLU = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "IsInfiniteQtyLU", null);
+	String COLUMNNAME_IsInfiniteQtyLU = "IsInfiniteQtyLU";
 
 	/**
 	 * Set Unendliche TU Menge.
@@ -256,7 +231,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInfiniteQtyTU (boolean IsInfiniteQtyTU);
+	void setIsInfiniteQtyTU (boolean IsInfiniteQtyTU);
 
 	/**
 	 * Get Unendliche TU Menge.
@@ -265,79 +240,73 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isInfiniteQtyTU();
+	boolean isInfiniteQtyTU();
 
-    /** Column definition for IsInfiniteQtyTU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_IsInfiniteQtyTU = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "IsInfiniteQtyTU", null);
-    /** Column name IsInfiniteQtyTU */
-    public static final String COLUMNNAME_IsInfiniteQtyTU = "IsInfiniteQtyTU";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_IsInfiniteQtyTU = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "IsInfiniteQtyTU", null);
+	String COLUMNNAME_IsInfiniteQtyTU = "IsInfiniteQtyTU";
 
 	/**
-	 * Set Gebindekonfiguration.
+	 * Set Packing Configuration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_LUTU_Configuration_ID (int M_HU_LUTU_Configuration_ID);
+	void setM_HU_LUTU_Configuration_ID (int M_HU_LUTU_Configuration_ID);
 
 	/**
-	 * Get Gebindekonfiguration.
+	 * Get Packing Configuration.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_LUTU_Configuration_ID();
+	int getM_HU_LUTU_Configuration_ID();
 
-    /** Column definition for M_HU_LUTU_Configuration_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_M_HU_LUTU_Configuration_ID = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "M_HU_LUTU_Configuration_ID", null);
-    /** Column name M_HU_LUTU_Configuration_ID */
-    public static final String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_M_HU_LUTU_Configuration_ID = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "M_HU_LUTU_Configuration_ID", null);
+	String COLUMNNAME_M_HU_LUTU_Configuration_ID = "M_HU_LUTU_Configuration_ID";
 
 	/**
-	 * Set Packvorschrift.
+	 * Set Packing Instruction.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
 
 	/**
-	 * Get Packvorschrift.
+	 * Get Packing Instruction.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_PI_Item_Product_ID();
+	int getM_HU_PI_Item_Product_ID();
 
-    /** Column name M_HU_PI_Item_Product_ID */
-    public static final String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set Lagerort.
-	 * Lagerort im Lager
+	 * Set Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Locator_ID (int M_Locator_ID);
+	void setM_Locator_ID (int M_Locator_ID);
 
 	/**
-	 * Get Lagerort.
-	 * Lagerort im Lager
+	 * Get Locator.
+	 * Warehouse Locator
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Locator_ID();
+	int getM_Locator_ID();
 
-    /** Column name M_Locator_ID */
-    public static final String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
+	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
 	 * Set Packvorschrift (LU).
@@ -346,7 +315,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_LU_HU_PI_ID (int M_LU_HU_PI_ID);
+	void setM_LU_HU_PI_ID (int M_LU_HU_PI_ID);
 
 	/**
 	 * Get Packvorschrift (LU).
@@ -355,16 +324,14 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_LU_HU_PI_ID();
+	int getM_LU_HU_PI_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI();
+	@Nullable de.metas.handlingunits.model.I_M_HU_PI getM_LU_HU_PI();
 
-	public void setM_LU_HU_PI(de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI);
+	void setM_LU_HU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI M_LU_HU_PI);
 
-    /** Column definition for M_LU_HU_PI_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_LU_HU_PI_ID = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, de.metas.handlingunits.model.I_M_HU_PI>(I_M_HU_LUTU_Configuration.class, "M_LU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
-    /** Column name M_LU_HU_PI_ID */
-    public static final String COLUMNNAME_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
+	ModelColumn<I_M_HU_LUTU_Configuration, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_LU_HU_PI_ID = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "M_LU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
+	String COLUMNNAME_M_LU_HU_PI_ID = "M_LU_HU_PI_ID";
 
 	/**
 	 * Set Packvorschrift Position (LU).
@@ -373,7 +340,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_LU_HU_PI_Item_ID (int M_LU_HU_PI_Item_ID);
+	void setM_LU_HU_PI_Item_ID (int M_LU_HU_PI_Item_ID);
 
 	/**
 	 * Get Packvorschrift Position (LU).
@@ -382,39 +349,36 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_LU_HU_PI_Item_ID();
+	int getM_LU_HU_PI_Item_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI_Item getM_LU_HU_PI_Item();
+	@Nullable de.metas.handlingunits.model.I_M_HU_PI_Item getM_LU_HU_PI_Item();
 
-	public void setM_LU_HU_PI_Item(de.metas.handlingunits.model.I_M_HU_PI_Item M_LU_HU_PI_Item);
+	void setM_LU_HU_PI_Item(@Nullable de.metas.handlingunits.model.I_M_HU_PI_Item M_LU_HU_PI_Item);
 
-    /** Column definition for M_LU_HU_PI_Item_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, de.metas.handlingunits.model.I_M_HU_PI_Item> COLUMN_M_LU_HU_PI_Item_ID = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, de.metas.handlingunits.model.I_M_HU_PI_Item>(I_M_HU_LUTU_Configuration.class, "M_LU_HU_PI_Item_ID", de.metas.handlingunits.model.I_M_HU_PI_Item.class);
-    /** Column name M_LU_HU_PI_Item_ID */
-    public static final String COLUMNNAME_M_LU_HU_PI_Item_ID = "M_LU_HU_PI_Item_ID";
+	ModelColumn<I_M_HU_LUTU_Configuration, de.metas.handlingunits.model.I_M_HU_PI_Item> COLUMN_M_LU_HU_PI_Item_ID = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "M_LU_HU_PI_Item_ID", de.metas.handlingunits.model.I_M_HU_PI_Item.class);
+	String COLUMNNAME_M_LU_HU_PI_Item_ID = "M_LU_HU_PI_Item_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Packvorschrift (TU).
@@ -423,7 +387,7 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_TU_HU_PI_ID (int M_TU_HU_PI_ID);
+	void setM_TU_HU_PI_ID (int M_TU_HU_PI_ID);
 
 	/**
 	 * Get Packvorschrift (TU).
@@ -432,111 +396,102 @@ public interface I_M_HU_LUTU_Configuration
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_TU_HU_PI_ID();
+	int getM_TU_HU_PI_ID();
 
-	public de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI();
+	de.metas.handlingunits.model.I_M_HU_PI getM_TU_HU_PI();
 
-	public void setM_TU_HU_PI(de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI);
+	void setM_TU_HU_PI(de.metas.handlingunits.model.I_M_HU_PI M_TU_HU_PI);
 
-    /** Column definition for M_TU_HU_PI_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_TU_HU_PI_ID = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, de.metas.handlingunits.model.I_M_HU_PI>(I_M_HU_LUTU_Configuration.class, "M_TU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
-    /** Column name M_TU_HU_PI_ID */
-    public static final String COLUMNNAME_M_TU_HU_PI_ID = "M_TU_HU_PI_ID";
+	ModelColumn<I_M_HU_LUTU_Configuration, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_M_TU_HU_PI_ID = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "M_TU_HU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
+	String COLUMNNAME_M_TU_HU_PI_ID = "M_TU_HU_PI_ID";
 
 	/**
-	 * Set Menge CU.
+	 * Set Qty CU per TU.
+	 * Number of CUs per package (usually TU)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyCU (java.math.BigDecimal QtyCU);
+	void setQtyCU (BigDecimal QtyCU);
 
 	/**
-	 * Get Menge CU.
+	 * Get Qty CU per TU.
+	 * Number of CUs per package (usually TU)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyCU();
+	BigDecimal getQtyCU();
 
-    /** Column definition for QtyCU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_QtyCU = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "QtyCU", null);
-    /** Column name QtyCU */
-    public static final String COLUMNNAME_QtyCU = "QtyCU";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_QtyCU = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "QtyCU", null);
+	String COLUMNNAME_QtyCU = "QtyCU";
 
 	/**
-	 * Set LU Anzahl.
+	 * Set Number of LUs.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyLU (java.math.BigDecimal QtyLU);
+	void setQtyLU (BigDecimal QtyLU);
 
 	/**
-	 * Get LU Anzahl.
+	 * Get Number of LUs.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyLU();
+	BigDecimal getQtyLU();
 
-    /** Column definition for QtyLU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_QtyLU = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "QtyLU", null);
-    /** Column name QtyLU */
-    public static final String COLUMNNAME_QtyLU = "QtyLU";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_QtyLU = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "QtyLU", null);
+	String COLUMNNAME_QtyLU = "QtyLU";
 
 	/**
-	 * Set TU Anzahl.
+	 * Set Number of TUs.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyTU (java.math.BigDecimal QtyTU);
+	void setQtyTU (BigDecimal QtyTU);
 
 	/**
-	 * Get TU Anzahl.
+	 * Get Number of TUs.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyTU();
+	BigDecimal getQtyTU();
 
-    /** Column definition for QtyTU */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_QtyTU = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "QtyTU", null);
-    /** Column name QtyTU */
-    public static final String COLUMNNAME_QtyTU = "QtyTU";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_QtyTU = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "QtyTU", null);
+	String COLUMNNAME_QtyTU = "QtyTU";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_LUTU_Configuration, Object>(I_M_HU_LUTU_Configuration.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_LUTU_Configuration, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_LUTU_Configuration.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

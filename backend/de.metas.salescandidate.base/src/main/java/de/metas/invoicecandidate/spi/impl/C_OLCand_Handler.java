@@ -32,6 +32,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.lang.SOTrx;
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
@@ -69,7 +71,7 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /**
@@ -219,7 +221,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				.orElseGet(() -> olCandEffectiveValuesBL.getBuyerPartnerInfo(olcRecord));
 
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
-		final int taxId = taxBL.getTax(
+		final TaxId taxId = taxBL.getTaxNotNull(
 				ctx,
 				ic, // model
 				TaxCategoryId.ofRepoIdOrNull(olcRecord.getC_TaxCategory_ID()),
@@ -228,8 +230,8 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				(WarehouseId)null,
 				BPartnerLocationId.toRepoId(shipToPartnerInfo.getBpartnerLocationId()),
-				true /* isSOTrx */);
-		ic.setC_Tax_ID(taxId);
+				SOTrx.SALES);
+		ic.setC_Tax_ID(taxId.getRepoId());
 
 		ic.setExternalLineId(olcRecord.getExternalLineId());
 		ic.setExternalHeaderId(olcRecord.getExternalHeaderId());

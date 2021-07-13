@@ -1,7 +1,7 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.dunning;
 
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

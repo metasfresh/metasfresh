@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -36,16 +37,15 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer.ProcessIssueCan
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.util.CatchWeightHelper;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -185,7 +185,7 @@ public class ProcessPickingCandidatesCommand
 		final Quantity qtyPicked = pickingCandidate.getQtyPicked();
 
 		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing();
-		final IAllocationRequest request = AllocationUtils.createAllocationRequestBuilder()
+		final IAllocationRequest request = AllocationUtils.builder()
 				.setHUContext(huContext)
 				.setProduct(productId)
 				.setQuantity(qtyPicked)
@@ -198,6 +198,8 @@ public class ProcessPickingCandidatesCommand
 				.orElseThrow(() -> new AdempiereException("Nothing packed for " + pickingCandidate));
 
 		addShipmentScheduleQtyPickedAndUpdateHU(shipmentSchedule, packedToHU, qtyPicked, huContext);
+
+		huContext.flush();
 
 		return HuId.ofRepoId(packedToHU.getM_HU_ID());
 	}

@@ -1,16 +1,8 @@
 package de.metas.rest_api.bpartner_pricelist;
 
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_ProductPrice;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -20,6 +12,7 @@ import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -31,6 +24,12 @@ import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.IdentifierString.Type;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_ProductPrice;
+import org.springframework.stereotype.Service;
+
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /*
  * #%L
@@ -107,37 +106,41 @@ public class BpartnerPriceListServicesFacade
 
 	// TODO move this method to de.metas.bpartner.service.IBPartnerDAO since it has nothing to do with price list
 	// 		TODO: IdentifierString must also be moved to the module containing IBPartnerDAO
-	// TODO it would be nice here if we would also use orgID when searching for the bpartner, since an ExternalId may belong to multiple users from different orgs
-	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier)
+	public Optional<BPartnerId> getBPartnerId(final IdentifierString bpartnerIdentifier, OrgId orgId)
 	{
-		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier);
+		final BPartnerQuery query = createBPartnerQuery(bpartnerIdentifier,orgId);
 		return bpartnersRepo.retrieveBPartnerIdBy(query);
 	}
 
-	private static BPartnerQuery createBPartnerQuery(@NonNull final IdentifierString bpartnerIdentifier)
+	private static BPartnerQuery createBPartnerQuery(@NonNull final IdentifierString bpartnerIdentifier, final OrgId orgId)
 	{
 		final Type type = bpartnerIdentifier.getType();
+		final BPartnerQuery.BPartnerQueryBuilder builder = BPartnerQuery.builder();
+		if (orgId != null)
+		{
+			builder.onlyOrgId(orgId);
+		}
 		if (Type.METASFRESH_ID.equals(type))
 		{
-			return BPartnerQuery.builder()
+			return builder
 					.bPartnerId(bpartnerIdentifier.asMetasfreshId(BPartnerId::ofRepoId))
 					.build();
 		}
 		else if (Type.EXTERNAL_ID.equals(type))
 		{
-			return BPartnerQuery.builder()
+			return builder
 					.externalId(bpartnerIdentifier.asExternalId())
 					.build();
 		}
 		else if (Type.VALUE.equals(type))
 		{
-			return BPartnerQuery.builder()
+			return builder
 					.bpartnerValue(bpartnerIdentifier.asValue())
 					.build();
 		}
 		else if (Type.GLN.equals(type))
 		{
-			return BPartnerQuery.builder()
+			return builder
 					.gln(bpartnerIdentifier.asGLN())
 					.build();
 		}

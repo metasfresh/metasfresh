@@ -1,22 +1,15 @@
 package de.metas.ordercandidate.api;
 
-import java.util.stream.Stream;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.PO;
-import org.compiere.util.Env;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
-import de.metas.document.references.RelationTypeZoomProvidersFactory;
+import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
 import de.metas.payment.PaymentRule;
@@ -27,6 +20,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.PO;
+import org.compiere.util.Env;
+
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -91,11 +91,12 @@ final class RelationTypeOLCandSource implements OLCandSource
 		// FIXME: get rid of it
 		final PO processorPO = InterfaceWrapperHelper.getPO(InterfaceWrapperHelper.loadOutOfTrx(olCandProcessorId, I_C_OLCandProcessor.class));
 
-		return RelationTypeZoomProvidersFactory.instance
-				.getZoomProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
+		final RelationTypeRelatedDocumentsProvidersFactory relationTypeRelatedDocumentsProvidersFactory = SpringContextHolder.instance.getBean(RelationTypeRelatedDocumentsProvidersFactory.class);
+		return relationTypeRelatedDocumentsProvidersFactory
+				.getRelatedDocumentsProviderBySourceTableNameAndInternalName(I_C_OLCand.Table_Name, relationTypeInternalName)
 				.retrieveDestinations(Env.getCtx(), processorPO, I_C_OLCand.class, ITrx.TRXNAME_ThreadInherited)
 				.stream()
-				.map(record -> toOLCand(record));
+				.map(this::toOLCand);
 	}
 
 	private OLCand toOLCand(@NonNull final I_C_OLCand olCandRecord)
@@ -113,6 +114,11 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
 
+		final OrderLineGroup orderLineGroup = OrderLineGroup.ofOrNull(
+				olCandRecord.getCompensationGroupKey(),
+				olCandRecord.isGroupCompensationLine(),
+				olCandRecord.isGroupingError(),
+				olCandRecord.getGroupingErrorMessage());
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
 				.olCandRecord(olCandRecord)
@@ -127,6 +133,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.shipperId(shipperId)
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
+				.orderLineGroup(orderLineGroup)
 				.build();
 	}
 }

@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="cypress" type="js.build_tools.npm">
+  <configuration default="false" name="cypress" type="js.build_tools.npm" folderName="Less Used">
     <package-json value="$PROJECT_DIR$/metasfresh/e2e/package.json" />
     <command value="run" />
     <scripts>

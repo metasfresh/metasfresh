@@ -54,14 +54,15 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 
+import de.metas.project.ProjectType;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.AWindow;
 import org.compiere.model.MAchievement;
 import org.compiere.model.MGoal;
+import org.compiere.model.MMeasure;
 import org.compiere.model.MMeasureCalc;
-import org.compiere.model.MProjectType;
 import org.compiere.model.MQuery;
 import org.compiere.model.MRequestType;
 import org.compiere.swing.CMenuItem;
@@ -275,8 +276,8 @@ public class HtmlDashboard extends JPanel implements MouseListener,
 				}
 				else if (bgc.getProjectType() != null)	//	Document
 				{
-					MProjectType pt = bgc.getProjectType();
-					query = pt.getQuery(m_goal.getRestrictions(false), 
+					ProjectType pt = bgc.getProjectType();
+					query = MMeasure.getQuery(pt, m_goal.getRestrictions(false),
 						bgc.getMeasureDisplay(), bgc.getDate(), bgc.getID(), 
 								Env.getUserRolePermissions());	// logged in role
 				}

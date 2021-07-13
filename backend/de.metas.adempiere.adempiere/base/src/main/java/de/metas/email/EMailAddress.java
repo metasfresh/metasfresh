@@ -1,28 +1,25 @@
 package de.metas.email;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -50,9 +47,12 @@ import lombok.NonNull;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class EMailAddress
 {
+	@Nullable
 	public static EMailAddress ofNullableString(@Nullable final String emailStr)
 	{
-		return !Check.isEmpty(emailStr, true) ? new EMailAddress(emailStr) : null;
+		return  emailStr != null && !Check.isBlank(emailStr)
+				? new EMailAddress(emailStr)
+				: null;
 	}
 
 	@JsonCreator
@@ -61,9 +61,9 @@ public final class EMailAddress
 		return new EMailAddress(emailStr);
 	}
 
-	public static List<EMailAddress> ofSemicolonSeparatedList(final String emailsListStr)
+	public static List<EMailAddress> ofSemicolonSeparatedList(@Nullable final String emailsListStr)
 	{
-		if (Check.isEmpty(emailsListStr, true))
+		if (emailsListStr == null || Check.isBlank(emailsListStr))
 		{
 			return ImmutableList.of();
 		}
@@ -78,6 +78,7 @@ public final class EMailAddress
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Nullable
 	public static ITranslatableString checkEMailValid(@Nullable final EMailAddress email)
 	{
 		if (email == null)
@@ -87,9 +88,10 @@ public final class EMailAddress
 		return checkEMailValid(email.getAsString());
 	}
 
+	@Nullable
 	public static ITranslatableString checkEMailValid(@Nullable final String email)
 	{
-		if (Check.isEmpty(email, true))
+		if (email == null || Check.isBlank(email))
 		{
 			return TranslatableStrings.constant("no email");
 		}
@@ -105,7 +107,7 @@ public final class EMailAddress
 
 			return null; // OK
 		}
-		catch (AddressException ex)
+		catch (final AddressException ex)
 		{
 			logger.warn("Invalid email address: {}", email, ex);
 			return TranslatableStrings.constant(ex.getLocalizedMessage());
@@ -131,6 +133,7 @@ public final class EMailAddress
 		return emailStr;
 	}
 
+	@Nullable
 	public static String toStringOrNull(@Nullable final EMailAddress emailAddress)
 	{
 		return emailAddress != null ? emailAddress.getAsString() : null;

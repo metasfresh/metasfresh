@@ -1,0 +1,37 @@
+{
+  "props1": {
+    "widgetData": [
+      {
+        "field": "QtyOrdered",
+        "value": "8",
+        "readonly": true,
+        "mandatory": false,
+        "displayed": true,
+        "widgetType": "Quantity",
+        "validStatus": {
+          "valid": true,
+          "initialValue": true,
+          "fieldName": "QtyOrdered"
+        },
+        "viewEditorRenderMode": "never"
+      }
+    ],
+    "widgetField": "QtyOrdered",
+    "fields": [
+      {
+        "field": "QtyOrdered",
+        "caption": "Ordered Quantity",
+        "emptyText": "none",
+        "clearValueText": "none"
+      }
+    ],
+    "widgetProperties": {
+      "autoComplete": "off",
+      "value": "8",
+      "placeholder": "none",
+      "disabled": true,
+      "tabIndex": -1,
+      "title": "8"
+    }
+  }
+}

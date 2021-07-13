@@ -17,7 +17,6 @@
 de.metas.endcustomer.mf15/metasfresh.properties
 /de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.swingui/log/
 /de.metas.endcustomer.mf15/de.metas.endcustomer.mf15.serverRoot/log/
-**/activemq-data/
 
 **/.~lock*
 *.jasper
@@ -46,3 +45,4 @@ de.metas.material/dispo-service/application.properties
 **/LICENSE.txt
 
 /de.metas.adempiere.adempiere/base/src/main/java/de/metas/tbp/
+/metasfresh-dist/dist/src/main/docker/db/postgresql_data_dir/data/

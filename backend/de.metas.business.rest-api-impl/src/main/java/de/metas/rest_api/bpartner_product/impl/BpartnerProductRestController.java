@@ -15,7 +15,7 @@ import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.rest_api.utils.RestApiUtils;
+import de.metas.rest_api.utils.RestApiUtilsV1;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
@@ -44,12 +44,13 @@ import io.swagger.annotations.ApiParam;
  */
 
 @RestController
-@RequestMapping(BpartnerProductRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartnerProducts",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/bpartnerProducts",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartnerProducts" })
 //the spelling "Bpartner.." is to avoid swagger spelling it "b-partner-prod.."
 public class BpartnerProductRestController
 {
-	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/bpartnerProducts";
-
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerProductDAO bpartnerProductsRepo = Services.get(IBPartnerProductDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
@@ -108,6 +109,6 @@ public class BpartnerProductRestController
 	private String trl(final String message)
 	{
 		final IMsgBL msgBL = Services.get(IMsgBL.class);
-		return msgBL.parseTranslation(RestApiUtils.getAdLanguage(), message);
+		return msgBL.parseTranslation(RestApiUtilsV1.getAdLanguage(), message);
 	}
 }

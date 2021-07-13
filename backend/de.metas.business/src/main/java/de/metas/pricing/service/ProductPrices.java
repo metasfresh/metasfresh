@@ -27,7 +27,6 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.impexp.processing.product.ProductPriceCreateRequest;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;

@@ -22,8 +22,11 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
-import java.math.BigDecimal;
-
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -35,14 +38,12 @@ import org.adempiere.warehouse.validationrule.FilterWarehouseByDocTypeValidation
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.ModelValidator;
 
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.util.Services;
+import java.math.BigDecimal;
 
 @Interceptor(I_M_ReceiptSchedule.class)
 public class M_ReceiptSchedule
 {
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	@Init
 	public void init()
@@ -52,7 +53,6 @@ public class M_ReceiptSchedule
 				I_M_ReceiptSchedule.Table_Name,
 				I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_Dest_ID,
 				"Registered by " + this.getClass().getName());
-
 	}
 
 	@ModelChange(timings = {
@@ -155,9 +155,24 @@ public class M_ReceiptSchedule
 			return;
 		}
 
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = receiptScheduleBL.getHeaderAggregationKeyBuilder();
 		final String headerAggregationKey = headerAggregationKeyBuilder.buildKey(sched);
 		sched.setHeaderAggregationKey(headerAggregationKey);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_ReceiptSchedule.COLUMNNAME_IsActive,
+					I_M_ReceiptSchedule.COLUMNNAME_M_Warehouse_Override_ID,
+					I_M_ReceiptSchedule.COLUMNNAME_DeliveryRule_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_PriorityRule_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_QtyToMove_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_AD_User_Override_ID,
+					I_M_ReceiptSchedule.COLUMNNAME_BPartnerAddress_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_DeliveryViaRule_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_IsBPartnerAddress_Override,
+					I_M_ReceiptSchedule.COLUMNNAME_ExportStatus })
+	public void updateCanBeExportedAfter(@NonNull final I_M_ReceiptSchedule sched)
+	{
+		receiptScheduleBL.updateCanBeExportedFrom(sched);
 	}
 }

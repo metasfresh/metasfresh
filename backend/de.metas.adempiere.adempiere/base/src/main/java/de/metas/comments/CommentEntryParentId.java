@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 
 /**
  * Most likely you want to use {@link CommentEntryId}.
- * Please also read the description of {@link CommentEntryRepository}
+ * Please also read the description of {@link CommentsRepository}
  */
 @Value
 public class CommentEntryParentId implements RepoIdAware

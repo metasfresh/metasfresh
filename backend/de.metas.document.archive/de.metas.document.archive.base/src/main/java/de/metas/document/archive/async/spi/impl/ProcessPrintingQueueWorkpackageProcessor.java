@@ -3,6 +3,7 @@ package de.metas.document.archive.async.spi.impl;
 import java.util.List;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -42,7 +43,7 @@ public class ProcessPrintingQueueWorkpackageProcessor implements IWorkpackagePro
 
 		final org.adempiere.archive.api.IArchiveDAO archiveDAO = Services.get(org.adempiere.archive.api.IArchiveDAO.class);
 
-		final List<org.compiere.model.I_AD_Archive> archives = archiveDAO.retrieveLastArchives(ctx, TableRecordReference.of(po), Integer.MAX_VALUE);
+		final List<org.compiere.model.I_AD_Archive> archives = archiveDAO.retrieveLastArchives(ctx, TableRecordReference.of(po), QueryLimit.NO_LIMIT);
 
 		for (final org.compiere.model.I_AD_Archive archive : archives)
 		{

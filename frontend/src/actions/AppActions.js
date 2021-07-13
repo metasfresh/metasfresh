@@ -1,7 +1,8 @@
 import axios from 'axios';
 import MomentTZ from 'moment-timezone';
 import numeral from 'numeral';
-import { replace } from 'react-router-redux';
+import { push, replace } from 'react-router-redux';
+import queryString from 'query-string';
 
 import * as types from '../constants/ActionTypes';
 import { setCurrentActiveLocale } from '../utils/locale';
@@ -40,52 +41,6 @@ export function postImageAction(data) {
   return axios
     .post(`${config.API_URL}/image`, data)
     .then((response) => response.data);
-}
-
-export function getKPIsDashboard() {
-  return axios.get(`${config.API_URL}/dashboard/kpis?silentError=true`);
-}
-
-export function getTargetIndicatorsDashboard() {
-  return axios.get(
-    `${config.API_URL}/dashboard/targetIndicators?silentError=true`
-  );
-}
-
-export function getKPIData(id) {
-  return axios.get(
-    `${config.API_URL}/dashboard/kpis/${id}/data?silentError=true`
-  );
-}
-
-export function changeKPIItem(id, path, value) {
-  return axios.patch(`${config.API_URL}/dashboard/kpis/${id}`, [
-    {
-      op: 'replace',
-      path: path,
-      value: value,
-    },
-  ]);
-}
-
-export function changeTargetIndicatorsItem(id, path, value) {
-  return axios.patch(`${config.API_URL}/dashboard/targetIndicators/${id}`, [
-    {
-      op: 'replace',
-      path: path,
-      value: value,
-    },
-  ]);
-}
-
-export function getTargetIndicatorsData(id) {
-  return axios.get(
-    `${config.API_URL}/dashboard/targetIndicators/${id}/data?silentError=true`
-  );
-}
-
-export function setUserDashboardWidgets(payload) {
-  return axios.patch(`${config.API_URL}/dashboard/kpis`, payload);
 }
 
 export function getMessages(lang) {
@@ -282,24 +237,23 @@ export function clearNotifications() {
   };
 }
 
-export function updateUri(pathname, query, prop, value) {
+/**
+ * @method updateUri
+ * @summary Prepends viewId/page/sorting to the url
+ */
+export function updateUri(pathname, query, updatedQuery) {
+  const fullPath = window.location.href;
+
   return (dispatch) => {
-    let url = pathname + '?';
+    const queryObject = {
+      ...query,
+      ...updatedQuery,
+    };
 
-    // add new prop or overwrite existing
-    query[prop] = value;
+    const queryUrl = queryString.stringify(queryObject);
+    const url = `${pathname}?${queryUrl}`;
 
-    const queryKeys = Object.keys(query);
-
-    for (let i = 0; i < queryKeys.length; i++) {
-      url +=
-        queryKeys[i] +
-        '=' +
-        query[queryKeys[i]] +
-        (queryKeys.length - 1 !== i ? '&' : '');
-    }
-
-    dispatch(replace(url));
+    !fullPath.includes('viewId') ? dispatch(replace(url)) : dispatch(push(url));
   };
 }
 

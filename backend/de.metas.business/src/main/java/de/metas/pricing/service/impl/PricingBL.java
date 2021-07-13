@@ -28,6 +28,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -84,7 +85,6 @@ import de.metas.util.Loggables;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.PlainStringLoggable;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class PricingBL implements IPricingBL
@@ -279,7 +279,7 @@ public class PricingBL implements IPricingBL
 				&& pricingCtx.getPriceListId() == null
 				&& pricingCtx.getPriceListVersionId() == null)
 		{
-			final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(pricingCtx.getBPartnerId(), pricingCtx.getSoTrx());
+			final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNullInTrx(pricingCtx.getBPartnerId(), pricingCtx.getSoTrx());
 			if (pricingSystemId == null)
 			{
 				throw new AdempiereException("BPartnerId=" + pricingCtx.getBPartnerId().getRepoId() + " has no assigned " + pricingCtx.getSoTrx() + " pricingSystem")
@@ -334,7 +334,7 @@ public class PricingBL implements IPricingBL
 			{
 				final Boolean processedPLVFiltering = null; // task 09533: the user doesn't know about PLV's processed flag, so we can't filter by it
 				final I_M_PriceList_Version plv = priceListDAO.retrievePriceListVersionOrNull(priceList,
-						TimeUtil.asZonedDateTime(priceDate, SystemTime.zoneId()), processedPLVFiltering);
+						TimeUtil.asZonedDateTime(priceDate, de.metas.common.util.time.SystemTime.zoneId()), processedPLVFiltering);
 				if (plv != null)
 				{
 					final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoId(plv.getM_PriceList_Version_ID());

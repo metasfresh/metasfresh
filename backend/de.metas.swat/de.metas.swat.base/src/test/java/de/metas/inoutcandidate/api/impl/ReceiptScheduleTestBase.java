@@ -22,21 +22,33 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.InOutLineDimensionFactory;
+import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
+import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
+import de.metas.interfaces.I_C_DocType;
+import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.mm.attributes.api.impl.LotNumberDateAttributeDAO;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
@@ -56,30 +68,27 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.business.BusinessTestHelper;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
-import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
-import de.metas.interfaces.I_C_DocType;
-import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public abstract class ReceiptScheduleTestBase
 {
 	@BeforeAll
-	public final static void staticInit()
+	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InOutLineDimensionFactory());
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		POJOWrapper.setDefaultStrictValues(false);
 
 		//
@@ -140,7 +149,7 @@ public abstract class ReceiptScheduleTestBase
 
 		ctx = Env.getCtx();
 		date = SystemTime.asTimestamp();
-		date2 = SystemTime.asDayTimestamp();
+		date2 = de.metas.common.util.time.SystemTime.asDayTimestamp();
 		Env.setContext(ctx, Env.CTXNAME_Date, date2);
 
 		// Master data
@@ -176,19 +185,27 @@ public abstract class ReceiptScheduleTestBase
 		// 07629 just adding to fix existing tests; TODO extend the tests
 		productAcctDAO = Mockito.spy(IProductAcctDAO.class);
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
+		dimensionFactories.add(new InOutLineDimensionFactory());
+
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 		//
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 		Mockito.when(productAcctDAO.retrieveActivityForAcct(
-				(ClientId)Matchers.any(),
+				Matchers.any(),
 				Matchers.eq(orgId),
-				(ProductId)Matchers.any()))
+				Matchers.any()))
 				.thenReturn(activityId);
 
 		// #653
-		attr_LotNumberDate = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
-		attr_LotNumber = createM_Attribute(LotNumberDateAttributeDAO.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
+		attr_LotNumberDate = createM_Attribute(AttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
+		attr_LotNumber = createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		setup();
 	}
@@ -295,7 +312,7 @@ public abstract class ReceiptScheduleTestBase
 		return createOrder(warehouse);
 	}
 
-	protected I_C_Order createOrder(final I_M_Warehouse warehouse)
+	protected I_C_Order createOrder(@Nullable final I_M_Warehouse warehouse)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
 		order.setC_Order_ID(0);
@@ -319,10 +336,6 @@ public abstract class ReceiptScheduleTestBase
 
 	/**
 	 * Creates a new order line for the given order and product.
-	 *
-	 * @param order
-	 * @param product
-	 * @return
 	 */
 	protected I_C_OrderLine createOrderLine(final I_C_Order order, final I_M_Product product)
 	{

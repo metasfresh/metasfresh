@@ -34,6 +34,8 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 
+import javax.annotation.Nullable;
+
 /**
  *	System Display Types.
  *  <pre>
@@ -230,6 +232,13 @@ public final class DisplayType
 			return true;
 		return false;
 	}	//	isDate
+
+	public static boolean isYesNo (int displayType)
+	{
+		if (displayType == YesNo)
+			return true;
+		return false;
+	}
 
 	/**
 	 *	Returns true if DisplayType is a generic lookup (List, Table, TableDir, Search).
@@ -738,7 +747,8 @@ public final class DisplayType
 	/**
 	 * Delegates to {@link StringUtils#toBoolean(Object, Boolean)}.
 	 */
-	public static final Boolean toBoolean(final Object value, final Boolean defaultValue)
+	@Nullable
+	public static Boolean toBoolean(@Nullable final Object value, @Nullable final Boolean defaultValue)
 	{
 		return StringUtils.toBoolean(value, defaultValue);
 	}

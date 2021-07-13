@@ -183,13 +183,8 @@ class SubHeader extends Component {
    * @summary ToDo: Describe the method.
    */
   handleAboutButton = () => {
-    const {
-      selected,
-      activeTab,
-      windowId,
-      openModalRow,
-      openModal,
-    } = this.props;
+    const { selected, activeTab, windowId, openModalRow, openModal } =
+      this.props;
 
     if (selected && selected.length) {
       openModalRow(
@@ -589,6 +584,7 @@ const mapStateToProps = (state, props) => {
   return {
     standardActions: state.windowHandler.master.standardActions,
     selected: selector(state, tableId),
+    activeTab: tabId,
   };
 };
 

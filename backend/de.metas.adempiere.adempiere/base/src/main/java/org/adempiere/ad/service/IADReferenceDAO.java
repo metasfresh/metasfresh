@@ -29,6 +29,7 @@ import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -126,5 +127,7 @@ public interface IADReferenceDAO extends ISingletonService
 
 	ITranslatableString retrieveListNameTranslatableString(int adReferenceId, String value);
 
-	void saveRefList(@NonNull final IADReferenceDAO.ADRefListItemCreateRequest refListItemCreateRequest);
+	void saveRefList(IADReferenceDAO.ADRefListItemCreateRequest refListItemCreateRequest);
+
+	I_AD_Reference getReferenceByID(ReferenceId referenceId);
 }

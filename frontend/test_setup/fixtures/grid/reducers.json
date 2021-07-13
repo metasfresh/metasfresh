@@ -1,0 +1,354 @@
+{
+  "viewLayout1": {
+    "type": "169",
+    "windowId": "169",
+    "caption": "Shipment",
+    "description": "Shipments and Customer Returns",
+    "emptyResultText": "There are no detail rows",
+    "emptyResultHint": "You can create them in this window.",
+    "elements": [
+      {
+        "caption": "Document Type",
+        "description": "Document type or rules",
+        "fields": [
+          {
+            "field": "C_DocType_ID",
+            "caption": "Document Type"
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "filterId": "default-date",
+        "caption": "Date",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Date",
+            "parameterName": "MovementDate",
+            "widgetType": "Date",
+            "range": true,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": -2147483648
+        },
+        "sortNo": -2147483648
+      }
+    ],
+    "supportAttributes": false,
+    "supportTree": false,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": null,
+    "supportIncludedView": false,
+    "supportIncludedViewOnSelect": null,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": true   
+  },
+  "viewLayout2": {
+    "type": "540376",
+    "windowId": "540376",
+    "caption": "",
+    "description": "",
+    "emptyResultText": "There are no detail rows",
+    "emptyResultHint": "You can create them in this window.",
+    "elements": [
+      {
+        "caption": "Product Value",
+        "description": "",
+        "widgetType": "Text",
+        "size": null,
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "productValue",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "filterId": "materialCockpitDateOnlyFilter",
+        "caption": "Date",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Datum",
+            "parameterName": "DateGeneral",
+            "widgetType": "Date",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": true,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary",
+            "showIncrementDecrementButtons": true
+          }
+        ],
+        "debugProperties": {
+          "sortNo": 0
+        },
+        "sortNo": 0
+      }
+    ],
+    "supportAttributes": false,
+    "supportTree": true,
+    "collapsible": true,
+    "expandedDepth": 0,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": null,
+    "supportIncludedView": false,
+    "supportIncludedViewOnSelect": null,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": false
+  },
+  "basicViewData1":{
+    "windowId": "169",
+    "viewId": "169-Bd",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 125,
+    "orderBy": [
+      {
+        "fieldName": "MovementDate",
+        "ascending": false
+      },
+      {
+        "fieldName": "M_InOut_ID",
+        "ascending": true
+      }
+    ],
+    "result": [
+      {
+        "id": "1000189",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000189",
+            "widgetType": "Integer"
+          }
+        },
+        "type": "LU",
+        "supportAttributes": false
+      }
+    ],
+    "columnsByFieldName": {
+      "FreightAmt": {
+        "fieldName": "FreightAmt",
+        "widgetType": "Amount",
+        "maxPrecision": 0
+      }
+    },
+    "firstRow": 0,
+    "pageLength": 20,
+    "queryLimit": 5000,
+    "type": "169"
+  },
+  "basicViewData2":{
+    "windowId": "540376",
+    "viewId": "540376-B6",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 61,
+    "filters": [
+      {
+        "filterId": "materialCockpitDateOnlyFilter",
+        "caption": "Datum",
+        "parameters": [
+          {
+            "parameterName": "DateGeneral",
+            "value": "2020-11-02T00:00:00.000+01:00",
+            "valueTo": null
+          }
+        ]
+      }
+    ],
+    "result": [
+      {
+        "id": "main-2020-11-02-2000751",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "main-2020-11-02-2000751",
+            "widgetType": "Integer"
+          }
+        },
+        "type": "LU",
+        "hasComments": false,
+        "supportAttributes": false,
+        "includedDocuments": [
+          {
+            "id": "attributes-2020-11-02-2000751-sonstige",
+            "fieldsByName": {
+              "ID": {
+                "field": "ID",
+                "value": "attributes-2020-11-02-2000751-sonstige",
+                "widgetType": "Integer"
+              }
+            },
+            "type": "TU",
+            "hasComments": false,
+            "supportAttributes": false
+          },
+          {
+            "id": "attributes-2020-11-02-2000751-ADR",
+            "fieldsByName": {
+              "ID": {
+                "field": "ID",
+                "value": "attributes-2020-11-02-2000751-ADR",
+                "widgetType": "Integer"
+              }
+            },
+            "type": "TU",
+            "hasComments": false,
+            "supportAttributes": false
+          }
+        ]
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "540376"
+  },
+  "modalLayout1": {
+    "type": "540189",
+    "windowId": "540189",
+    "caption": "HU Editor",
+    "description": "",
+    "emptyResultText": "There are no detail rows",
+    "emptyResultHint": "You can create them in this window.",
+    "elements": [
+      {
+        "caption": "Code",
+        "description": "",
+        "widgetType": "Text",
+        "size": "S",
+        "gridAlign": "left",
+        "viewEditorRenderMode": "never",
+        "sortable": true,
+        "fields": [
+          {
+            "field": "Value",
+            "caption": "",
+            "emptyText": "none",
+            "clearValueText": "none"
+          }
+        ]
+      }
+    ],
+    "filters": [
+      {
+        "caption": "Filter",
+        "includedFilters": [
+          {
+            "filterId": "barcode",
+            "caption": "Barcode",
+            "inlineRenderMode": "button",
+            "barcodeScannerType": "qrCode",
+            "parametersLayoutType": "singleOverlayField",
+            "parameters": [
+              {
+                "caption": "Barcode",
+                "parameterName": "Barcode",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary",
+                "barcodeScannerType": "qrCode"
+              }
+            ],
+            "debugProperties": {
+              "sortNo": 0
+            },
+            "sortNo": 0
+          }
+        ]
+      }
+    ],
+    "supportAttributes": true,
+    "supportTree": true,
+    "collapsible": false,
+    "allowedCloseActions": [
+      "DONE"
+    ],
+    "includedView": null,
+    "supportIncludedView": false,
+    "supportIncludedViewOnSelect": null,
+    "supportNewRecord": false,
+    "supportOpenRecord": true,
+    "supportGeoLocations": false
+  },
+  "basicModalData1": {
+    "windowId": "540189",
+    "viewId": "540189-B6",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 1,
+    "result": [
+      {
+        "id": "1000802",
+        "fieldsByName": {
+          "ID": {
+            "field": "ID",
+            "value": "1000802",
+            "widgetType": "Integer"
+          }
+        },
+        "type": "CU",
+        "supportAttributes": true
+      }
+    ],
+    "firstRow": 0,
+    "pageLength": 20,
+    "type": "540189"
+  },
+  "basicModalFilters1": {
+    "windowId": "540189",
+    "viewId": "540189-Y",
+    "headerProperties": {
+      "groups": []
+    },
+    "size": 0,
+    "filters": [
+      {
+        "filterId": "default",
+        "parameters": [
+          {
+            "parameterName": "Value",
+            "value": "1000",
+            "valueTo": null
+          }
+        ]
+      }
+    ],
+    "type": "540189"
+  }
+}

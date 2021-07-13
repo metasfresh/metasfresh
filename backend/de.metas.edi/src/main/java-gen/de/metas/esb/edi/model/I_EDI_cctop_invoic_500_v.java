@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_cctop_invoic_500_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_cctop_invoic_500_v 
@@ -14,17 +14,10 @@ public interface I_EDI_cctop_invoic_500_v
     /** AD_Table_ID=540463 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -37,7 +30,7 @@ public interface I_EDI_cctop_invoic_500_v
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -47,7 +40,7 @@ public interface I_EDI_cctop_invoic_500_v
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -88,8 +81,8 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -103,8 +96,8 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -116,7 +109,7 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Auftrags-Maßeinheit.
+	 * Set Ordered UOM.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -125,7 +118,7 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setEanCom_Ordered_UOM (java.lang.String EanCom_Ordered_UOM);
 
 	/**
-	 * Get Auftrags-Maßeinheit.
+	 * Get Ordered UOM.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -304,8 +297,8 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_GTIN = "GTIN";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -314,8 +307,8 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -377,8 +370,7 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_Leergut = "Leergut";
 
 	/**
-	 * Set Zeile Nr..
-	 * Einzelne Zeile in dem Dokument
+	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -387,8 +379,7 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setLine (int Line);
 
 	/**
-	 * Get Zeile Nr..
-	 * Einzelne Zeile in dem Dokument
+	 * Get SeqNo..
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -402,8 +393,7 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Zeilennetto.
-	 * Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	 * Set Line Net Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -412,8 +402,7 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setLineNetAmt (java.math.BigDecimal LineNetAmt);
 
 	/**
-	 * Get Zeilennetto.
-	 * Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	 * Get Line Net Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -450,7 +439,7 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Name Zusatz.
+	 * Set Name 2.
 	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
@@ -460,7 +449,7 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setName2 (java.lang.String Name2);
 
 	/**
-	 * Get Name Zusatz.
+	 * Get Name 2.
 	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
@@ -475,7 +464,7 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_Name2 = "Name2";
 
 	/**
-	 * Set Auftragszeile.
+	 * Set Order Line.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -484,7 +473,7 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setOrderLine (int OrderLine);
 
 	/**
-	 * Get Auftragszeile.
+	 * Get Order Line.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -521,8 +510,7 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_OrderPOReference = "OrderPOReference";
 
 	/**
-	 * Set Einzelpreis.
-	 * Effektiver Preis
+	 * Set Price Actual.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -531,8 +519,7 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setPriceActual (java.math.BigDecimal PriceActual);
 
 	/**
-	 * Get Einzelpreis.
-	 * Effektiver Preis
+	 * Get Price Actual.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -596,8 +583,8 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
-	 * Set Berechn. Menge.
-	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
+	 * Set Quantity Invoiced.
+	 * Invoiced quantity in the product's UOM.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -606,8 +593,8 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setQtyInvoiced (java.math.BigDecimal QtyInvoiced);
 
 	/**
-	 * Get Berechn. Menge.
-	 * Menge in Produkt-Maßeinheit, die bereits in Rechnung gestellt wurde.
+	 * Get Quantity Invoiced.
+	 * Invoiced quantity in the product's UOM.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -621,7 +608,7 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_QtyInvoiced = "QtyInvoiced";
 
 	/**
-	 * Set Fakturierte Menge in Auftrags-Maßeinheit.
+	 * Set Invoiced quantity in ordered UOM.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -630,7 +617,7 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setQtyInvoicedInOrderedUOM (java.math.BigDecimal QtyInvoicedInOrderedUOM);
 
 	/**
-	 * Get Fakturierte Menge in Auftrags-Maßeinheit.
+	 * Get Invoiced quantity in ordered UOM.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -763,8 +750,8 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_UPC_TU = "UPC_TU";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -778,8 +765,8 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -791,8 +778,8 @@ public interface I_EDI_cctop_invoic_500_v
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -801,8 +788,8 @@ public interface I_EDI_cctop_invoic_500_v
 	public void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

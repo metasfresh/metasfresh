@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -48,6 +49,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementLineId;
@@ -95,6 +97,21 @@ public class ESRImportDAO implements IESRImportDAO
 	public void save(@NonNull final I_ESR_ImportLine esrImportLine)
 	{
 		saveRecord(esrImportLine);
+	}
+	
+	@Override
+	public List<I_ESR_Import> getByIds(@NonNull final Set<ESRImportId> esrImportIds)
+	{
+		if (esrImportIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_ESR_Import.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_ESR_Import.COLUMNNAME_ESR_Import_ID, esrImportIds)
+				.create()
+				.list();
 	}
 
 	@Override
@@ -291,7 +308,7 @@ public class ESRImportDAO implements IESRImportDAO
 	{
 		return queryBL.createQueryBuilder(I_ESR_ImportLine.class, payment)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ESR_ImportLine.COLUMN_C_Payment_ID, payment.getC_Payment_ID())
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_Payment_ID, payment.getC_Payment_ID())
 				//
 				.andCollect(I_ESR_ImportLine.COLUMN_ESR_Import_ID)
 				.addEqualsFilter(I_ESR_Import.COLUMN_Processed, true)
@@ -335,4 +352,19 @@ public class ESRImportDAO implements IESRImportDAO
 				.firstOnly(I_ESR_ImportLine.class);
 	}
 
+	@Override
+	public ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(final Set<ESRImportId> esrImportIds)
+	{
+		final ImmutableSet<ESRImportId> notReconciledESRImportIds = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_ESR_ImportLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, esrImportIds)
+				.addEqualsFilter(I_ESR_ImportLine.COLUMNNAME_C_BankStatement_ID, null) // not reconciled
+				.create()
+				.listDistinct(I_ESR_ImportLine.COLUMNNAME_ESR_Import_ID, Integer.class)
+				.stream()
+				.map(ESRImportId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+		return notReconciledESRImportIds;
+	}
 }

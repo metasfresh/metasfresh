@@ -22,12 +22,19 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
+import de.metas.inoutcandidate.modelvalidator.C_OrderLine_ReceiptSchedule;
+import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
+import de.metas.interfaces.I_C_BPartner;
+import de.metas.process.PInstanceId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.warehouse.LocatorId;
@@ -36,17 +43,11 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.inoutcandidate.modelvalidator.C_OrderLine_ReceiptSchedule;
-import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
-import de.metas.interfaces.I_C_BPartner;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public interface IReceiptScheduleBL extends ISingletonService
 {
@@ -89,12 +90,12 @@ public interface IReceiptScheduleBL extends ISingletonService
 	/**
 	 * @return override-qty or the qty (if no override set) of the given {@code rs}.
 	 */
-	StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule rs);
+	StockQtyAndUOMQty getQtyToMove(I_M_ReceiptSchedule rs);
 
 	/**
 	 * @return M_Warehouse_Override_ID and falls back to M_Warehouse_ID if no override value is set
 	 */
-	WarehouseId getWarehouseEffectiveId(final I_M_ReceiptSchedule rs);
+	WarehouseId getWarehouseEffectiveId(I_M_ReceiptSchedule rs);
 
 	/**
 	 * @return M_Warehouse_Override and falls back to M_Warehouse if no override value is set
@@ -221,4 +222,10 @@ public interface IReceiptScheduleBL extends ISingletonService
 	 * @return true if receipt schedule is closed
 	 */
 	boolean isClosed(I_M_ReceiptSchedule receiptSchedule);
+
+	void applyReceiptScheduleChanges(ApplyReceiptScheduleChangesRequest applyReceiptScheduleChangesRequest);
+
+	void updateExportStatus(@NonNull APIExportStatus exportStatus, @NonNull PInstanceId pinstanceId);
+
+	void updateCanBeExportedFrom(@NonNull I_M_ReceiptSchedule receiptSchedule);
 }

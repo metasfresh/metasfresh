@@ -1,11 +1,6 @@
 package de.metas.procurement.base;
 
-import java.util.List;
-
-import de.metas.procurement.sync.IAgentSync;
-import de.metas.procurement.sync.protocol.SyncBPartnersRequest;
-import de.metas.procurement.sync.protocol.SyncConfirmation;
-import de.metas.procurement.sync.protocol.SyncProductsRequest;
+import de.metas.common.procurement.sync.IAgentSync;
 import de.metas.util.ISingletonService;
 
 /*
@@ -29,20 +24,10 @@ import de.metas.util.ISingletonService;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
- * Note that we don't have an implementation in metasfresh. Instead, we use the framework, to get a jax-rs client proxy which we then register in {@link de.metas.util.Services}.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
+ * The implementation of this interface just sends the respective request objects to the procurement-webui using {@link de.metas.procurement.base.rabbitmq.SenderToProcurementWeb}.
  */
 public interface IAgentSyncBL extends IAgentSync, ISingletonService
 {
-	@Override
-	void syncBPartners(final SyncBPartnersRequest request);
-
-	@Override
-	void syncProducts(final SyncProductsRequest request);
-
-	@Override
-	void confirm(List<SyncConfirmation> syncConfirmations);
 }

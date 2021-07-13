@@ -1,5 +1,47 @@
 package de.metas.material.dispo.commons.repository;
 
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.ForecastLineDimensionFactory;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
+import de.metas.document.engine.DocStatus;
+import de.metas.material.dispo.commons.DispoTestUtils;
+import de.metas.material.dispo.commons.RepositoryTestHelper;
+import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.TransactionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
+import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
+import de.metas.material.dispo.model.I_MD_Candidate;
+import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
+import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
+import de.metas.material.dispo.model.X_MD_Candidate;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ResourceId;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_ForecastLine;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
 import static de.metas.material.event.EventTestHelper.AFTER_NOW;
 import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
 import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
@@ -15,42 +57,7 @@ import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import de.metas.document.engine.DocStatus;
-import de.metas.material.dispo.commons.DispoTestUtils;
-import de.metas.material.dispo.commons.RepositoryTestHelper;
-import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
-import de.metas.material.dispo.commons.candidate.CandidateType;
-import de.metas.material.dispo.commons.candidate.TransactionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
-import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
-import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
-import de.metas.material.dispo.model.I_MD_Candidate;
-import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Prod_Detail;
-import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
-import de.metas.material.dispo.model.X_MD_Candidate;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.organization.ClientAndOrgId;
-import de.metas.product.ResourceId;
-import de.metas.util.Services;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -81,14 +88,39 @@ public class CandidateRepositoryWriteServiceTests
 
 	private RepositoryTestHelper repositoryTestHelper;
 
+	private I_M_ForecastLine forecastLine;
+
+	private DimensionService dimensionService;
+	private StockChangeDetailRepo stockChangeDetailRepo;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryWriteService = new CandidateRepositoryWriteService();
 
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionFactories.add(new ForecastLineDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		stockChangeDetailRepo = new StockChangeDetailRepo();
+
+		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
+		forecastLine = createForecastLine(61);
+	}
+
+	private I_M_ForecastLine createForecastLine(final int forecastLineId)
+	{
+		final I_M_ForecastLine forecastLine = newInstance(I_M_ForecastLine.class);
+		forecastLine.setM_ForecastLine_ID(61);
+		save(forecastLine);
+
+		return forecastLine;
+
 	}
 
 	@Test
@@ -191,7 +223,7 @@ public class CandidateRepositoryWriteServiceTests
 	@Test
 	public void addOrReplace_update()
 	{
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
 		// guard
 		final CandidatesQuery queryForStockUntilDate = repositoryTestHelper.mkQueryForStockUntilDate(NOW);
@@ -226,17 +258,17 @@ public class CandidateRepositoryWriteServiceTests
 				.materialDescriptor(createMaterialDescriptor())
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.businessCaseDetail(ProductionDetail.builder()
-						.description("description")
-						.plantId(ResourceId.ofRepoId(60))
-						.productBomLineId(70)
-						.productPlanningId(80)
-						.ppOrderId(100)
-						.ppOrderLineId(110)
-						.ppOrderDocStatus(DocStatus.Completed)
-						.advised(Flag.TRUE)
-						.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
-						.qty(TEN)
-						.build())
+											.description("description")
+											.plantId(ResourceId.ofRepoId(60))
+											.productBomLineId(70)
+											.productPlanningId(80)
+											.ppOrderId(100)
+											.ppOrderLineId(110)
+											.ppOrderDocStatus(DocStatus.Completed)
+											.advised(Flag.TRUE)
+											.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE)
+											.qty(TEN)
+											.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(productionCandidate)
@@ -335,15 +367,15 @@ public class CandidateRepositoryWriteServiceTests
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor())
 				.businessCaseDetail(DistributionDetail.builder()
-						.productPlanningId(80)
-						.plantId(85)
-						.networkDistributionLineId(90)
-						.ddOrderId(100)
-						.ddOrderLineId(110)
-						.shipperId(120)
-						.ddOrderDocStatus("ddOrderDocStatus")
-						.qty(TEN)
-						.build())
+											.productPlanningId(80)
+											.plantId(85)
+											.networkDistributionLineId(90)
+											.ddOrderId(100)
+											.ddOrderLineId(110)
+											.shipperId(120)
+											.ddOrderDocStatus("ddOrderDocStatus")
+											.qty(TEN)
+											.build())
 				.build();
 		final Candidate addOrReplaceResult = candidateRepositoryWriteService
 				.addOrUpdateOverwriteStoredSeqNo(distributionCandidate)
@@ -405,7 +437,7 @@ public class CandidateRepositoryWriteServiceTests
 				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.materialDescriptor(createMaterialDescriptor()
-						.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
+											.withProductDescriptor(createProductDescriptorWithOffSet(productIdOffSet)))
 				.businessCaseDetail(DemandDetail.forForecastLineId(61, 62, TEN))
 				.transactionDetail(TransactionDetail.builder().quantity(ONE).storageAttributesKey(AttributesKey.ALL).transactionId(33).transactionDate(NOW).complete(true).build())
 				.build();

@@ -1,0 +1,238 @@
+[
+  {
+    "filterId": "default-date",
+    "caption": "Date",
+    "inlineRenderMode": "button",
+    "parametersLayoutType": "panel",
+    "parameters": [
+      {
+        "caption": "Date",
+        "parameterName": "DateOrdered",
+        "widgetType": "Date",
+        "range": true,
+        "defaultValue": null,
+        "defaultValueTo": null,
+        "mandatory": false,
+        "displayed": true,
+        "readonly": false,
+        "type": "primary"
+      }
+    ],
+    "debugProperties": {
+      "sortNo": -2147483648
+    },
+    "sortNo": -2147483648
+  },
+  {
+    "caption": "Filter",
+    "includedFilters": [
+      {
+        "filterId": "default",
+        "caption": "Default",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Date Promised",
+            "parameterName": "DatePromised",
+            "widgetType": "Date",
+            "range": true,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Business Partner ",
+            "parameterName": "C_BPartner_ID",
+            "widgetType": "Lookup",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "No.",
+            "parameterName": "DocumentNo",
+            "widgetType": "Text",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Order Reference",
+            "parameterName": "POReference",
+            "widgetType": "Text",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Document Type",
+            "parameterName": "C_DocType_ID",
+            "widgetType": "List",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Document Status",
+            "parameterName": "DocStatus",
+            "widgetType": "List",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Created By",
+            "parameterName": "CreatedBy",
+            "widgetType": "List",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Organisation",
+            "parameterName": "AD_Org_ID",
+            "widgetType": "Lookup",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Tour",
+            "parameterName": "M_Tour_ID",
+            "widgetType": "Lookup",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": 10000
+        },
+        "sortNo": 10000
+      },
+      {
+        "filterId": "location-area-search",
+        "caption": "Area Search",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Street & House No.",
+            "parameterName": "Address1",
+            "widgetType": "Text",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "ZIP",
+            "parameterName": "Postal",
+            "widgetType": "Text",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "City",
+            "parameterName": "City",
+            "widgetType": "Text",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Country",
+            "parameterName": "C_Country_ID",
+            "widgetType": "Lookup",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Distance",
+            "parameterName": "Distance",
+            "widgetType": "Integer",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          },
+          {
+            "caption": "Visitors Address",
+            "parameterName": "VisitorsAddress",
+            "widgetType": "YesNo",
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primaryLongLabels"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": 40000
+        },
+        "sortNo": 40000
+      }
+    ],
+    "debugProperties": {
+      
+    }
+  }
+]

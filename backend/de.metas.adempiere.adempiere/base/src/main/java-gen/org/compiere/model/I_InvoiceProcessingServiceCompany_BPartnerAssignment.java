@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for InvoiceProcessingServiceCompany_BPartnerAssignment
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment 
@@ -14,17 +14,10 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
     /** AD_Table_ID=541494 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 2 - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(2);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -37,7 +30,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -47,7 +40,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,8 +52,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -69,8 +61,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -82,8 +73,8 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -97,8 +88,8 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -110,7 +101,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -119,7 +110,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	public void setDescription (java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -133,7 +124,30 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
     public static final String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Invoice Processing Service Company BPartner Assignment.
+	 * Set Fee Percentage of Invoice Grand Total.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setFeePercentageOfGrandTotal (java.math.BigDecimal FeePercentageOfGrandTotal);
+
+	/**
+	 * Get Fee Percentage of Invoice Grand Total.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.math.BigDecimal getFeePercentageOfGrandTotal();
+
+    /** Column definition for FeePercentageOfGrandTotal */
+    public static final org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object> COLUMN_FeePercentageOfGrandTotal = new org.adempiere.model.ModelColumn<I_InvoiceProcessingServiceCompany_BPartnerAssignment, Object>(I_InvoiceProcessingServiceCompany_BPartnerAssignment.class, "FeePercentageOfGrandTotal", null);
+    /** Column name FeePercentageOfGrandTotal */
+    public static final String COLUMNNAME_FeePercentageOfGrandTotal = "FeePercentageOfGrandTotal";
+
+	/**
+	 * Set Assigned Customers.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -142,7 +156,7 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	public void setInvoiceProcessingServiceCompany_BPartnerAssignment_ID (int InvoiceProcessingServiceCompany_BPartnerAssignment_ID);
 
 	/**
-	 * Get Invoice Processing Service Company BPartner Assignment.
+	 * Get Assigned Customers.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -183,8 +197,8 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
     public static final String COLUMNNAME_InvoiceProcessingServiceCompany_ID = "InvoiceProcessingServiceCompany_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -193,8 +207,8 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -208,8 +222,8 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -223,8 +237,8 @@ public interface I_InvoiceProcessingServiceCompany_BPartnerAssignment
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

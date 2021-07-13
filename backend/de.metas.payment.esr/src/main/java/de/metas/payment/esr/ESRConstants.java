@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Env;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.organization.OrgId;
 import de.metas.payment.esr.actionhandler.impl.WithNextInvoiceESRActionHandler;
 import de.metas.util.Services;
@@ -100,7 +101,7 @@ public final class ESRConstants
 
 	public static final String ESR_DIFF_PAYMENT_PARTNER = "ESR_Diff_Payment_partner";
 
-	public static final String ESR_Reverse_Booking = "ESR_Reverse_Booking";
+	public static final  AdMessageKey ESR_Reverse_Booking =  AdMessageKey.of("ESR_Reverse_Booking");
 
 	public static final String ESR_ASYNC_BATCH_NAME = "ESR Import";
 

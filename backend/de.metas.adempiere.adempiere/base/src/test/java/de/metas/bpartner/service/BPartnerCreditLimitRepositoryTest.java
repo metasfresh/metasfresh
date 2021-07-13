@@ -3,13 +3,9 @@
  */
 package de.metas.bpartner.service;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
+import de.metas.common.util.time.SystemTime;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
@@ -18,10 +14,12 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.util.time.FixedTimeSource;
-import de.metas.util.time.SystemTime;
-import lombok.Builder;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -71,7 +69,7 @@ public class BPartnerCreditLimitRepositoryTest
 				.seqNo(2)
 				.build();
 
-		SystemTime.setTimeSource(new FixedTimeSource(2018, 02, 28, 13, 13, 13));
+		SystemTime.setFixedTimeSource("2018-02-28T13:13:13+01:00[Europe/Berlin]");
 	}
 
 	@Test

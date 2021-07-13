@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
+import de.metas.order.compensationGroup.FlatrateConditionsExcludedProductsRepository;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -211,7 +212,8 @@ public class FlatrateTermTestHelper
 						new GroupCompensationLineCreateRequestFactory(),
 						Optional.empty() // advisors
 				),
-				new GroupTemplateRepository(Optional.empty()));
+				new GroupTemplateRepository(Optional.empty()),
+				new FlatrateConditionsExcludedProductsRepository());
 
 		final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo = new InOutLinesWithMissingInvoiceCandidate();
 

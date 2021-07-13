@@ -52,7 +52,7 @@ public class CommissionAlgorithmInvoker
 			final ImmutableList.Builder<SalesCommissionShare> result = ImmutableList.builder();
 			for (final CommissionType commissionType : commissionTypes)
 			{
-				try (final MDCCloseable commissionTypeMDC = MDC.putCloseable("commissionType", commissionType.name()))
+				try (final MDCCloseable ignore = MDC.putCloseable("commissionType", commissionType.name()))
 				{
 					final CommissionAlgorithm algorithm;
 					algorithm = createAlgorithmInstance(commissionType);
@@ -80,7 +80,7 @@ public class CommissionAlgorithmInvoker
 
 			for (final CommissionType commissionType : commissionTypes)
 			{
-				try (final MDCCloseable commissionTypeMDC = MDC.putCloseable("commissionType", commissionType.name()))
+				try (final MDCCloseable ignore = MDC.putCloseable("commissionType", commissionType.name()))
 				{
 					final CommissionAlgorithm algorithm = createAlgorithmInstance(commissionType);
 

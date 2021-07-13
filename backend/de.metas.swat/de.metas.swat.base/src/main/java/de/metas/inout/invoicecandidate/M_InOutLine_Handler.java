@@ -10,6 +10,8 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
@@ -26,6 +28,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderLineBL;
 import de.metas.organization.OrgId;
@@ -38,12 +41,13 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -105,6 +109,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 	// Services
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -231,8 +236,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final boolean qtyLeftWasAllocated = qtyLeftToAllocate.abs().compareTo(allocatedQty.abs()) == 0;
 
 			Check.errorIf(qtyLeftShouldHaveBeenAllocated && !qtyLeftWasAllocated,
-					"We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}; inOut={}",
-					qtyLeftToAllocate, allocatedQty, inOutLine, inOutLine.getM_InOut());
+						  "We invoked createInvoiceCandidateForInOutLineOrNull with forcedQtyOrdered={}, but allocatedQty={}; inOutLine={}; inOut={}",
+						  qtyLeftToAllocate, allocatedQty, inOutLine, inOutLine.getM_InOut());
 		}
 
 		return createdInvoiceCandidates.build();
@@ -358,10 +363,17 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			}
 		}
 
-		//
-		// Set C_Activity from Product (07442)
-		final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
-		icRecord.setC_Activity_ID(ActivityId.toRepoId(activityId));
+		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);
+
+		if (inOutLineDimension.getActivityId() == null)
+		{
+			//
+			// Set C_Activity from Product (07442)
+			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(clientId, orgId, productId);
+			inOutLineDimension = inOutLineDimension.withActivityId(activityId);
+		}
+
+		dimensionService.updateRecord(icRecord, inOutLineDimension);
 
 		//
 		// Set C_Tax from Product (07442)
@@ -370,7 +382,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final Timestamp shipDate = inOut.getMovementDate();
 		final int locationId = inOut.getC_BPartner_Location_ID();
 
-		final int taxId = Services.get(ITaxBL.class).getTax(
+		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ctx,
 				icRecord,
 				taxCategoryId,
@@ -379,8 +391,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				locationId, // shipC_BPartner_Location_ID
-				isSOTrx);
-		icRecord.setC_Tax_ID(taxId);
+				SOTrx.ofBoolean(isSOTrx));
+		icRecord.setC_Tax_ID(taxId.getRepoId());
 
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
@@ -770,9 +782,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final User billBPContact = bPartnerBL
 					.retrieveContactOrNull(RetrieveContactRequest.builder()
-							.bpartnerId(billBPLocationId.getBpartnerId())
-							.bPartnerLocationId(billBPLocationId)
-							.build());
+												   .bpartnerId(billBPLocationId.getBpartnerId())
+												   .bPartnerLocationId(billBPLocationId)
+												   .build());
 			billBPContactId = billBPContact != null
 					? BPartnerContactId.of(billBPLocationId.getBpartnerId(), billBPContact.getId())
 					: null;

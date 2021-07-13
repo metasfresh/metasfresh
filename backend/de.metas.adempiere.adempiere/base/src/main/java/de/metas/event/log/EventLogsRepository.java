@@ -3,6 +3,7 @@ package de.metas.event.log;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
+import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
@@ -11,7 +12,6 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -27,12 +27,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L

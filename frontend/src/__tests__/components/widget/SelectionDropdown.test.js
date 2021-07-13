@@ -21,7 +21,7 @@ describe('SelectionDropdown component', () => {
       {
         ...fixtures.widgetData1,
       },
-      fixtures.data1.options,
+      fixtures.data1.options
     );
 
     const wrapper = shallow(<SelectionDropdown {...props} />);
@@ -39,7 +39,7 @@ describe('SelectionDropdown component', () => {
         ...fixtures.widgetData1,
         loading: true,
       },
-      [],
+      []
     );
 
     const wrapper = shallow(<SelectionDropdown {...props} />);
@@ -59,7 +59,7 @@ describe('SelectionDropdown component', () => {
         selected: fixtures.data1.options[0],
         onChange: onChangeSpy,
       },
-      fixtures.data1.options,
+      fixtures.data1.options
     );
     const options = List(fixtures.data1.options);
     const map = {};
@@ -92,7 +92,7 @@ describe('SelectionDropdown component', () => {
         selected: fixtures.data1.options[0],
         onCancel: onCancelSpy,
       },
-      fixtures.data1.options,
+      fixtures.data1.options
     );
     const options = List(fixtures.data1.options);
     const map = {};
@@ -113,9 +113,11 @@ describe('SelectionDropdown component', () => {
     wrapper.instance().forceUpdate();
     wrapper.update();
 
-    expect(spyDown).toHaveBeenCalledWith(
-      { ...eventProps, keyCode: 110, key: 'n' }
-    );
+    expect(spyDown).toHaveBeenCalledWith({
+      ...eventProps,
+      keyCode: 110,
+      key: 'n',
+    });
 
     const ref = wrapper.instance().optionToRef.get(options.get(2));
     expect(spyScroll).toHaveBeenCalledWith(ref, false);
@@ -138,7 +140,7 @@ describe('SelectionDropdown component', () => {
         onSelect: onSelectSpy,
         onChange: onChangeSpy,
       },
-      fixtures.data1.options,
+      fixtures.data1.options
     );
     const options = List(fixtures.data1.options);
     const newOption = options.get(1);
@@ -147,7 +149,9 @@ describe('SelectionDropdown component', () => {
     const spyEnter = jest.spyOn(wrapper.instance(), 'handleMouseEnter');
     const spyDown = jest.spyOn(wrapper.instance(), 'handleMouseDown');
 
-    const optionEl = wrapper.find(`[data-test-id="${newOption.key}${newOption.caption}"]`)
+    const optionEl = wrapper.find(
+      `[data-test-id="${newOption.key}${newOption.caption}"]`
+    );
     optionEl.prop('onMouseEnter')();
 
     expect(spyEnter).toHaveBeenCalled();

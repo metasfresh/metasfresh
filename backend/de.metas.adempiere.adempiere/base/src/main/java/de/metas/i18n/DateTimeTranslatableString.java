@@ -7,12 +7,12 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 
 import com.google.common.collect.ImmutableSet;
 
-import de.metas.util.time.SystemTime;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
@@ -48,7 +48,7 @@ final class DateTimeTranslatableString implements ITranslatableString
 
 	static DateTimeTranslatableString ofDate(@NonNull final LocalDate date)
 	{
-		final Instant instant = date.atStartOfDay(SystemTime.zoneId()).toInstant();
+		final Instant instant = date.atStartOfDay(de.metas.common.util.time.SystemTime.zoneId()).toInstant();
 		final boolean dateTime = false;
 		return new DateTimeTranslatableString(instant, dateTime);
 	}

@@ -28,6 +28,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -51,7 +52,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class ContractsDAO implements IContractsDAO
@@ -193,6 +193,22 @@ public class ContractsDAO implements IContractsDAO
 				.orderBy()
 					.addColumn(I_C_Flatrate_Term.COLUMNNAME_MasterEndDate, Direction.Descending, Nulls.Last)
 					.addColumn(I_C_Flatrate_Term.COLUMNNAME_EndDate, Direction.Descending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.first();
+	}
+
+	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#BPartnerId")
+	@Override
+	public I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(@NonNull final BPartnerId bpartnerId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bpartnerId)
+				.orderBy()
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_MasterStartDate, Direction.Ascending, Nulls.Last)
+				.addColumn(I_C_Flatrate_Term.COLUMNNAME_StartDate, Direction.Ascending, Nulls.Last)
 				.endOrderBy()
 				.create()
 				.first();

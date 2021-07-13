@@ -63,6 +63,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 public abstract class AbstractAttributeStorage implements IAttributeStorage
 {
 	// Services
@@ -202,7 +204,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		listeners.removeAttributeStorageListener(listener);
 	}
 
-	private final void onAttributeValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeValue attributeValue, final Object valueOld, final Object valueNew)
+	private void onAttributeValueChanged(final IAttributeValueContext attributeValueContext, final IAttributeValue attributeValue, final Object valueOld, final Object valueNew)
 	{
 		assertNotDisposed();
 
@@ -219,10 +221,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 
 	/**
 	 * Set the inner {@link #attributeValuesRO}, build up the indexing maps and add {@link #attributeValueListener}.
-	 *
-	 * @param attributeValues
 	 */
-	private final void setInnerAttributeValues(final List<IAttributeValue> attributeValues)
+	private void setInnerAttributeValues(final List<IAttributeValue> attributeValues)
 	{
 		_indexedAttributeValuesLock.lock();
 		try
@@ -277,7 +277,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 	}
 
-	private final IndexedAttributeValues getIndexedAttributeValuesNoLoad()
+	private IndexedAttributeValues getIndexedAttributeValuesNoLoad()
 	{
 		// NOTE: even though we are not loading them, at least we want to make sure there is no loading in progress,
 		// because that would produce unpredictable results
@@ -388,7 +388,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final void generateInitialAttributes(final Map<AttributeId, Object> defaultAttributesValue)
+	public final void generateInitialAttributes(@Nullable final Map<AttributeId, Object> defaultAttributesValue)
 	{
 		assertNotDisposed();
 
@@ -458,7 +458,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public BigDecimal getValueAsBigDecimal(final AttributeCode attributeCode)
+	public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 	{
 		// assertNotDisposed(); // checked in next called method
 
@@ -701,7 +701,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	 *
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
-	private final void setValue(final IHUAttributePropagationContext propagationContext, final Object value)
+	private void setValue(final IHUAttributePropagationContext propagationContext, final Object value)
 	{
 		Check.assumeNotNull(propagationContext, "propagationContext not null for {}", this);
 
@@ -1144,7 +1144,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		return callout.isDisplayedUI(this, attribute);
 	}
 
-	protected final Object getDefaultAttributeValue(final Map<AttributeId, Object> defaultAttributesValue, final AttributeId attributeId)
+	protected final Object getDefaultAttributeValue(@Nullable final Map<AttributeId, Object> defaultAttributesValue, final AttributeId attributeId)
 	{
 		if (defaultAttributesValue == null || defaultAttributesValue.isEmpty())
 		{

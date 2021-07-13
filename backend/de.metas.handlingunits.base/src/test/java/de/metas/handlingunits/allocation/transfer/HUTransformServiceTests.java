@@ -110,7 +110,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
+	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, Quantity)} 
 	 * and verifies that the method does nothing if the given CU has no parent and if the given qty is equal or greater than the CU's full quantity.
 	 */
 	@Test
@@ -121,7 +121,7 @@ public class HUTransformServiceTests
 
 
 	/**
-	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
+	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, Quantity)} 
 	 * and verifies that the method does nothing if the given CU has no parent and if the given qty is equal or greater than the CU's full quantity.
 	 */
 	@Test
@@ -131,7 +131,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)}
+	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, Quantity)} 
 	 * and verifies that the method removes the given CU from its parent, if it has a parent and if the given qty is equal or greater than the CU's full quantity.
 	 */
 	@Test
@@ -141,7 +141,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal)} by splitting one tomato onto a new CU.
+	 * Tests {@link HUTransformService#cuToNewCU(I_M_HU, Quantity)}  by splitting one tomato onto a new CU.
 	 * Also verifies that the new CU has the same C_BPartner, M_Locator etc as the old CU.
 	 */
 	@Test
@@ -182,10 +182,8 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Tests {@link HUTransformService#cuToNewTUs(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal, I_M_HU_PI_Item_Product, boolean)}
+	 * Tests {@link HUTransformService#cuToNewTUs(I_M_HU, Quantity, I_M_HU_PI_Item_Product, boolean)}
 	 * by creating an <b>aggregate</b> HU with a qty of 80 (representing two IFCOs) and then splitting one kg.
-	 *
-	 * @param isOwnPackingMaterials
 	 */
 	@Theory
 	public void testAggregateCU_To_NewTUs_1Tomato(
@@ -228,7 +226,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Run {@link HUTransformService#cuToNewTUs(I_M_HU, org.compiere.model.I_M_Product, org.compiere.model.I_C_UOM, BigDecimal, I_M_HU_PI_Item_Product, boolean)}
+	 * Run {@link HUTransformService#cuToNewTUs(I_M_HU, Quantity, I_M_HU_PI_Item_Product, boolean)} 
 	 * by splitting a CU-quantity of 40 onto new TUs with a CU-capacity of 8 each.
 	 *
 	 * @param isOwnPackingMaterials
@@ -312,7 +310,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Like {@link #testSplitRealCU_To_ExistingRealTU()}, but the existing TU already contains 30kg (with a capacity of 40kg). Then add another 20kg. shall work.
+	 * Like {@link #testRealCU_To_ExistingRealTU()} , but the existing TU already contains 30kg (with a capacity of 40kg). Then add another 20kg. shall work.
 	 */
 	@Test
 	public void testRealCU_To_ExistingRealTU_overfill()
@@ -402,9 +400,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Verifies that if {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal, boolean)} is run with the source TU's full qty or more and since .
-	 *
-	 * @param isOwnPackingMaterials
+	 * Verifies that if {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal)}  is run with the source TU's full qty or more and since .
 	 */
 	@Test
 	public void testAggregateTU_To_NewTUs_MaxValueParent()
@@ -471,9 +467,7 @@ public class HUTransformServiceTests
 	}
 
 	/**
-	 * Verifies the nothing is changed if {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal, boolean)} is run with the source TU's full qty or more.
-	 *
-	 * @param isOwnPackingMaterials
+	 * Verifies the nothing is changed if {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal)}  is run with the source TU's full qty or more.
 	 */
 	@Test
 	public void testRealTU_To_NewTUs_MaxValue()
@@ -506,8 +500,6 @@ public class HUTransformServiceTests
 	/**
 	 * Similar to {@link #testSplitAggregateTU_To_NewTUs_MaxValue()}, but here the source TU is on a pallet.<br>
 	 * So this time, it shall be taken off the pallet.
-	 *
-	 * @param isOwnPackingMaterials
 	 */
 	@Theory
 	public void testRealTU_To_NewTUs(@FromDataPoints("isOwnPackingMaterials") final boolean isOwnPackingMaterials)
@@ -1114,9 +1106,9 @@ public class HUTransformServiceTests
 		final LUTUProducerDestinationTestSupport data = testsBase.getData();
 
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-		final I_M_HU realTu1 = handlingUnitsDAO.retrieveParent(testsBase.getData().mkRealCUWithTUandQtyCU("8"));
-		final I_M_HU realTu2 = handlingUnitsDAO.retrieveParent(testsBase.getData().mkRealCUWithTUandQtyCU("8"));
-		final I_M_HU realTu3 = handlingUnitsDAO.retrieveParent(testsBase.getData().mkRealCUWithTUandQtyCU("8"));
+		final I_M_HU realTu1 = handlingUnitsDAO.retrieveParent(data.mkRealCUWithTUandQtyCU("8"));
+		final I_M_HU realTu2 = handlingUnitsDAO.retrieveParent(data.mkRealCUWithTUandQtyCU("8"));
+		final I_M_HU realTu3 = handlingUnitsDAO.retrieveParent(data.mkRealCUWithTUandQtyCU("8"));
 
 		assertThat(ImmutableList.of(realTu1, realTu2, realTu3))
 				.allSatisfy(tu -> assertThat(tu.isHUPlanningReceiptOwnerPM()).isFalse());

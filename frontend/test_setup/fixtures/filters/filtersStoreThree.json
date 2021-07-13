@@ -1,0 +1,64 @@
+{
+  "143_143-O": {
+    "widgetShown": false,
+    "filtersCaptions": {
+      
+    },
+    "notValidFields": null,
+    "filterData": [
+      {
+        "filterId": "default-date",
+        "caption": "Date",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Date",
+            "parameterName": "DateOrdered",
+            "widgetType": "Date",
+            "range": true,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {
+          "sortNo": -2147483648
+        },
+        "sortNo": -2147483648
+      },
+      {
+        "caption": "Filters",
+        "includedFilters": [
+          {
+            "filterId": "userquery-540024",
+            "caption": "Abrechnung_offen_normal",
+            "frequent": false,
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "debugProperties": {}
+          }
+        ]
+      }
+    ],
+    "filtersActive": [
+      {
+        "filterId": "default",
+        "parameters": [
+          {
+            "parameterName": "C_BPartner_ID",
+            "value": {
+              "key": "2156429",
+              "caption": "1000003_TestVendor",
+              "description": "1000003_TestVendor"
+            },
+            "valueTo": null
+          }
+        ]
+      }
+    ]
+  }
+}

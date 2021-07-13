@@ -56,6 +56,13 @@ public class PlainPaymentDAO extends AbstractPaymentDAO
 	}
 
 	@Override
+	public BigDecimal getAllocatedAmt(final PaymentId paymentId)
+	{
+		final I_C_Payment payment = getById(paymentId);
+		return getAllocatedAmt(payment);
+	}
+
+	@Override
 	public BigDecimal getAllocatedAmt(final I_C_Payment payment)
 	{
 		Adempiere.assertUnitTestMode();

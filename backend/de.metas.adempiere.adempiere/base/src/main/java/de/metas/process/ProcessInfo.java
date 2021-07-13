@@ -1,19 +1,32 @@
 package de.metas.process;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.ILanguageBL;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.report.server.OutputType;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.RoleId;
+import de.metas.security.permissions.Access;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.workflow.WorkflowId;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -43,35 +56,22 @@ import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.ILanguageBL;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.organization.OrgInfo;
-import de.metas.report.server.OutputType;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.IUserRolePermissionsDAO;
-import de.metas.security.RoleId;
-import de.metas.security.permissions.Access;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.time.SystemTime;
-import lombok.Getter;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Process Instance informations.
- *
+ * <p>
  * NOTE to developers: when changing this class, please keep in mind that it always shall be fully restorable from AD_PInstance_ID.
  *
  * @author authors of earlier versions of this class are: Jorg Janke, victor.perez@e-evolution.com
@@ -110,9 +110,8 @@ public final class ProcessInfo implements Serializable
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
 		sqlStatement = builder.getSQLStatement();
-		translateExcelHeaders = builder.isTranslateExcelHeaders();
-		adWorkflowId = builder.getAD_Workflow_ID();
-		serverProcess = builder.isServerProcess();
+		excelExportOptions = builder.getExcelExportOptions();
+		adWorkflowId = builder.getWorkflowId();
 		invokedByScheduler = builder.isInvokedByScheduler();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
 
@@ -157,15 +156,21 @@ public final class ProcessInfo implements Serializable
 
 	private final Properties ctx;
 
-	/** Title of the Process/Report */
+	/**
+	 * Title of the Process/Report
+	 */
 	@Getter
 	private final String title;
 	@Getter
 	private final AdProcessId adProcessId;
 
-	/** Table ID if the Process */
+	/**
+	 * Table ID if the Process
+	 */
 	private final int adTableId;
-	/** Record ID if the Process */
+	/**
+	 * Record ID if the Process
+	 */
 	private final int recordId;
 	private final Set<TableRecordReference> selectedIncludedRecords;
 
@@ -180,41 +185,51 @@ public final class ProcessInfo implements Serializable
 	private final int windowNo;
 	private final int tabNo;
 
-	/** Class Name */
+	/**
+	 * Class Name
+	 */
 	private final Optional<String> className;
 	private transient ProcessClassInfo _processClassInfo = null; // lazy
 
 	private final Optional<String> dbProcedureName;
 	private final Optional<String> sqlStatement;
 
+	@NonNull
 	@Getter
-	private final boolean translateExcelHeaders;
-	private final int adWorkflowId;
+	private final ExcelExportOptions excelExportOptions;
 
-	@Getter
-	private final boolean serverProcess;
+	private final WorkflowId adWorkflowId;
 
 	@Getter
 	private final boolean invokedByScheduler;
 
-	/** IF true, then expect the user to be notified, with a link to the AD_Pssntance_ID */
+	/**
+	 * IF true, then expect the user to be notified, with a link to the AD_Pssntance_ID
+	 */
 	@Getter
 	private final boolean notifyUserAfterExecution;
 
-	/** Process Instance ID */
+	/**
+	 * Process Instance ID
+	 */
 	@Getter
 	private PInstanceId pinstanceId;
 
 	private Boolean async = null;
 
-	/** Parameters */
-	private ImmutableList<ProcessInfoParameter> parameters = null; // lazy loaded
+	/**
+	 * Parameters
+	 */
+	@Nullable
+	private ImmutableList<ProcessInfoParameter> parameters; // lazy loaded
 	private final ImmutableList<ProcessInfoParameter> parametersOverride;
 
 	//
 	// Reporting related
 
-	/** Is print preview instead of direct print ? Only relevant if this is a reporting process */
+	/**
+	 * Is print preview instead of direct print ? Only relevant if this is a reporting process
+	 */
 	@Getter
 	private final boolean printPreview;
 	@Getter
@@ -233,7 +248,9 @@ public final class ProcessInfo implements Serializable
 	@Getter
 	private final Optional<String> jsonPath;
 
-	/** Process result */
+	/**
+	 * Process result
+	 */
 	@Getter
 	private final ProcessExecutionResult result;
 
@@ -269,7 +286,7 @@ public final class ProcessInfo implements Serializable
 	public boolean isAsync()
 	{
 		return async;
-	}	// isBatch
+	}    // isBatch
 
 	/**
 	 * Shall only be called once. Intended to be called by {@link ProcessExecutor} only.
@@ -291,18 +308,14 @@ public final class ProcessInfo implements Serializable
 		return className.orElse(null);
 	}
 
-	/**
-	 * Creates a new instance of {@link #getClassName()}.
-	 * If the classname is empty, null will be returned.
-	 *
-	 * @return new instance or null
-	 */
-	public JavaProcess newProcessClassInstanceOrNull()
+	@NonNull
+	@Nullable
+	public JavaProcess newProcessClassInstance()
 	{
 		final String classname = getClassName();
 		if (Check.isEmpty(classname, true))
 		{
-			return null;
+			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -315,24 +328,32 @@ public final class ProcessInfo implements Serializable
 		{
 			final Class<?> processClass = classLoader.loadClass(classname);
 			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
-			if (processClassInstance instanceof JavaProcess)
-			{
-				processClassInstance.init(this);
-			}
+			processClassInstance.init(this);
 
 			return processClassInstance;
 		}
-		catch (final Throwable e)
+		catch (final Exception e)
 		{
-			if (isServerProcess() && Ini.isSwingClient())
-			{
-				// NOTE: in case of server process, it might be that the class is not present, which could be fine
-				logger.debug("Failed instantiating class '{}'. Skipped.", classname, e);
-			}
-			else
-			{
-				logger.warn("Failed instantiating class '{}'. Skipped.", classname, e);
-			}
+			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo", this);
+		}
+	}
+
+	/**
+	 * Creates a new instance of {@link #getClassName()}.
+	 * If the classname is empty, null will be returned.
+	 *
+	 * @return new instance or null
+	 */
+	@Nullable
+	public JavaProcess newProcessClassInstanceOrNull()
+	{
+		try
+		{
+			return newProcessClassInstance();
+		}
+		catch (final AdempiereException e)
+		{
+			logger.warn("Failed instantiating class '{}'. Skipped.", this.getClassName(), e);
 			return null;
 		}
 	}
@@ -347,11 +368,12 @@ public final class ProcessInfo implements Serializable
 		return sqlStatement;
 	}
 
-	public int getAD_Workflow_ID()
+	public WorkflowId getWorkflowId()
 	{
 		return adWorkflowId;
 	}
 
+	@Nullable
 	public String getTableNameOrNull()
 	{
 		if (adTableId <= 0)
@@ -376,6 +398,7 @@ public final class ProcessInfo implements Serializable
 		return recordId;
 	}
 
+	@Nullable
 	public TableRecordReference getRecordRefOrNull()
 	{
 		if (adTableId <= 0 || recordId < 0)
@@ -393,10 +416,10 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID using ITrx#TRXNAME_ThreadInherited.
 	 *
-	 * @param modelClass
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
 	 */
+	@NonNull
 	public <ModelType> ModelType getRecord(final Class<ModelType> modelClass)
 	{
 		return getRecord(modelClass, ITrx.TRXNAME_ThreadInherited);
@@ -405,12 +428,12 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
-	 * @param modelClass
 	 * @param trxName transaction to be used when loading the record
 	 * @return record; never returns null
 	 * @throws AdempiereException if no model found
 	 */
-	public <ModelType> ModelType getRecord(final Class<ModelType> modelClass, final String trxName)
+	@NonNull
+	public <ModelType> ModelType getRecord(@NonNull final Class<ModelType> modelClass, final String trxName)
 	{
 		Check.assumeNotNull(modelClass, "modelClass not null");
 
@@ -441,9 +464,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * Retrieve underlying model for AD_Table_ID/Record_ID.
 	 *
-	 * @param modelClass
-	 * @param trxName
-	 * @return record or {@link Optional#absent()} if record does not exist or it does not match given <code>modelClass</code>
+	 * @return record or {@link Optional#empty()} if record does not exist or it does not match given <code>modelClass</code>
 	 */
 	public <ModelType> Optional<ModelType> getRecordIfApplies(final Class<ModelType> modelClass, final String trxName)
 	{
@@ -525,7 +546,7 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * Get Process Parameters.
-	 *
+	 * <p>
 	 * If they were not already set, they will be loaded from database.
 	 *
 	 * @return parameters; never returns null
@@ -538,7 +559,7 @@ public final class ProcessInfo implements Serializable
 			parameters = mergeParameters(parametersFromDB, parametersOverride);
 		}
 		return parameters;
-	}	// getParameter
+	}    // getParameter
 
 	public List<ProcessInfoParameter> getParametersNoLoad()
 	{
@@ -585,7 +606,7 @@ public final class ProcessInfo implements Serializable
 
 	/**
 	 * @return the whereClause <b>but without org restrictions</b>
-	 * @deprecated please use {@link #getQueryFilter()} instead
+	 * @deprecated please use one of getQueryFilter methods instead
 	 */
 	@Deprecated
 	public String getWhereClause()
@@ -597,11 +618,12 @@ public final class ProcessInfo implements Serializable
 	 * IMPORTANT: in most cases, {@link #getQueryFilterOrElseFalse()} is what you probably want to use.
 	 *
 	 * @return a query filter for the current {@code whereClause}, or an "all inclusive" {@link ConstantQueryFilter} if the {@code whereClause} is empty.<br>
-	 *         gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
-	 *
-	 * @task 03685
+	 * gh #1348: in both cases, the filter also contains a client and org restriction that is according to the logged-on user's role as returned by {@link Env#getUserRolePermissions(Properties)}.
+	 * <p>
+	 * task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
+	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
 	{
 		// default: use a "neutral" filter that does not exclude anything
@@ -622,7 +644,8 @@ public final class ProcessInfo implements Serializable
 	 * @param defaultQueryFilter filter to be returned if this process info does not have a whereClause set.
 	 * @return a query filter for the current m_whereClause or if there is none, return <code>defaultQueryFilter</code>
 	 */
-	public <T> IQueryFilter<T> getQueryFilterOrElse(final IQueryFilter<T> defaultQueryFilter)
+	@Nullable
+	public <T> IQueryFilter<T> getQueryFilterOrElse(@Nullable final IQueryFilter<T> defaultQueryFilter)
 	{
 		final IQueryFilter<T> whereFilter;
 		if (Check.isEmpty(whereClause, true))
@@ -660,7 +683,9 @@ public final class ProcessInfo implements Serializable
 		return compositeFilter;
 	}
 
-	/** @return selected included rows of current single selected document */
+	/**
+	 * @return selected included rows of current single selected document
+	 */
 	public Set<TableRecordReference> getSelectedIncludedRecords()
 	{
 		return selectedIncludedRecords;
@@ -677,6 +702,7 @@ public final class ProcessInfo implements Serializable
 	/**
 	 * @return AD_Language used to reports; could BE <code>null</code>
 	 */
+	@Nullable
 	public String getReportAD_Language()
 	{
 		return reportLanguage == null ? null : reportLanguage.getAD_Language();
@@ -688,9 +714,8 @@ public final class ProcessInfo implements Serializable
 	}
 
 	/**
-	 *
 	 * @return the {@link ProcessClassInfo} for this instance's <code>className</code> (see {@link #getClassName()}) or {@link ProcessClassInfo#NULL} if this instance has no classname or the
-	 *         instance's classname's class can't be loaded.
+	 * instance's classname's class can't be loaded.
 	 */
 	public ProcessClassInfo getProcessClassInfo()
 	{
@@ -707,7 +732,7 @@ public final class ProcessInfo implements Serializable
 		private boolean createTemporaryCtx = false;
 		/**
 		 * Window context variables to copy when {@link #createTemporaryCtx}
-		 *
+		 * <p>
 		 * NOTE to developer: before changing and mainly removing some context variables from this list,
 		 * please do a text search and check the code which is actually relying on this list.
 		 */
@@ -742,7 +767,7 @@ public final class ProcessInfo implements Serializable
 
 		private OutputType jrDesiredOutputType = null;
 
-		private List<ProcessInfoParameter> parameters = null;
+		private ArrayList<ProcessInfoParameter> parameters = null;
 		private boolean loadParametersFromDB = false; // backward compatibility
 
 		@Getter
@@ -893,7 +918,7 @@ public final class ProcessInfo implements Serializable
 			return setClientId(ClientId.ofRepoIdOrNull(adClientId));
 		}
 
-		public ProcessInfoBuilder setClientId(final ClientId adClientId)
+		public ProcessInfoBuilder setClientId(@Nullable final ClientId adClientId)
 		{
 			this._adClientId = adClientId;
 			return this;
@@ -1027,7 +1052,7 @@ public final class ProcessInfo implements Serializable
 			return _adPInstance;
 		}
 
-		public ProcessInfoBuilder setPInstanceId(final PInstanceId pinstanceId)
+		public ProcessInfoBuilder setPInstanceId(@Nullable final PInstanceId pinstanceId)
 		{
 			this.pInstanceId = pinstanceId;
 			return this;
@@ -1109,7 +1134,7 @@ public final class ProcessInfo implements Serializable
 			return setAD_Process_ID(AdProcessId.ofRepoIdOrNull(adProcessId));
 		}
 
-		public ProcessInfoBuilder setAD_Process_ID(final AdProcessId adProcessId)
+		public ProcessInfoBuilder setAD_Process_ID(@Nullable final AdProcessId adProcessId)
 		{
 			this.adProcessId = adProcessId;
 			return this;
@@ -1176,10 +1201,23 @@ public final class ProcessInfo implements Serializable
 			}
 		}
 
-		private boolean isTranslateExcelHeaders()
+		private ExcelExportOptions getExcelExportOptions()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
-			return process != null ? process.isTranslateExcelHeaders() : false;
+			if (process == null)
+			{
+				return ExcelExportOptions.builder()
+						.translateExcelHeaders(false)
+						.applyFormatting(true)
+						.build();
+			}
+			else
+			{
+				return ExcelExportOptions.builder()
+						.translateExcelHeaders(process.isTranslateExcelHeaders())
+						.applyFormatting(process.isFormatExcelFile())
+						.build();
+			}
 		}
 
 		private Optional<String> getReportTemplate()
@@ -1209,11 +1247,10 @@ public final class ProcessInfo implements Serializable
 			return adProcess.isApplySecuritySettings();
 		}
 
-		private int getAD_Workflow_ID()
+		private WorkflowId getWorkflowId()
 		{
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			final int adWorkflowId = adProcess != null ? adProcess.getAD_Workflow_ID() : -1;
-			return adWorkflowId > 0 ? adWorkflowId : -1;
+			return adProcess != null ? WorkflowId.ofRepoIdOrNull(adProcess.getAD_Workflow_ID()) : null;
 		}
 
 		/**
@@ -1356,7 +1393,7 @@ public final class ProcessInfo implements Serializable
 		 *
 		 * @param reportLanguage optional report language
 		 */
-		public ProcessInfoBuilder setReportLanguage(final Language reportLanguage)
+		public ProcessInfoBuilder setReportLanguage(@Nullable final Language reportLanguage)
 		{
 			this.reportLanguage = reportLanguage;
 			return this;
@@ -1367,9 +1404,9 @@ public final class ProcessInfo implements Serializable
 		 *
 		 * @param adLanguage optional report language
 		 */
-		public ProcessInfoBuilder setReportLanguage(final String adLanguage)
+		public ProcessInfoBuilder setReportLanguage(@Nullable final String adLanguage)
 		{
-			this.reportLanguage = Check.isEmpty(adLanguage, true) ? null : Language.getLanguage(adLanguage);
+			this.reportLanguage = Check.isBlank(adLanguage) ? null : Language.getLanguage(adLanguage);
 			return this;
 		}
 
@@ -1583,12 +1620,6 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
-		private boolean isServerProcess()
-		{
-			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			return adProcess != null ? adProcess.isServerProcess() : false;
-		}
-
 		private boolean isReportingProcess()
 		{
 			if (getReportTemplate().isPresent())
@@ -1603,12 +1634,11 @@ public final class ProcessInfo implements Serializable
 		/**
 		 * Advises the builder to also try loading the parameters from database.
 		 *
-		 * @param loadParametersFromDB
-		 *            <ul>
-		 *            <li><code>true</code> - the parameters will be loaded from database and the parameters which were added here will be used as overrides.
-		 *            <li><code>false</code> - the parameters will be loaded from database only if they were not specified here. If at least one parameter was added to this builder, no parameters will
-		 *            be loaded from database but only those added here will be used.
-		 *            </ul>
+		 * @param loadParametersFromDB <ul>
+		 *                             <li><code>true</code> - the parameters will be loaded from database and the parameters which were added here will be used as overrides.
+		 *                             <li><code>false</code> - the parameters will be loaded from database only if they were not specified here. If at least one parameter was added to this builder, no parameters will
+		 *                             be loaded from database but only those added here will be used.
+		 *                             </ul>
 		 */
 		public ProcessInfoBuilder setLoadParametersFromDB(boolean loadParametersFromDB)
 		{
@@ -1682,7 +1712,6 @@ public final class ProcessInfo implements Serializable
 		/**
 		 * Extracts reporting language.
 		 *
-		 * @param pi
 		 * @return Language; never returns null
 		 */
 		private Language findReportingLanguage()
@@ -1904,4 +1933,14 @@ public final class ProcessInfo implements Serializable
 			return Language.getLanguage(languageString);
 		}
 	} // ProcessInfoBuilder
+
+	@Value
+	@Builder
+	public static class ExcelExportOptions
+	{
+		boolean translateExcelHeaders;
+
+		@Builder.Default
+		boolean applyFormatting = true;
+	}
 }   // ProcessInfo

@@ -8,13 +8,22 @@ import de.metas.jenkins.DockerConf
 import de.metas.jenkins.Misc
 import de.metas.jenkins.MvnConf
 
-Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=false)
-{
+Map build(final MvnConf mvnConf,
+          final Map scmVars,
+          final boolean forceBuild = false,
+          final boolean forceSkip = false) {
 	stage('Build frontend')
 	{
-		currentBuild.description="""${currentBuild.description}<br/>
+    currentBuild.description = """${currentBuild.description}<br/>
 			<h2>Frontend</h2>
 		"""
+    if (forceSkip) {
+      currentBuild.description = """${currentBuild.description}<p/>
+            Forced to skip.
+            """
+      echo "forced to skip frontend";
+      return;
+    }
 
     def anyFileChanged
     try {
@@ -38,7 +47,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		}
 
 		// set nodejs version defined in tool name of NodeJS installations located in Jenkins global plugins
-		final NODEJS_TOOL_NAME="nodejs-13"
+		final NODEJS_TOOL_NAME="nodejs-14"
 		echo "Setting NODEJS_TOOL_NAME=$NODEJS_TOOL_NAME"
 		
 		String BUILD_ARTIFACT_URL
@@ -55,7 +64,6 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 		sh 'yarn install'
 		sh 'yarn lint --quiet'
 							
-		sh "yarn add jest jest-junit --dev"
 		if(params.MF_MF_SKIP_UNIT_TESTS)
 		{
 			echo "params.MF_MF_SKIP_UNIT_TESTS=${params.MF_MF_SKIP_UNIT_TESTS}, so we skip the jest unit tests."
@@ -66,7 +74,7 @@ Map build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild=fal
 			//junit 'junit.xml' // commenting out; might be that it published "everything"
 		}
 					
-		sh "webpack --config webpack.prod.js --bail --display-error-details"
+		sh "webpack --config webpack.prod.js"
 
 		// https://github.com/metasfresh/metasfresh-webui-frontend/issues/292
 		// add a file info.json whose shall look similar to the info which spring-boot provides unter the /info URL

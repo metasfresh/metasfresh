@@ -1,19 +1,7 @@
 package de.metas.dunning.process;
 
-import java.util.List;
-
-import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.logging.LogManager;
@@ -25,6 +13,13 @@ import de.metas.report.server.OutputType;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Invoice;
+import org.slf4j.Logger;
+
+import java.util.List;
 
 /*
  * #%L
@@ -53,7 +48,6 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 	private static final Logger logger = LogManager.getLogger(C_DunningDoc_JasperWithInvoicePDFsStrategy.class);
 
 	private final transient IArchiveBL archiveBL = Services.get(IArchiveBL.class);
-	private final transient IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 	private final transient int dunningDocJasperProcessId;
 
 	public C_DunningDoc_JasperWithInvoicePDFsStrategy(final int dunningDocJasperProcessId)
@@ -88,16 +82,16 @@ public class C_DunningDoc_JasperWithInvoicePDFsStrategy implements ExecuteReport
 
 	private List<PdfDataProvider> retrieveAdditionalDataItems(@NonNull final List<I_C_Invoice> dunnedInvoices)
 	{
-		ImmutableList.Builder<PdfDataProvider> result = ImmutableList.builder();
+		final ImmutableList.Builder<PdfDataProvider> result = ImmutableList.builder();
 		for (final I_C_Invoice invoice : dunnedInvoices)
 		{
-			final List<I_AD_Archive> invoiceArchives = archiveDAO.retrieveLastArchives(Env.getCtx(), TableRecordReference.of(invoice), 1);
-			if (invoiceArchives.isEmpty())
+			final TableRecordReference invoiceRef = TableRecordReference.of(invoice);
+			final byte[] data = archiveBL.getLastArchiveBinaryData(invoiceRef).orElse(null);
+			if(data == null)
 			{
 				continue;
 			}
 
-			final byte[] data = archiveBL.getBinaryData(invoiceArchives.get(0));
 			result.add(PdfDataProvider.forData(data));
 		}
 		return result.build();

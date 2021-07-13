@@ -50,7 +50,6 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * Validates the pricing for the given term, e.g. if the flatrate product associated with the term has a price during the term's runtime.
 	 *
-	 * @param fc
 	 * @throws AdempiereException if the pricing is not OK
 	 */
 	void validatePricing(I_C_Flatrate_Term fc);
@@ -58,10 +57,6 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * Retrieves data entries with the given term and uom and whose periods are between the given periodFrom and periodTo (inclusive!). Checks if they have been completed and fully invoiced
 	 *
-	 * @param flatrateTerm
-	 * @param periodFrom
-	 * @param periodTo
-	 * @param uom
 	 * @param errors the method adds a user friendly error message to this list for every data entry that is not yet ready.
 	 * @return the retrieved data entries or <code>null</code> if they are not yet completed or fully invoiced.
 	 */
@@ -73,18 +68,12 @@ public interface IFlatrateBL extends ISingletonService
 			List<String> errors);
 
 	/**
-	 *
-	 * @param ctx
 	 * @param flatrateTerm the term under which the entries are created
-	 * @param logReceiver may be <code>null</code>. If not null, then the receivers's addLog() method will be used to log important messages
-	 * @param trxName
 	 */
 	void createDataEntriesForTerm(I_C_Flatrate_Term flatrateTerm);
 
 	/**
 	 * Updates various fields of the given entry, all based of the entry's current Qty_Reported and ActualQty values
-	 *
-	 * @param dataEntry
 	 */
 	void updateEntry(I_C_Flatrate_DataEntry dataEntry);
 
@@ -95,7 +84,7 @@ public interface IFlatrateBL extends ISingletonService
 	 */
 	@Builder(toBuilder = true)
 	@Getter
-	public static class ContractExtendingRequest
+	class ContractExtendingRequest
 	{
 		private @NonNull final I_C_Flatrate_Term contract;
 		private final boolean forceExtend;
@@ -107,8 +96,6 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * Create a new flatrate term using the given term as template. The new term's C_Year will be the year after the
 	 * given term's C_Year.
-	 *
-	 * @param context
 	 */
 	void extendContractAndNotifyUser(ContractExtendingRequest context);
 
@@ -117,8 +104,6 @@ public interface IFlatrateBL extends ISingletonService
 	 * associated with the term.
 	 *
 	 * It is assume that the term is not completed.
-	 *
-	 * @param term
 	 */
 	void updateNoticeDateAndEndDate(I_C_Flatrate_Term term);
 
@@ -128,8 +113,6 @@ public interface IFlatrateBL extends ISingletonService
 
 	/**
 	 * Copy relevant columns from {@link I_C_Flatrate_Conditions} to given <code>term</code>.
-	 *
-	 * @param term
 	 */
 	void updateFromConditions(I_C_Flatrate_Term term);
 
@@ -157,16 +140,6 @@ public interface IFlatrateBL extends ISingletonService
 	 * </ul>
 	 * Note that as of now, the log messages are non-localized EN strings.
 	 *
-	 * @param createFlatrateTermRequest
-	 * @param createFlatrateTermRequest#context
-	 * @param createFlatrateTermRequest#bPartner the partner to be used as <code>Bill_BPartner</code> and <code>DropShip_BPartner</code>. Also this partner's sales rep and billto location are used.
-	 * @param createFlatrateTermRequest#conditions
-	 * @param createFlatrateTermRequest#startDate the start date for the new term
-	 * @param createFlatrateTermRequest#userInCharge may be <code>null</code>. If set, then this value is used for <code>C_FLatrate_Term.AD_User_InCharge_ID</code>. Otherwise, the method tries
-	 *            <code>C_BPartner.SalesRep_ID</code>
-	 * @param createFlatrateTermRequest#product may be <code>null</code>. If set, then this value is used for <code>C_Flatrate_Term.M_Product_ID</code>.
-	 * @param createFlatrateTermRequest#completeIt if <code>true</code>, then attempt to complete the new term
-	 *
 	 * @return the newly created and completed term; never returns <code>null</code>
 	 * @throws AdempiereException in case of any error
 	 */
@@ -174,15 +147,11 @@ public interface IFlatrateBL extends ISingletonService
 
 	/**
 	 * Complete given contract.
-	 *
-	 * @param term the contract
 	 */
 	void complete(I_C_Flatrate_Term term);
 
 	/**
 	 * Void given contract
-	 *
-	 * @param term
 	 */
 	void voidIt(I_C_Flatrate_Term term);
 
@@ -208,16 +177,11 @@ public interface IFlatrateBL extends ISingletonService
 	/**
 	 * Complete the given flatrate term only if it respects some conditions:
 	 * 1) Has not already completed overlapping terms (until now this is the only condition. Implement here if more become needed)
-	 *
-	 * @param term
 	 */
 	void completeIfValid(I_C_Flatrate_Term term);
 
 	/**
-	 * return the initial contract, looping back through contracts
-	 *
-	 * @param term
-	 * @return
+	 * Return the initial contract, looping back through contracts
 	 */
 	I_C_Flatrate_Term getInitialFlatrateTerm(I_C_Flatrate_Term term);
 }

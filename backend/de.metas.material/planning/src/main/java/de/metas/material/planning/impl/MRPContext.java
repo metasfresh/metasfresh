@@ -22,16 +22,18 @@ package de.metas.material.planning.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.logging.LogManager;
+import de.metas.material.planning.IMutableMRPContext;
+import de.metas.material.planning.exception.MrpException;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -41,12 +43,14 @@ import org.eevolution.model.I_PP_MRP;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.logging.LogManager;
-import de.metas.material.planning.IMutableMRPContext;
-import de.metas.material.planning.exception.MrpException;
-import de.metas.util.Check;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
 
 /**
  * It's possible to create instances of this class directly (intended for testing), but generally, please use a factory to do it.
@@ -242,9 +246,9 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public int getAD_Client_ID()
+	public ClientId getClientId()
 	{
-		return adClientId;
+		return ClientId.ofRepoIdOrSystem(adClientId);
 	}
 
 	@Override
@@ -260,14 +264,14 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public final int getAD_Org_ID()
+	public final OrgId getOrgId()
 	{
 		final I_AD_Org org = getAD_Org();
 		if (org == null)
 		{
-			return 0; // i.e. all organizations
+			return OrgId.ANY; // i.e. all organizations
 		}
-		return org.getAD_Org_ID();
+		return OrgId.ofRepoIdOrAny(org.getAD_Org_ID());
 	}
 
 	@Override
@@ -283,16 +287,16 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public final int getM_Product_ID()
+	public final ProductId getProductId()
 	{
 		final I_M_Product product = getM_Product();
-		return product == null ? -1 : product.getM_Product_ID();
+		return product == null ? null : ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
 	@Override
-	public int getM_AttributeSetInstance_ID()
+	public AttributeSetInstanceId getAttributeSetInstanceId()
 	{
-		return attributeSetInstanceId;
+		return AttributeSetInstanceId.ofRepoIdOrNone(attributeSetInstanceId);
 	}
 
 	@Override
@@ -395,14 +399,14 @@ public final class MRPContext implements IMutableMRPContext
 	}
 
 	@Override
-	public final int getM_Warehouse_ID()
+	public final WarehouseId getWarehouseId()
 	{
 		final I_M_Warehouse warehouse = getM_Warehouse();
 		if (warehouse == null)
 		{
-			return -1;
+			return null;
 		}
-		return warehouse.getM_Warehouse_ID();
+		return WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID());
 	}
 
 	@Override
@@ -499,10 +503,10 @@ public final class MRPContext implements IMutableMRPContext
 	@Override
 	public void assertContextConsistent()
 	{
-		final int contextProductId = getM_Product_ID();
-		final int productPlanningProductId = getProductPlanning().getM_Product_ID();
+		final ProductId contextProductId = getProductId();
+		final ProductId productPlanningProductId = ProductId.ofRepoIdOrNull(getProductPlanning().getM_Product_ID());
 
-		if (contextProductId != productPlanningProductId)
+		if (!Objects.equals(contextProductId, productPlanningProductId))
 		{
 			final String message = String.format("The given IMaterialPlanningContext has M_Product_ID=%s, but its included PP_Product_Planning has M_Product_ID=%s",
 					contextProductId, productPlanningProductId);

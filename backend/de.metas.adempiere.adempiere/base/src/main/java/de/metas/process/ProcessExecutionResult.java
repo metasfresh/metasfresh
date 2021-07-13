@@ -1,26 +1,5 @@
 package de.metas.process;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.print.MPrintFormat;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.MimeType;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -30,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult.RecordsToOpen.OpenTarget;
@@ -39,13 +18,28 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
-import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.print.MPrintFormat;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -118,6 +112,7 @@ public class ProcessExecutionResult
 	/**
 	 * Log Info
 	 */
+	@Nullable
 	private transient List<ProcessInfoLog> logs;
 	private ShowProcessLogs showProcessLogsPolicy = ShowProcessLogs.Always;
 
@@ -125,17 +120,15 @@ public class ProcessExecutionResult
 	// Reporting
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private transient MPrintFormat printFormat;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private byte[] reportData;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private String reportFilename;
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private String reportContentType;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable
+	private ReportResultData reportData;
 
 	/**
 	 * If the process fails with an Throwable, the Throwable is caught and stored here
 	 */
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
+	@Nullable
 	private transient Throwable throwable = null;
 
 	private boolean refreshAllAfterExecution = false;
@@ -160,11 +153,31 @@ public class ProcessExecutionResult
 
 	@Getter
 	@Setter
+	private boolean closeWebuiModalView = false;
+
+	@Getter
+	@Setter
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private DisplayQRCode displayQRCode;
 
+	/**
+	 * Webui's viewId on which this process was executed.
+	 */
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Setter
+	@Getter
+	@Nullable
 	private String webuiViewId = null;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Getter
+	@Nullable
+	private String stringResult = null;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Getter
+	@Nullable
+	private String stringResultContentType = null;
 
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
@@ -183,9 +196,7 @@ public class ProcessExecutionResult
 			// @JsonProperty("logs") final List<ProcessInfoLog> logs, // transient
 			@JsonProperty("showProcessLogsPolicy") final ShowProcessLogs showProcessLogsPolicy,
 			// @JsonProperty("printFormat") final MPrintFormat printFormat, // transient
-			@JsonProperty("reportData") final byte[] reportData,
-			@JsonProperty("reportFilename") final String reportFilename,
-			@JsonProperty("reportContentType") final String reportContentType,
+			@JsonProperty("reportData") @Nullable final ReportResultData reportData,
 			// @JsonProperty("throwable") final Throwable throwable, // transient
 			@JsonProperty("refreshAllAfterExecution") final boolean refreshAllAfterExecution,
 			@JsonProperty("recordToRefreshAfterExecution") final TableRecordReference recordToRefreshAfterExecution,
@@ -193,7 +204,9 @@ public class ProcessExecutionResult
 			@JsonProperty("recordsToOpen") @Nullable final RecordsToOpen recordsToOpen,
 			@JsonProperty("webuiViewToOpen") final WebuiViewToOpen webuiViewToOpen,
 			@JsonProperty("displayQRCode") final DisplayQRCode displayQRCode,
-			@JsonProperty("webuiViewId") final String webuiViewId)
+			@JsonProperty("webuiViewId") @Nullable final String webuiViewId,
+			@JsonProperty("stringResult") @Nullable final String stringResult,
+			@JsonProperty("stringResultContentType") @Nullable final String stringResultContentType)
 	{
 		this.pinstanceId = pinstanceId;
 		this.summary = summary;
@@ -201,8 +214,6 @@ public class ProcessExecutionResult
 		this.timeout = timeout;
 		this.showProcessLogsPolicy = showProcessLogsPolicy;
 		this.reportData = reportData;
-		this.reportFilename = reportFilename;
-		this.reportContentType = reportContentType;
 		this.refreshAllAfterExecution = refreshAllAfterExecution;
 		this.recordToRefreshAfterExecution = recordToRefreshAfterExecution;
 		this.recordToSelectAfterExecution = recordToSelectAfterExecution;
@@ -210,6 +221,8 @@ public class ProcessExecutionResult
 		this.webuiViewToOpen = webuiViewToOpen;
 		this.displayQRCode = displayQRCode;
 		this.webuiViewId = webuiViewId;
+		this.stringResult = stringResult;
+		this.stringResultContentType = stringResultContentType;
 	}
 
 	@Override
@@ -281,7 +294,7 @@ public class ProcessExecutionResult
 		markAsError(errorMsg, throwable);
 	}
 
-	public void markAsError(final String summary, final Throwable throwable)
+	public void markAsError(final String summary, @Nullable final Throwable throwable)
 	{
 		this.summary = summary;
 		this.throwable = throwable;
@@ -311,8 +324,9 @@ public class ProcessExecutionResult
 	 * If the process has failed with a Throwable, that Throwable can be retrieved using this getter.
 	 *
 	 * @return throwable
-	 * @task 03152
+	 * Task 03152
 	 */
+	@Nullable
 	public Throwable getThrowable()
 	{
 		return throwable;
@@ -345,6 +359,12 @@ public class ProcessExecutionResult
 	{
 		Check.assumeNotNull(showProcessLogsPolicy, "showProcessLogsPolicy not null");
 		this.showProcessLogsPolicy = showProcessLogsPolicy;
+	}
+
+	public void setStringResult(@Nullable final String result, @NonNull final String contentType)
+	{
+		this.stringResult = result;
+		this.stringResultContentType = contentType;
 	}
 
 	/**
@@ -426,6 +446,7 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(adWindowId)
 					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -446,6 +467,7 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(adWindowId)
 					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -463,6 +485,7 @@ public class ProcessExecutionResult
 					.records(records)
 					.adWindowId(null)
 					.target(OpenTarget.GridView)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -471,6 +494,11 @@ public class ProcessExecutionResult
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target)
 	{
 		setRecordToOpen(record, String.valueOf(adWindowId), target);
+	}
+
+	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)
+	{
+		setRecordToOpen(record, String.valueOf(adWindowId), target, targetTab);
 	}
 
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final @Nullable String adWindowId, @NonNull final OpenTarget target)
@@ -485,6 +513,25 @@ public class ProcessExecutionResult
 					.record(record)
 					.adWindowId(adWindowId)
 					.target(target)
+					.targetTab(RecordsToOpen.TargetTab.SAME_TAB)
+					.automaticallySetReferencingDocumentPaths(true)
+					.build());
+		}
+	}
+
+	public void setRecordToOpen(@Nullable final TableRecordReference record, final @Nullable String adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)
+	{
+		if (record == null)
+		{
+			setRecordToOpen(null);
+		}
+		else
+		{
+			setRecordToOpen(RecordsToOpen.builder()
+					.record(record)
+					.adWindowId(adWindowId)
+					.target(target)
+					.targetTab(targetTab)
 					.automaticallySetReferencingDocumentPaths(true)
 					.build());
 		}
@@ -495,22 +542,10 @@ public class ProcessExecutionResult
 		this.recordsToOpen = recordsToOpen;
 	}
 
+	@Nullable
 	public RecordsToOpen getRecordsToOpen()
 	{
 		return recordsToOpen;
-	}
-
-	/**
-	 * Sets webui's viewId on which this process was executed.
-	 */
-	public void setWebuiViewId(String webuiViewId)
-	{
-		this.webuiViewId = webuiViewId;
-	}
-
-	public String getWebuiViewId()
-	{
-		return webuiViewId;
 	}
 
 	public void setPrintFormat(final MPrintFormat printFormat)
@@ -523,40 +558,53 @@ public class ProcessExecutionResult
 		return printFormat;
 	}
 
-	public void setReportData(final byte[] data, final String filename, final String contentType)
+	public void setReportData(final byte[] data, @Nullable final String filename, final String contentType)
 	{
-		reportData = data;
-		reportFilename = filename;
-		reportContentType = contentType;
+		setReportData(ReportResultData.builder()
+				.reportData(data)
+				.reportFilename(filename)
+				.reportContentType(contentType)
+				.build());
 	}
 
 	public void setReportData(@NonNull final File file)
 	{
-		reportData = Util.readBytes(file);
-		reportFilename = file.getName();
-		reportContentType = MimeType.getMimeType(reportFilename);
+		setReportData(ReportResultData.ofFile(file));
 	}
 
-	public void setReportData(@NonNull final ReportResultData reportResult)
+	public void setReportData(@Nullable final ReportResultData reportData)
 	{
-		reportData = reportResult.getReportData();
-		reportFilename = reportResult.getReportFilename();
-		reportContentType = reportResult.getReportContentType();
+		this.reportData = reportData;
 	}
 
-	public byte[] getReportData()
+	@Nullable
+	public ReportResultData getReportData()
 	{
 		return reportData;
 	}
 
-	public String getReportFilename()
+	@Nullable
+	public byte[] getReportDataAsByteArray()
 	{
-		return reportFilename;
+		return reportData != null
+				? reportData.getReportData()
+				: null;
 	}
 
+	@Nullable
+	public String getReportFilename()
+	{
+		return reportData != null
+				? reportData.getReportFilename()
+				: null;
+	}
+
+	@Nullable
 	public String getReportContentType()
 	{
-		return reportContentType;
+		return reportData != null
+				? reportData.getReportContentType()
+				: null;
 	}
 
 	/**
@@ -784,8 +832,6 @@ public class ProcessExecutionResult
 		// Reporting
 		printFormat = otherResult.printFormat;
 		reportData = otherResult.reportData;
-		reportFilename = otherResult.reportFilename;
-		reportContentType = otherResult.reportContentType;
 
 		refreshAllAfterExecution = otherResult.refreshAllAfterExecution;
 
@@ -793,11 +839,6 @@ public class ProcessExecutionResult
 		recordsToOpen = otherResult.recordsToOpen;
 		webuiViewToOpen = otherResult.webuiViewToOpen;
 		displayQRCode = otherResult.displayQRCode;
-	}
-
-	public void setDisplayQRCodeFromString(final String qrCode)
-	{
-		setDisplayQRCode(DisplayQRCode.builder().code(qrCode).build());
 	}
 
 	//
@@ -818,6 +859,15 @@ public class ProcessExecutionResult
 		@Nullable
 		String windowIdString;
 
+		public enum TargetTab
+		{
+			SAME_TAB, SAME_TAB_OVERLAY, NEW_TAB,
+		}
+
+		@JsonProperty("targetTab")
+		@JsonInclude(JsonInclude.Include.NON_NULL)
+		TargetTab targetTab;
+
 		public enum OpenTarget
 		{
 			SingleDocument, SingleDocumentModal, GridView,
@@ -830,20 +880,27 @@ public class ProcessExecutionResult
 		@JsonProperty("automaticallySetReferencingDocumentPaths")
 		boolean automaticallySetReferencingDocumentPaths;
 
+		@JsonProperty("useAutoFilters")
+		boolean useAutoFilters;
+
 		@JsonCreator
 		@Builder
 		private RecordsToOpen(
 				@JsonProperty("records") @NonNull @Singular final List<TableRecordReference> records,
 				@JsonProperty("adWindowId") @Nullable final String adWindowId,
 				@JsonProperty("target") @Nullable final OpenTarget target,
-				@JsonProperty("automaticallySetReferencingDocumentPaths") @Nullable final Boolean automaticallySetReferencingDocumentPaths)
+				@JsonProperty("targetTab") final TargetTab targetTab,
+				@JsonProperty("automaticallySetReferencingDocumentPaths") @Nullable final Boolean automaticallySetReferencingDocumentPaths,
+				@JsonProperty("useAutoFilters") @Nullable final Boolean useAutoFilters)
 		{
 			Check.assumeNotEmpty(records, "records is not empty");
 
 			this.records = ImmutableList.copyOf(records);
 			this.windowIdString = StringUtils.trimBlankToNull(adWindowId);
 			this.target = target != null ? target : OpenTarget.GridView;
+			this.targetTab = targetTab != null ? targetTab : TargetTab.SAME_TAB;
 			this.automaticallySetReferencingDocumentPaths = automaticallySetReferencingDocumentPaths != null ? automaticallySetReferencingDocumentPaths : true;
+			this.useAutoFilters = useAutoFilters != null ? useAutoFilters : true;
 		}
 
 		@Override
@@ -892,7 +949,7 @@ public class ProcessExecutionResult
 		@JsonCreator
 		private WebuiViewToOpen(
 				@JsonProperty("viewId") @NonNull final String viewId,
-				@JsonProperty("profileId") final String profileId,
+				@JsonProperty("profileId") @Nullable final String profileId,
 				@JsonProperty("target") @NonNull final ViewOpenTarget target)
 		{
 			this.viewId = viewId;

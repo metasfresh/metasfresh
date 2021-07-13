@@ -58,6 +58,8 @@ import de.metas.product.ProductId;
 import de.metas.uom.UOMType;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Defines a Attribute Storage pool. Use e.g. {@link IAttributeStorageFactory#getAttributeStorage(Object)} do get an instance.
  */
@@ -154,10 +156,9 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 * Generate initial storage attributes
 	 *
-	 * @param defaultAttributesValue
 	 * @throws AdempiereException if attributes were already generated
 	 */
-	void generateInitialAttributes(final Map<AttributeId, Object> defaultAttributesValue);
+	void generateInitialAttributes(@Nullable final Map<AttributeId, Object> defaultAttributesValue);
 
 	/**
 	 * Updates given <code>huTrxAttribute</code> with storage settings and with underlying infos from <code>fromAttributeValue</code>.
@@ -185,19 +186,16 @@ public interface IAttributeStorage extends IAttributeSet
 	String getPropagationType(I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return {@link IAttributeAggregationStrategy} the linked aggregation strategy
 	 */
 	IAttributeAggregationStrategy retrieveAggregationStrategy(I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return {@link IAttributeSplitterStrategy} the linked splitter strategy
 	 */
 	IAttributeSplitterStrategy retrieveSplitterStrategy(I_M_Attribute attribute);
 
 	/**
-	 * @param attribute
 	 * @return {@link IHUAttributeTransferStrategy} the linked transfer strategy which will be used to transfer an attribute from another {@link IAttributeStorage}.
 	 */
 	IHUAttributeTransferStrategy retrieveTransferStrategy(I_M_Attribute attribute);
@@ -205,7 +203,6 @@ public interface IAttributeStorage extends IAttributeSet
 	/**
 	 *
 	 * @param ctx evaluation context
-	 * @param attribute
 	 * @return true if given attribute is readonly for user
 	 */
 	boolean isReadonlyUI(final IAttributeValueContext ctx, I_M_Attribute attribute);
@@ -219,9 +216,7 @@ public interface IAttributeStorage extends IAttributeSet
 
 	/**
 	 * Set attribute's value with NO propagation.
-	 *
-	 * @param attribute
-	 * @param value
+     *
 	 * @throws AttributeNotFoundException if given attribute was not found or is not supported
 	 */
 	void setValueNoPropagate(AttributeCode attributeCode, Object value);
@@ -262,7 +257,7 @@ public interface IAttributeStorage extends IAttributeSet
 	Object getValue(AttributeCode attributeCode);
 
 	@Override
-	BigDecimal getValueAsBigDecimal(AttributeCode attributeCode);
+	BigDecimal getValueAsBigDecimal(@NonNull AttributeCode attributeCode);
 
 	@Override
 	Date getValueAsDate(AttributeCode attributeCode);

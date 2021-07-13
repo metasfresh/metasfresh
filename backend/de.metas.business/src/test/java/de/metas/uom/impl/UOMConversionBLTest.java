@@ -1,36 +1,5 @@
 package de.metas.uom.impl;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -40,29 +9,57 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityExpectation;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConstants;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-public class UOMConversionBLTest extends UOMTestBase
+import java.math.BigDecimal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+class UOMConversionBLTest
 {
-	/** Service under test */
+	private static final X12DE355 X12_Meter = X12DE355.ofCode("MTR");
+	private static final X12DE355 X12_Millimeter = X12DE355.ofCode("mm");
+	private static final X12DE355 X12_Rolle = X12DE355.ofCode("RL");
+
+	private UOMTestHelper uomConversionHelper;
+
+	/**
+	 * Service under test
+	 */
 	private UOMConversionBL conversionBL;
 
-	@Override
-	protected void afterInit()
+	@BeforeEach
+	public void beforeEach()
 	{
+		AdempiereTestHelper.get().init();
+		POJOWrapper.setDefaultStrictValues(true);
+
+		this.uomConversionHelper = new UOMTestHelper(Env.getCtx());
+
 		// Service under test
 		conversionBL = (UOMConversionBL)Services.get(IUOMConversionBL.class);
 	}
 
-	private ProductId createProduct(final String name, final I_C_UOM uom)
+	private ProductId createProduct(
+			final String name,
+			final I_C_UOM uom)
 	{
 		return uomConversionHelper.createProduct(name, uom);
 	}
 
-	private ProductId createProduct(final String name, final UomId uomId)
+	private ProductId createProduct(
+			final String name,
+			final UomId uomId)
 	{
 		return uomConversionHelper.createProduct(name, uomId);
 	}
@@ -108,7 +105,8 @@ public class UOMConversionBLTest extends UOMTestBase
 	}
 
 	private void adjustToUOMPrecisionWithoutRoundingIfPossible(
-			final String qtyStr, final int uomPrecision,
+			final String qtyStr,
+			final int uomPrecision,
 			final String qtyStrExpected,
 			final int uomPrecisionExpected)
 	{
@@ -134,8 +132,8 @@ public class UOMConversionBLTest extends UOMTestBase
 		// Multiply Rate = 1500000.000000000000;
 		// Divide Rate = 0.000000666667
 
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, "mm");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, X12_Millimeter);
 
 		final ProductId folieId = createProduct("Folie", rolle);
 
@@ -153,7 +151,7 @@ public class UOMConversionBLTest extends UOMTestBase
 		}
 
 		{
-			final BigDecimal qtyToConvert = new BigDecimal(1500000);
+			final BigDecimal qtyToConvert = BigDecimal.valueOf(1500000);
 			final BigDecimal convertedQty = conversionBL.convertQty(folieId, qtyToConvert, millimeter, rolle);
 			assertThat(convertedQty).isEqualTo(new BigDecimal("1.00"));
 		}
@@ -162,12 +160,12 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convertQty_NoProductInConversion()
 	{
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
 
 		final ProductId folieProductId = createProduct("Folie", rolle);
 
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, "mm");
-		final UomId meter = uomConversionHelper.createUOMId("meter", 2, 0, "MTR");
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, X12_Millimeter);
+		final UomId meter = uomConversionHelper.createUOMId("meter", 2, 0, X12_Meter);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(meter)
@@ -178,7 +176,7 @@ public class UOMConversionBLTest extends UOMTestBase
 
 		final BigDecimal convertedQty = conversionBL.convertQty(
 				folieProductId,
-				new BigDecimal(2000),
+				BigDecimal.valueOf(2000),
 				millimeter,
 				meter);
 
@@ -188,16 +186,16 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convert_GeneralConversion()
 	{
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, "mm");
-		final UomId meter = uomConversionHelper.createUOMId("Meter", 2, 0, "MTR");
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, X12_Millimeter);
+		final UomId meter = uomConversionHelper.createUOMId("Meter", 2, 0, X12_Meter);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(meter)
 				.toUomId(millimeter)
-				.fromToMultiplier(new BigDecimal(1000))
+				.fromToMultiplier(BigDecimal.valueOf(1000))
 				.build());
 
-		final BigDecimal qtyToConvert = new BigDecimal(2);
+		final BigDecimal qtyToConvert = BigDecimal.valueOf(2);
 		final BigDecimal convertedQty = conversionBL.convert(
 				uomConversionHelper.getUOMById(meter),
 				uomConversionHelper.getUOMById(millimeter),
@@ -210,9 +208,9 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convertQty_GeneralConversion()
 	{
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
 		final ProductId folieId = createProduct("Folie", rolle);
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, "mm");
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 2, 0, X12_Millimeter);
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.productId(null)
 				.fromUomId(rolle)
@@ -220,7 +218,7 @@ public class UOMConversionBLTest extends UOMTestBase
 				.fromToMultiplier(new BigDecimal("1500000"))
 				.build());
 
-		final BigDecimal qtyToConvert = new BigDecimal(3000000);
+		final BigDecimal qtyToConvert = BigDecimal.valueOf(3000000);
 		final BigDecimal convertedQty = conversionBL.convertQty(folieId, qtyToConvert, millimeter, rolle);
 
 		assertThat(convertedQty).isEqualTo("2.00");
@@ -229,15 +227,15 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convert_GeneralConversion_UseStdPrecision()
 	{
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 3, 2, "mm");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 3, 2, X12_Millimeter);
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(rolle)
 				.toUomId(millimeter)
 				.fromToMultiplier(new BigDecimal("1500000.1290000000"))
 				.build());
 
-		final BigDecimal qtyToConvert = new BigDecimal(2);
+		final BigDecimal qtyToConvert = BigDecimal.valueOf(2);
 		final boolean useStdPrecision = true;
 		final BigDecimal convertedQty = conversionBL.convert(
 				uomConversionHelper.getUOMById(rolle),
@@ -251,8 +249,8 @@ public class UOMConversionBLTest extends UOMTestBase
 	@Test
 	public void convert_GeneralConversion_DoNotUseStdPrecision()
 	{
-		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, "RL");
-		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 3, 2, "mm");
+		final UomId rolle = uomConversionHelper.createUOMId("Rolle", 2, 0, X12_Rolle);
+		final UomId millimeter = uomConversionHelper.createUOMId("Millimeter", 3, 2, X12_Millimeter);
 
 		uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 				.fromUomId(rolle)
@@ -260,7 +258,7 @@ public class UOMConversionBLTest extends UOMTestBase
 				.fromToMultiplier(new BigDecimal("1500000.1290000000"))
 				.build());
 
-		final BigDecimal qtyToConvert = new BigDecimal(2);
+		final BigDecimal qtyToConvert = BigDecimal.valueOf(2);
 		final boolean useStdPrecision = false;
 		final BigDecimal convertedQty = conversionBL.convert(
 				uomConversionHelper.getUOMById(rolle),
@@ -271,109 +269,144 @@ public class UOMConversionBLTest extends UOMTestBase
 		assertThat(convertedQty).isEqualTo("3000000.26");
 	}
 
-	@Test
-	public void getTimeConversionRate()
+	@Nested
+	public class getTimeConversionRate
 	{
-		final I_C_UOM minute = uomConversionHelper.createUOM(
-				"Minute",
-				1,
-				0,
-				UOMConstants.X12_MINUTE);
+		private I_C_UOM minute;
+		private I_C_UOM hour;
+		private I_C_UOM day;
+		private I_C_UOM week;
+		private I_C_UOM month;
+		private I_C_UOM year;
 
-		final I_C_UOM hour = uomConversionHelper.createUOM(
-				"Hour",
-				1,
-				0,
-				UOMConstants.X12_HOUR);
-
-		final I_C_UOM day = uomConversionHelper.createUOM(
-				"Day",
-				1,
-				0,
-				UOMConstants.X12_DAY);
-
-		final I_C_UOM week = uomConversionHelper.createUOM(
-				"Week",
-				1,
-				0,
-				UOMConstants.X12_WEEK);
-
-		final I_C_UOM month = uomConversionHelper.createUOM(
-				"Month",
-				1,
-				0,
-				UOMConstants.X12_MONTH);
-
-		final I_C_UOM year = uomConversionHelper.createUOM(
-				"Year",
-				1,
-				0,
-				UOMConstants.X12_YEAR);
-
+		@BeforeEach
+		public void beforeEach()
 		{
-			final BigDecimal minutesPerDay = new BigDecimal(60 * 24);
+			minute = uomConversionHelper.createUOM(
+					"Minute",
+					1,
+					0,
+					X12DE355.MINUTE);
+
+			hour = uomConversionHelper.createUOM(
+					"Hour",
+					1,
+					0,
+					X12DE355.HOUR);
+
+			day = uomConversionHelper.createUOM(
+					"Day",
+					1,
+					0,
+					X12DE355.DAY);
+
+			week = uomConversionHelper.createUOM(
+					"Week",
+					1,
+					0,
+					X12DE355.WEEK);
+
+			month = uomConversionHelper.createUOM(
+					"Month",
+					1,
+					0,
+					X12DE355.MONTH);
+
+			year = uomConversionHelper.createUOM(
+					"Year",
+					1,
+					0,
+					X12DE355.YEAR);
+		}
+
+		@Test
+		void minutesPerDay()
+		{
+			final BigDecimal minutesPerDay = BigDecimal.valueOf(60 * 24);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(day, minute);
-			assertThat(rate).isEqualTo(minutesPerDay);
+			assertThat(rate).isEqualByComparingTo(minutesPerDay);
 		}
 
-		final BigDecimal daysPerWeek = new BigDecimal(7);
+		@Test
+		void daysPerWeek()
 		{
+			final BigDecimal daysPerWeek = BigDecimal.valueOf(7);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(week, day);
-			assertThat(rate).isEqualTo(daysPerWeek);
+			assertThat(rate).isEqualByComparingTo(daysPerWeek);
 		}
 
-		final BigDecimal hoursPerDay = new BigDecimal(24);
+		@Test
+		void hoursPerDay()
 		{
+			final BigDecimal hoursPerDay = BigDecimal.valueOf(24);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(day, hour);
-			assertThat(rate).isEqualTo(hoursPerDay);
+			assertThat(rate).isEqualByComparingTo(hoursPerDay);
 		}
 
+		@Test
+		void hoursPerWeek()
 		{
+			final BigDecimal daysPerWeek = BigDecimal.valueOf(7);
+			final BigDecimal hoursPerDay = BigDecimal.valueOf(24);
 			final BigDecimal hoursPerWeek = daysPerWeek.multiply(hoursPerDay);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(week, hour);
-			assertThat(rate).isEqualTo(hoursPerWeek);
+			assertThat(rate).isEqualByComparingTo(hoursPerWeek);
 		}
 
+		@Test
+		void weeksPerMonth()
 		{
-			final BigDecimal weeksPerMonth = new BigDecimal(4);
+			final BigDecimal weeksPerMonth = BigDecimal.valueOf(4);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(month, week);
-			assertThat(rate).isEqualTo(weeksPerMonth);
+			assertThat(rate).isEqualByComparingTo(weeksPerMonth);
 		}
 
+		@Test
+		void daysPerMinute()
 		{
-			final BigDecimal daysPerMinute = new BigDecimal(1.0 / 1440.0);
+			final BigDecimal daysPerMinute = BigDecimal.valueOf(1.0 / 1440.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(minute, day);
-			assertThat(rate).isEqualTo(daysPerMinute);
+			assertThat(rate).isEqualByComparingTo(daysPerMinute);
 		}
 
+		@Test
+		void weeksPerDay()
 		{
-			final BigDecimal weeksPerDay = new BigDecimal(1.0 / 7.0);
+			final BigDecimal weeksPerDay = BigDecimal.valueOf(1.0 / 7.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(day, week);
-			assertThat(rate).isEqualTo(weeksPerDay);
+			assertThat(rate).isEqualByComparingTo(weeksPerDay);
 		}
 
+		@Test
+		void daysPerHour()
 		{
-			final BigDecimal daysPerHour = new BigDecimal(1.0 / 24.0);
+			final BigDecimal daysPerHour = BigDecimal.valueOf(1.0 / 24.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(hour, day);
-			assertThat(rate).isEqualTo(daysPerHour);
+			assertThat(rate).isEqualByComparingTo(daysPerHour);
 		}
 
+		@Test
+		void weeksPerHour()
 		{
-			final BigDecimal weeksPerHour = new BigDecimal(1.0 / 168.0);
+			final BigDecimal weeksPerHour = BigDecimal.valueOf(1.0 / 168.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(hour, week);
-			assertThat(rate).isEqualTo(weeksPerHour);
+			assertThat(rate).isEqualByComparingTo(weeksPerHour);
 		}
 
+		@Test
+		void monthsPerWeek()
 		{
-			final BigDecimal monthsPerWeek = new BigDecimal(1.0 / 4.0);
+			final BigDecimal monthsPerWeek = BigDecimal.valueOf(1.0 / 4.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(week, month);
-			assertThat(rate).isEqualTo(monthsPerWeek);
+			assertThat(rate).isEqualByComparingTo(monthsPerWeek);
 		}
 
+		@Test
+		void minutesPerYear()
 		{
-			final BigDecimal minutesPerYear = new BigDecimal(1.0 / 525600.0);
+			final BigDecimal minutesPerYear = BigDecimal.valueOf(1.0 / 525600.0);
 			final BigDecimal rate = conversionBL.getTimeConversionRateAsBigDecimal(minute, year);
-			assertThat(rate).isEqualTo(minutesPerYear);
+			assertThat(rate).isEqualByComparingTo(minutesPerYear);
 		}
 	}
 
@@ -430,13 +463,13 @@ public class UOMConversionBLTest extends UOMTestBase
 					"Minute",
 					1,
 					0,
-					UOMConstants.X12_MINUTE);
+					X12DE355.MINUTE);
 
 			final UomId hour = uomConversionHelper.createUOMId(
 					"Hour",
 					1,
 					0,
-					UOMConstants.X12_HOUR);
+					X12DE355.HOUR);
 
 			uomConversionHelper.createUOMConversion(CreateUOMConversionRequest.builder()
 					.fromUomId(minute)
@@ -464,7 +497,7 @@ public class UOMConversionBLTest extends UOMTestBase
 					.productId(productId)
 					.fromUomId(uomRolle)
 					.toUomId(uomMillimeter)
-					.fromToMultiplier(new BigDecimal(1_500_000))
+					.fromToMultiplier(BigDecimal.valueOf(1_500_000))
 					.build());
 
 			// Expected converted qty: 0.0191 = 28600 x 0.000000666667(divideRate) rounded to 4 digits
@@ -537,7 +570,7 @@ public class UOMConversionBLTest extends UOMTestBase
 					.productId(productId)
 					.fromUomId(UomId.ofRepoId(uomRolle.getC_UOM_ID()))
 					.toUomId(UomId.ofRepoId(uomMillimeter.getC_UOM_ID()))
-					.fromToMultiplier(new BigDecimal(1_500_000))
+					.fromToMultiplier(BigDecimal.valueOf(1_500_000))
 					.build());
 
 			// Expected converted qty: 0.0191 = 28600 x 0.000000666667(divideRate) rounded to 4 digits

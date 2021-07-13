@@ -17,7 +17,7 @@ import com.google.common.collect.ImmutableMap;
 
 import de.metas.inbound.mail.config.InboundEMailConfig;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 

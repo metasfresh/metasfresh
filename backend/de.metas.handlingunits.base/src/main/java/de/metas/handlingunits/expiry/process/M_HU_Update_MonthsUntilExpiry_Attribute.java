@@ -2,13 +2,13 @@ package de.metas.handlingunits.expiry.process;
 
 import java.time.LocalDate;
 
+import de.metas.common.util.time.SystemTime;
 import org.compiere.SpringContextHolder;
 
 import de.metas.handlingunits.expiry.HUWithExpiryDatesService;
 import de.metas.handlingunits.expiry.UpdateMonthsUntilExpiryResult;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

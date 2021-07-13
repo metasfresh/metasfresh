@@ -143,10 +143,11 @@ export class Builder {
    */
   static createHUWithStock(productName, productQty, locatorId) {
     // create HU
-    let uomName;
-    cy.fixture('product/simple_product.json').then(productJson => {
-      uomName = getLanguageSpecific(productJson, 'c_uom');
-    });
+    // see https://github.com/metasfresh/metasfresh/pull/10090#issue-500479284
+    // let uomName;
+    // cy.fixture('product/simple_product.json').then(productJson => {
+    //   uomName = getLanguageSpecific(productJson, 'c_uom');
+    // });
 
     cy.fixture('inventory/inventory.json').then(inventoryJson => {
       const docTypeName = getLanguageSpecific(inventoryJson, 'singleHUInventoryDocTypeName');
@@ -154,7 +155,7 @@ export class Builder {
       const inventoryLine = new InventoryLine()
         .setProductName(productName)
         .setQuantity(productQty)
-        .setC_UOM_ID(uomName)
+        // .setC_UOM_ID(uomName)
         .setM_Locator_ID(locatorId)
         .setIsCounted(true);
 

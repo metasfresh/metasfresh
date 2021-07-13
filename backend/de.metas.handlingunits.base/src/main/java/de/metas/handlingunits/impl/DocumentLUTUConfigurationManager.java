@@ -23,7 +23,6 @@ package de.metas.handlingunits.impl;
  */
 
 
-import java.util.List;
 import java.util.function.Function;
 
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
@@ -72,9 +71,7 @@ public final class DocumentLUTUConfigurationManager<T> implements IDocumentLUTUC
 	@Override
 	public ILUTUConfigurationEditor startEditing()
 	{
-		final ILUTUConfigurationEditor editor = new LUTUConfigurationEditor(this);
-
-		return editor;
+		return new LUTUConfigurationEditor(this);
 	}
 
 	@Override
@@ -90,8 +87,7 @@ public final class DocumentLUTUConfigurationManager<T> implements IDocumentLUTUC
 
 		//
 		// Create a new LU/TU configuration and return it
-		final I_M_HU_LUTU_Configuration lutuConfigurationNew = createNewLUTUConfiguration();
-		return lutuConfigurationNew;
+		return createNewLUTUConfiguration();
 	}
 
 	@Override
@@ -99,13 +95,6 @@ public final class DocumentLUTUConfigurationManager<T> implements IDocumentLUTUC
 	{
 		final T documentLine = getDocumentLine();
 		return handler.getCurrentLUTUConfigurationOrNull(documentLine);
-	}
-
-	@Override
-	public List<I_M_HU_LUTU_Configuration> getCurrentLUTUConfigurationAlternatives()
-	{
-		final T documentLine = getDocumentLine();
-		return handler.getCurrentLUTUConfigurationAlternatives(documentLine);
 	}
 
 	@Override
@@ -125,7 +114,7 @@ public final class DocumentLUTUConfigurationManager<T> implements IDocumentLUTUC
 		return handler.createNewLUTUConfiguration(documentLine);
 	}
 
-	private final T getDocumentLine()
+	private T getDocumentLine()
 	{
 		return _documentLine;
 	}

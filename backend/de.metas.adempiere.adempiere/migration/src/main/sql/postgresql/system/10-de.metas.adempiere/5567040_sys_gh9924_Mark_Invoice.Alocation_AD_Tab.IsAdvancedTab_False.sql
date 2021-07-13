@@ -1,0 +1,5 @@
+-- 2020-09-11T05:31:05.720Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET IsAdvancedTab='N',Updated=TO_TIMESTAMP('2020-09-11 08:31:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=684
+;
+

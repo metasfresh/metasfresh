@@ -5,6 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.invoicecandidate.modelvalidator.C_BPartner;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.Test;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -14,7 +18,7 @@ import de.metas.tourplanning.api.PlainDeliveryDayQueryParams;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 
 /**
- * Tests for {@link DeliveryDayDAO#retrieveDeliveryDay(org.adempiere.model.IContextAware, IDeliveryDayQueryParams)}.
+ * Tests for {@link DeliveryDayDAO#retrieveDeliveryDay(IContextAware, IDeliveryDayQueryParams)}
  *
  * @author tsa
  *
@@ -36,6 +40,10 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 		final I_M_DeliveryDay dd1 = createDeliveryDay("07.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 		final I_M_DeliveryDay dd2 = createDeliveryDay("08.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
 		final I_M_DeliveryDay dd3 = createDeliveryDay("09.09.2014 15:00:00.000", 5, bpartner.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID());
+
+		// shall be ignored
+		I_C_BPartner otherBPartner = createBPartner("bp2");
+		final I_M_DeliveryDay dd4_withoutLocation = createDeliveryDay("10.09.2014 15:00:00.000", 5, otherBPartner.getC_BPartner_ID(), -1);
 
 		testRetrieveDeliveryDay(null, "06.09.2014 23:59:59.999");
 		testRetrieveDeliveryDay(dd1, "07.09.2014 23:59:59.999");
@@ -89,6 +97,8 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 	private IDeliveryDayQueryParams createDeliveryDayQueryParams(final String deliveryDateStr)
 	{
 		final PlainDeliveryDayQueryParams params = new PlainDeliveryDayQueryParams();
+
+		//params.setBPartnerId(BPartnerId.ofRepoId(bpLocation.getC_BPartner_ID()));
 		params.setBPartnerLocationId(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), bpLocation.getC_BPartner_Location_ID()));
 		params.setToBeFetched(false);
 		params.setDeliveryDate(toZonedDateTime(deliveryDateStr));
@@ -97,10 +107,7 @@ public class DeliveryDayDAO_retrieveDeliveryDay_Test extends TourPlanningTestBas
 	}
 
 	/**
-	 * Convenient method for calling {@link DeliveryDayDAO#retrieveDeliveryDay(org.adempiere.model.IContextAware, IDeliveryDayQueryParams)}
-	 *
-	 * @param deliveryDateStr
-	 * @return
+	 * Convenient method for calling {@link DeliveryDayDAO#retrieveDeliveryDay(IContextAware, IDeliveryDayQueryParams)}
 	 */
 	private I_M_DeliveryDay retrieveDeliveryDay(final String deliveryDateStr)
 	{

@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -56,7 +57,6 @@ import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class AsyncBatchBL implements IAsyncBatchBL
@@ -124,7 +124,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		try
 		{
 			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
-			final Timestamp enqueued = SystemTime.asTimestamp();
+			final Timestamp enqueued = de.metas.common.util.time.SystemTime.asTimestamp();
 			if (asyncBatch.getFirstEnqueued() == null)
 			{
 				asyncBatch.setFirstEnqueued(enqueued);
@@ -289,7 +289,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		// Case: when did not pass enough time between fist enqueue time and now
 		final int processedTimeOffsetMillis = getProcessedTimeOffsetMillis();
-		final Timestamp now = SystemTime.asTimestamp();
+		final Timestamp now = de.metas.common.util.time.SystemTime.asTimestamp();
 		final Timestamp minTimeAfterFirstEnqueued = TimeUtil.addMillis(now, processedTimeOffsetMillis);
 		if (firstEnqueued.compareTo(minTimeAfterFirstEnqueued) > 0)
 		{
@@ -343,7 +343,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		}
 
 		final Timestamp lastUpdated = asyncBatchRecord.getUpdated();
-		final Timestamp today = SystemTime.asTimestamp();
+		final Timestamp today = de.metas.common.util.time.SystemTime.asTimestamp();
 
 		final long diffHours = TimeUtil.getHoursBetween(lastUpdated, today);
 

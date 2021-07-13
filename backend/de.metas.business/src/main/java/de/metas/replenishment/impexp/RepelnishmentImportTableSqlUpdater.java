@@ -1,8 +1,10 @@
 package de.metas.replenishment.impexp;
 
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
-import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
-
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.impexp.processing.ImportRecordsSelection;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_I_Replenish;
@@ -10,11 +12,8 @@ import org.compiere.model.I_M_Replenish;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.impexp.processing.ImportRecordsSelection;
-import de.metas.logging.LogManager;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_ErrorMsg;
+import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 
 /*
  * #%L
@@ -54,7 +53,6 @@ public class RepelnishmentImportTableSqlUpdater
 		dbUpdateOrg(selection);
 		dbUpdateProducIds(selection);
 		dbUpdateWarehouse(selection);
-		dbUpdateSourceWarehouse(selection);
 		dbUpdateLocators(selection);
 		dbUpdatePeriodIds(selection);
 		//
@@ -102,17 +100,6 @@ public class RepelnishmentImportTableSqlUpdater
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private void dbUpdateSourceWarehouse(@NonNull final ImportRecordsSelection selection)
-	{
-		final StringBuilder sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
-				.append("SET M_WarehouseSource_ID=(SELECT M_Warehouse_ID FROM M_Warehouse w WHERE w.value = ")
-				.append(I_I_Replenish.COLUMNNAME_WarehouseSourceValue)
-				.append(" ) WHERE M_WarehouseSource_ID IS NULL AND WarehouseSourceValue IS NOT NULL ")
-				.append("AND I_IsImported<>'Y' ")
-				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-	}
-
 	private void dbUpdateLocators(@NonNull final ImportRecordsSelection selection)
 	{
 		StringBuilder sql = new StringBuilder("UPDATE " + I_I_Replenish.Table_Name + " i ")
@@ -154,8 +141,6 @@ public class RepelnishmentImportTableSqlUpdater
 				.append("=r." + I_M_Replenish.COLUMNNAME_M_Product_ID)
 				.append(" AND i." + I_I_Replenish.COLUMNNAME_M_Warehouse_ID)
 				.append("=r." + I_M_Replenish.COLUMNNAME_M_Warehouse_ID)
-				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_M_WarehouseSource_ID)
-				.append(",1)=coalesce(r." + I_M_Replenish.COLUMNNAME_M_WarehouseSource_ID+",1)")
 				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_M_Locator_ID)
 				.append(",1)=coalesce(r." + I_M_Replenish.COLUMNNAME_M_Locator_ID+",1)")
 				.append(" AND coalesce(i." + I_I_Replenish.COLUMNNAME_C_Calendar_ID)

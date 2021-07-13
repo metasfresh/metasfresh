@@ -8,12 +8,16 @@ import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
+import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 
@@ -49,7 +53,6 @@ import java.util.Properties;
  * This class has the job of managing a {@link I_M_HU_LUTU_Configuration} for a particular {@link I_PP_Order}..it might retrieve that ppOrder's lutuConfig or create a new default one.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */class PPOrderDocumentLUTUConfigurationHandler extends AbstractDocumentLUTUConfigurationHandler<I_PP_Order>
 {
@@ -81,9 +84,16 @@ import java.util.Properties;
 		final BigDecimal cuPerTu = ILUTUConfigurationFactory.extractHUPIItemProduct(lutuConfiguration).getQty();
 		if (cuPerTu.signum() > 0)
 		{
-			final BigDecimal undeliveredQtyCU = ppOrder.getQtyOrdered().subtract(ppOrder.getQtyDelivered());
-			final BigDecimal undeliveredQtyTU = undeliveredQtyCU.divide(cuPerTu, 0, RoundingMode.CEILING);
-			lutuConfiguration.setQtyTU(undeliveredQtyTU.min(lutuConfiguration.getQtyTU()));
+			final UomId uomId = ILUTUConfigurationFactory.extractUomIdOrNull(lutuConfiguration);
+
+			final PPOrderQuantities ppOrderQtys = Services.get(IPPOrderBOMBL.class).getQuantities(ppOrder, uomId);
+			final Quantity undeliveredQtyCU = ppOrderQtys.getQtyRequiredToProduce().subtract(ppOrderQtys.getQtyReceived());
+
+			final Quantity undeliveredQtyTU = undeliveredQtyCU.divide(cuPerTu, 0, RoundingMode.CEILING);
+			lutuConfiguration.setQtyTU(undeliveredQtyTU.toBigDecimal().min(lutuConfiguration.getQtyTU()));
+
+			final int qtyLU = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(lutuConfiguration, undeliveredQtyCU);
+			lutuConfiguration.setQtyLU(BigDecimal.valueOf(qtyLU));
 		}
 
 		// Update LU/TU configuration
@@ -123,18 +133,20 @@ import java.util.Properties;
 			}
 		}
 
-		//try to get the default M_HU_Item_Product from the product CU-TU allocation
-		final ZonedDateTime date = TimeUtil.asZonedDateTime( ppOrder.getDatePromised() );
+		//
+		// try to get the default M_HU_Item_Product from the product CU-TU allocation
+		final ZonedDateTime date = TimeUtil.asZonedDateTime(ppOrder.getDatePromised());
 
 		final Optional<I_M_HU_PI_Item_Product> defaultPip = hupiItemProductDAO.retrieveDefaultForProduct(
-				ProductId.ofRepoId( ppOrder.getM_Product_ID() ),
-				BPartnerId.ofRepoIdOrNull( ppOrder.getC_BPartner_ID() ),
-				date );
+				ProductId.ofRepoId(ppOrder.getM_Product_ID()),
+				BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID()),
+				date);
 
-		if ( defaultPip.isPresent() )
+		if (defaultPip.isPresent())
 		{
 			return defaultPip.get();
 		}
+
 		//
 		// Fallback: return the virtual PI Item Product
 		final I_M_HU_PI_Item_Product pipVirtual = hupiItemProductDAO.retrieveVirtualPIMaterialItemProduct(ctx);

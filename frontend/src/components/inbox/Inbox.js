@@ -57,9 +57,7 @@ class Inbox extends Component {
 
           dispatch(
             push(
-              `/window/${item.target.windowId}/?viewId=${
-                item.target.viewId
-              }${samePageParam}`
+              `/window/${item.target.windowId}/?viewId=${item.target.viewId}${samePageParam}`
             )
           );
 

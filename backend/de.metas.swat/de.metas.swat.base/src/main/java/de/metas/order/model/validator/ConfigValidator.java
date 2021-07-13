@@ -25,12 +25,14 @@ package de.metas.order.model.validator;
  * #L%
  */
 
+import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.order.document.documentNo.OrderPOReferenceListener;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
 /**
  * Main Invoice Candidates validator
@@ -44,6 +46,12 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	public void onAfterInit()
 	{
 		Services.get(IDocumentNoBL.class).registerDocumentNoListener(OrderPOReferenceListener.INSTANCE); // task 09776
+	}
+
+	@Override
+	protected void registerInterceptors(final @NonNull IModelValidationEngine engine)
+	{
+		engine.addModelValidator(new C_Order());
 	}
 
 	@Override

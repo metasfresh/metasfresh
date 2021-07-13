@@ -31,6 +31,8 @@ import de.metas.security.ISecurityRuleEngine;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.permissions.Access;
 
+import javax.annotation.Nullable;
+
 public class SecurityRuleEngine implements ISecurityRuleEngine
 {
 	final CompositeSecurityRule compositeRule = new CompositeSecurityRule();
@@ -42,7 +44,7 @@ public class SecurityRuleEngine implements ISecurityRuleEngine
 	}
 
 	@Override
-	public void filterOrgs(final IUserRolePermissions rolePermissions, final String tableName, final Access access, final Set<OrgId> orgIds)
+	public void filterOrgs(final IUserRolePermissions rolePermissions, @Nullable final String tableName, final Access access, final Set<OrgId> orgIds)
 	{
 		compositeRule.filterOrgs(rolePermissions, tableName, access, orgIds);
 	}

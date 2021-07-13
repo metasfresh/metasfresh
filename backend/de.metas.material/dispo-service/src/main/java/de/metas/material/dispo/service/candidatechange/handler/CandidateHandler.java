@@ -1,10 +1,12 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import java.util.Collection;
-
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -32,7 +34,22 @@ public interface CandidateHandler
 {
 	Collection<CandidateType> getHandeledTypes();
 
-	Candidate onCandidateNewOrChange(@NonNull final Candidate candidate);
+	Candidate onCandidateNewOrChange(@NonNull Candidate candidate, @NonNull OnNewOrChangeAdvise advise);
 
 	void onCandidateDelete(Candidate candidate);
+
+	@Value
+	@Builder
+	class OnNewOrChangeAdvise
+	{
+		public static final OnNewOrChangeAdvise DEFAULT = OnNewOrChangeAdvise.builder().build();
+
+		public static OnNewOrChangeAdvise attemptUpdate(final boolean attemptUpdate)
+		{
+			return OnNewOrChangeAdvise.builder().attemptUpdate(attemptUpdate).build();
+		}
+
+		@Builder.Default
+		boolean attemptUpdate = true;
+	}
 }

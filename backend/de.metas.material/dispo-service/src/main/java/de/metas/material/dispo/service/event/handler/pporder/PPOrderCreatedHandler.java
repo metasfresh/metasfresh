@@ -1,19 +1,11 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import java.util.Collection;
-
-import javax.annotation.Nullable;
-
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
+import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -27,6 +19,11 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
 import de.metas.util.Loggables;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -57,9 +54,6 @@ public final class PPOrderCreatedHandler
 {
 	private static final Logger logger = LogManager.getLogger(PPOrderCreatedHandler.class);
 
-	/**
-	 * @param candidateService needed in case we directly request a {@link PpOrderSuggestedEvent}'s proposed PP_Order to be created.
-	 */
 	public PPOrderCreatedHandler(
 			@NonNull final CandidateChangeService candidateChangeHandler,
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
@@ -86,15 +80,18 @@ public final class PPOrderCreatedHandler
 	}
 
 	@Override
-	protected CandidatesQuery createPreExistingCandidatesQuery(
-			@NonNull final PPOrder ppOrder,
-			@Nullable final SupplyRequiredDescriptor supplyRequiredDescriptor_NOTUSED)
+	protected CandidatesQuery createPreExistingSupplyCandidateQuery(@NonNull final AbstractPPOrderEvent abstractPPOrderEvent)
 	{
-		return createPreExistingCandidatesQuery(ppOrder);
-	}
+		final PPOrderCreatedEvent ppOrderCreatedEvent = PPOrderCreatedEvent.cast(abstractPPOrderEvent);
 
-	private static CandidatesQuery createPreExistingCandidatesQuery(@NonNull final PPOrder ppOrder)
-	{
+		final PPOrder ppOrder = ppOrderCreatedEvent.getPpOrder();
+		final SupplyRequiredDescriptor supplyRequiredDescriptor = ppOrderCreatedEvent.getSupplyRequiredDescriptor();
+
+		if (supplyRequiredDescriptor != null && supplyRequiredDescriptor.getSupplyCandidateId() > 0)
+		{
+			return CandidatesQuery.fromId(CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId()));
+		}
+
 		final MaterialDispoGroupId groupId = ppOrder.getMaterialDispoGroupId();
 		if (groupId == null)
 		{

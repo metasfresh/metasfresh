@@ -122,7 +122,7 @@ public class BPartnerImportTableSqlUpdater
 			final String sql = "UPDATE I_BPartner i "
 					+ "SET AD_Org_ID=(SELECT AD_Org_ID FROM AD_Org o"
 					+ " WHERE i.OrgValue=o.Value AND o.AD_Client_ID IN (0, i.AD_Client_ID)) "
-					+ "WHERE AD_Org_ID IS NULL AND OrgValue IS NOT NULL"
+					+ "WHERE OrgValue IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
 					+ selection.toSqlWhereClause("i");
 
@@ -145,7 +145,7 @@ public class BPartnerImportTableSqlUpdater
 	{
 		{
 			final String sql = "UPDATE I_BPartner i "
-					+ "SET GroupValue=(SELECT MAX(Value) FROM C_BP_Group g WHERE g.IsDefault='Y' AND g.AD_Client_ID=i.AD_Client_ID) "
+					+ "SET GroupValue=(SELECT MAX(Value) FROM C_BP_Group g WHERE g.IsDefault='Y' AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID=i.AD_Org_ID) "
 					+ " WHERE GroupValue IS NULL AND C_BP_Group_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
 					+ selection.toSqlWhereClause("i");
@@ -157,7 +157,7 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final String sql = "UPDATE I_BPartner i "
 					+ "SET C_BP_Group_ID=(SELECT C_BP_Group_ID FROM C_BP_Group g"
-					+ " WHERE i.GroupValue=g.Value AND g.AD_Client_ID=i.AD_Client_ID) "
+					+ " WHERE i.GroupValue=g.Value AND g.AD_Client_ID=i.AD_Client_ID AND g.AD_Org_ID=i.AD_Org_ID) "
 					+ "WHERE C_BP_Group_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y' "
 					+ selection.toSqlWhereClause("i");
@@ -223,7 +223,7 @@ public class BPartnerImportTableSqlUpdater
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 					+ "Set RegionName=(SELECT MAX(Name) FROM C_Region r"
 					+ " WHERE r.IsDefault='Y' AND r.C_Country_ID=i.C_Country_ID"
-					+ " AND r.AD_Client_ID IN (0, i.AD_Client_ID)) ");
+					+ " AND r.AD_Client_ID IN (0, i.AD_Client_ID) AND r.AD_Org_ID = i.AD_Org_ID) ");
 			sql.append("WHERE RegionName IS NULL AND C_Region_ID IS NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 					.append(selection.toSqlWhereClause("i"));
@@ -263,7 +263,7 @@ public class BPartnerImportTableSqlUpdater
 		{
 			final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 					+ "SET C_Greeting_ID=(SELECT C_Greeting_ID FROM C_Greeting g"
-					+ " WHERE i.BPContactGreeting=g.Name AND g.AD_Client_ID IN (0, i.AD_Client_ID)) "
+					+ " WHERE i.BPContactGreeting=g.Name AND g.AD_Client_ID IN (0, i.AD_Client_ID) AND g.AD_Org_ID = i.AD_Org_ID) "
 					+ "WHERE C_Greeting_ID IS NULL AND BPContactGreeting IS NOT NULL"
 					+ " AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 							.append(selection.toSqlWhereClause("i"));
@@ -313,7 +313,7 @@ public class BPartnerImportTableSqlUpdater
 		final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET (C_BPartner_ID,AD_User_ID)="
 				+ "(SELECT C_BPartner_ID,AD_User_ID FROM AD_User u "
-				+ "WHERE i.EMail=u.EMail AND u.AD_Client_ID=i.AD_Client_ID) "
+				+ "WHERE i.EMail=u.EMail AND u.AD_Client_ID=i.AD_Client_ID AND u.AD_Org_ID=i.AD_Org_ID) "
 				+ "WHERE i.EMail IS NOT NULL AND " + COLUMNNAME_I_IsImported + "='N'")
 						.append(selection.toSqlWhereClause("i"));
 
@@ -330,6 +330,7 @@ public class BPartnerImportTableSqlUpdater
 				+ " AND i." + I_I_BPartner.COLUMNNAME_BPValue + " IS NOT NULL "
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_Value + " = i." + I_I_BPartner.COLUMNNAME_BPValue
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Client_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Client_ID
+				+ " AND bp." + I_C_BPartner.COLUMNNAME_AD_Org_ID + " = i." + I_I_BPartner.COLUMNNAME_AD_Org_ID
 				+ " AND bp." + I_C_BPartner.COLUMNNAME_IsActive + " ='Y' "
 				+ " AND i." + I_I_BPartner.COLUMNNAME_I_IsImported + " = 'N'")
 
@@ -600,7 +601,7 @@ public class BPartnerImportTableSqlUpdater
 	{
 		final StringBuilder sql = new StringBuilder("UPDATE I_BPartner i "
 				+ "SET R_InterestArea_ID=(SELECT R_InterestArea_ID FROM R_InterestArea ia "
-				+ "WHERE i.InterestAreaName=ia.Name AND ia.AD_Client_ID=i.AD_Client_ID) "
+				+ "WHERE i.InterestAreaName=ia.Name AND ia.AD_Client_ID=i.AD_Client_ID AND ia.AD_Org_ID = i.AD_Org_ID) "
 				+ "WHERE R_InterestArea_ID IS NULL AND InterestAreaName IS NOT NULL"
 				+ " AND " + COLUMNNAME_I_IsImported + "='N'")
 						.append(selection.toSqlWhereClause("i"));

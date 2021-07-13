@@ -1,7 +1,15 @@
 package de.metas.bpartner.exceptions;
 
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
+
+import javax.annotation.Nullable;
 
 /**
  * Thrown when an exception related to a BPartner happened.
@@ -9,28 +17,39 @@ import org.compiere.model.I_C_BPartner;
 @SuppressWarnings("serial")
 public abstract class BPartnerException extends AdempiereException
 {
-	BPartnerException(final String ad_message, final I_C_BPartner bpartner)
+	BPartnerException(
+			@NonNull final AdMessageKey adMessage,
+			@Nullable final I_C_BPartner bpartner)
 	{
-		super(buildMsg(ad_message, bpartner));
+		super(buildMsg(adMessage, extractBPartnerName(bpartner)));
 	}
 
-	private static final String buildMsg(final String ad_message, final I_C_BPartner bpartner)
+	BPartnerException(
+			@NonNull final AdMessageKey adMessage,
+			@Nullable final String bpartnerName)
 	{
-		final StringBuilder sb = new StringBuilder();
-		sb.append("@").append(ad_message).append("@");
+		super(buildMsg(adMessage, bpartnerName));
+	}
 
-		sb.append(" - @C_BPartner_ID@: ");
-		if (bpartner == null)
+	private static String extractBPartnerName(final I_C_BPartner bpartner)
+	{
+		return bpartner != null
+				? bpartner.getValue() + "_" + bpartner.getName()
+				: null;
+	}
+
+	private static ITranslatableString buildMsg(
+			@NonNull final AdMessageKey adMessage,
+			@Nullable final String bpartnerName)
+	{
+		final TranslatableStringBuilder builder = TranslatableStrings.builder()
+				.appendADMessage(adMessage);
+
+		if (Check.isNotBlank(bpartnerName))
 		{
-			sb.append("none");
-		}
-		else
-		{
-			sb.append(bpartner.getValue()).append("_").append(bpartner.getName());
-			final int bpartnerId = bpartner.getC_BPartner_ID();
-			sb.append(" (ID=").append(bpartnerId <= 0 ? "new" : bpartnerId).append(")");
+			builder.append(": ").append(bpartnerName);
 		}
 
-		return sb.toString();
+		return builder.build();
 	}
 }

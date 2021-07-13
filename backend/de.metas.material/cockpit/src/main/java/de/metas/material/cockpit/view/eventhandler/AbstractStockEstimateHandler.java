@@ -1,15 +1,7 @@
 package de.metas.material.cockpit.view.eventhandler;
 
-import java.util.Collection;
-
-import org.compiere.util.TimeUtil;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
-import de.metas.material.cockpit.CockpitConstants;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
@@ -17,7 +9,16 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.time.ZoneId;
+import java.util.Collection;
 
 /*
  * #%L
@@ -47,6 +48,7 @@ public class AbstractStockEstimateHandler
 		implements MaterialEventHandler<AbstractStockEstimateEvent>
 {
 	private final MainDataRequestHandler dataUpdateRequestHandler;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public AbstractStockEstimateHandler(
 			@NonNull final MainDataRequestHandler dataUpdateRequestHandler)
@@ -70,16 +72,18 @@ public class AbstractStockEstimateHandler
 	private UpdateMainDataRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractStockEstimateEvent stockEstimateEvent)
 	{
+		final OrgId orgId = stockEstimateEvent.getEventDescriptor().getOrgId();
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
-				.productDescriptor(stockEstimateEvent.getProductDescriptor())
-				.date(TimeUtil.getDay(stockEstimateEvent.getDate(), CockpitConstants.TIME_ZONE))
+				.productDescriptor(stockEstimateEvent.getMaterialDescriptor())
+				.date(TimeUtil.getDay(stockEstimateEvent.getDate(), timeZone))
 				.plantId(stockEstimateEvent.getPlantId())
 				.build();
 
-		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
+		return UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.countedQty(stockEstimateEvent.getQuantityDelta())
 				.build();
-		return request;
 	}
 }

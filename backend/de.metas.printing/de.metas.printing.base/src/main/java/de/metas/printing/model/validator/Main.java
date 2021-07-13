@@ -1,49 +1,12 @@
 package de.metas.printing.model.validator;
 
-import java.util.List;
-import java.util.Properties;
-
-/*
- * #%L
- * de.metas.printing.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.session.ISessionBL;
-import org.adempiere.ad.session.MFSession;
-import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.async.api.IAsyncBatchListeners;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.event.Topic;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
-import de.metas.print.IPrintServiceRegistry;
 import de.metas.printing.Printing_Constants;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.async.spi.impl.PDFPrintingAsyncBatchListener;
@@ -68,6 +31,18 @@ import de.metas.printing.spi.impl.DefaultPrintingRecordTextProvider;
 import de.metas.printing.spi.impl.DocumentPrintingQueueHandler;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.session.ISessionBL;
+import org.adempiere.ad.session.MFSession;
+import org.adempiere.server.rpl.trx.api.IReplicationTrxBL;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Printing base - Main Validator
@@ -199,8 +174,6 @@ public class Main extends AbstractModuleInterceptor
 		}
 
 		Services.get(IPrintingQueueBL.class).registerHandler(DocumentPrintingQueueHandler.instance);
-
-		Services.get(IPrintServiceRegistry.class).registerJasperService(de.metas.printing.adapter.MassPrintServiceAdapter.INSTANCE);
 
 		// task 09833
 		// Register the Default Printing Info ctx provider

@@ -1,6 +1,31 @@
 package org.adempiere.warehouse.api;
 
+import de.metas.organization.OrgId;
+import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseAndLocatorValue;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehousePickingGroup;
+import org.adempiere.warehouse.WarehousePickingGroupId;
+import org.adempiere.warehouse.WarehouseType;
+import org.adempiere.warehouse.WarehouseTypeId;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.util.Check.assume;
+import static de.metas.util.Check.isEmpty;
 
 /*
  * #%L
@@ -23,23 +48,6 @@ import java.util.Collection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.WarehousePickingGroup;
-import org.adempiere.warehouse.WarehousePickingGroupId;
-import org.adempiere.warehouse.WarehouseType;
-import org.adempiere.warehouse.WarehouseTypeId;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-
-import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
 
 public interface IWarehouseDAO extends ISingletonService
 {
@@ -76,7 +84,10 @@ public interface IWarehouseDAO extends ISingletonService
 	@Deprecated
 	I_M_Locator getLocatorByRepoId(final int locatorId);
 
+	@Nullable
 	LocatorId getLocatorIdByRepoIdOrNull(int locatorId);
+
+	LocatorId getLocatorIdByRepoId(int locatorId);
 
 	I_M_Locator getLocatorById(final LocatorId locatorId);
 
@@ -105,6 +116,8 @@ public interface IWarehouseDAO extends ISingletonService
 	Optional<WarehouseId> getInTransitWarehouseIdIfExists(OrgId adOrgId);
 
 	List<I_M_Warehouse> getAllWarehouses();
+
+	Set<WarehouseId> getAllWarehouseIds();
 
 	Set<WarehouseId> getWarehouseIdsOfSamePickingGroup(WarehouseId warehouseId);
 
@@ -138,4 +151,46 @@ public interface IWarehouseDAO extends ISingletonService
 	 * Retrieve the warehouse marked as IsQuarantineWarehouse.
 	 */
 	org.adempiere.warehouse.model.I_M_Warehouse retrieveQuarantineWarehouseOrNull();
+
+	@Value
+	class WarehouseQuery
+	{
+		/**
+		 * Applied if not empty. {@code AND}ed with {@code externalId} if given. At least one of {@code value} or {@code externalId} needs to be given.
+		 */
+		String value;
+
+		/**
+		 * Applied if not {@code null}. {@code AND}ed with {@code value} if given. At least one of {@code value} or {@code externalId} needs to be given.
+		 */
+		ExternalId externalId;
+
+		OrgId orgId;
+
+		boolean includeAnyOrg;
+		boolean outOfTrx;
+
+		@Builder
+		private WarehouseQuery(
+				@Nullable final String value,
+				@Nullable final ExternalId externalId,
+				@NonNull final OrgId orgId,
+				@Nullable final Boolean includeAnyOrg,
+				@Nullable final Boolean outOfTrx)
+		{
+			final boolean valueIsSet = !isEmpty(value, true);
+			final boolean externalIdIsSet = externalId != null;
+			assume(valueIsSet || externalIdIsSet, "At least one of value or externalId need to be specified");
+
+			this.value = value;
+			this.externalId = externalId;
+			this.orgId = orgId;
+			this.includeAnyOrg = coalesce(includeAnyOrg, false);
+			this.outOfTrx = coalesce(outOfTrx, false);
+		}
+	}
+
+	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
+
+	WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(int locatorRepoId);
 }

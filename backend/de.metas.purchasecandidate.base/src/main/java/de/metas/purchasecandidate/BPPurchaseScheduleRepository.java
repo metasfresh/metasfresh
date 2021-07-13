@@ -74,7 +74,7 @@ public class BPPurchaseScheduleRepository
 		final List<BPPurchaseSchedule> bpPurchaseSchedules = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_BP_PurchaseSchedule.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BP_PurchaseSchedule.COLUMN_C_BPartner_ID, bpartnerId.getRepoId())
+				.addEqualsFilter(I_C_BP_PurchaseSchedule.COLUMNNAME_C_BPartner_ID, bpartnerId.getRepoId())
 				.create()
 				.stream()
 				.map(scheduleRecord -> toBPPurchaseSchedule(scheduleRecord))

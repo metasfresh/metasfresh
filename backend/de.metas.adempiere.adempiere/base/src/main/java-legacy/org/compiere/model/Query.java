@@ -25,6 +25,8 @@ import java.util.Properties;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.exceptions.DBException;
 
+import javax.annotation.Nullable;
+
 /**
  *
  * @author Low Heng Sin
@@ -49,7 +51,7 @@ public class Query extends TypedSqlQuery<Object>
 	}
 
 	@SuppressWarnings("deprecation")
-	public Query(Properties ctx, String tableName, String whereClause, String trxName)
+	public Query(Properties ctx, String tableName, String whereClause, @Nullable String trxName)
 	{
 		super(ctx, Object.class, tableName, whereClause, trxName);
 	}

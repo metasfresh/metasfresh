@@ -1,15 +1,13 @@
 package de.metas.project;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -42,17 +40,19 @@ public class ProjectId implements RepoIdAware
 		return new ProjectId(repoId);
 	}
 
+	@Nullable
 	public static ProjectId ofRepoIdOrNull(@Nullable final Integer repoId)
 	{
 		return repoId != null && repoId > 0 ? new ProjectId(repoId) : null;
 	}
 
+	@Nullable
 	public static ProjectId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new ProjectId(repoId) : null;
 	}
 
-	public static int toRepoId(final ProjectId id)
+	public static int toRepoId(@Nullable final ProjectId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
@@ -71,7 +71,7 @@ public class ProjectId implements RepoIdAware
 		return repoId;
 	}
 
-	public static boolean equals(final ProjectId id1, final ProjectId id2)
+	public static boolean equals(@Nullable final ProjectId id1, @Nullable final ProjectId id2)
 	{
 		return Objects.equals(id1, id2);
 	}

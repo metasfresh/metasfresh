@@ -1,7 +1,134 @@
 package de.metas.invoice.service.impl;
 
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
+import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
+import de.metas.costing.ChargeId;
+import de.metas.costing.impl.ChargeRepository;
+import de.metas.currency.Amount;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.ICopyHandlerBL;
+import de.metas.document.IDocCopyHandler;
+import de.metas.document.IDocLineCopyHandler;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceCreditContext;
+import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.invoice.service.IMatchInvBL;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListBL;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
+import de.metas.user.User;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.comparator.ComparatorChain;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Charge;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_RMA;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_Tax;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.util.Check.assumeNotNull;
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
 
 /*
  * #%L
@@ -25,127 +152,15 @@ import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.comparator.ComparatorChain;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_RMA;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_C_Tax;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.allocation.api.IAllocationBL;
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
-import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.IfNotFound;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.document.DocTypeId;
-import de.metas.document.DocTypeQuery;
-import de.metas.document.ICopyHandlerBL;
-import de.metas.document.IDocCopyHandler;
-import de.metas.document.IDocLineCopyHandler;
-import de.metas.document.IDocTypeBL;
-import de.metas.document.IDocTypeDAO;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.ITranslatableString;
-import de.metas.invoice.BPartnerInvoicingInfo;
-import de.metas.invoice.InvoiceCreditContext;
-import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IInvoiceLineBL;
-import de.metas.invoice.service.IMatchInvBL;
-import de.metas.invoice.service.IMatchInvDAO;
-import de.metas.lang.SOTrx;
-import de.metas.location.CountryId;
-import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.order.IOrderBL;
-import de.metas.payment.PaymentRule;
-import de.metas.payment.paymentterm.PaymentTermId;
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPriceListBL;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UOMConversionContext;
-import de.metas.uom.UomId;
-import de.metas.user.User;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.time.SystemTime;
-import lombok.NonNull;
-
 /**
  * Implements those methods that are DB decoupled
- *
- * @author ts
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
 	protected final transient Logger log = LogManager.getLogger(getClass());
 
 	/**
-	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine)}.
+	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
 	 */
 	private static final ModelDynAttributeAccessor<I_C_InvoiceLine, Boolean> HAS_FIXED_LINE_NUMBER = new ModelDynAttributeAccessor<>(Boolean.class);
 
@@ -157,28 +172,57 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	// FRESH-488: Payment rule from sys config
 	public static final String SYSCONFIG_C_Invoice_PaymentRule = "de.metas.invoice.C_Invoice_PaymentRule";
 
+	private static final AdMessageKey MSG_InvoiceMayNotBePaid = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotBePaid");
+
+	private static final AdMessageKey MSG_InvoiceMayNotHaveOpenAmtZero = AdMessageKey.of("de.metas.invoice.service.impl.AbstractInvoiceBL_InvoiceMayNotHaveOpenAmtZero");
+
+	@Override
+	public org.compiere.model.I_C_Invoice getById(@NonNull final InvoiceId invoiceId)
+	{
+		return Services.get(IInvoiceDAO.class).getByIdInTrx(invoiceId);
+	}
+
 	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
 	{
 		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
-		Check.errorIf(invoice.isPaid(), "Param 'invoice'={} may not yet be paid");
-
 		Check.assume(invoice.getGrandTotal().signum() != 0, "GrandTotal!=0 for {}", invoice);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
-		//
-		// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
-		final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
-				false); // creditMemoAdjusted = false
+		if (creditCtx.isReferenceInvoice())
+		{
+			if (invoice.isPaid())
+			{
+				throw new AdempiereException(
+						MSG_InvoiceMayNotBePaid,
+						new Object[] {
+								invoice.getDocumentNo()
+						});
+			}
 
-		// 'invoice' is not paid, so the open amount won't be zero
-		Check.assume(openAmt.signum() != 0, "OpenAmt != zero for {}", invoice);
+			//
+			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
+			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
+					false); // creditMemoAdjusted = false
+
+			// 'invoice' is not paid, so the open amount won't be zero
+			if (openAmt.signum() == 0)
+			{
+				throw new AdempiereException(
+						MSG_InvoiceMayNotHaveOpenAmtZero,
+						new Object[] {
+								invoice.getDocumentNo()
+						});
+			}
+
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
 		final DocTypeId targetDocTypeId = getTarget_DocType_ID(ctx, invoice, creditCtx.getDocTypeId());
 		//
 		// create the credit memo as a copy of the original invoice
 		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
-				copyFrom(invoice, SystemTime.asTimestamp(),
+				copyFrom(invoice, de.metas.common.util.time.SystemTime.asTimestamp(),
 						targetDocTypeId.getRepoId(),
 						invoice.isSOTrx(),
 						false, // counter == false
@@ -523,6 +567,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		invoice.setC_BPartner_ID(order.getBill_BPartner_ID());
 		invoice.setC_BPartner_Location_ID(order.getBill_Location_ID());
 		invoice.setAD_User_ID(order.getBill_User_ID());
+		invoice.setExternalId(order.getExternalId());
 
 		return invoice;
 	}
@@ -658,7 +703,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private BPartnerLocationId getBillBPartnerLocationId(final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-
 		final List<I_C_BPartner_Location> bpLocations = bpartnersRepo.retrieveBPartnerLocations(bpartnerId);
 		for (final I_C_BPartner_Location loc : bpLocations)
 		{
@@ -675,8 +719,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return BPartnerLocationId.ofRepoId(loc.getC_BPartner_ID(), loc.getC_BPartner_Location_ID());
 		}
 
-		throw new AdempiereException("@NotFound@ @Bill_Location_ID@")
-				.setParameter("C_BPartner_ID", bpartnerId)
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+		final String bpartnerName = bpartnerBL.getBPartnerValueAndName(bpartnerId);
+		throw new BPartnerNoBillToAddressException(bpartnerName)
 				.setParameter("SOTrx", soTrx)
 				.appendParametersToMessage();
 	}
@@ -686,9 +731,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			@NonNull final SOTrx soTrx,
 			@NonNull final ZonedDateTime date)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 
-		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(bpartnerLocationId.getBpartnerId(), soTrx);
+		final PricingSystemId pricingSystemId = bpartnersRepo.retrievePricingSystemIdOrNull(bpartnerLocationId.getBpartnerId(), soTrx);
 		if (pricingSystemId == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@")
@@ -697,7 +742,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 					.appendParametersToMessage();
 		}
 
-		final CountryId countryId = bpartnerDAO.getBPartnerLocationCountryId(bpartnerLocationId);
+		final CountryId countryId = bpartnersRepo.getBPartnerLocationCountryId(bpartnerLocationId);
 
 		final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 		return priceListBL.getCurrentPriceList(pricingSystemId, countryId, date, soTrx)
@@ -710,13 +755,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean setDocTypeTargetId(final org.compiere.model.I_C_Invoice invoice, final String docBaseType)
+	public final boolean setDocTypeTargetId(@NonNull final org.compiere.model.I_C_Invoice invoice, @NonNull final InvoiceDocBaseType docBaseType)
 	{
 		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 		final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(docBaseType)
+				.docBaseType(docBaseType.getDocBaseType())
 				.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 				.adClientId(invoice.getAD_Client_ID())
 				.adOrgId(invoice.getAD_Org_ID())
@@ -730,7 +775,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		else
 		{
 			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
-			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType);
+			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType.getDocBaseType());
 			invoice.setIsSOTrx(isSOTrx);
 			return true;
 		}
@@ -744,7 +789,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final String docBaseType = invoice.isSOTrx() ? X_C_DocType.DOCBASETYPE_ARInvoice : X_C_DocType.DOCBASETYPE_APInvoice;
+		final InvoiceDocBaseType docBaseType = invoice.isSOTrx() ? InvoiceDocBaseType.CustomerInvoice : InvoiceDocBaseType.VendorInvoice;
 		setDocTypeTargetId(invoice, docBaseType);
 	}
 
@@ -758,6 +803,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void updateDescriptionFromDocTypeTargetId(final org.compiere.model.I_C_Invoice invoice, final String defaultDescription, final String defaultDocumentNote)
 	{
+		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+
 		final int docTypeId = invoice.getC_DocTypeTarget_ID();
 		if (docTypeId <= 0)
 		{
@@ -781,8 +828,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner bPartner = bpartnerDAO.getById(invoice.getC_BPartner_ID());
+		final I_C_BPartner bPartner = bpartnersRepo.getById(invoice.getC_BPartner_ID());
 
 		final String adLanguage = CoalesceUtil.coalesce(bPartner.getAD_Language(), Env.getAD_Language());
 
@@ -814,8 +860,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public void ensureUOMsAreNotNull(final @NonNull InvoiceId invoiceId)
 	{
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IProductBL productBL = Services.get(IProductBL.class);
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoiceId); // // TODO tbp: create this method!
 		for (final I_C_InvoiceLine line : lines)
@@ -837,8 +883,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void renumberLines(final I_C_Invoice invoice, final int step)
 	{
-
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice, InterfaceWrapperHelper.getTrxName(invoice));
 		renumberLines(lines, step);
 	}
@@ -1162,7 +1208,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 		else
 		{
-			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, invoiceLine.getC_UOM(), stockQty.toBigDecimal());
+			final BigDecimal qtyEntered = uomConversionBL.convertFromProductUOM(productId, UomId.ofRepoId(invoiceLine.getC_UOM_ID()), stockQty.toBigDecimal());
 			invoiceLine.setQtyEntered(qtyEntered);
 		}
 
@@ -1179,8 +1225,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		// services
 		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
-		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		final ITaxBL taxBL = Services.get(ITaxBL.class);
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+		final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
 
 		// // Make sure QtyInvoicedInPriceUOM is up2date
 		invoiceLineBL.setQtyInvoicedInPriceUOM(invoiceLine);
@@ -1208,9 +1255,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			if (invoiceLine.getM_Product_ID() > 0)
 			{
-				if (invoiceLine.getC_Charge_ID() > 0)    // Charge
+				final ChargeId chargeId = ChargeId.ofRepoIdOrNull(invoiceLine.getC_Charge_ID());
+				if (chargeId != null)    // Charge
 				{
-					stdTax = createTax(ctx, taxDAO.getDefaultTax(invoiceLine.getC_Charge().getC_TaxCategory()).getC_Tax_ID(), trxName);
+					final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
+					final I_C_TaxCategory taxCategoryRecord = taxDAO.getTaxCategoryById(TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID()));
+					stdTax = createTax(ctx, taxDAO.getDefaultTaxId(taxCategoryRecord), trxName);
 				}
 
 			}
@@ -1245,6 +1295,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void setTaxAmt(final I_C_InvoiceLine invoiceLine)
 	{
+		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
 		final int taxId = invoiceLine.getC_Tax_ID();
 		if (taxId <= 0)
 		{
@@ -1252,8 +1304,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// setLineNetAmt();
-		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-		final I_C_Tax tax = taxDAO.getTaxById(taxId);
+		final Tax tax = taxDAO.getTaxById(taxId);
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 		if (tax.isDocumentLevel() && invoice.isSOTrx())
 		{
@@ -1263,7 +1314,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
 		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
-		final BigDecimal TaxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, isTaxIncluded, taxPrecision.toInt());
+		final BigDecimal TaxAmt = tax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt());
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);
@@ -1275,18 +1326,19 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		invoiceLine.setTaxAmt(TaxAmt);
 	}    // setTaxAmt
 
-	private I_C_Tax createTax(final Properties ctx, final int taxId, final String trxName)
+	private I_C_Tax createTax(final Properties ctx, final TaxId taxId, final String trxName)
 	{
-		final I_C_Tax tax = InterfaceWrapperHelper.create(ctx, taxId, I_C_Tax.class, trxName);
+		final int ctaxId = taxId.getRepoId();
+		final I_C_Tax tax = InterfaceWrapperHelper.create(ctx, ctaxId, I_C_Tax.class, trxName);
 
-		if (taxId == 0)
+		if (ctaxId == 0)
 		{
 			tax.setIsDefault(false);
 			tax.setIsDocumentLevel(true);
 			tax.setIsSummary(false);
 			tax.setIsTaxExempt(false);
 			tax.setRate(BigDecimal.ZERO);
-			tax.setRequiresTaxCertificate(false);
+			tax.setRequiresTaxCertificate(null);
 			tax.setSOPOType(X_C_Tax.SOPOTYPE_Both);
 			tax.setValidFrom(TimeUtil.getDay(1990, 1, 1));
 			tax.setIsSalesTax(false);
@@ -1296,30 +1348,106 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	/**
-	 * Calls {@link #isTaxIncluded(I_C_Invoice, I_C_Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
-	 *
-	 * @param invoiceLine
-	 * @return
+	 * Calls {@link #isTaxIncluded(org.compiere.model.I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
 	 */
 	@Override
 	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
+
+		final Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
 		final org.compiere.model.I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		return isTaxIncluded(invoice, tax);
 	}
 
 	@Override
-	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Invoice invoice, @Nullable final I_C_Tax tax)
+	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_Invoice invoice, @Nullable final Tax tax)
 	{
 		if (tax != null && tax.isWholeTax())
 		{
 			return true;
 		}
 
-		return invoice.isTaxIncluded(); // 08486: use the invoice's flag, not whatever the PL sais right now
+		return invoice.isTaxIncluded(); // 08486: use the invoice's flag, not whatever the PL says right now
+	}
+
+	@Override
+	public void setInvoiceLineTaxes(@NonNull final I_C_Invoice invoice)
+	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+		final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+
+		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+
+		for (final I_C_InvoiceLine il : lines)
+		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(il.getM_InOutLine_ID());
+
+			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineById(inoutLineId);
+			final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
+
+			final OrgId orgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+			final Timestamp taxDate = io != null ? io.getMovementDate() : invoice.getDateInvoiced();
+
+			final BPartnerLocationId taxBPartnerLocationId = io != null ? BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID())
+					: BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+
+			final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
+
+			final CountryId countryFromId = getFromCountryId(invoice, il);
+
+			invoiceLineBL.setTaxForInvoiceLine(il, orgId, taxDate, countryFromId, taxBPartnerLocationId, isSOTrx);
+
+			invoiceDAO.save(il);
+		}
+	}
+
+	@Override
+	public CountryId getFromCountryId(org.compiere.model.I_C_Invoice invoice, org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+		final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
+
+		final WarehouseId invoiceWarehouseId = WarehouseId.ofRepoIdOrNull(invoice.getM_Warehouse_ID());
+
+		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+		final CountryId orgCountryId = bpartnerOrgBL.getOrgCountryId(orgId);
+
+		final CountryId warehouseCountryId = invoiceWarehouseId == null ? null : warehouseBL.getCountryId(invoiceWarehouseId);
+
+		final CountryId countryFromId;
+
+		if (warehouseCountryId != null)
+		{
+
+			countryFromId = warehouseCountryId;
+		}
+		else if (invoiceLine.getM_InOutLine_ID() > 0)
+		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoId(invoiceLine.getM_InOutLine_ID());
+
+			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+
+			final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
+
+			final WarehouseId warehouseId = WarehouseId.ofRepoId(inout.getM_Warehouse_ID());
+			countryFromId = warehouseBL.getCountryId(warehouseId);
+		}
+		else
+		{
+			countryFromId = orgCountryId;
+			if (countryFromId == null)
+			{
+				throw new OrgHasNoBPartnerLinkException(orgId);
+			}
+		}
+
+		return countryFromId;
 	}
 
 	@Override
@@ -1336,6 +1464,20 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		return null;
+	}
+
+	@Override
+	public final boolean isInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());
+		final String docBaseType = docType.getDocBaseType();
+		return isInvoice(docBaseType);
+	}
+
+	private final boolean isInvoice(final String docBaseType)
+	{
+		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofNullableCode(docBaseType);
+		return invoiceDocBaseType != null && (invoiceDocBaseType.equals(InvoiceDocBaseType.CustomerInvoice) || invoiceDocBaseType.equals(InvoiceDocBaseType.VendorInvoice));
 	}
 
 	@Override
@@ -1389,8 +1531,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		// must be one of Mengendifferenz or Preisdifferenz
-		if (X_C_DocType.DOCSUBTYPE_NB_Mengendifferenz.compareTo(docSubType) != 0
-				&& X_C_DocType.DOCSUBTYPE_NB_Preisdifferenz.compareTo(docSubType) != 0)
+		if (X_C_DocType.DOCSUBTYPE_AQ.compareTo(docSubType) != 0
+				&& X_C_DocType.DOCSUBTYPE_AP.compareTo(docSubType) != 0)
 		{
 			return false;
 		}
@@ -1502,11 +1644,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void updateInvoiceLineIsReadOnlyFlags(@NonNull final I_C_Invoice invoice, final I_C_InvoiceLine... invoiceLines)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 		final boolean saveLines;
 		final List<I_C_InvoiceLine> linesToUpdate;
 		if (Check.isEmpty(invoiceLines))
 		{
-			final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 			linesToUpdate = invoiceDAO.retrieveLines(invoice);
 			saveLines = true;
 		}
@@ -1590,10 +1733,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final TaxCategoryId getTaxCategoryId(final I_C_InvoiceLine invoiceLine)
 	{
+		final ChargeRepository chargeRepo = SpringContextHolder.instance.getBean(ChargeRepository.class);
 		// In case we have a charge, use the tax category from charge
-		if (invoiceLine.getC_Charge_ID() > 0)
+		final ChargeId chargeId = ChargeId.ofRepoIdOrNull(invoiceLine.getC_Charge_ID());
+		if (chargeId != null)
 		{
-			return TaxCategoryId.ofRepoId(invoiceLine.getC_Charge().getC_TaxCategory_ID());
+			final I_C_Charge chargeRecord = chargeRepo.getById(chargeId);
+			return TaxCategoryId.ofRepoId(chargeRecord.getC_TaxCategory_ID());
 		}
 
 		final IPricingContext pricingCtx = Services.get(IInvoiceLineBL.class).createPricingContext(invoiceLine);
@@ -1609,12 +1755,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 		final int reversalInvoiceId = invoice.getReversal_ID();
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
 		final org.compiere.model.I_C_Invoice reversalInvoice = invoice.getReversal();
 
 		// services
-		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 		final IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 		final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
@@ -1697,4 +1844,34 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return sysconfigs.getReferenceListAware(SYSCONFIG_C_Invoice_PaymentRule, PaymentRule.OnCredit, PaymentRule.class);
 	}
 
+	@Override
+	public final void discountInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice, final @NonNull Amount discountAmt, final @NonNull Timestamp date)
+	{
+		if (discountAmt.signum() == 0)
+		{
+			return;
+		}
+
+		final Amount discountAmtAbs = discountAmt.negateIfNot(invoice.isSOTrx());
+
+		// don't declare during init; it won't be available yet
+		final CurrencyRepository currenciesRepo = SpringContextHolder.instance.getBean(CurrencyRepository.class);
+		final CurrencyId currencyId = currenciesRepo.getCurrencyIdByCurrencyCode(discountAmt.getCurrencyCode());
+
+		// @formatter:off
+		Services.get(IAllocationBL.class).newBuilder()
+			.orgId(invoice.getAD_Org_ID())
+			.currencyId(currencyId)
+			.dateAcct(date)
+			.dateTrx(date)
+			.addLine()
+				.orgId(invoice.getAD_Org_ID())
+				.bpartnerId(invoice.getC_BPartner_ID())
+				.invoiceId(invoice.getC_Invoice_ID())
+				.amount(BigDecimal.ZERO)
+				.discountAmt(discountAmtAbs.getAsBigDecimal())
+			.lineDone()
+			.create(true);
+		// @formatter:on
+	}
 }

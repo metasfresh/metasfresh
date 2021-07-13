@@ -1,17 +1,19 @@
 package de.metas.purchasecandidate;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.Dimension;
+import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -40,6 +42,12 @@ import lombok.Value;
 class PurchaseCandidateImmutableFields
 {
 	@Nullable
+	ExternalId externalHeaderId;
+
+	@Nullable
+	ExternalId externalLineId;
+
+	@Nullable
 	OrderAndLineId salesOrderAndLineIdOrNull;
 
 	@NonNull
@@ -63,4 +71,16 @@ class PurchaseCandidateImmutableFields
 	String vendorProductNo;
 
 	boolean aggregatePOs;
+
+	@Nullable
+	ForecastLineId forecastLineId;
+
+	@Nullable
+	Dimension dimension;
+
+	@Nullable
+	PurchaseCandidateSource source;
+
+	@Nullable
+	String externalPurchaseOrderUrl;
 }

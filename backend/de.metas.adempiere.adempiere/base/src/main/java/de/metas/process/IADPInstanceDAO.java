@@ -22,20 +22,21 @@ package de.metas.process;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
-
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_PInstance;
 
-import de.metas.util.ISingletonService;
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Set;
 
 public interface IADPInstanceDAO extends ISingletonService
 {
 	/**
 	 * Saves {@link ProcessInfo} together with it's parameters.
 	 *
-	 * @param pi
 	 * @see #saveProcessInfoOnly(ProcessInfo)
 	 * @see #saveParameterToDB(PInstanceId, List)
 	 */
@@ -44,9 +45,7 @@ public interface IADPInstanceDAO extends ISingletonService
 	/**
 	 * Saves {@link ProcessInfo} only, excluding depending records like process parameters.
 	 *
-	 * Also, in case the {@link ProcessInfo#getAD_PInstance_ID()} is missing, this method will create it and it will set it to {@link ProcessInfo}.
-	 *
-	 * @param pi
+	 * Also, in case the {@link ProcessInfo#getAdProcessId()} is missing, this method will create it and it will set it to {@link ProcessInfo}.
 	 */
 	void saveProcessInfoOnly(ProcessInfo pi);
 
@@ -54,27 +53,22 @@ public interface IADPInstanceDAO extends ISingletonService
 	 * Saves process parameters.
 	 *
 	 * @param pinstanceId existing AD_PInstance_ID (mandatory)
-	 * @param piParams
 	 */
 	void saveParameterToDB(PInstanceId pinstanceId, List<ProcessInfoParameter> piParams);
 
 	/**
-	 * @param adPInstanceId AD_PInstance_ID
+	 * @param pinstanceId AD_PInstance_ID
 	 * @return process parameters for given AD_PInstance_ID
 	 */
 	List<ProcessInfoParameter> retrieveProcessInfoParameters(PInstanceId pinstanceId);
 
 	/**
 	 * Locks underlying AD_PInstance.
-	 *
-	 * @param adPInstanceId
 	 */
 	void lock(PInstanceId pinstanceId);
 
 	/**
 	 * Unlocks underlying AD_PInstance, saves the result and logs.
-	 *
-	 * @param result
 	 */
 	void unlockAndSaveResult(ProcessExecutionResult result);
 
@@ -108,4 +102,8 @@ public interface IADPInstanceDAO extends ISingletonService
 	void saveSelectedIncludedRecords(PInstanceId pinstanceId, Set<TableRecordReference> recordRefs);
 
 	PInstanceId createADPinstanceAndADPInstancePara(PInstanceRequest pinstanceRequest);
+
+	Timestamp getLastRunDate(@NonNull AdProcessId adProcessId, @Nullable PInstanceId pinstanceToExclude);
+
+	void saveProcessInfoLogs(PInstanceId pinstanceId, List<ProcessInfoLog> logs);
 }

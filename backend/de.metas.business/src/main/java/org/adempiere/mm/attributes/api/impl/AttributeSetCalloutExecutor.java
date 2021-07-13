@@ -44,18 +44,12 @@ public class AttributeSetCalloutExecutor
 	 *
 	 * Note that callouts now fire and change other attributes.
 	 * <b>{@link IAttributeValueContext} is responsible for preventing setting values multiple times</b>
-	 *
-	 * @param attributeValueContext
-	 * @param attributeSet
-	 * @param attribute
-	 * @param valueNew
-	 * @param valueOld
 	 */
 	public final void executeCallout(final IAttributeValueContext attributeValueContext,
 			final IAttributeSet attributeSet,
 			final I_M_Attribute attribute,
-			final Object valueNew,
-			final Object valueOld)
+			final Object valueOld, 
+			final Object valueNew)
 	{
 		// Get the M_Attribute from storage (to make sure we are using the same instance of it)
 		final I_M_Attribute attributeCurrent = attributeSet.getAttributeByIdIfExists(attribute.getM_Attribute_ID());
@@ -75,7 +69,7 @@ public class AttributeSetCalloutExecutor
 		}
 
 		final IAttributeValueCallout callout = attributeSet.getAttributeValueCallout(attributeCurrent);
-		executeCallout(attributeValueContext, callout, attributeSet, attributeCurrent, valueNew, valueOld);
+		executeCallout(attributeValueContext, callout, attributeSet, attributeCurrent, valueOld, valueNew);
 	}
 
 	private final List<IAttributeValueCallout> calloutsActive = new ArrayList<>();
@@ -85,8 +79,8 @@ public class AttributeSetCalloutExecutor
 			final IAttributeValueCallout callout,
 			final IAttributeSet attributeSet,
 			final I_M_Attribute attribute,
-			final Object valueNew,
-			final Object valueOld)
+			final Object valueOld, 
+			final Object valueNew)
 	{
 		if (calloutsActive.contains(callout))
 		{

@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -15,12 +14,17 @@ import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.ICountryAreaBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
@@ -29,6 +33,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Calendar;
@@ -50,6 +56,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -80,7 +87,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public abstract class AbstractFlatrateTermTest
 {
@@ -111,7 +117,7 @@ public abstract class AbstractFlatrateTermTest
 	private I_C_BPartner_Location bpLocation;
 
 	@Getter
-	private I_AD_User user;
+	private org.compiere.model.I_AD_User user;
 
 	private TaxCategoryId taxCategoryId;
 
@@ -130,6 +136,13 @@ public abstract class AbstractFlatrateTermTest
 		initialize();
 
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
 	}
 
 	protected void initialize()
@@ -233,14 +246,14 @@ public abstract class AbstractFlatrateTermTest
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 		warehouse.setName("WH");
-		warehouse.setAD_Org(helper.getOrg());
+		warehouse.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
 		save(warehouse);
 	}
 
 	private void createDocType()
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
-		docType.setAD_Org(helper.getOrg());
+		docType.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
 		docType.setDocSubType(I_C_DocType.DocSubType_Abonnement);
 		docType.setDocBaseType(I_C_DocType.DocBaseType_CustomerContract);
 		save(docType);
@@ -273,6 +286,7 @@ public abstract class AbstractFlatrateTermTest
 		tax.setValidFrom(TimeUtil.asTimestamp(LocalDate.of(1970, Month.JANUARY, 1).atStartOfDay().atZone(ZoneId.systemDefault())));
 		tax.setC_Country_ID(country.getC_Country_ID());
 		tax.setTo_Country_ID(country.getC_Country_ID());
+		tax.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
 		tax.setSOPOType(X_C_Tax.SOPOTYPE_SalesTax);
 		saveRecord(tax);
 	}
@@ -330,7 +344,7 @@ public abstract class AbstractFlatrateTermTest
 				.name("Abo")
 				.calendar(getCalendar())
 				.pricingSystem(productAndPricingSystem.getPricingSystem())
-				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Sofort)
+				.invoiceRule(X_C_Flatrate_Conditions.INVOICERULE_Immediate)
 				.typeConditions(X_C_Flatrate_Conditions.TYPE_CONDITIONS_Subscription)
 				.onFlatrateTermExtend(X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice)
 				.isCreateNoInvoice(false)
@@ -348,6 +362,7 @@ public abstract class AbstractFlatrateTermTest
 		final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 		final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+				.orgId(OrgId.ofRepoId(orderLine.getAD_Org_ID()))
 				.context(helper.getContextProvider())
 				.bPartner(getBpartner())
 				.conditions(conditions)
@@ -361,18 +376,19 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
 
-		contract.setBill_Location(bpLocation);
-		contract.setBill_User(user);
-		contract.setDropShip_BPartner(getBpartner());
-		contract.setDropShip_Location(bpLocation);
-		contract.setDropShip_User(user);
+		contract.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
+		contract.setBill_User_ID(user.getAD_User_ID());
+		contract.setDropShip_BPartner_ID(getBpartner().getC_BPartner_ID());
+		contract.setDropShip_Location_ID(bpLocation.getC_BPartner_Location_ID());
+		contract.setDropShip_User_ID(user.getAD_User_ID());
 		contract.setPriceActual(PRICE_TEN);
 		contract.setPlannedQtyPerUnit(QTY_ONE);
 		contract.setMasterStartDate(startDate);
 		contract.setM_Product_ID(productAndCategoryId.getProductId().getRepoId());
 		contract.setC_TaxCategory_ID(taxCategoryId.getRepoId());
 		contract.setIsTaxIncluded(true);
-		contract.setC_OrderLine_Term(orderLine);
+		contract.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
+		contract.setC_Order_Term_ID(orderLine.getC_Order_ID());
 		save(contract);
 		flatrateBL.complete(contract);
 

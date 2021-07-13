@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.reflist.RefListId;
 import de.metas.reflist.ReferenceId;
@@ -11,11 +12,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Ref_List;
+import org.compiere.model.I_AD_Reference;
 import org.compiere.util.Env;
 
 import java.util.Collection;
@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -59,8 +60,7 @@ public class ADReferenceDAO implements IADReferenceDAO
 	public ADRefListItem retrieveListItemOrNull(final int adReferenceId, final String value)
 	{
 		final Map<String, ADRefListItem> itemsMap = retrieveListValuesMap(adReferenceId);
-		final ADRefListItem item = itemsMap.get(value);
-		return item;
+		return itemsMap.get(value);
 	}
 
 	@Override
@@ -79,7 +79,12 @@ public class ADReferenceDAO implements IADReferenceDAO
 			return value;
 		}
 
-		return item.getName().translate(Env.getAD_Language(ctx));
+		String adLanguage = Env.getAD_Language(ctx);
+		if(adLanguage == null)
+		{
+			adLanguage = Language.getBaseAD_Language();
+		}
+		return item.getName().translate(adLanguage);
 	}
 
 	@Override
@@ -109,20 +114,21 @@ public class ADReferenceDAO implements IADReferenceDAO
 		saveRecord(record);
 	}
 
+	public I_AD_Reference getReferenceByID(@NonNull final ReferenceId referenceId)
+	{
+		return load(referenceId, I_AD_Reference.class);
+	}
+
 	private ImmutableMap<String, ADRefListItem> retrieveListValuesMap(@NonNull final ReferenceId referenceId)
 	{
-
-		final IQueryBuilder<I_AD_Ref_List> queryBuilder = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_AD_Ref_List.class, Env.getCtx(), ITrx.TRXNAME_None);
-
-		queryBuilder.getCompositeFilter()
+		final List<I_AD_Ref_List> items = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Ref_List.class)
 				.addEqualsFilter(I_AD_Ref_List.COLUMNNAME_AD_Reference_ID, referenceId.getRepoId())
-				.addOnlyActiveRecordsFilter();
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_Ref_List.COLUMNNAME_AD_Ref_List_ID)
+				.create()
+				.list(I_AD_Ref_List.class);
 
-		queryBuilder.orderBy()
-				.addColumn(I_AD_Ref_List.COLUMNNAME_AD_Ref_List_ID);
-
-		final List<I_AD_Ref_List> items = queryBuilder.create().list(I_AD_Ref_List.class);
 		if (items.isEmpty())
 		{
 			return ImmutableMap.of();

@@ -1,19 +1,14 @@
 package org.adempiere.ad.table.process;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.base.Joiner;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CacheMgt;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -37,16 +32,19 @@ import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import com.google.common.base.Joiner;
-import com.google.common.collect.ImmutableList;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
-import ch.qos.logback.classic.Level;
-import de.metas.cache.CacheMgt;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -143,7 +141,7 @@ class TablePrimaryKeyGenerator
 		return this;
 	}
 
-	private TablePrimaryKeyGenerator generateForTableIfPossible(final I_AD_Table adTable)
+	private void generateForTableIfPossible(final I_AD_Table adTable)
 	{
 		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
@@ -163,7 +161,6 @@ class TablePrimaryKeyGenerator
 			}
 		});
 
-		return this;
 	}
 
 	public String getSummary()
@@ -176,7 +173,7 @@ class TablePrimaryKeyGenerator
 		Loggables.withLogger(logger, Level.DEBUG).addLog(msg, msgParameters);
 	}
 
-	private final boolean hasColumnPK(final I_AD_Table table)
+	private boolean hasColumnPK(final I_AD_Table table)
 	{
 		return queryBL
 				.createQueryBuilder(I_AD_Column.class)
@@ -198,7 +195,7 @@ class TablePrimaryKeyGenerator
 				.listDistinct(I_AD_Column.COLUMNNAME_ColumnName, String.class);
 	}
 
-	private final I_AD_Column createColumnPK(final I_AD_Table table)
+	private I_AD_Column createColumnPK(final I_AD_Table table)
 	{
 		final I_AD_Column columnPK = InterfaceWrapperHelper.newInstance(I_AD_Column.class);
 		columnPK.setAD_Org_ID(0);
@@ -246,7 +243,7 @@ class TablePrimaryKeyGenerator
 		return columnPK;
 	}
 
-	private final I_AD_Element getOrCreateKeyColumnNameElement(final I_AD_Table table)
+	private I_AD_Element getOrCreateKeyColumnNameElement(final I_AD_Table table)
 	{
 		final String keyColumnName = table.getTableName() + "_ID";
 
@@ -276,7 +273,7 @@ class TablePrimaryKeyGenerator
 		//
 		// Fetch the rows to migrate using ID server
 		// NOTE: we are doing this ahead, before starting to alter the table
-		final List<Map<String, Object>> rowsToMigrateUsingIDServer = retrieveRowsToMigrateUsingIDServer(adTableId, tableName, pkColumnName);
+		final List<Map<String, Object>> rowsToMigrateUsingIDServer = retrieveRowsToMigrateUsingIDServer(adTableId, tableName);
 
 		// Create/update the DB sequence
 		DB.createTableSequence(tableName);
@@ -286,9 +283,14 @@ class TablePrimaryKeyGenerator
 		executeDDL("ALTER TABLE " + tableName + " ADD COLUMN " + pkColumnName + " numeric(10,0)");
 
 		//
-		// Migrate column's value using ID server
+		// Migrate PK's value using ID server
 		rowsToMigrateUsingIDServer.forEach(row -> updateRowPKFromIDServer(tableName, pkColumnName, row));
 		addLog("Migrated {} rows using ID server", rowsToMigrateUsingIDServer.size());
+
+		//
+		// Migrate PK's value using local DB sequence
+		// usually this happens for tables where we don't have centralized ID maintainance (e.g. C_Invoice_Candidate_Recompute), so in that case the "rows" above is empty.
+		updatePKFromDBSequence(tableName, pkColumnName);
 
 		//
 		// Set default value
@@ -308,7 +310,7 @@ class TablePrimaryKeyGenerator
 		executeDDL("ALTER TABLE " + tableName + " ADD CONSTRAINT " + pkName + " PRIMARY KEY (" + pkColumnName + ")");
 	}
 
-	private List<Map<String, Object>> retrieveRowsToMigrateUsingIDServer(final int adTableId, final String tableName, final String pkColumnName)
+	private List<Map<String, Object>> retrieveRowsToMigrateUsingIDServer(final int adTableId, final String tableName)
 	{
 		if (!isMigrateDataUsingIDServer())
 		{
@@ -322,8 +324,7 @@ class TablePrimaryKeyGenerator
 			return ImmutableList.of();
 		}
 
-		final List<Map<String, Object>> rows = retrieveMaps(tableName, parentColumnNames);
-		return rows;
+		return retrieveMaps(tableName, parentColumnNames);
 	}
 
 	private static List<Map<String, Object>> retrieveMaps(@NonNull final String tableName, @NonNull final List<String> columnNames)
@@ -370,7 +371,7 @@ class TablePrimaryKeyGenerator
 		return map;
 	}
 
-	private static void updateRowPKFromIDServer(final String tableName, final String pkColumnName, Map<String, Object> whereClause)
+	private static void updateRowPKFromIDServer(final String tableName, final String pkColumnName, final Map<String, Object> whereClause)
 	{
 		final int id = MSequence.getNextProjectID_HTTP(tableName);
 		if (id <= 0)
@@ -380,27 +381,36 @@ class TablePrimaryKeyGenerator
 
 		final StringBuilder sql = new StringBuilder();
 
-		sql.append("UPDATE " + tableName + " SET " + pkColumnName + "=" + id);
+		sql.append("UPDATE ").append(tableName).append(" SET ").append(pkColumnName).append("=").append(id);
 
 		sql.append(" WHERE 1=1");
-		for (Map.Entry<String, Object> e : whereClause.entrySet())
+		for (final Map.Entry<String, Object> e : whereClause.entrySet())
 		{
 			final String columnName = e.getKey();
 			final Object value = e.getValue();
 
-			sql.append(" AND " + columnName + "=" + DB.TO_SQL(value));
+			sql.append(" AND ").append(columnName).append("=").append(DB.TO_SQL(value));
 		}
 
 		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
-	private final void executeDDL(final String sql)
+	private void updatePKFromDBSequence(final String tableName, final String pkColumnName)
+	{
+		final int count = DB.executeUpdateEx(
+				"UPDATE " + tableName + " SET " + pkColumnName + "=" + DB.TO_TABLESEQUENCE_NEXTVAL(tableName) + " WHERE " + pkColumnName + " IS NULL",
+				new Object[] {},
+				ITrx.TRXNAME_ThreadInherited);
+		addLog("Updated {}.{} for {} rows using local DB sequence", tableName, pkColumnName, count);
+	}
+
+	private void executeDDL(final String sql)
 	{
 		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 		addLog("DDL: " + sql);
 	}
 
-	private final void addToTabs(final I_AD_Column column)
+	private void addToTabs(final I_AD_Column column)
 	{
 		final int adTableId = column.getAD_Table_ID();
 
@@ -411,11 +421,11 @@ class TablePrimaryKeyGenerator
 				.forEach(tab -> createAD_Field(tab, column));
 	}
 
-	private final I_AD_Field createAD_Field(final I_AD_Tab tab, final I_AD_Column column)
+	private void createAD_Field(final I_AD_Tab tab, final I_AD_Column column)
 	{
 		final String fieldEntityType = null; // auto
 
-		I_AD_Field field = null;
+		final I_AD_Field field;
 		try
 		{
 			final boolean displayedIfNotIDColumn = true; // actually doesn't matter because PK probably is an ID column anyways
@@ -432,6 +442,5 @@ class TablePrimaryKeyGenerator
 			addLog("@Error@ creating AD_Field for {} in {}: {}", column, tab, ex.getLocalizedMessage());
 		}
 
-		return field;
 	}
 }

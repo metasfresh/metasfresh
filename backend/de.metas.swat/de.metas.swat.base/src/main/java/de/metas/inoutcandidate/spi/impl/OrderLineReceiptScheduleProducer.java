@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -39,6 +41,7 @@ import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
@@ -65,7 +68,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 
 /**
  *
@@ -95,6 +98,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(final I_C_OrderLine line, final boolean createReceiptScheduleIfNotExists)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
+		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 		//
 		// Create/update Receipt Schedule
@@ -234,6 +239,9 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		// #3549
 		receiptSchedule.setOnMaterialReceiptWithDestWarehouse(getOnMaterialReceiptWithDestWarehouse(line));
+
+		final Dimension orderLineDimension = dimensionService.getFromRecord(line);
+		dimensionService.updateRecord(receiptSchedule, orderLineDimension);
 
 		//
 		// Save & return
@@ -392,7 +400,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 	/**
 	 * Suggests the C_DocType_ID to be used for the future Material Receipt.
-	 *
+	 * <p>
 	 * Basically, it checks:
 	 * <ul>
 	 * <li>order's C_DocType.C_DocType_Shipment_ID if set
@@ -439,7 +447,9 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		return DocTypeId.toRepoId(docTypeDAO.getDocTypeIdOrNull(query));
 	}
 
-	/** Wraps {@link I_C_OrderLine} as {@link IReceiptScheduleWarehouseDestProvider.IContext} */
+	/**
+	 * Wraps {@link I_C_OrderLine} as {@link IReceiptScheduleWarehouseDestProvider.IContext}
+	 */
 	private static final class OrderLineWarehouseDestProviderContext implements IReceiptScheduleWarehouseDestProvider.IContext
 	{
 		public static OrderLineWarehouseDestProviderContext of(final Properties ctx, final org.compiere.model.I_C_OrderLine orderLine)

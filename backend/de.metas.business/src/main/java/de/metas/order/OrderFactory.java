@@ -1,30 +1,43 @@
 package de.metas.order;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.lang.SOTrx;
+import de.metas.logging.TableRecordMDC;
+import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.shipping.ShipperId;
+import de.metas.uom.UomId;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.util.TimeUtil;
+import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-import org.slf4j.MDC.MDCCloseable;
-
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPartnerId;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.lang.SOTrx;
-import de.metas.logging.TableRecordMDC;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -57,26 +70,32 @@ import lombok.NonNull;
  */
 public class OrderFactory
 {
-	public static final OrderFactory newPurchaseOrder()
+	public static OrderFactory newPurchaseOrder()
 	{
 		return new OrderFactory()
 				.soTrx(SOTrx.PURCHASE);
 	}
 
-	public static final OrderFactory newSalesOrder()
+	public static OrderFactory newSalesOrder()
 	{
 		return new OrderFactory()
 				.soTrx(SOTrx.SALES);
 	}
 
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 	private final I_C_Order order;
 	private boolean built = false;
+	private DocTypeId docTypeTargetId = null;
 
 	private final List<OrderLineBuilder> orderLineBuilders = new ArrayList<>();
 
 	private OrderFactory()
 	{
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+		trxManager.assertThreadInheritedTrxExists();
 		order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
 		order.setDocStatus(DocStatus.Drafted.getCode());
 		order.setDocAction(IDocument.ACTION_Complete);
@@ -84,11 +103,11 @@ public class OrderFactory
 
 	public org.compiere.model.I_C_Order createAndComplete()
 	{
-		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 		{
 			createDraft();
 
-			Services.get(IDocumentBL.class).processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 			return order;
 		}
@@ -96,11 +115,11 @@ public class OrderFactory
 
 	public I_C_Order createDraft()
 	{
-		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 		{
 			if (orderLineBuilders.isEmpty())
 			{
-				throw new AdempiereException("no lines");
+				throw new AdempiereException("Cannot create an order without lines");
 			}
 
 			createDraftOrderHeader();
@@ -113,22 +132,22 @@ public class OrderFactory
 
 	public I_C_Order createDraftOrderHeader()
 	{
-		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 		{
 			assertNotBuilt();
 			built = true;
 
-			final IOrderBL orderBL = Services.get(IOrderBL.class);
 			if (order.getC_DocTypeTarget_ID() <= 0)
 			{
-				orderBL.setDocTypeTargetId(order);
+				orderBL.setDefaultDocTypeTargetId(order);
 			}
 
 			if (order.getBill_BPartner_ID() <= 0)
 			{
 				orderBL.setBillLocation(order);
 			}
-			save(order);
+
+			saveRecord(order);
 
 			return order;
 		}
@@ -136,7 +155,7 @@ public class OrderFactory
 
 	private void assertNotBuilt()
 	{
-		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 		{
 			if (built)
 			{
@@ -152,7 +171,7 @@ public class OrderFactory
 
 	public OrderLineBuilder newOrderLine()
 	{
-		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 		{
 			final OrderLineBuilder orderLineBuilder = new OrderLineBuilder(this);
 			orderLineBuilders.add(orderLineBuilder);
@@ -162,7 +181,7 @@ public class OrderFactory
 
 	public Optional<OrderLineBuilder> orderLineByProductAndUom(final ProductId productId, final UomId uomId)
 	{
-		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 		{
 			return orderLineBuilders.stream()
 					.filter(orderLineBuilder -> orderLineBuilder.isProductAndUomMatching(productId, uomId))
@@ -176,80 +195,87 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory deliveryRule(final String deliveryRule)
+	public OrderFactory externalPurchaseOrderUrl(@Nullable final String externalPurchaseOrderUrl)
 	{
+		order.setExternalPurchaseOrderURL(externalPurchaseOrderUrl);
+
 		assertNotBuilt();
-		order.setDeliveryRule(deliveryRule);
 		return this;
 	}
 
-	public OrderFactory deliveryViaRule(final String deliveryViaRule)
+	public OrderFactory externalHeaderId(@Nullable final ExternalId externalId)
 	{
+		order.setExternalId(externalId != null ? externalId.getValue() : null);
+
 		assertNotBuilt();
-		order.setDeliveryViaRule(deliveryViaRule);
 		return this;
 	}
 
-	public OrderFactory shipperId(final int shipperId)
+	public OrderFactory shipperId(@Nullable final ShipperId shipperId)
 	{
 		assertNotBuilt();
-		order.setM_Shipper_ID(shipperId);
+		order.setM_Shipper_ID(ShipperId.toRepoId(shipperId));
 		return this;
 	}
 
-	public OrderFactory freightCostRule(final String freightCostRule)
+	public OrderFactory freightCostRule(@NonNull final FreightCostRule freightCostRule)
 	{
 		assertNotBuilt();
-		order.setFreightCostRule(freightCostRule);
+		order.setFreightCostRule(freightCostRule.getCode());
 		return this;
 	}
 
-	public OrderFactory paymentRule(final String paymentRule)
+	public OrderFactory paymentRule(@NonNull final PaymentRule paymentRule)
 	{
 		assertNotBuilt();
-		order.setPaymentRule(paymentRule);
+		order.setPaymentRule(paymentRule.getCode());
 		return this;
 	}
 
-	public OrderFactory paymentTermId(final int paymentTermId)
+	public OrderFactory paymentTermId(@Nullable final PaymentTermId paymentTermId)
 	{
 		assertNotBuilt();
-		order.setC_PaymentTerm_ID(paymentTermId);
+		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermId));
 		return this;
 	}
 
-	public OrderFactory invoiceRule(final String invoiceRule)
+	public OrderFactory invoiceRule(@NonNull final InvoiceRule invoiceRule)
 	{
 		assertNotBuilt();
-		order.setInvoiceRule(invoiceRule);
+		order.setInvoiceRule(invoiceRule.getCode());
 		return this;
 	}
 
-	public OrderFactory docType(final int docTypeTargetId)
+	public OrderFactory docType(final DocTypeId docTypeTargetId)
 	{
-		try (final MDCCloseable orderRecordMDC = TableRecordMDC.putTableRecordReference(order))
+		this.docTypeTargetId = docTypeTargetId;
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 		{
 			assertNotBuilt();
 
-			final IOrderBL orderBL = Services.get(IOrderBL.class);
 			orderBL.setDocTypeTargetIdAndUpdateDescription(order, docTypeTargetId);
 
 			return this;
 		}
 	}
 
-	public OrderFactory warehouseId(final int warehouseId)
+	public OrderFactory warehouseId(@Nullable final WarehouseId warehouseId)
 	{
 		assertNotBuilt();
-		order.setM_Warehouse_ID(warehouseId);
+		order.setM_Warehouse_ID(WarehouseId.toRepoId(warehouseId));
 		return this;
 	}
 
-	public OrderFactory orgId(final int orgId)
+	public OrderFactory orgId(@NonNull final OrgId orgId)
 	{
 		assertNotBuilt();
-		order.setAD_Org_ID(orgId);
+		order.setAD_Org_ID(orgId.getRepoId());
 		return this;
+	}
+
+	public OrgId getOrgId()
+	{
+		return OrgId.ofRepoId(order.getAD_Org_ID());
 	}
 
 	public OrderFactory dateOrdered(final LocalDate dateOrdered)
@@ -266,55 +292,48 @@ public class OrderFactory
 		return this;
 	}
 
-	public OrderFactory shipBPartner(@NonNull final BPartnerId bpartnerId, final int bpartnerLocationId, final int contactId)
+	public ZonedDateTime getDatePromised()
+	{
+		return TimeUtil.asZonedDateTime(order.getDatePromised());
+	}
+
+	public OrderFactory shipBPartner(
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final BPartnerLocationId bpartnerLocationId,
+			@Nullable final BPartnerContactId contactId)
 	{
 		assertNotBuilt();
+
+		if (bpartnerLocationId != null && !BPartnerId.equals(bpartnerId, bpartnerLocationId.getBpartnerId()))
+		{
+			throw new AdempiereException("BPartner not matching: " + bpartnerLocationId + ", " + bpartnerId);
+		}
+		if (contactId != null && !BPartnerId.equals(bpartnerId, contactId.getBpartnerId()))
+		{
+			throw new AdempiereException("BPartner not matching: " + contactId + ", " + bpartnerId);
+		}
+
 		order.setC_BPartner_ID(bpartnerId.getRepoId());
-		order.setC_BPartner_Location_ID(bpartnerLocationId);
-		order.setAD_User_ID(contactId);
+		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
+		order.setAD_User_ID(BPartnerContactId.toRepoId(contactId));
 		return this;
 	}
 
 	public OrderFactory shipBPartner(final BPartnerId bpartnerId)
 	{
-		final int bpartnerLocationId = -1;
-		final int contactId = -1;
-		shipBPartner(bpartnerId, bpartnerLocationId, contactId);
+		shipBPartner(bpartnerId, null, null);
 		return this;
 	}
 
-	public OrderFactory billBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
+	public BPartnerId getShipBPartnerId()
 	{
-		assertNotBuilt();
-		order.setBill_BPartner_ID(bpartnerId);
-		order.setBill_Location_ID(bpartnerLocationId);
-		order.setBill_User_ID(contactId);
-		return this;
+		return BPartnerId.ofRepoId(order.getC_BPartner_ID());
 	}
 
-	public OrderFactory dropShipBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
+	public OrderFactory pricingSystemId(@NonNull final PricingSystemId pricingSystemId)
 	{
 		assertNotBuilt();
-		order.setDropShip_BPartner_ID(bpartnerId);
-		order.setDropShip_Location_ID(bpartnerLocationId);
-		order.setDropShip_User_ID(contactId);
-		return this;
-	}
-
-	public OrderFactory handOverBPartner(final int bpartnerId, final int bpartnerLocationId, final int contactId)
-	{
-		assertNotBuilt();
-		order.setHandOver_Partner_ID(bpartnerId);
-		order.setHandOver_Location_ID(bpartnerLocationId);
-		order.setHandOver_User_ID(contactId);
-		order.setIsUseHandOver_Location(bpartnerLocationId > 0);
-		return this;
-	}
-
-	public OrderFactory pricingSystemId(final int pricingSystemId)
-	{
-		assertNotBuilt();
-		order.setM_PricingSystem_ID(pricingSystemId);
+		order.setM_PricingSystem_ID(pricingSystemId.getRepoId());
 		return this;
 	}
 
@@ -323,5 +342,36 @@ public class OrderFactory
 		assertNotBuilt();
 		order.setPOReference(poReference);
 		return this;
+	}
+
+	public OrderFactory salesRepId(@Nullable final UserId salesRepId)
+	{
+		assertNotBuilt();
+		order.setSalesRep_ID(UserId.toRepoId(salesRepId));
+		return this;
+	}
+
+	public OrderFactory projectId(@Nullable final ProjectId projectId)
+	{
+		assertNotBuilt();
+		order.setC_Project_ID(ProjectId.toRepoId(projectId));
+		return this;
+	}
+
+	public OrderFactory campaignId(final int campaignId)
+	{
+		assertNotBuilt();
+		order.setC_Campaign_ID(campaignId);
+		return this;
+	}
+
+	public DocTypeId getDocTypeTargetId()
+	{
+		return docTypeTargetId;
+	}
+
+	public void setDocTypeTargetId(final DocTypeId docTypeTargetId)
+	{
+		this.docTypeTargetId = docTypeTargetId;
 	}
 }

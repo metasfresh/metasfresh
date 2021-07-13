@@ -2,14 +2,16 @@ package de.metas.material.event.purchase;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.MinMaxDescriptor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -42,13 +44,15 @@ public class PurchaseCandidateUpdatedEvent extends PurchaseCandidateEvent
 
 	@JsonCreator
 	@Builder
-	public PurchaseCandidateUpdatedEvent(
+	private PurchaseCandidateUpdatedEvent(
 			@JsonProperty("eventDescriptor") @NonNull final EventDescriptor eventDescriptor,
 			@JsonProperty("purchaseCandidateRepoId") final int purchaseCandidateRepoId,
 			@JsonProperty("purchaseMaterialDescriptor") @NonNull final MaterialDescriptor purchaseMaterialDescriptor,
+			@JsonProperty("minMaxDescriptor") @Nullable final MinMaxDescriptor minMaxDescriptor,
 			@JsonProperty("vendorId") final int vendorId)
 	{
 		super(purchaseMaterialDescriptor,
+				minMaxDescriptor,
 				eventDescriptor,
 				purchaseCandidateRepoId,
 				vendorId);

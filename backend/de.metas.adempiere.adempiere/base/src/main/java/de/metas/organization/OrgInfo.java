@@ -12,6 +12,9 @@ import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import de.metas.workflow.WFResponsibleId;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -57,8 +60,11 @@ public class OrgInfo
 	@NonNull
 	StoreCreditCardNumberMode storeCreditCardNumberMode;
 
-	int logoImageId;
-	int workflowResponsibleId;
+	@NonNull
+	OrgImagesMap imagesMap;
+
+	@Nullable
+	WFResponsibleId workflowResponsibleId;
 	BPartnerLocationId orgBPartnerLocationId;
 	String reportsPathPrefix;
 	ZoneId timeZone;

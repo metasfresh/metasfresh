@@ -1,6 +1,6 @@
 package de.metas.contracts.refund.interceptor;
 
-import static de.metas.util.lang.CoalesceUtil.coalesceSuppliers;
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import java.sql.Timestamp;
 
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

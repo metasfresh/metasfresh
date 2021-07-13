@@ -57,7 +57,6 @@ public class AttachmentEntryCreateRequest
 				.url(uri)
 				.build();
 		return request;
-
 	}
 
 	public static AttachmentEntryCreateRequest fromByteArray(

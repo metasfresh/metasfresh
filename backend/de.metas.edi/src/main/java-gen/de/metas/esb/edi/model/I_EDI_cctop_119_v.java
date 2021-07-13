@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_cctop_119_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_cctop_119_v 
@@ -14,17 +14,10 @@ public interface I_EDI_cctop_119_v
     /** AD_Table_ID=540466 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -87,7 +80,7 @@ public interface I_EDI_cctop_119_v
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -97,7 +90,7 @@ public interface I_EDI_cctop_119_v
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -109,8 +102,7 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -119,8 +111,7 @@ public interface I_EDI_cctop_119_v
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -161,8 +152,7 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
-	 * Set Ort.
-	 * Name des Ortes
+	 * Set City Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -171,8 +161,7 @@ public interface I_EDI_cctop_119_v
 	public void setCity (java.lang.String City);
 
 	/**
-	 * Get Ort.
-	 * Name des Ortes
+	 * Get City Name.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -186,8 +175,8 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_City = "City";
 
 	/**
-	 * Set ISO Ländercode.
-	 * Zweibuchstabiger ISO Ländercode gemäß ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
+	 * Set ISO Country Code.
+	 * Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -196,8 +185,8 @@ public interface I_EDI_cctop_119_v
 	public void setCountryCode (java.lang.String CountryCode);
 
 	/**
-	 * Get ISO Ländercode.
-	 * Zweibuchstabiger ISO Ländercode gemäß ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
+	 * Get ISO Country Code.
+	 * Upper-case two-letter alphanumeric ISO Country code according to ISO 3166-1 - http://www.chemie.fu-berlin.de/diverse/doc/ISO_3166.html
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -211,8 +200,8 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_CountryCode = "CountryCode";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -226,8 +215,8 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -360,8 +349,8 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_GLN = "GLN";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -370,8 +359,8 @@ public interface I_EDI_cctop_119_v
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -385,7 +374,7 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lieferung/Wareneingang.
+	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: TableDir
@@ -395,7 +384,7 @@ public interface I_EDI_cctop_119_v
 	public void setM_InOut_ID (int M_InOut_ID);
 
 	/**
-	 * Get Lieferung/Wareneingang.
+	 * Get Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: TableDir
@@ -437,7 +426,7 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Name Zusatz.
+	 * Set Name 2.
 	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
@@ -447,7 +436,7 @@ public interface I_EDI_cctop_119_v
 	public void setName2 (java.lang.String Name2);
 
 	/**
-	 * Get Name Zusatz.
+	 * Get Name 2.
 	 * Zusätzliche Bezeichnung
 	 *
 	 * <br>Type: String
@@ -462,8 +451,8 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_Name2 = "Name2";
 
 	/**
-	 * Set Telefon.
-	 * Beschreibt eine Telefon Nummer
+	 * Set Phone.
+	 * Identifies a telephone number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -472,8 +461,8 @@ public interface I_EDI_cctop_119_v
 	public void setPhone (java.lang.String Phone);
 
 	/**
-	 * Get Telefon.
-	 * Beschreibt eine Telefon Nummer
+	 * Get Phone.
+	 * Identifies a telephone number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -487,8 +476,7 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_Phone = "Phone";
 
 	/**
-	 * Set PLZ.
-	 * Postleitzahl
+	 * Set Postal.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -497,8 +485,7 @@ public interface I_EDI_cctop_119_v
 	public void setPostal (java.lang.String Postal);
 
 	/**
-	 * Get PLZ.
-	 * Postleitzahl
+	 * Get Postal.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -537,8 +524,8 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_ReferenceNo = "ReferenceNo";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -552,8 +539,8 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -565,8 +552,8 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -575,8 +562,8 @@ public interface I_EDI_cctop_119_v
 	public void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -590,7 +577,7 @@ public interface I_EDI_cctop_119_v
     public static final String COLUMNNAME_Value = "Value";
 
 	/**
-	 * Set Umsatzsteuer ID.
+	 * Set VAT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -599,7 +586,7 @@ public interface I_EDI_cctop_119_v
 	public void setVATaxID (java.lang.String VATaxID);
 
 	/**
-	 * Get Umsatzsteuer ID.
+	 * Get VAT ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

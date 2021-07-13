@@ -1,0 +1,718 @@
+{
+  "modal_included1": {
+    "viewHandler": {
+      "modals": {
+        "540328": {
+          "layout": {
+            "activeTab": null,
+            "type": "540328",
+            "windowId": "540328",
+            "caption": "PP Order Issue/Receipt",
+            "description": "",
+            "emptyResultText": "There are no detail rows",
+            "emptyResultHint": "You can create them in this window.",
+            "elements": [
+              {
+                "caption": "Product",
+                "description": "",
+                "widgetType": "Lookup",
+                "size": null,
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "product",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Code",
+                "description": "",
+                "widgetType": "Text",
+                "size": null,
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "code",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Type",
+                "description": "",
+                "widgetType": "Text",
+                "size": null,
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "type",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "PackingInfo",
+                "description": "",
+                "widgetType": "Text",
+                "size": null,
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "packingInfo",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Quantity Plan",
+                "description": "",
+                "widgetType": "Quantity",
+                "size": null,
+                "gridAlign": "right",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "qtyPlan",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Quantity",
+                "description": "",
+                "widgetType": "Quantity",
+                "size": null,
+                "gridAlign": "right",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "qty",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "UOM",
+                "description": "",
+                "widgetType": "Lookup",
+                "size": null,
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "uom",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Packing Status",
+                "description": "",
+                "widgetType": "Lookup",
+                "size": null,
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "huStatus",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              }
+            ],
+            "supportAttributes": true,
+            "supportTree": true,
+            "collapsible": false,
+            "allowedCloseActions": [
+              "DONE"
+            ],
+            "includedView": {
+              "openOnSelect": false,
+              "blurWhenOpen": true
+            },
+            "supportIncludedView": true,
+            "supportIncludedViewOnSelect": null,
+            "supportNewRecord": false,
+            "supportOpenRecord": true,
+            "supportGeoLocations": false
+          },
+          "layoutPending": false,
+          "layoutError": false,
+          "layoutNotFound": false,
+          "locationData": null,
+          "docId": null,
+          "type": "540328",
+          "viewId": "540328-g",
+          "windowId": "540328",
+          "filters": null,
+          "firstRow": 0,
+          "headerProperties": {
+            "groups": []
+          },
+          "pageLength": 20,
+          "page": 1,
+          "description": null,
+          "sort": null,
+          "mapConfig": null,
+          "notFound": false,
+          "pending": false,
+          "error": null,
+          "isActive": false,
+          "isShowIncluded": false,
+          "hasShowIncluded": false
+        }
+      }
+    }
+  },
+  "modal_included2": {
+    "viewHandler": {
+      "views": {
+        "540345": {
+          "layout": {
+            "activeTab": null,
+            "type": "540345",
+            "windowId": "540345",
+            "profileId": "groupByProduct",
+            "caption": "Items",
+            "description": "",
+            "emptyResultText": "There are no detail rows",
+            "emptyResultHint": "You can create them in this window.",
+            "elements": [
+              {
+                "caption": "Product / Partner",
+                "description": "",
+                "widgetType": "Lookup",
+                "fields": [
+                  {
+                    "field": "ProductOrBPartner",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Order",
+                "description": "Order",
+                "widgetType": "Lookup",
+                "size": "S",
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "C_OrderSO_ID",
+                    "caption": "Order",
+                    "emptyText": "none",
+                    "clearValueText": "none",
+                    "source": "lookup",
+                    "lookupSearchStringMinLength": -1,
+                    "lookupSearchStartDelayMillis": 500,
+                    "supportZoomInto": true
+                  }
+                ]
+              },
+              {
+                "caption": "Qty Ordered",
+                "description": "Qty Ordered",
+                "widgetType": "Quantity",
+                "gridAlign": "right",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "QtyOrdered",
+                    "caption": "Qty Ordered",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Menge kommissioniert oder geliefert",
+                "description": "",
+                "widgetType": "Quantity",
+                "gridAlign": "right",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "QtyPickedOrDelivered",
+                    "caption": "Menge kommissioniert oder geliefert",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Warehouse",
+                "description": "Storage Warehouse and Service Point",
+                "widgetType": "Lookup",
+                "size": "S",
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "M_Warehouse_ID",
+                    "caption": "Warehouse",
+                    "emptyText": "none",
+                    "clearValueText": "none",
+                    "source": "lookup",
+                    "lookupSearchStringMinLength": -1,
+                    "lookupSearchStartDelayMillis": 500,
+                    "supportZoomInto": true
+                  }
+                ]
+              },
+              {
+                "caption": "Preparation Date",
+                "description": "",
+                "widgetType": "ZonedDateTime",
+                "size": "M",
+                "gridAlign": "right",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "PreparationDate",
+                    "caption": "Preparation Date",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              }
+            ],
+            "filters": [
+              {
+                "filterId": "default-date",
+                "caption": "Preparation Date",
+                "inlineRenderMode": "button",
+                "parametersLayoutType": "panel",
+                "parameters": [
+                  {
+                    "caption": "Preparation Date",
+                    "parameterName": "PreparationDate",
+                    "widgetType": "Date",
+                    "range": true,
+                    "defaultValue": null,
+                    "defaultValueTo": null,
+                    "mandatory": false,
+                    "displayed": true,
+                    "readonly": false,
+                    "type": "primary"
+                  }
+                ],
+                "debugProperties": {
+                  "sortNo": -2147483648
+                },
+                "sortNo": -2147483648
+              },
+              {
+                "caption": "Filter",
+                "includedFilters": [
+                  {
+                    "filterId": "default",
+                    "caption": "Default",
+                    "inlineRenderMode": "button",
+                    "parametersLayoutType": "panel",
+                    "parameters": [
+                      {
+                        "caption": "Warehouse",
+                        "parameterName": "M_Warehouse_ID",
+                        "widgetType": "Lookup",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                      },
+                      {
+                        "caption": "Product",
+                        "parameterName": "M_Product_ID",
+                        "widgetType": "Lookup",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                      },
+                      {
+                        "caption": "Business Partner ",
+                        "parameterName": "C_BPartner_Customer_ID",
+                        "widgetType": "Lookup",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                      },
+                      {
+                        "caption": "Organisation",
+                        "parameterName": "AD_Org_ID",
+                        "widgetType": "Lookup",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                      }
+                    ],
+                    "debugProperties": {
+                      "sortNo": 10000
+                    },
+                    "sortNo": 10000
+                  },
+                  {
+                    "filterId": "location-area-search",
+                    "caption": "Area Search",
+                    "inlineRenderMode": "button",
+                    "parametersLayoutType": "panel",
+                    "parameters": [
+                      {
+                        "caption": "Street & House No.",
+                        "parameterName": "Address1",
+                        "widgetType": "Text",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                      },
+                      {
+                        "caption": "ZIP",
+                        "parameterName": "Postal",
+                        "widgetType": "Text",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                      },
+                      {
+                        "caption": "City",
+                        "parameterName": "City",
+                        "widgetType": "Text",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                      },
+                      {
+                        "caption": "Country",
+                        "parameterName": "C_Country_ID",
+                        "widgetType": "Lookup",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": true,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                      },
+                      {
+                        "caption": "Distance",
+                        "parameterName": "Distance",
+                        "widgetType": "Integer",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primary"
+                      },
+                      {
+                        "caption": "Visitors Address",
+                        "parameterName": "VisitorsAddress",
+                        "widgetType": "YesNo",
+                        "range": false,
+                        "defaultValue": null,
+                        "defaultValueTo": null,
+                        "mandatory": false,
+                        "displayed": true,
+                        "readonly": false,
+                        "type": "primaryLongLabels"
+                      }
+                    ],
+                    "debugProperties": {
+                      "sortNo": 40000
+                    },
+                    "sortNo": 40000
+                  }
+                ],
+                "debugProperties": {}
+              }
+            ],
+            "supportAttributes": false,
+            "supportTree": true,
+            "collapsible": true,
+            "expandedDepth": 0,
+            "allowedCloseActions": [
+              "DONE"
+            ],
+            "includedView": null,
+            "supportIncludedView": false,
+            "supportIncludedViewOnSelect": null,
+            "supportNewRecord": false,
+            "supportOpenRecord": true,
+            "supportGeoLocations": true
+          },
+          "layoutPending": false,
+          "layoutError": false,
+          "layoutNotFound": false,
+          "locationData": null,
+          "docId": null,
+          "type": "540345",
+          "viewId": "540345-p",
+          "windowId": "540345",
+          "filters": null,
+          "firstRow": 0,
+          "headerProperties": {
+            "groups": []
+          },
+          "pageLength": 20,
+          "page": 1,
+          "description": null,
+          "sort": null,
+          "orderBy": [
+            {
+              "fieldName": "ProductOrBPartner",
+              "ascending": true
+            }
+          ],
+          "queryLimit": 5000,
+          "mapConfig": null,
+          "notFound": false,
+          "pending": false,
+          "error": null,
+          "isActive": false,
+          "isShowIncluded": false,
+          "hasShowIncluded": false
+        }
+      },
+      "modals": {
+        "540350": {
+          "layout": {
+            "activeTab": null,
+            "type": "540350",
+            "windowId": "540350",
+            "caption": "Picking",
+            "description": "",
+            "emptyResultText": "There are no detail rows",
+            "emptyResultHint": "You can create them in this window.",
+            "elements": [
+              {
+                "caption": "Order",
+                "description": "",
+                "widgetType": "Lookup",
+                "size": "S",
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "order",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Product",
+                "description": "",
+                "widgetType": "Lookup",
+                "size": null,
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "product",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Picked",
+                "description": "",
+                "widgetType": "YesNo",
+                "size": null,
+                "gridAlign": "center",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "picked",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Qty Ordered",
+                "description": "",
+                "widgetType": "Quantity",
+                "size": null,
+                "gridAlign": "right",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "qtyOrdered",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Quantity (stock unit)",
+                "description": "",
+                "widgetType": "Quantity",
+                "size": null,
+                "gridAlign": "right",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "qtyPicked",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Business Partner",
+                "description": "",
+                "widgetType": "Lookup",
+                "size": null,
+                "gridAlign": "left",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "bpartner",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              },
+              {
+                "caption": "Date ready",
+                "description": "",
+                "widgetType": "ZonedDateTime",
+                "size": null,
+                "gridAlign": "right",
+                "viewEditorRenderMode": "never",
+                "sortable": true,
+                "fields": [
+                  {
+                    "field": "preparationDate",
+                    "caption": "",
+                    "emptyText": "none",
+                    "clearValueText": "none"
+                  }
+                ]
+              }
+            ],
+            "supportAttributes": false,
+            "supportTree": false,
+            "allowedCloseActions": [
+              "DONE"
+            ],
+            "includedView": {
+              "openOnSelect": true,
+              "blurWhenOpen": true
+            },
+            "supportIncludedView": true,
+            "supportIncludedViewOnSelect": true,
+            "supportNewRecord": false,
+            "supportOpenRecord": true,
+            "supportGeoLocations": false
+          },
+          "layoutPending": false,
+          "layoutError": false,
+          "layoutNotFound": false,
+          "locationData": null,
+          "docId": null,
+          "type": "540350",
+          "viewId": "540350-q",
+          "windowId": "540350",
+          "filters": null,
+          "firstRow": 0,
+          "headerProperties": {
+            "groups": []
+          },
+          "pageLength": 20,
+          "page": 1,
+          "description": null,
+          "sort": null,
+          "mapConfig": null,
+          "notFound": false,
+          "pending": false,
+          "error": null,
+          "isActive": false,
+          "isShowIncluded": true,
+          "hasShowIncluded": true
+        }
+      },
+      "includedView": {
+        "viewId": "pickingSlot-q-1003027",
+        "windowId": "pickingSlot",
+        "viewProfileId": null,
+        "parentId": "540350"
+      }
+    }
+  }
+}

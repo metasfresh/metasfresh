@@ -3,6 +3,7 @@ package de.metas.product.event;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -45,9 +46,9 @@ import lombok.NonNull;
 
 public class ProductWithNoCustomsTariffUserNotificationsProducer
 {
-	private static final String MSG_ProductWithNoCustomsTariff = "M_Product_No_CustomsTariff";
+	private static final AdMessageKey MSG_ProductWithNoCustomsTariff = AdMessageKey.of("M_Product_No_CustomsTariff");
 
-	public static final ProductWithNoCustomsTariffUserNotificationsProducer newInstance()
+	public static ProductWithNoCustomsTariffUserNotificationsProducer newInstance()
 	{
 		return new ProductWithNoCustomsTariffUserNotificationsProducer();
 	}
@@ -78,7 +79,7 @@ public class ProductWithNoCustomsTariffUserNotificationsProducer
 		return this;
 	}
 
-	private final UserNotificationRequest createUserNotification(@NonNull final ProductId productId)
+	private UserNotificationRequest createUserNotification(@NonNull final ProductId productId)
 	{
 		final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 
@@ -100,7 +101,7 @@ public class ProductWithNoCustomsTariffUserNotificationsProducer
 		return TableRecordReference.of(I_M_Product.Table_Name, productId);
 	}
 
-	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
+	private UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
 	{
 		return UserNotificationRequest.builder()
 				.topic(EVENTBUS_TOPIC);

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrx;
@@ -27,7 +28,6 @@ import com.google.common.base.Stopwatch;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 @Service
 @ManagedResource(objectName = "org.adempiere.ad.dao.impl.QueryStatisticsLogger:type=Statistics", description = "SQL query statistics and tracing")
@@ -225,7 +225,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		return validFrom;
 	}
 
-	private final void traceSqlQuery(final String sql, final Map<Integer, Object> sqlParams, final String trxName, final CountAndDuration duration)
+	private void traceSqlQuery(final String sql, final Map<Integer, Object> sqlParams, final String trxName, final CountAndDuration duration)
 	{
 		final Thread thread = Thread.currentThread();
 		final String threadName = thread.getName();
@@ -236,13 +236,13 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		final int count = traceSqlQueries_Count.incrementAndGet();
 		final String prefix = "-- SQL[" + count + "]-" + threadName + "-";
 		final String prefixSQL = "                 ";
-		final String nl = "\r\n";
+		final String nl = "\n";
 
 		final StringBuilder message = new StringBuilder();
 
 		//
 		// Duration
-		message.append("-- Duration: " + durationStr);
+		message.append("-- Duration: ").append(durationStr);
 
 		//
 		// Dump the stacktrace as short as possible
@@ -263,26 +263,24 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		{
 			final String sqlNorm = sql
 					.trim()
-					.replace(nl, "\n").replace("\n", nl); // make sure we always have \r\n
-			message.append(nl + sqlNorm);
+					.replace("\r\n", "\n").replace("\n", nl); // make sure we always have `nl`
+			message.append(nl).append(sqlNorm);
 		}
 
 		//
 		// SQL query parameters
 		if (sqlParams != null && !sqlParams.isEmpty())
 		{
-			message.append(nl + "-- Parameters[" + sqlParams.size() + "]: " + sqlParams);
+			message.append(nl + "-- Parameters[").append(sqlParams.size()).append("]: ").append(sqlParams);
 		}
 
 		//
 		// Print the message
-		logMessage(new StringBuilder()
-				.append("\n")
-				.append("\n" + prefix + "-begin---------------------------------------------------------------------------")
-				.append("\n" + prefixSQL + message.toString().replaceAll("\n", prefixSQL))
-				.append("\n" + prefix + "-end-----------------------------------------------------------------------------")
-				.append("\n")
-				.toString());
+		logMessage("\n"
+				+ "\n" + prefix + "-begin---------------------------------------------------------------------------"
+				+ "\n" + prefixSQL + message.toString().replaceAll("\n", "\n" + prefixSQL)
+				+ "\n" + prefix + "-end-----------------------------------------------------------------------------"
+				+ "\n");
 
 	}
 

@@ -34,7 +34,7 @@ import javax.annotation.concurrent.Immutable;
 @Immutable
 public final class WindowMaxQueryRecordsConstraint extends Constraint
 {
-	public static final WindowMaxQueryRecordsConstraint of(final int maxQueryRecordsPerRole, final int confirmQueryRecords)
+	public static WindowMaxQueryRecordsConstraint of(final int maxQueryRecordsPerRole, final int confirmQueryRecords)
 	{
 		return new WindowMaxQueryRecordsConstraint(maxQueryRecordsPerRole, confirmQueryRecords);
 	}
@@ -46,13 +46,12 @@ public final class WindowMaxQueryRecordsConstraint extends Constraint
 	private final int maxQueryRecordsPerRole;
 	private final int confirmQueryRecords;
 
-	private WindowMaxQueryRecordsConstraint(int maxQueryRecordsPerRole, int confirmQueryRecords)
+	private WindowMaxQueryRecordsConstraint(final int maxQueryRecordsPerRole, final int confirmQueryRecords)
 	{
-		super();
-		this.maxQueryRecordsPerRole = maxQueryRecordsPerRole <= 0 ? 0 : maxQueryRecordsPerRole;
+		this.maxQueryRecordsPerRole = Math.max(maxQueryRecordsPerRole, 0);
 
 		// NOTE: instead of throw exception it's better to fallback to default. Else, all our roles on will fail now.
-		// Before changing thise, please make sure u check AD_Role.ConfirmQueryRecords.
+		// Before changing this, please make sure u check AD_Role.ConfirmQueryRecords.
 		// Check.assume(confirmQueryRecords > 0, "confirmQueryRecords > 0 but it was {}", confirmQueryRecords);
 		this.confirmQueryRecords = confirmQueryRecords <= 0 ? DEFAULT_ConfirmQueryRecords : confirmQueryRecords;
 	}
@@ -60,7 +59,7 @@ public final class WindowMaxQueryRecordsConstraint extends Constraint
 	@Override
 	public String toString()
 	{
-		// NOTE: we are making it translateable friendly because it's displayed in Prefereces->Info->Rollen
+		// NOTE: we are making it translatable friendly because it's displayed in Preferences->Info->Role
 		final int queryRecordsPerRole = getMaxQueryRecordsPerRole();
 		final int confirmQueryRecords = getConfirmQueryRecords();
 		return "WindowMaxQueryRecords["
@@ -87,7 +86,7 @@ public final class WindowMaxQueryRecordsConstraint extends Constraint
 	/**
 	 * Gets the maximum allowed records to be presented to user, without asking him to confirm/refine the initial query.
 	 * 
-	 * @return maximum allowed records to be presented to user, without asking him to confirm/refine the initial query; always returns greather than zero.
+	 * @return maximum allowed records to be presented to user, without asking him to confirm/refine the initial query; always returns greater than zero.
 	 */
 	public int getConfirmQueryRecords()
 	{

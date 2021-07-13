@@ -32,7 +32,7 @@ import org.adempiere.util.proxy.Cached;
 
 /**
  * Use this annotation on a method parameter if the method has been annotated
- * with {@link Cached}, and the parameter is a model which shall contribute with its context, trxName and ID to caching key.
+ * with {@link Cached}, and the parameter is a model(i.e. data record, like {@code I_C_Order}) which shall <b>contribute with its context, trxName and ID</b> to caching key.
  *
  * @author metas-dev <dev@metasfresh.com>
  * @see CacheCtx

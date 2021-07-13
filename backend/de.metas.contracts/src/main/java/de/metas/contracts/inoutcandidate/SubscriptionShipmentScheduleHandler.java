@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -51,7 +52,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
@@ -59,10 +59,11 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	@VisibleForTesting
 	static final String SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS = "C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays";
 
+	private final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
+
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
 	{
-		final IDocumentLocationBL documentLocationBL = Services.get(IDocumentLocationBL.class);
 		final I_C_SubscriptionProgress subscriptionLine = create(model, I_C_SubscriptionProgress.class);
 
 		if (subscriptionLine.getQty().signum() <= 0)
@@ -74,55 +75,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		}
 		final I_M_ShipmentSchedule newSched = newInstance(I_M_ShipmentSchedule.class, model);
 
-		final int tableId = InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class);
-		newSched.setAD_Table_ID(tableId);
-		newSched.setRecord_ID(subscriptionLine.getC_SubscriptionProgress_ID());
-
-		final I_C_Flatrate_Term term = subscriptionLine.getC_Flatrate_Term();
-
-		Check.assume(term.getM_Product_ID() > 0, term + " has M_Product_ID>0");
-
-		newSched.setM_Product_ID(term.getM_Product_ID());
-		Services.get(IAttributeSetInstanceBL.class).cloneASI(term, newSched);
-
-		newSched.setProductDescription(null);
-
-		updateNewSchedWithValuesFromReferencedLine(newSched);
-
-		final I_C_DocType doctypeForTerm = Services.get(IFlatrateBL.class).getDocTypeFor(term);
-		newSched.setC_DocType_ID(doctypeForTerm.getC_DocType_ID());
-		newSched.setDocSubType(doctypeForTerm.getDocSubType());
-
-		newSched.setPriorityRule(X_M_ShipmentSchedule.PRIORITYRULE_High);
-
-		newSched.setC_BPartner_Location_ID(subscriptionLine.getDropShip_Location_ID());
-		newSched.setC_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID());
-		newSched.setAD_User_ID(subscriptionLine.getDropShip_User_ID());
-		newSched.setBill_BPartner_ID(newSched.getC_BPartner_ID());
-
-		final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(newSched, IDocumentLocation.class);
-		documentLocationBL.setBPartnerAddress(documentLocation);
-
-		newSched.setDeliveryRule(term.getDeliveryRule());
-		newSched.setDeliveryViaRule(term.getDeliveryViaRule());
-
-		newSched.setQtyOrdered(subscriptionLine.getQty());
-		newSched.setQtyOrdered_Calculated(subscriptionLine.getQty());
-		newSched.setQtyReserved(subscriptionLine.getQty());
-
-		newSched.setLineNetAmt(newSched.getQtyReserved().multiply(term.getPriceActual()));
-
-		newSched.setDateOrdered(subscriptionLine.getEventDate());
-
-		newSched.setAD_Org_ID(subscriptionLine.getAD_Org_ID());
-
-		Check.assume(newSched.getAD_Client_ID() == subscriptionLine.getAD_Client_ID(),
-				"The new M_ShipmentSchedule has the same AD_Client_ID as " + subscriptionLine + ", i.e." + newSched.getAD_Client_ID() + " == " + subscriptionLine.getAD_Client_ID());
-
-		// only display item products
-		// note: at least for C_Subscription_Progress records, we won't even create records for non-items
-		final boolean display = Services.get(IProductBL.class).getProductType(ProductId.ofRepoId(term.getM_Product_ID())).isItem();
-		newSched.setIsDisplayed(display);
+		updateShipmentScheduleFromSubscriptionLine(newSched, subscriptionLine);
 
 		save(newSched);
 
@@ -176,12 +129,11 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(subscriptionLine.getM_ShipmentSchedule());
 		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
 
-		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
+		return ImmutableShipmentScheduleSegment.builder()
 				.productId(subscriptionLine.getC_Flatrate_Term().getM_Product_ID())
 				.bpartnerId(subscriptionLine.getDropShip_BPartner_ID())
 				.locatorIds(LocatorId.toRepoIds(locatorIds))
 				.build();
-		return segment;
 	}
 
 	@Override
@@ -191,7 +143,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveModelsWithMissingCandidates(
+	public Iterator<?> retrieveModelsWithMissingCandidates(
 			final Properties ctx,
 			final String trxName)
 	{
@@ -207,7 +159,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.create();
 
 		// Note: we used to also check if there is an active I_M_IolCandHandler_Log record referencing the C_SubscriptionProgress, but I don't see why.
-		final Iterator<I_C_SubscriptionProgress> subscriptionLines = queryBL
+		return queryBL
 				.createQueryBuilder(I_C_SubscriptionProgress.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_SubscriptionProgress.COLUMN_Status, X_C_SubscriptionProgress.STATUS_Planned)
@@ -225,8 +177,6 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 500)
 				.iterate(I_C_SubscriptionProgress.class);
-
-		return subscriptionLines;
 	}
 
 	@Override
@@ -244,8 +194,70 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public void updateShipmentScheduleFromReferencedRecord(I_M_ShipmentSchedule shipmentSchedule)
+	public void updateShipmentScheduleFromReferencedRecord(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		// does nothing
+		final I_C_SubscriptionProgress subscriptionProgressRecord = TableRecordReference
+				.ofReferenced(shipmentSchedule) // Record_Id and AD_Table_ID are mandatory
+				.getModel(I_C_SubscriptionProgress.class);
+
+		updateShipmentScheduleFromSubscriptionLine(shipmentSchedule,subscriptionProgressRecord);
+	}
+
+	private void updateShipmentScheduleFromSubscriptionLine(
+			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
+			@NonNull final I_C_SubscriptionProgress subscriptionLine)
+	{
+		final int tableId = InterfaceWrapperHelper.getTableId(I_C_SubscriptionProgress.class);
+		shipmentSchedule.setAD_Table_ID(tableId);
+		shipmentSchedule.setRecord_ID(subscriptionLine.getC_SubscriptionProgress_ID());
+
+		final I_C_Flatrate_Term term = subscriptionLine.getC_Flatrate_Term();
+
+		Check.assume(term.getM_Product_ID() > 0, term + " has M_Product_ID>0");
+
+		shipmentSchedule.setM_Product_ID(term.getM_Product_ID());
+		Services.get(IAttributeSetInstanceBL.class).cloneASI(term, shipmentSchedule);
+
+		shipmentSchedule.setProductDescription(null);
+
+		updateNewSchedWithValuesFromReferencedLine(shipmentSchedule);
+
+		final I_C_DocType doctypeForTerm = Services.get(IFlatrateBL.class).getDocTypeFor(term);
+		shipmentSchedule.setC_DocType_ID(doctypeForTerm.getC_DocType_ID());
+		shipmentSchedule.setDocSubType(doctypeForTerm.getDocSubType());
+
+		shipmentSchedule.setPriorityRule(X_M_ShipmentSchedule.PRIORITYRULE_High);
+
+		shipmentSchedule.setC_BPartner_Location_ID(subscriptionLine.getDropShip_Location_ID());
+		shipmentSchedule.setC_BPartner_ID(subscriptionLine.getDropShip_BPartner_ID());
+		shipmentSchedule.setAD_User_ID(subscriptionLine.getDropShip_User_ID());
+
+		shipmentSchedule.setBill_BPartner_ID(term.getBill_BPartner_ID());
+		shipmentSchedule.setBill_Location_ID(term.getBill_Location_ID());
+		shipmentSchedule.setBill_User_ID(term.getBill_User_ID());
+
+		final IDocumentLocation documentLocation = InterfaceWrapperHelper.create(shipmentSchedule, IDocumentLocation.class);
+		documentLocationBL.setBPartnerAddress(documentLocation);
+
+		shipmentSchedule.setDeliveryRule(term.getDeliveryRule());
+		shipmentSchedule.setDeliveryViaRule(term.getDeliveryViaRule());
+
+		shipmentSchedule.setQtyOrdered(subscriptionLine.getQty());
+		shipmentSchedule.setQtyOrdered_Calculated(subscriptionLine.getQty());
+		shipmentSchedule.setQtyReserved(subscriptionLine.getQty());
+
+		shipmentSchedule.setLineNetAmt(shipmentSchedule.getQtyReserved().multiply(term.getPriceActual()));
+
+		shipmentSchedule.setDateOrdered(subscriptionLine.getEventDate());
+
+		shipmentSchedule.setAD_Org_ID(subscriptionLine.getAD_Org_ID());
+
+		Check.assume(shipmentSchedule.getAD_Client_ID() == subscriptionLine.getAD_Client_ID(),
+				"The new M_ShipmentSchedule has the same AD_Client_ID as " + subscriptionLine + ", i.e." + shipmentSchedule.getAD_Client_ID() + " == " + subscriptionLine.getAD_Client_ID());
+
+		// only display item products
+		// note: at least for C_Subscription_Progress records, we won't even create records for non-items
+		final boolean display = Services.get(IProductBL.class).getProductType(ProductId.ofRepoId(term.getM_Product_ID())).isItem();
+		shipmentSchedule.setIsDisplayed(display);
 	}
 }

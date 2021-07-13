@@ -4,7 +4,9 @@ import org.compiere.model.I_C_DocType;
 
 import de.metas.document.DocumentNoBuilderException;
 import de.metas.document.sequence.IDocumentNoBuilder;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,7 +50,7 @@ public interface IPreliminaryDocumentNoBuilder
 {
 	IDocumentNoInfo buildOrNull() throws DocumentNoBuilderException;
 
-	IPreliminaryDocumentNoBuilder setNewDocType(I_C_DocType newDocType);
+	IPreliminaryDocumentNoBuilder setNewDocType(@Nullable I_C_DocType newDocType);
 
 	/** Sets the old C_DocType_ID. Used to identify if the underlying document sequence was really changed and in case it didn't change, shall prevent fetching a new (preliminary) DocumentNo. */
 	IPreliminaryDocumentNoBuilder setOldDocType_ID(int oldDocType_ID);

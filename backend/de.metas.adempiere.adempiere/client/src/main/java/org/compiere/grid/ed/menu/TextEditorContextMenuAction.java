@@ -28,7 +28,6 @@ import java.awt.Frame;
 import java.util.Properties;
 
 import org.adempiere.ui.AbstractContextMenuAction;
-import org.compiere.apps.ScriptEditor;
 import org.compiere.grid.ed.Editor;
 import org.compiere.grid.ed.HTMLEditor;
 import org.compiere.grid.ed.VEditor;
@@ -168,11 +167,6 @@ public class TextEditorContextMenuAction extends AbstractContextMenuAction
 			//	Start it
 			HTMLEditor ed = new HTMLEditor (frame, title, text, editable);
 			textNew = ed.getHtmlText();
-			ed = null;
-		}
-		else if (isScriptEditor())
-		{
-			textNew = ScriptEditor.start(frame, title, text, editable, windowNo);
 		}
 		else
 		{

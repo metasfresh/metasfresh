@@ -1,12 +1,10 @@
 package org.adempiere.ad.dao;
 
-import javax.annotation.concurrent.Immutable;
-
+import com.google.common.base.MoreObjects;
+import de.metas.process.PInstanceId;
 import org.adempiere.exceptions.AdempiereException;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.process.PInstanceId;
+import javax.annotation.concurrent.Immutable;
 
 /*
  * #%L
@@ -55,9 +53,6 @@ public interface IQueryInsertExecutor<ToModelType, FromModelType>
 	/**
 	 * Map a column name in target model to a column name of "From Model".
 	 *
-	 * @param toColumnName
-	 * @param fromColumnName
-	 * @return
 	 */
 	IQueryInsertExecutor<ToModelType, FromModelType> mapColumn(String toColumnName, String fromColumnName);
 

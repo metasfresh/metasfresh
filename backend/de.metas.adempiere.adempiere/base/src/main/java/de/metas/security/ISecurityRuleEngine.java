@@ -28,6 +28,8 @@ import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.util.ISingletonService;
 
+import javax.annotation.Nullable;
+
 /**
  * API interface for a security engine with pluggable rules.
  *
@@ -38,8 +40,6 @@ public interface ISecurityRuleEngine extends ISingletonService
 {
 	/**
 	 * Registers the given rule. the same rule can be registered more than once without error, but the rule's {@link ISecurityRule#init()} method is only called the first time.
-	 *
-	 * @param rule
 	 */
 	void registerRule(ISecurityRule rule);
 
@@ -49,5 +49,5 @@ public interface ISecurityRuleEngine extends ISingletonService
 	 *
 	 * @param tableName TableName on which the org filter shall be applied or null if the request is not specific to any table name
 	 */
-	void filterOrgs(IUserRolePermissions rolePermissions, String tableName, Access access, Set<OrgId> orgIds);
+	void filterOrgs(IUserRolePermissions rolePermissions, @Nullable String tableName, Access access, Set<OrgId> orgIds);
 }

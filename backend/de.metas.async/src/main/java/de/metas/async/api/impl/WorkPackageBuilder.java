@@ -53,6 +53,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /* package */class WorkPackageBuilder implements IWorkPackageBuilder
 {
 	// Parameters
@@ -126,9 +128,9 @@ import lombok.NonNull;
 					Services.get(IQueueDAO.class).save(asyncBatch);
 				}
 
-			if (userInChargeId != null)
+				if (userInChargeId != null)
 				{
-				workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
+					workpackage.setAD_User_InCharge_ID(userInChargeId.getRepoId());
 				}
 
 				// Create workpackage parameters
@@ -166,7 +168,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private final I_C_Queue_Block getC_Queue_Block()
+	private I_C_Queue_Block getC_Queue_Block()
 	{
 		return _blockBuilder.getCreateBlock();
 	}
@@ -180,17 +182,17 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final IWorkpackagePrioStrategy getPriority()
+	private IWorkpackagePrioStrategy getPriority()
 	{
 		return _priority;
 	}
 
-	private final IWorkPackageQueue getWorkpackageQueue()
+	private IWorkPackageQueue getWorkpackageQueue()
 	{
 		return _blockBuilder.getWorkPackageQueue();
 	}
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!built.get(), "not already built");
 	}
@@ -198,7 +200,7 @@ import lombok.NonNull;
 	/**
 	 * Marks this builder as already executed. Fails if it was already marked before.
 	 */
-	private final void markAsBuilt()
+	private void markAsBuilt()
 	{
 		final boolean wasAlreadyBuilt = built.getAndSet(true);
 		Check.assume(!wasAlreadyBuilt, "not already built");
@@ -268,7 +270,7 @@ import lombok.NonNull;
 		return this;
 	}
 
-	private final ILockCommand getElementsLockerOrNull()
+	private ILockCommand getElementsLockerOrNull()
 	{
 		return _elementsLocker;
 	}
@@ -297,7 +299,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IWorkPackageBuilder setUserInChargeId(final UserId userInChargeId)
+	public IWorkPackageBuilder setUserInChargeId(@Nullable final UserId userInChargeId)
 	{
 		assertNotBuilt();
 		this.userInChargeId = userInChargeId;

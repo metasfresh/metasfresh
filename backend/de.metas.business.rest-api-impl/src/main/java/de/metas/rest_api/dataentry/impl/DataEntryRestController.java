@@ -20,7 +20,7 @@ import de.metas.dataentry.layout.DataEntryLayoutRepository;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.dataentry.impl.dto.JsonDataEntry;
 import de.metas.rest_api.dataentry.impl.dto.JsonDataEntryResponse;
-import de.metas.rest_api.utils.RestApiUtils;
+import de.metas.rest_api.utils.RestApiUtilsV1;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import lombok.NonNull;
 
@@ -47,12 +47,13 @@ import lombok.NonNull;
  */
 
 @RestController
-@RequestMapping(DataEntryRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/dataentry",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/dataentry",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/dataentry" })
 @Profile(Profiles.PROFILE_App)
 public class DataEntryRestController
 {
-	static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API + "/dataentry";
-
 	private static final transient Logger log = LogManager.getLogger(DataEntryRestController.class);
 
 	private final DataEntryLayoutRepository layoutRepo;
@@ -74,7 +75,7 @@ public class DataEntryRestController
 			@PathVariable("recordId") final int recordId)
 	{
 		final Stopwatch w = Stopwatch.createStarted();
-		final String adLanguage = RestApiUtils.getAdLanguage();
+		final String adLanguage = RestApiUtilsV1.getAdLanguage();
 		final ResponseEntity<JsonDataEntryResponse> jsonDataEntry = getByRecordId0(AdWindowId.ofRepoId(windowId), recordId, adLanguage);
 		w.stop();
 

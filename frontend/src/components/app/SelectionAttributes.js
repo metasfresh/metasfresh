@@ -2,11 +2,13 @@ import counterpart from 'counterpart';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+
 import {
-  getViewAttributes,
-  getViewAttributesLayout,
-} from '../../actions/ViewAttributesActions';
-import RawWidget from '../widget/RawWidget';
+  patchViewAttributes,
+  setViewAttributesData,
+} from '../../actions/IndependentWidgetsActions';
+
+import WidgetWrapper from '../../containers/WidgetWrapper';
 
 /**
  * @file Class based component.
@@ -14,115 +16,104 @@ import RawWidget from '../widget/RawWidget';
  * @extends PureComponent
  */
 class SelectionAttributes extends PureComponent {
-  componentDidUpdate = (prevProps) => {
-    const {
-      selected,
-      DLWrapperSetData,
-      DLWrapperSetLayout,
-      shouldNotUpdate,
-      supportAttribute,
-    } = this.props;
+  /*
+   * @method handleChange
+   * @summary Run action creator changing field value in the store
+   *
+   * @param {string} field
+   * @param {any} value
+   */
+  handleChange = (field, value) => {
+    const { setViewAttributesData } = this.props;
 
-    if (shouldNotUpdate) {
-      return;
-    }
-
-    if (JSON.stringify(prevProps.selected) !== JSON.stringify(selected)) {
-      DLWrapperSetData([], null, () => {
-        DLWrapperSetLayout([], () => {
-          if (supportAttribute && selected.length === 1) {
-            if (selected[0] == 0) {
-              return;
-            }
-            this.fetchActions();
-          }
-        });
-      });
-    }
+    setViewAttributesData({ field, value });
   };
 
-  fetchActions = () => {
+  /*
+   * @method handlePatch
+   * @summary Run action creator sending the change to the backend
+   *
+   * @param {string} prop - field name
+   * @param {any} value
+   * @param {function} cb - callback function
+   */
+  handlePatch = (prop, value, cb) => {
     const {
-      windowType,
+      windowId,
       viewId,
-      selected,
-      DLWrapperSetData,
-      DLWrapperSetLayout,
+      patchViewAttributes,
+      attributes: { dataId },
     } = this.props;
-    getViewAttributesLayout(windowType, viewId, selected[0])
-      .then((response) => {
-        DLWrapperSetLayout(response.data.elements);
-        return getViewAttributes(windowType, viewId, selected[0]);
-      })
-      .then((response) => {
-        DLWrapperSetData(response.data.fieldsByName, response.data.id);
-      })
-      .catch(() => {});
+
+    patchViewAttributes({ windowId, viewId, rowId: dataId, prop, value }).then(
+      () => {
+        cb && cb();
+      }
+    );
   };
 
-  moveToDevice = (e) => {
+  moveToDevice(e) {
     switch (e.key) {
       case 'Shift':
         e.preventDefault();
         //TO DO
         break;
     }
-  };
+  }
 
-  getTabId = (item) => {
+  getTabId(item) {
     return item && item[0].readonly ? -1 : 1;
+  }
+
+  selectTable() {
+    document.getElementsByClassName('js-table')[0].focus();
+  }
+
+  handleFocus = () => {
+    this.props.setClickOutsideLock(true);
   };
 
-  selectTable = () => {
-    document.getElementsByClassName('js-table')[0].focus();
+  handleBlur = () => {
+    this.props.setClickOutsideLock(false);
   };
 
   render() {
-    const {
-      windowType,
-      viewId,
-      DLWrapperLayout,
-      DLWrapperData,
-      DLWrapperDataId,
-      DLWrapperHandleChange,
-      DLWrapperHandlePatch,
-      entity,
-      setClickOutsideLock,
-    } = this.props;
+    const { windowId, viewId, attributes, entity } = this.props;
+    const { fields, elements, dataId } = attributes;
 
     return (
-      <div className="js-not-unselect">
+      <div className="table-flex-wrapper attributes-selector js-not-unselect">
         <div className="attributes-selector-header">
           {counterpart.translate('window.selectionAttributes.caption')}
         </div>
         <div tabIndex={1} className="attributes-selector-body js-attributes">
-          {DLWrapperLayout &&
-            DLWrapperLayout.map((item, id) => (
-              <RawWidget
+          {elements &&
+            elements.map((item, id) => (
+              <WidgetWrapper
+                key={id}
+                dataSource="selection-attributes"
+                type={item.type}
                 entity={entity}
+                windowId={windowId}
+                dataId={dataId}
                 attribute={true}
                 widgetType={item.widgetType}
                 fields={item.fields}
-                dataId={DLWrapperDataId}
-                windowType={windowType}
+                windowType={windowId}
                 viewId={viewId}
-                widgetData={item.fields.map(
-                  (elem) => DLWrapperData[elem.field] || -1
-                )}
+                widgetData={item.fields.map((elem) => fields[elem.field] || -1)}
                 gridAlign={item.gridAlign}
-                key={id}
-                type={item.type}
                 caption={item.caption}
-                handleFocus={() => setClickOutsideLock(true)}
-                handleBlur={() => setClickOutsideLock(false)}
-                handlePatch={DLWrapperHandlePatch}
-                handleChange={DLWrapperHandleChange}
+                handleFocus={this.handleFocus}
+                handleBlur={this.handleBlur}
+                handlePatch={this.handlePatch}
+                handleChange={this.handleChange}
                 tabIndex={this.getTabId(
-                  item.fields.map((elem) => DLWrapperData[elem.field] || -1)
+                  item.fields.map((elem) => fields[elem.field] || -1)
                 )}
               />
             ))}
-          {DLWrapperLayout && !DLWrapperLayout.length && (
+          {elements && !elements.length && (
             <i>
               {counterpart.translate('window.selectionAttributes.callToAction')}
             </i>
@@ -134,21 +125,27 @@ class SelectionAttributes extends PureComponent {
   }
 }
 
+const mapStateToProps = (state) => {
+  return {
+    attributes: state.widgetHandler.attributes,
+  };
+};
+
 SelectionAttributes.propTypes = {
-  windowType: PropTypes.string,
+  windowId: PropTypes.string,
   selected: PropTypes.any,
   viewId: PropTypes.string,
-  DLWrapperSetLayout: PropTypes.func,
-  DLWrapperSetData: PropTypes.func,
-  shouldNotUpdate: PropTypes.bool,
-  DLWrapperData: PropTypes.any,
-  DLWrapperDataId: PropTypes.string,
-  DLWrapperHandleChange: PropTypes.func,
+  setViewAttributesData: PropTypes.func,
+  patchViewAttributes: PropTypes.func,
+  attributes: PropTypes.object,
   DLWrapperHandlePatch: PropTypes.func,
   setClickOutsideLock: PropTypes.func,
-  entity: PropTypes.any,
+  entity: PropTypes.string,
   DLWrapperLayout: PropTypes.array,
   supportAttribute: PropTypes.bool,
 };
 
-export default connect()(SelectionAttributes);
+export default connect(mapStateToProps, {
+  patchViewAttributes,
+  setViewAttributesData,
+})(SelectionAttributes);

@@ -11,7 +11,10 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailVoidRequest;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.MoveCostsRequest;
+import de.metas.costing.MoveCostsResult;
 import de.metas.order.OrderLineId;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -45,6 +48,8 @@ public interface CostingMethodHandler
 	Set<String> getHandledTableNames();
 
 	Optional<CostDetailCreateResult> createOrUpdateCost(CostDetailCreateRequest request);
+
+	MoveCostsResult createMovementCosts(@NonNull MoveCostsRequest request);
 
 	void voidCosts(CostDetailVoidRequest request);
 

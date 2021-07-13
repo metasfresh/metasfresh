@@ -1,218 +1,240 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ForecastLine
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_ForecastLine 
 {
 
-    /** TableName=M_ForecastLine */
-    public static final String Table_Name = "M_ForecastLine";
+	String Table_Name = "M_ForecastLine";
 
-    /** AD_Table_ID=722 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=722 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_AD_Client>(I_M_ForecastLine.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_AD_Org>(I_M_ForecastLine.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Activity.
+	 * Business Activity
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_Activity_ID (int C_Activity_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Activity.
+	 * Business Activity
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_Activity_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_BPartner>(I_M_ForecastLine.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_Location_ID();
+	int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
-    /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_BPartner_Location>(I_M_ForecastLine.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
-    /** Column name C_BPartner_Location_ID */
-    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Periode.
+	 * Set Campaign.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Campaign_ID (int C_Campaign_ID);
+
+	/**
+	 * Get Campaign.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Campaign_ID();
+
+	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
+
+	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
+
+	ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_M_ForecastLine.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+
+	/**
+	 * Set Period.
 	 * Period of the Calendar
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Period_ID (int C_Period_ID);
+	void setC_Period_ID (int C_Period_ID);
 
 	/**
-	 * Get Periode.
+	 * Get Period.
 	 * Period of the Calendar
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_Period_ID();
-
-	public org.compiere.model.I_C_Period getC_Period();
-
-	public void setC_Period(org.compiere.model.I_C_Period C_Period);
-
-    /** Column definition for C_Period_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_Period>(I_M_ForecastLine.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
-    /** Column name C_Period_ID */
-    public static final String COLUMNNAME_C_Period_ID = "C_Period_ID";
-
-	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_UOM_ID (int C_UOM_ID);
+	int getC_Period_ID();
+
+	@Nullable org.compiere.model.I_C_Period getC_Period();
+
+	void setC_Period(@Nullable org.compiere.model.I_C_Period C_Period);
+
+	ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new ModelColumn<>(I_M_ForecastLine.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
+	String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Set Project.
+	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_C_UOM>(I_M_ForecastLine.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	void setC_Project_ID (int C_Project_ID);
 
 	/**
-	 * Get Erstellt.
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
+
+	/**
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_ForecastLine, Object>(I_M_ForecastLine.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_Created = new ModelColumn<>(I_M_ForecastLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_AD_User>(I_M_ForecastLine.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Zugesagter Termin.
@@ -222,7 +244,7 @@ public interface I_M_ForecastLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDatePromised (java.sql.Timestamp DatePromised);
+	void setDatePromised (java.sql.Timestamp DatePromised);
 
 	/**
 	 * Get Zugesagter Termin.
@@ -232,66 +254,60 @@ public interface I_M_ForecastLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDatePromised();
+	java.sql.Timestamp getDatePromised();
 
-    /** Column definition for DatePromised */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, Object> COLUMN_DatePromised = new org.adempiere.model.ModelColumn<I_M_ForecastLine, Object>(I_M_ForecastLine.class, "DatePromised", null);
-    /** Column name DatePromised */
-    public static final String COLUMNNAME_DatePromised = "DatePromised";
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_DatePromised = new ModelColumn<>(I_M_ForecastLine.class, "DatePromised", null);
+	String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_ForecastLine, Object>(I_M_ForecastLine.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_IsActive = new ModelColumn<>(I_M_ForecastLine.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSetInstance_ID();
+	int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_AttributeSetInstance>(I_M_ForecastLine.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+	ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_M_ForecastLine.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
 	 * Set Prognose.
@@ -301,7 +317,7 @@ public interface I_M_ForecastLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Forecast_ID (int M_Forecast_ID);
+	void setM_Forecast_ID (int M_Forecast_ID);
 
 	/**
 	 * Get Prognose.
@@ -311,16 +327,14 @@ public interface I_M_ForecastLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Forecast_ID();
+	int getM_Forecast_ID();
 
-	public org.compiere.model.I_M_Forecast getM_Forecast();
+	org.compiere.model.I_M_Forecast getM_Forecast();
 
-	public void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast);
+	void setM_Forecast(org.compiere.model.I_M_Forecast M_Forecast);
 
-    /** Column definition for M_Forecast_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_Forecast>(I_M_ForecastLine.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
-    /** Column name M_Forecast_ID */
-    public static final String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
+	ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new ModelColumn<>(I_M_ForecastLine.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
+	String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
 
 	/**
 	 * Set Prognose-Position.
@@ -330,7 +344,7 @@ public interface I_M_ForecastLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ForecastLine_ID (int M_ForecastLine_ID);
+	void setM_ForecastLine_ID (int M_ForecastLine_ID);
 
 	/**
 	 * Get Prognose-Position.
@@ -340,95 +354,77 @@ public interface I_M_ForecastLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ForecastLine_ID();
+	int getM_ForecastLine_ID();
 
-    /** Column definition for M_ForecastLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, Object> COLUMN_M_ForecastLine_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, Object>(I_M_ForecastLine.class, "M_ForecastLine_ID", null);
-    /** Column name M_ForecastLine_ID */
-    public static final String COLUMNNAME_M_ForecastLine_ID = "M_ForecastLine_ID";
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_M_ForecastLine_ID = new ModelColumn<>(I_M_ForecastLine.class, "M_ForecastLine_ID", null);
+	String COLUMNNAME_M_ForecastLine_ID = "M_ForecastLine_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_Product>(I_M_ForecastLine.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Lager.
+	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
+	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
+	 * Get Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Warehouse_ID();
+	int getM_Warehouse_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_Warehouse();
-
-	public void setM_Warehouse(org.compiere.model.I_M_Warehouse M_Warehouse);
-
-    /** Column definition for M_Warehouse_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_Warehouse> COLUMN_M_Warehouse_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_M_Warehouse>(I_M_ForecastLine.class, "M_Warehouse_ID", org.compiere.model.I_M_Warehouse.class);
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Menge.
+	 * Set Quantity.
 	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQty (java.math.BigDecimal Qty);
+	void setQty (BigDecimal Qty);
 
 	/**
-	 * Get Menge.
+	 * Get Quantity.
 	 * Quantity
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQty();
+	BigDecimal getQty();
 
-    /** Column definition for Qty */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, Object> COLUMN_Qty = new org.adempiere.model.ModelColumn<I_M_ForecastLine, Object>(I_M_ForecastLine.class, "Qty", null);
-    /** Column name Qty */
-    public static final String COLUMNNAME_Qty = "Qty";
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_Qty = new ModelColumn<>(I_M_ForecastLine.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Set Calculated Quantity.
@@ -438,7 +434,7 @@ public interface I_M_ForecastLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyCalculated (java.math.BigDecimal QtyCalculated);
+	void setQtyCalculated (BigDecimal QtyCalculated);
 
 	/**
 	 * Get Calculated Quantity.
@@ -448,63 +444,203 @@ public interface I_M_ForecastLine
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyCalculated();
+	BigDecimal getQtyCalculated();
 
-    /** Column definition for QtyCalculated */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, Object> COLUMN_QtyCalculated = new org.adempiere.model.ModelColumn<I_M_ForecastLine, Object>(I_M_ForecastLine.class, "QtyCalculated", null);
-    /** Column name QtyCalculated */
-    public static final String COLUMNNAME_QtyCalculated = "QtyCalculated";
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_QtyCalculated = new ModelColumn<>(I_M_ForecastLine.class, "QtyCalculated", null);
+	String COLUMNNAME_QtyCalculated = "QtyCalculated";
 
 	/**
-	 * Set Aussendienst.
+	 * Set Account manager.
+	 * Sales Representative or Company Agent
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSalesRep_ID (int SalesRep_ID);
+	void setSalesRep_ID (int SalesRep_ID);
 
 	/**
-	 * Get Aussendienst.
+	 * Get Account manager.
+	 * Sales Representative or Company Agent
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSalesRep_ID();
+	int getSalesRep_ID();
 
-    /** Column definition for SalesRep_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, Object> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_M_ForecastLine, Object>(I_M_ForecastLine.class, "SalesRep_ID", null);
-    /** Column name SalesRep_ID */
-    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_SalesRep_ID = new ModelColumn<>(I_M_ForecastLine.class, "SalesRep_ID", null);
+	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_ForecastLine, Object>(I_M_ForecastLine.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_Updated = new ModelColumn<>(I_M_ForecastLine.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_M_ForecastLine, org.compiere.model.I_AD_User>(I_M_ForecastLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
+
+	/**
+	 * Get UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString1();
+
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_M_ForecastLine.class, "UserElementString1", null);
+	String COLUMNNAME_UserElementString1 = "UserElementString1";
+
+	/**
+	 * Set UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
+
+	/**
+	 * Get UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString2();
+
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_M_ForecastLine.class, "UserElementString2", null);
+	String COLUMNNAME_UserElementString2 = "UserElementString2";
+
+	/**
+	 * Set UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
+
+	/**
+	 * Get UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString3();
+
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_M_ForecastLine.class, "UserElementString3", null);
+	String COLUMNNAME_UserElementString3 = "UserElementString3";
+
+	/**
+	 * Set UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
+
+	/**
+	 * Get UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString4();
+
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_M_ForecastLine.class, "UserElementString4", null);
+	String COLUMNNAME_UserElementString4 = "UserElementString4";
+
+	/**
+	 * Set UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
+
+	/**
+	 * Get UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString5();
+
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_M_ForecastLine.class, "UserElementString5", null);
+	String COLUMNNAME_UserElementString5 = "UserElementString5";
+
+	/**
+	 * Set UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
+
+	/**
+	 * Get UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString6();
+
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_M_ForecastLine.class, "UserElementString6", null);
+	String COLUMNNAME_UserElementString6 = "UserElementString6";
+
+	/**
+	 * Set UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
+
+	/**
+	 * Get UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserElementString7();
+
+	ModelColumn<I_M_ForecastLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_M_ForecastLine.class, "UserElementString7", null);
+	String COLUMNNAME_UserElementString7 = "UserElementString7";
 }

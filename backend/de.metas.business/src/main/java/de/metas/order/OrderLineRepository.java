@@ -1,6 +1,6 @@
 package de.metas.order;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.time.ZonedDateTime;
@@ -22,7 +22,7 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 /*

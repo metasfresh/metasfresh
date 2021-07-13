@@ -1,9 +1,5 @@
 package de.metas.contracts.pricing;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_PriceList;
-import org.slf4j.Logger;
-
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -11,10 +7,14 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_M_PriceList;
+import org.slf4j.Logger;
 
 /**
  * This pricing rule applies if the given {@link IPricingContext}'s referenced object references a {@link I_C_Flatrate_Conditions} record.
@@ -109,6 +109,7 @@ public class SubscriptionPricingRule implements IPricingRule
 
 		// set the price list from subscription's M_Pricing_Systen
 		subscriptionPricingCtx.setPriceListId(PriceListId.ofRepoId(subscriptionPriceList.getM_PriceList_ID()));
+		subscriptionPricingCtx.setPricingSystemId(PricingSystemId.ofRepoId(subscriptionPriceList.getM_PricingSystem_ID()));
 		subscriptionPricingCtx.setPriceListVersionId(null);
 
 		return subscriptionPricingCtx;
@@ -123,10 +124,7 @@ public class SubscriptionPricingRule implements IPricingRule
 	}
 
 	/**
-	 * copy the results of our internal call into 'result'
-	 *
-	 * @param subscriptionPricingResult
-	 * @param result
+	 * Copy the results of our internal call into 'result'
 	 */
 	private static void copySubscriptionResultIntoResult(
 			@NonNull final IPricingResult subscriptionPricingResult,

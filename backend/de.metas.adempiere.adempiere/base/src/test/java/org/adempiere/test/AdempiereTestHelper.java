@@ -1,7 +1,66 @@
 package org.adempiere.test;
 
+import ch.qos.logback.classic.Level;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Stopwatch;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.interceptor.CacheInterceptor;
+import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.IService;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.Services.IServiceImplProvider;
+import de.metas.util.UnitTestServiceNamePolicy;
+import de.metas.util.lang.UIDStringUtil;
+import io.github.jsonSnapshot.SnapshotConfig;
+import io.github.jsonSnapshot.SnapshotMatcher;
+import io.github.jsonSnapshot.SnapshotMatchingStrategy;
+import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
+import lombok.NonNull;
+import org.adempiere.ad.dao.impl.POJOQuery;
+import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.context.SwingContextProvider;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.proxy.Cached;
+import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
+import org.adempiere.util.reflect.TestingClassInstanceProvider;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.compiere.util.Util;
+
+import java.time.ZoneId;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.function.Function;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -25,62 +84,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  * #L%
  */
 
-import java.util.Properties;
-import java.util.function.Function;
-
-import org.adempiere.ad.dao.impl.POJOQuery;
-import org.adempiere.ad.persistence.cache.AbstractModelListCacheLocal;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.context.SwingContextProvider;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.proxy.Cached;
-import org.adempiere.util.proxy.impl.JavaAssistInterceptor;
-import org.adempiere.util.reflect.TestingClassInstanceProvider;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_ClientInfo;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.compiere.util.Util;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.base.Stopwatch;
-
-import ch.qos.logback.classic.Level;
-import de.metas.JsonObjectMapperHolder;
-import de.metas.adempiere.form.IClientUI;
-import de.metas.adempiere.model.I_AD_User;
-import de.metas.cache.CacheMgt;
-import de.metas.cache.interceptor.CacheInterceptor;
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.IService;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.Services.IServiceImplProvider;
-import de.metas.util.UnitTestServiceNamePolicy;
-import de.metas.util.lang.UIDStringUtil;
-import de.metas.util.time.SystemTime;
-import io.github.jsonSnapshot.SnapshotConfig;
-import io.github.jsonSnapshot.SnapshotMatcher;
-import io.github.jsonSnapshot.SnapshotMatchingStrategy;
-import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
-
 /**
  * Helper to be used in order to setup ANY test which depends on ADempiere.
  *
  * @author tsa
- *
  */
 public class AdempiereTestHelper
 {
@@ -88,7 +95,9 @@ public class AdempiereTestHelper
 
 	public static final String AD_LANGUAGE = "de_DE";
 
-	/** This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars */
+	/**
+	 * This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars
+	 */
 	public static final SnapshotConfig SNAPSHOT_CONFIG = new SnapshotConfig()
 	{
 		@Override
@@ -167,7 +176,7 @@ public class AdempiereTestHelper
 		POJOLookupMap.resetAll();
 
 		// we also don't want any model interceptors to interfere, unless we explicitly test them up to do so
-		POJOLookupMap.get().clear();
+		Objects.requireNonNull(POJOLookupMap.get()).clear();
 
 		//
 		// POJOWrapper defaults
@@ -254,15 +263,15 @@ public class AdempiereTestHelper
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
 		final I_AD_Org allOrgs = newInstance(I_AD_Org.class);
-		allOrgs.setAD_Org_ID(0);
+		allOrgs.setAD_Org_ID(OrgId.ANY.getRepoId());
 		save(allOrgs);
 
-		final I_AD_User systemUser = newInstance(I_AD_User.class);
-		systemUser.setAD_User_ID(0);
+		final org.compiere.model.I_AD_User systemUser = newInstance(I_AD_User.class);
+		systemUser.setAD_User_ID(UserId.SYSTEM.getRepoId());
 		save(systemUser);
 
 		final I_M_AttributeSetInstance noAsi = newInstance(I_M_AttributeSetInstance.class);
-		noAsi.setM_AttributeSetInstance_ID(0);
+		noAsi.setM_AttributeSetInstance_ID(AttributeSetInstanceId.NONE.getRepoId());
 		save(noAsi);
 
 		log("createSystemRecords", "done in " + stopwatch);
@@ -285,9 +294,42 @@ public class AdempiereTestHelper
 		InterfaceWrapperHelper.save(clientInfo);
 	}
 
+	public static OrgId createOrgWithTimeZone(@NonNull final String nameAndValue)
+	{
+		return createOrgWithTimeZone(nameAndValue, ZoneId.of("Europe/Berlin"));
+	}
+
+	public static OrgId createOrgWithTimeZone()
+	{
+		return createOrgWithTimeZone("org", ZoneId.of("Europe/Berlin"));
+	}
+
+	public static OrgId createOrgWithTimeZone(@NonNull final ZoneId timeZone)
+	{
+		return createOrgWithTimeZone("org", timeZone);
+	}
+
+	public static OrgId createOrgWithTimeZone(
+			@NonNull final String nameAndValue,
+			@NonNull final ZoneId timeZone)
+	{
+		final I_AD_Org orgRecord = newInstanceOutOfTrx(I_AD_Org.class);
+		orgRecord.setValue(nameAndValue);
+		orgRecord.setName(nameAndValue);
+		saveRecord(orgRecord);
+
+		final I_AD_OrgInfo orgInfoRecord = newInstanceOutOfTrx(I_AD_OrgInfo.class);
+		orgInfoRecord.setAD_Org_ID(orgRecord.getAD_Org_ID());
+		orgInfoRecord.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
+		orgInfoRecord.setTimeZone(timeZone.getId());
+		saveRecord(orgInfoRecord);
+
+		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
+	}
+
 	/**
 	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
-	 *
+	 * <p>
 	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
 	 */
 	public static Function<Object, String> createSnapshotJsonFunction()
@@ -299,7 +341,7 @@ public class AdempiereTestHelper
 			{
 				return writerWithDefaultPrettyPrinter.writeValueAsString(object);
 			}
-			catch (JsonProcessingException e)
+			catch (final JsonProcessingException e)
 			{
 				throw AdempiereException.wrapIfNeeded(e);
 			}

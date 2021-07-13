@@ -28,8 +28,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.order.process.IC_Order_CreatePOFromSOsBL;
-import de.metas.order.process.spi.IC_Order_CreatePOFromSOsListener;
+import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
+import de.metas.order.createFrom.po_from_so.spi.IC_Order_CreatePOFromSOsListener;
 
 /**
  * Copy the handling unit related details from a sales order line to a purchase order line.<br>
@@ -43,7 +43,7 @@ public class HUC_Order_CreatePOFromSOsListener implements IC_Order_CreatePOFromS
 {
 
 	@Override
-	public void afterPurchaseOrderLineCreatedBeforeSave(org.compiere.model.I_C_OrderLine purchaseOrderLine, org.compiere.model.I_C_OrderLine salesOrderLine)
+	public void afterPurchaseOrderLineCreatedBeforeSave(final org.compiere.model.I_C_OrderLine purchaseOrderLine, final org.compiere.model.I_C_OrderLine salesOrderLine)
 	{
 		final I_C_OrderLine huPurchaseOrderLine = InterfaceWrapperHelper.create(purchaseOrderLine, I_C_OrderLine.class);
 		final I_C_OrderLine huSalesOrderLine = InterfaceWrapperHelper.create(salesOrderLine, I_C_OrderLine.class);

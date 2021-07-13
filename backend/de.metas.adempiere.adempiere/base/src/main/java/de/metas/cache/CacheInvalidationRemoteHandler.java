@@ -17,8 +17,8 @@ import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
-import de.metas.event.Type;
 import de.metas.event.impl.EventMDC;
+import de.metas.event.remote.RabbitMQEventBusConfiguration;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -53,10 +53,7 @@ final class CacheInvalidationRemoteHandler implements IEventListener
 
 	private static final Logger logger = LogManager.getLogger(CacheInvalidationRemoteHandler.class);
 
-	private static final Topic TOPIC_CacheInvalidation = Topic.builder()
-			.name("de.metas.cache.CacheInvalidationRemoteHandler")
-			.type(Type.REMOTE)
-			.build();
+	private static final Topic TOPIC_CacheInvalidation = RabbitMQEventBusConfiguration.CacheInvalidationQueueConfiguration.EVENTBUS_TOPIC;
 
 	private static final String EVENT_PROPERTY = CacheInvalidateRequest.class.getSimpleName();
 

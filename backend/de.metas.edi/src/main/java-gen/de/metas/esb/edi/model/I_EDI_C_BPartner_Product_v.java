@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_C_BPartner_Product_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_C_BPartner_Product_v 
@@ -14,17 +14,9 @@ public interface I_EDI_C_BPartner_Product_v
     /** AD_Table_ID=53713 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -33,8 +25,7 @@ public interface I_EDI_C_BPartner_Product_v
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -46,8 +37,7 @@ public interface I_EDI_C_BPartner_Product_v
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Auftragsposition.
-	 * Auftragsposition
+	 * Set Orderline.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -56,8 +46,7 @@ public interface I_EDI_C_BPartner_Product_v
 	public void setC_OrderLine_ID (int C_OrderLine_ID);
 
 	/**
-	 * Get Auftragsposition.
-	 * Auftragsposition
+	 * Get Orderline.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -75,8 +64,8 @@ public interface I_EDI_C_BPartner_Product_v
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Set Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -85,8 +74,8 @@ public interface I_EDI_C_BPartner_Product_v
 	public void setM_InOutLine_ID (int M_InOutLine_ID);
 
 	/**
-	 * Get Versand-/Wareneingangsposition.
-	 * Position auf Versand- oder Wareneingangsbeleg
+	 * Get Receipt Line.
+	 * Line on Receipt document
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -104,8 +93,8 @@ public interface I_EDI_C_BPartner_Product_v
     public static final String COLUMNNAME_M_InOutLine_ID = "M_InOutLine_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -114,8 +103,8 @@ public interface I_EDI_C_BPartner_Product_v
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -151,7 +140,7 @@ public interface I_EDI_C_BPartner_Product_v
 
 	/**
 	 * Set UPC.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -161,7 +150,7 @@ public interface I_EDI_C_BPartner_Product_v
 
 	/**
 	 * Get UPC.
-	 * Produktidentifikation (Barcode) durch Universal Product Code oder European Article Number)
+	 * Bar Code (Universal Product Code or its superset European Article Number)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

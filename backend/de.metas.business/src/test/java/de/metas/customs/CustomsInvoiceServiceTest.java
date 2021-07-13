@@ -10,6 +10,7 @@ import java.time.Month;
 import java.util.function.Consumer;
 
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -25,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 
-import de.metas.adempiere.model.I_AD_User;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -53,8 +53,8 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMConstants;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -122,7 +122,7 @@ public class CustomsInvoiceServiceTest
 
 		uom1 = createUOM("UomCode1");
 		uom2 = createUOM("UomCode2");
-		createUOM(UOMConstants.X12_KILOGRAM);
+		createUOM(X12DE355.KILOGRAM.getCode());
 
 		product1 = createProduct("Product1", uom1);
 
@@ -698,7 +698,7 @@ public class CustomsInvoiceServiceTest
 
 	private UserId createUser(final BPartnerId bpartnerId, final String userName)
 	{
-		final I_AD_User userRecord = newInstance(I_AD_User.class);
+		final org.compiere.model.I_AD_User userRecord = newInstance(I_AD_User.class);
 		userRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		userRecord.setName(userName);
 		save(userRecord);

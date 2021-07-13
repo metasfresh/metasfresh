@@ -1,0 +1,26 @@
+{
+  "modal_included1": {
+    "processId": "ADP_540871",
+    "viewId": "540328-g",
+    "viewDocumentIds": [
+      "PP_Order_BOMLine-null-1000003"
+    ],
+    "selectedTab": {
+      "tabId": "AD_Tab-53040",
+      "rowIds": [
+        "PP_Order_BOMLine-null-1000003"
+      ]
+    }
+  },
+  "modal_included2": {
+    "processId": "ADP_540809",
+    "viewId": "pickingSlot-q-1003027",
+    "viewDocumentIds": [
+      "1000126"
+    ],
+    "parentViewId": "540350-q",
+    "parentViewSelectedIds": [
+      "1003027"
+    ]
+  }
+}

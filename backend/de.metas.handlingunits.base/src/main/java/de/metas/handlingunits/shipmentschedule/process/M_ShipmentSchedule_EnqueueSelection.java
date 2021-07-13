@@ -48,7 +48,7 @@ import lombok.NonNull;
  * Auswahl Liefern: Enqueue selected {@link I_M_ShipmentSchedule}s and let {@link GenerateInOutFromShipmentSchedules} process them.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29
+ * task http://dewiki908/mediawiki/index.php/07042_Simple_InOut-Creation_from_shipment-schedule_%28109342691288%29
  */
 public class M_ShipmentSchedule_EnqueueSelection
 		extends JavaProcess
@@ -100,7 +100,7 @@ public class M_ShipmentSchedule_EnqueueSelection
 				.setContext(getCtx(), getTrxName())
 				.createWorkpackages(workPackageParameters);
 
-		return "@Created@: " + result.getEneuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();
+		return "@Created@: " + result.getEnqueuedPackagesCount() + " @" + I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID + "@; @Skip@ " + result.getSkippedPackagesCount();
 	}
 
 	private IQueryFilter<I_M_ShipmentSchedule> createShipmentSchedulesQueryFilters()

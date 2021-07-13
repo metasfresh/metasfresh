@@ -1,19 +1,17 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 /*
  * #%L
@@ -151,10 +149,18 @@ public class FactTrxLines
 		}
 		else
 		{
-			throw new AdempiereException("Invalid accounting operation structure (" + drLines.size() + " DR lines, " + crLines.size() + " CR lines)")
-					.appendParametersToMessage()
-					.setParameter("drLines", drLines)
-					.setParameter("crLines", crLines);
+			final AdempiereException ex = new AdempiereException("Invalid accounting operation structure (" + drLines.size() + " DR lines, " + crLines.size() + " CR lines)")
+					.appendParametersToMessage();
+			for (int i = 0, size = drLines.size(); i < size; i++)
+			{
+				ex.setParameter("DR " + (i + 1), drLines.get(i));
+			}
+			for (int i = 0, size = crLines.size(); i < size; i++)
+			{
+				ex.setParameter("CR " + (i + 1), crLines.get(i));
+			}
+
+			throw ex;
 		}
 	}
 

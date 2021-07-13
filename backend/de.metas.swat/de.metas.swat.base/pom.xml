@@ -8,6 +8,7 @@
 		<groupId>de.metas.swat</groupId>
 		<artifactId>de.metas.swat</artifactId>
 		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>de.metas.swat.base</artifactId>
@@ -18,7 +19,7 @@
 	<properties>
 		<!-- empty property because the sql migration dir already contains a list 
 			of base directories -->
-		<migration-sql-basedir></migration-sql-basedir>
+		<migration-sql-basedir/>
 	</properties>
 
 	<dependencies>
@@ -59,11 +60,11 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- 07058: Libero (Distribution Network) dependency will be used for warehouse 
+		<!-- 07058: Manufacturing (Distribution Network) dependency will be used for warehouse 
 			association between OrderLine and ReceiptSchedule warehouses -->
 		<dependency>
-			<groupId>de.metas.adempiere.libero</groupId>
-			<artifactId>de.metas.adempiere.libero.libero</artifactId>
+			<groupId>de.metas.manufacturing</groupId>
+			<artifactId>de.metas.manufacturing</artifactId>
 			<version>10.0.0</version>
 		</dependency>
 
@@ -106,22 +107,11 @@
 			<version>10.0.0</version>
 		</dependency>
 
-		<!-- other 3rd party libs -->
-		<!-- Needed only for de.metas.impex.spi.impl.FtpImporter -->
-		<dependency>
-			<groupId>ftp4che</groupId>
-			<artifactId>ftp4che</artifactId>
-			<version>0.7.1</version>
-		</dependency>
-
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
 		</dependency>
 
-		<!-- Lombok See https://github.com/metasfresh/metasfresh/issues/1125 NOTE: 
-			if you don't need fancy things like @SneakyThrows then scope 'provided' it's 
-			totally fine Also note that the version is managed by spring-boot. -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -135,25 +125,6 @@
             <version>${mockito.version}</version>
             <scope>test</scope>
         </dependency>
-		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymock</artifactId>
-			<version>2.5</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.easymock</groupId>
-			<artifactId>easymockclassextension</artifactId>
-			<version>2.4</version>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<groupId>org.easymock</groupId>
-					<artifactId>easymock</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

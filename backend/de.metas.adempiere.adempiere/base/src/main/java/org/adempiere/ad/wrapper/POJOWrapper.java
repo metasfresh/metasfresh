@@ -97,13 +97,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		return create(ctx, cl, POJOLookupMap.get());
 	}
 
-	/**
-	 *
-	 * @param ctx
-	 * @param cl
-	 * @param trxName
-	 * @return
-	 */
 	public static <T> T create(final Properties ctx, final Class<T> cl, final String trxName)
 	{
 		final T object = create(ctx, cl);
@@ -232,11 +225,8 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 * If the given <code>cl</code> has a table name (see {@link #getTableNameOrNull(Class)}), then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be
+	 * If the given <code>cl</code> has a table name - see {@link InterfaceWrapperHelper#getTableNameOrNull(Class)} then this method makes sure that there is also an <code>I_AD_Table</code> POJO. This can generally be
 	 * assumed when running against a DB and should also be made sure when running unti tests in decoupled mode.
-	 *
-	 * @param ctx
-	 * @param cl
 	 */
 	private static <T> void createADTableInstanceIfNeccesary(final Properties ctx, final Class<T> cl)
 	{
@@ -587,7 +577,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		catch (final AdempiereException e)
 		{
-			throw new AdempiereException("Error invoking method=\"" + method.getName() + "\"; proxy=" + proxy + "; args=" + args, e);
+			e.printStackTrace();
+			throw new AdempiereException("Error invoking method=\"" + method.getName() + "\""
+												 //+ "; proxy=" + proxy // commented out because in some cases this causes StackOverflow
+												 + "; args=" + args, e);
 		}
 	}
 
@@ -646,18 +639,18 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			@NonNull final Object[] args,
 			@NonNull final String methodName)
 	{
-		final String propertyNameLowerCase = methodName.substring(3);
+		final String propertyName = methodName.substring(3);
 		final Class<?> paramType = method.getParameterTypes()[0];
 		final Object value = args[0];
 		if (isModelInterface(paramType))
 		{
-			setReferencedObject(propertyNameLowerCase, value);
+			setReferencedObject(propertyName, value);
 			// throw new AdempiereException("Object setter not supported: " + method);
 			// setValueFromPO(propertyName + "_ID", paramType, value);
 		}
 		else
 		{
-			setValue(propertyNameLowerCase, value);
+			setValue(propertyName, value);
 		}
 		return null;
 	}
@@ -666,7 +659,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		final String propertyNameLowerCase = methodName.substring(3);
 
-		if (propertyNameLowerCase.equals(idColumnName))
+		if (propertyNameLowerCase.equalsIgnoreCase(idColumnName))
 		{
 			return getId();
 		}
@@ -787,7 +780,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			sb.append(", OLD VALUES");
 		}
 
-		final boolean printReferencedModels = !useOldValues && isPrintReferencedModels();
+		final boolean printReferencedModels = !useOldValues && isPrintReferencedModels() && false;
 
 		final Map<String, Object> values = getInnerValues();
 		if (values != null && !values.isEmpty())
@@ -1464,7 +1457,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 	}
 
-	public static void setInstanceName(final Object model, final String instanceName)
+	public static void setInstanceName(final Object model, @Nullable final String instanceName)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
 		if (wrapper == null)
@@ -1475,6 +1468,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		wrapper.instanceName = instanceName;
 	}
 
+	@Nullable
 	public static String getInstanceName(final Object model)
 	{
 		final POJOWrapper wrapper = getWrapper(model);
@@ -1517,9 +1511,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 * Set if we shall allow to {@link #refresh(Object)} an object which has changes.
-	 *
-	 * @param allow
+	 * Set if we shall allow to {@link #refresh(String)}  an object which has changes.
 	 */
 	public static void setAllowRefreshingChangedModels(final boolean allow)
 	{
@@ -1658,8 +1650,6 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 	}
 
 	/**
-	 * @param model
-	 * @param columnNames
 	 * @return true if any of given column names where changed
 	 */
 	public static boolean isValueChanged(final Object model, final Set<String> propertyNames)

@@ -1,6 +1,54 @@
 package de.metas.payment.api.impl;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
+import de.metas.banking.BankStatementLineRefId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.exceptions.NoCurrencyRateFoundException;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.invoice.interceptor.C_Invoice;
+import de.metas.money.CurrencyId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentReconcileReference;
+import de.metas.payment.api.PaymentReconcileRequest;
+import de.metas.payment.processor.PaymentProcessorService;
+import de.metas.payment.reservation.PaymentReservationCaptureRepository;
+import de.metas.payment.reservation.PaymentReservationRepository;
+import de.metas.payment.reservation.PaymentReservationService;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_C_Payment;
+import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,42 +74,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_Payment;
-import org.junit.Assert;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.banking.BankStatementId;
-import de.metas.banking.BankStatementLineId;
-import de.metas.banking.BankStatementLineRefId;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
-import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.money.CurrencyId;
-import de.metas.payment.PaymentId;
-import de.metas.payment.api.IPaymentBL;
-import de.metas.payment.api.PaymentReconcileReference;
-import de.metas.payment.api.PaymentReconcileRequest;
-import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentBLTest
@@ -96,7 +108,7 @@ public class PaymentBLTest
 			order = newInstance(I_C_Order.class);
 			order.setAD_Org_ID(1);
 			order.setC_Currency_ID(currencyEUR.getRepoId());
-			order.setGrandTotal(new BigDecimal(50.0));
+			order.setGrandTotal(new BigDecimal("50.0"));
 			order.setIsSOTrx(true);
 			order.setProcessed(true);
 			saveRecord(order);
@@ -104,7 +116,7 @@ public class PaymentBLTest
 			invoice = newInstance(I_C_Invoice.class);
 			invoice.setAD_Org_ID(1);
 			invoice.setC_Currency_ID(currencyEUR.getRepoId());
-			invoice.setGrandTotal(new BigDecimal(50.0));
+			invoice.setGrandTotal(new BigDecimal("50.0"));
 			invoice.setIsSOTrx(true);
 			invoice.setProcessed(true);
 			saveRecord(invoice);
@@ -121,8 +133,8 @@ public class PaymentBLTest
 		{
 			final PaymentBL paymentBL = new PaymentBL(); // the class under test
 			final Timestamp today = SystemTime.asDayTimestamp();
-			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(2.0));
-			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.5));
+			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal("2.0"));
+			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal("0.5"));
 
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
 			payment.setDateTrx(today); // needed for default C_ConversionType_ID retrieval
@@ -209,26 +221,26 @@ public class PaymentBLTest
 			saveRecord(payment);
 
 			// Test writeoff completion
-			payment.setPayAmt(new BigDecimal(40.0));
+			payment.setPayAmt(new BigDecimal("40.0"));
 			saveRecord(payment);
 			invoice.setC_Currency_ID(currencyEUR.getRepoId());
-			invoice.setGrandTotal(new BigDecimal(50.0));
+			invoice.setGrandTotal(new BigDecimal("50.0"));
 			saveRecord(invoice);
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect writeoff amount", new BigDecimal(10.0), payment.getWriteOffAmt());
+			Assert.assertEquals("Incorrect writeoff amount", new BigDecimal("10.0"), payment.getWriteOffAmt());
 
 			// Test over/under completion
-			payment.setPayAmt(new BigDecimal(60.0));
+			payment.setPayAmt(new BigDecimal("60.0"));
 			payment.setIsOverUnderPayment(true);
 			saveRecord(payment);
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect over/under amount", new BigDecimal(-10.0), payment.getOverUnderAmt());
+			Assert.assertEquals("Incorrect over/under amount", BigDecimal.valueOf(-10.0), payment.getOverUnderAmt());
 
-			Assert.assertEquals("Incorrect payment amount in EUR", new BigDecimal(60.0), payment.getPayAmt());
+			Assert.assertEquals("Incorrect payment amount in EUR", new BigDecimal("60.0"), payment.getPayAmt());
 
 			// Test currency change
 			payment.setC_Currency_ID(currencyCHF.getRepoId());
@@ -236,24 +248,24 @@ public class PaymentBLTest
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_C_Currency_ID, /* creditMemoAdjusted */false);
 
-			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal(120.0).compareTo(payment.getPayAmt()));
+			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal("120.0").compareTo(payment.getPayAmt()));
 
 			paymentBL.updateAmounts(payment, null, /* creditMemoAdjusted */false); // B==D
 
-			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal(120.0).compareTo(payment.getPayAmt()));
+			Assert.assertEquals("Incorrect pay amount", 0, new BigDecimal("120.0").compareTo(payment.getPayAmt()));
 
-			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(2.0));
-			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.5));
+			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal("2.0"));
+			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal("0.5"));
 
 			// Called manually because we can't test properly with "creditMemoAdjusted" true
 			paymentBL.onPayAmtChange(payment, /* creditMemoAdjusted */false);
 
-			Assert.assertTrue("Incorrect payment amount in CHF", new BigDecimal(120.0).compareTo(payment.getPayAmt()) == 0);
+			Assert.assertTrue("Incorrect payment amount in CHF", new BigDecimal("120.0").compareTo(payment.getPayAmt()) == 0);
 
 			payment.setC_Invoice_ID(0);
 			payment.setC_Order_ID(order.getC_Order_ID());
 			payment.setC_Currency_ID(currencyEUR.getRepoId());
-			payment.setPayAmt(new BigDecimal(30.0));
+			payment.setPayAmt(new BigDecimal("30.0"));
 			saveRecord(payment);
 
 			paymentBL.updateAmounts(payment, I_C_Payment.COLUMNNAME_IsOverUnderPayment, /* creditMemoAdjusted */false);
@@ -266,7 +278,7 @@ public class PaymentBLTest
 		}
 
 		@Test
-		public void exceptionTest()
+		public void noCurrencyConversionDefined()
 		{
 			final I_C_Payment payment = newInstance(I_C_Payment.class);
 			payment.setAD_Org_ID(1);
@@ -282,12 +294,11 @@ public class PaymentBLTest
 			saveRecord(invoice);
 			saveRecord(payment);
 
-			currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(0.0));
-			currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.0));
+			//currencyDAO.setRate(currencyEUR, currencyCHF, new BigDecimal(0.0));
+			//currencyDAO.setRate(currencyCHF, currencyEUR, new BigDecimal(0.0));
 
 			assertThatThrownBy(() -> paymentBL.updateAmounts(payment, null, false))
-					.isInstanceOf(AdempiereException.class)
-					.hasMessage("NoCurrencyConversion");
+					.isInstanceOf(NoCurrencyRateFoundException.class);
 		}
 	}
 
@@ -385,7 +396,7 @@ public class PaymentBLTest
 
 			assertThatThrownBy(() -> paymentBL.markReconciledAndSave(payment, bankStatementLine2))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageStartingWith("Payment was already reconciled");
+					.hasMessageStartingWith("Payment with DocumentNo=");
 		}
 	}
 
@@ -473,6 +484,135 @@ public class PaymentBLTest
 				assertThat(payment2.isReconciled()).isTrue();
 				assertThat(PaymentBL.extractPaymentReconcileReference(payment2)).isEqualTo(bankStatementLine2);
 			}
+		}
+	}
+
+	@Nested
+	public class canAllocateOrderPaymentToInvoice
+	{
+		private I_C_DocType prepayDocType;
+		private I_C_DocType salesOrderDocType;
+		private C_Invoice c_invoiceInterceptor;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			AdempiereTestHelper.get().init();
+
+			prepayDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, X_C_DocType.DOCSUBTYPE_PrepayOrder);
+			salesOrderDocType = createDocType(X_C_DocType.DOCBASETYPE_SalesOrder, null);
+
+			final @NonNull PaymentReservationRepository reservationsRepo = new PaymentReservationRepository();
+			final @NonNull PaymentReservationCaptureRepository capturesRepo = new PaymentReservationCaptureRepository();
+			final @NonNull PaymentProcessorService paymentProcessors = new PaymentProcessorService(Optional.empty());
+			c_invoiceInterceptor = new C_Invoice(new PaymentReservationService(reservationsRepo, capturesRepo, paymentProcessors));
+		}
+
+		@SuppressWarnings("ConstantConditions")
+		@NonNull
+		protected I_C_DocType createDocType(
+				@NonNull final String baseType,
+				@Nullable final String subType)
+		{
+			final I_C_DocType docType = InterfaceWrapperHelper.newInstance(I_C_DocType.class);
+			docType.setDocBaseType(baseType);
+			docType.setDocSubType(subType);
+			saveRecord(docType);
+			return docType;
+		}
+
+		@Test
+		void canAllocate_OrderDoctypePrepay()
+		{
+			final I_C_Payment payment = createPayment(null);
+			final de.metas.adempiere.model.I_C_Order prepayOrder = createSalesOrder(null, prepayDocType, payment);
+
+			Assertions.assertTrue(paymentBL.canAllocateOrderPaymentToInvoice(prepayOrder));
+		}
+
+		@Test
+		void canAllocate_OrderDoctypeSalesOrder_SameExternalId()
+		{
+			final ExternalId externalId = ExternalId.of("extId1432");
+			final I_C_Payment payment = createPayment(externalId);
+			final de.metas.adempiere.model.I_C_Order salesOrder = createSalesOrder(externalId, salesOrderDocType, payment);
+
+			Assertions.assertTrue(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
+		}
+
+		@Test
+		void canAllocate_OrderDoctypeSalesOrder_DifferentExternalID()
+		{
+			final ExternalId externalIdSO = ExternalId.of("extId1432SO");
+			final ExternalId externalIdP = ExternalId.of("extId1432P");
+			final I_C_Payment payment = createPayment(externalIdP);
+			final de.metas.adempiere.model.I_C_Order salesOrder = createSalesOrder(externalIdSO, salesOrderDocType, payment);
+
+			Assertions.assertTrue(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
+		}
+
+		@Test
+		void canAllocate_OrderDoctypeSalesOrder_NoExternalID()
+		{
+			final I_C_Payment payment = createPayment(null);
+			final de.metas.adempiere.model.I_C_Order salesOrder = createSalesOrder(null, salesOrderDocType, payment);
+
+			Assertions.assertTrue(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
+		}
+
+		@Test
+		void canNotAllocate_OrderDoctypeSalesOrder_DifferentPaymentOrderLinked()
+		{
+			final de.metas.adempiere.model.I_C_Order salesOrder = createSalesOrder(null, salesOrderDocType, null);
+
+			final I_C_Payment payment = createPayment(null);
+			salesOrder.setC_Payment_ID(payment.getC_Payment_ID());
+
+			Assertions.assertFalse(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
+		}
+
+		@Test
+		void canNotAllocate_OrderDoctypeSalesOrder_NoPayment()
+		{
+			final de.metas.adempiere.model.I_C_Order salesOrder = createSalesOrder(null, salesOrderDocType, null);
+
+			Assertions.assertFalse(paymentBL.canAllocateOrderPaymentToInvoice(salesOrder));
+		}
+
+		@SuppressWarnings("ConstantConditions")
+		@NonNull
+		private I_C_Payment createPayment(@Nullable final ExternalId externalOrderId)
+		{
+			final I_C_Payment payment = newInstance(I_C_Payment.class);
+			payment.setExternalOrderId(ExternalId.toValue(externalOrderId));
+			payment.getExternalOrderId();
+			save(payment);
+			return payment;
+		}
+
+		@SuppressWarnings("ConstantConditions")
+		@NonNull
+		private de.metas.adempiere.model.I_C_Order createSalesOrder(
+				@Nullable final ExternalId externalOrderId,
+				@NonNull final I_C_DocType prepayDocType,
+				@Nullable final I_C_Payment payment)
+		{
+			final de.metas.adempiere.model.I_C_Order order = newInstance(de.metas.adempiere.model.I_C_Order.class);
+			order.setExternalId(ExternalId.toValue(externalOrderId));
+			order.setC_DocType_ID(prepayDocType.getC_DocType_ID());
+			order.setIsSOTrx(true);
+			saveRecord(order);
+
+			if (payment != null)
+			{
+				order.setC_Payment_ID(payment.getC_Payment_ID());
+				payment.setC_Order_ID(order.getC_Order_ID());
+
+				saveRecord(payment);
+				saveRecord(order);
+			}
+
+			return order;
 		}
 	}
 }

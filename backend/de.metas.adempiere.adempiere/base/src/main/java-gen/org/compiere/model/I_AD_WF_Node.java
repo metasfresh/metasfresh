@@ -1,91 +1,82 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_WF_Node
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_AD_WF_Node 
 {
 
-    /** TableName=AD_WF_Node */
-    public static final String Table_Name = "AD_WF_Node";
+	String Table_Name = "AD_WF_Node";
 
-    /** AD_Table_ID=129 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=129 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 6 - System - Client
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(6);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Aktion.
+	 * Set Action.
+	 * Zeigt die durchzuführende Aktion an
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAction (java.lang.String Action);
+	void setAction (java.lang.String Action);
 
 	/**
-	 * Get Aktion.
+	 * Get Action.
+	 * Zeigt die durchzuführende Aktion an
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAction();
+	java.lang.String getAction();
 
-    /** Column definition for Action */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Action = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Action", null);
-    /** Column name Action */
-    public static final String COLUMNNAME_Action = "Action";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Action = new ModelColumn<>(I_AD_WF_Node.class, "Action", null);
+	String COLUMNNAME_Action = "Action";
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Spalte.
-	 * Column in the table
+	 * Set Link Column.
+	 * Link Column for Multi-Parent tables
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Column_ID (int AD_Column_ID);
+	void setAD_Column_ID (int AD_Column_ID);
 
 	/**
-	 * Get Spalte.
-	 * Column in the table
+	 * Get Link Column.
+	 * Link Column for Multi-Parent tables
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Column_ID();
+	int getAD_Column_ID();
 
-	public org.compiere.model.I_AD_Column getAD_Column();
+	@Nullable org.compiere.model.I_AD_Column getAD_Column();
 
-	public void setAD_Column(org.compiere.model.I_AD_Column AD_Column);
+	void setAD_Column(@Nullable org.compiere.model.I_AD_Column AD_Column);
 
-    /** Column definition for AD_Column_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Column>(I_AD_WF_Node.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
-    /** Column name AD_Column_ID */
-    public static final String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Column> COLUMN_AD_Column_ID = new ModelColumn<>(I_AD_WF_Node.class, "AD_Column_ID", org.compiere.model.I_AD_Column.class);
+	String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
 
 	/**
 	 * Set Special Form.
@@ -95,7 +86,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Form_ID (int AD_Form_ID);
+	void setAD_Form_ID (int AD_Form_ID);
 
 	/**
 	 * Get Special Form.
@@ -105,16 +96,14 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Form_ID();
+	int getAD_Form_ID();
 
-	public org.compiere.model.I_AD_Form getAD_Form();
+	@Nullable org.compiere.model.I_AD_Form getAD_Form();
 
-	public void setAD_Form(org.compiere.model.I_AD_Form AD_Form);
+	void setAD_Form(@Nullable org.compiere.model.I_AD_Form AD_Form);
 
-    /** Column definition for AD_Form_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Form> COLUMN_AD_Form_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Form>(I_AD_WF_Node.class, "AD_Form_ID", org.compiere.model.I_AD_Form.class);
-    /** Column name AD_Form_ID */
-    public static final String COLUMNNAME_AD_Form_ID = "AD_Form_ID";
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Form> COLUMN_AD_Form_ID = new ModelColumn<>(I_AD_WF_Node.class, "AD_Form_ID", org.compiere.model.I_AD_Form.class);
+	String COLUMNNAME_AD_Form_ID = "AD_Form_ID";
 
 	/**
 	 * Set Bild.
@@ -124,7 +113,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Image_ID (int AD_Image_ID);
+	void setAD_Image_ID (int AD_Image_ID);
 
 	/**
 	 * Get Bild.
@@ -134,39 +123,36 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Image_ID();
+	int getAD_Image_ID();
 
-	public org.compiere.model.I_AD_Image getAD_Image();
+	@Nullable org.compiere.model.I_AD_Image getAD_Image();
 
-	public void setAD_Image(org.compiere.model.I_AD_Image AD_Image);
+	void setAD_Image(@Nullable org.compiere.model.I_AD_Image AD_Image);
 
-    /** Column definition for AD_Image_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Image> COLUMN_AD_Image_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Image>(I_AD_WF_Node.class, "AD_Image_ID", org.compiere.model.I_AD_Image.class);
-    /** Column name AD_Image_ID */
-    public static final String COLUMNNAME_AD_Image_ID = "AD_Image_ID";
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Image> COLUMN_AD_Image_ID = new ModelColumn<>(I_AD_WF_Node.class, "AD_Image_ID", org.compiere.model.I_AD_Image.class);
+	String COLUMNNAME_AD_Image_ID = "AD_Image_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Prozess.
@@ -176,7 +162,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Process_ID (int AD_Process_ID);
+	void setAD_Process_ID (int AD_Process_ID);
 
 	/**
 	 * Get Prozess.
@@ -186,16 +172,14 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Process_ID();
+	int getAD_Process_ID();
 
-	public org.compiere.model.I_AD_Process getAD_Process();
+	@Nullable org.compiere.model.I_AD_Process getAD_Process();
 
-	public void setAD_Process(org.compiere.model.I_AD_Process AD_Process);
+	void setAD_Process(@Nullable org.compiere.model.I_AD_Process AD_Process);
 
-    /** Column definition for AD_Process_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Process>(I_AD_WF_Node.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
-    /** Column name AD_Process_ID */
-    public static final String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Process> COLUMN_AD_Process_ID = new ModelColumn<>(I_AD_WF_Node.class, "AD_Process_ID", org.compiere.model.I_AD_Process.class);
+	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
 	 * Set Externer Prozess.
@@ -205,7 +189,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Task_ID (int AD_Task_ID);
+	void setAD_Task_ID (int AD_Task_ID);
 
 	/**
 	 * Get Externer Prozess.
@@ -215,16 +199,14 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Task_ID();
+	int getAD_Task_ID();
 
-	public org.compiere.model.I_AD_Task getAD_Task();
+	@Nullable org.compiere.model.I_AD_Task getAD_Task();
 
-	public void setAD_Task(org.compiere.model.I_AD_Task AD_Task);
+	void setAD_Task(@Nullable org.compiere.model.I_AD_Task AD_Task);
 
-    /** Column definition for AD_Task_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Task> COLUMN_AD_Task_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Task>(I_AD_WF_Node.class, "AD_Task_ID", org.compiere.model.I_AD_Task.class);
-    /** Column name AD_Task_ID */
-    public static final String COLUMNNAME_AD_Task_ID = "AD_Task_ID";
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Task> COLUMN_AD_Task_ID = new ModelColumn<>(I_AD_WF_Node.class, "AD_Task_ID", org.compiere.model.I_AD_Task.class);
+	String COLUMNNAME_AD_Task_ID = "AD_Task_ID";
 
 	/**
 	 * Set Workflow Block.
@@ -234,7 +216,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_WF_Block_ID (int AD_WF_Block_ID);
+	void setAD_WF_Block_ID (int AD_WF_Block_ID);
 
 	/**
 	 * Get Workflow Block.
@@ -244,16 +226,9 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_WF_Block_ID();
+	int getAD_WF_Block_ID();
 
-	public org.compiere.model.I_AD_WF_Block getAD_WF_Block();
-
-	public void setAD_WF_Block(org.compiere.model.I_AD_WF_Block AD_WF_Block);
-
-    /** Column definition for AD_WF_Block_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_WF_Block> COLUMN_AD_WF_Block_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_WF_Block>(I_AD_WF_Node.class, "AD_WF_Block_ID", org.compiere.model.I_AD_WF_Block.class);
-    /** Column name AD_WF_Block_ID */
-    public static final String COLUMNNAME_AD_WF_Block_ID = "AD_WF_Block_ID";
+	String COLUMNNAME_AD_WF_Block_ID = "AD_WF_Block_ID";
 
 	/**
 	 * Set Knoten.
@@ -263,7 +238,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_WF_Node_ID (int AD_WF_Node_ID);
+	void setAD_WF_Node_ID (int AD_WF_Node_ID);
 
 	/**
 	 * Get Knoten.
@@ -273,39 +248,30 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_WF_Node_ID();
+	int getAD_WF_Node_ID();
 
-    /** Column definition for AD_WF_Node_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_AD_WF_Node_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "AD_WF_Node_ID", null);
-    /** Column name AD_WF_Node_ID */
-    public static final String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_AD_WF_Node_ID = new ModelColumn<>(I_AD_WF_Node.class, "AD_WF_Node_ID", null);
+	String COLUMNNAME_AD_WF_Node_ID = "AD_WF_Node_ID";
 
 	/**
-	 * Set Workflow Steps Template.
+	 * Set Workflow Steps Template (ID).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_WF_Node_Template_ID (int AD_WF_Node_Template_ID);
+	void setAD_WF_Node_Template_ID (int AD_WF_Node_Template_ID);
 
 	/**
-	 * Get Workflow Steps Template.
+	 * Get Workflow Steps Template (ID).
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_WF_Node_Template_ID();
+	int getAD_WF_Node_Template_ID();
 
-	public org.compiere.model.I_AD_WF_Node_Template getAD_WF_Node_Template();
-
-	public void setAD_WF_Node_Template(org.compiere.model.I_AD_WF_Node_Template AD_WF_Node_Template);
-
-    /** Column definition for AD_WF_Node_Template_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_WF_Node_Template> COLUMN_AD_WF_Node_Template_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_WF_Node_Template>(I_AD_WF_Node.class, "AD_WF_Node_Template_ID", org.compiere.model.I_AD_WF_Node_Template.class);
-    /** Column name AD_WF_Node_Template_ID */
-    public static final String COLUMNNAME_AD_WF_Node_Template_ID = "AD_WF_Node_Template_ID";
+	String COLUMNNAME_AD_WF_Node_Template_ID = "AD_WF_Node_Template_ID";
 
 	/**
 	 * Set Workflow - Verantwortlicher.
@@ -315,7 +281,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID);
+	void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID);
 
 	/**
 	 * Get Workflow - Verantwortlicher.
@@ -325,45 +291,36 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_WF_Responsible_ID();
+	int getAD_WF_Responsible_ID();
 
-	public org.compiere.model.I_AD_WF_Responsible getAD_WF_Responsible();
-
-	public void setAD_WF_Responsible(org.compiere.model.I_AD_WF_Responsible AD_WF_Responsible);
-
-    /** Column definition for AD_WF_Responsible_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_WF_Responsible> COLUMN_AD_WF_Responsible_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_WF_Responsible>(I_AD_WF_Node.class, "AD_WF_Responsible_ID", org.compiere.model.I_AD_WF_Responsible.class);
-    /** Column name AD_WF_Responsible_ID */
-    public static final String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
+	String COLUMNNAME_AD_WF_Responsible_ID = "AD_WF_Responsible_ID";
 
 	/**
-	 * Set Fenster.
+	 * Set Window.
 	 * Data entry or display window
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Window_ID (int AD_Window_ID);
+	void setAD_Window_ID (int AD_Window_ID);
 
 	/**
-	 * Get Fenster.
+	 * Get Window.
 	 * Data entry or display window
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Window_ID();
+	int getAD_Window_ID();
 
-	public org.compiere.model.I_AD_Window getAD_Window();
+	@Nullable org.compiere.model.I_AD_Window getAD_Window();
 
-	public void setAD_Window(org.compiere.model.I_AD_Window AD_Window);
+	void setAD_Window(@Nullable org.compiere.model.I_AD_Window AD_Window);
 
-    /** Column definition for AD_Window_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Window>(I_AD_WF_Node.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
-    /** Column name AD_Window_ID */
-    public static final String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Window> COLUMN_AD_Window_ID = new ModelColumn<>(I_AD_WF_Node.class, "AD_Window_ID", org.compiere.model.I_AD_Window.class);
+	String COLUMNNAME_AD_Window_ID = "AD_Window_ID";
 
 	/**
 	 * Set Workflow.
@@ -373,7 +330,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Workflow_ID (int AD_Workflow_ID);
+	void setAD_Workflow_ID (int AD_Workflow_ID);
 
 	/**
 	 * Get Workflow.
@@ -383,16 +340,9 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Workflow_ID();
+	int getAD_Workflow_ID();
 
-	public org.compiere.model.I_AD_Workflow getAD_Workflow();
-
-	public void setAD_Workflow(org.compiere.model.I_AD_Workflow AD_Workflow);
-
-    /** Column definition for AD_Workflow_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Workflow> COLUMN_AD_Workflow_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Workflow>(I_AD_WF_Node.class, "AD_Workflow_ID", org.compiere.model.I_AD_Workflow.class);
-    /** Column name AD_Workflow_ID */
-    public static final String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
+	String COLUMNNAME_AD_Workflow_ID = "AD_Workflow_ID";
 
 	/**
 	 * Set Attribute Name.
@@ -402,7 +352,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAttributeName (java.lang.String AttributeName);
+	void setAttributeName (@Nullable java.lang.String AttributeName);
 
 	/**
 	 * Get Attribute Name.
@@ -412,12 +362,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAttributeName();
+	@Nullable java.lang.String getAttributeName();
 
-    /** Column definition for AttributeName */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_AttributeName = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "AttributeName", null);
-    /** Column name AttributeName */
-    public static final String COLUMNNAME_AttributeName = "AttributeName";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_AttributeName = new ModelColumn<>(I_AD_WF_Node.class, "AttributeName", null);
+	String COLUMNNAME_AttributeName = "AttributeName";
 
 	/**
 	 * Set Merkmals-Wert.
@@ -427,7 +375,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAttributeValue (java.lang.String AttributeValue);
+	void setAttributeValue (@Nullable java.lang.String AttributeValue);
 
 	/**
 	 * Get Merkmals-Wert.
@@ -437,35 +385,30 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAttributeValue();
+	@Nullable java.lang.String getAttributeValue();
 
-    /** Column definition for AttributeValue */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_AttributeValue = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "AttributeValue", null);
-    /** Column name AttributeValue */
-    public static final String COLUMNNAME_AttributeValue = "AttributeValue";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_AttributeValue = new ModelColumn<>(I_AD_WF_Node.class, "AttributeValue", null);
+	String COLUMNNAME_AttributeValue = "AttributeValue";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_ID();
 
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set Kosten.
@@ -475,7 +418,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setCost (java.math.BigDecimal Cost);
+	void setCost (BigDecimal Cost);
 
 	/**
 	 * Get Kosten.
@@ -485,88 +428,79 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getCost();
+	BigDecimal getCost();
 
-    /** Column definition for Cost */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Cost = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Cost", null);
-    /** Column name Cost */
-    public static final String COLUMNNAME_Cost = "Cost";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Cost = new ModelColumn<>(I_AD_WF_Node.class, "Cost", null);
+	String COLUMNNAME_Cost = "Cost";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Created = new ModelColumn<>(I_AD_WF_Node.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Description = new ModelColumn<>(I_AD_WF_Node.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Belegverarbeitung.
+	 * Set Process Batch.
 	 * The targeted status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocAction (java.lang.String DocAction);
+	void setDocAction (@Nullable java.lang.String DocAction);
 
 	/**
-	 * Get Belegverarbeitung.
+	 * Get Process Batch.
 	 * The targeted status of the document
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocAction();
+	@Nullable java.lang.String getDocAction();
 
-    /** Column definition for DocAction */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_DocAction = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "DocAction", null);
-    /** Column name DocAction */
-    public static final String COLUMNNAME_DocAction = "DocAction";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_DocAction = new ModelColumn<>(I_AD_WF_Node.class, "DocAction", null);
+	String COLUMNNAME_DocAction = "DocAction";
 
 	/**
 	 * Set Duration.
@@ -576,7 +510,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDuration (int Duration);
+	void setDuration (int Duration);
 
 	/**
 	 * Get Duration.
@@ -586,12 +520,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDuration();
+	int getDuration();
 
-    /** Column definition for Duration */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Duration = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Duration", null);
-    /** Column name Duration */
-    public static final String COLUMNNAME_Duration = "Duration";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Duration = new ModelColumn<>(I_AD_WF_Node.class, "Duration", null);
+	String COLUMNNAME_Duration = "Duration";
 
 	/**
 	 * Set Duration Limit.
@@ -601,7 +533,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDurationLimit (int DurationLimit);
+	void setDurationLimit (int DurationLimit);
 
 	/**
 	 * Get Duration Limit.
@@ -611,12 +543,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDurationLimit();
+	int getDurationLimit();
 
-    /** Column definition for DurationLimit */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_DurationLimit = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "DurationLimit", null);
-    /** Column name DurationLimit */
-    public static final String COLUMNNAME_DurationLimit = "DurationLimit";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_DurationLimit = new ModelColumn<>(I_AD_WF_Node.class, "DurationLimit", null);
+	String COLUMNNAME_DurationLimit = "DurationLimit";
 
 	/**
 	 * Set Dynamic Priority Change.
@@ -626,7 +556,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDynPriorityChange (java.math.BigDecimal DynPriorityChange);
+	void setDynPriorityChange (@Nullable BigDecimal DynPriorityChange);
 
 	/**
 	 * Get Dynamic Priority Change.
@@ -636,12 +566,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getDynPriorityChange();
+	BigDecimal getDynPriorityChange();
 
-    /** Column definition for DynPriorityChange */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_DynPriorityChange = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "DynPriorityChange", null);
-    /** Column name DynPriorityChange */
-    public static final String COLUMNNAME_DynPriorityChange = "DynPriorityChange";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_DynPriorityChange = new ModelColumn<>(I_AD_WF_Node.class, "DynPriorityChange", null);
+	String COLUMNNAME_DynPriorityChange = "DynPriorityChange";
 
 	/**
 	 * Set Dynamic Priority Unit.
@@ -651,7 +579,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDynPriorityUnit (java.lang.String DynPriorityUnit);
+	void setDynPriorityUnit (@Nullable java.lang.String DynPriorityUnit);
 
 	/**
 	 * Get Dynamic Priority Unit.
@@ -661,37 +589,31 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDynPriorityUnit();
+	@Nullable java.lang.String getDynPriorityUnit();
 
-    /** Column definition for DynPriorityUnit */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_DynPriorityUnit = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "DynPriorityUnit", null);
-    /** Column name DynPriorityUnit */
-    public static final String COLUMNNAME_DynPriorityUnit = "DynPriorityUnit";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_DynPriorityUnit = new ModelColumn<>(I_AD_WF_Node.class, "DynPriorityUnit", null);
+	String COLUMNNAME_DynPriorityUnit = "DynPriorityUnit";
 
 	/**
 	 * Set eMail.
-	 * EMail-Adresse
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMail (java.lang.String EMail);
+	void setEMail (@Nullable java.lang.String EMail);
 
 	/**
 	 * Get eMail.
-	 * EMail-Adresse
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEMail();
+	@Nullable java.lang.String getEMail();
 
-    /** Column definition for EMail */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "EMail", null);
-    /** Column name EMail */
-    public static final String COLUMNNAME_EMail = "EMail";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_EMail = new ModelColumn<>(I_AD_WF_Node.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
 
 	/**
 	 * Set EMail Recipient.
@@ -701,7 +623,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMailRecipient (java.lang.String EMailRecipient);
+	void setEMailRecipient (@Nullable java.lang.String EMailRecipient);
 
 	/**
 	 * Get EMail Recipient.
@@ -711,12 +633,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEMailRecipient();
+	@Nullable java.lang.String getEMailRecipient();
 
-    /** Column definition for EMailRecipient */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_EMailRecipient = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "EMailRecipient", null);
-    /** Column name EMailRecipient */
-    public static final String COLUMNNAME_EMailRecipient = "EMailRecipient";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_EMailRecipient = new ModelColumn<>(I_AD_WF_Node.class, "EMailRecipient", null);
+	String COLUMNNAME_EMailRecipient = "EMailRecipient";
 
 	/**
 	 * Set Entitäts-Art.
@@ -727,7 +647,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEntityType (java.lang.String EntityType);
+	void setEntityType (java.lang.String EntityType);
 
 	/**
 	 * Get Entitäts-Art.
@@ -738,12 +658,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEntityType();
+	java.lang.String getEntityType();
 
-    /** Column definition for EntityType */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_EntityType = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "EntityType", null);
-    /** Column name EntityType */
-    public static final String COLUMNNAME_EntityType = "EntityType";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_EntityType = new ModelColumn<>(I_AD_WF_Node.class, "EntityType", null);
+	String COLUMNNAME_EntityType = "EntityType";
 
 	/**
 	 * Set Finish Mode.
@@ -753,7 +671,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFinishMode (java.lang.String FinishMode);
+	void setFinishMode (@Nullable java.lang.String FinishMode);
 
 	/**
 	 * Get Finish Mode.
@@ -763,62 +681,56 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getFinishMode();
+	@Nullable java.lang.String getFinishMode();
 
-    /** Column definition for FinishMode */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_FinishMode = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "FinishMode", null);
-    /** Column name FinishMode */
-    public static final String COLUMNNAME_FinishMode = "FinishMode";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_FinishMode = new ModelColumn<>(I_AD_WF_Node.class, "FinishMode", null);
+	String COLUMNNAME_FinishMode = "FinishMode";
 
 	/**
-	 * Set Kommentar/Hilfe.
+	 * Set Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHelp (java.lang.String Help);
+	void setHelp (@Nullable java.lang.String Help);
 
 	/**
-	 * Get Kommentar/Hilfe.
+	 * Get Help.
 	 * Comment or Hint
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHelp();
+	@Nullable java.lang.String getHelp();
 
-    /** Column definition for Help */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Help = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Help", null);
-    /** Column name Help */
-    public static final String COLUMNNAME_Help = "Help";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Help = new ModelColumn<>(I_AD_WF_Node.class, "Help", null);
+	String COLUMNNAME_Help = "Help";
 
 	/**
-	 * Set Aktiv.
+	 * Set Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
+	 * Get Active.
 	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_WF_Node.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Zentral verwaltet.
@@ -828,7 +740,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsCentrallyMaintained (boolean IsCentrallyMaintained);
+	void setIsCentrallyMaintained (boolean IsCentrallyMaintained);
 
 	/**
 	 * Get Zentral verwaltet.
@@ -838,12 +750,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isCentrallyMaintained();
+	boolean isCentrallyMaintained();
 
-    /** Column definition for IsCentrallyMaintained */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_IsCentrallyMaintained = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "IsCentrallyMaintained", null);
-    /** Column name IsCentrallyMaintained */
-    public static final String COLUMNNAME_IsCentrallyMaintained = "IsCentrallyMaintained";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_IsCentrallyMaintained = new ModelColumn<>(I_AD_WF_Node.class, "IsCentrallyMaintained", null);
+	String COLUMNNAME_IsCentrallyMaintained = "IsCentrallyMaintained";
 
 	/**
 	 * Set Is Milestone.
@@ -852,7 +762,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsMilestone (boolean IsMilestone);
+	void setIsMilestone (boolean IsMilestone);
 
 	/**
 	 * Get Is Milestone.
@@ -861,12 +771,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isMilestone();
+	boolean isMilestone();
 
-    /** Column definition for IsMilestone */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_IsMilestone = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "IsMilestone", null);
-    /** Column name IsMilestone */
-    public static final String COLUMNNAME_IsMilestone = "IsMilestone";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_IsMilestone = new ModelColumn<>(I_AD_WF_Node.class, "IsMilestone", null);
+	String COLUMNNAME_IsMilestone = "IsMilestone";
 
 	/**
 	 * Set Is Subcontracting.
@@ -875,7 +783,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSubcontracting (boolean IsSubcontracting);
+	void setIsSubcontracting (boolean IsSubcontracting);
 
 	/**
 	 * Get Is Subcontracting.
@@ -884,12 +792,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSubcontracting();
+	boolean isSubcontracting();
 
-    /** Column definition for IsSubcontracting */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_IsSubcontracting = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "IsSubcontracting", null);
-    /** Column name IsSubcontracting */
-    public static final String COLUMNNAME_IsSubcontracting = "IsSubcontracting";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_IsSubcontracting = new ModelColumn<>(I_AD_WF_Node.class, "IsSubcontracting", null);
+	String COLUMNNAME_IsSubcontracting = "IsSubcontracting";
 
 	/**
 	 * Set Join Element.
@@ -899,7 +805,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setJoinElement (java.lang.String JoinElement);
+	void setJoinElement (java.lang.String JoinElement);
 
 	/**
 	 * Get Join Element.
@@ -909,12 +815,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getJoinElement();
+	java.lang.String getJoinElement();
 
-    /** Column definition for JoinElement */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_JoinElement = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "JoinElement", null);
-    /** Column name JoinElement */
-    public static final String COLUMNNAME_JoinElement = "JoinElement";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_JoinElement = new ModelColumn<>(I_AD_WF_Node.class, "JoinElement", null);
+	String COLUMNNAME_JoinElement = "JoinElement";
 
 	/**
 	 * Set Moving Time.
@@ -923,7 +827,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMovingTime (int MovingTime);
+	void setMovingTime (int MovingTime);
 
 	/**
 	 * Get Moving Time.
@@ -932,12 +836,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getMovingTime();
+	int getMovingTime();
 
-    /** Column definition for MovingTime */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_MovingTime = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "MovingTime", null);
-    /** Column name MovingTime */
-    public static final String COLUMNNAME_MovingTime = "MovingTime";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_MovingTime = new ModelColumn<>(I_AD_WF_Node.class, "MovingTime", null);
+	String COLUMNNAME_MovingTime = "MovingTime";
 
 	/**
 	 * Set Name.
@@ -946,7 +848,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -955,12 +857,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Name = new ModelColumn<>(I_AD_WF_Node.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Overlap Units.
@@ -970,7 +870,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setOverlapUnits (int OverlapUnits);
+	void setOverlapUnits (int OverlapUnits);
 
 	/**
 	 * Get Overlap Units.
@@ -980,12 +880,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getOverlapUnits();
+	int getOverlapUnits();
 
-    /** Column definition for OverlapUnits */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_OverlapUnits = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "OverlapUnits", null);
-    /** Column name OverlapUnits */
-    public static final String COLUMNNAME_OverlapUnits = "OverlapUnits";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_OverlapUnits = new ModelColumn<>(I_AD_WF_Node.class, "OverlapUnits", null);
+	String COLUMNNAME_OverlapUnits = "OverlapUnits";
 
 	/**
 	 * Set Priorität.
@@ -995,7 +893,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPriority (int Priority);
+	void setPriority (int Priority);
 
 	/**
 	 * Get Priorität.
@@ -1005,12 +903,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPriority();
+	int getPriority();
 
-    /** Column definition for Priority */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Priority = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Priority", null);
-    /** Column name Priority */
-    public static final String COLUMNNAME_Priority = "Priority";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Priority = new ModelColumn<>(I_AD_WF_Node.class, "Priority", null);
+	String COLUMNNAME_Priority = "Priority";
 
 	/**
 	 * Set Queuing Time.
@@ -1019,7 +915,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQueuingTime (int QueuingTime);
+	void setQueuingTime (int QueuingTime);
 
 	/**
 	 * Get Queuing Time.
@@ -1028,12 +924,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getQueuingTime();
+	int getQueuingTime();
 
-    /** Column definition for QueuingTime */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_QueuingTime = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "QueuingTime", null);
-    /** Column name QueuingTime */
-    public static final String COLUMNNAME_QueuingTime = "QueuingTime";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_QueuingTime = new ModelColumn<>(I_AD_WF_Node.class, "QueuingTime", null);
+	String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
 	 * Set EMail-Vorlage.
@@ -1043,7 +937,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setR_MailText_ID (int R_MailText_ID);
+	void setR_MailText_ID (int R_MailText_ID);
 
 	/**
 	 * Get EMail-Vorlage.
@@ -1053,16 +947,14 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getR_MailText_ID();
+	int getR_MailText_ID();
 
-	public org.compiere.model.I_R_MailText getR_MailText();
+	@Nullable org.compiere.model.I_R_MailText getR_MailText();
 
-	public void setR_MailText(org.compiere.model.I_R_MailText R_MailText);
+	void setR_MailText(@Nullable org.compiere.model.I_R_MailText R_MailText);
 
-    /** Column definition for R_MailText_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_R_MailText> COLUMN_R_MailText_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_R_MailText>(I_AD_WF_Node.class, "R_MailText_ID", org.compiere.model.I_R_MailText.class);
-    /** Column name R_MailText_ID */
-    public static final String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_R_MailText> COLUMN_R_MailText_ID = new ModelColumn<>(I_AD_WF_Node.class, "R_MailText_ID", org.compiere.model.I_R_MailText.class);
+	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
 	 * Set Ressource.
@@ -1072,7 +964,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setS_Resource_ID (int S_Resource_ID);
+	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
 	 * Get Ressource.
@@ -1082,16 +974,14 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getS_Resource_ID();
+	int getS_Resource_ID();
 
-	public org.compiere.model.I_S_Resource getS_Resource();
+	@Nullable org.compiere.model.I_S_Resource getS_Resource();
 
-	public void setS_Resource(org.compiere.model.I_S_Resource S_Resource);
+	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
 
-    /** Column definition for S_Resource_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_S_Resource>(I_AD_WF_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-    /** Column name S_Resource_ID */
-    public static final String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+	ModelColumn<I_AD_WF_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_AD_WF_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Set Setup Time.
@@ -1101,7 +991,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSetupTime (int SetupTime);
+	void setSetupTime (int SetupTime);
 
 	/**
 	 * Get Setup Time.
@@ -1111,12 +1001,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSetupTime();
+	int getSetupTime();
 
-    /** Column definition for SetupTime */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_SetupTime = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "SetupTime", null);
-    /** Column name SetupTime */
-    public static final String COLUMNNAME_SetupTime = "SetupTime";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_SetupTime = new ModelColumn<>(I_AD_WF_Node.class, "SetupTime", null);
+	String COLUMNNAME_SetupTime = "SetupTime";
 
 	/**
 	 * Set Split Element.
@@ -1126,7 +1014,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setSplitElement (java.lang.String SplitElement);
+	void setSplitElement (java.lang.String SplitElement);
 
 	/**
 	 * Get Split Element.
@@ -1136,12 +1024,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSplitElement();
+	java.lang.String getSplitElement();
 
-    /** Column definition for SplitElement */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_SplitElement = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "SplitElement", null);
-    /** Column name SplitElement */
-    public static final String COLUMNNAME_SplitElement = "SplitElement";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_SplitElement = new ModelColumn<>(I_AD_WF_Node.class, "SplitElement", null);
+	String COLUMNNAME_SplitElement = "SplitElement";
 
 	/**
 	 * Set Start Mode.
@@ -1151,7 +1037,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setStartMode (java.lang.String StartMode);
+	void setStartMode (@Nullable java.lang.String StartMode);
 
 	/**
 	 * Get Start Mode.
@@ -1161,12 +1047,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getStartMode();
+	@Nullable java.lang.String getStartMode();
 
-    /** Column definition for StartMode */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_StartMode = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "StartMode", null);
-    /** Column name StartMode */
-    public static final String COLUMNNAME_StartMode = "StartMode";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_StartMode = new ModelColumn<>(I_AD_WF_Node.class, "StartMode", null);
+	String COLUMNNAME_StartMode = "StartMode";
 
 	/**
 	 * Set Subflow Execution.
@@ -1176,7 +1060,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSubflowExecution (java.lang.String SubflowExecution);
+	void setSubflowExecution (@Nullable java.lang.String SubflowExecution);
 
 	/**
 	 * Get Subflow Execution.
@@ -1186,12 +1070,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSubflowExecution();
+	@Nullable java.lang.String getSubflowExecution();
 
-    /** Column definition for SubflowExecution */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_SubflowExecution = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "SubflowExecution", null);
-    /** Column name SubflowExecution */
-    public static final String COLUMNNAME_SubflowExecution = "SubflowExecution";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_SubflowExecution = new ModelColumn<>(I_AD_WF_Node.class, "SubflowExecution", null);
+	String COLUMNNAME_SubflowExecution = "SubflowExecution";
 
 	/**
 	 * Set Units by Cycles.
@@ -1201,7 +1083,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUnitsCycles (java.math.BigDecimal UnitsCycles);
+	void setUnitsCycles (@Nullable BigDecimal UnitsCycles);
 
 	/**
 	 * Get Units by Cycles.
@@ -1211,115 +1093,102 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getUnitsCycles();
+	BigDecimal getUnitsCycles();
 
-    /** Column definition for UnitsCycles */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_UnitsCycles = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "UnitsCycles", null);
-    /** Column name UnitsCycles */
-    public static final String COLUMNNAME_UnitsCycles = "UnitsCycles";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_UnitsCycles = new ModelColumn<>(I_AD_WF_Node.class, "UnitsCycles", null);
+	String COLUMNNAME_UnitsCycles = "UnitsCycles";
 
 	/**
-	 * Get Aktualisiert.
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Updated = new ModelColumn<>(I_AD_WF_Node.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Gültig ab.
-	 * Valid from including this date (first day)
+	 * Set Valid From.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValidFrom (java.sql.Timestamp ValidFrom);
+	void setValidFrom (@Nullable java.sql.Timestamp ValidFrom);
 
 	/**
-	 * Get Gültig ab.
-	 * Valid from including this date (first day)
+	 * Get Valid From.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidFrom();
+	@Nullable java.sql.Timestamp getValidFrom();
 
-    /** Column definition for ValidFrom */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_ValidFrom = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "ValidFrom", null);
-    /** Column name ValidFrom */
-    public static final String COLUMNNAME_ValidFrom = "ValidFrom";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_ValidFrom = new ModelColumn<>(I_AD_WF_Node.class, "ValidFrom", null);
+	String COLUMNNAME_ValidFrom = "ValidFrom";
 
 	/**
-	 * Set Gültig bis.
+	 * Set Valid to.
 	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValidTo (java.sql.Timestamp ValidTo);
+	void setValidTo (@Nullable java.sql.Timestamp ValidTo);
 
 	/**
-	 * Get Gültig bis.
+	 * Get Valid to.
 	 * Valid to including this date (last day)
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getValidTo();
+	@Nullable java.sql.Timestamp getValidTo();
 
-    /** Column definition for ValidTo */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_ValidTo = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "ValidTo", null);
-    /** Column name ValidTo */
-    public static final String COLUMNNAME_ValidTo = "ValidTo";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_ValidTo = new ModelColumn<>(I_AD_WF_Node.class, "ValidTo", null);
+	String COLUMNNAME_ValidTo = "ValidTo";
 
 	/**
-	 * Set Suchschlüssel.
+	 * Set Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
+	 * Get Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Value = new ModelColumn<>(I_AD_WF_Node.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 
 	/**
 	 * Set Waiting Time.
@@ -1329,7 +1198,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setWaitingTime (int WaitingTime);
+	void setWaitingTime (int WaitingTime);
 
 	/**
 	 * Get Waiting Time.
@@ -1339,12 +1208,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getWaitingTime();
+	int getWaitingTime();
 
-    /** Column definition for WaitingTime */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_WaitingTime = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "WaitingTime", null);
-    /** Column name WaitingTime */
-    public static final String COLUMNNAME_WaitingTime = "WaitingTime";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_WaitingTime = new ModelColumn<>(I_AD_WF_Node.class, "WaitingTime", null);
+	String COLUMNNAME_WaitingTime = "WaitingTime";
 
 	/**
 	 * Set Wait Time.
@@ -1354,7 +1221,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWaitTime (int WaitTime);
+	void setWaitTime (int WaitTime);
 
 	/**
 	 * Get Wait Time.
@@ -1364,12 +1231,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getWaitTime();
+	int getWaitTime();
 
-    /** Column definition for WaitTime */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_WaitTime = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "WaitTime", null);
-    /** Column name WaitTime */
-    public static final String COLUMNNAME_WaitTime = "WaitTime";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_WaitTime = new ModelColumn<>(I_AD_WF_Node.class, "WaitTime", null);
+	String COLUMNNAME_WaitTime = "WaitTime";
 
 	/**
 	 * Set Workflow.
@@ -1379,7 +1244,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWorkflow_ID (int Workflow_ID);
+	void setWorkflow_ID (int Workflow_ID);
 
 	/**
 	 * Get Workflow.
@@ -1389,16 +1254,9 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getWorkflow_ID();
+	int getWorkflow_ID();
 
-	public org.compiere.model.I_AD_Workflow getWorkflow();
-
-	public void setWorkflow(org.compiere.model.I_AD_Workflow Workflow);
-
-    /** Column definition for Workflow_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Workflow> COLUMN_Workflow_ID = new org.adempiere.model.ModelColumn<I_AD_WF_Node, org.compiere.model.I_AD_Workflow>(I_AD_WF_Node.class, "Workflow_ID", org.compiere.model.I_AD_Workflow.class);
-    /** Column name Workflow_ID */
-    public static final String COLUMNNAME_Workflow_ID = "Workflow_ID";
+	String COLUMNNAME_Workflow_ID = "Workflow_ID";
 
 	/**
 	 * Set Working Time.
@@ -1408,7 +1266,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setWorkingTime (int WorkingTime);
+	void setWorkingTime (int WorkingTime);
 
 	/**
 	 * Get Working Time.
@@ -1418,12 +1276,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getWorkingTime();
+	int getWorkingTime();
 
-    /** Column definition for WorkingTime */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_WorkingTime = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "WorkingTime", null);
-    /** Column name WorkingTime */
-    public static final String COLUMNNAME_WorkingTime = "WorkingTime";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_WorkingTime = new ModelColumn<>(I_AD_WF_Node.class, "WorkingTime", null);
+	String COLUMNNAME_WorkingTime = "WorkingTime";
 
 	/**
 	 * Set X Position.
@@ -1433,7 +1289,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setXPosition (int XPosition);
+	void setXPosition (int XPosition);
 
 	/**
 	 * Get X Position.
@@ -1443,12 +1299,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getXPosition();
+	int getXPosition();
 
-    /** Column definition for XPosition */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_XPosition = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "XPosition", null);
-    /** Column name XPosition */
-    public static final String COLUMNNAME_XPosition = "XPosition";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_XPosition = new ModelColumn<>(I_AD_WF_Node.class, "XPosition", null);
+	String COLUMNNAME_XPosition = "XPosition";
 
 	/**
 	 * Set Yield %.
@@ -1458,7 +1312,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setYield (int Yield);
+	void setYield (int Yield);
 
 	/**
 	 * Get Yield %.
@@ -1468,12 +1322,10 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getYield();
+	int getYield();
 
-    /** Column definition for Yield */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_Yield = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "Yield", null);
-    /** Column name Yield */
-    public static final String COLUMNNAME_Yield = "Yield";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_Yield = new ModelColumn<>(I_AD_WF_Node.class, "Yield", null);
+	String COLUMNNAME_Yield = "Yield";
 
 	/**
 	 * Set Y Position.
@@ -1483,7 +1335,7 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setYPosition (int YPosition);
+	void setYPosition (int YPosition);
 
 	/**
 	 * Get Y Position.
@@ -1493,10 +1345,8 @@ public interface I_AD_WF_Node
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getYPosition();
+	int getYPosition();
 
-    /** Column definition for YPosition */
-    public static final org.adempiere.model.ModelColumn<I_AD_WF_Node, Object> COLUMN_YPosition = new org.adempiere.model.ModelColumn<I_AD_WF_Node, Object>(I_AD_WF_Node.class, "YPosition", null);
-    /** Column name YPosition */
-    public static final String COLUMNNAME_YPosition = "YPosition";
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_YPosition = new ModelColumn<>(I_AD_WF_Node.class, "YPosition", null);
+	String COLUMNNAME_YPosition = "YPosition";
 }

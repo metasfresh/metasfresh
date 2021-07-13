@@ -90,7 +90,7 @@ public class FlatrateUserNotificationsProducer
 
 		return newUserNotificationRequest()
 				.recipientUserId(recipientUserId)
-				.contentADMessage(message.toAD_Message())
+				.contentADMessage(message)
 				.targetAction(TargetRecordAction.ofRecordAndWindow(flatrateTermRef, Contracts_Constants.CONTRACTS_WINDOW_ID))
 				.build();
 	}

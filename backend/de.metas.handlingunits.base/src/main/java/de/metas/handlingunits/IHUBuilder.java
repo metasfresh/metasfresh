@@ -15,6 +15,8 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 
+import javax.annotation.Nullable;
+
 /**
  * Handling Unit Builder Helper
  *
@@ -33,7 +35,6 @@ public interface IHUBuilder extends IHUIterator
 	/**
 	 * Create handling unit by calling {@link #create(I_M_HU_PI_Version)} with the current version of the given <code>pi</code>.
 	 *
-	 * @param pi
 	 * @return created handling unit; never return null
 	 */
 	I_M_HU create(I_M_HU_PI pi);
@@ -63,7 +64,7 @@ public interface IHUBuilder extends IHUIterator
 	 *
 	 * @param parentItem
 	 */
-	IHUBuilder setM_HU_Item_Parent(I_M_HU_Item parentItem);
+	IHUBuilder setM_HU_Item_Parent(@Nullable I_M_HU_Item parentItem);
 
 	IHUBuilder setM_HU_PI_Item_Product(I_M_HU_PI_Item_Product piip);
 
@@ -75,8 +76,6 @@ public interface IHUBuilder extends IHUIterator
 	 * Sets M_Locator to be set on newly create HU.
 	 *
 	 * In case HU Item Parent (see {@link #setM_HU_Item_Parent(I_M_HU_Item)}) is set then locator from parent will be used and this one will be ignored.
-	 *
-	 * @param locator
 	 */
 	IHUBuilder setLocatorId(LocatorId locatorId);
 

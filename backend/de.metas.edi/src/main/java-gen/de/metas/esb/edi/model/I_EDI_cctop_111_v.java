@@ -2,7 +2,7 @@ package de.metas.esb.edi.model;
 
 
 /** Generated Interface for EDI_cctop_111_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_EDI_cctop_111_v 
@@ -14,17 +14,10 @@ public interface I_EDI_cctop_111_v
     /** AD_Table_ID=540465 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -37,7 +30,7 @@ public interface I_EDI_cctop_111_v
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -47,7 +40,7 @@ public interface I_EDI_cctop_111_v
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,7 +52,7 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Auftrag.
+	 * Set Sales order.
 	 * Order
 	 *
 	 * <br>Type: TableDir
@@ -69,7 +62,7 @@ public interface I_EDI_cctop_111_v
 	public void setC_Order_ID (int C_Order_ID);
 
 	/**
-	 * Get Auftrag.
+	 * Get Sales order.
 	 * Order
 	 *
 	 * <br>Type: TableDir
@@ -88,8 +81,8 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -103,8 +96,8 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -116,8 +109,8 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Auftragsdatum.
-	 * Datum des Auftrags
+	 * Set Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -126,8 +119,8 @@ public interface I_EDI_cctop_111_v
 	public void setDateOrdered (java.sql.Timestamp DateOrdered);
 
 	/**
-	 * Get Auftragsdatum.
-	 * Datum des Auftrags
+	 * Get Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -164,8 +157,8 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_EDI_cctop_111_v_ID = "EDI_cctop_111_v_ID";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -174,8 +167,8 @@ public interface I_EDI_cctop_111_v
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -189,7 +182,7 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Lieferung/Wareneingang.
+	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: TableDir
@@ -199,7 +192,7 @@ public interface I_EDI_cctop_111_v
 	public void setM_InOut_ID (int M_InOut_ID);
 
 	/**
-	 * Get Lieferung/Wareneingang.
+	 * Get Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: TableDir
@@ -218,7 +211,7 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Bewegungsdatum.
+	 * Set Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -228,7 +221,7 @@ public interface I_EDI_cctop_111_v
 	public void setMovementDate (java.sql.Timestamp MovementDate);
 
 	/**
-	 * Get Bewegungsdatum.
+	 * Get Bewegungs-Datum.
 	 * Datum, an dem eine Produkt in oder aus dem Bestand bewegt wurde
 	 *
 	 * <br>Type: Date
@@ -243,8 +236,8 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_MovementDate = "MovementDate";
 
 	/**
-	 * Set Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -253,8 +246,8 @@ public interface I_EDI_cctop_111_v
 	public void setPOReference (java.lang.String POReference);
 
 	/**
-	 * Get Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -291,8 +284,8 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_shipment_documentno = "shipment_documentno";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -306,8 +299,8 @@ public interface I_EDI_cctop_111_v
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

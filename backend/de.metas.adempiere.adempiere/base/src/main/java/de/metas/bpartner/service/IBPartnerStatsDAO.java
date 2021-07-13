@@ -40,7 +40,6 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	 * Note: Do not return the {@link I_C_BPartner_Stats} directly. This class shall be the only one accessing that table.
 	 * Instead, create a new IBPartnerStats object based on the found bp stats and return it.
 	 *
-	 * @param partner
 	 * @return the {@link BPartnerStats} object
 	 */
 	BPartnerStats getCreateBPartnerStats(I_C_BPartner partner);
@@ -61,17 +60,12 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	/**
 	 * Retrieve the total open balance value for the given stats using the old legacy sql
 	 * Note: This will have to be re-implemented in order to not search in the db each time a new document is created.
-	 *
-	 * @param stats
-	 * @return
 	 */
 	BigDecimal retrieveOpenItems(BPartnerStats stats);
 
 
 	/**
 	 * Set the given soCreditStatus value to the I_C_BPartner_Stats entry linked with the stats object
-	 *
-	 * @param stats
 	 */
 	void setSOCreditStatus(BPartnerStats stats, String soCreditStatus);
 

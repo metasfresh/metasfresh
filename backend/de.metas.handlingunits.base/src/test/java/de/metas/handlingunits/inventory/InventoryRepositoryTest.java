@@ -1,19 +1,22 @@
 package de.metas.handlingunits.inventory;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.ZoneId;
-
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_InventoryLine_HU;
+import de.metas.inventory.AggregationType;
+import de.metas.inventory.HUAggregationType;
+import de.metas.inventory.InventoryId;
+import de.metas.inventory.InventoryLineId;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.test.AdempiereTestHelper;
@@ -33,23 +36,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.DocTypeId;
-import de.metas.document.engine.DocStatus;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.handlingunits.model.I_M_InventoryLine_HU;
-import de.metas.inventory.AggregationType;
-import de.metas.inventory.HUAggregationType;
-import de.metas.inventory.InventoryId;
-import de.metas.inventory.InventoryLineId;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.organization.OrgId;
-import de.metas.organization.StoreCreditCardNumberMode;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import lombok.Builder;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
+
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -146,6 +144,7 @@ class InventoryRepositoryTest
 		inventoryRecord.setC_DocType_ID(docTypeId.getRepoId());
 		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
 		inventoryRecord.setMovementDate(TimeUtil.asTimestamp(LocalDate.parse("2020-06-15"), orgTimeZone));
+		inventoryRecord.setDocumentNo("documentNo");
 		saveRecord(inventoryRecord);
 		return InventoryId.ofRepoId(inventoryRecord.getM_Inventory_ID());
 	}
@@ -266,7 +265,8 @@ class InventoryRepositoryTest
 			inventoryLineId = InventoryLineId.ofRepoId(inventoryLineRecord.getM_InventoryLine_ID());
 
 			final I_M_InventoryLine_HU inventoryLineHURecord = newInstance(I_M_InventoryLine_HU.class);
-			inventoryLineHURecord.setM_InventoryLine(inventoryLineRecord);
+			inventoryLineHURecord.setM_Inventory_ID(inventoryId.getRepoId());
+			inventoryLineHURecord.setM_InventoryLine_ID(inventoryLineRecord.getM_InventoryLine_ID());
 			inventoryLineHURecord.setQtyBook(new BigDecimal("2"));
 			inventoryLineHURecord.setQtyCount(new BigDecimal("10"));
 			inventoryLineHURecord.setC_UOM_ID(uomRecord.getC_UOM_ID());

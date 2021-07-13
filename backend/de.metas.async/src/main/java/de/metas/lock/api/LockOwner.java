@@ -55,10 +55,8 @@ public final class LockOwner
 
 	/**
 	 * Creates a new owner whose name starts with <code>"Unknown"</code> and ands with a unique suffix.
-	 *
-	 * @return
 	 */
-	public static final LockOwner newOwner()
+	public static LockOwner newOwner()
 	{
 		final String ownerNamePrefix = null;
 		return newOwner(ownerNamePrefix);
@@ -67,10 +65,8 @@ public final class LockOwner
 	/**
 	 * Creates a new owner whose name consists of the given <code>ownerNamePrefix</code> and a unique suffix.
 	 *
-	 * @param ownerNamePrefix
-	 * @return
 	 */
-	public static final LockOwner newOwner(final String ownerNamePrefix)
+	public static LockOwner newOwner(final String ownerNamePrefix)
 	{
 		final Object ownerNameUniquePart = UUID.randomUUID();
 		return newOwner(ownerNamePrefix, ownerNameUniquePart);
@@ -80,10 +76,8 @@ public final class LockOwner
 	 * Creates a new owner whose name consists of the given <code>ownerNamePrefix</code> and the given <code>ownerNameUniquePart</code> which is supposed to be unique.
 	 *
 	 * @param ownerNamePrefix the owner name's prefix. <code>null</code> is substituted with <code>"Unknown"</code>.
-	 * @param ownerNameUniquePart
-	 * @return
 	 */
-	public static final LockOwner newOwner(final String ownerNamePrefix, final Object ownerNameUniquePart)
+	public static LockOwner newOwner(final String ownerNamePrefix, final Object ownerNameUniquePart)
 	{
 		Check.assumeNotNull(ownerNameUniquePart, "ownerNameUniquePart not null");
 

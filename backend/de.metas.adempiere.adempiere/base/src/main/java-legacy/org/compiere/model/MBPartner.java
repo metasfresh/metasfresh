@@ -16,13 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,13 +31,12 @@ import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.bpartner.BPGroupId;
-import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPGroupDAO;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Business Partner Model
@@ -525,27 +524,24 @@ public class MBPartner extends X_C_BPartner
 				|| X_C_BPartner_Stats.SOCREDITSTATUS_CreditHold.equals(status);
 	} // isCreditStopHold
 
-	/**
-	 * Get BP Group
-	 *
-	 * @return group
-	 */
 	private I_C_BP_Group getBPGroup()
 	{
-		if (m_group == null)
+		if (m_group != null)
 		{
-			final IBPGroupDAO bpGroupsRepo = Services.get(IBPGroupDAO.class);
+			return m_group;
+		}
 
-			final BPGroupId bpGroupId = BPGroupId.ofRepoIdOrNull(getC_BP_Group_ID());
-			if (bpGroupId == null)
-			{
-				final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
-				m_group = bpGroupsRepo.getDefaultByClientId(clientId);
-			}
-			else
-			{
-				m_group = bpGroupsRepo.getById(bpGroupId);
-			}
+		final IBPGroupDAO bpGroupsRepo = Services.get(IBPGroupDAO.class);
+
+		final BPGroupId bpGroupId = BPGroupId.ofRepoIdOrNull(getC_BP_Group_ID());
+		if (bpGroupId == null)
+		{
+			final ClientId clientId = ClientId.ofRepoId(getAD_Client_ID());
+			m_group = bpGroupsRepo.getDefaultByClientId(clientId);
+		}
+		else
+		{
+			m_group = bpGroupsRepo.getByIdInInheritedTrx(bpGroupId);
 		}
 		return m_group;
 	} // getBPGroup

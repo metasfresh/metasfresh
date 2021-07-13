@@ -1,35 +1,41 @@
-package de.metas.calendar.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
+package de.metas.calendar.impl;
 
+import de.metas.calendar.CalendarId;
+import de.metas.calendar.ICalendarBL;
+import de.metas.calendar.ICalendarDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.organization.OrgInfo;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.TypedAccessor;
+import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
+import de.metas.util.calendar.IBusinessDayMatcher;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.comparator.AccessorComparator;
 import org.adempiere.util.comparator.ComparableComparator;
@@ -39,16 +45,22 @@ import org.compiere.model.I_C_Year;
 import org.compiere.model.X_C_Period;
 import org.compiere.util.TimeUtil;
 
-import de.metas.calendar.ICalendarBL;
-import de.metas.calendar.ICalendarDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.TypedAccessor;
-import de.metas.util.calendar.ExcludeWeekendBusinessDayMatcher;
-import de.metas.util.calendar.IBusinessDayMatcher;
+import java.sql.Timestamp;
+import java.time.DayOfWeek;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public class CalendarBL implements ICalendarBL
 {
+
+	public static final AdMessageKey MSG_SET_DEFAULT_OR_ORG_CALENDAR = AdMessageKey.of("de.metas.calendar.impl.CalendarBL.SetDefaultCalendarOrOrgCalendar");
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	@Override
 	public boolean isLengthOneYear(final I_C_Year year)
 	{
@@ -204,7 +216,7 @@ public class CalendarBL implements ICalendarBL
 	public boolean isStandardPeriod(final I_C_Period period)
 	{
 		return X_C_Period.PERIODTYPE_StandardCalendarPeriod.equals(period.getPeriodType());
-	}	// isStandardPeriod
+	}    // isStandardPeriod
 
 	@Override
 	public IBusinessDayMatcher createBusinessDayMatcherExcluding(final Set<DayOfWeek> excludeWeekendDays)
@@ -213,5 +225,20 @@ public class CalendarBL implements ICalendarBL
 		return ExcludeWeekendBusinessDayMatcher.builder()
 				.excludeWeekendDays(excludeWeekendDays)
 				.build();
+	}
+
+	@Override
+	@NonNull
+	public CalendarId getOrgCalendarOrDefault(final @NonNull OrgId orgId)
+	{
+		final OrgInfo orgInfo = orgDAO.getOrgInfoByIdInTrx(orgId);
+		if (orgInfo.getCalendarId() != null)
+		{
+			return orgInfo.getCalendarId();
+		}
+
+		final I_C_Calendar calendar = calendarDAO.getDefaultCalendar(orgId);
+
+		return CalendarId.ofRepoId(calendar.getC_Calendar_ID());
 	}
 }

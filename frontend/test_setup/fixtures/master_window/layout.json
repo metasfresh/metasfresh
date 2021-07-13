@@ -1438,5 +1438,366 @@
         "queryOnActivate": true
       }
     ]
+  },
+  "layout2": {
+    "windowId": "53009",
+    "type": "53009",
+    "caption": "Manufacturing Order",
+    "documentSummaryElement": {
+      "caption": "",
+      "description": "",
+      "widgetType": "Text",
+      "fields": [
+        {
+          "field": "V$DocumentSummary",
+          "caption": "V$DocumentSummary",
+          "emptyText": "none",
+          "clearValueText": "none"
+        }
+      ]
+    },
+    "docActionElement": {
+      "caption": "",
+      "description": "",
+      "widgetType": "ActionButton",
+      "fields": [
+        {
+          "field": "DocStatus",
+          "caption": "Document Status",
+          "type": "ActionButtonStatus",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500
+        },
+        {
+          "field": "DocAction",
+          "caption": "Process Manufacturing Order",
+          "type": "ActionButton",
+          "emptyText": "none",
+          "clearValueText": "none",
+          "source": "list",
+          "lookupSearchStringMinLength": -1,
+          "lookupSearchStartDelayMillis": 500
+        }
+      ]
+    },
+    "sections": [],
+    "tabs": [
+      {
+        "windowId": "53009",
+        "tabId": "AD_Tab-53039",
+        "internalName": "Window-53009-AD_Tab-53039",
+        "caption": "Components of the Manufacturing Order ",
+        "description": "Components of the Manufacturing Order ",
+        "emptyResultText": "There are no detail rows",
+        "emptyResultHint": "You can create them in this window.",
+        "elements": [
+          {
+            "caption": "Line No",
+            "description": "Unique line for this document",
+            "widgetType": "Integer",
+            "size": "S",
+            "gridAlign": "right",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "Line",
+                "caption": "Line No",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Product",
+            "description": "Product, Service, Item",
+            "widgetType": "Lookup",
+            "size": "L",
+            "gridAlign": "left",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "M_Product_ID",
+                "caption": "Product",
+                "emptyText": "none",
+                "clearValueText": "none",
+                "source": "lookup",
+                "lookupSearchStringMinLength": -1,
+                "lookupSearchStartDelayMillis": 500,
+                "supportZoomInto": true
+              }
+            ]
+          },
+          {
+            "caption": "Attributes",
+            "description": "Attribute Instances for Products",
+            "widgetType": "ProductAttributes",
+            "size": "L",
+            "gridAlign": "left",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "M_AttributeSetInstance_ID",
+                "caption": "Attributes",
+                "emptyText": "none",
+                "clearValueText": "none",
+                "source": "lookup",
+                "lookupSearchStringMinLength": -1,
+                "lookupSearchStartDelayMillis": 500
+              }
+            ]
+          },
+          {
+            "caption": "Qty Required",
+            "description": "",
+            "widgetType": "Quantity",
+            "size": "S",
+            "gridAlign": "right",
+            "viewEditorRenderMode": "on-demand",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "QtyRequiered",
+                "caption": "Qty Required",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "UOM",
+            "description": "Unit of Measure",
+            "widgetType": "List",
+            "size": "S",
+            "gridAlign": "left",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "C_UOM_ID",
+                "caption": "UOM",
+                "emptyText": "none",
+                "clearValueText": "none",
+                "source": "list",
+                "lookupSearchStringMinLength": -1,
+                "lookupSearchStartDelayMillis": 500,
+                "supportZoomInto": true
+              }
+            ]
+          },
+          {
+            "caption": "Quantity",
+            "description": "The Quantity Entered is based on the selected UoM",
+            "widgetType": "Quantity",
+            "size": "S",
+            "gridAlign": "right",
+            "viewEditorRenderMode": "on-demand",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "QtyEntered",
+                "caption": "Quantity",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Is %",
+            "description": "Indicate that this component is based in % Quantity",
+            "widgetType": "YesNo",
+            "gridAlign": "center",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "IsQtyPercentage",
+                "caption": "Is %",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Quantity",
+            "description": "Indicate the Quantity  use in this BOM",
+            "widgetType": "Quantity",
+            "size": "S",
+            "gridAlign": "right",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "QtyBOM",
+                "caption": "Quantity",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Quantity in %",
+            "description": "Indicate the Quantity % use in this Formula",
+            "widgetType": "Quantity",
+            "size": "S",
+            "gridAlign": "right",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "QtyBatch",
+                "caption": "Quantity in %",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "% Scrap",
+            "description": "Indicate the Scrap %  for calculate the Scrap Quantity",
+            "widgetType": "Number",
+            "gridAlign": "right",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "Scrap",
+                "caption": "% Scrap",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Component Type",
+            "description": "Component Type for a Bill of Material or Formula",
+            "widgetType": "List",
+            "gridAlign": "left",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "ComponentType",
+                "caption": "Component Type",
+                "emptyText": "none",
+                "clearValueText": "none",
+                "source": "list",
+                "lookupSearchStringMinLength": -1,
+                "lookupSearchStartDelayMillis": 500
+              }
+            ]
+          },
+          {
+            "caption": "VariantGroup",
+            "description": "",
+            "widgetType": "List",
+            "gridAlign": "left",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "VariantGroup",
+                "caption": "VariantGroup",
+                "emptyText": "none",
+                "clearValueText": "none",
+                "source": "list",
+                "lookupSearchStringMinLength": -1,
+                "lookupSearchStartDelayMillis": 500
+              }
+            ]
+          },
+          {
+            "caption": "Issue Method",
+            "description": "There are two methods for issue the components to Manufacturing Order",
+            "widgetType": "List",
+            "gridAlign": "left",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "IssueMethod",
+                "caption": "Issue Method",
+                "emptyText": "none",
+                "clearValueText": "none",
+                "source": "list",
+                "lookupSearchStringMinLength": -1,
+                "lookupSearchStartDelayMillis": 500
+              }
+            ]
+          },
+          {
+            "caption": "CU Label Qty",
+            "description": "",
+            "widgetType": "Text",
+            "maxLength": 60,
+            "size": "S",
+            "gridAlign": "left",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "CULabelQuanitity",
+                "caption": "CU Label Qty",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Show Sub BOM Ingredients",
+            "description": "",
+            "widgetType": "YesNo",
+            "gridAlign": "center",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "ShowSubBOMIngredients",
+                "caption": "Show Sub BOM Ingredients",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Active",
+            "description": "The record is active in the system",
+            "widgetType": "Switch",
+            "gridAlign": "center",
+            "viewEditorRenderMode": "never",
+            "sortable": true,
+            "fields": [
+              {
+                "field": "IsActive",
+                "caption": "Active",
+                "emptyText": "none",
+                "clearValueText": "none"
+              }
+            ]
+          }
+        ],
+        "defaultOrderBys": [
+          {
+            "fieldName": "Line",
+            "ascending": true
+          },
+          {
+            "fieldName": "ValidFrom",
+            "ascending": false
+          },
+          {
+            "fieldName": "PP_Order_BOMLine_ID",
+            "ascending": true
+          }
+        ],
+        "supportQuickInput": false,
+        "queryOnActivate": true
+      }
+    ]
   }
 }

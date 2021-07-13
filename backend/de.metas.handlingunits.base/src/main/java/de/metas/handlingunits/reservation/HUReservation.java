@@ -3,6 +3,8 @@ package de.metas.handlingunits.reservation;
 import java.util.Map;
 import java.util.Set;
 
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.google.common.collect.ImmutableMap;
@@ -17,6 +19,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -43,19 +47,27 @@ import lombok.Value;
 @Value
 public class HUReservation
 {
-	OrderLineId salesOrderLineId;
+	@NonNull
+	HUReservationDocRef documentRef;
+
+	@Nullable
+	BPartnerId customerId;
+
 	@Getter(AccessLevel.PRIVATE)
 	ImmutableMap<HuId, Quantity> reservedQtyByVhuIds;
+
 	Quantity reservedQtySum;
 
 	@Builder(toBuilder = true)
 	private HUReservation(
-			@NonNull final OrderLineId salesOrderLineId,
+			@NonNull final HUReservationDocRef documentRef,
+			@Nullable final BPartnerId customerId,
 			@NonNull @Singular final Map<HuId, Quantity> reservedQtyByVhuIds)
 	{
 		Check.assumeNotEmpty(reservedQtyByVhuIds, "reservedQtyByVhuIds is not empty");
 
-		this.salesOrderLineId = salesOrderLineId;
+		this.documentRef = documentRef;
+		this.customerId = customerId;
 		this.reservedQtyByVhuIds = ImmutableMap.copyOf(reservedQtyByVhuIds);
 
 		this.reservedQtySum = reservedQtyByVhuIds.values()

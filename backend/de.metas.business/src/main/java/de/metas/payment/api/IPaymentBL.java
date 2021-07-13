@@ -25,21 +25,28 @@
  */
 package de.metas.payment.api;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
-
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-
 import de.metas.banking.BankAccountId;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Payment;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public interface IPaymentBL extends ISingletonService
 {
@@ -97,6 +104,10 @@ public interface IPaymentBL extends ISingletonService
 	 */
 	boolean isMatchInvoice(I_C_Payment payment, I_C_Invoice invoice);
 
+	void setPaymentOrderAndInvoiceIdsAndAllocateItIfNecessary(List<I_C_Payment> payments);
+
+	boolean canAllocateOrderPaymentToInvoice(@Nullable I_C_Order order);
+
 	/**
 	 * Test Allocation (and set allocated flag)
 	 *
@@ -107,6 +118,8 @@ public interface IPaymentBL extends ISingletonService
 	void testAllocation(PaymentId paymentId);
 
 	boolean isCashTrx(final I_C_Payment payment);
+
+	void fullyWriteOffPayments(Iterator<I_C_Payment> payments, Instant writeOffDate);
 
 	/**
 	 * WriteOff given payment.
@@ -136,4 +149,10 @@ public interface IPaymentBL extends ISingletonService
 
 	@NonNull
 	TenderType getTenderType(@NonNull BankAccountId bankAccountId);
+
+	Optional<PaymentId> getByExtIdOrgId(ExternalId externalId, OrgId orgId);
+
+	CurrencyConversionContext extractCurrencyConversionContext(@NonNull I_C_Payment payment);
+
+	void validateDocTypeIsInSync(@NonNull final I_C_Payment payment);
 }

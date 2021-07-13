@@ -32,13 +32,8 @@ class Labels extends Component {
    * @todo Write the documentation
    */
   handleClick = async () => {
-    this.input.focus();
-
-    this.setState({ focused: true });
-
     const {
       windowType, // windowId
-      docId,
       name,
       entity,
       subentity,
@@ -46,11 +41,18 @@ class Labels extends Component {
       tabId,
       rowId,
       viewId,
+      readonly,
+      dataId,
     } = this.props;
+
+    if (readonly) return false;
+
+    this.input.focus();
+    this.setState({ focused: true });
 
     const response = await dropdownRequest({
       docType: windowType,
-      docId,
+      docId: dataId,
       entity,
       subentity,
       subentityId,
@@ -104,7 +106,6 @@ class Labels extends Component {
     if (typeAhead !== this.lastTypeAhead) {
       const {
         windowType, // windowId
-        docId,
         name,
         entity,
         subentity,
@@ -112,11 +113,12 @@ class Labels extends Component {
         tabId,
         rowId,
         viewId,
+        dataId,
       } = this.props;
 
       const response = await autocompleteRequest({
         docType: windowType, // windowId
-        docId,
+        docId: dataId,
         entity,
         subentity,
         subentityId,
@@ -153,6 +155,7 @@ class Labels extends Component {
 
     switch (event.key) {
       case 'Backspace': {
+        this.setState({ focused: false });
         if (selected.length < 1) {
           return;
         }
@@ -313,7 +316,7 @@ class Labels extends Component {
    */
   render() {
     const { focused, suggestion, cursor } = this.state;
-    const { className, selected, tabIndex } = this.props;
+    const { className, selected, tabIndex, readonly } = this.props;
 
     const suggestions = this.state.suggestions.filter(this.unusedSuggestions());
 
@@ -323,6 +326,7 @@ class Labels extends Component {
         <Label
           key={item.key}
           label={item}
+          readonly={readonly}
           onClick={this.handleLabelClick}
           onRemove={this.handleLabelRemove}
         />
@@ -415,6 +419,8 @@ Labels.propTypes = {
   tabId: PropTypes.string,
   rowId: PropTypes.string,
   viewId: PropTypes.any,
+  readonly: PropTypes.bool,
+  dataId: PropTypes.string,
 };
 
 Labels.defaultProps = {

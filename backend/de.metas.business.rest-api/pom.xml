@@ -15,8 +15,9 @@
     <packaging>jar</packaging>
 
     <properties>
-        <migration-sql-basedir></migration-sql-basedir>
-        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+        <migration-sql-basedir/>
+        <metasfresh.version>10.0.0</metasfresh.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <dependencies>
@@ -34,6 +35,22 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.common.util</groupId>
+            <artifactId>de-metas-common-util</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.rest_api</groupId>
+            <artifactId>de-metas-common-rest_api</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.bpartner</groupId>
+            <artifactId>de-metas-common-bpartner</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+        
+        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
         </dependency>
@@ -41,13 +58,6 @@
         <dependency>
             <groupId>io.springfox</groupId>
             <artifactId>springfox-swagger2</artifactId>
-        </dependency>
-
-        <!-- https://github.com/hoereth/springfox-enum-plugin -->
-        <dependency>
-            <groupId>de.pentabyte</groupId>
-            <artifactId>springfox-enum-plugin</artifactId>
-            <version>1.1.1</version>
         </dependency>
 
         <dependency>
@@ -83,5 +93,19 @@
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.ordercandidates</groupId>
+            <artifactId>de-metas-common-ordercandidates</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
+
     </dependencies>
 </project>

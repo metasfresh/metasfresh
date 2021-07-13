@@ -34,6 +34,7 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.util.proxy.Cached;
 
 public interface IContractsDAO extends ISingletonService
 {
@@ -70,4 +71,5 @@ public interface IContractsDAO extends ISingletonService
 
 	I_C_Flatrate_Term retrieveLatestFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 
+	I_C_Flatrate_Term retrieveFirstFlatrateTermForBPartnerId(BPartnerId bpartnerId);
 }

@@ -22,12 +22,9 @@ import Header from './header/Header';
 class Container extends PureComponent {
   render() {
     const {
-      docActionElem,
-      docStatusData,
       docNoData,
       docId,
       processStatus,
-      docSummaryData,
       dataId,
       windowId,
       breadcrumb,
@@ -55,11 +52,11 @@ class Container extends PureComponent {
       closeModalCallback,
       editmode,
       handleEditModeToggle,
-      activeTab,
       masterDocumentList,
       pluginComponents,
       setRawModalTitle,
       setRawModalDescription,
+      hasComments,
     } = this.props;
     const pluginModalVisible = pluginModal.visible;
     let PluginModalComponent = null;
@@ -70,9 +67,8 @@ class Container extends PureComponent {
 
       if (modalPluginName) {
         // get the plugin holding the required component
-        const parentPlugin = window.META_HOST_APP.getRegistry().getEntry(
-          modalPluginName
-        );
+        const parentPlugin =
+          window.META_HOST_APP.getRegistry().getEntry(modalPluginName);
 
         PluginModalComponent = parentPlugin.components.filter(
           (component) => component.id === pluginModal.id
@@ -85,14 +81,11 @@ class Container extends PureComponent {
         {!hideHeader && (
           // Forcing refresh component
           <Header
-            docStatus={docActionElem}
             windowId={windowId}
             showIndicator={modalHidden}
             {...{
               entity,
-              docStatusData,
               docNoData,
-              docSummaryData,
               handleDeletedStatus,
               isDocumentNotSaved,
               viewId,
@@ -108,7 +101,7 @@ class Container extends PureComponent {
               docId,
               editmode,
               handleEditModeToggle,
-              activeTab,
+              hasComments,
             }}
           />
         )}
@@ -117,18 +110,19 @@ class Container extends PureComponent {
 
         <div
           className={
-            'header-sticky-distance js-unselect ' +
+            'header-sticky-distance js-unselect panel-vertical-scroll ' +
             (noMargin ? 'dashboard' : 'container-fluid')
           }
         >
           {!modalHidden && (
             <Modal
               {...modal}
-              windowId={modal.type}
+              windowId={modal.windowId}
               dataId={modal.dataId ? modal.dataId : dataId}
               modalTitle={modal.title}
               viewId={modal.viewId}
-              parentWindowId={windowId}
+              documentType={windowId}
+              rawModalWindowId={rawModal.windowId}
               parentDataId={dataId}
               parentViewId={viewId}
               rawModalVisible={rawModal.visible}
@@ -142,7 +136,8 @@ class Container extends PureComponent {
               isDocumentNotSaved={
                 modal.saveStatus &&
                 !modal.saveStatus.saved &&
-                (modal.validStatus && !modal.validStatus.initialValue)
+                modal.validStatus &&
+                !modal.validStatus.initialValue
               }
             />
           )}
@@ -155,6 +150,10 @@ class Container extends PureComponent {
               windowId={rawModal.windowId}
               viewId={rawModal.viewId}
               masterDocumentList={masterDocumentList}
+              parentWindowId={modal.parentWindowId} // parentWindowId, parentDocumentId, parentFieldId were added to
+              parentDocumentId={modal.parentDocumentId} // support the Search feature
+              parentFieldId={modal.parentFieldId}
+              featureType={modal.dataId} // 'SEARCH'
             >
               <div className="document-lists-wrapper">
                 <DocumentList
@@ -164,36 +163,28 @@ class Container extends PureComponent {
                   viewProfileId={rawModal.profileId}
                   setModalTitle={setRawModalTitle}
                   setModalDescription={setRawModalDescription}
-                  fetchQuickActionsOnInit={
-                    !(
-                      includedView &&
-                      includedView.windowType &&
-                      includedView.viewId
-                    )
-                  }
                   modalDescription={rawModal.description}
                   isModal
                   processStatus={processStatus}
                   includedView={includedView}
                   inBackground={
-                    includedView &&
-                    includedView.windowType &&
-                    includedView.viewId
+                    includedView && includedView.windowId && includedView.viewId
                   }
                   inModal={modal.visible}
+                  featureType={modal.dataId} // pass along this type to be able to know down below -> at table level if we need to disable or not
+                  // the multi selection depending on the feature type rendered  - as it happens in the `SEARCH` feat)
                 />
 
                 {includedView &&
-                  includedView.windowType &&
+                  includedView.windowId &&
                   includedView.viewId && (
                     <DocumentList
                       type="includedView"
-                      windowId={includedView.windowType}
+                      windowId={includedView.windowId}
                       viewProfileId={includedView.viewProfileId}
                       defaultViewId={includedView.viewId}
                       parentDefaultViewId={rawModal.viewId}
                       parentWindowType={rawModal.windowId}
-                      fetchQuickActionsOnInit
                       isModal
                       isIncluded
                       processStatus={processStatus}
@@ -225,18 +216,14 @@ class Container extends PureComponent {
 /**
  * @typedef {object} Props Component props
  * @prop {*} actions
- * @prop {*} activeTab
  * @prop {*} attachments
  * @prop {*} breadcrumb
  * @prop {*} children
  * @prop {bool} connectionError
  * @prop {*} closeModalCallback
  * @prop {string} dataId
- * @prop {*} docActionElem
- * @prop {*} docStatusData
  * @prop {*} docNoData
  * @prop {string} docId
- * @prop {*} docSummaryData
  * @prop {*} dropzoneFocused
  * @prop {*} editmode
  * @prop {*} entity
@@ -264,21 +251,18 @@ class Container extends PureComponent {
  * @prop {*} setModalTitle
  * @prop {string} siteName
  * @prop {string} windowId
+ * @prop {bool} hasComments - used to indicate comments in the details view
  */
 Container.propTypes = {
   actions: PropTypes.any,
-  activeTab: PropTypes.any,
   attachments: PropTypes.any,
   breadcrumb: PropTypes.any,
   children: PropTypes.any,
   closeModalCallback: PropTypes.any,
   connectionError: PropTypes.bool,
   dataId: PropTypes.any,
-  docActionElem: PropTypes.any,
   docId: PropTypes.any,
   docNoData: PropTypes.any,
-  docSummaryData: PropTypes.any,
-  docStatusData: PropTypes.any,
   dropzoneFocused: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,
@@ -305,6 +289,7 @@ Container.propTypes = {
   setRawModalDescription: PropTypes.any,
   setRawModalTitle: PropTypes.any,
   windowId: PropTypes.string,
+  hasComments: PropTypes.bool,
 };
 
 /**
@@ -328,7 +313,7 @@ const mapStateToProps = (state, { windowId }) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  { setRawModalTitle, setRawModalDescription }
-)(Container);
+export default connect(mapStateToProps, {
+  setRawModalTitle,
+  setRawModalDescription,
+})(Container);

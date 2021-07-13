@@ -22,6 +22,7 @@
 
 package de.metas.util;
 
+import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
 import org.slf4j.Logger;
 
@@ -54,8 +55,6 @@ public final class Check
 
 	/**
 	 * Set the class of exceptions to be thrown by this classe's methods. Usually ADempiere will call this method on startup, setting <code>org.adempiere.exceptions.AdempiereException</code>.
-	 *
-	 * @param clazz
 	 */
 	public static void setDefaultExClass(@NonNull final Class<? extends RuntimeException> clazz)
 	{
@@ -65,8 +64,6 @@ public final class Check
 	/**
 	 * Decides if an exception shall be thrown on a failed assumption. Note that if this is set to <code>false</code>, then also {@link #setLogger(Logger)} needs to be called to set a logger.
 	 * Otherwise the <code>false</code> parameter will be ingored.
-	 *
-	 * @param throwException
 	 */
 	public static void setThrowException(final boolean throwException)
 	{
@@ -86,8 +83,6 @@ public final class Check
 
 	/**
 	 * Set a logger to be used by this class to <b>log</b> exceptions instead of throwing them, if {@link #setThrowException(boolean)} was called with <code>false</code>.
-	 *
-	 * @param logger
 	 */
 	public static void setLogger(final Logger logger)
 	{
@@ -114,8 +109,7 @@ public final class Check
 		try
 		{
 			final Constructor<? extends RuntimeException> c = exClazz.getConstructor(String.class);
-			final RuntimeException ex = c.newInstance(msgToUse.toString());
-			return ex;
+			return c.newInstance(msgToUse.toString());
 		}
 		catch (final Exception e)
 		{
@@ -145,13 +139,12 @@ public final class Check
 	}
 
 	/**
-	 * Little method that throws an {@link AdempiereException} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because
+	 * Little method that throws an {@link Exception} if the given boolean condition is false. It might be a good idea to use "assume" instead of the assert keyword, because
 	 * <li>assert is
 	 * globally switched on and off and you never know what else libs are using assert</li>
 	 * <li>there are critical assumptions that should always be validated. Not only during development time or when
 	 * someone minds to use the -ea cmdline parameter</li>
 	 *
-	 * @param cond
 	 * @param errMsg the error message to pass to the assertion error, if the condition is <code>false</code>
 	 * @param params message parameters (@see {@link MessageFormat})
 	 */
@@ -160,18 +153,13 @@ public final class Check
 		assume(cond, defaultExClazz, errMsg, params);
 	}
 
-	public static <T> void assumeEquals(final T obj1, final T obj2, final String objectName)
+	public static <T> void assumeEquals(@Nullable final T obj1, @Nullable final T obj2, final String objectName)
 	{
 		assume(Objects.equals(obj1, obj2), "assumed same {} but they were different: {}, {}", objectName, obj1, obj2);
 	}
 
 	/**
 	 * Like {@link #assume(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param cond
-	 * @param exceptionClass
-	 * @param errMsg
-	 * @param params
 	 */
 	public static void assume(final boolean cond,
 			@NonNull final Class<? extends RuntimeException> exceptionClass,
@@ -190,8 +178,6 @@ public final class Check
 	 * <p>
 	 * If <code>obj</code> is null, it's fine.
 	 *
-	 * @param obj
-	 * @param interfaceClass
 	 * @param objectName     user readable object name (i.e. variable name)
 	 */
 	public static void assumeInstanceOfOrNull(final Object obj, final Class<?> interfaceClass, final String objectName)
@@ -202,11 +188,6 @@ public final class Check
 	/**
 	 * Like {@link #assumeInstanceOfOrNull(Object, Class, String)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in
 	 * {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param obj
-	 * @param interfaceClass
-	 * @param objectName
-	 * @param exceptionClass
 	 */
 	public static void assumeInstanceOfOrNull(final Object obj, final Class<?> interfaceClass, final String objectName, final Class<? extends RuntimeException> exceptionClass)
 	{
@@ -238,11 +219,6 @@ public final class Check
 
 	/**
 	 * Like {@link #assumeInstanceOf(Object, Class, String)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param obj
-	 * @param interfaceClass
-	 * @param objectName
-	 * @param exceptionClass
 	 */
 	public static void assumeInstanceOf(final Object obj, final Class<?> interfaceClass, final String objectName, final Class<? extends RuntimeException> exceptionClass)
 	{
@@ -253,7 +229,6 @@ public final class Check
 	/**
 	 * Assumes that given <code>object</code> is not null
 	 *
-	 * @param object
 	 * @param assumptionMessage message
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
@@ -277,30 +252,29 @@ public final class Check
 
 	public static <T> T assumePresent(@NonNull final Optional<T> optional, final String assumptionMessage, final Object... params)
 	{
-		assume(optional.isPresent(), defaultExClazz, assumptionMessage, params);
+		return assumePresent(optional, defaultExClazz, assumptionMessage, params);
+	}
+
+	public static <T> T assumePresent(@NonNull final Optional<T> optional, @NonNull final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
+	{
+		assume(optional.isPresent(), exceptionClass, assumptionMessage, params);
 		return optional.get();
 	}
 
 	/**
 	 * Assumes that given <code>object</code> is null
 	 *
-	 * @param object
 	 * @param assumptionMessage message
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	public static void assumeNull(final Object object, final String assumptionMessage, final Object... params)
+	public static void assumeNull(@Nullable final Object object, final String assumptionMessage, final Object... params)
 	{
 		assumeNull(object, defaultExClazz, assumptionMessage, params);
 	}
 
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param object
-	 * @param exceptionClass
-	 * @param assumptionMessage
-	 * @param params
 	 */
 	public static void assumeNull(final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -339,7 +313,6 @@ public final class Check
 	/**
 	 * Assumes that given <code>collection</code> is not null or empty.
 	 *
-	 * @param collection
 	 * @param assumptionMessage message
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
@@ -366,11 +339,6 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotEmpty(Collection, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in
 	 * {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param collection
-	 * @param exceptionClass
-	 * @param assumptionMessage
-	 * @param params
 	 */
 	public static <T extends Collection<? extends Object>> T assumeNotEmpty(final T collection, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -383,7 +351,6 @@ public final class Check
 	/**
 	 * Assumes that given <code>array</code> is not null or empty.
 	 *
-	 * @param array
 	 * @param assumptionMessage message
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
@@ -395,11 +362,6 @@ public final class Check
 
 	/**
 	 * Like {@link #assumeNotEmpty(Object[], String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param array
-	 * @param exceptionClass
-	 * @param assumptionMessage
-	 * @param params
 	 */
 	public static <T> void assumeNotEmpty(final T[] array, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -411,7 +373,6 @@ public final class Check
 	/**
 	 * Assumes that given <code>map</code> is not null or empty.
 	 *
-	 * @param map
 	 * @param assumptionMessage message
 	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
@@ -423,11 +384,6 @@ public final class Check
 
 	/**
 	 * Like {@link #assumeNotEmpty(Map, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param map
-	 * @param exceptionClass
-	 * @param assumptionMessage
-	 * @param params
 	 */
 	public static void assumeNotEmpty(final Map<?, ?> map, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -494,7 +450,7 @@ public final class Check
 		return valueBD;
 	}
 
-	public static <T> void assumeEquals(final T value1, final T value2)
+	public static <T> void assumeEquals(@Nullable final T value1, @Nullable final T value2)
 	{
 		if (Objects.equals(value1, value2))
 		{
@@ -518,10 +474,6 @@ public final class Check
 	 * This method similar to {@link #assume(boolean, String, Object...)}, but the message should be formulated in terms of an error message instead of an assumption.
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
-	 *
-	 * @param cond
-	 * @param errMsg
-	 * @param params
 	 */
 	public static void errorUnless(final boolean cond, final String errMsg, final Object... params)
 	{
@@ -530,11 +482,6 @@ public final class Check
 
 	/**
 	 * Like {@link #errorUnless(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param cond
-	 * @param exceptionClass
-	 * @param errMsg
-	 * @param params
 	 */
 	public static void errorUnless(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
 	{
@@ -580,10 +527,6 @@ public final class Check
 
 	/**
 	 * Supplier for an exception. Can be used with {@link Optional#orElseThrow(Supplier)}.
-	 *
-	 * @param errMsg
-	 * @param params
-	 * @return
 	 */
 	public static Supplier<? extends RuntimeException> supplyEx(final String errMsg, final Object... params)
 	{
@@ -592,11 +535,6 @@ public final class Check
 
 	/**
 	 * Like {@link #supplyEx(String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
-	 * @param errMsg
-	 * @param exceptionClass
-	 * @param params
-	 * @return
 	 */
 	public static Supplier<? extends RuntimeException> supplyEx(final String errMsg, final Class<? extends RuntimeException> exceptionClass, final Object... params)
 	{
@@ -615,34 +553,12 @@ public final class Check
 
 	public static boolean isEmpty(@Nullable final Object value)
 	{
-		if (value == null)
-		{
-			return true;
-		}
-
-		if (value instanceof String)
-		{
-			return isEmpty((String)value, true);
-		}
-		if (value instanceof Object[])
-		{
-			return isEmpty((Object[])value);
-		}
-		if (value instanceof BigDecimal)
-		{
-			return isEmpty((BigDecimal)value);
-		}
-		if (value instanceof Collection<?>)
-		{
-			return isEmpty((Collection<?>)value);
-		}
-
-		return false;
+		return EmptyUtil.isEmpty(value);
 	}
 
 	public static boolean isEmpty(@Nullable final String str)
 	{
-		return isEmpty(str, false);
+		return EmptyUtil.isEmpty(str);
 	}
 
 	/**
@@ -650,7 +566,7 @@ public final class Check
 	 */
 	public static boolean isBlank(@Nullable final String str)
 	{
-		return isEmpty(str, true);
+		return EmptyUtil.isBlank(str);
 	}
 
 	/**
@@ -658,7 +574,7 @@ public final class Check
 	 */
 	public static boolean isNotBlank(@Nullable final String str)
 	{
-		return !isEmpty(str, true);
+		return EmptyUtil.isNotBlank(str);
 	}
 
 	/**
@@ -670,26 +586,15 @@ public final class Check
 	 */
 	public static boolean isEmpty(@Nullable final String str, final boolean trimWhitespaces)
 	{
-		if (str == null)
-		{
-			return true;
-		}
-		if (trimWhitespaces)
-		{
-			return str.trim().length() == 0;
-		}
-		else
-		{
-			return str.length() == 0;
-		}
-	}    // isEmpty
+		return EmptyUtil.isEmpty(str, trimWhitespaces);
+	}
 
 	/**
 	 * @return true if bd is null or bd.signum() is zero
 	 */
 	public static boolean isEmpty(final BigDecimal bd)
 	{
-		return bd == null || bd.signum() == 0;
+		return EmptyUtil.isEmpty(bd);
 	}
 
 	/**
@@ -697,15 +602,15 @@ public final class Check
 	 */
 	public static <T> boolean isEmpty(final T[] arr)
 	{
-		return arr == null || arr.length == 0;
+		return EmptyUtil.isEmpty(arr);
 	}
 
 	/**
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
-	public static boolean isEmpty(final Collection<?> collection)
+	public static boolean isEmpty(@Nullable final Collection<?> collection)
 	{
-		return collection == null || collection.isEmpty();
+		return EmptyUtil.isEmpty(collection);
 	}
 
 	/**

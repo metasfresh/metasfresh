@@ -23,6 +23,7 @@
 package de.metas.contracts;
 
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,24 +43,43 @@ public class CreateFlatrateTermRequest
 	IContextAware context;
 
 	@NonNull
+	OrgId orgId;
+	
+	/**
+	 * the partner to be used as <code>Bill_BPartner</code> and <code>DropShip_BPartner</code>. Also this partner's sales rep and billto location are used.
+	 */
+	@NonNull
 	I_C_BPartner bPartner;
 
 	@NonNull
 	I_C_Flatrate_Conditions conditions;
 
+	/**
+	 * the start date for the new term
+	 */
 	@NonNull
 	Timestamp startDate;
 
 	@Nullable
 	Timestamp endDate;
 
+	/**
+	 * may be <code>null</code>. If set, then this value is used for <code>C_FLatrate_Term.AD_User_InCharge_ID</code>. Otherwise, the method tries
+	 * <code>C_BPartner.SalesRep_ID</code>
+	 */
 	@Nullable
 	I_AD_User userInCharge;
 
+	/**
+	 *  may be <code>null</code>. If set, then this value is used for <code>C_Flatrate_Term.M_Product_ID</code>.
+	 */
 	@Nullable
 	ProductAndCategoryId productAndCategoryId;
 
 	boolean isSimulation;
 
+	/**
+	 *  if <code>true</code>, then attempt to complete the new term
+	 */
 	boolean completeIt;
 }

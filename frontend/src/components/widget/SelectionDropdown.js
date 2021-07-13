@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
+import { CSSTransition } from 'react-transition-group';
 import classnames from 'classnames';
 
 /**
@@ -29,19 +29,11 @@ export default class SelectionDropdown extends Component {
     this.handleMouseDown = this.handleMouseDown.bind(this);
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
   }
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method.
-   */
   componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
@@ -91,10 +83,8 @@ export default class SelectionDropdown extends Component {
    * @param {*} up
    */
   scrollIntoView(element, up) {
-    const {
-      top: topMax,
-      bottom: bottomMax,
-    } = this.wrapper.getBoundingClientRect();
+    const { top: topMax, bottom: bottomMax } =
+      this.wrapper.getBoundingClientRect();
     const { top, bottom } = element.getBoundingClientRect();
 
     if (top < topMax || bottom > bottomMax) {
@@ -270,14 +260,14 @@ export default class SelectionDropdown extends Component {
    * @summary ToDo: Describe the method.
    * @param {*} option
    */
-  renderOption = (option) => {
+  renderOption = (option, idx) => {
     const { selected } = this.props;
     const { key, caption, description } = option;
 
     return (
       <div
         ref={(ref) => this.optionToRef.set(option, ref)}
-        key={`${key}${caption}`}
+        key={`${key}-${idx}-${caption}`}
         data-test-id={`${key}${caption}`}
         className={classnames(
           'input-dropdown-list-option ignore-react-onclickoutside',
@@ -301,21 +291,17 @@ export default class SelectionDropdown extends Component {
   renderEmpty = () => this.renderHeader(this.props.empty);
 
   loading = this.renderHeader(
-    <ReactCSSTransitionGroup
-      transitionName="rotate"
-      transitionEnterTimeout={1000}
-      transitionLeaveTimeout={1000}
-    >
-      <div className="rotate icon-rotate">
-        <i className="meta-icon-settings" />
+    <CSSTransition className="rotate" timeout={{ enter: 1000, exit: 1000 }}>
+      <div>
+        <div className="rotate icon-rotate">
+          <i className="meta-icon-settings" />
+        </div>
       </div>
-    </ReactCSSTransitionGroup>
+    </CSSTransition>
   );
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
+  setRef = (ref) => (this.wrapper = ref);
+
   render() {
     const { options, width, height, loading, forceEmpty } = this.props;
     const empty = this.size(options) === 0;
@@ -329,11 +315,7 @@ export default class SelectionDropdown extends Component {
     }
 
     return (
-      <div
-        ref={(ref) => (this.wrapper = ref)}
-        className="input-dropdown-list"
-        style={style}
-      >
+      <div ref={this.setRef} className="input-dropdown-list" style={style}>
         {loading ? this.loading : (empty || forceEmpty) && this.renderEmpty()}
         {options.map(this.renderOption)}
       </div>

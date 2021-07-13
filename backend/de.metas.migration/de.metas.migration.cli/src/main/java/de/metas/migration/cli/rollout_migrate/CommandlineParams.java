@@ -1,28 +1,26 @@
 package de.metas.migration.cli.rollout_migrate;
 
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableSet;
+import de.metas.migration.applier.impl.ConsoleScriptsApplierListener;
+import de.metas.migration.cli.rollout_migrate.RolloutMigrationConfig.RolloutMigrationConfigBuilder;
+import de.metas.migration.scanner.IFileRef;
+import de.metas.migration.scanner.impl.FileRef;
+import de.metas.migration.util.FileUtils;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.URL;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.PosixParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.migration.applier.impl.ConsoleScriptsApplierListener;
-import de.metas.migration.cli.rollout_migrate.Config.ConfigBuilder;
-import de.metas.migration.scanner.IFileRef;
-import de.metas.migration.scanner.impl.FileRef;
-import de.metas.migration.util.FileUtils;
 
 /*
  * #%L
@@ -52,7 +50,7 @@ class CommandlineParams
 
 	private static final String OPTION_Help = "h";
 	private static final String OPTION_RolloutDirectory = "d";
-	private static final String DEFAULT_RolloutDirectory = "./..";
+	public static final String DEFAULT_RolloutDirectory = "./..";
 
 	private static final String OPTION_ScriptFile = "f";
 	private static final String OPTION_SettingsFile = "s";
@@ -108,7 +106,7 @@ class CommandlineParams
 					"Name of the (s)ettings file that is needed to access the DB. May be an absolute file name (e.g. /home/metasfresh/rolloutdir/settings.properties).\n"
 							+ "If the given value can't be accessed as absolute file name, the tool will try again, prepending the rollout directory to the path.\n"
 							+ "If ommitted altogether, then "
-							+ System.getProperty("user.home") + "/" + Config.DEFAULT_SETTINGS_FILENAME + " will be used instead, where " + System.getProperty("user.home") + " is the current user's home directory");
+							+ System.getProperty("user.home") + "/" + RolloutMigrationConfig.DEFAULT_SETTINGS_FILENAME + " will be used instead, where " + System.getProperty("user.home") + " is the current user's home directory");
 			option.setArgs(1);
 			option.setArgName("Settings file");
 			option.setRequired(false);
@@ -172,9 +170,9 @@ class CommandlineParams
 		return options;
 	}
 
-	public final Config init(final String[] args)
+	public final RolloutMigrationConfig init(final String[] args)
 	{
-		final CommandLineParser parser = new PosixParser();
+		final CommandLineParser parser = new DefaultParser();
 		final CommandLine cmd;
 		try
 		{
@@ -192,16 +190,16 @@ class CommandlineParams
 		if (printHelp)
 		{
 			printHelp(System.out);
-			return Config.builder().rolloutDirName("not relevant").canRun(false).build();
+			return RolloutMigrationConfig.builder().rolloutDirName("not relevant").canRun(false).build();
 		}
 
-		final ConfigBuilder configBuilder = Config.builder();
+		final RolloutMigrationConfigBuilder configBuilder = RolloutMigrationConfig.builder();
 
 		final String rolloutDir = cmd.getOptionValue(OPTION_RolloutDirectory, DEFAULT_RolloutDirectory);
 		configBuilder.rolloutDirName(stripQuotes(rolloutDir));
 
 		final String settingsFile = cmd.getOptionValue(OPTION_SettingsFile);
-		configBuilder.settingsFile(stripQuotes(settingsFile));
+		configBuilder.dataBaseSettingsFile(stripQuotes(settingsFile));
 
 		final String scriptFile = cmd.getOptionValue(OPTION_ScriptFile);
 		configBuilder.scriptFileName(stripQuotes(scriptFile));
@@ -240,7 +238,7 @@ class CommandlineParams
 
 		configBuilder.additionalSqlDirs(extractAdditionalSqlDirs(cmd));
 
-		final Config config = configBuilder.canRun(true).build();
+		final RolloutMigrationConfig config = configBuilder.canRun(true).build();
 		logger.info("config={}", config);
 
 		return config;

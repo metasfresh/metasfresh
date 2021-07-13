@@ -22,35 +22,7 @@
 
 package de.metas.banking.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.Trace;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
@@ -87,9 +59,36 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Trace;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class BankStatementPaymentBLTest
 {
@@ -99,9 +98,10 @@ class BankStatementPaymentBLTest
 	private BankStatementPaymentBL bankStatementPaymentBL;
 	private BankRepository bankRepo;
 
+	@SuppressWarnings("FieldCanBeLocal")
 	private final String metasfreshIban = "123456";
-	private final LocalDate statementDate = SystemTime.asLocalDate();
-	private final LocalDate valutaDate = SystemTime.asLocalDate();
+	private final LocalDate statementDate = LocalDate.parse("2021-02-05");
+	private final LocalDate defaultValutaDate = LocalDate.parse("2021-02-06");
 
 	private CurrencyId euroCurrencyId;
 	private BankAccountId euroOrgBankAccountId;
@@ -112,9 +112,12 @@ class BankStatementPaymentBLTest
 		AdempiereTestHelper.get().init();
 
 		final BankAccountService bankAccountService = BankAccountService.newInstanceForUnitTesting();
-		final BankStatementBL bankStatementBL = new BankStatementBL(bankAccountService)
+		final BankStatementBL bankStatementBL = new BankStatementBL(
+				bankAccountService,
+				new MoneyService(new CurrencyRepository()))
 		{
-			public void unpost(I_C_BankStatement bankStatement)
+			@Override
+			public void unpost(final I_C_BankStatement bankStatement)
 			{
 				System.out.println("In JUnit test BankStatementBL.unpost() does nothing"
 						+ "\n\t bank statement: " + bankStatement
@@ -148,7 +151,7 @@ class BankStatementPaymentBLTest
 
 	private BPartnerId createCustomer()
 	{
-		I_C_BPartner customer = BusinessTestHelper.createBPartner("le customer");
+		final I_C_BPartner customer = BusinessTestHelper.createBPartner("le customer");
 		return BPartnerId.ofRepoId(customer.getC_BPartner_ID());
 	}
 
@@ -188,22 +191,24 @@ class BankStatementPaymentBLTest
 		return bankStatementDAO.getById(bankStatementId);
 	}
 
-	@Builder(builderMethodName = "bankStatementLine", builderClassName = "BankStatementLineBuilder")
+	@Builder(builderMethodName = "bankStatementLine", builderClassName = "$BankStatementLineBuilder")
 	private I_C_BankStatementLine createBankStatementLine(
 			final BankStatementId bankStatementId,
 			final BPartnerId bpartnerId,
 			final Money stmtAmt,
 			final Money trxAmt,
 			final Money bankFeeAmt,
-			final boolean processed)
+			final boolean processed,
+			@Nullable final String statementDate,
+			@Nullable final String valutaDate)
 	{
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
 				.bankStatementId(bankStatementId)
 				.orgId(OrgId.ANY)
 				.bpartnerId(bpartnerId)
 				.lineNo(10)
-				.statementLineDate(statementDate)
-				.valutaDate(valutaDate)
+				.statementLineDate(statementDate != null ? LocalDate.parse(statementDate) : this.statementDate)
+				.valutaDate(valutaDate != null ? LocalDate.parse(valutaDate) : defaultValutaDate)
 				.statementAmt(stmtAmt)
 				.trxAmt(trxAmt != null ? trxAmt : stmtAmt)
 				.bankFeeAmt(bankFeeAmt)
@@ -251,13 +256,13 @@ class BankStatementPaymentBLTest
 			bankStatementListenerService.addListener(new IBankStatementListener()
 			{
 				@Override
-				public void onPaymentsLinked(List<PaymentLinkResult> payments)
+				public void onPaymentsLinked(final List<PaymentLinkResult> payments)
 				{
 					paymentsLinked.addAll(payments);
 				}
 
 				@Override
-				public void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull BankStatementLineReferenceList lineRefs)
+				public void onPaymentsUnlinkedFromBankStatementLineReferences(@NonNull final BankStatementLineReferenceList lineRefs)
 				{
 					throw new UnsupportedOperationException();
 				}
@@ -362,6 +367,7 @@ class BankStatementPaymentBLTest
 	@Nested
 	public class findOrCreateSinglePaymentAndLinkIfPossible
 	{
+		@SuppressWarnings("SameParameterValue")
 		private void paymentChecks(
 				final String expectedPayAmt,
 				final int expectedC_payment_id,
@@ -386,7 +392,7 @@ class BankStatementPaymentBLTest
 			@Disabled("not implemented")
 			void vendorOneMatchingPaymentExists_DifferentInvoiceOnBSL()
 			{
-				// TODO tbp: check with mark in a followup task about this usecase.
+				// TODO tbp: check with mark in a followup task about this use case.
 				// the followup task is: https://github.com/metasfresh/metasfresh/issues/6128
 				// here is a draft of the data required to test
 				// outgoing payment:
@@ -591,6 +597,8 @@ class BankStatementPaymentBLTest
 						.stmtAmt(Money.of(100, euroCurrencyId))
 						.trxAmt(Money.of(123, euroCurrencyId))
 						.bankFeeAmt(Money.of(23, euroCurrencyId))
+						.statementDate("2021-02-11")
+						.valutaDate("2021-02-14")
 						.build();
 
 				//
@@ -604,13 +612,9 @@ class BankStatementPaymentBLTest
 				);
 
 				//
-				// Checks
-				final boolean isReceipt = true;
-				paymentChecks("123", bsl.getC_Payment_ID(), isReceipt, euroOrgBankAccountId);
+				// Check Bank Statement
 				assertFalse(bsl.isMultiplePayment());
 				assertFalse(bsl.isMultiplePaymentOrInvoice());
-
-				//
 				InterfaceWrapperHelper.refresh(bsl);
 				assertThat(BankStatementLineAmounts.of(bsl))
 						.isEqualToComparingFieldByField(BankStatementLineAmounts.builder()
@@ -618,6 +622,18 @@ class BankStatementPaymentBLTest
 								.trxAmt(new BigDecimal("123"))
 								.bankFeeAmt(new BigDecimal("23"))
 								.build());
+
+				//
+				// Check created Payment
+				final I_C_Payment payment = InterfaceWrapperHelper.load(bsl.getC_Payment_ID(), I_C_Payment.class);
+				assertThat(payment).isNotNull();
+				assertThat(payment.getDateTrx()).isEqualTo(TimeUtil.asTimestamp(LocalDate.parse("2021-02-14")));
+				assertThat(payment.getDateAcct()).isEqualTo(TimeUtil.asTimestamp(LocalDate.parse("2021-02-14")));
+				assertThat(payment.getPayAmt()).isEqualTo("123");
+				assertThat(payment.isReconciled()).isTrue();
+				assertThat(payment.isReceipt()).isEqualTo(true);
+				assertThat(DocStatus.ofCode(payment.getDocStatus())).isEqualTo(DocStatus.Completed);
+				assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(euroOrgBankAccountId.getRepoId());
 			}
 
 			@Test
@@ -633,6 +649,8 @@ class BankStatementPaymentBLTest
 						.bankStatementId(BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID()))
 						.bpartnerId(customerId)
 						.stmtAmt(Money.of(-123, euroCurrencyId))
+						.statementDate("2021-02-11")
+						.valutaDate("2021-02-14")
 						.build();
 
 				//
@@ -646,11 +664,22 @@ class BankStatementPaymentBLTest
 				);
 
 				//
-				// Checks
-				final boolean isReceipt = false;
-				paymentChecks("123", bsl.getC_Payment_ID(), isReceipt, euroOrgBankAccountId);
+				// Check bank statement line
+				assertThat(bsl.getC_Payment_ID()).isGreaterThan(0);
 				assertFalse(bsl.isMultiplePayment());
 				assertFalse(bsl.isMultiplePaymentOrInvoice());
+
+				//
+				// Check created Payment
+				final I_C_Payment payment = InterfaceWrapperHelper.load(bsl.getC_Payment_ID(), I_C_Payment.class);
+				assertThat(payment).isNotNull();
+				assertThat(payment.getDateTrx()).isEqualTo(TimeUtil.asTimestamp(LocalDate.parse("2021-02-14")));
+				assertThat(payment.getDateAcct()).isEqualTo(TimeUtil.asTimestamp(LocalDate.parse("2021-02-14")));
+				assertThat(payment.getPayAmt()).isEqualTo("123");
+				assertThat(payment.isReconciled()).isTrue();
+				assertThat(payment.isReceipt()).isEqualTo(false);
+				assertThat(DocStatus.ofCode(payment.getDocStatus())).isEqualTo(DocStatus.Completed);
+				assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(euroOrgBankAccountId.getRepoId());
 			}
 		}
 	}
@@ -712,6 +741,7 @@ class BankStatementPaymentBLTest
 				assertThat(paymentLinkResult.getPaymentId()).isEqualTo(paymentId);
 				assertThat(paymentLinkResult.getStatementTrxAmt()).isEqualTo(Money.of(-123, euroCurrencyId));
 
+				assertThat(paymentLinkResult.getBankStatementLineRefId()).isNotNull();
 				final I_C_BankStatementLine_Ref lineRef = InterfaceWrapperHelper.load(paymentLinkResult.getBankStatementLineRefId(), I_C_BankStatementLine_Ref.class);
 				assertThat(lineRef.isProcessed()).isEqualTo(bankStatementLineProcessed);
 			}
@@ -758,7 +788,7 @@ class BankStatementPaymentBLTest
 					.createAndProcess();
 			final PaymentId paymentId2 = PaymentId.ofRepoId(payment2.getC_Payment_ID());
 
-			BankStatementLineMultiPaymentLinkRequest request = BankStatementLineMultiPaymentLinkRequest.builder()
+			final BankStatementLineMultiPaymentLinkRequest request = BankStatementLineMultiPaymentLinkRequest.builder()
 					.bankStatementLineId(BankStatementLineId.ofRepoId(bsl.getC_BankStatementLine_ID()))
 					.paymentToLink(PaymentToLink.builder()
 							.paymentId(paymentId1)
@@ -773,24 +803,6 @@ class BankStatementPaymentBLTest
 			assertThatThrownBy(() -> bankStatementPaymentBL.linkMultiPayments(request))
 					.isInstanceOf(AdempiereException.class)
 					.hasMessageStartingWith("Partial bank statement line reconciliation is not allowed");
-
-			// assertThat(result.getPayments()).hasSize(2);
-			// {
-			// final PaymentLinkResult paymentLinkResult = result.getPayments().get(0);
-			// assertThat(paymentLinkResult.getPaymentId()).isEqualTo(paymentId1);
-			// assertThat(paymentLinkResult.getStatementTrxAmt()).isEqualTo(Money.of(80, euroCurrencyId));
-			// }
-			// {
-			// final PaymentLinkResult paymentLinkResult = result.getPayments().get(1);
-			// assertThat(paymentLinkResult.getPaymentId()).isEqualTo(paymentId1);
-			// assertThat(paymentLinkResult.getStatementTrxAmt()).isEqualTo(Money.of(40, euroCurrencyId));
-			// }
-			//
-			// InterfaceWrapperHelper.refresh(bsl);
-			// assertThat(bsl.getStmtAmt()).isEqualByComparingTo("100");
-			// assertThat(bsl.getTrxAmt()).isEqualByComparingTo("120");
-			// assertThat(bsl.getBankFeeAmt()).isEqualByComparingTo("20");
 		}
-
 	}
 }

@@ -22,19 +22,12 @@ package de.metas.workflow.api;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.compiere.model.I_AD_WF_Responsible;
-
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.workflow.model.I_C_Doc_Responsible;
+import de.metas.workflow.WFResponsible;
 
 public interface IWorkflowBL extends ISingletonService
 {
-
-	I_AD_WF_Responsible getOrgWFResponsible(Properties ctx, int adOrgId);
-
 	I_C_Doc_Responsible createDocResponsible(Object doc, int adOrgId);
-
 }

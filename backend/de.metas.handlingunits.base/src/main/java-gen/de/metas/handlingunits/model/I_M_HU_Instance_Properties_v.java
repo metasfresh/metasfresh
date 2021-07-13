@@ -1,62 +1,55 @@
 package de.metas.handlingunits.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_Instance_Properties_v
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_Instance_Properties_v 
 {
 
-    /** TableName=M_HU_Instance_Properties_v */
-    public static final String Table_Name = "M_HU_Instance_Properties_v";
+	String Table_Name = "M_HU_Instance_Properties_v";
 
-    /** AD_Table_ID=540538 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540538 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Attribute Name.
@@ -66,7 +59,7 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAttributeName (java.lang.String AttributeName);
+	void setAttributeName (@Nullable java.lang.String AttributeName);
 
 	/**
 	 * Get Attribute Name.
@@ -76,40 +69,35 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAttributeName();
+	@Nullable java.lang.String getAttributeName();
 
-    /** Column definition for AttributeName */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_AttributeName = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object>(I_M_HU_Instance_Properties_v.class, "AttributeName", null);
-    /** Column name AttributeName */
-    public static final String COLUMNNAME_AttributeName = "AttributeName";
+	ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_AttributeName = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "AttributeName", null);
+	String COLUMNNAME_AttributeName = "AttributeName";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	@Nullable java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object>(I_M_HU_Instance_Properties_v.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Document Name.
@@ -118,7 +106,7 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentName (java.lang.String DocumentName);
+	void setDocumentName (@Nullable java.lang.String DocumentName);
 
 	/**
 	 * Get Document Name.
@@ -127,62 +115,56 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocumentName();
+	@Nullable java.lang.String getDocumentName();
 
-    /** Column definition for DocumentName */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_DocumentName = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object>(I_M_HU_Instance_Properties_v.class, "DocumentName", null);
-    /** Column name DocumentName */
-    public static final String COLUMNNAME_DocumentName = "DocumentName";
+	ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_DocumentName = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "DocumentName", null);
+	String COLUMNNAME_DocumentName = "DocumentName";
 
 	/**
-	 * Set Nr..
+	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
 
 	/**
-	 * Get Nr..
+	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocumentNo();
+	@Nullable java.lang.String getDocumentNo();
 
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object>(I_M_HU_Instance_Properties_v.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_DocumentNo = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object>(I_M_HU_Instance_Properties_v.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Merkmal.
@@ -192,7 +174,7 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Attribute_ID (int M_Attribute_ID);
+	void setM_Attribute_ID (int M_Attribute_ID);
 
 	/**
 	 * Get Merkmal.
@@ -202,10 +184,9 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Attribute_ID();
+	int getM_Attribute_ID();
 
-    /** Column name M_Attribute_ID */
-    public static final String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
+	String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
 
 	/**
 	 * Set Handling Unit.
@@ -214,7 +195,7 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_ID (int M_HU_ID);
+	void setM_HU_ID (int M_HU_ID);
 
 	/**
 	 * Get Handling Unit.
@@ -223,12 +204,10 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_ID();
+	int getM_HU_ID();
 
-    /** Column definition for M_HU_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, de.metas.handlingunits.model.I_M_HU>(I_M_HU_Instance_Properties_v.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
-    /** Column name M_HU_ID */
-    public static final String COLUMNNAME_M_HU_ID = "M_HU_ID";
+	ModelColumn<I_M_HU_Instance_Properties_v, de.metas.handlingunits.model.I_M_HU> COLUMN_M_HU_ID = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "M_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_M_HU_ID = "M_HU_ID";
 
 	/**
 	 * Set HU PI Name.
@@ -237,7 +216,7 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPIName (java.lang.String PIName);
+	void setPIName (@Nullable java.lang.String PIName);
 
 	/**
 	 * Get HU PI Name.
@@ -246,88 +225,79 @@ public interface I_M_HU_Instance_Properties_v
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPIName();
+	@Nullable java.lang.String getPIName();
 
-    /** Column definition for PIName */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_PIName = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object>(I_M_HU_Instance_Properties_v.class, "PIName", null);
-    /** Column name PIName */
-    public static final String COLUMNNAME_PIName = "PIName";
+	ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_PIName = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "PIName", null);
+	String COLUMNNAME_PIName = "PIName";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	@Nullable java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object>(I_M_HU_Instance_Properties_v.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Set Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (@Nullable java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
-	 * Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein
+	 * Get Search Key.
+	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	@Nullable java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object>(I_M_HU_Instance_Properties_v.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_Value = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 
 	/**
-	 * Set Zahlwert.
+	 * Set Numeric Value.
 	 * Numeric Value
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValueNumber (java.math.BigDecimal ValueNumber);
+	void setValueNumber (@Nullable BigDecimal ValueNumber);
 
 	/**
-	 * Get Zahlwert.
+	 * Get Numeric Value.
 	 * Numeric Value
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getValueNumber();
+	BigDecimal getValueNumber();
 
-    /** Column definition for ValueNumber */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_ValueNumber = new org.adempiere.model.ModelColumn<I_M_HU_Instance_Properties_v, Object>(I_M_HU_Instance_Properties_v.class, "ValueNumber", null);
-    /** Column name ValueNumber */
-    public static final String COLUMNNAME_ValueNumber = "ValueNumber";
+	ModelColumn<I_M_HU_Instance_Properties_v, Object> COLUMN_ValueNumber = new ModelColumn<>(I_M_HU_Instance_Properties_v.class, "ValueNumber", null);
+	String COLUMNNAME_ValueNumber = "ValueNumber";
 }

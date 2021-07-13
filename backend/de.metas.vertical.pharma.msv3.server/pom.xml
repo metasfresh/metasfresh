@@ -35,6 +35,16 @@
 	</dependencyManagement>
 
 	<dependencies>
+		<dependency>
+			<groupId>javax.annotation</groupId>
+			<artifactId>javax.annotation-api</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.validation</groupId>
+			<artifactId>validation-api</artifactId>
+		</dependency>
+
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -63,7 +73,7 @@
 		<dependency>
 			<groupId>de.codecentric</groupId>
 			<artifactId>spring-boot-admin-starter-client</artifactId>
-			<version>1.5.0</version>
+			<version>${spring-boot-admin.version}</version>
 		</dependency>
 
 		<dependency>
@@ -101,7 +111,6 @@
 			<artifactId>httpclient</artifactId>
 		</dependency>
 
-
 		<!-- metasfresh -->
 		<dependency>
 			<groupId>de.metas.vertical.pharma</groupId>
@@ -129,9 +138,6 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 
-		<!-- Lombok See https://github.com/metasfresh/metasfresh/issues/1125 NOTE: 
-			if you don't need fancy things like @SneakyThrows then scope 'provided' it's 
-			totally fine Also note that the version is managed by spring-boot. -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

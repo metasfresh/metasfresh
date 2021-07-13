@@ -9,7 +9,8 @@ RETURNS TABLE
 	C_Currency_ID numeric,
 	poreference varchar(60),
 	displayhu text,
-	isoffer character(1)
+	isoffer character(1),
+	isprepay character(1)
 	)
 AS
 $$	
@@ -36,7 +37,11 @@ SELECT
 		CASE WHEN dt.docbasetype = 'SOO' AND dt.docsubtype IN ('ON', 'OB')
 		THEN 'Y'
 		ELSE 'N'
-	END AS isoffer
+	END AS isoffer,
+	CASE WHEN dt.docbasetype = 'SOO' AND dt.docsubtype ='PR'
+		THEN 'Y'
+		ELSE 'N'
+	END AS isprepay
 FROM
 	C_Order o
 	INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'

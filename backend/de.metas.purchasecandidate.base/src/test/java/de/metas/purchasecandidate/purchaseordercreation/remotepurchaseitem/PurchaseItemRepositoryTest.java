@@ -8,6 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -28,7 +29,6 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateTestTool;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.quantity.Quantity;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -94,8 +94,7 @@ public class PurchaseItemRepositoryTest
 		final PurchaseOrderItem orderItem = createAndAddPurchaseOrderItem(purchaseCandidate);
 
 		final I_C_OrderLine purchaseOrderLine = createPurchaseOrderLine(TEN);
-		orderItem.setPurchaseOrderLineIdAndMarkProcessed(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()));
-
+		orderItem.setPurchaseOrderLineId(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()));
 		// invoke the method under test
 		new PurchaseItemRepository().saveAll(purchaseCandidate.getPurchaseOrderItems());
 
@@ -118,7 +117,7 @@ public class PurchaseItemRepositoryTest
 		final PurchaseOrderItem originalPurchaseOrderItem = createAndAddPurchaseOrderItem(purchaseCandidate);
 
 		final I_C_OrderLine purchaseOrderLine = createPurchaseOrderLine(TEN);
-		originalPurchaseOrderItem.setPurchaseOrderLineIdAndMarkProcessed(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()));
+		originalPurchaseOrderItem.setPurchaseOrderLineId(OrderAndLineId.ofRepoIds(purchaseOrderLine.getC_Order_ID(), purchaseOrderLine.getC_OrderLine_ID()));
 
 		// invoke the method under test
 		final PurchaseItemRepository purchaseItemRepository = new PurchaseItemRepository();

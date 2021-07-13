@@ -1,13 +1,14 @@
 package org.adempiere.mm.attributes.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.function.Predicate;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.material.event.commons.AttributeKeyPartType;
+import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.event.commons.AttributesKeyPart;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -21,15 +22,14 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.material.event.commons.AttributeKeyPartType;
-import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.AttributesKeyPart;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -62,7 +62,7 @@ public final class AttributesKeys
 	//@formatter:on
 
 	/**
-	 * @return see {@link #createAttributesKeyFromASIAllAttributes(int)} for why we return an {@link Optional}.
+	 * @return see {@link #createAttributesKeyFromASIAllAttributes(AttributeSetInstanceId)} for why we return an {@link Optional}.
 	 */
 	public static Optional<AttributesKey> createAttributesKeyFromAttributeSet(@NonNull final IAttributeSet attributeSet)
 	{
@@ -85,7 +85,8 @@ public final class AttributesKeys
 		return Optional.of(AttributesKey.ofParts(parts));
 	}
 
-	private static AttributesKeyPart createAttributesKeyPart(final IAttributeSet attributeSet, final I_M_Attribute attribute)
+	@Nullable
+	private static AttributesKeyPart createAttributesKeyPart(@NonNull final IAttributeSet attributeSet, @NonNull final I_M_Attribute attribute)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
@@ -93,17 +94,24 @@ public final class AttributesKeys
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{
 			final String valueStr = attributeSet.getValueAsString(attributeCode);
-			return AttributesKeyPart.ofStringAttribute(attributeId, valueStr);
+
+			return Check.isNotBlank(valueStr)
+					? AttributesKeyPart.ofStringAttribute(attributeId, valueStr)
+					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
 			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeCode);
-			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
+			return valueBD != null
+					? AttributesKeyPart.ofNumberAttribute(attributeId, valueBD)
+					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
 			final LocalDate valueDate = attributeSet.getValueAsLocalDate(attributeCode);
-			return AttributesKeyPart.ofDateAttribute(attributeId, valueDate);
+			return valueDate != null
+					? AttributesKeyPart.ofDateAttribute(attributeId, valueDate)
+					: null;
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
@@ -123,16 +131,16 @@ public final class AttributesKeys
 
 	/**
 	 * @return and optional that is empty if no attribute values could be extracted from the given {@code attributeSetInstanceId}.<br>
-	 *         In that case it's up to the caller to interpret the empty result.<br>
-	 *         That can for example be done using using {@link Optional#orElse(Object)} with {@link AttributesKey#NONE}.
+	 * In that case it's up to the caller to interpret the empty result.<br>
+	 * That can for example be done using using {@link Optional#orElse(Object)} with {@link AttributesKey#NONE}.
 	 */
 	public static Optional<AttributesKey> createAttributesKeyFromASIAllAttributes(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return createAttributesKeyFromASI(attributeSetInstanceId, Predicates.alwaysTrue());
+		return createAttributesKeyFromASI(attributeSetInstanceId, i_m_attributeInstance -> true);
 	}
 
 	/**
-	 * Similar to {@link #createAttributesKeyFromASIAllAttributes(int)}, but only attributes flagged as "storage relevant" are considered.
+	 * Similar to {@link #createAttributesKeyFromASIAllAttributes(AttributeSetInstanceId)}, but only attributes flagged as "storage relevant" are considered.
 	 * <p>
 	 * Please make sure the output of this method is in sync with the DB function @{code GenerateASIStorageAttributesKey}.
 	 */
@@ -158,7 +166,7 @@ public final class AttributesKeys
 		final ImmutableSet<AttributesKeyPart> parts = attributesRepo().retrieveAttributeInstances(attributeSetInstanceId)
 				.stream()
 				.filter(additionalFilter)
-				.map(ai -> createAttributesKeyPart(ai))
+				.map(AttributesKeys::createAttributesKeyPart)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -170,7 +178,8 @@ public final class AttributesKeys
 		return Optional.of(AttributesKey.ofParts(parts));
 	}
 
-	private static AttributesKeyPart createAttributesKeyPart(final I_M_AttributeInstance ai)
+	@Nullable
+	private static AttributesKeyPart createAttributesKeyPart(@NonNull final I_M_AttributeInstance ai)
 	{
 		final AttributeId attributeId = AttributeId.ofRepoId(ai.getM_Attribute_ID());
 		final I_M_Attribute attribute = attributesRepo().getAttributeById(attributeId);
@@ -178,25 +187,39 @@ public final class AttributesKeys
 		if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(attributeValueType))
 		{
 			final String valueStr = ai.getValue();
+			if (Check.isBlank(valueStr))
+			{
+				return null;
+			}
 			return AttributesKeyPart.ofStringAttribute(attributeId, valueStr);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
 			final boolean isNull = InterfaceWrapperHelper.isNull(ai, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
-			final BigDecimal valueBD = isNull ? null : ai.getValueNumber();
+			if (isNull)
+			{
+				return null;
+			}
+			final BigDecimal valueBD = ai.getValueNumber();
 			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
 		{
 			final LocalDate valueDate = TimeUtil.asLocalDate(ai.getValueDate());
+			if (valueDate == null)
+			{
+				return null;
+			}
 			return AttributesKeyPart.ofDateAttribute(attributeId, valueDate);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
 			final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(ai.getM_AttributeValue_ID());
-			return attributeValueId != null
-					? AttributesKeyPart.ofAttributeValueId(attributeValueId)
-					: null;
+			if (attributeValueId == null)
+			{
+				return null;
+			}
+			return AttributesKeyPart.ofAttributeValueId(attributeValueId);
 		}
 		else
 		{
@@ -255,5 +278,14 @@ public final class AttributesKeys
 					.appendParametersToMessage()
 					.setParameter("attributesKey", attributesKey);
 		}
+	}
+
+	public static AttributesKey pruneEmptyParts(@NonNull final AttributesKey attributesKey)
+	{
+		final ImmutableList<AttributesKeyPart> notBlankParts = attributesKey.getParts().stream()
+				.filter(p -> Check.isNotBlank(p.getValue()))
+				.collect(ImmutableList.toImmutableList());
+
+		return AttributesKey.ofParts(notBlankParts);
 	}
 }

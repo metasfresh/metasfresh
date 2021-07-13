@@ -3,6 +3,7 @@ package de.metas.dlm.coordinator.impl;
 import java.sql.Timestamp;
 import java.util.Optional;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.TimeUtil;
@@ -10,7 +11,6 @@ import org.compiere.util.TimeUtil;
 import de.metas.dlm.coordinator.IRecordInspector;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.util.Check;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

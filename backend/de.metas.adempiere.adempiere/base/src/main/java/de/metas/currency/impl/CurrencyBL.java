@@ -4,7 +4,7 @@ package de.metas.currency.impl;
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,22 +22,16 @@ package de.metas.currency.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.service.ClientId;
-import org.compiere.util.Env;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyConversionResult.CurrencyConversionResultBuilder;
+import de.metas.currency.CurrencyConversionType;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
@@ -48,11 +42,20 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
 
 public class CurrencyBL implements ICurrencyBL
 {
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+
 	@Override
 	public final Currency getBaseCurrency(final Properties ctx)
 	{
@@ -69,8 +72,7 @@ public class CurrencyBL implements ICurrencyBL
 	{
 		final CurrencyId currencyId = getBaseCurrencyId(adClientId, adOrgId);
 
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		return currenciesRepo.getById(currencyId);
+		return currencyDAO.getById(currencyId);
 	}
 
 	@Override
@@ -78,7 +80,8 @@ public class CurrencyBL implements ICurrencyBL
 			@NonNull final ClientId adClientId,
 			@NonNull final OrgId adOrgId)
 	{
-		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(adClientId, adOrgId);
+		final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+		final AcctSchema as = acctSchemaDAO.getByCliendAndOrg(adClientId, adOrgId);
 		Check.assumeNotNull(as, "Missing C_AcctSchema for AD_Client_ID={} and AD_Org_ID={}", adClientId, adOrgId);
 
 		return as.getCurrencyId();
@@ -97,6 +100,7 @@ public class CurrencyBL implements ICurrencyBL
 		return convert(amt, currencyFromId, currencyToId, convDate, conversionTypeId, clientId, orgId);
 	}
 
+	@NonNull
 	@Override
 	public final BigDecimal convert(
 			final BigDecimal amt,
@@ -117,13 +121,10 @@ public class CurrencyBL implements ICurrencyBL
 				amt,
 				currencyFromId,
 				currencyToId);
-		if (conversionResult == null)
-		{
-			return null;
-		}
 		return conversionResult.getAmount();
 	}
 
+	@NonNull
 	@Override
 	public final CurrencyConversionResult convert(
 			@NonNull final CurrencyConversionContext conversionCtx,
@@ -149,8 +150,11 @@ public class CurrencyBL implements ICurrencyBL
 			final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
 			if (currencyRate == null)
 			{
-				// TODO: evaluate if we can throw an exception here
-				return null;
+				throw new NoCurrencyRateFoundException(
+						currencyDAO.getCurrencyCodeById(currencyFromId),
+						currencyDAO.getCurrencyCodeById(currencyToId),
+						conversionCtx.getConversionDate(),
+						currencyDAO.getConversionTypeMethodById(conversionCtx.getConversionTypeId()));
 			}
 
 			conversionRateBD = currencyRate.getConversionRate();
@@ -167,14 +171,15 @@ public class CurrencyBL implements ICurrencyBL
 				.currencyId(currencyToId)
 				.conversionRateOrNull(conversionRateBD)
 				.build();
-	}	// convert
+	}    // convert
 
 	private CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
 	{
-		return Services.get(ICurrencyDAO.class).getStdPrecision(currencyId);
+		return currencyDAO.getStdPrecision(currencyId);
 	}
 
 	@Override
+	@NonNull
 	public final BigDecimal convert(
 			final BigDecimal amt,
 			final CurrencyId currencyFromId,
@@ -183,7 +188,7 @@ public class CurrencyBL implements ICurrencyBL
 			@NonNull final OrgId orgId)
 	{
 		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(
-				(LocalDate)null, // convDate
+				null, // convDate
 				(CurrencyConversionTypeId)null, // C_ConversionType_ID,
 				clientId,
 				orgId);
@@ -192,31 +197,29 @@ public class CurrencyBL implements ICurrencyBL
 				amt,
 				currencyFromId,
 				currencyToId);
-		if (conversionResult == null)
-		{
-			return null;
-		}
 		return conversionResult.getAmount();
 	}
 
 	@Override
-	public final BigDecimal getRate(
-			final CurrencyId currencyFromId,
-			final CurrencyId currencyToId,
-			final LocalDate convDate,
-			final CurrencyConversionTypeId conversionTypeId,
-			final ClientId clientId,
-			final OrgId orgId)
+	public final Optional<CurrencyRate> getCurrencyRateIfExists(
+			@NonNull final CurrencyId currencyFromId,
+			@NonNull final CurrencyId currencyToId,
+			@Nullable final LocalDate convDate,
+			@Nullable final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
 	{
 		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(
 				convDate,
 				conversionTypeId,
 				clientId,
 				orgId);
-		return getRate(conversionCtx, currencyFromId, currencyToId);
+		final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
+		return Optional.ofNullable(currencyRate);
 	}
 
 	@Override
+	@NonNull
 	public final CurrencyConversionContext createCurrencyConversionContext(
 			@Nullable final LocalDate conversionDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
@@ -237,18 +240,18 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	@NonNull
 	public final CurrencyConversionContext createCurrencyConversionContext(
-			@NonNull final LocalDate convDate,
+			@NonNull final LocalDate conversionDate,
 			@Nullable final ConversionTypeMethod conversionType,
 			@NonNull final ClientId clientId,
 			@NonNull final OrgId orgId)
 	{
 		// Find C_ConversionType_ID
-		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 		final ConversionTypeMethod conversionTypeEffective = conversionType != null ? conversionType : ConversionTypeMethod.Spot;
 		final CurrencyConversionTypeId conversionTypeId = currencyDAO.getConversionTypeId(conversionTypeEffective);
 
-		return createCurrencyConversionContext(convDate, conversionTypeId, clientId, orgId);
+		return createCurrencyConversionContext(conversionDate, conversionTypeId, clientId, orgId);
 	}
 
 	private CurrencyConversionTypeId getDefaultConversionTypeId(
@@ -256,20 +259,16 @@ public class CurrencyBL implements ICurrencyBL
 			final OrgId adOrgId,
 			final LocalDate date)
 	{
-		final ICurrencyDAO currenciesRepo = Services.get(ICurrencyDAO.class);
-		return currenciesRepo.getDefaultConversionTypeId(adClientId, adOrgId, date);
+		return currencyDAO.getDefaultConversionTypeId(adClientId, adOrgId, date);
 	}
 
 	@Override
-	public BigDecimal getRate(
-			@NonNull final CurrencyConversionContext conversionCtx,
-			@NonNull final CurrencyId currencyFromId,
-			@NonNull final CurrencyId currencyToId)
+	public CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull final ConversionTypeMethod type)
 	{
-		final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
-		return currencyRate == null ? null : currencyRate.getConversionRate();
+		return currencyDAO.getConversionTypeId(type);
 	}
 
+	@Nullable
 	private CurrencyRate getCurrencyRateOrNull(
 			@NonNull final CurrencyConversionContext conversionCtx,
 			@NonNull final CurrencyId currencyFromId,
@@ -289,28 +288,46 @@ public class CurrencyBL implements ICurrencyBL
 		}
 		else
 		{
-			conversionRate = Services.get(ICurrencyDAO.class).retrieveRateOrNull(conversionCtx, currencyFromId, currencyToId);
+			conversionRate = currencyDAO.retrieveRateOrNull(conversionCtx, currencyFromId, currencyToId);
 			if (conversionRate == null)
 			{
 				return null;
 			}
 		}
 
-		final CurrencyPrecision currencyPrecision = conversionCtx.getPrecision()
-				.orElseGet(() -> getStdPrecision(currencyToId));
+		final CurrencyPrecision toCurrencyPrecision = conversionCtx.getPrecision().orElseGet(() -> getStdPrecision(currencyToId));
+		final CurrencyPrecision fromCurrencyPrecision = conversionCtx.getPrecision().orElseGet(() -> getStdPrecision(currencyFromId));
 
 		return CurrencyRate.builder()
 				.conversionRate(conversionRate)
 				.fromCurrencyId(currencyFromId)
 				.toCurrencyId(currencyToId)
-				.currencyPrecision(currencyPrecision)
+				.toCurrencyPrecision(toCurrencyPrecision)
+				.fromCurrencyPrecision(fromCurrencyPrecision)
 				.conversionTypeId(conversionTypeId)
 				.conversionDate(conversionDate)
 				.build();
 	}
 
 	@Override
-	public CurrencyRate getCurrencyRate(
+	public final CurrencyRate getCurrencyRate(
+			@NonNull final CurrencyId currencyFromId,
+			@NonNull final CurrencyId currencyToId,
+			@Nullable final LocalDate convDate,
+			@Nullable final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId)
+	{
+		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(
+				convDate,
+				conversionTypeId,
+				clientId,
+				orgId);
+		return getCurrencyRate(conversionCtx, currencyFromId, currencyToId);
+	}
+
+	@Override
+	public @NonNull CurrencyRate getCurrencyRate(
 			@NonNull final CurrencyConversionContext conversionCtx,
 			@NonNull final CurrencyId currencyFromId,
 			@NonNull final CurrencyId currencyToId)
@@ -318,12 +335,30 @@ public class CurrencyBL implements ICurrencyBL
 		final CurrencyRate currencyRate = getCurrencyRateOrNull(conversionCtx, currencyFromId, currencyToId);
 		if (currencyRate == null)
 		{
-			throw new NoCurrencyRateFoundException(conversionCtx, currencyFromId, currencyToId);
+			final CurrencyCode currencyFrom = currencyDAO.getCurrencyCodeById(currencyFromId);
+			final CurrencyCode currencyTo = currencyDAO.getCurrencyCodeById(currencyToId);
+			final ConversionTypeMethod conversionTypeMethod = conversionCtx.getConversionTypeId() != null
+					? currencyDAO.getConversionTypeMethodById(conversionCtx.getConversionTypeId())
+					: null;
+
+			throw new NoCurrencyRateFoundException(
+					currencyFrom,
+					currencyTo,
+					conversionCtx.getConversionDate(),
+					conversionTypeMethod)
+					.setParameter("conversionCtx", conversionCtx);
 		}
+
 		return currencyRate;
 	}
 
-	private static final CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
+	@Override
+	public @NonNull CurrencyCode getCurrencyCodeById(@NonNull final CurrencyId currencyId)
+	{
+		return currencyDAO.getCurrencyCodeById(currencyId);
+	}
+
+	private static CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
 	{
 		return CurrencyConversionResult.builder()
 				.clientId(conversionCtx.getClientId())

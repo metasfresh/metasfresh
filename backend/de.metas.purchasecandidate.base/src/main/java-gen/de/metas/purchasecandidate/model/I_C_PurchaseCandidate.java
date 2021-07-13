@@ -1,101 +1,127 @@
 package de.metas.purchasecandidate.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_PurchaseCandidate
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_PurchaseCandidate 
 {
 
-    /** TableName=C_PurchaseCandidate */
-    public static final String Table_Name = "C_PurchaseCandidate";
+	String Table_Name = "C_PurchaseCandidate";
 
-    /** AD_Table_ID=540861 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540861 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_Client>(I_C_PurchaseCandidate.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_Org>(I_C_PurchaseCandidate.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Währung.
-	 * Die Währung für diesen Eintrag
+	 * Set Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Activity_ID();
+
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Campaign.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Campaign_ID (int C_Campaign_ID);
+
+	/**
+	 * Get Campaign.
+	 * Marketing Campaign
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Campaign_ID();
+
+	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
+
+	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
+
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
+	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Currency_ID (int C_Currency_ID);
+	void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
-	 * Die Währung für diesen Eintrag
+	 * Get Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Currency_ID();
+	int getC_Currency_ID();
 
-	public org.compiere.model.I_C_Currency getC_Currency();
-
-	public void setC_Currency(org.compiere.model.I_C_Currency C_Currency);
-
-    /** Column definition for C_Currency_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_Currency> COLUMN_C_Currency_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_Currency>(I_C_PurchaseCandidate.class, "C_Currency_ID", org.compiere.model.I_C_Currency.class);
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Auftragsposition.
@@ -105,7 +131,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_OrderLineSO_ID (int C_OrderLineSO_ID);
+	void setC_OrderLineSO_ID (int C_OrderLineSO_ID);
 
 	/**
 	 * Get Auftragsposition.
@@ -115,16 +141,14 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_OrderLineSO_ID();
+	int getC_OrderLineSO_ID();
 
-	public org.compiere.model.I_C_OrderLine getC_OrderLineSO();
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLineSO();
 
-	public void setC_OrderLineSO(org.compiere.model.I_C_OrderLine C_OrderLineSO);
+	void setC_OrderLineSO(@Nullable org.compiere.model.I_C_OrderLine C_OrderLineSO);
 
-    /** Column definition for C_OrderLineSO_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLineSO_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_OrderLine>(I_C_PurchaseCandidate.class, "C_OrderLineSO_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLineSO_ID */
-    public static final String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLineSO_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "C_OrderLineSO_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
 
 	/**
 	 * Set Auftrag.
@@ -134,7 +158,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_OrderSO_ID (int C_OrderSO_ID);
+	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
 	 * Get Auftrag.
@@ -144,16 +168,36 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_OrderSO_ID();
+	int getC_OrderSO_ID();
 
-	public org.compiere.model.I_C_Order getC_OrderSO();
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
 
-	public void setC_OrderSO(org.compiere.model.I_C_Order C_OrderSO);
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
 
-    /** Column definition for C_OrderSO_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_Order>(I_C_PurchaseCandidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_OrderSO_ID */
-    public static final String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
+
+	/**
+	 * Set Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Project_ID (int C_Project_ID);
+
+	/**
+	 * Get Project.
+	 * Financial Project
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Project_ID();
+
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Set Purchase candidate.
@@ -162,7 +206,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_PurchaseCandidate_ID (int C_PurchaseCandidate_ID);
+	void setC_PurchaseCandidate_ID (int C_PurchaseCandidate_ID);
 
 	/**
 	 * Get Purchase candidate.
@@ -171,121 +215,255 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_PurchaseCandidate_ID();
+	int getC_PurchaseCandidate_ID();
 
-    /** Column definition for C_PurchaseCandidate_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_C_PurchaseCandidate_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "C_PurchaseCandidate_ID", null);
-    /** Column name C_PurchaseCandidate_ID */
-    public static final String COLUMNNAME_C_PurchaseCandidate_ID = "C_PurchaseCandidate_ID";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_C_PurchaseCandidate_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "C_PurchaseCandidate_ID", null);
+	String COLUMNNAME_C_PurchaseCandidate_ID = "C_PurchaseCandidate_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Set Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxCategory_ID();
+
+	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Created = new ModelColumn<>(I_C_PurchaseCandidate.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_User>(I_C_PurchaseCandidate.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_UOM_ID();
-
-	public org.compiere.model.I_C_UOM getC_UOM();
-
-	public void setC_UOM(org.compiere.model.I_C_UOM C_UOM);
-
-    /** Column definition for C_UOM_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_UOM> COLUMN_C_UOM_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_UOM>(I_C_PurchaseCandidate.class, "C_UOM_ID", org.compiere.model.I_C_UOM.class);
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Referenz.
+	 * Set Bedarfs-ID.
 	 * Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDemandReference (java.lang.String DemandReference);
+	void setDemandReference (String DemandReference);
 
 	/**
-	 * Get Referenz.
+	 * Get Bedarfs-ID.
 	 * Bestelldispo-Zeilen, die den selben Bedarf (z.b. die selbe Auftragszeile) addressieren habe den selben Referenz-Wert
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDemandReference();
+	String getDemandReference();
 
-    /** Column definition for DemandReference */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DemandReference = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "DemandReference", null);
-    /** Column name DemandReference */
-    public static final String COLUMNNAME_DemandReference = "DemandReference";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DemandReference = new ModelColumn<>(I_C_PurchaseCandidate.class, "DemandReference", null);
+	String COLUMNNAME_DemandReference = "DemandReference";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDiscount (@Nullable BigDecimal Discount);
+
+	/**
+	 * Get Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscount();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Discount = new ModelColumn<>(I_C_PurchaseCandidate.class, "Discount", null);
+	String COLUMNNAME_Discount = "Discount";
+
+	/**
+	 * Set DiscountEff.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDiscountEff (@Nullable BigDecimal DiscountEff);
+
+	/**
+	 * Get DiscountEff.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscountEff();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DiscountEff = new ModelColumn<>(I_C_PurchaseCandidate.class, "DiscountEff", null);
+	String COLUMNNAME_DiscountEff = "DiscountEff";
+
+	/**
+	 * Set DiscountInternal.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDiscountInternal (@Nullable BigDecimal DiscountInternal);
+
+	/**
+	 * Get DiscountInternal.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscountInternal();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_DiscountInternal = new ModelColumn<>(I_C_PurchaseCandidate.class, "DiscountInternal", null);
+	String COLUMNNAME_DiscountInternal = "DiscountInternal";
+
+	/**
+	 * Set External Header ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalHeaderId (@Nullable String ExternalHeaderId);
+
+	/**
+	 * Get External Header ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getExternalHeaderId();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalHeaderId = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalHeaderId", null);
+	String COLUMNNAME_ExternalHeaderId = "ExternalHeaderId";
+
+	/**
+	 * Set External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalLineId (@Nullable String ExternalLineId);
+
+	/**
+	 * Get External Line ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getExternalLineId();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalLineId", null);
+	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
+	 * Set URL of the purchase order in an external system.
+	 * If a purchase order was synched from an external system, this field can be used to store its URL
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalPurchaseOrderURL (@Nullable String ExternalPurchaseOrderURL);
+
+	/**
+	 * Get URL of the purchase order in an external system.
+	 * If a purchase order was synched from an external system, this field can be used to store its URL
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getExternalPurchaseOrderURL();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ExternalPurchaseOrderURL = new ModelColumn<>(I_C_PurchaseCandidate.class, "ExternalPurchaseOrderURL", null);
+	String COLUMNNAME_ExternalPurchaseOrderURL = "ExternalPurchaseOrderURL";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsActive = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Aggregate Purchase Orders.
@@ -294,7 +472,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsAggregatePO (boolean IsAggregatePO);
+	void setIsAggregatePO (boolean IsAggregatePO);
 
 	/**
 	 * Get Aggregate Purchase Orders.
@@ -303,12 +481,52 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAggregatePO();
+	boolean isAggregatePO();
 
-    /** Column definition for IsAggregatePO */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsAggregatePO = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "IsAggregatePO", null);
-    /** Column name IsAggregatePO */
-    public static final String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsAggregatePO = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsAggregatePO", null);
+	String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
+
+	/**
+	 * Set Discount Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualDiscount (boolean IsManualDiscount);
+
+	/**
+	 * Get Discount Manual.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualDiscount();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsManualDiscount = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsManualDiscount", null);
+	String COLUMNNAME_IsManualDiscount = "IsManualDiscount";
+
+	/**
+	 * Set Manual Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualPrice (boolean IsManualPrice);
+
+	/**
+	 * Get Manual Price.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualPrice();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsManualPrice = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsManualPrice", null);
+	String COLUMNNAME_IsManualPrice = "IsManualPrice";
 
 	/**
 	 * Set Prepared.
@@ -317,7 +535,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPrepared (boolean IsPrepared);
+	void setIsPrepared (boolean IsPrepared);
 
 	/**
 	 * Get Prepared.
@@ -326,220 +544,378 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPrepared();
+	boolean isPrepared();
 
-    /** Column definition for IsPrepared */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsPrepared = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "IsPrepared", null);
-    /** Column name IsPrepared */
-    public static final String COLUMNNAME_IsPrepared = "IsPrepared";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsPrepared = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsPrepared", null);
+	String COLUMNNAME_IsPrepared = "IsPrepared";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set RfQ Created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRequisitionCreated (boolean IsRequisitionCreated);
+
+	/**
+	 * Get RfQ Created.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRequisitionCreated();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsRequisitionCreated = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsRequisitionCreated", null);
+	String COLUMNNAME_IsRequisitionCreated = "IsRequisitionCreated";
+
+	/**
+	 * Set Price incl. Tax.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsTaxIncluded (boolean IsTaxIncluded);
+
+	/**
+	 * Get Price incl. Tax.
+	 * Tax is included in the price
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isTaxIncluded();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsTaxIncluded = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsTaxIncluded", null);
+	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
+
+	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSetInstance_ID();
+	int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_AttributeSetInstance>(I_C_PurchaseCandidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Forecast.
+	 * Material Forecast
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Forecast_ID (int M_Forecast_ID);
+
+	/**
+	 * Get Forecast.
+	 * Material Forecast
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Forecast_ID();
+
+	@Nullable org.compiere.model.I_M_Forecast getM_Forecast();
+
+	void setM_Forecast(@Nullable org.compiere.model.I_M_Forecast M_Forecast);
+
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_Forecast> COLUMN_M_Forecast_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "M_Forecast_ID", org.compiere.model.I_M_Forecast.class);
+	String COLUMNNAME_M_Forecast_ID = "M_Forecast_ID";
+
+	/**
+	 * Set Forecast Line.
+	 * Forecast Line
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_ForecastLine_ID (int M_ForecastLine_ID);
+
+	/**
+	 * Get Forecast Line.
+	 * Forecast Line
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_ForecastLine_ID();
+
+	@Nullable org.compiere.model.I_M_ForecastLine getM_ForecastLine();
+
+	void setM_ForecastLine(@Nullable org.compiere.model.I_M_ForecastLine M_ForecastLine);
+
+	ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_ForecastLine> COLUMN_M_ForecastLine_ID = new ModelColumn<>(I_C_PurchaseCandidate.class, "M_ForecastLine_ID", org.compiere.model.I_M_ForecastLine.class);
+	String COLUMNNAME_M_ForecastLine_ID = "M_ForecastLine_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-	public org.compiere.model.I_M_Product getM_Product();
-
-	public void setM_Product(org.compiere.model.I_M_Product M_Product);
-
-    /** Column definition for M_Product_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_Product> COLUMN_M_Product_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_Product>(I_C_PurchaseCandidate.class, "M_Product_ID", org.compiere.model.I_M_Product.class);
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Liefer-Lager.
+	 * Set Lager.
 	 * Lager, an das der Lieferant eine Bestellung liefern soll.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_WarehousePO_ID (int M_WarehousePO_ID);
+	void setM_WarehousePO_ID (int M_WarehousePO_ID);
 
 	/**
-	 * Get Liefer-Lager.
+	 * Get Lager.
 	 * Lager, an das der Lieferant eine Bestellung liefern soll.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_WarehousePO_ID();
+	int getM_WarehousePO_ID();
 
-	public org.compiere.model.I_M_Warehouse getM_WarehousePO();
-
-	public void setM_WarehousePO(org.compiere.model.I_M_Warehouse M_WarehousePO);
-
-    /** Column definition for M_WarehousePO_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_Warehouse> COLUMN_M_WarehousePO_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_M_Warehouse>(I_C_PurchaseCandidate.class, "M_WarehousePO_ID", org.compiere.model.I_M_Warehouse.class);
-    /** Column name M_WarehousePO_ID */
-    public static final String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
+	String COLUMNNAME_M_WarehousePO_ID = "M_WarehousePO_ID";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Price diff..
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setPriceDifference (@Nullable BigDecimal PriceDifference);
+
+	/**
+	 * Get Price diff..
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getPriceDifference();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceDifference = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceDifference", null);
+	String COLUMNNAME_PriceDifference = "PriceDifference";
+
+	/**
+	 * Set Price effective.
+	 * Effective Date of Price
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceEffective (@Nullable BigDecimal PriceEffective);
+
+	/**
+	 * Get Price effective.
+	 * Effective Date of Price
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceEffective();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEffective = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEffective", null);
+	String COLUMNNAME_PriceEffective = "PriceEffective";
+
+	/**
+	 * Set Price imp..
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceEntered (@Nullable BigDecimal PriceEntered);
+
+	/**
+	 * Get Price imp..
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceEntered();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceEntered = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceEntered", null);
+	String COLUMNNAME_PriceEntered = "PriceEntered";
+
+	/**
+	 * Set Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPriceInternal (@Nullable BigDecimal PriceInternal);
+
+	/**
+	 * Get Price.
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPriceInternal();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PriceInternal = new ModelColumn<>(I_C_PurchaseCandidate.class, "PriceInternal", null);
+	String COLUMNNAME_PriceInternal = "PriceInternal";
+
+	/**
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Processed = new ModelColumn<>(I_C_PurchaseCandidate.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set EK Ertrag netto.
+	 * Set Purchase net.
 	 * Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProfitPurchasePriceActual (java.math.BigDecimal ProfitPurchasePriceActual);
+	void setProfitPurchasePriceActual (@Nullable BigDecimal ProfitPurchasePriceActual);
 
 	/**
-	 * Get EK Ertrag netto.
+	 * Get Purchase net.
 	 * Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getProfitPurchasePriceActual();
+	BigDecimal getProfitPurchasePriceActual();
 
-    /** Column definition for ProfitPurchasePriceActual */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ProfitPurchasePriceActual = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "ProfitPurchasePriceActual", null);
-    /** Column name ProfitPurchasePriceActual */
-    public static final String COLUMNNAME_ProfitPurchasePriceActual = "ProfitPurchasePriceActual";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ProfitPurchasePriceActual = new ModelColumn<>(I_C_PurchaseCandidate.class, "ProfitPurchasePriceActual", null);
+	String COLUMNNAME_ProfitPurchasePriceActual = "ProfitPurchasePriceActual";
 
 	/**
-	 * Set VK Ertrag netto.
+	 * Set Sales net.
 	 * Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProfitSalesPriceActual (java.math.BigDecimal ProfitSalesPriceActual);
+	void setProfitSalesPriceActual (@Nullable BigDecimal ProfitSalesPriceActual);
 
 	/**
-	 * Get VK Ertrag netto.
+	 * Get Sales net.
 	 * Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getProfitSalesPriceActual();
+	BigDecimal getProfitSalesPriceActual();
 
-    /** Column definition for ProfitSalesPriceActual */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ProfitSalesPriceActual = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "ProfitSalesPriceActual", null);
-    /** Column name ProfitSalesPriceActual */
-    public static final String COLUMNNAME_ProfitSalesPriceActual = "ProfitSalesPriceActual";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ProfitSalesPriceActual = new ModelColumn<>(I_C_PurchaseCandidate.class, "ProfitSalesPriceActual", null);
+	String COLUMNNAME_ProfitSalesPriceActual = "ProfitSalesPriceActual";
 
 	/**
 	 * Set Bestelldatum.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPurchaseDateOrdered (java.sql.Timestamp PurchaseDateOrdered);
+	void setPurchaseDateOrdered (java.sql.Timestamp PurchaseDateOrdered);
 
 	/**
 	 * Get Bestelldatum.
 	 *
-	 * <br>Type: Date
+	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPurchaseDateOrdered();
+	java.sql.Timestamp getPurchaseDateOrdered();
 
-    /** Column definition for PurchaseDateOrdered */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDateOrdered = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchaseDateOrdered", null);
-    /** Column name PurchaseDateOrdered */
-    public static final String COLUMNNAME_PurchaseDateOrdered = "PurchaseDateOrdered";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDateOrdered = new ModelColumn<>(I_C_PurchaseCandidate.class, "PurchaseDateOrdered", null);
+	String COLUMNNAME_PurchaseDateOrdered = "PurchaseDateOrdered";
 
 	/**
-	 * Set Liefer-Zusagedatum.
+	 * Set Zugesagter Termin.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPurchaseDatePromised (java.sql.Timestamp PurchaseDatePromised);
+	void setPurchaseDatePromised (java.sql.Timestamp PurchaseDatePromised);
 
 	/**
-	 * Get Liefer-Zusagedatum.
+	 * Get Zugesagter Termin.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPurchaseDatePromised();
+	java.sql.Timestamp getPurchaseDatePromised();
 
-    /** Column definition for PurchaseDatePromised */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDatePromised = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchaseDatePromised", null);
-    /** Column name PurchaseDatePromised */
-    public static final String COLUMNNAME_PurchaseDatePromised = "PurchaseDatePromised";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchaseDatePromised = new ModelColumn<>(I_C_PurchaseCandidate.class, "PurchaseDatePromised", null);
+	String COLUMNNAME_PurchaseDatePromised = "PurchaseDatePromised";
 
 	/**
 	 * Set Bestellte Menge.
@@ -548,7 +924,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPurchasedQty (java.math.BigDecimal PurchasedQty);
+	void setPurchasedQty (@Nullable BigDecimal PurchasedQty);
 
 	/**
 	 * Get Bestellte Menge.
@@ -557,60 +933,54 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPurchasedQty();
+	BigDecimal getPurchasedQty();
 
-    /** Column definition for PurchasedQty */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchasedQty = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchasedQty", null);
-    /** Column name PurchasedQty */
-    public static final String COLUMNNAME_PurchasedQty = "PurchasedQty";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchasedQty = new ModelColumn<>(I_C_PurchaseCandidate.class, "PurchasedQty", null);
+	String COLUMNNAME_PurchasedQty = "PurchasedQty";
 
 	/**
-	 * Set EK-Preis.
+	 * Set Rohertragspreis.
 	 * Einkaufspreis pro Einheit, nach Abzug des Rabattes.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPurchasePriceActual (java.math.BigDecimal PurchasePriceActual);
+	void setPurchasePriceActual (@Nullable BigDecimal PurchasePriceActual);
 
 	/**
-	 * Get EK-Preis.
+	 * Get Rohertragspreis.
 	 * Einkaufspreis pro Einheit, nach Abzug des Rabattes.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getPurchasePriceActual();
+	BigDecimal getPurchasePriceActual();
 
-    /** Column definition for PurchasePriceActual */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchasePriceActual = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "PurchasePriceActual", null);
-    /** Column name PurchasePriceActual */
-    public static final String COLUMNNAME_PurchasePriceActual = "PurchasePriceActual";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_PurchasePriceActual = new ModelColumn<>(I_C_PurchaseCandidate.class, "PurchasePriceActual", null);
+	String COLUMNNAME_PurchasePriceActual = "PurchasePriceActual";
 
 	/**
-	 * Set Bestellmenge.
+	 * Set Menge angefragt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyToPurchase (java.math.BigDecimal QtyToPurchase);
+	void setQtyToPurchase (BigDecimal QtyToPurchase);
 
 	/**
-	 * Get Bestellmenge.
+	 * Get Menge angefragt.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyToPurchase();
+	BigDecimal getQtyToPurchase();
 
-    /** Column definition for QtyToPurchase */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_QtyToPurchase = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "QtyToPurchase", null);
-    /** Column name QtyToPurchase */
-    public static final String COLUMNNAME_QtyToPurchase = "QtyToPurchase";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_QtyToPurchase = new ModelColumn<>(I_C_PurchaseCandidate.class, "QtyToPurchase", null);
+	String COLUMNNAME_QtyToPurchase = "QtyToPurchase";
 
 	/**
 	 * Set Wiedervorlage Datum.
@@ -619,7 +989,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setReminderDate (java.sql.Timestamp ReminderDate);
+	void setReminderDate (@Nullable java.sql.Timestamp ReminderDate);
 
 	/**
 	 * Get Wiedervorlage Datum.
@@ -628,42 +998,203 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getReminderDate();
+	@Nullable java.sql.Timestamp getReminderDate();
 
-    /** Column definition for ReminderDate */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ReminderDate = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "ReminderDate", null);
-    /** Column name ReminderDate */
-    public static final String COLUMNNAME_ReminderDate = "ReminderDate";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_ReminderDate = new ModelColumn<>(I_C_PurchaseCandidate.class, "ReminderDate", null);
+	String COLUMNNAME_ReminderDate = "ReminderDate";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Set Source.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSource (@Nullable String Source);
+
+	/**
+	 * Get Source.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getSource();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Source = new ModelColumn<>(I_C_PurchaseCandidate.class, "Source", null);
+	String COLUMNNAME_Source = "Source";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, Object>(I_C_PurchaseCandidate.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_Updated = new ModelColumn<>(I_C_PurchaseCandidate.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_AD_User>(I_C_PurchaseCandidate.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString1 (@Nullable String UserElementString1);
+
+	/**
+	 * Get UserElementString1.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getUserElementString1();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString1", null);
+	String COLUMNNAME_UserElementString1 = "UserElementString1";
+
+	/**
+	 * Set UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString2 (@Nullable String UserElementString2);
+
+	/**
+	 * Get UserElementString2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getUserElementString2();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString2", null);
+	String COLUMNNAME_UserElementString2 = "UserElementString2";
+
+	/**
+	 * Set UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString3 (@Nullable String UserElementString3);
+
+	/**
+	 * Get UserElementString3.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getUserElementString3();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString3", null);
+	String COLUMNNAME_UserElementString3 = "UserElementString3";
+
+	/**
+	 * Set UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString4 (@Nullable String UserElementString4);
+
+	/**
+	 * Get UserElementString4.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getUserElementString4();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString4", null);
+	String COLUMNNAME_UserElementString4 = "UserElementString4";
+
+	/**
+	 * Set UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString5 (@Nullable String UserElementString5);
+
+	/**
+	 * Get UserElementString5.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getUserElementString5();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString5", null);
+	String COLUMNNAME_UserElementString5 = "UserElementString5";
+
+	/**
+	 * Set UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString6 (@Nullable String UserElementString6);
+
+	/**
+	 * Get UserElementString6.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getUserElementString6();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString6", null);
+	String COLUMNNAME_UserElementString6 = "UserElementString6";
+
+	/**
+	 * Set UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserElementString7 (@Nullable String UserElementString7);
+
+	/**
+	 * Get UserElementString7.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getUserElementString7();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_PurchaseCandidate.class, "UserElementString7", null);
+	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
 	 * Set Lieferant.
@@ -673,7 +1204,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setVendor_ID (int Vendor_ID);
+	void setVendor_ID (int Vendor_ID);
 
 	/**
 	 * Get Lieferant.
@@ -683,14 +1214,7 @@ public interface I_C_PurchaseCandidate
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getVendor_ID();
+	int getVendor_ID();
 
-	public org.compiere.model.I_C_BPartner getVendor();
-
-	public void setVendor(org.compiere.model.I_C_BPartner Vendor);
-
-    /** Column definition for Vendor_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_BPartner> COLUMN_Vendor_ID = new org.adempiere.model.ModelColumn<I_C_PurchaseCandidate, org.compiere.model.I_C_BPartner>(I_C_PurchaseCandidate.class, "Vendor_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name Vendor_ID */
-    public static final String COLUMNNAME_Vendor_ID = "Vendor_ID";
+	String COLUMNNAME_Vendor_ID = "Vendor_ID";
 }

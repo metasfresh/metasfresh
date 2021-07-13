@@ -2,6 +2,7 @@ package de.metas.report;
 
 import com.google.common.collect.ImmutableList;
 import com.lowagie.text.pdf.BadPdfFormatException;
+import de.metas.printing.IMassPrintingService;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.experimental.UtilityClass;
@@ -12,14 +13,12 @@ import java.io.OutputStream;
 import java.util.List;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.print.ReportEngine;
 import org.compiere.util.Env;
 
 import com.lowagie.text.Document;
 import com.lowagie.text.pdf.PdfCopy;
 import com.lowagie.text.pdf.PdfReader;
 
-import de.metas.print.IPrintService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.report.server.ReportConstants;
@@ -59,8 +58,8 @@ public class ExecuteReportStrategyUtil
 				.setCtx(Env.getCtx())
 				.setAD_Process_ID(jasperProcessId)
 				.setRecord(processInfo.getTable_ID(), processInfo.getRecord_ID())
-				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, ReportEngine.getBarcodeServlet(Env.getCtx()))
-				.addParameter(IPrintService.PARAM_PrintCopies, 1)
+				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(processInfo.getClientId(), processInfo.getOrgId()))
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, PrintCopies.ONE.toInt())
 				.setArchiveReportData(false) // don't archive it! just give us the PDF data
 				.setPrintPreview(false)
 
@@ -71,7 +70,7 @@ public class ExecuteReportStrategyUtil
 				.onErrorThrowException(true)
 				.executeSync();
 
-		return processExecutor.getResult().getReportData();
+		return processExecutor.getResult().getReportDataAsByteArray();
 	}
 
 	/**

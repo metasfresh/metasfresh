@@ -1,6 +1,6 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.time.Instant;
 import java.time.LocalDate;

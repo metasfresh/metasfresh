@@ -15,6 +15,7 @@
 <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="true"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.adempiere.util.GenerateModel"/>
+<stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="de.metas.shipper.gateway.dpd"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="./src/main/java-gen/de/metas/shipper/gateway/dhl/model&#13;&#10;de.metas.shipper.gateway.dpd.model&#13;&#10;'de.metas.shipper.gateway.dpd'"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="de.metas.shipper.gateway.dpd"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>

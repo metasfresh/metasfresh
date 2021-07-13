@@ -544,6 +544,13 @@ input:checked + .input-slider:before {
     font-size: 16px;
 }
 
+.input-icon-m-right {
+    margin-right: 1rem;
+}
+.input-icon-m-top-small {
+  margin-top: 0.1rem;
+}
+
 .input-dropdown-container {
     position: relative;
     cursor: pointer;
@@ -631,6 +638,7 @@ input:checked + .input-slider:before {
     border-bottom-right-radius: 3px;
     left: 0;
     top: calc(100% + 1px);
+    z-index: 1002;
 }
 
 .input-dropdown-list-header {
@@ -887,6 +895,10 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     width: 450px;
 }
 
+.attributes-dropup {
+  bottom: 35px;
+}
+
 /* Others */
 .number-field {
     input::-webkit-outer-spin-button {
@@ -952,4 +964,64 @@ table {
 
 .table-striped tbody .rdtPicker tr:nth-of-type(odd) {
     background-color: white;
+}
+
+/** Used with transition group - CSSTransition component */
+.rotate-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.rotate-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 1000ms, transform 1000ms;
+}
+.rotate-exit {
+  opacity: 1;
+}
+.rotate-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 1000ms, transform 1000ms;
+}
+
+/** FADE */
+.fade-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.fade-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 200ms, transform 200ms;
+}
+.fade-exit {
+  opacity: 1;
+}
+.fade-exit-active {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 200ms, transform 200ms;
+}
+
+.input-dropdown-hasmore {
+    position:absolute;
+    top: calc(100% + 197px);
+    left: 0;
+    border: 1px solid #C9D5DC;
+    background: #f8fafb;
+    padding: 6px 0px 4px 8px;
+    border-radius: 5px;
+    text-align: center;
+    z-index: 1001;
+    box-sizing: border-box;
+}
+
+.btn-borderless:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.input-qr-scanner-wrapper {
+    padding: 20px 30px 20px 28px;
 }

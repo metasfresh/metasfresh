@@ -1,23 +1,22 @@
 package de.metas.movement.event;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_M_Movement;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
-
-import de.metas.document.engine.IDocumentBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.event.Topic;
 import de.metas.event.Type;
+import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_M_Movement;
+import org.compiere.util.Env;
+
+import java.util.Collection;
+import java.util.List;
 
 /*
  * #%L
@@ -43,7 +42,7 @@ import lombok.NonNull;
 
 public class MovementUserNotificationsProducer
 {
-	public static final MovementUserNotificationsProducer newInstance()
+	public static MovementUserNotificationsProducer newInstance()
 	{
 		return new MovementUserNotificationsProducer();
 	}
@@ -55,10 +54,9 @@ public class MovementUserNotificationsProducer
 			.build();
 
 	// services
-	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 
-	private static final String MSG_Event_MovementGenerated = "Event_MovementGenerated";
+	private static final AdMessageKey MSG_Event_MovementGenerated = AdMessageKey.of("Event_MovementGenerated");
 
 	private MovementUserNotificationsProducer()
 	{
@@ -84,7 +82,7 @@ public class MovementUserNotificationsProducer
 		return this;
 	}
 
-	private final UserNotificationRequest createUserNotification(@NonNull final I_M_Movement movement)
+	private UserNotificationRequest createUserNotification(@NonNull final I_M_Movement movement)
 	{
 		final UserId recipientUserId = getNotificationRecipientUserId(movement);
 		final TableRecordReference movementRef = TableRecordReference.of(movement);
@@ -96,17 +94,18 @@ public class MovementUserNotificationsProducer
 				.build();
 	}
 
-	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
+	private UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
 	{
 		return UserNotificationRequest.builder()
 				.topic(USER_NOTIFICATIONS_TOPIC);
 	}
 
-	private final UserId getNotificationRecipientUserId(final I_M_Movement movement)
+	private UserId getNotificationRecipientUserId(final I_M_Movement movement)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if (documentBL.isDocumentReversedOrVoided(movement))
+		final DocStatus docStatus = DocStatus.ofCode(movement.getDocStatus());
+		if (docStatus.isReversedOrVoided())
 		{
 			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
 			if (currentUserId > 0)

@@ -438,11 +438,6 @@ public class MCash extends X_C_Cash implements IDocument
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));
-				if (amt == null)
-				{
-					m_processMsg = "No Conversion Rate found - @C_CashLine_ID@= " + line.getLine();
-					return IDocument.STATUS_Invalid;
-				}
 				difference = difference.add(amt);
 			}
 		}

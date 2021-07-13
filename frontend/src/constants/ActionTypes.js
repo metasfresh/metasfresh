@@ -1,5 +1,11 @@
 export * from './actions/TableTypes';
 export * from './actions/ViewTypes';
+export * from './actions/ListTypes';
+export * from './actions/TabTypes';
+export * from './actions/FilterTypes';
+export * from './actions/Actions';
+export * from './actions/InlineTabTypes';
+export * from './actions/WindowActions';
 
 /**
  * @constant
@@ -80,24 +86,6 @@ export const INIT_LAYOUT_SUCCESS = 'INIT_LAYOUT_SUCCESS';
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
-export const SORT_TAB = 'SORT_TAB';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const ACTIVATE_TAB = 'ACTIVATE_TAB';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UNSELECT_TAB = 'UNSELECT_TAB';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
 export const UPDATE_DATA_PROPERTY = 'UPDATE_DATA_PROPERTY';
 
 /**
@@ -129,12 +117,6 @@ export const UPDATE_DATA_VALID_STATUS = 'UPDATE_DATA_VALID_STATUS';
  * @type {string} ToDo: Description for the constant.
  */
 export const UPDATE_DATA_SAVE_STATUS = 'UPDATE_DATA_SAVE_STATUS';
-
-/**
- * @constant
- * @type {string} ToDo: Description for the constant.
- */
-export const UPDATE_DATA_INCLUDED_TABS_INFO = 'UPDATE_DATA_INCLUDED_TABS_INFO';
 
 // END OF SCOPED ACTIONS
 
@@ -398,42 +380,24 @@ export const UPDATE_HOTKEYS = 'UPDATE_HOTKEYS';
 
 /**
  * @constant
- * @type {string} fetches panel's quick actions.
- */
-export const FETCHED_QUICK_ACTIONS = 'FETCHED_QUICK_ACTIONS';
-
-/**
- * @constant
- * @type {string} removes panel's quick actions when it's unmounted.
- */
-export const DELETE_QUICK_ACTIONS = 'DELETE_QUICK_ACTIONS';
-
-/**
- * @constant
- * @type {string} fetches tab's quick actions.
- */
-export const FETCH_TOP_ACTIONS = 'FETCH_TOP_ACTIONS';
-
-/**
- * @constant
- * @type {string} called on successful response.
- */
-export const FETCH_TOP_ACTIONS_SUCCESS = 'FETCH_TOP_ACTIONS_SUCCESS';
-
-/**
- * @constant
- * @type {string} called on failed response.
- */
-export const FETCH_TOP_ACTIONS_FAILURE = 'FETCH_TOP_ACTIONS_FAILURE';
-
-/**
- * @constant
- * @type {string} removes tab's quick actions on unmount.
- */
-export const DELETE_TOP_ACTIONS = 'DELETE_TOP_ACTIONS';
-
-/**
- * @constant
  * @type {string} set languages in the app handler
  */
 export const SET_LANGUAGES = 'SET_LANGUAGES';
+
+/**
+ * @constant
+ * @type {string} set the printing options
+ */
+export const SET_PRINTING_OPTIONS = 'SET_PRINTING_OPTIONS';
+
+/**
+ * @constant
+ * @type {string} reset the printing options
+ */
+export const RESET_PRINTING_OPTIONS = 'RESET_PRINTING_OPTIONS';
+
+/**
+ * @constant
+ * @type {string} toggles specific printing option
+ */
+export const TOGGLE_PRINTING_OPTION = 'TOGGLE_PRINTING_OPTION';

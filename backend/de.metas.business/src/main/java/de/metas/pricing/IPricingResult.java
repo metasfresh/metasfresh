@@ -32,6 +32,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.product.ProductCategoryId;
@@ -39,6 +40,7 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 
 /**
  * Result of a pricing calculation
@@ -75,9 +77,12 @@ public interface IPricingResult
 
 	void setEnforcePriceLimit(BooleanWithReason enforcePriceLimit);
 
+	Money getPriceStdAsMoney();
+
 	/**
 	 * @return discount (between 0 and 100); never null
 	 */
+	@NonNull
 	Percent getDiscount();
 
 	void setDiscount(Percent discount);

@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.model.PlainContextAware;
 import org.compiere.util.TimeUtil;
 
@@ -16,7 +17,6 @@ import de.metas.dlm.coordinator.IRecordInspector;
 import de.metas.dlm.migrator.IMigratorService;
 import de.metas.dlm.model.IDLMAware;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L

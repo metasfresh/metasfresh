@@ -12,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBuilderDAO;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.IQuery;
@@ -60,7 +61,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		return create(queryBuildCtx);
 	}
 
-	private final <T> IQuery<T> create(final QueryBuildContext<T> queryBuildCtx)
+	private <T> IQuery<T> create(final QueryBuildContext<T> queryBuildCtx)
 	{
 		//
 		// Case: we were asked to explode composite filters which are joined by ORs into UNIONs
@@ -241,7 +242,6 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 	/**
 	 * Extracts the {@link ISqlQueryFilter} part and the nonSQL part of given filter.
 	 *
-	 * @param filter
 	 * @return pair of SQL filter and nonSQL filter
 	 */
 	protected <T> IPair<ISqlQueryFilter, IQueryFilter<T>> extractSqlAndNonSqlFilters(final IQueryFilter<T> filter)
@@ -271,10 +271,8 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 	/**
 	 * Actually creates the {@link IQuery} instance for given context.
 	 *
-	 * @param queryBuildCtx
 	 * @param sqlFilters SQL filters part
 	 * @param nonSqlFilters nonSQL filters part
-	 * @return
 	 */
 	protected abstract <T> IQuery<T> createQuery(final QueryBuildContext<T> queryBuildCtx, final ISqlQueryFilter sqlFilters, final IQueryFilter<T> nonSqlFilters);
 
@@ -295,7 +293,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 		private IQueryFilter<T> mainFilter;
 		//
 		private IQueryOrderBy queryOrderBy;
-		private int queryLimit;
+		private QueryLimit queryLimit;
 		//
 		private final boolean explodeORJoinsToUnions;
 
@@ -339,7 +337,7 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			final QueryBuildContext<T> subQueryCtx = new QueryBuildContext<>(this);
 			subQueryCtx.mainFilter = subFilter;
 			subQueryCtx.queryOrderBy = null;
-			subQueryCtx.queryLimit = IQuery.NO_LIMIT;
+			subQueryCtx.queryLimit = QueryLimit.NO_LIMIT;
 
 			return subQueryCtx;
 		}
@@ -394,17 +392,17 @@ public abstract class AbstractQueryBuilderDAO implements IQueryBuilderDAO
 			return queryOrderBy;
 		}
 
-		public void setQueryOrderBy(IQueryOrderBy queryOrderBy)
+		public void setQueryOrderBy(final IQueryOrderBy queryOrderBy)
 		{
 			this.queryOrderBy = queryOrderBy;
 		}
 
-		public int getQueryLimit()
+		public QueryLimit getQueryLimit()
 		{
 			return queryLimit;
 		}
 
-		public void setQueryLimit(int queryLimit)
+		public void setQueryLimit(@NonNull final QueryLimit queryLimit)
 		{
 			this.queryLimit = queryLimit;
 		}

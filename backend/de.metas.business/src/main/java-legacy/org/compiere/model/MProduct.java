@@ -1,24 +1,31 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2020 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import de.metas.organization.OrgId;
+import de.metas.product.ProductCategoryId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
@@ -47,9 +54,6 @@ import de.metas.util.Services;
  */
 public class MProduct extends X_M_Product
 {
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 285926961771269935L;
 
 	@Deprecated
@@ -231,8 +235,10 @@ public class MProduct extends X_M_Product
 	 */
 	public boolean isCreateAsset()
 	{
-		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
-		return pc.getA_Asset_Group_ID() != 0;
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(getM_Product_Category_ID());
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final I_M_Product_Category pc = productDAO.getProductCategoryById(productCategoryId);
+		return pc.getA_Asset_Group_ID() > 0;
 	}	// isCreated
 
 	/**
@@ -242,8 +248,10 @@ public class MProduct extends X_M_Product
 	 */
 	public boolean isOneAssetPerUOM()
 	{
-		MProductCategory pc = MProductCategory.get(getCtx(), getM_Product_Category_ID());
-		if (pc.getA_Asset_Group_ID() == 0)
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(getM_Product_Category_ID());
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final I_M_Product_Category pc = productDAO.getProductCategoryById(productCategoryId);
+		if (pc.getA_Asset_Group_ID() <= 0)
 		{
 			return false;
 		}
@@ -312,33 +320,22 @@ public class MProduct extends X_M_Product
 		// New - Acct, Tree, Old Costing
 		if (newRecord)
 		{
-			insert_Accounting(I_M_Product_Acct.Table_Name,
-					I_M_Product_Category_Acct.Table_Name,
-					"p.M_Product_Category_ID=" + getM_Product_Category_ID());
+			if (this.getDynAttribute(PO.DYNATTR_CopyRecordSupport) == null)
+			{
+				insert_Accounting(I_M_Product_Acct.Table_Name,
+								  I_M_Product_Category_Acct.Table_Name,
+								  "p.M_Product_Category_ID=" + getM_Product_Category_ID());
+			}
+			else
+			{
+				log.info("This M_Product is created via CopyRecordSupport; -> don't insert the default _acct records");
+			}
 			insert_Tree(X_AD_Tree.TREETYPE_Product);
 		}
 		
-		if(newRecord)
-		{
-			createOrUpdateProductPlanningsForSelector();
-		}
-
 		return true;
 	}	// afterSave
 	
-	private void createOrUpdateProductPlanningsForSelector()
-	{
-		final ProductPlanningSchemaSelector productPlanningSchemaSelector = ProductPlanningSchemaSelector.ofNullableCode(getM_ProductPlanningSchema_Selector());
-		if (productPlanningSchemaSelector == null)
-		{
-			return;
-		}
-		
-		final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
-
-		final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
-		productPlanningSchemaBL.createOrUpdateProductPlanningsForSelector(productId, productPlanningSchemaSelector);
-	}
 
 	@Override
 	protected boolean beforeDelete()

@@ -1,23 +1,5 @@
 package de.metas.handlingunits.reservation;
 
-import static de.metas.handlingunits.HUAssertions.assertThat;
-import static de.metas.handlingunits.HUConditions.isAggregate;
-import static de.metas.handlingunits.HUConditions.isNotAggregate;
-import static java.math.BigDecimal.ONE;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.assertj.core.api.Condition;
-import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -30,6 +12,22 @@ import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.assertj.core.api.Condition;
+import org.compiere.model.I_C_UOM;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.handlingunits.HUAssertions.assertThat;
+import static de.metas.handlingunits.HUConditions.isAggregate;
+import static de.metas.handlingunits.HUConditions.isNotAggregate;
+import static java.math.BigDecimal.ONE;
 
 /*
  * #%L
@@ -56,8 +54,6 @@ import de.metas.util.Services;
 @ExtendWith(AdempiereTestWatcher.class)
 public class HUReservationServiceTest
 {
-	private static final BigDecimal TWOHUNDRET = new BigDecimal("200");
-
 	private LUTUProducerDestinationTestSupport data;
 
 	private HUReservationService huReservationService;
@@ -68,8 +64,6 @@ public class HUReservationServiceTest
 
 	private IHandlingUnitsDAO handlingUnitsDAO;
 
-	private HUReservationRepository huReservationRepository;
-
 	@BeforeEach
 	public void init()
 	{
@@ -77,7 +71,7 @@ public class HUReservationServiceTest
 
 		data = new LUTUProducerDestinationTestSupport();
 
-		huReservationRepository = new HUReservationRepository();
+		final HUReservationRepository huReservationRepository = new HUReservationRepository();
 
 		huReservationService = new HUReservationService(huReservationRepository);
 		huReservationService.setHuTransformServiceSupplier(() -> HUTransformService.newInstance(data.helper.getHUContext()));
@@ -94,7 +88,7 @@ public class HUReservationServiceTest
 		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
 
 		final ReserveHUsRequest request = ReserveHUsRequest.builder()
-				.salesOrderLineId(OrderLineId.ofRepoId(20))
+				.documentRef(HUReservationDocRef.ofSalesOrderLineId(OrderLineId.ofRepoId(20)))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
 				.qtyToReserve(Quantity.of(ONE, cuUOM))
 				.productId(data.helper.pTomatoProductId)
@@ -145,16 +139,16 @@ public class HUReservationServiceTest
 		final I_M_HU lu = handlingUnitsBL.getTopLevelParent(data.mkAggregateHUWithTotalQtyCU("200"));
 
 		final ReserveHUsRequest firstRequest = ReserveHUsRequest.builder()
-				.salesOrderLineId(OrderLineId.ofRepoId(20))
+				.documentRef(HUReservationDocRef.ofSalesOrderLineId(OrderLineId.ofRepoId(20)))
 				.huId(HuId.ofRepoId(lu.getM_HU_ID()))
-				.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
+				.qtyToReserve(Quantity.of("200", cuUOM))
 				.productId(data.helper.pTomatoProductId)
 				.build();
 
 		// invoke the method under test
 		final HUReservation result = huReservationService.makeReservation(firstRequest).get();
 
-		assertThat(result.getReservedQtySum().toBigDecimal()).isEqualByComparingTo(TWOHUNDRET);
+		assertThat(result.getReservedQtySum().toBigDecimal()).isEqualByComparingTo("200");
 
 		// final Map<HuId, Quantity> vhuId2reservedQtys = result.getVhuId2reservedQtys();
 		assertThat(result.getVhuIds()).hasSize(5);
@@ -186,24 +180,24 @@ public class HUReservationServiceTest
 		// First reservation request
 		{
 			final ReserveHUsRequest firstRequest = ReserveHUsRequest.builder()
-					.salesOrderLineId(OrderLineId.ofRepoId(20))
+					.documentRef(HUReservationDocRef.ofSalesOrderLineId(OrderLineId.ofRepoId(20)))
 					.huId(HuId.ofRepoId(lu.getM_HU_ID()))
-					.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
+					.qtyToReserve(Quantity.of("200", cuUOM))
 					.productId(data.helper.pTomatoProductId)
 					.build();
 
 			// invoke the method under test
 			final HUReservation firstResult = huReservationService.makeReservation(firstRequest).get();
-			assertThat(firstResult.getReservedQtySum().toBigDecimal()).isEqualByComparingTo(TWOHUNDRET); // guard
+			assertThat(firstResult.getReservedQtySum().toBigDecimal()).isEqualByComparingTo("200"); // guard
 		}
 
 		//
 		// Second reservation request
 		{
 			final ReserveHUsRequest secondRequest = ReserveHUsRequest.builder()
-					.salesOrderLineId(OrderLineId.ofRepoId(20))
+					.documentRef(HUReservationDocRef.ofSalesOrderLineId(OrderLineId.ofRepoId(20)))
 					.huId(HuId.ofRepoId(lu.getM_HU_ID()))
-					.qtyToReserve(Quantity.of(TWOHUNDRET, cuUOM))
+					.qtyToReserve(Quantity.of("200", cuUOM))
 					.productId(ProductId.ofRepoId(data.helper.pTomato.getM_Product_ID()))
 					.build();
 

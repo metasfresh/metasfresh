@@ -1,0 +1,25 @@
+# --------------------------------------------------------------------------------
+# HTTP server (tomcat)
+# --------------------------------------------------------------------------------
+server:
+  port: 9090
+
+info:
+  app:
+    name: metasfresh-admin
+    title: metasfresh Spring Boot Admin web application
+
+spring:
+  cloud:
+    discovery:
+      client:
+        simple:
+          instances:
+            app:
+              - uri: http://localhost:8181
+                metadata:
+                  management.context-path: /
+            webapi:      
+              - uri: http://localhost:8080
+                metadata:
+                  management.context-path: /

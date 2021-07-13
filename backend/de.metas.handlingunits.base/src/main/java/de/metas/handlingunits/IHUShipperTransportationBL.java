@@ -1,5 +1,22 @@
 package de.metas.handlingunits;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
+import de.metas.handlingunits.impl.CreatePackagesForInOutRequest;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Package;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+
 /*
  * #%L
  * de.metas.handlingunits.base
@@ -22,21 +39,6 @@ package de.metas.handlingunits;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.shipping.model.I_M_ShipperTransportation;
-import de.metas.shipping.model.I_M_ShippingPackage;
-import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Package;
-
-import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
 public interface IHUShipperTransportationBL extends ISingletonService
 {
 	/**
@@ -53,7 +55,9 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	 * It is likely that you should use {@link #addHUsToShipperTransportation(ShipperTransportationId, Collection)} instead of this method.
 	 */
 	@NonNull
-	ImmutableList<I_M_Package> addInOutWithoutHUToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final ImmutableList<de.metas.inout.model.I_M_InOut> inOuts);
+	ImmutableList<I_M_Package> addInOutWithoutHUToShipperTransportation(
+			@NonNull final ShipperTransportationId shipperTransportationId,
+			@NonNull final ImmutableList<CreatePackagesForInOutRequest> requests);
 
 	/**
 	 * Generates Material Shipments from previously enqueued HUs to shipper transportation.
@@ -81,4 +85,12 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	 */
 	@Nullable
 	I_M_ShipperTransportation getCommonM_ShipperTransportationOrNull(Collection<I_M_HU> hus);
+
+	@NonNull
+	ShipperTransportationId addTrackingInfosForInOutWithoutHU(AddTrackingInfosForInOutWithoutHUReq req);
+
+	@NonNull
+	I_M_ShipperTransportation getById(ShipperTransportationId shipperTransportationId);
+
+	void processShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId);
 }

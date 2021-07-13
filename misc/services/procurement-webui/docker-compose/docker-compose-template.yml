@@ -1,0 +1,65 @@
+version: '2.4'
+services:
+  rabbitmq:
+    image: ${dockerImage.procurement_rabbitmq}
+    ports:
+      - 5674:5672
+      - 15674:15672
+    restart: always
+    environment:
+      # these two are used to set the user passwords on rabbitmq startup
+      - RABBITMQ_PROCUREMENT_WEBUI_PASSWORD=procurement_webui_pw
+      - RABBITMQ_PROCUREMENT_MF_PASSWORD=procurement_mf_pw
+    volumes:
+      # the startup script copies default settings files to this folder, but does not overwrite existing files
+      - ./volumes/rabbitmq/configs:/etc/rabbitmq:rw
+    networks:
+      - rmq_backend
+  nginx:
+    image: ${dockerImage.procurement_nginx}
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "25674:25672"
+    volumes:
+      - ./volumes/nginx/certs:/etc/nginx/ssl:ro
+      - ./volumes/nginx/stream.conf.d:/opt/nginx/stream.conf.d:ro
+    networks:
+      - rmq_backend
+  db:
+    image: postgres:13.1
+    restart: always
+    environment:
+      - POSTGRES_USER=mfprocurement
+      - POSTGRES_PASSWORD=xYjloQKHPfqgKSHbNzgp
+      - POSTGRES_DB=mfprocurement
+    networks:
+      - rmq_backend
+    volumes:
+      - ./volumes/db:/var/lib/postgresql/data
+    ports:
+      - "25434:5432"
+  backend:
+    image: ${dockerImage.procurement_backend}
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db/mfprocurement
+      - SPRING_DATASOURCE_USERNAME=mfprocurement
+      - SPRING_DATASOURCE_PASSWORD=xYjloQKHPfqgKSHbNzgp
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=procurement_webui
+      - SPRING_RABBITMQ_PASSWORD=procurement_webui_pw
+#      - JAVA_TOOL_OPTIONS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:8793
+    ports:
+      - "8082:8082"
+#      - "8793:8793"
+    networks:
+      - rmq_backend
+  frontend:
+    image: ${dockerImage.procurement_frontend}
+    ports:
+      - "127.0.0.1:8085:80"
+    networks:
+      - rmq_backend
+networks:
+  rmq_backend:

@@ -22,7 +22,7 @@ package de.metas.document.archive.api.impl;
  * #L%
  */
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.util.List;
 import java.util.Properties;
@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,7 +51,6 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.model.X_C_Doc_Outbound_Log_Line;
-import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -156,7 +156,7 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				//
 				// Filter the ones with PDF export
 				//
-				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_Action, X_C_Doc_Outbound_Log_Line.ACTION_PdfExport);
+				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_Action, ArchiveAction.PDF_EXPORT.getCode());
 
 		//
 		// Order by latest log line first

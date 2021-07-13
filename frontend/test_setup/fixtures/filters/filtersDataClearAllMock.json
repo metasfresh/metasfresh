@@ -1,0 +1,136 @@
+{
+  "filterId": "default",
+  "caption": "Default",
+  "inlineRenderMode": "button",
+  "parametersLayoutType": "panel",
+  "parameters": [
+    {
+      "caption": "Date Promised",
+      "parameterName": "DatePromised",
+      "widgetType": "Date",
+      "range": true,
+      "defaultValue": null,
+      "defaultValueTo": null,
+      "mandatory": false,
+      "displayed": true,
+      "readonly": false,
+      "type": "primary",
+      "field": "DatePromised"
+    },
+    {
+      "caption": "Business Partner ",
+      "parameterName": "C_BPartner_ID",
+      "widgetType": "Lookup",
+      "range": false,
+      "defaultValue": null,
+      "defaultValueTo": null,
+      "mandatory": false,
+      "displayed": true,
+      "readonly": false,
+      "type": "primary",
+      "value": {
+        "key": "2156427",
+        "caption": "1000001_RelationPartner",
+        "description": "1000001_RelationPartner"
+      },
+      "valueTo": "",
+      "field": "C_BPartner_ID"
+    },
+    {
+      "caption": "No.",
+      "parameterName": "DocumentNo",
+      "widgetType": "Text",
+      "range": false,
+      "defaultValue": null,
+      "defaultValueTo": null,
+      "mandatory": false,
+      "displayed": true,
+      "readonly": false,
+      "type": "primary",
+      "field": "DocumentNo"
+    },
+    {
+      "caption": "Order Reference",
+      "parameterName": "POReference",
+      "widgetType": "Text",
+      "range": false,
+      "defaultValue": null,
+      "defaultValueTo": null,
+      "mandatory": false,
+      "displayed": true,
+      "readonly": false,
+      "type": "primary",
+      "field": "POReference"
+    },
+    {
+      "caption": "Document Type",
+      "parameterName": "C_DocType_ID",
+      "widgetType": "List",
+      "range": false,
+      "defaultValue": null,
+      "defaultValueTo": null,
+      "mandatory": false,
+      "displayed": true,
+      "readonly": false,
+      "type": "primary",
+      "field": "C_DocType_ID"
+    },
+    {
+      "caption": "Document Status",
+      "parameterName": "DocStatus",
+      "widgetType": "List",
+      "range": false,
+      "defaultValue": null,
+      "defaultValueTo": null,
+      "mandatory": false,
+      "displayed": true,
+      "readonly": false,
+      "type": "primary",
+      "field": "DocStatus"
+    },
+    {
+      "caption": "Created By",
+      "parameterName": "CreatedBy",
+      "widgetType": "List",
+      "range": false,
+      "defaultValue": null,
+      "defaultValueTo": null,
+      "mandatory": false,
+      "displayed": true,
+      "readonly": false,
+      "type": "primary",
+      "field": "CreatedBy"
+    },
+    {
+      "caption": "Organisation",
+      "parameterName": "AD_Org_ID",
+      "widgetType": "Lookup",
+      "range": false,
+      "defaultValue": null,
+      "defaultValueTo": null,
+      "mandatory": false,
+      "displayed": true,
+      "readonly": false,
+      "type": "primary",
+      "field": "AD_Org_ID"
+    },
+    {
+      "caption": "Tour",
+      "parameterName": "M_Tour_ID",
+      "widgetType": "Lookup",
+      "range": false,
+      "defaultValue": null,
+      "defaultValueTo": null,
+      "mandatory": false,
+      "displayed": true,
+      "readonly": false,
+      "type": "primary",
+      "field": "M_Tour_ID"
+    }
+  ],
+  "debugProperties": {
+    "sortNo": 10000
+  },
+  "sortNo": 10000,
+  "isActive": true
+}

@@ -1,6 +1,5 @@
 import React from 'react';
 import { shallow, mount } from 'enzyme';
-import merge from 'merge';
 
 import tableHeaderProps from '../../../../test_setup/fixtures/table/table_header.json';
 
@@ -47,5 +46,29 @@ describe('TableHeader', () => {
     const html = wrapperTableCMenu.html();
 
     expect(html).toContain(`<th class="indent"></th>`);
+  });
+
+  it('should call `onTableSort` when cell is clicked', () => {
+    const onSortTableSpy = jest.fn();
+    const localProps = {
+      ...props,
+      onSortTable: onSortTableSpy,
+      setActiveSort: jest.fn(),
+      deselect: jest.fn(),
+    };
+
+    const wrapper = mount(
+      <table>
+        <thead>
+          <TableHeader {...localProps} />
+        </thead>
+      </table>
+    );
+    const html = wrapper.html();
+
+    expect(html).toContain('sort-menu');
+    expect(wrapper.find(`.th-caption[title="${tableHeaderProps.cols[0].description}"]`).length).toBe(1);
+    wrapper.find(`.th-caption[title="${tableHeaderProps.cols[0].description}"]`).simulate('click')
+    expect(onSortTableSpy).toHaveBeenCalled();
   });
 });

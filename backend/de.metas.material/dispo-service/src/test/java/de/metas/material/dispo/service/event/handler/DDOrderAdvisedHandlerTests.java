@@ -1,37 +1,16 @@
 package de.metas.material.dispo.service.event.handler;
 
-import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
-import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.ORG_ID;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptorWithProductId;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
@@ -47,6 +26,31 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import lombok.NonNull;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
+import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.ORG_ID;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptorWithProductId;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -105,15 +109,25 @@ public class DDOrderAdvisedHandlerTests
 
 	private DDOrderAdvisedHandler ddOrderAdvisedHandler;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
-		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval();
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService();
+		final CandidateRepositoryRetrieval candidateRepository = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		final SupplyProposalEvaluator supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepository);
 
 		final AvailableToPromiseRepository availableToPromiseRepository = new AvailableToPromiseRepository();
@@ -121,13 +135,15 @@ public class DDOrderAdvisedHandlerTests
 				candidateRepository,
 				candidateRepositoryCommands);
 
+		final SupplyCandidateHandler supplyCandiateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
+
 		final DemandCandiateHandler demandCandiateHandler = new DemandCandiateHandler(
 				candidateRepository,
 				candidateRepositoryCommands,
 				postMaterialEventService,
 				availableToPromiseRepository,
-				stockCandidateService);
-		final SupplyCandidateHandler supplyCandiateHandler = new SupplyCandidateHandler(candidateRepositoryCommands, stockCandidateService);
+				stockCandidateService,
+				supplyCandiateHandler);
 		final CandidateChangeService candidateChangeService = new CandidateChangeService(ImmutableList.of(
 				demandCandiateHandler,
 				supplyCandiateHandler));
@@ -159,19 +175,19 @@ public class DDOrderAdvisedHandlerTests
 				.toWarehouseId(toWarehouseId)
 				.supplyRequiredDescriptor(supplyRequiredDescriptor)
 				.ddOrder(DDOrder.builder()
-						.orgId(ORG_ID)
-						.datePromised(t2)
-						.plantId(plantId)
-						.productPlanningId(productPlanningId)
-						.shipperId(shipperId)
-						.line(DDOrderLine.builder()
-								.productDescriptor(createProductDescriptor())
-								.bPartnerId(BPARTNER_ID.getRepoId())
-								.qty(BigDecimal.TEN)
-								.durationDays(1)
-								.networkDistributionLineId(networkDistributionLineId)
-								.build())
-						.build())
+								 .orgId(ORG_ID)
+								 .datePromised(t2)
+								 .plantId(plantId)
+								 .productPlanningId(productPlanningId)
+								 .shipperId(shipperId)
+								 .line(DDOrderLine.builder()
+											   .productDescriptor(createProductDescriptor())
+											   .bPartnerId(BPARTNER_ID.getRepoId())
+											   .qty(BigDecimal.TEN)
+											   .durationDays(1)
+											   .networkDistributionLineId(networkDistributionLineId)
+											   .build())
+								 .build())
 				.build();
 		event.validate();
 		ddOrderAdvisedHandler.handleEvent(event);
@@ -236,7 +252,7 @@ public class DDOrderAdvisedHandlerTests
 	}
 
 	/**
-	 * Like {@link #handleDistributionAdvisedEvent_with_two_events_chronological()},
+	 * Like {@link #handleDistributionAdvisedEvent_with_one_event()},
 	 * but intermediateWarehouseId => toWarehouseId and then fromWarehouseId => intermediateWarehouseId (i.e. first t2 and then t3),
 	 * because that's the sequence in which the planner would provide the advise-events to us.
 	 */
@@ -253,9 +269,9 @@ public class DDOrderAdvisedHandlerTests
 	{
 		final int durationTwoDays = 2; // => t3 minus 2days = t2 (expected date of the demand candidate)
 		adviseDistributionFromToStartDuration(ddOrderAdvisedHandler, intermediateWarehouseId, toWarehouseId,
-				t3, // => expected date of the supply candidate
-				durationTwoDays,
-				50);
+											  t3, // => expected date of the supply candidate
+											  durationTwoDays,
+											  50);
 		{ // guards
 			assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);
 			final I_MD_Candidate supplyRecord = DispoTestUtils.filter(CandidateType.SUPPLY).get(0);
@@ -272,9 +288,9 @@ public class DDOrderAdvisedHandlerTests
 
 		final int durationOneDay = 1; // => t2 minus 1day = t1 (expected date of the demand candidate)
 		adviseDistributionFromToStartDuration(ddOrderAdvisedHandler, fromWarehouseId, intermediateWarehouseId,
-				t2, // => expected date of the supply candidate
-				durationOneDay,
-				demandCandidateId);
+											  t2, // => expected date of the supply candidate
+											  durationOneDay,
+											  demandCandidateId);
 
 		assertStateAfterTwoDistributionAdvisedEvents();
 	}
@@ -359,19 +375,19 @@ public class DDOrderAdvisedHandlerTests
 				.fromWarehouseId(fromWarehouseId)
 				.toWarehouseId(toWarehouseId)
 				.ddOrder(DDOrder.builder()
-						.orgId(ORG_ID)
-						.datePromised(start)
-						.plantId(plantId)
-						.productPlanningId(productPlanningId)
-						.shipperId(shipperId)
-						.line(DDOrderLine.builder()
-								.salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
-								.productDescriptor(createProductDescriptor())
-								.qty(BigDecimal.TEN)
-								.networkDistributionLineId(networkDistributionLineId)
-								.durationDays(durationDays)
-								.build())
-						.build())
+								 .orgId(ORG_ID)
+								 .datePromised(start)
+								 .plantId(plantId)
+								 .productPlanningId(productPlanningId)
+								 .shipperId(shipperId)
+								 .line(DDOrderLine.builder()
+											   .salesOrderLineId(supplyRequiredDescriptor.getOrderLineId())
+											   .productDescriptor(createProductDescriptor())
+											   .qty(BigDecimal.TEN)
+											   .networkDistributionLineId(networkDistributionLineId)
+											   .durationDays(durationDays)
+											   .build())
+								 .build())
 				.build();
 		event.validate();
 		ddOrderAdvisedHandler.handleEvent(event);

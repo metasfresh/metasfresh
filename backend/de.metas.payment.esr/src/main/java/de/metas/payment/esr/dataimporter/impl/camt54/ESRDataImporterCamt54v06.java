@@ -19,6 +19,9 @@ import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
 
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.money.CurrencyId;
@@ -35,6 +38,7 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
@@ -92,6 +96,7 @@ import lombok.NonNull;
  */
 public class ESRDataImporterCamt54v06 
 {
+	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
 
 	private final I_ESR_Import header;
 	private final MultiVersionStreamReaderDelegate xsr;
@@ -205,11 +210,15 @@ public class ESRDataImporterCamt54v06
 	{
 		final List<ESRTransaction> transactions = new ArrayList<>();
 
+		int countQRR = 0;
+		
 		for (final EntryTransaction8 txDtl : ntryDtl.getTxDtls())
 		{
 			final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
 
 			new ReferenceStringHelper().extractAndSetEsrReference(txDtl, trxBuilder);
+			
+			new ReferenceStringHelper().extractAndSetType(txDtl, trxBuilder);
 
 			verifyTransactionCurrency(txDtl, trxBuilder);
 
@@ -222,6 +231,17 @@ public class ESRDataImporterCamt54v06
 					.transactionKey(mkTrxKey(txDtl))
 					.build();
 			transactions.add(esrTransaction);
+			
+
+			if (ESRType.TYPE_QRR.equals(esrTransaction.getType()))
+			{
+				countQRR++;
+			}
+		}
+		
+		if (countQRR != 0 && countQRR != transactions.size())
+		{
+				throw new AdempiereException(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES);
 		}
 		return transactions;
 	}
@@ -320,7 +340,9 @@ public class ESRDataImporterCamt54v06
 			@NonNull final EntryTransaction8 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
-		if (header.getC_BP_BankAccount_ID() <= 0)
+		int bankAccountRecordId = header.getC_BP_BankAccount_ID();
+
+		if (bankAccountRecordId <= 0)
 		{
 			return; // nothing to do
 		}
@@ -328,8 +350,10 @@ public class ESRDataImporterCamt54v06
 		// TODO: this does not really belong into the loader! move it to the matcher code.
 		final ActiveOrHistoricCurrencyAndAmount transactionDetailAmt = txDtls.getAmt();
 
-		final CurrencyId currencyId = CurrencyId.ofRepoId(header.getC_BP_BankAccount().getC_Currency_ID());
-		final String headerCurrencyISO = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId).toThreeLetterCode(); 
+		final BankAccount bankAccount = bpBankAccountRepo.getById(BankAccountId.ofRepoId(bankAccountRecordId));
+		final CurrencyId currencyId = bankAccount.getCurrencyId();
+
+		final String headerCurrencyISO = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId).toThreeLetterCode();
 		if (!headerCurrencyISO.equalsIgnoreCase(transactionDetailAmt.getCcy()))
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);

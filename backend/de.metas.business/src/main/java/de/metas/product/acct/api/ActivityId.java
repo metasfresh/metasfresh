@@ -8,6 +8,8 @@ import de.metas.util.lang.RepoIdAware;
 
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.business
@@ -41,12 +43,13 @@ public class ActivityId implements RepoIdAware
 		return new ActivityId(repoId);
 	}
 
+	@Nullable
 	public static ActivityId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new ActivityId(repoId) : null;
 	}
 
-	public static int toRepoId(final ActivityId id)
+	public static int toRepoId(@Nullable final ActivityId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

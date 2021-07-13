@@ -2,6 +2,8 @@ package de.metas.security;
 
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -24,16 +26,17 @@ import org.adempiere.exceptions.AdempiereException;
  * #L%
  */
 
-@SuppressWarnings("serial")
 public class UserNotAuthorizedException extends AdempiereException
 {
-	public UserNotAuthorizedException(final String authTokenString, final Throwable cause)
+	public UserNotAuthorizedException(
+			@SuppressWarnings("unused") @Nullable final String authTokenString,
+			@Nullable final Throwable cause)
 	{
-		super(buildMsg(authTokenString, cause), cause);
+		super(buildMsg(cause), cause);
 		// setParameter("authTokenString", authTokenString); // NOTE: don't include token in message because it might be a security issue
 	}
 
-	private static String buildMsg(final String authTokenString, final Throwable cause)
+	private static String buildMsg(@Nullable final Throwable cause)
 	{
 		final StringBuilder msg = new StringBuilder();
 		msg.append("Token not authorized.");

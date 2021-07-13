@@ -48,7 +48,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.vertical.pharma.securpharm.actions.SecurPharmAction;
 import de.metas.vertical.pharma.securpharm.client.schema.JsonAPIResponse;
 import de.metas.vertical.pharma.securpharm.client.schema.JsonPackage;

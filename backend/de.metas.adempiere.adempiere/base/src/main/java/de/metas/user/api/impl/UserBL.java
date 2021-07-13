@@ -1,23 +1,8 @@
 package de.metas.user.api.impl;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.email.EMail;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
@@ -40,16 +25,38 @@ import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.hash.HashableString;
-import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 public class UserBL implements IUserBL
 {
-	private static final transient Logger logger = LogManager.getLogger(UserBL.class);
+	private static final Logger logger = LogManager.getLogger(UserBL.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
-	 * @see org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin
+	 * @see org.compiere.model.X_AD_MailConfig#CUSTOMTYPE_OrgCompiereUtilLogin
 	 */
 	private static final EMailCustomType MAILCONFIG_CUSTOMTYPE_UserPasswordReset = EMailCustomType.ofCode("L");
 
@@ -58,11 +65,41 @@ public class UserBL implements IUserBL
 
 	private MailService mailService()
 	{
-		return Adempiere.getBean(MailService.class);
+		return SpringContextHolder.instance.getBean(MailService.class);
 	}
 
 	@Override
-	public HashableString getUserPassword(final I_AD_User user)
+	public I_AD_User getById(@NonNull final UserId userId)
+	{
+		return userDAO.getById(userId);
+	}
+
+	@Override
+	public I_AD_User getByPasswordResetCode(@NonNull final String passwordResetCode)
+	{
+		return userDAO.getByPasswordResetCode(passwordResetCode);
+	}
+
+	@Override
+	public String extractUserLogin(final I_AD_User user)
+	{
+		final String login = StringUtils.trimBlankToNull(user.getLogin());
+		if (login != null)
+		{
+			return login;
+		}
+
+		final String email = StringUtils.trimBlankToNull(user.getEMail());
+		if (email != null)
+		{
+			return email;
+		}
+
+		throw new AdempiereException("Cannot extract login principal from " + user);
+	}
+
+	@Override
+	public HashableString extractUserPassword(@NonNull final I_AD_User user)
 	{
 		return HashableString.fromString(user.getPassword());
 	}
@@ -75,7 +112,7 @@ public class UserBL implements IUserBL
 			return false;
 		}
 
-		final HashableString userPassword = getUserPassword(user);
+		final HashableString userPassword = extractUserPassword(user);
 		if (userPassword == null || userPassword.isEmpty())
 		{
 			return false;
@@ -87,10 +124,8 @@ public class UserBL implements IUserBL
 	@Override
 	public void createResetPasswordByEMailRequest(final String userId)
 	{
-		final IUserDAO usersRepo = Services.get(IUserDAO.class);
-
-		final I_AD_User user = usersRepo.retrieveLoginUserByUserId(userId);
-		try (final MDCCloseable userRecordMDC = TableRecordMDC.putTableRecordReference(user))
+		final I_AD_User user = userDAO.retrieveLoginUserByUserId(userId);
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(user))
 		{
 			if (user.getAD_Client_ID() == ClientId.SYSTEM.getRepoId())
 			{
@@ -109,9 +144,8 @@ public class UserBL implements IUserBL
 			throw new AdempiereException("@NoEMailFoundForLoginName@");
 		}
 
-		final IClientDAO adClientsRepo = Services.get(IClientDAO.class);
 		final ClientId adClientId = ClientId.ofRepoId(user.getAD_Client_ID());
-		final ClientEMailConfig tenantEmailConfig = adClientsRepo.getEMailConfigById(adClientId);
+		final ClientEMailConfig tenantEmailConfig = clientDAO.getEMailConfigById(adClientId);
 
 		final MailTemplateId mailTemplateId = tenantEmailConfig.getPasswordResetMailTemplateId().orElse(null);
 		if (mailTemplateId == null)
@@ -133,7 +167,7 @@ public class UserBL implements IUserBL
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(user.getC_BPartner_ID());
 		if (bpartnerId != null)
 		{
-			final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
+			final I_C_BPartner bpartner = bpartnerDAO.getById(bpartnerId);
 			mailTextBuilder.bpartner(bpartner);
 		}
 
@@ -180,12 +214,9 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public I_AD_User resetPassword(final String passwordResetCode, final String newPassword)
+	public I_AD_User resetPassword(@NonNull final String passwordResetCode, final String newPassword)
 	{
-		Check.assumeNotNull(passwordResetCode, "passwordResetCode not null");
-
-		final IUserDAO usersRepo = Services.get(IUserDAO.class);
-		final I_AD_User user = usersRepo.getByPasswordResetCode(passwordResetCode);
+		final I_AD_User user = userDAO.getByPasswordResetCode(passwordResetCode);
 
 		user.setPasswordResetCode(null);
 		changePasswordAndSave(user, newPassword);
@@ -205,14 +236,14 @@ public class UserBL implements IUserBL
 
 		//
 		// Load the user
-		final I_AD_User user = Services.get(IUserDAO.class).getByIdInTrx(request.getUserId());
+		final I_AD_User user = userDAO.getByIdInTrx(request.getUserId());
 
 		//
 		// Make sure the old password is matching (if required)
 		if (isOldPasswordRequired(request))
 		{
 			final HashableString oldPassword = request.getOldPassword();
-			final HashableString userPassword = getUserPassword(user);
+			final HashableString userPassword = extractUserPassword(user);
 			if (HashableString.isEmpty(userPassword) && !HashableString.isEmpty(oldPassword))
 			{
 				throw new AdempiereException("@OldPasswordNoMatch@")
@@ -229,7 +260,7 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public void changePasswordAndSave(final I_AD_User user, final String newPassword)
+	public void changePasswordAndSave(final I_AD_User user, @Nullable final String newPassword)
 	{
 		assertValidPassword(newPassword);
 
@@ -248,51 +279,45 @@ public class UserBL implements IUserBL
 		}
 
 		// If logged in as Administrator, there is no need to enter the old password
-		final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-		if (userRolePermissionsDAO.isAdministrator(request.getContextClientId(), request.getContextUserId(), request.getContextDate()))
-		{
-			return false;
-		}
-
-		return true; // old password is required
+		return !userRolePermissionsDAO.isAdministrator(request.getContextClientId(), request.getContextUserId(), request.getContextDate());// old password is required
 	}
 
-	private void assertValidPassword(final String passwordPlain)
+	private void assertValidPassword(@Nullable final String passwordPlain)
 	{
 		final int minPasswordLength = getMinPasswordLength();
-		if (Check.isEmpty(passwordPlain))
+		if (passwordPlain == null || Check.isEmpty(passwordPlain))
 		{
-			throw new AdempiereException(MSG_INCORRECT_PASSWORD, new Object[] { minPasswordLength })
+			throw new AdempiereException(MSG_INCORRECT_PASSWORD, minPasswordLength)
 					.setParameter("reason", "empty/null password");
 		}
 
 		if (passwordPlain.contains(" "))
 		{
-			throw new AdempiereException(MSG_INCORRECT_PASSWORD, new Object[] { minPasswordLength })
+			throw new AdempiereException(MSG_INCORRECT_PASSWORD, minPasswordLength)
 					.setParameter("reason", "spaces are not allowed");
 		}
 
 		if (passwordPlain.length() < minPasswordLength)
 		{
-			throw new AdempiereException(MSG_INCORRECT_PASSWORD, new Object[] { minPasswordLength });
+			throw new AdempiereException(MSG_INCORRECT_PASSWORD, minPasswordLength);
 		}
 	}
 
 	private int getMinPasswordLength()
 	{
-		return Services.get(ISysConfigBL.class).getIntValue(SYS_MIN_PASSWORD_LENGTH, 8);
+		return sysConfigBL.getIntValue(SYS_MIN_PASSWORD_LENGTH, 8);
 	}
 
 	@Override
-	public String buildContactName(final String firstName, final String lastName)
+	public String buildContactName(@Nullable final String firstName, @Nullable final String lastName)
 	{
 		final StringBuilder contactName = new StringBuilder();
-		if (!Check.isEmpty(lastName, true))
+		if (lastName != null && !Check.isBlank(lastName))
 		{
 			contactName.append(lastName.trim());
 		}
 
-		if (!Check.isEmpty(firstName, true))
+		if (firstName != null && !Check.isBlank(firstName))
 		{
 			if (contactName.length() > 0)
 			{
@@ -324,13 +349,14 @@ public class UserBL implements IUserBL
 			final boolean haveInvalidEMails = emails.stream().anyMatch(email -> EMailAddress.checkEMailValid(email.getAsString()) != null);
 			return !haveInvalidEMails;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			return false;
 		}
-	}	// isEMailValid
+	}    // isEMailValid
 
 	@Override
+	@Nullable
 	public ITranslatableString checkCanSendEMail(final UserEMailConfig userEmailConfig)
 	{
 		// Email
@@ -343,21 +369,21 @@ public class UserBL implements IUserBL
 		}
 
 		// STMP user/password (if SMTP authorization is required)
-		final ClientEMailConfig clientEmailConfig = Services.get(IClientDAO.class).getEMailConfigById(Env.getClientId());
+		final ClientEMailConfig clientEmailConfig = clientDAO.getEMailConfigById(Env.getClientId());
 		if (clientEmailConfig.isSmtpAuthorization())
 		{
 			// SMTP user
-			final String emailUser = userEmailConfig.getUsername();
+			final String emailUser = CoalesceUtil.firstNotEmptyTrimmed(userEmailConfig.getUsername(), clientEmailConfig.getUsername());
 			if (Check.isEmpty(emailUser, true))
 			{
-				return TranslatableStrings.constant("no STMP user configured");
+				return TranslatableStrings.constant("no SMTP user configured in AD_User or AD_Client");
 			}
 
 			// SMTP password
-			final String emailPassword = userEmailConfig.getPassword();
+			final String emailPassword = CoalesceUtil.firstNotEmptyTrimmed(userEmailConfig.getPassword(), clientEmailConfig.getPassword());
 			if (Check.isEmpty(emailPassword, false))
 			{
-				return TranslatableStrings.constant("STMP authorization is required but no STMP password configured");
+				return TranslatableStrings.constant("SMTP authorization is required but no SMTP password set in AD_User or AD_Client");
 			}
 		}
 
@@ -374,27 +400,41 @@ public class UserBL implements IUserBL
 			throw new AdempiereException(TranslatableStrings.builder()
 					.append("User cannot send emails: ")
 					.append(errmsg)
-					.build());
+					.build())
+					.appendParametersToMessage()
+					.setParameter("AD_User_ID", adUserId.getRepoId())
+					.setParameter("UserEMailConfig", userEmailConfig);
 		}
 	}
 
 	@Override
 	public Language getUserLanguage(@NonNull final I_AD_User userRecord)
 	{
-		final int bPartnerId = userRecord.getC_BPartner_ID();
-
 		final String languageStr = CoalesceUtil.coalesceSuppliers(
 				() -> userRecord.getAD_Language(),
-				() -> bPartnerId > 0 ? userRecord.getC_BPartner().getAD_Language() : null,
+				() -> getBPartnerLanguage(userRecord),
 				() -> Env.getADLanguageOrBaseLanguage());
 
 		return Language.getLanguage(languageStr);
 	}
 
+	@Nullable
+	private String getBPartnerLanguage(@NonNull final I_AD_User userRecord)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
+		if(bpartnerId == null)
+		{
+			return null;
+		}
+
+		final I_C_BPartner bpartner = bpartnerDAO.getByIdInTrx(bpartnerId);
+		return bpartner.getAD_Language();
+	}
+
 	@Override
 	public UserEMailConfig getEmailConfigById(@NonNull final UserId userId)
 	{
-		final I_AD_User userRecord = Services.get(IUserDAO.class).getById(userId);
+		final I_AD_User userRecord = userDAO.getById(userId);
 		return toUserEMailConfig(userRecord);
 	}
 

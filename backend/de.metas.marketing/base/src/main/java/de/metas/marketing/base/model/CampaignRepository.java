@@ -7,6 +7,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +15,6 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -110,7 +110,7 @@ public class CampaignRepository
 
 		if (syncResult instanceof LocalToRemoteSyncResult)
 		{
-			campaignRecord.setLastSyncOfLocalToRemote(SystemTime.asTimestamp());
+			campaignRecord.setLastSyncOfLocalToRemote(de.metas.common.util.time.SystemTime.asTimestamp());
 
 			final LocalToRemoteSyncResult localToRemoteSyncResult = (LocalToRemoteSyncResult)syncResult;
 			campaignRecord.setLastSyncStatus(localToRemoteSyncResult.getLocalToRemoteStatus().toString());

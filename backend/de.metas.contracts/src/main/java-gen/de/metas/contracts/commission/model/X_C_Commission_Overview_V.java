@@ -1,92 +1,67 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.contracts.commission.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Commission_Overview_V
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public class X_C_Commission_Overview_V extends org.compiere.model.PO implements I_C_Commission_Overview_V, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1115295879L;
+	private static final long serialVersionUID = -151577667L;
 
     /** Standard Constructor */
-    public X_C_Commission_Overview_V (Properties ctx, int C_Commission_Overview_V_ID, String trxName)
+    public X_C_Commission_Overview_V (final Properties ctx, final int C_Commission_Overview_V_ID, @Nullable final String trxName)
     {
       super (ctx, C_Commission_Overview_V_ID, trxName);
-      /** if (C_Commission_Overview_V_ID == 0)
-        {
-			setC_Commission_Overview_V_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Commission_Overview_V (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Commission_Overview_V (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Rechnungspartner.
-		@param Bill_BPartner_ID 
-		Geschäftspartner für die Rechnungsstellung
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setBill_BPartner_ID (int Bill_BPartner_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
 	{
 		if (Bill_BPartner_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_Bill_BPartner_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_Bill_BPartner_ID, Integer.valueOf(Bill_BPartner_ID));
+			set_ValueNoCheck (COLUMNNAME_Bill_BPartner_ID, Bill_BPartner_ID);
 	}
 
-	/** Get Rechnungspartner.
-		@return Geschäftspartner für die Rechnungsstellung
-	  */
 	@Override
-	public int getBill_BPartner_ID () 
+	public int getBill_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Bill_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Bill_BPartner_ID);
 	}
 
-	/** Set Zugeordneter Vertriebspartner.
-		@param C_BPartner_SalesRep_ID Zugeordneter Vertriebspartner	  */
 	@Override
-	public void setC_BPartner_SalesRep_ID (int C_BPartner_SalesRep_ID)
+	public void setC_BPartner_SalesRep_ID (final int C_BPartner_SalesRep_ID)
 	{
 		if (C_BPartner_SalesRep_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_SalesRep_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_SalesRep_ID, Integer.valueOf(C_BPartner_SalesRep_ID));
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_SalesRep_ID, C_BPartner_SalesRep_ID);
 	}
 
-	/** Get Zugeordneter Vertriebspartner.
-		@return Zugeordneter Vertriebspartner	  */
 	@Override
-	public int getC_BPartner_SalesRep_ID () 
+	public int getC_BPartner_SalesRep_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_SalesRep_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_SalesRep_ID);
 	}
 
 	@Override
@@ -96,53 +71,39 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_Commission_Instance(de.metas.contracts.commission.model.I_C_Commission_Instance C_Commission_Instance)
+	public void setC_Commission_Instance(final de.metas.contracts.commission.model.I_C_Commission_Instance C_Commission_Instance)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Commission_Instance_ID, de.metas.contracts.commission.model.I_C_Commission_Instance.class, C_Commission_Instance);
 	}
 
-	/** Set Provisionsvorgang.
-		@param C_Commission_Instance_ID Provisionsvorgang	  */
 	@Override
-	public void setC_Commission_Instance_ID (int C_Commission_Instance_ID)
+	public void setC_Commission_Instance_ID (final int C_Commission_Instance_ID)
 	{
 		if (C_Commission_Instance_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Instance_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Commission_Instance_ID, Integer.valueOf(C_Commission_Instance_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Commission_Instance_ID, C_Commission_Instance_ID);
 	}
 
-	/** Get Provisionsvorgang.
-		@return Provisionsvorgang	  */
 	@Override
-	public int getC_Commission_Instance_ID () 
+	public int getC_Commission_Instance_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Commission_Instance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Commission_Instance_ID);
 	}
 
-	/** Set Provision Übersicht.
-		@param C_Commission_Overview_V_ID Provision Übersicht	  */
 	@Override
-	public void setC_Commission_Overview_V_ID (int C_Commission_Overview_V_ID)
+	public void setC_Commission_Overview_V_ID (final int C_Commission_Overview_V_ID)
 	{
 		if (C_Commission_Overview_V_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Overview_V_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Commission_Overview_V_ID, Integer.valueOf(C_Commission_Overview_V_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Commission_Overview_V_ID, C_Commission_Overview_V_ID);
 	}
 
-	/** Get Provision Übersicht.
-		@return Provision Übersicht	  */
 	@Override
-	public int getC_Commission_Overview_V_ID () 
+	public int getC_Commission_Overview_V_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Commission_Overview_V_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Commission_Overview_V_ID);
 	}
 
 	@Override
@@ -152,31 +113,24 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_CommissionSettingsLine(de.metas.contracts.commission.model.I_C_CommissionSettingsLine C_CommissionSettingsLine)
+	public void setC_CommissionSettingsLine(final de.metas.contracts.commission.model.I_C_CommissionSettingsLine C_CommissionSettingsLine)
 	{
 		set_ValueFromPO(COLUMNNAME_C_CommissionSettingsLine_ID, de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class, C_CommissionSettingsLine);
 	}
 
-	/** Set Einstellungsdetail.
-		@param C_CommissionSettingsLine_ID Einstellungsdetail	  */
 	@Override
-	public void setC_CommissionSettingsLine_ID (int C_CommissionSettingsLine_ID)
+	public void setC_CommissionSettingsLine_ID (final int C_CommissionSettingsLine_ID)
 	{
 		if (C_CommissionSettingsLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_CommissionSettingsLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_CommissionSettingsLine_ID, Integer.valueOf(C_CommissionSettingsLine_ID));
+			set_ValueNoCheck (COLUMNNAME_C_CommissionSettingsLine_ID, C_CommissionSettingsLine_ID);
 	}
 
-	/** Get Einstellungsdetail.
-		@return Einstellungsdetail	  */
 	@Override
-	public int getC_CommissionSettingsLine_ID () 
+	public int getC_CommissionSettingsLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_CommissionSettingsLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_CommissionSettingsLine_ID);
 	}
 
 	@Override
@@ -186,97 +140,69 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_Commission_Share(de.metas.contracts.commission.model.I_C_Commission_Share C_Commission_Share)
+	public void setC_Commission_Share(final de.metas.contracts.commission.model.I_C_Commission_Share C_Commission_Share)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Commission_Share_ID, de.metas.contracts.commission.model.I_C_Commission_Share.class, C_Commission_Share);
 	}
 
-	/** Set Buchauszug.
-		@param C_Commission_Share_ID Buchauszug	  */
 	@Override
-	public void setC_Commission_Share_ID (int C_Commission_Share_ID)
+	public void setC_Commission_Share_ID (final int C_Commission_Share_ID)
 	{
 		if (C_Commission_Share_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, Integer.valueOf(C_Commission_Share_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, C_Commission_Share_ID);
 	}
 
-	/** Get Buchauszug.
-		@return Buchauszug	  */
 	@Override
-	public int getC_Commission_Share_ID () 
+	public int getC_Commission_Share_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Commission_Share_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Commission_Share_ID);
 	}
 
-	/** Set Pauschale - Vertragsperiode.
-		@param C_Flatrate_Term_ID Pauschale - Vertragsperiode	  */
 	@Override
-	public void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID)
+	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
 	{
 		if (C_Flatrate_Term_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, Integer.valueOf(C_Flatrate_Term_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
 	}
 
-	/** Get Pauschale - Vertragsperiode.
-		@return Pauschale - Vertragsperiode	  */
 	@Override
-	public int getC_Flatrate_Term_ID () 
+	public int getC_Flatrate_Term_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Flatrate_Term_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
 	}
 
-	/** Set Provisionsabrechnungskandidat.
-		@param C_Invoice_Candidate_Commission_ID Provisionsabrechnungskandidat	  */
 	@Override
-	public void setC_Invoice_Candidate_Commission_ID (int C_Invoice_Candidate_Commission_ID)
+	public void setC_Invoice_Candidate_Commission_ID (final int C_Invoice_Candidate_Commission_ID)
 	{
 		if (C_Invoice_Candidate_Commission_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Commission_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Commission_ID, Integer.valueOf(C_Invoice_Candidate_Commission_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Commission_ID, C_Invoice_Candidate_Commission_ID);
 	}
 
-	/** Get Provisionsabrechnungskandidat.
-		@return Provisionsabrechnungskandidat	  */
 	@Override
-	public int getC_Invoice_Candidate_Commission_ID () 
+	public int getC_Invoice_Candidate_Commission_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_Commission_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_Commission_ID);
 	}
 
-	/** Set Rechnungskandidat.
-		@param C_Invoice_Candidate_ID Rechnungskandidat	  */
 	@Override
-	public void setC_Invoice_Candidate_ID (int C_Invoice_Candidate_ID)
+	public void setC_Invoice_Candidate_ID (final int C_Invoice_Candidate_ID)
 	{
 		if (C_Invoice_Candidate_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, Integer.valueOf(C_Invoice_Candidate_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_ID, C_Invoice_Candidate_ID);
 	}
 
-	/** Get Rechnungskandidat.
-		@return Rechnungskandidat	  */
 	@Override
-	public int getC_Invoice_Candidate_ID () 
+	public int getC_Invoice_Candidate_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Candidate_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_ID);
 	}
 
 	@Override
@@ -286,31 +212,24 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_Invoice_Commission(org.compiere.model.I_C_Invoice C_Invoice_Commission)
+	public void setC_Invoice_Commission(final org.compiere.model.I_C_Invoice C_Invoice_Commission)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_Commission_ID, org.compiere.model.I_C_Invoice.class, C_Invoice_Commission);
 	}
 
-	/** Set Provisionsabrechnung.
-		@param C_Invoice_Commission_ID Provisionsabrechnung	  */
 	@Override
-	public void setC_Invoice_Commission_ID (int C_Invoice_Commission_ID)
+	public void setC_Invoice_Commission_ID (final int C_Invoice_Commission_ID)
 	{
 		if (C_Invoice_Commission_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Commission_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_Commission_ID, Integer.valueOf(C_Invoice_Commission_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_Commission_ID, C_Invoice_Commission_ID);
 	}
 
-	/** Get Provisionsabrechnung.
-		@return Provisionsabrechnung	  */
 	@Override
-	public int getC_Invoice_Commission_ID () 
+	public int getC_Invoice_Commission_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_Commission_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_Commission_ID);
 	}
 
 	@Override
@@ -320,34 +239,24 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_Invoice(org.compiere.model.I_C_Invoice C_Invoice)
+	public void setC_Invoice(final org.compiere.model.I_C_Invoice C_Invoice)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_ID, org.compiere.model.I_C_Invoice.class, C_Invoice);
 	}
 
-	/** Set Rechnung.
-		@param C_Invoice_ID 
-		Invoice Identifier
-	  */
 	@Override
-	public void setC_Invoice_ID (int C_Invoice_ID)
+	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, Integer.valueOf(C_Invoice_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Invoice_ID, C_Invoice_ID);
 	}
 
-	/** Get Rechnung.
-		@return Invoice Identifier
-	  */
 	@Override
-	public int getC_Invoice_ID () 
+	public int getC_Invoice_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Invoice_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
 	}
 
 	@Override
@@ -357,31 +266,24 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_InvoiceLine_Commission(org.compiere.model.I_C_InvoiceLine C_InvoiceLine_Commission)
+	public void setC_InvoiceLine_Commission(final org.compiere.model.I_C_InvoiceLine C_InvoiceLine_Commission)
 	{
 		set_ValueFromPO(COLUMNNAME_C_InvoiceLine_Commission_ID, org.compiere.model.I_C_InvoiceLine.class, C_InvoiceLine_Commission);
 	}
 
-	/** Set Provisionsabrechnungszeile.
-		@param C_InvoiceLine_Commission_ID Provisionsabrechnungszeile	  */
 	@Override
-	public void setC_InvoiceLine_Commission_ID (int C_InvoiceLine_Commission_ID)
+	public void setC_InvoiceLine_Commission_ID (final int C_InvoiceLine_Commission_ID)
 	{
 		if (C_InvoiceLine_Commission_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_Commission_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_Commission_ID, Integer.valueOf(C_InvoiceLine_Commission_ID));
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_Commission_ID, C_InvoiceLine_Commission_ID);
 	}
 
-	/** Get Provisionsabrechnungszeile.
-		@return Provisionsabrechnungszeile	  */
 	@Override
-	public int getC_InvoiceLine_Commission_ID () 
+	public int getC_InvoiceLine_Commission_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceLine_Commission_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_InvoiceLine_Commission_ID);
 	}
 
 	@Override
@@ -391,72 +293,48 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_InvoiceLine(org.compiere.model.I_C_InvoiceLine C_InvoiceLine)
+	public void setC_InvoiceLine(final org.compiere.model.I_C_InvoiceLine C_InvoiceLine)
 	{
 		set_ValueFromPO(COLUMNNAME_C_InvoiceLine_ID, org.compiere.model.I_C_InvoiceLine.class, C_InvoiceLine);
 	}
 
-	/** Set Rechnungsposition.
-		@param C_InvoiceLine_ID 
-		Rechnungszeile
-	  */
 	@Override
-	public void setC_InvoiceLine_ID (int C_InvoiceLine_ID)
+	public void setC_InvoiceLine_ID (final int C_InvoiceLine_ID)
 	{
 		if (C_InvoiceLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, Integer.valueOf(C_InvoiceLine_ID));
+			set_ValueNoCheck (COLUMNNAME_C_InvoiceLine_ID, C_InvoiceLine_ID);
 	}
 
-	/** Get Rechnungsposition.
-		@return Rechnungszeile
-	  */
 	@Override
-	public int getC_InvoiceLine_ID () 
+	public int getC_InvoiceLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_InvoiceLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_InvoiceLine_ID);
 	}
 
-	/** Set Datum.
-		@param CommissionDate 
-		Belegdatum des Provisionsauslösers
-	  */
 	@Override
-	public void setCommissionDate (java.sql.Timestamp CommissionDate)
+	public void setCommissionDate (final java.sql.Timestamp CommissionDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_CommissionDate, CommissionDate);
 	}
 
-	/** Get Datum.
-		@return Belegdatum des Provisionsauslösers
-	  */
 	@Override
-	public java.sql.Timestamp getCommissionDate () 
+	public java.sql.Timestamp getCommissionDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_CommissionDate);
+		return get_ValueAsTimestamp(COLUMNNAME_CommissionDate);
 	}
 
-	/** Set Provisionsauslöser.
-		@param CommissionTrigger_Type 
-		Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
-	  */
 	@Override
-	public void setCommissionTrigger_Type (java.lang.String CommissionTrigger_Type)
+	public void setCommissionTrigger_Type (final java.lang.String CommissionTrigger_Type)
 	{
 		set_ValueNoCheck (COLUMNNAME_CommissionTrigger_Type, CommissionTrigger_Type);
 	}
 
-	/** Get Provisionsauslöser.
-		@return Art des Dokuments, dass den Provisionsvorgang ausgelöst hat
-	  */
 	@Override
-	public java.lang.String getCommissionTrigger_Type () 
+	public java.lang.String getCommissionTrigger_Type() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_CommissionTrigger_Type);
+		return get_ValueAsString(COLUMNNAME_CommissionTrigger_Type);
 	}
 
 	@Override
@@ -466,34 +344,24 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_Order(org.compiere.model.I_C_Order C_Order)
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
 	}
 
-	/** Set Auftrag.
-		@param C_Order_ID 
-		Auftrag
-	  */
 	@Override
-	public void setC_Order_ID (int C_Order_ID)
+	public void setC_Order_ID (final int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Order_ID, Integer.valueOf(C_Order_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Order_ID, C_Order_ID);
 	}
 
-	/** Get Auftrag.
-		@return Auftrag
-	  */
 	@Override
-	public int getC_Order_ID () 
+	public int getC_Order_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
 
 	@Override
@@ -503,270 +371,192 @@ public class X_C_Commission_Overview_V extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine)
+	public void setC_OrderLine(final org.compiere.model.I_C_OrderLine C_OrderLine)
 	{
 		set_ValueFromPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class, C_OrderLine);
 	}
 
-	/** Set Auftragsposition.
-		@param C_OrderLine_ID 
-		Auftragsposition
-	  */
 	@Override
-	public void setC_OrderLine_ID (int C_OrderLine_ID)
+	public void setC_OrderLine_ID (final int C_OrderLine_ID)
 	{
 		if (C_OrderLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, Integer.valueOf(C_OrderLine_ID));
+			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, C_OrderLine_ID);
 	}
 
-	/** Get Auftragsposition.
-		@return Auftragsposition
-	  */
 	@Override
-	public int getC_OrderLine_ID () 
+	public int getC_OrderLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_OrderLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
 	}
 
-	/** Set Maßeinheit.
-		@param C_UOM_ID 
-		Maßeinheit
-	  */
 	@Override
-	public void setC_UOM_ID (int C_UOM_ID)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, Integer.valueOf(C_UOM_ID));
+			set_ValueNoCheck (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
-	/** Get Maßeinheit.
-		@return Maßeinheit
-	  */
 	@Override
-	public int getC_UOM_ID () 
+	public int getC_UOM_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
-	/** Set Hierarchie-Ebene.
-		@param LevelHierarchy Hierarchie-Ebene	  */
 	@Override
-	public void setLevelHierarchy (int LevelHierarchy)
+	public void setIsSimulation (final boolean IsSimulation)
 	{
-		set_ValueNoCheck (COLUMNNAME_LevelHierarchy, Integer.valueOf(LevelHierarchy));
+		set_ValueNoCheck (COLUMNNAME_IsSimulation, IsSimulation);
 	}
 
-	/** Get Hierarchie-Ebene.
-		@return Hierarchie-Ebene	  */
 	@Override
-	public int getLevelHierarchy () 
+	public boolean isSimulation() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_LevelHierarchy);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsBoolean(COLUMNNAME_IsSimulation);
 	}
 
-	/** Set Provisionsauslöser Zeitpunkt.
-		@param MostRecentTriggerTimestamp Provisionsauslöser Zeitpunkt	  */
 	@Override
-	public void setMostRecentTriggerTimestamp (java.sql.Timestamp MostRecentTriggerTimestamp)
+	public void setLevelHierarchy (final int LevelHierarchy)
+	{
+		set_ValueNoCheck (COLUMNNAME_LevelHierarchy, LevelHierarchy);
+	}
+
+	@Override
+	public int getLevelHierarchy() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LevelHierarchy);
+	}
+
+	@Override
+	public void setMostRecentTriggerTimestamp (final java.sql.Timestamp MostRecentTriggerTimestamp)
 	{
 		set_ValueNoCheck (COLUMNNAME_MostRecentTriggerTimestamp, MostRecentTriggerTimestamp);
 	}
 
-	/** Get Provisionsauslöser Zeitpunkt.
-		@return Provisionsauslöser Zeitpunkt	  */
 	@Override
-	public java.sql.Timestamp getMostRecentTriggerTimestamp () 
+	public java.sql.Timestamp getMostRecentTriggerTimestamp() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_MostRecentTriggerTimestamp);
+		return get_ValueAsTimestamp(COLUMNNAME_MostRecentTriggerTimestamp);
 	}
 
-	/** Set Beauftragtes Produkt.
-		@param M_Product_Order_ID Beauftragtes Produkt	  */
 	@Override
-	public void setM_Product_Order_ID (int M_Product_Order_ID)
+	public void setM_Product_Order_ID (final int M_Product_Order_ID)
 	{
 		if (M_Product_Order_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_Order_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_Order_ID, Integer.valueOf(M_Product_Order_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_Order_ID, M_Product_Order_ID);
 	}
 
-	/** Get Beauftragtes Produkt.
-		@return Beauftragtes Produkt	  */
 	@Override
-	public int getM_Product_Order_ID () 
+	public int getM_Product_Order_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Order_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_Order_ID);
 	}
 
-	/** Set % der Basispunkte.
-		@param PercentOfBasePoints % der Basispunkte	  */
 	@Override
-	public void setPercentOfBasePoints (java.math.BigDecimal PercentOfBasePoints)
+	public void setPercentOfBasePoints (final BigDecimal PercentOfBasePoints)
 	{
 		set_ValueNoCheck (COLUMNNAME_PercentOfBasePoints, PercentOfBasePoints);
 	}
 
-	/** Get % der Basispunkte.
-		@return % der Basispunkte	  */
 	@Override
-	public java.math.BigDecimal getPercentOfBasePoints () 
+	public BigDecimal getPercentOfBasePoints() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PercentOfBasePoints);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PercentOfBasePoints);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Beauftragte Basispunktzahl.
-		@param PointsBase_Forecasted Beauftragte Basispunktzahl	  */
 	@Override
-	public void setPointsBase_Forecasted (java.math.BigDecimal PointsBase_Forecasted)
+	public void setPointsBase_Forecasted (final BigDecimal PointsBase_Forecasted)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsBase_Forecasted, PointsBase_Forecasted);
 	}
 
-	/** Get Beauftragte Basispunktzahl.
-		@return Beauftragte Basispunktzahl	  */
 	@Override
-	public java.math.BigDecimal getPointsBase_Forecasted () 
+	public BigDecimal getPointsBase_Forecasted() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PointsBase_Forecasted);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PointsBase_Forecasted);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Fakturierbare Basispunktzahl.
-		@param PointsBase_Invoiceable Fakturierbare Basispunktzahl	  */
 	@Override
-	public void setPointsBase_Invoiceable (java.math.BigDecimal PointsBase_Invoiceable)
+	public void setPointsBase_Invoiceable (final BigDecimal PointsBase_Invoiceable)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsBase_Invoiceable, PointsBase_Invoiceable);
 	}
 
-	/** Get Fakturierbare Basispunktzahl.
-		@return Fakturierbare Basispunktzahl	  */
 	@Override
-	public java.math.BigDecimal getPointsBase_Invoiceable () 
+	public BigDecimal getPointsBase_Invoiceable() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PointsBase_Invoiceable);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PointsBase_Invoiceable);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Fakturierte Basispunktzahl.
-		@param PointsBase_Invoiced Fakturierte Basispunktzahl	  */
 	@Override
-	public void setPointsBase_Invoiced (java.math.BigDecimal PointsBase_Invoiced)
+	public void setPointsBase_Invoiced (final BigDecimal PointsBase_Invoiced)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsBase_Invoiced, PointsBase_Invoiced);
 	}
 
-	/** Get Fakturierte Basispunktzahl.
-		@return Fakturierte Basispunktzahl	  */
 	@Override
-	public java.math.BigDecimal getPointsBase_Invoiced () 
+	public BigDecimal getPointsBase_Invoiced() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PointsBase_Invoiced);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PointsBase_Invoiced);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Abgerechnete Punktzahl.
-		@param PointsSum_Settled Abgerechnete Punktzahl	  */
 	@Override
-	public void setPointsSum_Settled (java.math.BigDecimal PointsSum_Settled)
+	public void setPointsSum_Settled (final BigDecimal PointsSum_Settled)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsSum_Settled, PointsSum_Settled);
 	}
 
-	/** Get Abgerechnete Punktzahl.
-		@return Abgerechnete Punktzahl	  */
 	@Override
-	public java.math.BigDecimal getPointsSum_Settled () 
+	public BigDecimal getPointsSum_Settled() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PointsSum_Settled);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PointsSum_Settled);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Abzurechnende Punktzahl.
-		@param PointsSum_ToSettle Abzurechnende Punktzahl	  */
 	@Override
-	public void setPointsSum_ToSettle (java.math.BigDecimal PointsSum_ToSettle)
+	public void setPointsSum_ToSettle (final BigDecimal PointsSum_ToSettle)
 	{
 		set_ValueNoCheck (COLUMNNAME_PointsSum_ToSettle, PointsSum_ToSettle);
 	}
 
-	/** Get Abzurechnende Punktzahl.
-		@return Abzurechnende Punktzahl	  */
 	@Override
-	public java.math.BigDecimal getPointsSum_ToSettle () 
+	public BigDecimal getPointsSum_ToSettle() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PointsSum_ToSettle);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PointsSum_ToSettle);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Referenz.
-		@param POReference 
-		Referenz-Nummer des Kunden
-	  */
 	@Override
-	public void setPOReference (java.lang.String POReference)
+	public void setPOReference (final java.lang.String POReference)
 	{
 		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
 	}
 
-	/** Get Referenz.
-		@return Referenz-Nummer des Kunden
-	  */
 	@Override
-	public java.lang.String getPOReference () 
+	public java.lang.String getPOReference() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_POReference);
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
-	/** Set Menge.
-		@param QtyEntered 
-		Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
-	  */
 	@Override
-	public void setQtyEntered (java.math.BigDecimal QtyEntered)
+	public void setQtyEntered (final BigDecimal QtyEntered)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyEntered, QtyEntered);
 	}
 
-	/** Get Menge.
-		@return Die Eingegebene Menge basiert auf der gewählten Mengeneinheit
-	  */
 	@Override
-	public java.math.BigDecimal getQtyEntered () 
+	public BigDecimal getQtyEntered() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyEntered);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

@@ -1,5 +1,12 @@
 package de.metas.purchasecandidate.process;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
+import de.metas.purchasecandidate.command.CreatePurchaseOrderFromRequisitionCommand;
+import de.metas.order.process.C_Order_CreationProcess;
+import de.metas.process.Param;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 
@@ -14,6 +21,10 @@ import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrd
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.compiere.model.I_C_Order;
+
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -73,9 +84,14 @@ public class C_PurchaseCandiate_Create_PurchaseOrders
 				.map(I_C_PurchaseCandidate::getC_PurchaseCandidate_ID)
 				.map(PurchaseCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
-
-		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
+		createPurchaseOrders(purchaseCandidateIds);
 
 		return MSG_OK;
 	}
+
+	protected void createPurchaseOrders(final ImmutableSet<PurchaseCandidateId> purchaseCandidateIds)
+	{
+		C_PurchaseCandidates_GeneratePurchaseOrders.enqueue(purchaseCandidateIds);
+	}
+
 }

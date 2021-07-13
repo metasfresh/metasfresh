@@ -1,31 +1,6 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.MAccount;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
@@ -35,14 +10,19 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.ICurrencyBL;
-import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.MAccount;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Post Bank Statement Documents.
@@ -54,16 +34,15 @@ import lombok.NonNull;
  *
  * @author Jorg Janke
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
- *         <li>FR [ 2520591 ] Support multiples calendar for Org
+ * <li>FR [ 2520591 ] Support multiples calendar for Org
  * @version $Id: Doc_Bank.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
- *          <p>
- *          FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts BankAsset and BankInTransit are equal
+ * <p>
+ * FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts BankAsset and BankInTransit are equal
  * Also see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
 public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 {
-	private final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IBankStatementBL bankStatementBL = SpringContextHolder.instance.getBean(IBankStatementBL.class);
 
 	public Doc_BankStatement(final AcctDocContext ctx)
 	{
@@ -117,7 +96,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		retValue = retValue.add(getAmount(Doc.AMTTYPE_Gross));
 
 		// minus Lines
-		for (DocLine_BankStatement line : getDocLines())
+		for (final DocLine_BankStatement line : getDocLines())
 		{
 			final BigDecimal lineBalance = line.getStmtAmt();
 			retValue = retValue.subtract(lineBalance);
@@ -129,32 +108,10 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	/**
 	 * @return bank account's Org or {@link OrgId#ANY}
 	 */
-	private final OrgId getBankOrgId()
+	private OrgId getBankOrgId()
 	{
 		final BankAccount bankAccount = getBankAccount();
 		return bankAccount != null ? bankAccount.getOrgId() : OrgId.ANY;
-	}
-
-	private CurrencyConversionContext createCurrencyConversionContext(
-			@NonNull final DocLine_BankStatement line,
-			@NonNull final CurrencyId acctSchemaCurrencyId)
-	{
-		CurrencyConversionContext currencyConversionCtx = currencyBL.createCurrencyConversionContext(
-				line.getDateAcct(),
-				line.getCurrencyConversionTypeId(),
-				line.getClientId(),
-				line.getOrgId());
-
-		BigDecimal fixedCurrencyRate = line.getFixedCurrencyRate();
-		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
-		{
-			currencyConversionCtx = currencyConversionCtx.withFixedConversionRate(
-					line.getCurrencyId(),
-					acctSchemaCurrencyId,
-					fixedCurrencyRate);
-		}
-
-		return currencyConversionCtx;
 	}
 
 	private FactLineBuilder prepareBankAssetFactLine(
@@ -164,7 +121,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final AcctSchema as = fact.getAcctSchema();
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Organization
 		final BPartnerId bpartnerId = line.getBPartnerId();
-		final CurrencyConversionContext currencyConversionCtx = createCurrencyConversionContext(line, as.getCurrencyId());
+		final CurrencyConversionContext currencyConversionCtx = line.getCurrencyConversionCtx();
 
 		//
 		// BankAsset DR/CR (StmtAmt)
@@ -194,7 +151,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final ArrayList<Fact> facts = new ArrayList<>();
 
 		// Lines
-		for (DocLine_BankStatement line : getDocLines())
+		for (final DocLine_BankStatement line : getDocLines())
 		{
 			facts.addAll(createFacts(as, line));
 		}
@@ -227,11 +184,11 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	/**
 	 * Create facts for bank transfer
 	 */
-	private final List<Fact> createFacts_BankTransfer(
+	private List<Fact> createFacts_BankTransfer(
 			final AcctSchema as,
 			// final Fact fact,
 			final DocLine_BankStatement line
-	// final FactLine factLine_BankAsset
+			// final FactLine factLine_BankAsset
 	)
 	{
 		//
@@ -265,7 +222,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				.setDocLine(line)
 				.setAccount(getAccount(AccountType.BankInTransit, as))
 				.setCurrencyId(line.getCurrencyId())
-				.setCurrencyConversionCtx(line.getBankTransferCurrencyConversionCtx(as.getCurrencyId()))
+				.setCurrencyConversionCtx(line.getCurrencyConversionCtx())
 				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
 				.bpartnerIdIfNotNull(line.getBPartnerId());
 
@@ -316,7 +273,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	/**
 	 * Create facts for bank transfer's currency gain/loss
 	 */
-	private final void createFacts_BankTransfer_RealizedGainOrLoss(
+	private void createFacts_BankTransfer_RealizedGainOrLoss(
 			final Fact fact,
 			final DocLine_BankStatement line,
 			final BigDecimal amtAcct_BankAssetMinusTransferred)
@@ -386,7 +343,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	/**
 	 * Create facts for booking the payments.
 	 */
-	private final List<Fact> createFacts_Payments(
+	private List<Fact> createFacts_Payments(
 			@NonNull final AcctSchema as,
 			@NonNull final DocLine_BankStatement line)
 	{
@@ -396,7 +353,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
 
-		final CurrencyConversionContext currencyConversionCtx = createCurrencyConversionContext(line, as.getCurrencyId());
+		final CurrencyConversionContext currencyConversionCtx = line.getCurrencyConversionCtx();
 
 		final List<BankStatementLineReference> lineReferences = line.getReferences();
 		if (lineReferences.isEmpty())
@@ -486,7 +443,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				}
 				else
 				{
-					bankInTransitFactLine.setAmtSource(lineRef.getTrxAmt().toBigDecimal(), null);
+					bankInTransitFactLine.setAmtSource(lineRef.getTrxAmt().toBigDecimal().negate(), null);
 				}
 
 				bankInTransitFactLine.buildAndAdd();
@@ -500,7 +457,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 			@NonNull final AcctSchema as,
 			@NonNull final DocLine_BankStatement line)
 	{
-		BigDecimal bankFeeAmt = line.getBankFeeAmt();
+		final BigDecimal bankFeeAmt = line.getBankFeeAmt();
 		if (bankFeeAmt.signum() == 0)
 		{
 			return ImmutableList.of();

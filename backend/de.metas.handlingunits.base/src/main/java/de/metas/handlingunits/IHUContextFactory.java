@@ -39,7 +39,6 @@ public interface IHUContextFactory extends ISingletonService
 	 * <p>
 	 * Compared with {@link #createMutableHUContext(IContextAware)} this method optimizes the HU Context for HU generation/processing (i.e. enable caching etc etc).
 	 *
-	 * @param contextProvider
 	 * @return mutable HU context for <code>contextProvider</code>
 	 */
 	IMutableHUContext createMutableHUContextForProcessing(IContextAware contextProvider);
@@ -77,7 +76,6 @@ public interface IHUContextFactory extends ISingletonService
 	}
 
 	/**
-	 * @param contextProvider
 	 * @return mutable HU context for <code>contextProvider</code>
 	 */
 	IMutableHUContext createMutableHUContext(IContextAware contextProvider);
@@ -85,9 +83,7 @@ public interface IHUContextFactory extends ISingletonService
 	/**
 	 * Create an identical context but with our given "trxName".
 	 *
-	 * @param context
-	 * @param trxName
-	 * @return newly created context
+ 	 * @return newly created context
 	 */
 	IHUContext deriveWithTrxName(IHUContext context, String trxName);
 

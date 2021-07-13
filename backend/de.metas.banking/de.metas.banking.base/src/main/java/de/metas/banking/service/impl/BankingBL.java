@@ -29,10 +29,11 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.invoice.InvoiceDocBaseType;
 import org.adempiere.banking.model.I_C_Invoice;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.Constants;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.model.MRecurrentPaymentHistory;
@@ -47,7 +48,6 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class BankingBL implements IBankingBL
 {
@@ -154,7 +154,7 @@ public class BankingBL implements IBankingBL
 		final PaymentRule paymentRule = Services.get(IInvoiceBL.class).getDefaultPaymentRule();
 		invoice.setPaymentRule(paymentRule.getCode());
 
-		Services.get(IInvoiceBL.class).setDocTypeTargetId(invoice, Constants.DOCBASETYPE_AVIinvoice);
+		Services.get(IInvoiceBL.class).setDocTypeTargetId(invoice, InvoiceDocBaseType.AVInvoice);
 		invoice.saveEx();
 
 		final MInvoiceLine invoiceLine = new MInvoiceLine(invoice);

@@ -1,10 +1,16 @@
 package de.metas.product;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.OrgId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -33,10 +39,57 @@ import lombok.Value;
 public class Product
 {
 	@NonNull
+	OrgId orgId;
+
+	@NonNull
 	ProductId id;
 
 	@NonNull
 	UomId uomId;
 
+	@NonNull
+	String productNo;
+
+	@Nullable
+	ProductCategoryId productCategoryId;
+
+	@NonNull
+	ITranslatableString name;
+
+	@NonNull
+	@Builder.Default
+	ITranslatableString description = TranslatableStrings.empty();
+
+	@NonNull
+	@Builder.Default
+	ITranslatableString documentNote = TranslatableStrings.empty();
+
+	@NonNull
+	String productType;
+
+	@Nullable
+	String ean;
+
+	@Nullable
+	String gtin;
+
+	@Nullable
+	Boolean discontinued;
+
+	@Nullable
+	Boolean active;
+
+	@Nullable
 	BPartnerId manufacturerId;
+
+	@Nullable
+	String packageSize;
+
+	@Nullable
+	BigDecimal weight;
+
+	boolean stocked;
+
+	@Nullable
+	CommodityNumberId commodityNumberId;
 }

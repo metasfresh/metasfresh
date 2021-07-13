@@ -1,19 +1,3 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.acct;
 
 import de.metas.acct.api.AcctSchema;
@@ -24,6 +8,7 @@ import de.metas.acct.gljournal.IGLJournalLineBL;
 import de.metas.acct.gljournal.IGLJournalLineDAO;
 import de.metas.acct.tax.ITaxAccountable;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.quantity.Quantity;
@@ -37,6 +22,7 @@ import org.compiere.model.I_GL_Journal;
 import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +37,6 @@ import java.util.Objects;
  * </pre>
  *
  * @author Jorg Janke
- * @version $Id: Doc_GLJournal.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  */
 public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 {
@@ -118,11 +103,8 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	 * Account_DR	DR				AmtSourceDr/AmtAcctDr
 	 * Account_CR			CR		AmtSourceCr/AmtAcctCr
 	 * </pre>
-	 *
-	 * @param glJournalLine
-	 * @return
 	 */
-	private final List<DocLine_GLJournal> createDocLines_Normal(final I_GL_JournalLine glJournalLine)
+	private List<DocLine_GLJournal> createDocLines_Normal(final I_GL_JournalLine glJournalLine)
 	{
 		final List<DocLine_GLJournal> docLines = new ArrayList<>();
 
@@ -150,7 +132,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		return docLines;
 	}
 
-	private final List<DocLine_GLJournal> createDocLines_Tax(final I_GL_JournalLine glJournalLine)
+	private List<DocLine_GLJournal> createDocLines_Tax(final I_GL_JournalLine glJournalLine)
 	{
 		if (glJournalLine.isDR_AutoTaxAccount())
 		{
@@ -182,11 +164,8 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 	 * Account_CR				CR		TaxBaseAmt
 	 * Tax_Acct					CR		TaxAmt
 	 * </pre>
-	 *
-	 * @param glJournalLine
-	 * @return
 	 */
-	private final List<DocLine_GLJournal> createDocLines_Tax(final I_GL_JournalLine glJournalLine, final boolean isTaxOnDebit)
+	private List<DocLine_GLJournal> createDocLines_Tax(final I_GL_JournalLine glJournalLine, final boolean isTaxOnDebit)
 	{
 		final ITaxAccountable autoTaxRecord = glJournalLineBL.asTaxAccountable(glJournalLine, isTaxOnDebit);
 
@@ -220,7 +199,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		return docLines;
 	}
 
-	private final DocLine_GLJournal createDocLine(final I_GL_JournalLine glJournalLine)
+	private DocLine_GLJournal createDocLine(final I_GL_JournalLine glJournalLine)
 	{
 		final DocLine_GLJournal docLine = new DocLine_GLJournal(glJournalLine, this);
 		docLine.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
@@ -237,6 +216,7 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		return docLine;
 	}
 
+	@Nullable
 	private static Quantity extractQty(final I_GL_JournalLine glJournalLine)
 	{
 		final int uomId = glJournalLine.getC_UOM_ID();
@@ -312,6 +292,10 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 						line.getCurrencyId(),
 						line.getAmtSourceDr(),
 						line.getAmtSourceCr());
+				if (factLine == null)
+				{
+					continue;
+				}
 
 				factLine.setCurrencyConversionCtx(currencyConversionCtx);
 				factLine.convert();
@@ -338,13 +322,14 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 				line.getClientId(),
 				line.getOrgId());
 
-		BigDecimal fixedCurrencyRate = line.getFixedCurrencyRate();
+		final BigDecimal fixedCurrencyRate = line.getFixedCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)
 		{
-			currencyConversionCtx = currencyConversionCtx.withFixedConversionRate(
-					line.getCurrencyId(),
-					acctSchemaCurrencyId,
-					fixedCurrencyRate);
+			currencyConversionCtx = currencyConversionCtx.withFixedConversionRate(FixedConversionRate.builder()
+					.fromCurrencyId(line.getCurrencyId())
+					.toCurrencyId(acctSchemaCurrencyId)
+					.multiplyRate(fixedCurrencyRate)
+					.build());
 		}
 
 		return currencyConversionCtx;

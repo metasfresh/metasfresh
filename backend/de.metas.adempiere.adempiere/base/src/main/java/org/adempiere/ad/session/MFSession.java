@@ -32,6 +32,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -60,7 +62,7 @@ import lombok.NonNull;
 public class MFSession
 {
 	/**
-	 * New sessions receive this value until the time {@link #getHostKey()} is invoked for the first time.
+	 * New sessions receive this value until the time {@link #setHostKey(String, Properties)} is invoked for the first time.
 	 * Then, this value is replaced with the return value from {@link IHostKeyBL#getCreateHostKey()}.
 	 * We invoke the hostKeyBL late, because in the case of {@link SessionRemoteHostStorage}, the hostkey can only be determined after a successful login.
 	 */
@@ -166,16 +168,19 @@ public class MFSession
 		InterfaceWrapperHelper.save(sessionPO);
 	}
 
+	@Nullable
 	public Timestamp getLoginDate()
 	{
 		return sessionPO.getLoginDate();
 	}
 
+	@Nullable
 	public String getRemote_Addr()
 	{
 		return sessionPO.getRemote_Addr();
 	}
 
+	@Nullable
 	public String getRemote_Host()
 	{
 		return sessionPO.getRemote_Addr();
@@ -246,11 +251,6 @@ public class MFSession
 
 		setHostKey(newHostKey, ctxToUpdate);
 		return newHostKey;
-	}
-
-	public String getWebSessionId()
-	{
-		return sessionPO.getWebSession();
 	}
 
 	public void setWebSessionId(final String webSessionId)

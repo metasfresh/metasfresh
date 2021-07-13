@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.NonNull;
 import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
@@ -31,7 +32,7 @@ import de.metas.logging.LogManager;
  *  Convert SQL to Target DB
  *
  *  @author     Jorg Janke, Victor Perez
- *  
+ *
  *  @author Teo Sarca, www.arhipac.ro
  *  		<li>BF [ 2782095 ] Do not log *Access records
  *  			https://sourceforge.net/tracker/?func=detail&aid=2782095&group_id=176962&atid=879332
@@ -39,19 +40,21 @@ import de.metas.logging.LogManager;
  *  			https://sourceforge.net/tracker/?func=detail&aid=2782611&group_id=176962&atid=879332
  *  @author Teo Sarca
  *  		<li>BF [ 3137355 ] PG query not valid when contains quotes and backslashes
- *  			https://sourceforge.net/tracker/?func=detail&aid=3137355&group_id=176962&atid=879332	
+ *  			https://sourceforge.net/tracker/?func=detail&aid=3137355&group_id=176962&atid=879332
  */
 public abstract class Convert
 {
 	/** RegEx: insensitive and dot to include line end characters   */
-	public static final int         REGEX_FLAGS = Pattern.CASE_INSENSITIVE | Pattern.DOTALL;
+	static final int REGEX_FLAGS = Pattern.CASE_INSENSITIVE | Pattern.DOTALL;
+	private static final Pattern PATTERN_QUOTED_STRING = Pattern.compile("'[[^']*]*'");
+	private static final Pattern PATTERN_WHITESPACES = Pattern.compile("\\s+");
 
 	/** Last Conversion Error           */
 	protected String                  m_conversionError = null;
 
 	/**	Logger	*/
 	private static final transient Logger log = LogManager.getLogger(Convert.class);
-	
+
 
 	/**
 	 *  Convert SQL Statement (stops at first error).
@@ -82,7 +85,7 @@ public abstract class Convert
 		return m_conversionError;
 	}   //  getConversionError
 
-	
+
 	/**************************************************************************
 	 *  Conversion routine (stops at first error).
 	 *  <pre>
@@ -105,8 +108,8 @@ public abstract class Convert
 	}   //  convertIt
 
 	/**
-	 * Clean up Statement. Remove trailing spaces, carriage return and tab 
-	 * 
+	 * Clean up Statement. Remove trailing spaces, carriage return and tab
+	 *
 	 * @param statement
 	 * @return sql statement
 	 */
@@ -115,37 +118,36 @@ public abstract class Convert
 		String clean = statement.trim();
 
 		// Convert cr/lf/tab to single space
-		Matcher m = Pattern.compile("\\s+").matcher(clean);
+		Matcher m = PATTERN_WHITESPACES.matcher(clean);
 		clean = m.replaceAll(" ");
 
 		clean = clean.trim();
 		return clean;
 	} // removeComments
-	
+
 	/**
 	 * Utility method to replace quoted string with a predefined marker
-	 * @param retValue
-	 * @param retVars
-	 * @return string
 	 */
-	protected final String replaceQuotedStrings(String inputValue, final Collection<String> retVars)
+	protected final String replaceQuotedStrings(
+			@NonNull String inputValue,
+			@NonNull final Collection<String> retVars,
+			@NonNull final String nonce)
 	{
 		// save every value  
 		// Carlos Ruiz - globalqss - better matching regexp
 		retVars.clear();
-		
+
 		// First we need to replace double quotes to not be matched by regexp - Teo Sarca BF [3137355 ]
-		final String quoteMarker = "<--QUOTE"+System.currentTimeMillis()+"-->";
+		final String quoteMarker = "<--QUOTE" + nonce + "-->";
 		inputValue = inputValue.replace("''", quoteMarker);
-		
-		Pattern p = Pattern.compile("'[[^']*]*'");
-		Matcher m = p.matcher(inputValue);
+
+		Matcher m = PATTERN_QUOTED_STRING.matcher(inputValue);
 		int i = 0;
 		StringBuffer retValue = new StringBuffer(inputValue.length());
 		while (m.find()) {
 			String var = inputValue.substring(m.start(), m.end()).replace(quoteMarker, "''"); // Put back quotes, if any
 			retVars.add(var);
-			m.appendReplacement(retValue, "<--" + i + "-->");
+			m.appendReplacement(retValue, parameterPlaceholder(i, nonce));
 			i++;
 		}
 		m.appendTail(retValue);
@@ -156,23 +158,29 @@ public abstract class Convert
 
 	/**
 	 * Utility method to recover quoted string store in retVars
-	 * @param retValue
-	 * @param retVars
-	 * @return string
 	 */
-	protected final String recoverQuotedStrings(String retValue, Collection<String> retVars)
+	protected final String recoverQuotedStrings(
+			@NonNull String retValue,
+			@NonNull final Collection<String> retVars,
+			@NonNull final String nonce)
 	{
 		int i = 0;
 		for (String replacement : retVars)
 		{
 			//hengsin, special character in replacement can cause exception
 			replacement = escapeQuotedString(replacement);
-			retValue = retValue.replace("<--" + i + "-->", replacement);
+			retValue = retValue.replace(parameterPlaceholder(i, nonce), replacement);
 			i++;
 		}
 		return retValue;
 	}
-	
+
+	private static String parameterPlaceholder(final int parameterIndex, final String nonce)
+	{
+		return "<--" + parameterIndex + "-" + nonce + "-->";
+	}
+
+
 	/**
 	 * hook for database specific escape of quoted string ( if needed )
 	 * @param in
@@ -182,10 +190,10 @@ public abstract class Convert
 	{
 		return in;
 	}
-	
+
 	/**
 	 * Convert simple SQL Statement. Based on ConvertMap
-	 * 
+	 *
 	 * @param sqlStatement
 	 * @return converted Statement
 	 */
@@ -201,7 +209,7 @@ public abstract class Convert
 
 		// Carlos Ruiz - globalqss
 		// Standard Statement -- change the keys in ConvertMap
-		
+
 		String retValue = sqlStatement;
 
 		// for each iteration in the conversion map
@@ -212,14 +220,14 @@ public abstract class Convert
 			for (final Map.Entry<Pattern, String> pattern2replacement : convertMap.getPattern2ReplacementEntries())
 //			while (iter.hasNext())
 			{
-			    // replace the key on convertmap (i.e.: number by numeric)   
+			    // replace the key on convertmap (i.e.: number by numeric)
 				final Pattern regex = pattern2replacement.getKey();
 				final String replacement = pattern2replacement.getValue();
 				try
 				{
 					final Matcher matcher = regex.matcher(retValue);
 					retValue = matcher.replaceAll(replacement);
-	
+
 				}
 				catch (Exception e)
 				{
@@ -229,10 +237,10 @@ public abstract class Convert
 				}
 			}
 		}
-		
+
 		return retValue;
 	} // convertSimpleStatement
-	
+
 	/**
 	 * do convert map base conversion
 	 * @param sqlStatement
@@ -240,7 +248,7 @@ public abstract class Convert
 	 */
 	protected final String convertWithConvertMap(String sqlStatement)
 	{
-		try 
+		try
 		{
 			sqlStatement = applyConvertMap(cleanUpStatement(sqlStatement));
 		}
@@ -248,10 +256,10 @@ public abstract class Convert
 		{
 			log.warn("Failed converting {}", sqlStatement, e);
 		}
-		
+
 		return sqlStatement;
 	}
-	
+
 	/**
 	 * Get convert map for use in sql convertion
 	 * @return map
@@ -260,7 +268,7 @@ public abstract class Convert
 	{
 		return null;
 	}
-	
+
 	/**
 	 *  Convert single Statements.
 	 *  - remove comments
@@ -273,9 +281,9 @@ public abstract class Convert
 
 	/**
 	 * Mark given keyword as native.
-	 * 
+	 *
 	 * Some prefixes/suffixes can be added, but this depends on implementation.
-	 * 
+	 *
 	 * @param keyword
 	 * @return keyword with some prefix/suffix markers.
 	 */

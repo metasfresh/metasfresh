@@ -80,6 +80,14 @@ public class FactAcctBL implements IFactAcctBL
 				.setUser2_ID(fa.getUser2_ID())
 				.setUserElement1_ID(fa.getUserElement1_ID())
 				.setUserElement2_ID(fa.getUserElement2_ID())
+				.setUserElementString1(fa.getUserElementString1())
+				.setUserElementString2(fa.getUserElementString2())
+				.setUserElementString3(fa.getUserElementString3())
+				.setUserElementString4(fa.getUserElementString4())
+				.setUserElementString5(fa.getUserElementString5())
+				.setUserElementString6(fa.getUserElementString6())
+				.setUserElementString7(fa.getUserElementString7())
+
 				.build();
 	}
 
@@ -158,6 +166,34 @@ public class FactAcctBL implements IFactAcctBL
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElement2))
 		{
 			fa.setUserElement2_ID(dim.getUserElement2_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString1))
+		{
+			fa.setUserElementString1(dim.getUserElementString1());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString2))
+		{
+			fa.setUserElementString2(dim.getUserElementString2());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString3))
+		{
+			fa.setUserElementString3(dim.getUserElementString3());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString4))
+		{
+			fa.setUserElementString4(dim.getUserElementString4());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString5))
+		{
+			fa.setUserElementString5(dim.getUserElementString5());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString6))
+		{
+			fa.setUserElementString6(dim.getUserElementString6());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString7))
+		{
+			fa.setUserElementString7(dim.getUserElementString7());
 		}
 	}
 }

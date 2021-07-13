@@ -1,207 +1,190 @@
 package org.compiere.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_User
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_AD_User 
 {
 
-    /** TableName=AD_User */
-    public static final String Table_Name = "AD_User";
+	String Table_Name = "AD_User";
 
-    /** AD_Table_ID=114 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=114 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
+	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-	public org.compiere.model.I_AD_Client getAD_Client();
-
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Client>(I_AD_User.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sprache.
-	 * Sprache für diesen Eintrag
+	 * Set Language.
+	 * Language for this entity
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Language (java.lang.String AD_Language);
+	void setAD_Language (@Nullable java.lang.String AD_Language);
 
 	/**
-	 * Get Sprache.
-	 * Sprache für diesen Eintrag
+	 * Get Language.
+	 * Language for this entity
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAD_Language();
+	@Nullable java.lang.String getAD_Language();
 
-    /** Column definition for AD_Language */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_AD_Language = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "AD_Language", null);
-    /** Column name AD_Language */
-    public static final String COLUMNNAME_AD_Language = "AD_Language";
+	ModelColumn<I_AD_User, Object> COLUMN_AD_Language = new ModelColumn<>(I_AD_User.class, "AD_Language", null);
+	String COLUMNNAME_AD_Language = "AD_Language";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-	public org.compiere.model.I_AD_Org getAD_Org();
-
-	public void setAD_Org(org.compiere.model.I_AD_Org AD_Org);
-
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Org>(I_AD_User.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Buchende Organisation.
+	 * Set Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_Mapping_ID (int AD_Org_Mapping_ID);
+
+	/**
+	 * Get Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_Mapping_ID();
+
+	@Nullable org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping();
+
+	void setAD_Org_Mapping(@Nullable org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_AD_Org_Mapping> COLUMN_AD_Org_Mapping_ID = new ModelColumn<>(I_AD_User.class, "AD_Org_Mapping_ID", org.compiere.model.I_AD_Org_Mapping.class);
+	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
+
+	/**
+	 * Set Trx Organization.
 	 * Performing or initiating organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
+	void setAD_OrgTrx_ID (int AD_OrgTrx_ID);
 
 	/**
-	 * Get Buchende Organisation.
+	 * Get Trx Organization.
 	 * Performing or initiating organization
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_OrgTrx_ID();
+	int getAD_OrgTrx_ID();
 
-	public org.compiere.model.I_AD_Org getAD_OrgTrx();
-
-	public void setAD_OrgTrx(org.compiere.model.I_AD_Org AD_OrgTrx);
-
-    /** Column definition for AD_OrgTrx_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Org> COLUMN_AD_OrgTrx_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Org>(I_AD_User.class, "AD_OrgTrx_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_OrgTrx_ID */
-    public static final String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
+	String COLUMNNAME_AD_OrgTrx_ID = "AD_OrgTrx_ID";
 
 	/**
-	 * Set Ansprechpartner.
+	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	void setAD_User_ID (int AD_User_ID);
 
 	/**
-	 * Get Ansprechpartner.
+	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_ID();
+	int getAD_User_ID();
 
-    /** Column definition for AD_User_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_AD_User_ID = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "AD_User_ID", null);
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+	ModelColumn<I_AD_User, Object> COLUMN_AD_User_ID = new ModelColumn<>(I_AD_User.class, "AD_User_ID", null);
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
-	 * Set Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Set Responsible.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
+	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
 
 	/**
-	 * Get Betreuer.
-	 * Person, die bei einem fachlichen Problem vom System informiert wird.
+	 * Get Responsible.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_InCharge_ID();
+	int getAD_User_InCharge_ID();
 
-	public org.compiere.model.I_AD_User getAD_User_InCharge();
-
-	public void setAD_User_InCharge(org.compiere.model.I_AD_User AD_User_InCharge);
-
-    /** Column definition for AD_User_InCharge_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User> COLUMN_AD_User_InCharge_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User>(I_AD_User.class, "AD_User_InCharge_ID", org.compiere.model.I_AD_User.class);
-    /** Column name AD_User_InCharge_ID */
-    public static final String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
+	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
-	 * Set Adresse.
-	 * Anschrift
+	 * Set Title.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setAddress (java.lang.String Address);
+	void setAlbertaTitle (@Nullable java.lang.String AlbertaTitle);
 
 	/**
-	 * Get Adresse.
-	 * Anschrift
+	 * Get Title.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public java.lang.String getAddress();
+	@Nullable java.lang.String getAlbertaTitle();
 
-    /** Column definition for Address */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Address = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Address", null);
-    /** Column name Address */
-    public static final String COLUMNNAME_Address = "Address";
+	ModelColumn<I_AD_User, Object> COLUMN_AlbertaTitle = new ModelColumn<>(I_AD_User.class, "AlbertaTitle", null);
+	String COLUMNNAME_AlbertaTitle = "AlbertaTitle";
 
 	/**
 	 * Set Avatar.
@@ -210,7 +193,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAvatar_ID (int Avatar_ID);
+	void setAvatar_ID (int Avatar_ID);
 
 	/**
 	 * Get Avatar.
@@ -219,16 +202,14 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAvatar_ID();
+	int getAvatar_ID();
 
-	public org.compiere.model.I_AD_Image getAvatar();
+	@Nullable org.compiere.model.I_AD_Image getAvatar();
 
-	public void setAvatar(org.compiere.model.I_AD_Image Avatar);
+	void setAvatar(@Nullable org.compiere.model.I_AD_Image Avatar);
 
-    /** Column definition for Avatar_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Image> COLUMN_Avatar_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_Image>(I_AD_User.class, "Avatar_ID", org.compiere.model.I_AD_Image.class);
-    /** Column name Avatar_ID */
-    public static final String COLUMNNAME_Avatar_ID = "Avatar_ID";
+	ModelColumn<I_AD_User, org.compiere.model.I_AD_Image> COLUMN_Avatar_ID = new ModelColumn<>(I_AD_User.class, "Avatar_ID", org.compiere.model.I_AD_Image.class);
+	String COLUMNNAME_Avatar_ID = "Avatar_ID";
 
 	/**
 	 * Set Geburtstag.
@@ -238,7 +219,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBirthday (java.sql.Timestamp Birthday);
+	void setBirthday (@Nullable java.sql.Timestamp Birthday);
 
 	/**
 	 * Get Geburtstag.
@@ -248,281 +229,167 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getBirthday();
+	@Nullable java.sql.Timestamp getBirthday();
 
-    /** Column definition for Birthday */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Birthday = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Birthday", null);
-    /** Column name Birthday */
-    public static final String COLUMNNAME_Birthday = "Birthday";
+	ModelColumn<I_AD_User, Object> COLUMN_Birthday = new ModelColumn<>(I_AD_User.class, "Birthday", null);
+	String COLUMNNAME_Birthday = "Birthday";
 
 	/**
-	 * Set Partner Parent.
-	 * Business Partner Parent
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setBPartner_Parent_ID (int BPartner_Parent_ID);
-
-	/**
-	 * Get Partner Parent.
-	 * Business Partner Parent
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getBPartner_Parent_ID();
-
-	public org.compiere.model.I_C_BPartner getBPartner_Parent();
-
-	@Deprecated
-	public void setBPartner_Parent(org.compiere.model.I_C_BPartner BPartner_Parent);
-
-    /** Column definition for BPartner_Parent_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_BPartner> COLUMN_BPartner_Parent_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_BPartner>(I_AD_User.class, "BPartner_Parent_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name BPartner_Parent_ID */
-    public static final String COLUMNNAME_BPartner_Parent_ID = "BPartner_Parent_ID";
-
-	/**
-	 * Set Geschäftspartnergruppe.
-	 * Geschäftspartnergruppe
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setC_BP_Group_ID (int C_BP_Group_ID);
-
-	/**
-	 * Get Geschäftspartnergruppe.
-	 * Geschäftspartnergruppe
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getC_BP_Group_ID();
-
-	public org.compiere.model.I_C_BP_Group getC_BP_Group();
-
-	@Deprecated
-	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
-
-    /** Column definition for C_BP_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_BP_Group>(I_AD_User.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
-    /** Column name C_BP_Group_ID */
-    public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
-
-	/**
-	 * Set Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Set Partner Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_BPartner_Alt_Location_ID (int C_BPartner_Alt_Location_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Identifies a Business Partner
+	 * Get Partner Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_BPartner_Alt_Location_ID();
 
-	public org.compiere.model.I_C_BPartner getC_BPartner();
-
-	public void setC_BPartner(org.compiere.model.I_C_BPartner C_BPartner);
-
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_BPartner>(I_AD_User.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	String COLUMNNAME_C_BPartner_Alt_Location_ID = "C_BPartner_Alt_Location_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifies the (ship to) address for this Business Partner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifies the (ship to) address for this Business Partner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_Location_ID();
+	int getC_BPartner_ID();
 
-	public org.compiere.model.I_C_BPartner_Location getC_BPartner_Location();
-
-	public void setC_BPartner_Location(org.compiere.model.I_C_BPartner_Location C_BPartner_Location);
-
-    /** Column definition for C_BPartner_Location_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_BPartner_Location> COLUMN_C_BPartner_Location_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_BPartner_Location>(I_AD_User.class, "C_BPartner_Location_ID", org.compiere.model.I_C_BPartner_Location.class);
-    /** Column name C_BPartner_Location_ID */
-    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Land.
-	 * Land
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setC_Country_ID (int C_Country_ID);
-
-	/**
-	 * Get Land.
-	 * Land
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getC_Country_ID();
-
-	public org.compiere.model.I_C_Country getC_Country();
-
-	@Deprecated
-	public void setC_Country(org.compiere.model.I_C_Country C_Country);
-
-    /** Column definition for C_Country_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_Country> COLUMN_C_Country_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_Country>(I_AD_User.class, "C_Country_ID", org.compiere.model.I_C_Country.class);
-    /** Column name C_Country_ID */
-    public static final String COLUMNNAME_C_Country_ID = "C_Country_ID";
-
-	/**
-	 * Set Anrede (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Set Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Greeting_ID (int C_Greeting_ID);
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Anrede (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Get Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Greeting_ID();
+	int getC_BPartner_Location_ID();
 
-	public org.compiere.model.I_C_Greeting getC_Greeting();
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
-	public void setC_Greeting(org.compiere.model.I_C_Greeting C_Greeting);
+	/**
+	 * Set Greeting (ID).
+	 * Greeting to print on correspondence
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Greeting_ID (int C_Greeting_ID);
 
-    /** Column definition for C_Greeting_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_Greeting>(I_AD_User.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
-    /** Column name C_Greeting_ID */
-    public static final String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
+	/**
+	 * Get Greeting (ID).
+	 * Greeting to print on correspondence
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Greeting_ID();
+
+	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
 	/**
 	 * Set Position.
 	 * Job Position
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Job_ID (int C_Job_ID);
+	void setC_Job_ID (int C_Job_ID);
 
 	/**
 	 * Get Position.
 	 * Job Position
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Job_ID();
+	int getC_Job_ID();
 
-	public org.compiere.model.I_C_Job getC_Job();
+	@Nullable org.compiere.model.I_C_Job getC_Job();
 
-	public void setC_Job(org.compiere.model.I_C_Job C_Job);
+	void setC_Job(@Nullable org.compiere.model.I_C_Job C_Job);
 
-    /** Column definition for C_Job_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_Job> COLUMN_C_Job_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_Job>(I_AD_User.class, "C_Job_ID", org.compiere.model.I_C_Job.class);
-    /** Column name C_Job_ID */
-    public static final String COLUMNNAME_C_Job_ID = "C_Job_ID";
+	ModelColumn<I_AD_User, org.compiere.model.I_C_Job> COLUMN_C_Job_ID = new ModelColumn<>(I_AD_User.class, "C_Job_ID", org.compiere.model.I_C_Job.class);
+	String COLUMNNAME_C_Job_ID = "C_Job_ID";
 
 	/**
-	 * Set Region.
-	 * Identifiziert eine geographische Region
+	 * Set Comments.
+	 * Comments or additional information
 	 *
-	 * <br>Type: Search
+	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
+	 */
+	void setComments (@Nullable java.lang.String Comments);
+
+	/**
+	 * Get Comments.
+	 * Comments or additional information
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getComments();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Comments = new ModelColumn<>(I_AD_User.class, "Comments", null);
+	String COLUMNNAME_Comments = "Comments";
+
+	/**
+	 * Set Company Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setC_Region_ID (int C_Region_ID);
+	void setCompanyname (@Nullable java.lang.String Companyname);
 
 	/**
-	 * Get Region.
-	 * Identifiziert eine geographische Region
+	 * Get Company Name.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
-	public int getC_Region_ID();
-
-	public org.compiere.model.I_C_Region getC_Region();
-
 	@Deprecated
-	public void setC_Region(org.compiere.model.I_C_Region C_Region);
+	@Nullable java.lang.String getCompanyname();
 
-    /** Column definition for C_Region_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_Region> COLUMN_C_Region_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_C_Region>(I_AD_User.class, "C_Region_ID", org.compiere.model.I_C_Region.class);
-    /** Column name C_Region_ID */
-    public static final String COLUMNNAME_C_Region_ID = "C_Region_ID";
-
-	/**
-	 * Set Bemerkungen.
-	 * Comments or additional information
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setComments (java.lang.String Comments);
-
-	/**
-	 * Get Bemerkungen.
-	 * Comments or additional information
-	 *
-	 * <br>Type: Text
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.lang.String getComments();
-
-    /** Column definition for Comments */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Comments = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Comments", null);
-    /** Column name Comments */
-    public static final String COLUMNNAME_Comments = "Comments";
+	ModelColumn<I_AD_User, Object> COLUMN_Companyname = new ModelColumn<>(I_AD_User.class, "Companyname", null);
+	String COLUMNNAME_Companyname = "Companyname";
 
 	/**
 	 * Set Verbindungsart.
@@ -532,7 +399,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setConnectionProfile (java.lang.String ConnectionProfile);
+	void setConnectionProfile (@Nullable java.lang.String ConnectionProfile);
 
 	/**
 	 * Get Verbindungsart.
@@ -542,12 +409,10 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getConnectionProfile();
+	@Nullable java.lang.String getConnectionProfile();
 
-    /** Column definition for ConnectionProfile */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_ConnectionProfile = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "ConnectionProfile", null);
-    /** Column name ConnectionProfile */
-    public static final String COLUMNNAME_ConnectionProfile = "ConnectionProfile";
+	ModelColumn<I_AD_User, Object> COLUMN_ConnectionProfile = new ModelColumn<>(I_AD_User.class, "ConnectionProfile", null);
+	String COLUMNNAME_ConnectionProfile = "ConnectionProfile";
 
 	/**
 	 * Set Kontakt Einschränkung.
@@ -556,7 +421,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setContactLimitation (java.lang.String ContactLimitation);
+	void setContactLimitation (@Nullable java.lang.String ContactLimitation);
 
 	/**
 	 * Get Kontakt Einschränkung.
@@ -565,12 +430,10 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getContactLimitation();
+	@Nullable java.lang.String getContactLimitation();
 
-    /** Column definition for ContactLimitation */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_ContactLimitation = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "ContactLimitation", null);
-    /** Column name ContactLimitation */
-    public static final String COLUMNNAME_ContactLimitation = "ContactLimitation";
+	ModelColumn<I_AD_User, Object> COLUMN_ContactLimitation = new ModelColumn<>(I_AD_User.class, "ContactLimitation", null);
+	String COLUMNNAME_ContactLimitation = "ContactLimitation";
 
 	/**
 	 * Set Begründung.
@@ -579,7 +442,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setContactLimitationReason (java.lang.String ContactLimitationReason);
+	void setContactLimitationReason (@Nullable java.lang.String ContactLimitationReason);
 
 	/**
 	 * Get Begründung.
@@ -588,42 +451,60 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getContactLimitationReason();
+	@Nullable java.lang.String getContactLimitationReason();
 
-    /** Column definition for ContactLimitationReason */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_ContactLimitationReason = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "ContactLimitationReason", null);
-    /** Column name ContactLimitationReason */
-    public static final String COLUMNNAME_ContactLimitationReason = "ContactLimitationReason";
+	ModelColumn<I_AD_User, Object> COLUMN_ContactLimitationReason = new ModelColumn<>(I_AD_User.class, "ContactLimitationReason", null);
+	String COLUMNNAME_ContactLimitationReason = "ContactLimitationReason";
 
 	/**
-	 * Get Erstellt.
+	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_AD_User, Object> COLUMN_Created = new ModelColumn<>(I_AD_User.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
+	 * Get Created By.
 	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User>(I_AD_User.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Title_ID (int C_Title_ID);
+
+	/**
+	 * Get Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Title_ID();
+
+	@Nullable org.compiere.model.I_C_Title getC_Title();
+
+	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
+	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 
 	/**
 	 * Set Löschdatum.
@@ -632,7 +513,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDelDate (java.sql.Timestamp DelDate);
+	void setDelDate (@Nullable java.sql.Timestamp DelDate);
 
 	/**
 	 * Get Löschdatum.
@@ -641,60 +522,52 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDelDate();
+	@Nullable java.sql.Timestamp getDelDate();
 
-    /** Column definition for DelDate */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_DelDate = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "DelDate", null);
-    /** Column name DelDate */
-    public static final String COLUMNNAME_DelDate = "DelDate";
+	ModelColumn<I_AD_User, Object> COLUMN_DelDate = new ModelColumn<>(I_AD_User.class, "DelDate", null);
+	String COLUMNNAME_DelDate = "DelDate";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_AD_User, Object> COLUMN_Description = new ModelColumn<>(I_AD_User.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set eMail.
-	 * EMail-Adresse
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMail (java.lang.String EMail);
+	void setEMail (@Nullable java.lang.String EMail);
 
 	/**
 	 * Get eMail.
-	 * EMail-Adresse
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEMail();
+	@Nullable java.lang.String getEMail();
 
-    /** Column definition for EMail */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_EMail = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "EMail", null);
-    /** Column name EMail */
-    public static final String COLUMNNAME_EMail = "EMail";
+	ModelColumn<I_AD_User, Object> COLUMN_EMail = new ModelColumn<>(I_AD_User.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
 
 	/**
 	 * Set EMail Nutzer-ID.
@@ -704,7 +577,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMailUser (java.lang.String EMailUser);
+	void setEMailUser (@Nullable java.lang.String EMailUser);
 
 	/**
 	 * Get EMail Nutzer-ID.
@@ -714,12 +587,10 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEMailUser();
+	@Nullable java.lang.String getEMailUser();
 
-    /** Column definition for EMailUser */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_EMailUser = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "EMailUser", null);
-    /** Column name EMailUser */
-    public static final String COLUMNNAME_EMailUser = "EMailUser";
+	ModelColumn<I_AD_User, Object> COLUMN_EMailUser = new ModelColumn<>(I_AD_User.class, "EMailUser", null);
+	String COLUMNNAME_EMailUser = "EMailUser";
 
 	/**
 	 * Set Passwort EMail-Nutzer.
@@ -729,7 +600,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMailUserPW (java.lang.String EMailUserPW);
+	void setEMailUserPW (@Nullable java.lang.String EMailUserPW);
 
 	/**
 	 * Get Passwort EMail-Nutzer.
@@ -739,12 +610,10 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEMailUserPW();
+	@Nullable java.lang.String getEMailUserPW();
 
-    /** Column definition for EMailUserPW */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_EMailUserPW = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "EMailUserPW", null);
-    /** Column name EMailUserPW */
-    public static final String COLUMNNAME_EMailUserPW = "EMailUserPW";
+	ModelColumn<I_AD_User, Object> COLUMN_EMailUserPW = new ModelColumn<>(I_AD_User.class, "EMailUserPW", null);
+	String COLUMNNAME_EMailUserPW = "EMailUserPW";
 
 	/**
 	 * Set Überprüfung EMail.
@@ -754,7 +623,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMailVerify (java.lang.String EMailVerify);
+	void setEMailVerify (@Nullable java.lang.String EMailVerify);
 
 	/**
 	 * Get Überprüfung EMail.
@@ -764,12 +633,10 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getEMailVerify();
+	@Nullable java.lang.String getEMailVerify();
 
-    /** Column definition for EMailVerify */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_EMailVerify = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "EMailVerify", null);
-    /** Column name EMailVerify */
-    public static final String COLUMNNAME_EMailVerify = "EMailVerify";
+	ModelColumn<I_AD_User, Object> COLUMN_EMailVerify = new ModelColumn<>(I_AD_User.class, "EMailVerify", null);
+	String COLUMNNAME_EMailVerify = "EMailVerify";
 
 	/**
 	 * Set EMail überprüft.
@@ -779,7 +646,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setEMailVerifyDate (java.sql.Timestamp EMailVerifyDate);
+	void setEMailVerifyDate (@Nullable java.sql.Timestamp EMailVerifyDate);
 
 	/**
 	 * Get EMail überprüft.
@@ -789,12 +656,10 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getEMailVerifyDate();
+	@Nullable java.sql.Timestamp getEMailVerifyDate();
 
-    /** Column definition for EMailVerifyDate */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_EMailVerifyDate = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "EMailVerifyDate", null);
-    /** Column name EMailVerifyDate */
-    public static final String COLUMNNAME_EMailVerifyDate = "EMailVerifyDate";
+	ModelColumn<I_AD_User, Object> COLUMN_EMailVerifyDate = new ModelColumn<>(I_AD_User.class, "EMailVerifyDate", null);
+	String COLUMNNAME_EMailVerifyDate = "EMailVerifyDate";
 
 	/**
 	 * Set External ID.
@@ -803,7 +668,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalId (java.lang.String ExternalId);
+	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
 	 * Get External ID.
@@ -812,12 +677,10 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExternalId();
+	@Nullable java.lang.String getExternalId();
 
-    /** Column definition for ExternalId */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_ExternalId = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "ExternalId", null);
-    /** Column name ExternalId */
-    public static final String COLUMNNAME_ExternalId = "ExternalId";
+	ModelColumn<I_AD_User, Object> COLUMN_ExternalId = new ModelColumn<>(I_AD_User.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
 	 * Set Fax.
@@ -827,7 +690,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFax (java.lang.String Fax);
+	void setFax (@Nullable java.lang.String Fax);
 
 	/**
 	 * Get Fax.
@@ -837,105 +700,77 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getFax();
+	@Nullable java.lang.String getFax();
 
-    /** Column definition for Fax */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Fax = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Fax", null);
-    /** Column name Fax */
-    public static final String COLUMNNAME_Fax = "Fax";
+	ModelColumn<I_AD_User, Object> COLUMN_Fax = new ModelColumn<>(I_AD_User.class, "Fax", null);
+	String COLUMNNAME_Fax = "Fax";
 
 	/**
-	 * Set Vorname.
-	 * Vorname
+	 * Set Firstname.
+	 * Firstname
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFirstname (java.lang.String Firstname);
+	void setFirstname (@Nullable java.lang.String Firstname);
 
 	/**
-	 * Get Vorname.
-	 * Vorname
+	 * Get Firstname.
+	 * Firstname
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getFirstname();
+	@Nullable java.lang.String getFirstname();
 
-    /** Column definition for Firstname */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Firstname = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Firstname", null);
-    /** Column name Firstname */
-    public static final String COLUMNNAME_Firstname = "Firstname";
+	ModelColumn<I_AD_User, Object> COLUMN_Firstname = new ModelColumn<>(I_AD_User.class, "Firstname", null);
+	String COLUMNNAME_Firstname = "Firstname";
 
 	/**
-	 * Set Weihnachtsgeschenk.
+	 * Set Christmas Gift.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFresh_xmas_Gift (java.lang.String Fresh_xmas_Gift);
+	void setFresh_xmas_Gift (@Nullable java.lang.String Fresh_xmas_Gift);
 
 	/**
-	 * Get Weihnachtsgeschenk.
+	 * Get Christmas Gift.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getFresh_xmas_Gift();
+	@Nullable java.lang.String getFresh_xmas_Gift();
 
-    /** Column definition for Fresh_xmas_Gift */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Fresh_xmas_Gift = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Fresh_xmas_Gift", null);
-    /** Column name Fresh_xmas_Gift */
-    public static final String COLUMNNAME_Fresh_xmas_Gift = "Fresh_xmas_Gift";
+	ModelColumn<I_AD_User, Object> COLUMN_Fresh_xmas_Gift = new ModelColumn<>(I_AD_User.class, "Fresh_xmas_Gift", null);
+	String COLUMNNAME_Fresh_xmas_Gift = "Fresh_xmas_Gift";
 
 	/**
-	 * Set Anrede.
-	 * Für Briefe - z.B. "Sehr geehrter 
-{
-0}
-" oder "Sehr geehrter Herr 
-{
-0}
-" - Zur Laufzeit wird  "
-{
-0}
-" durch den Namen ersetzt
+	 * Set Gender.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setGreeting (java.lang.String Greeting);
+	void setGender (@Nullable java.lang.String Gender);
 
 	/**
-	 * Get Anrede.
-	 * Für Briefe - z.B. "Sehr geehrter 
-{
-0}
-" oder "Sehr geehrter Herr 
-{
-0}
-" - Zur Laufzeit wird  "
-{
-0}
-" durch den Namen ersetzt
+	 * Get Gender.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public java.lang.String getGreeting();
+	@Nullable java.lang.String getGender();
 
-    /** Column definition for Greeting */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Greeting = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Greeting", null);
-    /** Column name Greeting */
-    public static final String COLUMNNAME_Greeting = "Greeting";
+	ModelColumn<I_AD_User, Object> COLUMN_Gender = new ModelColumn<>(I_AD_User.class, "Gender", null);
+	String COLUMNNAME_Gender = "Gender";
 
 	/**
 	 * Set Included Tab.
@@ -945,7 +780,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIncluded_Tab_ID (java.lang.String Included_Tab_ID);
+	void setIncluded_Tab_ID (@Nullable java.lang.String Included_Tab_ID);
 
 	/**
 	 * Get Included Tab.
@@ -955,135 +790,146 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIncluded_Tab_ID();
+	@Nullable java.lang.String getIncluded_Tab_ID();
 
-    /** Column definition for Included_Tab_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Included_Tab_ID = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Included_Tab_ID", null);
-    /** Column name Included_Tab_ID */
-    public static final String COLUMNNAME_Included_Tab_ID = "Included_Tab_ID";
+	ModelColumn<I_AD_User, Object> COLUMN_Included_Tab_ID = new ModelColumn<>(I_AD_User.class, "Included_Tab_ID", null);
+	String COLUMNNAME_Included_Tab_ID = "Included_Tab_ID";
 
 	/**
-	 * Set Aktiv.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsActive (boolean IsActive);
-
-	/**
-	 * Get Aktiv.
-	 * The record is active in the system
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isActive();
-
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Rechnungskontakt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsBillToContact_Default (boolean IsBillToContact_Default);
-
-	/**
-	 * Get Rechnungskontakt.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isBillToContact_Default();
-
-    /** Column definition for IsBillToContact_Default */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsBillToContact_Default = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsBillToContact_Default", null);
-    /** Column name IsBillToContact_Default */
-    public static final String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
-
-	/**
-	 * Set Kunde.
-	 * Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	 * Set Account locked.
+	 * Kennzeichen das anzeigt ob der Zugang gesperrt wurde
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAccountLocked (boolean IsAccountLocked);
+
+	/**
+	 * Get Account locked.
+	 * Kennzeichen das anzeigt ob der Zugang gesperrt wurde
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isAccountLocked();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsAccountLocked = new ModelColumn<>(I_AD_User.class, "IsAccountLocked", null);
+	String COLUMNNAME_IsAccountLocked = "IsAccountLocked";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsActive = new ModelColumn<>(I_AD_User.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Activ.
+	 * Shows if the partner is active
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setIsCustomer (boolean IsCustomer);
+	void setIsActivePartner (boolean IsActivePartner);
 
 	/**
-	 * Get Kunde.
-	 * Zeigt an, ob dieser Geschäftspartner ein Kunde ist
+	 * Get Activ.
+	 * Shows if the partner is active
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
-	public boolean isCustomer();
+	@Deprecated
+	boolean isActivePartner();
 
-    /** Column definition for IsCustomer */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsCustomer = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsCustomer", null);
-    /** Column name IsCustomer */
-    public static final String COLUMNNAME_IsCustomer = "IsCustomer";
+	ModelColumn<I_AD_User, Object> COLUMN_IsActivePartner = new ModelColumn<>(I_AD_User.class, "IsActivePartner", null);
+	String COLUMNNAME_IsActivePartner = "IsActivePartner";
 
 	/**
-	 * Set Bereinigt.
-	 * Nur bereinigte Daten ausgeben
+	 * Set Authorized signatory.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDataClarified (boolean IsDataClarified);
+	void setIsAuthorizedSignatory (boolean IsAuthorizedSignatory);
 
 	/**
-	 * Get Bereinigt.
-	 * Nur bereinigte Daten ausgeben
+	 * Get Authorized signatory.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDataClarified();
+	boolean isAuthorizedSignatory();
 
-    /** Column definition for IsDataClarified */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsDataClarified = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsDataClarified", null);
-    /** Column name IsDataClarified */
-    public static final String COLUMNNAME_IsDataClarified = "IsDataClarified";
+	ModelColumn<I_AD_User, Object> COLUMN_IsAuthorizedSignatory = new ModelColumn<>(I_AD_User.class, "IsAuthorizedSignatory", null);
+	String COLUMNNAME_IsAuthorizedSignatory = "IsAuthorizedSignatory";
 
 	/**
-	 * Set Standard-Ansprechpartner.
+	 * Set BillTo Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDefaultContact (boolean IsDefaultContact);
+	void setIsBillToContact_Default (boolean IsBillToContact_Default);
 
 	/**
-	 * Get Standard-Ansprechpartner.
+	 * Get BillTo Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDefaultContact();
+	boolean isBillToContact_Default();
 
-    /** Column definition for IsDefaultContact */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsDefaultContact = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsDefaultContact", null);
-    /** Column name IsDefaultContact */
-    public static final String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
+	ModelColumn<I_AD_User, Object> COLUMN_IsBillToContact_Default = new ModelColumn<>(I_AD_User.class, "IsBillToContact_Default", null);
+	String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
+
+	/**
+	 * Set Default Contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefaultContact (boolean IsDefaultContact);
+
+	/**
+	 * Get Default Contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefaultContact();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsDefaultContact = new ModelColumn<>(I_AD_User.class, "IsDefaultContact", null);
+	String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
 
 	/**
 	 * Set Full BP Access.
@@ -1093,7 +939,7 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsFullBPAccess (boolean IsFullBPAccess);
+	void setIsFullBPAccess (boolean IsFullBPAccess);
 
 	/**
 	 * Get Full BP Access.
@@ -1103,37 +949,10 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isFullBPAccess();
+	boolean isFullBPAccess();
 
-    /** Column definition for IsFullBPAccess */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsFullBPAccess = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsFullBPAccess", null);
-    /** Column name IsFullBPAccess */
-    public static final String COLUMNNAME_IsFullBPAccess = "IsFullBPAccess";
-
-	/**
-	 * Set hat zentralen Partner.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setIsHavingParentPartner (boolean IsHavingParentPartner);
-
-	/**
-	 * Get hat zentralen Partner.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public boolean isHavingParentPartner();
-
-    /** Column definition for IsHavingParentPartner */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsHavingParentPartner = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsHavingParentPartner", null);
-    /** Column name IsHavingParentPartner */
-    public static final String COLUMNNAME_IsHavingParentPartner = "IsHavingParentPartner";
+	ModelColumn<I_AD_User, Object> COLUMN_IsFullBPAccess = new ModelColumn<>(I_AD_User.class, "IsFullBPAccess", null);
+	String COLUMNNAME_IsFullBPAccess = "IsFullBPAccess";
 
 	/**
 	 * Set Is In Payroll.
@@ -1143,7 +962,7 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInPayroll (boolean IsInPayroll);
+	void setIsInPayroll (boolean IsInPayroll);
 
 	/**
 	 * Get Is In Payroll.
@@ -1153,69 +972,84 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isInPayroll();
+	boolean isInPayroll();
 
-    /** Column definition for IsInPayroll */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsInPayroll = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsInPayroll", null);
-    /** Column name IsInPayroll */
-    public static final String COLUMNNAME_IsInPayroll = "IsInPayroll";
+	ModelColumn<I_AD_User, Object> COLUMN_IsInPayroll = new ModelColumn<>(I_AD_User.class, "IsInPayroll", null);
+	String COLUMNNAME_IsInPayroll = "IsInPayroll";
 
 	/**
-	 * Set Login As HostKey .
+	 * Set Invoice Email Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoiceEmailEnabled (@Nullable java.lang.String IsInvoiceEmailEnabled);
+
+	/**
+	 * Get Invoice Email Enabled.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsInvoiceEmailEnabled();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsInvoiceEmailEnabled = new ModelColumn<>(I_AD_User.class, "IsInvoiceEmailEnabled", null);
+	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
+
+	/**
+	 * Set Use Login As Printing HostKey.
+	 * Wenn gesetzt und ein Nutzer meldet sich an, dann wird immer der jeweilige User-Login als Hostkey benutzt, egal von welchem Computer aus sich der Nutzer anmeldet
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsLoginAsHostKey (boolean IsLoginAsHostKey);
+	void setIsLoginAsHostKey (boolean IsLoginAsHostKey);
 
 	/**
-	 * Get Login As HostKey .
+	 * Get Use Login As Printing HostKey.
+	 * Wenn gesetzt und ein Nutzer meldet sich an, dann wird immer der jeweilige User-Login als Hostkey benutzt, egal von welchem Computer aus sich der Nutzer anmeldet
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isLoginAsHostKey();
+	boolean isLoginAsHostKey();
 
-    /** Column definition for IsLoginAsHostKey */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsLoginAsHostKey = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsLoginAsHostKey", null);
-    /** Column name IsLoginAsHostKey */
-    public static final String COLUMNNAME_IsLoginAsHostKey = "IsLoginAsHostKey";
+	ModelColumn<I_AD_User, Object> COLUMN_IsLoginAsHostKey = new ModelColumn<>(I_AD_User.class, "IsLoginAsHostKey", null);
+	String COLUMNNAME_IsLoginAsHostKey = "IsLoginAsHostKey";
+
+	/**
+	 * Set Is Membership Contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMembershipContact (boolean IsMembershipContact);
+
+	/**
+	 * Get Is Membership Contact.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMembershipContact();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsMembershipContact = new ModelColumn<>(I_AD_User.class, "IsMembershipContact", null);
+	String COLUMNNAME_IsMembershipContact = "IsMembershipContact";
 
 	/**
 	 * Set Newsletter.
-	 * Template or container uses news channels
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsNews (boolean IsNews);
-
-	/**
-	 * Get Newsletter.
-	 * Template or container uses news channels
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isNews();
-
-    /** Column definition for IsNews */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsNews = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsNews", null);
-    /** Column name IsNews */
-    public static final String COLUMNNAME_IsNews = "IsNews";
-
-	/**
-	 * Set Newsletter.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsNewsletter (boolean IsNewsletter);
+	void setIsNewsletter (boolean IsNewsletter);
 
 	/**
 	 * Get Newsletter.
@@ -1224,62 +1058,31 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isNewsletter();
+	boolean isNewsletter();
 
-    /** Column definition for IsNewsletter */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsNewsletter = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsNewsletter", null);
-    /** Column name IsNewsletter */
-    public static final String COLUMNNAME_IsNewsletter = "IsNewsletter";
+	ModelColumn<I_AD_User, Object> COLUMN_IsNewsletter = new ModelColumn<>(I_AD_User.class, "IsNewsletter", null);
+	String COLUMNNAME_IsNewsletter = "IsNewsletter";
 
 	/**
-	 * Set Zielkunde.
-	 * Kennzeichnet einen Interessenten oder Kunden
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setIsProspect (boolean IsProspect);
-
-	/**
-	 * Get Zielkunde.
-	 * Kennzeichnet einen Interessenten oder Kunden
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public boolean isProspect();
-
-    /** Column definition for IsProspect */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsProspect = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsProspect", null);
-    /** Column name IsProspect */
-    public static final String COLUMNNAME_IsProspect = "IsProspect";
-
-	/**
-	 * Set Einkaufskontakt.
+	 * Set Purchasing Contact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPurchaseContact (boolean IsPurchaseContact);
+	void setIsPurchaseContact (boolean IsPurchaseContact);
 
 	/**
-	 * Get Einkaufskontakt.
+	 * Get Purchasing Contact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPurchaseContact();
+	boolean isPurchaseContact();
 
-    /** Column definition for IsPurchaseContact */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsPurchaseContact = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsPurchaseContact", null);
-    /** Column name IsPurchaseContact */
-    public static final String COLUMNNAME_IsPurchaseContact = "IsPurchaseContact";
+	ModelColumn<I_AD_User, Object> COLUMN_IsPurchaseContact = new ModelColumn<>(I_AD_User.class, "IsPurchaseContact", null);
+	String COLUMNNAME_IsPurchaseContact = "IsPurchaseContact";
 
 	/**
 	 * Set IsPurchaseContact_Default.
@@ -1288,7 +1091,7 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsPurchaseContact_Default (boolean IsPurchaseContact_Default);
+	void setIsPurchaseContact_Default (boolean IsPurchaseContact_Default);
 
 	/**
 	 * Get IsPurchaseContact_Default.
@@ -1297,35 +1100,31 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isPurchaseContact_Default();
+	boolean isPurchaseContact_Default();
 
-    /** Column definition for IsPurchaseContact_Default */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsPurchaseContact_Default = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsPurchaseContact_Default", null);
-    /** Column name IsPurchaseContact_Default */
-    public static final String COLUMNNAME_IsPurchaseContact_Default = "IsPurchaseContact_Default";
+	ModelColumn<I_AD_User, Object> COLUMN_IsPurchaseContact_Default = new ModelColumn<>(I_AD_User.class, "IsPurchaseContact_Default", null);
+	String COLUMNNAME_IsPurchaseContact_Default = "IsPurchaseContact_Default";
 
 	/**
-	 * Set Verkaufskontakt.
+	 * Set IsSalesContact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSalesContact (boolean IsSalesContact);
+	void setIsSalesContact (boolean IsSalesContact);
 
 	/**
-	 * Get Verkaufskontakt.
+	 * Get IsSalesContact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSalesContact();
+	boolean isSalesContact();
 
-    /** Column definition for IsSalesContact */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsSalesContact = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsSalesContact", null);
-    /** Column name IsSalesContact */
-    public static final String COLUMNNAME_IsSalesContact = "IsSalesContact";
+	ModelColumn<I_AD_User, Object> COLUMN_IsSalesContact = new ModelColumn<>(I_AD_User.class, "IsSalesContact", null);
+	String COLUMNNAME_IsSalesContact = "IsSalesContact";
 
 	/**
 	 * Set IsSalesContact_Default.
@@ -1334,7 +1133,7 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSalesContact_Default (boolean IsSalesContact_Default);
+	void setIsSalesContact_Default (boolean IsSalesContact_Default);
 
 	/**
 	 * Get IsSalesContact_Default.
@@ -1343,133 +1142,188 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSalesContact_Default();
+	boolean isSalesContact_Default();
 
-    /** Column definition for IsSalesContact_Default */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsSalesContact_Default = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsSalesContact_Default", null);
-    /** Column name IsSalesContact_Default */
-    public static final String COLUMNNAME_IsSalesContact_Default = "IsSalesContact_Default";
+	ModelColumn<I_AD_User, Object> COLUMN_IsSalesContact_Default = new ModelColumn<>(I_AD_User.class, "IsSalesContact_Default", null);
+	String COLUMNNAME_IsSalesContact_Default = "IsSalesContact_Default";
 
 	/**
-	 * Set Selbstregistrierung.
-	 * This is a Self-Service entry or this entry can be changed via Self-Service
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setIsSelfService (boolean IsSelfService);
-
-	/**
-	 * Get Selbstregistrierung.
-	 * This is a Self-Service entry or this entry can be changed via Self-Service
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public boolean isSelfService();
-
-    /** Column definition for IsSelfService */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsSelfService = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsSelfService", null);
-    /** Column name IsSelfService */
-    public static final String COLUMNNAME_IsSelfService = "IsSelfService";
-
-	/**
-	 * Set Lieferkontakt.
+	 * Set ShipTo Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsShipToContact_Default (boolean IsShipToContact_Default);
+	void setIsShipToContact_Default (boolean IsShipToContact_Default);
 
 	/**
-	 * Get Lieferkontakt.
+	 * Get ShipTo Contact Default.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isShipToContact_Default();
+	boolean isShipToContact_Default();
 
-    /** Column definition for IsShipToContact_Default */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsShipToContact_Default = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsShipToContact_Default", null);
-    /** Column name IsShipToContact_Default */
-    public static final String COLUMNNAME_IsShipToContact_Default = "IsShipToContact_Default";
+	ModelColumn<I_AD_User, Object> COLUMN_IsShipToContact_Default = new ModelColumn<>(I_AD_User.class, "IsShipToContact_Default", null);
+	String COLUMNNAME_IsShipToContact_Default = "IsShipToContact_Default";
 
 	/**
-	 * Set IsSubjectMatterContact.
+	 * Set Subject matter contact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSubjectMatterContact (boolean IsSubjectMatterContact);
+	void setIsSubjectMatterContact (boolean IsSubjectMatterContact);
 
 	/**
-	 * Get IsSubjectMatterContact.
+	 * Get Subject matter contact.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSubjectMatterContact();
+	boolean isSubjectMatterContact();
 
-    /** Column definition for IsSubjectMatterContact */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_IsSubjectMatterContact = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "IsSubjectMatterContact", null);
-    /** Column name IsSubjectMatterContact */
-    public static final String COLUMNNAME_IsSubjectMatterContact = "IsSubjectMatterContact";
+	ModelColumn<I_AD_User, Object> COLUMN_IsSubjectMatterContact = new ModelColumn<>(I_AD_User.class, "IsSubjectMatterContact", null);
+	String COLUMNNAME_IsSubjectMatterContact = "IsSubjectMatterContact";
 
 	/**
-	 * Set Sprachregion.
+	 * Set System User.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	public void setLanguage (java.lang.String Language);
+	void setIsSystemUser (boolean IsSystemUser);
 
 	/**
-	 * Get Sprachregion.
+	 * Get System User.
 	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getLanguage();
+	boolean isSystemUser();
 
-    /** Column definition for Language */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Language = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Language", null);
-    /** Column name Language */
-    public static final String COLUMNNAME_Language = "Language";
+	ModelColumn<I_AD_User, Object> COLUMN_IsSystemUser = new ModelColumn<>(I_AD_User.class, "IsSystemUser", null);
+	String COLUMNNAME_IsSystemUser = "IsSystemUser";
 
 	/**
-	 * Set Nachname.
+	 * Set Lastname.
+	 * Lastname
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLastname (java.lang.String Lastname);
+	void setLastname (@Nullable java.lang.String Lastname);
 
 	/**
-	 * Get Nachname.
+	 * Get Lastname.
+	 * Lastname
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getLastname();
+	@Nullable java.lang.String getLastname();
 
-    /** Column definition for Lastname */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Lastname = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Lastname", null);
-    /** Column name Lastname */
-    public static final String COLUMNNAME_Lastname = "Lastname";
+	ModelColumn<I_AD_User, Object> COLUMN_Lastname = new ModelColumn<>(I_AD_User.class, "Lastname", null);
+	String COLUMNNAME_Lastname = "Lastname";
+
+	/**
+	 * Set Locked From IP.
+	 * Client IP address that was used when this account was locked
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLockedFromIP (@Nullable java.lang.String LockedFromIP);
+
+	/**
+	 * Get Locked From IP.
+	 * Client IP address that was used when this account was locked
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLockedFromIP();
+
+	ModelColumn<I_AD_User, Object> COLUMN_LockedFromIP = new ModelColumn<>(I_AD_User.class, "LockedFromIP", null);
+	String COLUMNNAME_LockedFromIP = "LockedFromIP";
+
+	/**
+	 * Set Login.
+	 * Used for login. See Help.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLogin (@Nullable java.lang.String Login);
+
+	/**
+	 * Get Login.
+	 * Used for login. See Help.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLogin();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Login = new ModelColumn<>(I_AD_User.class, "Login", null);
+	String COLUMNNAME_Login = "Login";
+
+	/**
+	 * Set Login Failure Count.
+	 * Anzahl Login Fehlversuche
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoginFailureCount (int LoginFailureCount);
+
+	/**
+	 * Get Login Failure Count.
+	 * Anzahl Login Fehlversuche
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLoginFailureCount();
+
+	ModelColumn<I_AD_User, Object> COLUMN_LoginFailureCount = new ModelColumn<>(I_AD_User.class, "LoginFailureCount", null);
+	String COLUMNNAME_LoginFailureCount = "LoginFailureCount";
+
+	/**
+	 * Set Login Failure Date.
+	 * Datum Login Fehler
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoginFailureDate (@Nullable java.sql.Timestamp LoginFailureDate);
+
+	/**
+	 * Get Login Failure Date.
+	 * Datum Login Fehler
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getLoginFailureDate();
+
+	ModelColumn<I_AD_User, Object> COLUMN_LoginFailureDate = new ModelColumn<>(I_AD_User.class, "LoginFailureDate", null);
+	String COLUMNNAME_LoginFailureDate = "LoginFailureDate";
 
 	/**
 	 * Set Memo.
@@ -1479,7 +1333,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMemo (java.lang.String Memo);
+	void setMemo (@Nullable java.lang.String Memo);
 
 	/**
 	 * Get Memo.
@@ -1489,60 +1343,52 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getMemo();
+	@Nullable java.lang.String getMemo();
 
-    /** Column definition for Memo */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Memo = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Memo", null);
-    /** Column name Memo */
-    public static final String COLUMNNAME_Memo = "Memo";
+	ModelColumn<I_AD_User, Object> COLUMN_Memo = new ModelColumn<>(I_AD_User.class, "Memo", null);
+	String COLUMNNAME_Memo = "Memo";
 
 	/**
-	 * Set Handynummer.
+	 * Set Mobile Phone.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setMobilePhone (java.lang.String MobilePhone);
+	void setMobilePhone (@Nullable java.lang.String MobilePhone);
 
 	/**
-	 * Get Handynummer.
+	 * Get Mobile Phone.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getMobilePhone();
+	@Nullable java.lang.String getMobilePhone();
 
-    /** Column definition for MobilePhone */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_MobilePhone = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "MobilePhone", null);
-    /** Column name MobilePhone */
-    public static final String COLUMNNAME_MobilePhone = "MobilePhone";
+	ModelColumn<I_AD_User, Object> COLUMN_MobilePhone = new ModelColumn<>(I_AD_User.class, "MobilePhone", null);
+	String COLUMNNAME_MobilePhone = "MobilePhone";
 
 	/**
 	 * Set Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
-	 * Alphanumeric identifier of the entity
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_AD_User, Object> COLUMN_Name = new ModelColumn<>(I_AD_User.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Benachrichtigungs-Art.
@@ -1552,7 +1398,7 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setNotificationType (java.lang.String NotificationType);
+	void setNotificationType (java.lang.String NotificationType);
 
 	/**
 	 * Get Benachrichtigungs-Art.
@@ -1562,35 +1408,33 @@ public interface I_AD_User
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getNotificationType();
+	java.lang.String getNotificationType();
 
-    /** Column definition for NotificationType */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_NotificationType = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "NotificationType", null);
-    /** Column name NotificationType */
-    public static final String COLUMNNAME_NotificationType = "NotificationType";
+	ModelColumn<I_AD_User, Object> COLUMN_NotificationType = new ModelColumn<>(I_AD_User.class, "NotificationType", null);
+	String COLUMNNAME_NotificationType = "NotificationType";
 
 	/**
-	 * Set Kennwort.
+	 * Set Password.
+	 * Password of any length (case sensitive)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPassword (java.lang.String Password);
+	void setPassword (@Nullable java.lang.String Password);
 
 	/**
-	 * Get Kennwort.
+	 * Get Password.
+	 * Password of any length (case sensitive)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPassword();
+	@Nullable java.lang.String getPassword();
 
-    /** Column definition for Password */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Password = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Password", null);
-    /** Column name Password */
-    public static final String COLUMNNAME_Password = "Password";
+	ModelColumn<I_AD_User, Object> COLUMN_Password = new ModelColumn<>(I_AD_User.class, "Password", null);
+	String COLUMNNAME_Password = "Password";
 
 	/**
 	 * Set Portalpasswort.
@@ -1599,7 +1443,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setpasswordportal (java.lang.String passwordportal);
+	void setpasswordportal (@Nullable java.lang.String passwordportal);
 
 	/**
 	 * Get Portalpasswort.
@@ -1608,12 +1452,10 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getpasswordportal();
+	@Nullable java.lang.String getpasswordportal();
 
-    /** Column definition for passwordportal */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_passwordportal = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "passwordportal", null);
-    /** Column name passwordportal */
-    public static final String COLUMNNAME_passwordportal = "passwordportal";
+	ModelColumn<I_AD_User, Object> COLUMN_passwordportal = new ModelColumn<>(I_AD_User.class, "passwordportal", null);
+	String COLUMNNAME_passwordportal = "passwordportal";
 
 	/**
 	 * Set Code für Passwort-Änderung.
@@ -1622,7 +1464,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPasswordResetCode (java.lang.String PasswordResetCode);
+	void setPasswordResetCode (@Nullable java.lang.String PasswordResetCode);
 
 	/**
 	 * Get Code für Passwort-Änderung.
@@ -1631,85 +1473,75 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPasswordResetCode();
+	@Nullable java.lang.String getPasswordResetCode();
 
-    /** Column definition for PasswordResetCode */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_PasswordResetCode = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "PasswordResetCode", null);
-    /** Column name PasswordResetCode */
-    public static final String COLUMNNAME_PasswordResetCode = "PasswordResetCode";
+	ModelColumn<I_AD_User, Object> COLUMN_PasswordResetCode = new ModelColumn<>(I_AD_User.class, "PasswordResetCode", null);
+	String COLUMNNAME_PasswordResetCode = "PasswordResetCode";
 
 	/**
-	 * Set Telefon.
-	 * Beschreibt eine Telefon Nummer
+	 * Set Phone.
+	 * Identifies a telephone number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPhone (java.lang.String Phone);
+	void setPhone (@Nullable java.lang.String Phone);
 
 	/**
-	 * Get Telefon.
-	 * Beschreibt eine Telefon Nummer
+	 * Get Phone.
+	 * Identifies a telephone number
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPhone();
+	@Nullable java.lang.String getPhone();
 
-    /** Column definition for Phone */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Phone = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Phone", null);
-    /** Column name Phone */
-    public static final String COLUMNNAME_Phone = "Phone";
+	ModelColumn<I_AD_User, Object> COLUMN_Phone = new ModelColumn<>(I_AD_User.class, "Phone", null);
+	String COLUMNNAME_Phone = "Phone";
 
 	/**
-	 * Set Mobil.
-	 * Alternative Mobile Telefonnummer
+	 * Set Phone (alternative).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPhone2 (java.lang.String Phone2);
+	void setPhone2 (@Nullable java.lang.String Phone2);
 
 	/**
-	 * Get Mobil.
-	 * Alternative Mobile Telefonnummer
+	 * Get Phone (alternative).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPhone2();
+	@Nullable java.lang.String getPhone2();
 
-    /** Column definition for Phone2 */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Phone2 = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Phone2", null);
-    /** Column name Phone2 */
-    public static final String COLUMNNAME_Phone2 = "Phone2";
+	ModelColumn<I_AD_User, Object> COLUMN_Phone2 = new ModelColumn<>(I_AD_User.class, "Phone2", null);
+	String COLUMNNAME_Phone2 = "Phone2";
 
 	/**
-	 * Set Verarbeiten.
+	 * Set Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessing (boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
-	 * Get Verarbeiten.
+	 * Get Process Now.
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_AD_User, Object> COLUMN_Processing = new ModelColumn<>(I_AD_User.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Handelsregister.
@@ -1719,7 +1551,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRegistry (java.lang.String Registry);
+	void setRegistry (@Nullable java.lang.String Registry);
 
 	/**
 	 * Get Handelsregister.
@@ -1729,42 +1561,35 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRegistry();
+	@Nullable java.lang.String getRegistry();
 
-    /** Column definition for Registry */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Registry = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Registry", null);
-    /** Column name Registry */
-    public static final String COLUMNNAME_Registry = "Registry";
+	ModelColumn<I_AD_User, Object> COLUMN_Registry = new ModelColumn<>(I_AD_User.class, "Registry", null);
+	String COLUMNNAME_Registry = "Registry";
 
 	/**
-	 * Set Beratung.
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	public void setSalesRep_ID (int SalesRep_ID);
+	void setSeqNo (int SeqNo);
 
 	/**
-	 * Get Beratung.
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Integer
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
-	public int getSalesRep_ID();
+	int getSeqNo();
 
-	public org.compiere.model.I_AD_User getSalesRep();
-
-	@Deprecated
-	public void setSalesRep(org.compiere.model.I_AD_User SalesRep);
-
-    /** Column definition for SalesRep_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User> COLUMN_SalesRep_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User>(I_AD_User.class, "SalesRep_ID", org.compiere.model.I_AD_User.class);
-    /** Column name SalesRep_ID */
-    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+	ModelColumn<I_AD_User, Object> COLUMN_SeqNo = new ModelColumn<>(I_AD_User.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Vorgesetzter.
@@ -1774,7 +1599,7 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSupervisor_ID (int Supervisor_ID);
+	void setSupervisor_ID (int Supervisor_ID);
 
 	/**
 	 * Get Vorgesetzter.
@@ -1784,117 +1609,145 @@ public interface I_AD_User
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSupervisor_ID();
+	int getSupervisor_ID();
 
-	public org.compiere.model.I_AD_User getSupervisor();
-
-	public void setSupervisor(org.compiere.model.I_AD_User Supervisor);
-
-    /** Column definition for Supervisor_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User> COLUMN_Supervisor_ID = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User>(I_AD_User.class, "Supervisor_ID", org.compiere.model.I_AD_User.class);
-    /** Column name Supervisor_ID */
-    public static final String COLUMNNAME_Supervisor_ID = "Supervisor_ID";
+	String COLUMNNAME_Supervisor_ID = "Supervisor_ID";
 
 	/**
-	 * Set Titel.
+	 * Set Timestamp.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTimestamp (@Nullable java.sql.Timestamp Timestamp);
+
+	/**
+	 * Get Timestamp.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.sql.Timestamp getTimestamp();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Timestamp = new ModelColumn<>(I_AD_User.class, "Timestamp", null);
+	String COLUMNNAME_Timestamp = "Timestamp";
+
+	/**
+	 * Set Title.
 	 * Name this entity is referred to as
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setTitle (java.lang.String Title);
+	void setTitle (@Nullable java.lang.String Title);
 
 	/**
-	 * Get Titel.
+	 * Get Title.
 	 * Name this entity is referred to as
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getTitle();
+	@Nullable java.lang.String getTitle();
 
-    /** Column definition for Title */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Title = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Title", null);
-    /** Column name Title */
-    public static final String COLUMNNAME_Title = "Title";
+	ModelColumn<I_AD_User, Object> COLUMN_Title = new ModelColumn<>(I_AD_User.class, "Title", null);
+	String COLUMNNAME_Title = "Title";
 
 	/**
-	 * Get Aktualisiert.
+	 * Set Unlock Account.
+	 * Button that will call a process to unlock current selected account
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUnlockAccount (@Nullable java.lang.String UnlockAccount);
+
+	/**
+	 * Get Unlock Account.
+	 * Button that will call a process to unlock current selected account
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUnlockAccount();
+
+	ModelColumn<I_AD_User, Object> COLUMN_UnlockAccount = new ModelColumn<>(I_AD_User.class, "UnlockAccount", null);
+	String COLUMNNAME_UnlockAccount = "UnlockAccount";
+
+	/**
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_AD_User, Object> COLUMN_Updated = new ModelColumn<>(I_AD_User.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
+	 * Get Updated By.
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_AD_User, org.compiere.model.I_AD_User>(I_AD_User.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Benutzer PIN.
+	 * Set User PIN.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setUserPIN (java.lang.String UserPIN);
+	void setUserPIN (@Nullable java.lang.String UserPIN);
 
 	/**
-	 * Get Benutzer PIN.
+	 * Get User PIN.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getUserPIN();
+	@Nullable java.lang.String getUserPIN();
 
-    /** Column definition for UserPIN */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_UserPIN = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "UserPIN", null);
-    /** Column name UserPIN */
-    public static final String COLUMNNAME_UserPIN = "UserPIN";
+	ModelColumn<I_AD_User, Object> COLUMN_UserPIN = new ModelColumn<>(I_AD_User.class, "UserPIN", null);
+	String COLUMNNAME_UserPIN = "UserPIN";
 
 	/**
-	 * Set Suchschlüssel.
+	 * Set Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (@Nullable java.lang.String Value);
 
 	/**
-	 * Get Suchschlüssel.
+	 * Get Search Key.
 	 * Search key for the record in the format required - must be unique
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	@Nullable java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_AD_User, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_AD_User, Object>(I_AD_User.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_AD_User, Object> COLUMN_Value = new ModelColumn<>(I_AD_User.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 }

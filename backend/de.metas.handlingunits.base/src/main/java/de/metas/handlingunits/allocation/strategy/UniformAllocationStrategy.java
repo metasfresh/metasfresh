@@ -1,8 +1,8 @@
 package de.metas.handlingunits.allocation.strategy;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -136,7 +136,7 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 		return candidates;
 	}
 
-	private void updateQtyToAllocate(
+	void updateQtyToAllocate(
 			@NonNull final List<AllocCandidate> candidates,
 			@NonNull final Quantity qtyToAllocateTarget)
 	{
@@ -180,11 +180,21 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 		{
 			final AllocCandidate candidate = nonZeroCandidates.get(idx);
 
+			// metas-ts: i don't really understand what we do here, but to avoid rounding errors, we need a precision that is big, compared to the quantities' precisions.
+			// Otherwise, e.g. with a prcision of just four:
+			// currentQtyTotalBD=104 (HU with 104PCE)
+			// currentCandidateQtyBD=2 (TU with 2PCE)
+			// => percent = 1.9231 (<=rounded up) => qtyToAllocate ends up 3 instead of 2.
+			// why don't we take qtyToAllocate := currentCandidateQtyBD directly? IDK.
 			final Quantity qtyToAllocate;
 			if (idx != lastIdx)
 			{
-				final Percent percent = Percent.of(candidate.getCurrentQty().toBigDecimal(), currentQtyTotal.toBigDecimal());
-				qtyToAllocate = qtyToAllocateTarget.multiply(percent);
+				final BigDecimal currentCandidateQtyBD = candidate.getCurrentQty().toBigDecimal();
+				final BigDecimal currentQtyTotalBD = currentQtyTotal.toBigDecimal();
+				final int precision = (currentCandidateQtyBD.precision() + currentCandidateQtyBD.precision()) * 20; // try to avoid rounding issues
+				final Percent percent = Percent.of(currentCandidateQtyBD, currentQtyTotalBD, precision);
+
+				qtyToAllocate = qtyToAllocateTarget.multiply(percent, RoundingMode.HALF_UP); // with the default UOM-rounding-mode of "UP", we might get 2.00..008 => 3 which was wrong
 			}
 			else
 			{
@@ -243,7 +253,7 @@ public class UniformAllocationStrategy implements IAllocationStrategy
 		return AllocationUtils.createQtyAllocationResult(
 				qtyToAllocate,
 				qtyAllocated,
-				Arrays.asList(trx), // trxs
+				ImmutableList.of(trx), // trxs
 				ImmutableList.of()); // attributeTrxs
 	}
 

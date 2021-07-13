@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.model;
 
 
 /** Generated Interface for M_ShipmentSchedule
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_M_ShipmentSchedule 
@@ -14,17 +14,10 @@ public interface I_M_ShipmentSchedule
     /** AD_Table_ID=500221 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -36,8 +29,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -46,8 +39,8 @@ public interface I_M_ShipmentSchedule
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -59,7 +52,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
+	 * Set Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
@@ -69,7 +62,7 @@ public interface I_M_ShipmentSchedule
 	public void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get DB-Tabelle.
+	 * Get Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
@@ -82,7 +75,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Ansprechpartner.
+	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: TableDir
@@ -92,7 +85,7 @@ public interface I_M_ShipmentSchedule
 	public void setAD_User_ID (int AD_User_ID);
 
 	/**
-	 * Get Ansprechpartner.
+	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
 	 * <br>Type: TableDir
@@ -126,7 +119,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_AD_User_Override_ID = "AD_User_Override_ID";
 
 	/**
-	 * Set Sammel-Lieferscheine erlaubt.
+	 * Set Consolidate Shipments allowed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -135,7 +128,7 @@ public interface I_M_ShipmentSchedule
 	public void setAllowConsolidateInOut (boolean AllowConsolidateInOut);
 
 	/**
-	 * Get Sammel-Lieferscheine erlaubt.
+	 * Get Consolidate Shipments allowed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -149,8 +142,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_AllowConsolidateInOut = "AllowConsolidateInOut";
 
 	/**
-	 * Set Rechnungspartner.
-	 * Geschäftspartner für die Rechnungsstellung
+	 * Set Bill Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -159,8 +151,7 @@ public interface I_M_ShipmentSchedule
 	public void setBill_BPartner_ID (int Bill_BPartner_ID);
 
 	/**
-	 * Get Rechnungspartner.
-	 * Geschäftspartner für die Rechnungsstellung
+	 * Get Bill Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -172,7 +163,49 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
-	 * Set Anschrift-Text.
+	 * Set Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_Location_ID (int Bill_Location_ID);
+
+	/**
+	 * Get Bill Location.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_Location_ID();
+
+    /** Column name Bill_Location_ID */
+    public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+
+	/**
+	 * Set Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setBill_User_ID (int Bill_User_ID);
+
+	/**
+	 * Get Bill Contact.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getBill_User_ID();
+
+    /** Column name Bill_User_ID */
+    public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	/**
+	 * Set Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: true
@@ -181,7 +214,7 @@ public interface I_M_ShipmentSchedule
 	public void setBPartnerAddress (java.lang.String BPartnerAddress);
 
 	/**
-	 * Get Anschrift-Text.
+	 * Get Address.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: true
@@ -218,8 +251,33 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
 
 	/**
-	 * Set Catch Einheit.
-	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 * Set Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setCanBeExportedFrom (java.sql.Timestamp CanBeExportedFrom);
+
+	/**
+	 * Get Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.sql.Timestamp getCanBeExportedFrom();
+
+    /** Column definition for CanBeExportedFrom */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_CanBeExportedFrom = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "CanBeExportedFrom", null);
+    /** Column name CanBeExportedFrom */
+    public static final String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
+
+	/**
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -228,8 +286,8 @@ public interface I_M_ShipmentSchedule
 	public void setCatch_UOM_ID (int Catch_UOM_ID);
 
 	/**
-	 * Get Catch Einheit.
-	 * Aus dem Produktstamm übenommene Catch Weight Einheit.
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -241,8 +299,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -251,8 +308,7 @@ public interface I_M_ShipmentSchedule
 	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -264,8 +320,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -274,8 +329,7 @@ public interface I_M_ShipmentSchedule
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Location.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -354,8 +408,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
 
 	/**
-	 * Set Währung.
-	 * Die Währung für diesen Eintrag
+	 * Set Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -366,8 +420,8 @@ public interface I_M_ShipmentSchedule
 	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
-	 * Die Währung für diesen Eintrag
+	 * Get Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -381,8 +435,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Set Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -391,8 +445,8 @@ public interface I_M_ShipmentSchedule
 	public void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Get Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -404,7 +458,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Auftrag.
+	 * Set Sales order.
 	 * Order
 	 *
 	 * <br>Type: Search
@@ -414,7 +468,7 @@ public interface I_M_ShipmentSchedule
 	public void setC_Order_ID (int C_Order_ID);
 
 	/**
-	 * Get Auftrag.
+	 * Get Sales order.
 	 * Order
 	 *
 	 * <br>Type: Search
@@ -433,8 +487,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Set Auftragsposition.
-	 * Auftragsposition
+	 * Set Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -443,8 +496,7 @@ public interface I_M_ShipmentSchedule
 	public void setC_OrderLine_ID (int C_OrderLine_ID);
 
 	/**
-	 * Get Auftragsposition.
-	 * Auftragsposition
+	 * Get Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -462,8 +514,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -477,8 +529,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -490,8 +542,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -502,8 +554,8 @@ public interface I_M_ShipmentSchedule
 	public void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -517,8 +569,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Auftragsdatum.
-	 * Datum des Auftrags
+	 * Set Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -527,8 +579,8 @@ public interface I_M_ShipmentSchedule
 	public void setDateOrdered (java.sql.Timestamp DateOrdered);
 
 	/**
-	 * Get Auftragsdatum.
-	 * Datum des Auftrags
+	 * Get Date.
+	 * Date of Order
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -542,7 +594,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Lieferdatum.
+	 * Set Shipmentdate.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -551,7 +603,7 @@ public interface I_M_ShipmentSchedule
 	public void setDeliveryDate (java.sql.Timestamp DeliveryDate);
 
 	/**
-	 * Get Lieferdatum.
+	 * Get Shipmentdate.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -734,6 +786,29 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
+	 * Set Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setExportStatus (java.lang.String ExportStatus);
+
+	/**
+	 * Get Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getExportStatus();
+
+    /** Column definition for ExportStatus */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExportStatus = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "ExportStatus", null);
+    /** Column name ExportStatus */
+    public static final String COLUMNNAME_ExportStatus = "ExportStatus";
+
+	/**
 	 * Set Kopf-Aggregationsmerkmal.
 	 *
 	 * <br>Type: String
@@ -757,8 +832,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -767,8 +842,8 @@ public interface I_M_ShipmentSchedule
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -901,7 +976,34 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
-	 * Set zu Akt..
+	 * Set EDI DESADV Receipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	public void setIsEdiDesadvRecipient (boolean IsEdiDesadvRecipient);
+
+	/**
+	 * Get EDI DESADV Receipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	public boolean isEdiDesadvRecipient();
+
+    /** Column definition for IsEdiDesadvRecipient */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsEdiDesadvRecipient = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsEdiDesadvRecipient", null);
+    /** Column name IsEdiDesadvRecipient */
+    public static final String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
+
+	/**
+	 * Set Recompute.
 	 * Wert wird bei einer Benutzer-Änderung am Rechnungskandidaten vom System automatisch auf "Ja" gesetzt.
 	 *
 	 * <br>Type: YesNo
@@ -913,7 +1015,7 @@ public interface I_M_ShipmentSchedule
 	public void setIsToRecompute (boolean IsToRecompute);
 
 	/**
-	 * Get zu Akt..
+	 * Get Recompute.
 	 * Wert wird bei einer Benutzer-Änderung am Rechnungskandidaten vom System automatisch auf "Ja" gesetzt.
 	 *
 	 * <br>Type: YesNo
@@ -930,8 +1032,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_IsToRecompute = "IsToRecompute";
 
 	/**
-	 * Set Zeilennetto.
-	 * Noch offener der Nettowert Zeile (offene Menge * Einzelpreis) ohne Fracht und Geb�hren
+	 * Set Line Net Amount.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -940,8 +1041,7 @@ public interface I_M_ShipmentSchedule
 	public void setLineNetAmt (java.math.BigDecimal LineNetAmt);
 
 	/**
-	 * Get Zeilennetto.
-	 * Noch offener der Nettowert Zeile (offene Menge * Einzelpreis) ohne Fracht und Geb�hren
+	 * Get Line Net Amount.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -955,8 +1055,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
-	 * Set Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Set Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -965,8 +1065,8 @@ public interface I_M_ShipmentSchedule
 	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
-	 * Get Merkmale.
-	 * Merkmals Ausprägungen zum Produkt
+	 * Get Attributes.
+	 * Attribute Instances for Products
 	 *
 	 * <br>Type: PAttribute
 	 * <br>Mandatory: false
@@ -1011,8 +1111,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -1021,8 +1121,8 @@ public interface I_M_ShipmentSchedule
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -1061,7 +1161,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_Shipment_Constraint_ID = "M_Shipment_Constraint_ID";
 
 	/**
-	 * Set Lieferdisposition.
+	 * Set Shipment Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -1070,7 +1170,7 @@ public interface I_M_ShipmentSchedule
 	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
-	 * Get Lieferdisposition.
+	 * Get Shipment Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -1084,8 +1184,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Set Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1094,8 +1194,8 @@ public interface I_M_ShipmentSchedule
 	public void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
-	 * Get Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Get Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1115,7 +1215,7 @@ public interface I_M_ShipmentSchedule
 	/**
 	 * Set Tour.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1124,7 +1224,7 @@ public interface I_M_ShipmentSchedule
 	/**
 	 * Get Tour.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1136,7 +1236,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
 
 	/**
-	 * Set Ziel-Lager.
+	 * Set Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1147,7 +1247,7 @@ public interface I_M_ShipmentSchedule
 	public void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
 
 	/**
-	 * Get Ziel-Lager.
+	 * Get Destination warehouse locator.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1161,8 +1261,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_Warehouse_Dest_ID = "M_Warehouse_Dest_ID";
 
 	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -1171,8 +1271,8 @@ public interface I_M_ShipmentSchedule
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -1207,6 +1307,29 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
 
 	/**
+	 * Set Nr of order line candidates with the same PO ref.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setNrOfOLCandsWithSamePOReference (int NrOfOLCandsWithSamePOReference);
+
+	/**
+	 * Get Nr of order line candidates with the same PO ref.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public int getNrOfOLCandsWithSamePOReference();
+
+    /** Column definition for NrOfOLCandsWithSamePOReference */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_NrOfOLCandsWithSamePOReference = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "NrOfOLCandsWithSamePOReference", null);
+    /** Column name NrOfOLCandsWithSamePOReference */
+    public static final String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
+
+	/**
 	 * Set Pick From Order.
 	 *
 	 * <br>Type: Search
@@ -1234,27 +1357,23 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_PickFrom_Order_ID = "PickFrom_Order_ID";
 
 	/**
-	 * Set Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public void setPOReference (java.lang.String POReference);
 
 	/**
-	 * Get Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
 	public java.lang.String getPOReference();
 
     /** Column definition for POReference */
@@ -1384,8 +1503,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_PriorityRule_Override = "PriorityRule_Override";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1394,8 +1512,7 @@ public interface I_M_ShipmentSchedule
 	public void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1511,8 +1628,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
 
 	/**
-	 * Set Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Set Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1521,8 +1638,8 @@ public interface I_M_ShipmentSchedule
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Get Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1582,7 +1699,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyOrdered_Override = "QtyOrdered_Override";
 
 	/**
-	 * Set Auf Packzettel (Lagereinheit).
+	 * Set Picked (stock UOM).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1591,7 +1708,7 @@ public interface I_M_ShipmentSchedule
 	public void setQtyPickList (java.math.BigDecimal QtyPickList);
 
 	/**
-	 * Get Auf Packzettel (Lagereinheit).
+	 * Get Picked (stock UOM).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1605,7 +1722,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyPickList = "QtyPickList";
 
 	/**
-	 * Set Offen.
+	 * Set Open Qty.
 	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
@@ -1615,7 +1732,7 @@ public interface I_M_ShipmentSchedule
 	public void setQtyReserved (java.math.BigDecimal QtyReserved);
 
 	/**
-	 * Get Offen.
+	 * Get Open Qty.
 	 * Offene Menge
 	 *
 	 * <br>Type: Quantity
@@ -1653,7 +1770,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyToDeliver = "QtyToDeliver";
 
 	/**
-	 * Set Abw. Catch Weight Menge.
+	 * Set Different Catch Weight Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1662,7 +1779,7 @@ public interface I_M_ShipmentSchedule
 	public void setQtyToDeliverCatch_Override (java.math.BigDecimal QtyToDeliverCatch_Override);
 
 	/**
-	 * Get Abw. Catch Weight Menge.
+	 * Get Different Catch Weight Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1726,7 +1843,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_QtyToDeliver_OverrideFulfilled = "QtyToDeliver_OverrideFulfilled";
 
 	/**
-	 * Set Datensatz-ID.
+	 * Set Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
@@ -1736,7 +1853,7 @@ public interface I_M_ShipmentSchedule
 	public void setRecord_ID (int Record_ID);
 
 	/**
-	 * Get Datensatz-ID.
+	 * Get Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
@@ -1751,7 +1868,7 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
-	 * Set Zuordnung Mindesthaltbarkeit.
+	 * Set Best Before Policy.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1760,7 +1877,7 @@ public interface I_M_ShipmentSchedule
 	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy);
 
 	/**
-	 * Get Zuordnung Mindesthaltbarkeit.
+	 * Get Best Before Policy.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1820,8 +1937,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_Status = "Status";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -1835,8 +1952,8 @@ public interface I_M_ShipmentSchedule
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

@@ -99,7 +99,7 @@ import lombok.NonNull;
 		}
 		else
 		{
-			try (final CloseableReentrantLock l = parentLock.mutex)
+			try (final CloseableReentrantLock ignored = parentLock.mutex)
 			{
 				LockAlreadyClosedException.throwIfClosed(parentLock);
 				final ILock lock = lockDatabase.lock(this);
@@ -135,7 +135,7 @@ import lombok.NonNull;
 						final ILock lock = acquire();
 						futureLock.set(lock);
 					}
-					catch (Exception e)
+					catch (final Exception e)
 					{
 						futureLock.setError(e);
 					}

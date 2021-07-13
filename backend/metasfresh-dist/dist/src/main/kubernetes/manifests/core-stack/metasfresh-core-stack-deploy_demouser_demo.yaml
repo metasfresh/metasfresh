@@ -54,7 +54,6 @@ spec:
         image: docker.metasfresh.com/metasfresh/metasfresh-dist-app:gh4939_app_LATEST
         imagePullPolicy: Always
         ports:
-          - containerPort: 61616 # activemq
           - containerPort: 8282  # embedded tomcat
           - containerPort: 8788  # remote debugging
         resources: 

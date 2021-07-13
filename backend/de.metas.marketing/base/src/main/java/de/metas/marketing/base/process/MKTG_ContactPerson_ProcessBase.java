@@ -42,10 +42,10 @@ import lombok.NonNull;
 @Service
 public class MKTG_ContactPerson_ProcessBase
 {
-	private UserRepository userRepository;
-	private CampaignService campaignService;
+	private final UserRepository userRepository;
+	private final CampaignService campaignService;
 
-	public MKTG_ContactPerson_ProcessBase(@NonNull UserRepository userRepository, @NonNull CampaignService campaignService)
+	public MKTG_ContactPerson_ProcessBase(@NonNull final UserRepository userRepository, @NonNull final CampaignService campaignService)
 	{
 		this.userRepository = userRepository;
 		this.campaignService = campaignService;
@@ -97,8 +97,8 @@ public class MKTG_ContactPerson_ProcessBase
 				.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(params.getSelectionFilter())
-				.andCollectChildren(I_AD_User.COLUMN_C_BPartner_ID)
-				.addNotInSubQueryFilter(I_AD_User.COLUMN_AD_User_ID, I_MKTG_Campaign_ContactPerson.COLUMN_AD_User_ID, linkTableQuery)
+				.andCollectChildren(I_AD_User.COLUMNNAME_C_BPartner_ID, I_AD_User.class)
+				.addNotInSubQueryFilter(I_AD_User.COLUMNNAME_AD_User_ID, I_MKTG_Campaign_ContactPerson.COLUMNNAME_AD_User_ID, linkTableQuery)
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, false)
 				.setOption(IQuery.OPTION_IteratorBufferSize, 1000)

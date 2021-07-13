@@ -1,7 +1,9 @@
 import update from 'immutability-helper';
 import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
-import merge from 'merge';
+import { createCachedSelector } from 're-reselect';
+import { merge } from 'merge-anything';
+import { get } from 'lodash';
 
 import {
   ACTIVATE_TAB,
@@ -14,11 +16,9 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_QUICK_ACTIONS,
   DELETE_TOP_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
-  FETCHED_QUICK_ACTIONS,
   FETCH_TOP_ACTIONS,
   FETCH_TOP_ACTIONS_FAILURE,
   FETCH_TOP_ACTIONS_SUCCESS,
@@ -43,37 +43,81 @@ import {
   UPDATE_DATA_PROPERTY,
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
+  UPDATE_INLINE_TAB_DATA,
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
+  UPDATE_TAB_LAYOUT,
+  SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
+  TOGGLE_PRINTING_OPTION,
+  SET_INLINE_TAB_LAYOUT_AND_DATA,
+  SET_INLINE_TAB_WRAPPER_DATA,
+  UPDATE_INLINE_TAB_WRAPPER_FIELDS,
+  UPDATE_INLINE_TAB_ITEM_FIELDS,
+  SET_INLINE_TAB_ADD_NEW,
+  SET_INLINE_TAB_SHOW_MORE,
+  SET_INLINE_TAB_ITEM_PROP,
 } from '../constants/ActionTypes';
 
+import { updateTab } from '../utils';
+
+const initialMasterState = {
+  layout: {
+    activeTab: null,
+  },
+  data: [],
+  saveStatus: {},
+  validStatus: {},
+  includedTabsInfo: {},
+  hasComments: false,
+  docId: undefined,
+  websocket: null,
+  topActions: {
+    actions: [],
+    fetching: false,
+    error: false,
+  },
+};
+const initialModalState = {
+  visible: false,
+  type: '',
+  dataId: null,
+  tabId: null,
+  rowId: null,
+  viewId: null,
+  layout: {},
+  data: {},
+  modalTitle: '',
+  modalType: '',
+  isAdvanced: false,
+  viewDocumentIds: [],
+  childViewId: null,
+  childViewSelectedIds: [],
+  parentViewId: null,
+  triggerField: null,
+  saveStatus: {},
+  validStatus: {},
+  includedTabsInfo: {},
+  staticModalType: '',
+};
+
+/**
+ * In the initialState we have also the `inlineTab` which is the branch that holds the logic for the InlineTabWrapper & InlineTab components
+ * - wrapperData keys pattern ${windowId}_{$tabId}_${docId}
+ * - inlineTab keys ${windowId}_{$tabId}_${rowId}
+ */
 export const initialState = {
   connectionError: false,
-
+  printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
-  modal: {
-    visible: false,
-    type: '',
-    dataId: null,
-    tabId: null,
-    rowId: null,
-    viewId: null,
-    layout: {},
-    data: {},
-    modalTitle: '',
-    modalType: '',
-    isAdvanced: false,
-    viewDocumentIds: [],
-    childViewId: null,
-    childViewSelectedIds: [],
-    parentViewId: null,
-    triggerField: null,
-    saveStatus: {},
-    validStatus: {},
-    includedTabsInfo: {},
-    staticModalType: '',
+  modal: initialModalState,
+  inlineTab: {
+    wrapperData: {},
+    addNew: {},
+    showMore: {},
   },
+
   overlay: {
     visible: false,
     data: null,
@@ -94,24 +138,7 @@ export const initialState = {
   },
 
   // this only feeds data to details view now
-  master: {
-    layout: {
-      activeTab: null,
-    },
-    data: [],
-    saveStatus: {},
-    validStatus: {},
-    includedTabsInfo: {},
-    docId: undefined,
-    websocket: null,
-    topActions: {
-      actions: [],
-      fetching: false,
-      error: false,
-    },
-  },
-
-  quickActions: {},
+  master: initialMasterState,
   indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
@@ -125,18 +152,164 @@ export const initialState = {
   filter: {},
 };
 
-export const NO_SELECTION = [];
+/**
+ * @method getData
+ * @summary getter for master data
+ *
+ * @param {object} state - redux state
+ */
+export const getData = (state, isModal = false) => {
+  const selector = isModal ? 'modal' : 'master';
 
-const getQuickactionsData = (state, { windowType, viewId }) => {
-  const key = `${windowType}${viewId ? `-${viewId}` : ''}`;
-
-  return state.windowHandler.quickActions[key] || NO_SELECTION;
+  return state.windowHandler[selector].data;
 };
 
-export const getQuickactions = createSelector(
-  [getQuickactionsData],
-  (actions) => actions
-);
+export const getElementLayout = (state, isModal, layoutPath) => {
+  const selector = isModal ? 'modal' : 'master';
+  const layout = state.windowHandler[selector].layout;
+  const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
+    layoutPath.split('_');
+
+  return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
+    elGroupIdx
+  ].elementsLine[elLineIdx].elements[elIdx];
+};
+
+export const getInlineTabLayout = ({
+  state,
+  inlineTabId,
+  layoutId: layoutPath,
+}) => {
+  const layout = state.windowHandler.inlineTab[inlineTabId].layout;
+  const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
+    layoutPath.split('_');
+  // console.log('Section:', sectionIdx);
+  // console.log('Column:', columnIdx);
+  // console.log('elGroupIndex:', elGroupIdx)
+  // console.log('ellineIdx:', elLineIdx);
+  // console.log('elIds:', elIdx)
+  // console.log('layoutContent:', layout)
+  // console.log('layoutPath:', layoutPath);
+  // console.log('LAYOUT_IN_SELECTOR:', layout.sections[sectionIdx].columns[columnIdx].elementGroups[elGroupIdx].elementsLine[elLineIdx].elements[elIdx])
+
+  return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
+    elGroupIdx
+  ].elementsLine[elLineIdx].elements[elIdx];
+};
+
+const getProcessLayout = (state, isModal, elementIndex) =>
+  state.windowHandler.modal.layout.elements[elementIndex];
+
+/**
+ * @method selectWidgetData
+ * @summary map layout fields to widgets. If field doesn't exist in data
+ * just return an empty object (might be it's not initialized yet, but it
+ * exists in the layout)
+ *
+ * @param {object} data
+ * @param {object} layout
+ */
+const selectWidgetData = (data, layout) => {
+  let widgetData = null;
+
+  if (layout.fields) {
+    widgetData = layout.fields.reduce((result, item) => {
+      const values = get(data, [`${item.field}`], {});
+      result.push(values);
+
+      return result;
+    }, []);
+  }
+
+  if (!widgetData.length) {
+    widgetData = [{}];
+  }
+
+  return widgetData;
+};
+
+/**
+ * @method getElementWidgetData
+ * @summary cached selector for picking widget data for a desired element
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getElementWidgetData = createCachedSelector(
+  getData,
+  getElementLayout,
+  (data, layout) => selectWidgetData(data, layout)
+)((_state_, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getInlineTabWidgetFields
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getInlineTabWidgetFields = ({ state, inlineTabId }) => {
+  const data = state.windowHandler.inlineTab[`${inlineTabId}`].data;
+
+  return data.fieldsByName;
+};
+
+/**
+ * @method getElementWidgetFields
+ * @summary cached selector for picking fields of a layout section
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getElementWidgetFields = createCachedSelector(
+  getElementLayout,
+  (layout) => layout.fields
+)((_state, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getProcessWidgetData
+ * @summary cached selector for picking widget data for a desired element in process
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getProcessWidgetData = createCachedSelector(
+  getData,
+  getProcessLayout,
+  (data, layout) => selectWidgetData(data, layout)
+)((_state_, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getProcessWidgetFields
+ * @summary cached selector for picking fields of process's elements
+ *
+ * @param {object} state - redux state
+ * @param {boolean} isModal
+ * @param {string} layoutPath - indexes of elements in the layout structure
+ */
+export const getProcessWidgetFields = createCachedSelector(
+  getProcessLayout,
+  (layout) => layout.fields
+)((_state, isModal, layoutPath) => layoutPath);
+
+/**
+ * @method getMasterDocStatus
+ * @summary selector for geting master document status
+ *
+ * @param {object} state - redux state
+ */
+export const getMasterDocStatus = createSelector(getData, (data) => {
+  return [
+    {
+      status: data.DocStatus || null,
+      action: data.DocAction || null,
+      displayed: true,
+    },
+  ];
+});
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
@@ -151,20 +324,7 @@ export default function windowHandler(state = initialState, action) {
         modal: {
           ...state.modal,
           visible: true,
-          type: action.windowType,
-          staticModalType: action.staticModalType,
-          dataId: action.dataId,
-          tabId: action.tabId,
-          rowId: action.rowId,
-          viewId: action.viewId,
-          title: action.title,
-          modalType: action.modalType,
-          isAdvanced: action.isAdvanced,
-          viewDocumentIds: action.viewDocumentIds,
-          triggerField: action.triggerField,
-          parentViewId: action.parentViewId,
-          childViewId: action.childViewId,
-          childViewSelectedIds: action.childViewSelectedIds,
+          ...action.payload,
         },
       };
     case UPDATE_MODAL:
@@ -180,7 +340,6 @@ export default function windowHandler(state = initialState, action) {
       return {
         ...state,
         modal: {
-          ...state.modal,
           ...initialState.modal,
         },
       };
@@ -193,6 +352,7 @@ export default function windowHandler(state = initialState, action) {
           windowId: action.windowId,
           viewId: action.viewId,
           profileId: action.profileId,
+          title: action.title,
         },
       };
     case UPDATE_RAW_MODAL: {
@@ -260,7 +420,6 @@ export default function windowHandler(state = initialState, action) {
         return {
           ...state,
           modal: {
-            ...state.modal,
             ...initialState.modal,
           },
         };
@@ -299,6 +458,7 @@ export default function windowHandler(state = initialState, action) {
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
+          hasComments: action.hasComments,
         },
       };
     case UPDATE_MASTER_DATA:
@@ -315,11 +475,8 @@ export default function windowHandler(state = initialState, action) {
     case CLEAR_MASTER_DATA:
       return {
         ...state,
-        master: {
-          ...state.master,
-          data: {},
-          docId: undefined,
-        },
+        master: initialMasterState,
+        modal: initialModalState,
       };
     case SORT_TAB:
       return Object.assign({}, state, {
@@ -340,6 +497,18 @@ export default function windowHandler(state = initialState, action) {
           }),
         }),
       });
+    case UPDATE_TAB_LAYOUT: {
+      const { tabId, layoutData } = action.payload;
+      const updated = updateTab(state.master.layout.tabs, tabId, layoutData);
+
+      return update(state, {
+        master: {
+          layout: {
+            tabs: { $set: updated },
+          },
+        },
+      });
+    }
     case ACTIVATE_TAB:
       return update(state, {
         [action.scope]: {
@@ -380,12 +549,14 @@ export default function windowHandler(state = initialState, action) {
       } else if (property === 'standardActions') {
         // TODO: Use normal array
         newValue = iSet(value);
-      } else if (['saveStatus', 'validStatus'].includes(property)) {
+      } else if (
+        ['saveStatus', 'validStatus', 'hasComments'].includes(property)
+      ) {
         newValue = value;
       } else {
         const currentVal = state[scope] ? state[scope][property] : {};
 
-        newValue = merge.recursive(true, currentVal, value);
+        newValue = merge(currentVal, value);
       }
 
       return update(state, {
@@ -411,22 +582,16 @@ export default function windowHandler(state = initialState, action) {
         }),
       });
     case UPDATE_DATA_INCLUDED_TABS_INFO:
-      return Object.assign({}, state, {
-        [action.scope]: Object.assign({}, state[action.scope], {
-          includedTabsInfo: Object.keys(
-            state[action.scope].includedTabsInfo
-          ).reduce((result, current) => {
-            result[current] = Object.assign(
-              {},
-              state[action.scope].includedTabsInfo[current],
-              action.includedTabsInfo[current]
-                ? action.includedTabsInfo[current]
-                : {}
-            );
-            return result;
-          }, {}),
-        }),
-      });
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          includedTabsInfo: {
+            ...state.master.includedTabsInfo,
+            ...action.includedTabsInfo,
+          },
+        },
+      };
     // END OF SCOPED ACTIONS
 
     case OPEN_FILTER_BOX:
@@ -534,30 +699,6 @@ export default function windowHandler(state = initialState, action) {
         indicator: action.state,
       };
 
-    // QUICK ACTIONS
-    case FETCHED_QUICK_ACTIONS:
-      return {
-        ...state,
-        quickActions: {
-          ...state.quickActions,
-          [`${action.payload.windowId}${
-            action.payload.id ? `-${action.payload.id}` : ''
-          }`]: action.payload.data,
-        },
-      };
-    case DELETE_QUICK_ACTIONS: {
-      const key = `${action.payload.windowId}${
-        action.payload.id ? `-${action.payload.id}` : ''
-      }`;
-      const newQuickActions = { ...state.quickActions };
-
-      delete newQuickActions[key];
-
-      return {
-        ...state,
-        quickActions: newQuickActions,
-      };
-    }
     // TOP ACTIONS
     case FETCH_TOP_ACTIONS:
       return {
@@ -602,6 +743,172 @@ export default function windowHandler(state = initialState, action) {
           topActions: {
             ...state.master.topActions,
             actions: [],
+          },
+        },
+      };
+    }
+    case SET_PRINTING_OPTIONS: {
+      return {
+        ...state,
+        printingOptions: action.payload,
+      };
+    }
+    case RESET_PRINTING_OPTIONS: {
+      return {
+        ...state,
+        printingOptions: {},
+      };
+    }
+    case TOGGLE_PRINTING_OPTION: {
+      const newPrintingOptions = [...state.printingOptions.options];
+
+      newPrintingOptions.map((item) => {
+        if (item.internalName === action.payload) item.value = !item.value;
+        return item;
+      });
+      return {
+        ...state,
+        printingOptions: {
+          ...state.printingOptions,
+          options: newPrintingOptions,
+        },
+      };
+    }
+    // INLINE TAB ACTIONS
+    case SET_INLINE_TAB_LAYOUT_AND_DATA: {
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${action.payload.inlineTabId}`]: {
+            ...state.inlineTab[`${action.payload.inlineTabId}`],
+            ...action.payload.data,
+          },
+        },
+      };
+    }
+
+    case UPDATE_INLINE_TAB_DATA: {
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${action.payload.inlineTabId}`]: {
+            ...state.inlineTab[`${action.payload.inlineTabId}`],
+            data: {
+              ...state.inlineTab[`${action.payload.inlineTabId}`].data,
+              ...action.payload.data,
+            },
+          },
+        },
+      };
+    }
+
+    case SET_INLINE_TAB_WRAPPER_DATA: {
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          wrapperData: {
+            ...state.inlineTab.wrapperData,
+            [`${action.payload.inlineTabWrapperId}`]: action.payload.data,
+          },
+        },
+      };
+    }
+    case UPDATE_INLINE_TAB_WRAPPER_FIELDS: {
+      let indexWD;
+      const { inlineTabWrapperId, rowId, response } = action.payload;
+      if (!response) return { ...state };
+      const { fieldsByName, saveStatus, validStatus } = response;
+      state.inlineTab.wrapperData[inlineTabWrapperId].forEach((item, i) => {
+        if (item.rowId === rowId) indexWD = i;
+      });
+
+      const wrapperDataClone = { ...state.inlineTab.wrapperData };
+      if (wrapperDataClone[inlineTabWrapperId][indexWD]) {
+        wrapperDataClone[inlineTabWrapperId][indexWD].saveStatus = saveStatus;
+        wrapperDataClone[inlineTabWrapperId][indexWD].validStatus = validStatus;
+        wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName = {
+          ...wrapperDataClone[inlineTabWrapperId][indexWD].fieldsByName,
+          ...fieldsByName,
+        };
+      }
+
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          wrapperData: wrapperDataClone,
+        },
+      };
+    }
+
+    case UPDATE_INLINE_TAB_ITEM_FIELDS: {
+      const { inlineTabId, fieldsByName } = action.payload;
+
+      const targetTabData = { ...state.inlineTab[`${inlineTabId}`].data };
+
+      Object.keys(fieldsByName).forEach((fieldItem) => {
+        targetTabData.fieldsByName[fieldItem] = {
+          ...targetTabData.fieldsByName[fieldItem],
+          ...fieldsByName[fieldItem],
+        };
+      });
+
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${inlineTabId}`]: {
+            ...state.inlineTab[`${inlineTabId}`],
+            data: targetTabData,
+          },
+        },
+      };
+    }
+
+    case SET_INLINE_TAB_ADD_NEW: {
+      const { visible, windowId, tabId, rowId, docId } = action.payload;
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          addNew: {
+            ...state.inlineTab.addNew,
+            [`${windowId}_${tabId}_${docId}`]: {
+              visible,
+              windowId,
+              tabId,
+              rowId,
+            },
+          },
+        },
+      };
+    }
+    case SET_INLINE_TAB_SHOW_MORE: {
+      const { inlineTabWrapperId, showMore } = action.payload;
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          showMore: {
+            ...state.inlineTab.showMore,
+            [`${inlineTabWrapperId}`]: showMore,
+          },
+        },
+      };
+    }
+    case SET_INLINE_TAB_ITEM_PROP: {
+      const { inlineTabId, targetProp, targetValue } = action.payload;
+
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${inlineTabId}`]: {
+            ...state.inlineTab[`${inlineTabId}`],
+            [`${targetProp}`]: targetValue,
           },
         },
       };

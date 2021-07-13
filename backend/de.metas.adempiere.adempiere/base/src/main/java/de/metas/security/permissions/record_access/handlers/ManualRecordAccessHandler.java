@@ -1,15 +1,13 @@
 package de.metas.security.permissions.record_access.handlers;
 
-import java.util.Collection;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.security.permissions.record_access.RecordAccessFeature;
-import de.metas.security.permissions.record_access.RecordAccess;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L
@@ -37,7 +35,7 @@ import lombok.ToString;
 @ToString
 public class ManualRecordAccessHandler implements RecordAccessHandler
 {
-	public static final ManualRecordAccessHandler ofTableNames(final Collection<String> tableNames)
+	public static ManualRecordAccessHandler ofTableNames(final Collection<String> tableNames)
 	{
 		return new ManualRecordAccessHandler(tableNames);
 	}
@@ -62,17 +60,5 @@ public class ManualRecordAccessHandler implements RecordAccessHandler
 	public Set<String> getHandledTableNames()
 	{
 		return handledTableNames;
-	}
-
-	@Override
-	public void onAccessGranted(final RecordAccess request)
-	{
-		// nothing
-	}
-
-	@Override
-	public void onAccessRevoked(final RecordAccess request)
-	{
-		// nothing
 	}
 }

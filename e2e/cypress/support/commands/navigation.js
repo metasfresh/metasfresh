@@ -47,7 +47,7 @@ Cypress.Commands.add('selectSingleTabRow', () => {
 
 Cypress.Commands.add('openReferencedDocuments', (referenceId, retriesLeft = 8) => {
   // retry 8 times to open the referenced document
-  const date = humanReadableNow();
+  // const date = humanReadableNow();
   const timeout = { timeout: 20000 };
   checkIfWindowCanExecuteActions();
 
@@ -128,6 +128,9 @@ export class ColumnAndValue {
   }
 }
 
+/**
+ * selectRowByColumnAndValue - command
+ */
 Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false, force = false, single = true) => {
   cy.log(`Select row by ${JSON.stringify(columnAndValue)}`);
   const timeout = { timeout: 10000 };
@@ -186,7 +189,10 @@ Cypress.Commands.add('selectRowByColumnAndValue', (columnAndValue, modal = false
             });
 
             if (trMatchesAllColumns) {
-              cy.wrap(tr).click();
+              // we execute click on the row only if it's not selected already - due to https://github.com/metasfresh/metasfresh/issues/10167
+              if (!tr.classList.contains('row-selected')) {
+                cy.wrap(tr).click();
+              }
               matchingRows.push(tr);
             }
           });
@@ -227,6 +233,10 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = fa
       cy.get(barcodeFilterPath).click();
     });
 
+  const filterAlias = 'filter_' + humanReadableNow();
+  cy.server();
+  cy.route('GET', new RegExp(RewriteURL.Filter)).as(filterAlias);
+
   const quickActionsAlias = 'quickActions_' + humanReadableNow();
   cy.server();
   cy.route('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
@@ -241,13 +251,8 @@ Cypress.Commands.add('selectItemUsingBarcodeFilter', (columnAndValue, modal = fa
     cy.waitForSaveIndicator();
   }
 
-  // Workaround:
-  // if not doing this wait, we may get `element detached` errors
-  // ref: https://github.com/cypress-io/cypress/issues/7306
-  // in the future cypress may retry on element detached, but that's not the case as of 2020-05-22
+  cy.wait(`@${filterAlias}`);
   cy.wait(`@${quickActionsAlias}`);
-
-  return cy.selectRowByColumnAndValue(columnAndValue, modal, force);
 });
 
 /**

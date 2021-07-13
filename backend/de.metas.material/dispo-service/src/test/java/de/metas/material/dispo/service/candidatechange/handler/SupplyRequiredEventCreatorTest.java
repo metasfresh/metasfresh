@@ -1,22 +1,23 @@
 package de.metas.material.dispo.service.candidatechange.handler;
 
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static de.metas.material.event.EventTestHelper.createProductDescriptor;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import org.junit.jupiter.api.Test;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.Flag;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import de.metas.util.time.SystemTime;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static de.metas.material.event.EventTestHelper.createProductDescriptor;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -49,7 +50,10 @@ public class SupplyRequiredEventCreatorTest
 				.id(CandidateId.ofRepoId(10))
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
-				// .status(CandidateStatus.doc_closed)
+				.businessCaseDetail(ProductionDetail.builder()
+						.advised(Flag.FALSE)
+						.pickDirectlyIfFeasible(Flag.FALSE)
+						.qty(new BigDecimal("10")).build())
 				.groupId(MaterialDispoGroupId.ofInt(40))
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -60,10 +64,13 @@ public class SupplyRequiredEventCreatorTest
 						.build())
 				.build();
 
-		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createSupplyRequiredEvent(demandCandidate, BigDecimal.TEN);
+		final SupplyRequiredEvent result = SupplyRequiredEventCreator.createSupplyRequiredEvent(
+				demandCandidate, BigDecimal.TEN, CandidateId.ofRepoId(60));
+
 		assertThat(result).isNotNull();
 		assertThat(result.getEventDescriptor().getClientId().getRepoId()).isEqualTo(20);
 		assertThat(result.getEventDescriptor().getOrgId().getRepoId()).isEqualTo(30);
 		assertThat(result.getSupplyRequiredDescriptor().getDemandCandidateId()).isEqualTo(10);
+		assertThat(result.getSupplyRequiredDescriptor().getSupplyCandidateId()).isEqualTo(60);
 	}
 }

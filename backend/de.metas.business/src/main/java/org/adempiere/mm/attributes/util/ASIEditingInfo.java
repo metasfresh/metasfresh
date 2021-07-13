@@ -1,13 +1,15 @@
 package org.adempiere.mm.attributes.util;
 
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import de.metas.lang.SOTrx;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -22,17 +24,12 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_M_Attribute;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-
-import de.metas.lang.SOTrx;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -260,7 +257,7 @@ public final class ASIEditingInfo
 			}
 			case ProductWindow:
 			{
-				attributeSet = retrieveProductAttributeSetOrNull();
+				attributeSet = retrieveProductMasterDataSchema();
 				break;
 			}
 			case ProcessParameter:
@@ -317,6 +314,18 @@ public final class ASIEditingInfo
 		}
 
 		return productBL.getAttributeSetOrNull(productId);
+	}
+
+
+	private I_M_AttributeSet retrieveProductMasterDataSchema()
+	{
+		final ProductId productId = getProductId();
+		if (productId == null)
+		{
+			return null;
+		}
+
+		return productBL.getProductMasterDataSchemaOrNull(productId);
 	}
 
 	public boolean isLotEnabled()
@@ -414,8 +423,7 @@ public final class ASIEditingInfo
 			{
 				attributes = attributesRepo
 						.getAttributesByAttributeSetId(attributeSetId)
-						.stream()
-						.filter(attribute -> !attribute.isInstanceAttribute()); // non-instance attributes
+						.stream();
 				break;
 			}
 			case ProcessParameter:
@@ -461,7 +469,7 @@ public final class ASIEditingInfo
 
 	/**
 	 * 
-	 * @param attributeSet
+	 * @param attributeSetId
 	 * @param attributeSetInstanceId
 	 * @return list of available attributeSet's instance attributes, merged with the attributes which are currently present in our ASI (even if they are not present in attribute set)
 	 */

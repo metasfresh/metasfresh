@@ -477,11 +477,6 @@ public class MClient extends X_AD_Client
 	/**
 	 * Send EMail from Request User - with trace
 	 * 
-	 * @param recipientUserId
-	 * @param subject subject
-	 * @param message message
-	 * @param attachment optional collection of attachments
-	 * @return true if sent
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
 	@Deprecated
@@ -493,11 +488,6 @@ public class MClient extends X_AD_Client
 	/**
 	 * Send EMail from Request User - with trace
 	 * 
-	 * @param recipientUserId recipient
-	 * @param subject subject
-	 * @param message message
-	 * @param attachment optional collection of attachments
-	 * @param html
 	 * @return true if sent
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
@@ -615,12 +605,6 @@ public class MClient extends X_AD_Client
 	/**
 	 * Send EMail from User
 	 * 
-	 * @param from sender
-	 * @param to recipient
-	 * @param subject subject
-	 * @param message message
-	 * @param attachment optional attachment
-	 * @param isHtml
 	 * @return true if sent
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
@@ -752,10 +736,6 @@ public class MClient extends X_AD_Client
 	/**
 	 * Create EMail from User
 	 * 
-	 * @param from optional sender
-	 * @param to recipient
-	 * @param subject sunject
-	 * @param message nessage
 	 * @return EMail
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
@@ -768,11 +748,6 @@ public class MClient extends X_AD_Client
 	/**
 	 * Create EMail from User
 	 * 
-	 * @param from optional sender
-	 * @param userTo recipient
-	 * @param subject sunject
-	 * @param message nessage
-	 * @param html
 	 * @return EMail
 	 * @deprecated please use {@link de.metas.email.MailService} instead, and extend it as required.
 	 */
@@ -865,9 +840,9 @@ public class MClient extends X_AD_Client
 		final PreparedStatement pstmt = DB.prepareStatement(sqlInsert
 				.toString(), null);
 		try {
-			for (int i = 0; i < categoryIds.length; i++) {
-				final MProductCategory currentCat = MProductCategory.get(Env
-						.getCtx(), categoryIds[i]);
+			for (int i = 0; i < categoryIds.length; i++)
+			{
+				final MProductCategory currentCat = MProductCategory.get(Env.getCtx(), categoryIds[i]);
 				pstmt.setInt(1, currentCat.getM_Product_Category_ID());
 				pstmt.setInt(2, currentCat.getM_Product_Category_Parent_ID());
 				pstmt.setInt(3, (i + 1) * 10);

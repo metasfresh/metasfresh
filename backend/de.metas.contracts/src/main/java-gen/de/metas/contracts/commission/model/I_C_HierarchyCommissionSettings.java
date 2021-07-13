@@ -1,209 +1,209 @@
 package de.metas.contracts.commission.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_HierarchyCommissionSettings
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
 public interface I_C_HierarchyCommissionSettings 
 {
 
-    /** TableName=C_HierarchyCommissionSettings */
-    public static final String Table_Name = "C_HierarchyCommissionSettings";
+	String Table_Name = "C_HierarchyCommissionSettings";
 
-    /** AD_Table_ID=541425 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541425 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Einstellungen für Hierachie-Provisionsverträge.
+	 * Set Hierarchy commission settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_HierarchyCommissionSettings_ID (int C_HierarchyCommissionSettings_ID);
+	void setC_HierarchyCommissionSettings_ID (int C_HierarchyCommissionSettings_ID);
 
 	/**
-	 * Get Einstellungen für Hierachie-Provisionsverträge.
+	 * Get Hierarchy commission settings.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_HierarchyCommissionSettings_ID();
+	int getC_HierarchyCommissionSettings_ID();
 
-    /** Column definition for C_HierarchyCommissionSettings_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_C_HierarchyCommissionSettings_ID = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "C_HierarchyCommissionSettings_ID", null);
-    /** Column name C_HierarchyCommissionSettings_ID */
-    public static final String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
+	ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_C_HierarchyCommissionSettings_ID = new ModelColumn<>(I_C_HierarchyCommissionSettings.class, "C_HierarchyCommissionSettings_ID", null);
+	String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
 
 	/**
-	 * Set Provisionsprodukt.
-	 * Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	 * Set Commission product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setCommission_Product_ID (int Commission_Product_ID);
+	void setCommission_Product_ID (int Commission_Product_ID);
 
 	/**
-	 * Get Provisionsprodukt.
-	 * Produkt in dessen Einheit Provisionspunkte geführt und abgerechnet werden
+	 * Get Commission product.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCommission_Product_ID();
+	int getCommission_Product_ID();
 
-    /** Column name Commission_Product_ID */
-    public static final String COLUMNNAME_Commission_Product_ID = "Commission_Product_ID";
+	String COLUMNNAME_Commission_Product_ID = "Commission_Product_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Created = new ModelColumn<>(I_C_HierarchyCommissionSettings.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Description = new ModelColumn<>(I_C_HierarchyCommissionSettings.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_IsActive = new ModelColumn<>(I_C_HierarchyCommissionSettings.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Provision von Basis abziehen.
-	 * Legt fest, ob die für untere Hierarchie-Ebenen ermittelten Provisionspunkte bei der aktuellen Ebene von der Basispunktzahl abgezogen werden sollen.
+	 * Set Commission deed for own revenue.
+	 * If set and the sales-rep makes a purchase of their own, then a 0% commission deed record is create for this.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsSubtractLowerLevelCommissionFromBase (boolean IsSubtractLowerLevelCommissionFromBase);
+	void setIsCreateShareForOwnRevenue (boolean IsCreateShareForOwnRevenue);
 
 	/**
-	 * Get Provision von Basis abziehen.
-	 * Legt fest, ob die für untere Hierarchie-Ebenen ermittelten Provisionspunkte bei der aktuellen Ebene von der Basispunktzahl abgezogen werden sollen.
+	 * Get Commission deed for own revenue.
+	 * If set and the sales-rep makes a purchase of their own, then a 0% commission deed record is create for this.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isSubtractLowerLevelCommissionFromBase();
+	boolean isCreateShareForOwnRevenue();
 
-    /** Column definition for IsSubtractLowerLevelCommissionFromBase */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_IsSubtractLowerLevelCommissionFromBase = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "IsSubtractLowerLevelCommissionFromBase", null);
-    /** Column name IsSubtractLowerLevelCommissionFromBase */
-    public static final String COLUMNNAME_IsSubtractLowerLevelCommissionFromBase = "IsSubtractLowerLevelCommissionFromBase";
+	ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_IsCreateShareForOwnRevenue = new ModelColumn<>(I_C_HierarchyCommissionSettings.class, "IsCreateShareForOwnRevenue", null);
+	String COLUMNNAME_IsCreateShareForOwnRevenue = "IsCreateShareForOwnRevenue";
+
+	/**
+	 * Set Subtract commission from base.
+	 * Specifies if the commission points from lower levels shall be subtracted from the base points for the current level.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSubtractLowerLevelCommissionFromBase (boolean IsSubtractLowerLevelCommissionFromBase);
+
+	/**
+	 * Get Subtract commission from base.
+	 * Specifies if the commission points from lower levels shall be subtracted from the base points for the current level.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSubtractLowerLevelCommissionFromBase();
+
+	ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_IsSubtractLowerLevelCommissionFromBase = new ModelColumn<>(I_C_HierarchyCommissionSettings.class, "IsSubtractLowerLevelCommissionFromBase", null);
+	String COLUMNNAME_IsSubtractLowerLevelCommissionFromBase = "IsSubtractLowerLevelCommissionFromBase";
 
 	/**
 	 * Set Name.
@@ -212,7 +212,7 @@ public interface I_C_HierarchyCommissionSettings
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -221,63 +221,56 @@ public interface I_C_HierarchyCommissionSettings
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Name = new ModelColumn<>(I_C_HierarchyCommissionSettings.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Nachkommapräzision.
-	 * Anzahl der Nachkommastellen auf die beim Berechnen der Provisionspounkte gerundet wird.
+	 * Set Points precision.
+	 * Number of digits after the decimal point to which the system rounds when computing commission points.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setPointsPrecision (int PointsPrecision);
+	void setPointsPrecision (int PointsPrecision);
 
 	/**
-	 * Get Nachkommapräzision.
-	 * Anzahl der Nachkommastellen auf die beim Berechnen der Provisionspounkte gerundet wird.
+	 * Get Points precision.
+	 * Number of digits after the decimal point to which the system rounds when computing commission points.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getPointsPrecision();
+	int getPointsPrecision();
 
-    /** Column definition for PointsPrecision */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_PointsPrecision = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "PointsPrecision", null);
-    /** Column name PointsPrecision */
-    public static final String COLUMNNAME_PointsPrecision = "PointsPrecision";
+	ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_PointsPrecision = new ModelColumn<>(I_C_HierarchyCommissionSettings.class, "PointsPrecision", null);
+	String COLUMNNAME_PointsPrecision = "PointsPrecision";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_HierarchyCommissionSettings, Object>(I_C_HierarchyCommissionSettings.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_HierarchyCommissionSettings, Object> COLUMN_Updated = new ModelColumn<>(I_C_HierarchyCommissionSettings.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

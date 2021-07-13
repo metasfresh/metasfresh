@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 import java.sql.Timestamp;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -19,7 +20,6 @@ import de.metas.contracts.model.I_C_Flatrate_Matching;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Conditions;
 import de.metas.document.engine.IDocument;
-import de.metas.util.time.SystemTime;
 
 /*
  * #%L
@@ -69,13 +69,14 @@ public class FlatrateDAOTest extends ContractsTestBase
 		final I_C_Flatrate_Term ft = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
 		ft.setDocStatus(IDocument.STATUS_Completed);
 		ft.setC_Flatrate_Conditions(fc);
-		ft.setBill_BPartner(bpartner);
+		ft.setBill_BPartner_ID(bpartner.getC_BPartner_ID());
 		ft.setStartDate(TimeUtil.addDays(now, -10));
 		ft.setEndDate(TimeUtil.addDays(now, 10));
 		InterfaceWrapperHelper.save(ft);
 
 		final List<I_C_Flatrate_Term> result = new FlatrateDAO().retrieveTerms(
 				Env.getCtx(),
+				Env.getOrgId(),
 				bpartner.getC_BPartner_ID(),
 				now,
 				0,

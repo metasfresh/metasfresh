@@ -22,17 +22,6 @@
 
 package de.metas.payment.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
@@ -44,13 +33,26 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.TenderType;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.TimeUtil;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class DefaultPaymentBuilder
 {
@@ -98,10 +100,9 @@ public class DefaultPaymentBuilder
 	/**
 	 * Creates and processes the payment.
 	 *
-	 * @param docAction
-	 * @param expectedDocStatus
 	 * @return payment
 	 */
+	@SuppressWarnings("SameParameterValue")
 	private I_C_Payment createAndProcess(final String docAction, final String expectedDocStatus)
 	{
 		final I_C_Payment payment = createDraft();
@@ -152,12 +153,12 @@ public class DefaultPaymentBuilder
 				.build());
 	}
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!_built, "payment already built");
 	}
 
-	private final void markAsBuilt()
+	private void markAsBuilt()
 	{
 		assertNotBuilt();
 		_built = true;
@@ -170,7 +171,7 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	private final DefaultPaymentBuilder direction(@NonNull final PaymentDirection direction)
+	private DefaultPaymentBuilder direction(@NonNull final PaymentDirection direction)
 	{
 		assertNotBuilt();
 		payment.setIsReceipt(direction.isReceipt());
@@ -225,21 +226,21 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	public final DefaultPaymentBuilder payAmt(final BigDecimal payAmt)
+	public final DefaultPaymentBuilder payAmt(@Nullable final BigDecimal payAmt)
 	{
 		assertNotBuilt();
 		payment.setPayAmt(payAmt);
 		return this;
 	}
 
-	public final DefaultPaymentBuilder discountAmt(final BigDecimal discountAmt)
+	public final DefaultPaymentBuilder discountAmt(@Nullable final BigDecimal discountAmt)
 	{
 		assertNotBuilt();
 		payment.setDiscountAmt(discountAmt);
 		return this;
 	}
 
-	public final DefaultPaymentBuilder writeoffAmt(final BigDecimal writeoffAmt)
+	public final DefaultPaymentBuilder writeoffAmt(@Nullable final BigDecimal writeoffAmt)
 	{
 		assertNotBuilt();
 		payment.setWriteOffAmt(writeoffAmt);
@@ -250,6 +251,19 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setC_Currency_ID(currencyId.getRepoId());
+		return this;
+	}
+
+	public final DefaultPaymentBuilder paymentCurrencyContext(@NonNull final PaymentCurrencyContext paymentCurrencyContext)
+	{
+		assertNotBuilt();
+		payment.setC_ConversionType_ID(CurrencyConversionTypeId.toRepoId(paymentCurrencyContext.getCurrencyConversionTypeId()));
+		if(paymentCurrencyContext.isFixedConversionRate())
+		{
+			Check.assumeEquals(payment.getC_Currency_ID(), paymentCurrencyContext.getPaymentCurrencyId().getRepoId(), "{} shall match payment currency", paymentCurrencyContext);
+			payment.setCurrencyRate(paymentCurrencyContext.getCurrencyRate());
+			payment.setSource_Currency_ID(paymentCurrencyContext.getSourceCurrencyId().getRepoId());
+		}
 		return this;
 	}
 
@@ -268,11 +282,8 @@ public class DefaultPaymentBuilder
 	 * <li>C_Currency_ID
 	 * <li>IsReceipt: set from the invoice's <code>SOTrx</code> (negated if the invoice is a credit memo)
 	 * </ul>
-	 *
-	 * @param invoice
-	 * @return
 	 */
-	private final DefaultPaymentBuilder invoice(@NonNull final I_C_Invoice invoice)
+	private DefaultPaymentBuilder invoice(@NonNull final I_C_Invoice invoice)
 	{
 		adOrgId(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
@@ -297,6 +308,43 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setDescription(description);
+		return this;
+	}
+
+	public final DefaultPaymentBuilder externalId(@Nullable final ExternalId externalId)
+	{
+		assertNotBuilt();
+		if (externalId != null)
+		{
+			payment.setExternalId(externalId.getValue());
+		}
+		return this;
+	}
+
+	public final DefaultPaymentBuilder orderId(@Nullable final OrderId orderId)
+	{
+		assertNotBuilt();
+		if (orderId != null)
+		{
+			payment.setC_Order_ID(orderId.getRepoId());
+		}
+		return this;
+	}
+
+	public final DefaultPaymentBuilder orderExternalId(@Nullable final String orderExternalId)
+	{
+		assertNotBuilt();
+		if (Check.isNotBlank(orderExternalId))
+		{
+			payment.setExternalOrderId(orderExternalId);
+		}
+		return this;
+	}
+
+	public final DefaultPaymentBuilder isAutoAllocateAvailableAmt(final boolean isAutoAllocateAvailableAmt)
+	{
+		assertNotBuilt();
+		payment.setIsAutoAllocateAvailableAmt(isAutoAllocateAvailableAmt);
 		return this;
 	}
 }

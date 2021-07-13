@@ -61,7 +61,6 @@ public interface IReceiptScheduleQtysBL extends ISingletonService
 	 *
 	 * NOTE: QtyToMove_Override is not considered
 	 *
-	 * @param rs
 	 * @return qty to move
 	 */
 	StockQtyAndUOMQty getQtyToMove(final I_M_ReceiptSchedule rs);
@@ -69,7 +68,6 @@ public interface IReceiptScheduleQtysBL extends ISingletonService
 	/**
 	 * Gets QtyMoved
 	 *
-	 * @param rs
 	 * @return qty moved
 	 */
 	BigDecimal getQtyMoved(final I_M_ReceiptSchedule rs);
@@ -78,7 +76,7 @@ public interface IReceiptScheduleQtysBL extends ISingletonService
 
 	/**
 	 * Gets Qty Over/Under Delivery
-	 * @param rs
+
 	 * @return Qty Over/Under Delivery
 	 */
 	BigDecimal getQtyOverUnderDelivery(I_M_ReceiptSchedule rs);

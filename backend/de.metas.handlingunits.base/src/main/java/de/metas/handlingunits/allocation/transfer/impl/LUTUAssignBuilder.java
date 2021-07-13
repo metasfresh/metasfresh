@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -73,7 +74,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 /**
  * Creates an LU (according to given parameters) and assigns given TUs to it (LU zuteilen).
@@ -164,7 +164,7 @@ public class LUTUAssignBuilder
 		final IHUBuilder huBuilder = handlingUnitsDAO.createHUBuilder(huContext);
 		huBuilder.setBPartnerId(getBPartnerId());
 		huBuilder.setC_BPartner_Location_ID(getC_BPartner_Location_ID());
-		huBuilder.setDate(SystemTime.asZonedDateTime());
+		huBuilder.setDate(de.metas.common.util.time.SystemTime.asZonedDateTime());
 		huBuilder.setLocatorId(getLocatorId());
 		huBuilder.setHUStatus(X_M_HU.HUSTATUS_Planning);
 

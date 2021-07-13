@@ -22,23 +22,8 @@ package de.metas.invoice.service;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_InvoiceTax;
-import org.compiere.model.I_C_LandedCost;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.MInvoice;
-
 import com.google.common.collect.ImmutableMap;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
@@ -46,8 +31,28 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceQuery;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_InvoiceTax;
+import org.compiere.model.I_C_LandedCost;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.MInvoice;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 public interface IInvoiceDAO extends ISingletonService
 {
@@ -57,10 +62,16 @@ public interface IInvoiceDAO extends ISingletonService
 
 	void save(org.compiere.model.I_C_InvoiceLine invoiceLine);
 
+	Map<OrderId, InvoiceId> getInvoiceIdsForOrderIds(List<OrderId> orderIds);
+
+	List<I_C_Invoice> getInvoicesForOrderIds(List<OrderId> orderIds);
+
 	/**
 	 * @throws IllegalArgumentException if invoice is not an {@link MInvoice}
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
+
+	I_C_InvoiceLine retrieveLineById(InvoiceLineId invoiceLineId);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
@@ -79,14 +90,13 @@ public interface IInvoiceDAO extends ISingletonService
 
 	I_C_InvoiceLine createInvoiceLine(String trxName);
 
+	ImmutableSet<InvoiceId> retainIfHasCompletedInvoicesReferencing(@NonNull Collection<InvoiceId> invoiceIds);
+
 	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
 
 	/**
 	 * Search by the invoice when the document number and the bpartner id are known.
 	 *
-	 * @param ctx
-	 * @param invoiceNo
-	 * @param bPartnerID
 	 * @return the I_C_Invoice object if the value was found, null otherwise
 	 */
 	I_C_Invoice retrieveInvoiceByInvoiceNoAndBPartnerID(Properties ctx, String invoiceNo, BPartnerId bpartnerId);
@@ -94,9 +104,6 @@ public interface IInvoiceDAO extends ISingletonService
 	/**
 	 * Gets all open invoices for the specific organization.<br>
 	 * Not guaranteed iterator. Do not use if modifying the "IsPaid" column.
-	 *
-	 * @param adOrg
-	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveOpenInvoicesByOrg(I_AD_Org adOrg);
 
@@ -131,8 +138,6 @@ public interface IInvoiceDAO extends ISingletonService
 	/**
 	 * Retrieves the reversal line for the given invoice line and C_Invoice_ID, using the line's <code>C_InvoiceLine.Line</code> value.
 	 *
-	 * @param line
-	 * @param reversalInvoiceId
 	 * @return the reversal line or <code>null</code> if the reversal invoice has no line with the given <code>line</code>'s number.
 	 */
 	I_C_InvoiceLine retrieveReversalLine(I_C_InvoiceLine line, int reversalInvoiceId);
@@ -140,32 +145,22 @@ public interface IInvoiceDAO extends ISingletonService
 	/**
 	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
-	 *
-	 * @param ctx
-	 * @param startDate
-	 * @return
 	 */
 	List<I_C_Invoice> retrievePostedWithoutFactAcct(Properties ctx, Date startTime);
 
 	/**
 	 * Retrieve all Adjustment Charge entries that were created based on the given invoice
-	 *
-	 * @param invoice
-	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveAdjustmentChargesForInvoice(I_C_Invoice invoice);
 
 	/**
 	 * Retrieve all Credit Memo entries that were created based on the given invoice
-	 *
-	 * @param invoice
-	 * @return
 	 */
 	Iterator<I_C_Invoice> retrieveCreditMemosForInvoice(I_C_Invoice invoice);
 
 	org.compiere.model.I_C_Invoice getByIdInTrx(InvoiceId invoiceId);
 
-	List<org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
+	List<? extends org.compiere.model.I_C_Invoice> getByIdsInTrx(Collection<InvoiceId> invoiceIds);
 
 	List<org.compiere.model.I_C_Invoice> getByIdsOutOfTrx(Collection<InvoiceId> invoiceIds);
 
@@ -176,4 +171,16 @@ public interface IInvoiceDAO extends ISingletonService
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 
 	boolean hasCompletedInvoicesReferencing(InvoiceId invoiceId);
+
+	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
+
+	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
+
+	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
+
+	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
+
+	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
+
+	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
 }

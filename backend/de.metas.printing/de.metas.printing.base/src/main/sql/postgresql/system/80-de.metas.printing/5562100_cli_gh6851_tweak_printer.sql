@@ -39,7 +39,7 @@ UPDATE AD_PrinterHW SET
     Name='print-to-disk', 
     AD_PrinterHW_ID=540331,
     Description='Wenn mit diesem Drucker gedruckt wird, dann wird eine PDF-Datei innerhalb des Verzeichnisses "print-to-disk" (Name dieses Druckers) abgelegt. Siehe auch System-Konfig "de.metas.printing.StorePDFBaseDirectory"'
-WHERE AD_PrinterHW_ID=1000006;
+WHERE AD_PrinterHW_ID=540006;
 
 
 UPDATE AD_Printer_Config SET UpdatedBy=99, Updated='2020-06-23 17:06:39.646094+00', ConfigHostKey=TRIM(ConfigHostKey) WHERE TRIM(ConfigHostKey)!=ConfigHostKey;

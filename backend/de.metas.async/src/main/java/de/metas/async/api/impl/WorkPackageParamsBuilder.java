@@ -1,5 +1,7 @@
 package de.metas.async.api.impl;
 
+import java.util.Collection;
+
 /*
  * #%L
  * de.metas.async
@@ -26,7 +28,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.annotation.Nullable;
+
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
 
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageParamsBuilder;
@@ -78,12 +83,12 @@ import lombok.NonNull;
 	}
 
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!built.get(), "not already built");
 	}
 
-	private final void markAsBuilt()
+	private void markAsBuilt()
 	{
 		final boolean wasAlreadyBuilt = built.getAndSet(true);
 		Check.assume(!wasAlreadyBuilt, "not already built");
@@ -101,7 +106,7 @@ import lombok.NonNull;
 		_workpackage = workpackage;
 	}
 
-	private final I_C_Queue_WorkPackage getC_Queue_WorkPackage()
+	private I_C_Queue_WorkPackage getC_Queue_WorkPackage()
 	{
 		Check.assumeNotNull(_workpackage, "workpackage not null");
 		return _workpackage;
@@ -119,7 +124,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public IWorkPackageParamsBuilder setParameters(final Map<String, ? extends Object> parameters)
+	public IWorkPackageParamsBuilder setParameters(final Map<String, ?> parameters)
 	{
 		assertNotBuilt();
 
@@ -128,12 +133,39 @@ import lombok.NonNull;
 			return this;
 		}
 
-		for (final Map.Entry<String, ? extends Object> param : parameters.entrySet())
+		for (final Map.Entry<String, ?> param : parameters.entrySet())
 		{
 			final String parameterName = param.getKey();
 			Check.assumeNotEmpty(parameterName, "parameterName not empty");
 
 			final Object parameterValue = param.getValue();
+			parameterName2valueMap.put(parameterName, parameterValue);
+		}
+
+		return this;
+	}
+	
+	@Override
+	public IWorkPackageParamsBuilder setParameters(@Nullable final IParams parameters)
+	{
+		assertNotBuilt();
+
+		if (parameters == null)
+		{
+			return this;
+		}
+		
+		final Collection<String> parameterNames = parameters.getParameterNames();
+		if(parameterNames.isEmpty())
+		{
+			return this;
+		}
+
+		for (final String parameterName : parameterNames)
+		{
+			Check.assumeNotEmpty(parameterName, "parameterName not empty");
+
+			final Object parameterValue = parameters.getParameterAsObject(parameterName);
 			parameterName2valueMap.put(parameterName, parameterValue);
 		}
 

@@ -22,6 +22,7 @@
 
 package de.metas.serviceprovider.timebooking.importer;
 
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -34,6 +35,9 @@ import java.time.LocalDate;
 @ToString( exclude = "authToken")
 public class ImportTimeBookingsRequest
 {
+	@NonNull
+	OrgId orgId;
+
 	@NonNull
 	String authToken;
 

@@ -27,6 +27,10 @@ import java.util.Arrays;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.lock.spi.impl.SqlLockDatabase;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -46,14 +50,14 @@ import de.metas.i18n.TranslatableStrings;
  */
 public abstract class LockException extends AdempiereException
 {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2526563115872381426L;
 
 	private String sql;
 	private Object[] sqlParams;
-
+	
+	@Getter
+	private ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocks;
+	
 	public LockException(final String message)
 	{
 		super(message);
@@ -85,7 +89,11 @@ public abstract class LockException extends AdempiereException
 		{
 			message.append("\n SQL Params: ").append(Arrays.toString(sqlParams));
 		}
-
+		if (existingLocks != null)
+		{
+			message.append("\n Existing Locks: ").append(existingLocks.toString());
+		}
+		
 		appendParameters(message);
 
 		return message.build();
@@ -100,8 +108,9 @@ public abstract class LockException extends AdempiereException
 		return this;
 	}
 
+ 	@Override
 	@OverridingMethodsMustInvokeSuper
-	public LockException setRecord(final TableRecordReference record)
+	public LockException setRecord(final @NonNull TableRecordReference record)
 	{
 		super.setRecord(record);
 		resetMessageBuilt();
@@ -110,9 +119,15 @@ public abstract class LockException extends AdempiereException
 
 	@Override
 	@OverridingMethodsMustInvokeSuper
-	public LockException setParameter(final String name, final Object value)
+	public LockException setParameter(final @NonNull String name, final Object value)
 	{
 		super.setParameter(name, value);
+		return this;
+	}
+
+	public LockException setExistingLocks(@NonNull final ImmutableList<SqlLockDatabase.ExistingLockInfo> existingLocks)
+	{
+		this.existingLocks = existingLocks;
 		return this;
 	}
 }

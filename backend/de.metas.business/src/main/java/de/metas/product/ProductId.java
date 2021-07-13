@@ -68,7 +68,7 @@ public class ProductId implements RepoIdAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public static int toRepoId(final ProductId productId)
+	public static int toRepoId(@Nullable final ProductId productId)
 	{
 		return productId != null ? productId.getRepoId() : -1;
 	}

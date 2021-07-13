@@ -21,20 +21,18 @@
 	<build>
 		<plugins>
 			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>jaxb2-maven-plugin</artifactId>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
 				<executions>
-
 					<execution>
-						<!-- Direct Credit -->
 						<id>generate-de.metas.payment.sepa.jaxb.sct.pain_001_01_03_ch_02</id>
+						<phase>generate-sources</phase>
 						<goals>
-							<goal>xjc</goal>
+							<goal>generate</goal>
 						</goals>
 						<configuration>
-							<clearOutputDir>true</clearOutputDir>
-							<sources>src/main/xsd/pain.001.001.03.ch.02.xsd</sources>
-							<packageName>de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</packageName>
+							<schemaDirectory>src/main/xsd</schemaDirectory>
+							<generatePackage>de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</generatePackage>
 						</configuration>
 					</execution>
 				</executions>

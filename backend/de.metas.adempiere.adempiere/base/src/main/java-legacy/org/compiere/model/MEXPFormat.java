@@ -67,6 +67,7 @@ import de.metas.cache.CCache;
 import de.metas.util.Check;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
 
 /**
  * @author Trifon N. Trifonov
@@ -161,17 +162,9 @@ public class MEXPFormat extends X_EXP_Format {
 	/**
 	 * Returns the format with the given AD_client_ID (or 0), Value and Version or <code>null</code>. Note that this triple is
 	 * unique for all formats.
-	 *
-	 * @param ctx
-	 * @param value
-	 * @param AD_Client_ID
-	 * @param version
-	 * @param trxName
-	 * @return
-	 * @throws SQLException
 	 */
 	public static MEXPFormat getFormatByValueAD_Client_IDAndVersion(
-			final Properties ctx, final String value, final int AD_Client_ID, final String version, final String trxName)
+			final Properties ctx, final String value, final int AD_Client_ID, final String version, @Nullable final String trxName)
 	{
 		final String key = new String(AD_Client_ID + value + version);
 

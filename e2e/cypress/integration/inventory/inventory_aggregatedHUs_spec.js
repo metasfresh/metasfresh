@@ -31,24 +31,20 @@ describe('Aggregated-HUs inventory test', function() {
   });
 
   it('Create a new single-HU inventory doc', function() {
-    cy.fixture('product/simple_product.json').then(productJson => {
-      const uomName = getLanguageSpecific(productJson, 'c_uom');
-      cy.fixture('inventory/inventory.json').then(inventoryJson => {
-        const docTypeName = getLanguageSpecific(inventoryJson, docTypeKey);
+    cy.fixture('inventory/inventory.json').then(inventoryJson => {
+      const docTypeName = getLanguageSpecific(inventoryJson, docTypeKey);
 
-        const inventoryLine = new InventoryLine()
-          .setProductName(productName)
-          .setQuantity(quantity)
-          .setC_UOM_ID(uomName)
-          .setM_Locator_ID(locatorId)
-          .setIsCounted(isCounted);
+      const inventoryLine = new InventoryLine()
+        .setProductName(productName)
+        .setQuantity(quantity)
+        .setM_Locator_ID(locatorId)
+        .setIsCounted(isCounted);
 
-        new Inventory()
-          .setWarehouse(inventoryJson.warehouseName)
-          .setDocType(docTypeName)
-          .addInventoryLine(inventoryLine)
-          .apply();
-      });
+      new Inventory()
+        .setWarehouse(inventoryJson.warehouseName)
+        .setDocType(docTypeName)
+        .addInventoryLine(inventoryLine)
+        .apply();
     });
   });
 });

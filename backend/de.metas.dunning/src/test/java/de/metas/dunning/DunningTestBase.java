@@ -42,6 +42,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.junit.After;
 import org.junit.Before;
@@ -51,6 +52,7 @@ import org.junit.rules.TestWatcher;
 
 import de.metas.acct.api.IPostingService;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.engine.IDocument;
@@ -107,6 +109,8 @@ public class DunningTestBase
 	{
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.get().setCopyOnSave(true); // FIXME : Adapt dunning tests to new behavior
+		
+		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
 		Services.get(ISysConfigBL.class).setValue(IPostingService.SYSCONFIG_Enabled, false, ClientId.SYSTEM, OrgId.ANY);
 

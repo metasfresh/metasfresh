@@ -25,7 +25,7 @@ package de.metas.handlingunits;
 import com.google.common.base.MoreObjects;
 
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.util.lang.CoalesceUtil;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;

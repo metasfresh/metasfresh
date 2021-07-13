@@ -22,37 +22,13 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import de.metas.bpartner.BPartnerContactId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.apache.log4j.MDC;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_M_InOut;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -71,6 +47,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.event.InOutUserNotificationsProducer;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -79,10 +56,41 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemExceptionHandler;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorContext;
+import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
+import org.adempiere.ad.trx.processor.spi.ITrxItemChunkProcessor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.X_C_DocType;
+import org.compiere.model.X_M_InOut;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.MDC;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_DELIVERY_DATE;
+import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY;
 
 /**
  * Create Shipments from {@link ShipmentScheduleWithHU} records.
@@ -115,12 +123,16 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private ITrxItemProcessorContext processorCtx;
 	private ITrxItemExceptionHandler trxItemExceptionHandler = FailTrxItemExceptionHandler.instance;
 
+	@Nullable
 	private I_M_InOut currentShipment;
+	
+	@Nullable
 	private ShipmentLineBuilder currentShipmentLineBuilder;
 
 	/**
 	 * All candidates for {@link #currentShipment}
 	 */
+	@Nullable
 	private List<ShipmentScheduleWithHU> currentCandidates;
 
 	/**
@@ -134,7 +146,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	private boolean createPackingLines = false;
 
-	private boolean shipmentDateToday = false;
+	private CalculateShippingDateRule calculateShippingDateRule = CalculateShippingDateRule.NONE;
 
 	/**
 	 * A list of TUs which are assigned to different shipment lines.
@@ -144,6 +156,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 * In this way, we {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>true</code> only on first assignment.
 	 */
 	private final Set<HuId> tuIdsAlreadyAssignedToShipmentLine = new HashSet<>();
+
+	private final Map<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new HashMap<>();
 
 	public InOutProducerFromShipmentScheduleWithHU(@NonNull final InOutGenerateResult result)
 	{
@@ -161,7 +175,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		try
 		{
 			final InOutGenerateResult result = trxItemProcessorExecutorService
-					.<ShipmentScheduleWithHU, InOutGenerateResult> createExecutor()
+					.<ShipmentScheduleWithHU, InOutGenerateResult>createExecutor()
 					.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 					.setProcessor(this)
 					.setExceptionHandler(trxItemExceptionHandler)
@@ -188,7 +202,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private static String extractSourceInfo(final List<ShipmentScheduleWithHU> candidates)
 	{
 		return candidates.stream()
-				.map(candidate -> extractSourceInfo(candidate))
+				.map(InOutProducerFromShipmentScheduleWithHU::extractSourceInfo)
 				.distinct()
 				.collect(Collectors.joining(", "));
 	}
@@ -241,11 +255,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 	 *
 	 * @return shipment (header)
 	 */
-	private I_M_InOut getCreateShipmentHeader(final ShipmentScheduleWithHU candidate)
+	private I_M_InOut getCreateShipmentHeader(@NonNull final ShipmentScheduleWithHU candidate)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = candidate.getM_ShipmentSchedule();
 
-		final LocalDate shipmentDate = calculateShipmentDate(shipmentSchedule, shipmentDateToday);
+		final LocalDate shipmentDate = calculateShipmentDate(shipmentSchedule, calculateShippingDateRule);
 
 		//
 		// Search for existing shipment to consolidate on
@@ -261,23 +275,30 @@ public class InOutProducerFromShipmentScheduleWithHU
 			shipment = createShipmentHeader(candidate, shipmentDate);
 		}
 
-		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, shipment.getM_InOut_ID());
+		MDC.put(I_M_InOut.COLUMNNAME_M_InOut_ID, Integer.toString(shipment.getM_InOut_ID()));
 		return shipment;
 	}
 
 	@VisibleForTesting
-	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, final boolean isShipmentDateToday)
+	static LocalDate calculateShipmentDate(final @NonNull I_M_ShipmentSchedule schedule, @NonNull final CalculateShippingDateRule calculateShippingDateType)
 	{
-		final LocalDate today = SystemTime.asLocalDate();
-		if (isShipmentDateToday)
+		final LocalDate today = de.metas.common.util.time.SystemTime.asLocalDate();
+
+		if (FORCE_SHIPMENT_DATE_TODAY.equals(calculateShippingDateType))
 		{
 			return today;
 		}
 
 		final ZonedDateTime deliveryDateEffective = Services.get(IShipmentScheduleEffectiveBL.class).getDeliveryDate(schedule);
+
 		if (deliveryDateEffective == null)
 		{
 			return today;
+		}
+
+		if (FORCE_SHIPMENT_DATE_DELIVERY_DATE.equals(calculateShippingDateType))
+		{
+			return deliveryDateEffective.toLocalDate();
 		}
 
 		if (deliveryDateEffective.toLocalDate().isBefore(today))
@@ -289,11 +310,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	/**
-	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentOrNull(ShipmentScheduleWithHU)}
-	 *
-	 * @param candidate
-	 * @param movementDate
-	 * @return shipment
+	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL#getOpenShipmentOrNull(ShipmentScheduleWithHU, LocalDate)}.
 	 */
 	private I_M_InOut createShipmentHeader(final ShipmentScheduleWithHU candidate, final LocalDate dateDoc)
 	{
@@ -314,6 +331,13 @@ public class InOutProducerFromShipmentScheduleWithHU
 			shipment.setC_DocType_ID(docTypeId);
 			shipment.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 			shipment.setIsSOTrx(true);
+
+			final ShipmentScheduleExternalInfo externalInfo = scheduleId2ExternalInfo.get(ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID()));
+
+			if (externalInfo != null && Check.isNotBlank(externalInfo.getDocumentNo()))
+			{
+				shipment.setDocumentNo(externalInfo.getDocumentNo());
+			}
 		}
 
 		//
@@ -483,6 +507,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 			// save the shipment schedule using current transaction
 			InterfaceWrapperHelper.save(shipmentSchedule, processorCtx.getTrxName());
 		}
+
 		Loggables.addLog("Shipment {0} was created;\nShipmentScheduleWithHUs: {1}", currentShipment, currentCandidates);
 	}
 
@@ -551,7 +576,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private void updateShipmentDate(@NonNull final I_M_InOut shipment, @NonNull final ShipmentScheduleWithHU candidate)
 	{
 		final I_M_ShipmentSchedule schedule = candidate.getM_ShipmentSchedule();
-		final LocalDate candidateShipmentDate = calculateShipmentDate(schedule, shipmentDateToday);
+		final LocalDate candidateShipmentDate = calculateShipmentDate(schedule, calculateShippingDateRule);
 
 		// the shipment was created before but wasn't yet completed;
 		if (isShipmentDeliveryDateBetterThanMovementDate(shipment, candidateShipmentDate))
@@ -570,8 +595,10 @@ public class InOutProducerFromShipmentScheduleWithHU
 			final @NonNull I_M_InOut shipment,
 			final @NonNull LocalDate shipmentDeliveryDate)
 	{
+		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoId(shipment.getAD_Org_ID()));
+
 		final LocalDate today = SystemTime.asLocalDate();
-		final LocalDate movementDate = TimeUtil.asLocalDate(shipment.getMovementDate());
+		final LocalDate movementDate = TimeUtil.asLocalDate(shipment.getMovementDate(), timeZone);
 
 		final boolean isCandidateInThePast = shipmentDeliveryDate.isBefore(today);
 		final boolean isMovementDateInThePast = movementDate.isBefore(today);
@@ -602,8 +629,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		// then create shipment line (if any) and reset the builder
 		if (currentShipmentLineBuilder != null && !currentShipmentLineBuilder.canAdd(candidate))
 		{
-			createShipmentLineIfAny();
-			// => currentShipmentLineBuilder = null;
+			createShipmentLineIfAny(); // => currentShipmentLineBuilder is null after this
 		}
 
 		//
@@ -643,9 +669,16 @@ public class InOutProducerFromShipmentScheduleWithHU
 	}
 
 	@Override
-	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(boolean forceDateToday)
+	public IInOutProducerFromShipmentScheduleWithHU computeShipmentDate(final CalculateShippingDateRule calculateShippingDateRule)
 	{
-		this.shipmentDateToday = forceDateToday;
+		this.calculateShippingDateRule = calculateShippingDateRule;
+		return this;
+	}
+
+	@Override
+	public IInOutProducerFromShipmentScheduleWithHU setScheduleIdToExternalInfo(@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo)
+	{
+		this.scheduleId2ExternalInfo.putAll(scheduleId2ExternalInfo);
 		return this;
 	}
 
@@ -658,5 +691,4 @@ public class InOutProducerFromShipmentScheduleWithHU
 				+ ", currentShipmentLineBuilder=" + currentShipmentLineBuilder + ", currentCandidates=" + currentCandidates
 				+ ", lastItem=" + lastItem + "]";
 	}
-
 }

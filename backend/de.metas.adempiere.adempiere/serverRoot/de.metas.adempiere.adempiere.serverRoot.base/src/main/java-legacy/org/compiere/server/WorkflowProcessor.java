@@ -16,28 +16,10 @@
  *****************************************************************************/
 package org.compiere.server;
 
-import java.io.File;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Set;
-
-import org.compiere.model.MClient;
-import org.compiere.model.PO;
-import org.compiere.process.StateEngine;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-import org.compiere.wf.MWFActivity;
-import org.compiere.wf.MWFNode;
-import org.compiere.wf.MWFProcess;
-import org.compiere.wf.MWFResponsible;
-import org.compiere.wf.MWorkflowProcessor;
-import org.compiere.wf.MWorkflowProcessorLog;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Msg;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -46,6 +28,25 @@ import de.metas.security.IRoleDAO;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.workflow.WFResponsible;
+import de.metas.workflow.WFResponsibleId;
+import de.metas.workflow.WFResponsibleType;
+import de.metas.workflow.execution.WFActivityPendingInfo;
+import de.metas.workflow.execution.WFProcessRepository;
+import de.metas.workflow.service.IADWorkflowDAO;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.MClient;
+import org.compiere.model.PO;
+import org.compiere.util.TimeUtil;
+import org.compiere.wf.MWorkflowProcessor;
+import org.compiere.wf.MWorkflowProcessorLog;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Workflow Processor
@@ -55,23 +56,26 @@ import de.metas.util.Services;
  */
 public class WorkflowProcessor extends AdempiereServer
 {
-	/**
-	 * WorkflowProcessor
-	 * 
-	 * @param model model
-	 */
+	private final WFProcessRepository wfProcessRepo = SpringContextHolder.instance.getBean(WFProcessRepository.class);
+
 	public WorkflowProcessor(MWorkflowProcessor model)
 	{
-		super(model, 120);		// 2 minute dalay
+		super(model, 120);        // 2 minute dalay
 		m_model = model;
 		m_client = MClient.get(model.getCtx(), model.getAD_Client_ID());
-	}	// WorkflowProcessor
+	}    // WorkflowProcessor
 
-	/** The Concrete Model */
+	/**
+	 * The Concrete Model
+	 */
 	private MWorkflowProcessor m_model = null;
-	/** Last Summary */
+	/**
+	 * Last Summary
+	 */
 	private StringBuffer m_summary = new StringBuffer();
-	/** Client onfo */
+	/**
+	 * Client onfo
+	 */
 	private MClient m_client = null;
 
 	/**
@@ -82,8 +86,8 @@ public class WorkflowProcessor extends AdempiereServer
 	{
 		m_summary = new StringBuffer();
 		//
-		wakeup();
-		dynamicPriority();
+		// wakeup();
+		// dynamicPriority();
 		sendAlerts();
 		//
 		int no = m_model.deleteLog();
@@ -92,206 +96,179 @@ public class WorkflowProcessor extends AdempiereServer
 		MWorkflowProcessorLog pLog = new MWorkflowProcessorLog(m_model, m_summary.toString());
 		pLog.setReference("#" + getRunCount() + " - " + TimeUtil.formatElapsed(getStartWork()));
 		pLog.save();
-	}	// doWork
+	}    // doWork
 
-	/**
-	 * Continue Workflow After Sleep
-	 */
-	private void wakeup()
-	{
-		String sql = "SELECT * "
-				+ "FROM AD_WF_Activity a "
-				+ "WHERE Processed='N' AND WFState='OS'"	// suspended
-				+ " AND EndWaitTime > now()"
-				+ " AND AD_Client_ID=?"
-				+ " AND EXISTS (SELECT * FROM AD_Workflow wf "
-				+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
-				+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID"
-				+ " AND wfn.Action='Z'"		// sleeping
-				+ " AND (wf.AD_WorkflowProcessor_ID IS NULL OR wf.AD_WorkflowProcessor_ID=?))";
-		PreparedStatement pstmt = null;
-		int count = 0;
-		int countEMails = 0;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, m_model.getAD_Client_ID());
-			pstmt.setInt(2, m_model.getAD_WorkflowProcessor_ID());
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				MWFActivity activity = new MWFActivity(getCtx(), rs, null);
-				activity.setWFState(StateEngine.STATE_Completed);
-				// saves and calls MWFProcess.checkActivities();
-				count++;
-			}
-			rs.close();
-		}
-		catch (Exception e)
-		{
-			log.error("wakeup", e);
-		}
-		finally
-		{
-			DB.close(pstmt);
-		}
-		m_summary.append("Wakeup #").append(count).append(" - ");
-	}	// wakeup
+	// /**
+	//  * Continue Workflow After Sleep
+	//  */
+	// private void wakeup()
+	// {
+	// 	String sql = "SELECT * "
+	// 			+ "FROM AD_WF_Activity a "
+	// 			+ "WHERE Processed='N' AND WFState='OS'"    // suspended
+	// 			+ " AND EndWaitTime > now()"
+	// 			+ " AND AD_Client_ID=?"
+	// 			+ " AND EXISTS (SELECT * FROM AD_Workflow wf "
+	// 			+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
+	// 			+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID"
+	// 			+ " AND wfn.Action='Z'"        // sleeping
+	// 			+ " AND (wf.AD_WorkflowProcessor_ID IS NULL OR wf.AD_WorkflowProcessor_ID=?))";
+	// 	PreparedStatement pstmt = null;
+	// 	int count = 0;
+	// 	int countEMails = 0;
+	// 	try
+	// 	{
+	// 		pstmt = DB.prepareStatement(sql, null);
+	// 		pstmt.setInt(1, m_model.getAD_Client_ID());
+	// 		pstmt.setInt(2, m_model.getAD_WorkflowProcessor_ID());
+	// 		ResultSet rs = pstmt.executeQuery();
+	// 		while (rs.next())
+	// 		{
+	// 			MWFActivity activity = new MWFActivity(getCtx(), rs);
+	// 			activity.changeWFStateTo(WFState.Completed);
+	// 			// saves and calls MWFProcess.checkActivities();
+	// 			count++;
+	// 		}
+	// 		rs.close();
+	// 	}
+	// 	catch (final Exception e)
+	// 	{
+	// 		log.error("wakeup", e);
+	// 	}
+	// 	finally
+	// 	{
+	// 		DB.close(pstmt);
+	// 	}
+	// 	m_summary.append("Wakeup #").append(count).append(" - ");
+	// }    // wakeup
 
-	/**
-	 * Set/Increase Priority dynamically
-	 */
-	private void dynamicPriority()
-	{
-		// suspened activities with dynamic priority node
-		String sql = "SELECT * "
-				+ "FROM AD_WF_Activity a "
-				+ "WHERE Processed='N' AND WFState='OS'"	// suspended
-				+ " AND EXISTS (SELECT * FROM AD_Workflow wf"
-				+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
-				+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID AND wf.AD_WorkflowProcessor_ID=?"
-				+ " AND wfn.DynPriorityUnit IS NOT NULL AND wfn.DynPriorityChange IS NOT NULL)";
-		PreparedStatement pstmt = null;
-		int count = 0;
-		int countEMails = 0;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, m_model.getAD_WorkflowProcessor_ID());
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				MWFActivity activity = new MWFActivity(getCtx(), rs, null);
-				if (activity.getDynPriorityStart() == 0)
-				{
-					activity.setDynPriorityStart(activity.getPriority());
-				}
-				long ms = System.currentTimeMillis() - activity.getCreated().getTime();
-				MWFNode node = activity.getNode();
-				int prioDiff = node.calculateDynamicPriority((int)(ms / 1000));
-				activity.setPriority(activity.getDynPriorityStart() + prioDiff);
-				activity.save();
-				count++;
-			}
-			rs.close();
-		}
-		catch (Exception e)
-		{
-			log.error(sql, e);
-		}
-		finally
-		{
-			DB.close(pstmt);
-		}
-
-		m_summary.append("DynPriority #").append(count).append(" - ");
-	}	// setPriority
+	// /**
+	//  * Set/Increase Priority dynamically
+	//  */
+	// private void dynamicPriority()
+	// {
+	// 	// suspened activities with dynamic priority node
+	// 	String sql = "SELECT * "
+	// 			+ "FROM AD_WF_Activity a "
+	// 			+ "WHERE Processed='N' AND WFState='OS'"    // suspended
+	// 			+ " AND EXISTS (SELECT * FROM AD_Workflow wf"
+	// 			+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
+	// 			+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID AND wf.AD_WorkflowProcessor_ID=?"
+	// 			+ " AND wfn.DynPriorityUnit IS NOT NULL AND wfn.DynPriorityChange IS NOT NULL)";
+	// 	PreparedStatement pstmt = null;
+	// 	ResultSet rs = null;
+	// 	int count = 0;
+	// 	int countEMails = 0;
+	// 	try
+	// 	{
+	// 		pstmt = DB.prepareStatement(sql, null);
+	// 		pstmt.setInt(1, m_model.getAD_WorkflowProcessor_ID());
+	// 		rs = pstmt.executeQuery();
+	// 		while (rs.next())
+	// 		{
+	// 			MWFActivity activity = new MWFActivity(getCtx(), rs);
+	// 			if (activity.getDynPriorityStart() == 0)
+	// 			{
+	// 				activity.setDynPriorityStart(activity.getPriority());
+	// 			}
+	// 			long ms = System.currentTimeMillis() - activity.getCreated().getTime();
+	// 			WFNode node = activity.getNode();
+	// 			int prioDiff = calculateDynamicPriority(node, (int)(ms / 1000));
+	// 			activity.setPriority(activity.getDynPriorityStart() + prioDiff);
+	// 			activity.save();
+	// 			count++;
+	// 		}
+	// 		rs.close();
+	// 	}
+	// 	catch (Exception e)
+	// 	{
+	// 		throw new DBException(e, sql);
+	// 	}
+	// 	finally
+	// 	{
+	// 		DB.close(rs, pstmt);
+	// 	}
+	//
+	// 	m_summary.append("DynPriority #").append(count).append(" - ");
+	// }    // setPriority
+	//
+	// /**
+	//  * Calculate Dynamic Priority
+	//  *
+	//  * @param seconds second after created
+	//  * @return dyn prio
+	//  */
+	// private static int calculateDynamicPriority(final WFNode wfNode, final int seconds)
+	// {
+	// 	if (seconds == 0
+	// 			|| wfNode.getDynPriorityUnitDuration().isZero()
+	// 			|| wfNode.getDynPriorityChange().signum() == 0)
+	// 	{
+	// 		return 0;
+	// 	}
+	//
+	// 	final BigDecimal change = new BigDecimal(seconds)
+	// 			.divide(BigDecimal.valueOf(wfNode.getDynPriorityUnitDuration().getSeconds()), BigDecimal.ROUND_DOWN)
+	// 			.multiply(wfNode.getDynPriorityChange());
+	// 	return change.intValue();
+	// }    //	calculateDynamicPriority
 
 	/**
 	 * Send Alerts
 	 */
 	private void sendAlerts()
 	{
-		// Alert over Priority
+		alertOverPriority();
+		alertOverEndWaitTime();
+		alertInactivity();
+	}    // sendAlerts
+
+	private void alertOverPriority()
+	{
 		if (m_model.getAlertOverPriority() > 0)
 		{
-			String sql = "SELECT * "
-					+ "FROM AD_WF_Activity a "
-					+ "WHERE Processed='N' AND WFState='OS'"	// suspended
-					+ " AND Priority >= ?"				// ##1
-					+ " AND (DateLastAlert IS NULL";
-			if (m_model.getRemindDays() > 0)
-			{
-				sql += " OR (DateLastAlert+" + m_model.getRemindDays()
-						+ ") < now()";
-			}
-			sql += ") AND EXISTS (SELECT * FROM AD_Workflow wf "
-					+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
-					+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID"
-					+ " AND (wf.AD_WorkflowProcessor_ID IS NULL OR wf.AD_WorkflowProcessor_ID=?))";
+			final List<WFActivityPendingInfo> pendingActivities = wfProcessRepo.queryPendingActivitiesOverPriority()
+					.alertOverPriority(m_model.getAlertOverPriority())
+					.remindDays(m_model.getRemindDays())
+					.adWorkflowProcessorId(m_model.getAD_WorkflowProcessor_ID())
+					.execute();
+
 			int count = 0;
 			int countEMails = 0;
-			PreparedStatement pstmt = null;
-			try
+			for (final WFActivityPendingInfo activity : pendingActivities)
 			{
-				pstmt = DB.prepareStatement(sql, null);
-				pstmt.setInt(1, m_model.getAlertOverPriority());
-				pstmt.setInt(2, m_model.getAD_WorkflowProcessor_ID());
-				ResultSet rs = pstmt.executeQuery();
-				while (rs.next())
-				{
-					MWFActivity activity = new MWFActivity(getCtx(), rs, null);
-					boolean escalate = activity.getDateLastAlert() != null;
-					countEMails += sendEmail(activity, "ActivityOverPriority",
-							escalate, true);
-					activity.setDateLastAlert(new Timestamp(System.currentTimeMillis()));
-					activity.save();
-					count++;
-				}
-				rs.close();
-				pstmt.close();
+				boolean escalate = activity.getDateLastAlert() != null;
+				countEMails += sendEmail(activity, "ActivityOverPriority",
+						escalate, true);
+				wfProcessRepo.setDateLastAlert(activity.getWfActivityId(), SystemTime.asInstant());
+				count++;
 			}
-			catch (SQLException e)
-			{
-				log.error("(Priority) - " + sql, e);
-			}
-			finally
-			{
-				DB.close(pstmt);
-			}
+
 			m_summary.append("OverPriority #").append(count);
 			if (countEMails > 0)
 			{
 				m_summary.append(" (").append(countEMails).append(" EMail)");
 			}
 			m_summary.append(" - ");
-		}	// Alert over Priority
+		}    // Alert over Priority
+	}
 
-		/**
-		 * Over End Wait
-		 */
-		String sql = "SELECT * "
-				+ "FROM AD_WF_Activity a "
-				+ "WHERE Processed='N' AND WFState='OS'"	// suspended
-				+ " AND EndWaitTime > now()"
-				+ " AND (DateLastAlert IS NULL";
-		if (m_model.getRemindDays() > 0)
-		{
-			sql += " OR (DateLastAlert+" + m_model.getRemindDays()
-					+ ") < now()";
-		}
-		sql += ") AND EXISTS (SELECT * FROM AD_Workflow wf "
-				+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
-				+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID"
-				+ " AND wfn.Action<>'Z'"	// not sleeping
-				+ " AND (wf.AD_WorkflowProcessor_ID IS NULL OR wf.AD_WorkflowProcessor_ID=?))";
-		PreparedStatement pstmt = null;
+	private void alertOverEndWaitTime()
+	{
+		final List<WFActivityPendingInfo> pendingActivities = wfProcessRepo.queryPendingActivitiesOverEndWaitTime()
+				.remindDays(m_model.getRemindDays())
+				.adWorkflowProcessorId(m_model.getAD_WorkflowProcessor_ID())
+				.execute();
+
 		int count = 0;
 		int countEMails = 0;
-		try
+		for (final WFActivityPendingInfo activity : pendingActivities)
 		{
-			pstmt = DB.prepareStatement(sql, null);
-			pstmt.setInt(1, m_model.getAD_WorkflowProcessor_ID());
-			ResultSet rs = pstmt.executeQuery();
-			while (rs.next())
-			{
-				MWFActivity activity = new MWFActivity(getCtx(), rs, null);
-				boolean escalate = activity.getDateLastAlert() != null;
-				countEMails += sendEmail(activity, "ActivityEndWaitTime",
-						escalate, false);
-				activity.setDateLastAlert(new Timestamp(System.currentTimeMillis()));
-				activity.save();
-				count++;
-			}
-			rs.close();
-		}
-		catch (Exception e)
-		{
-			log.error("(EndWaitTime) - " + sql, e);
-		}
-		finally
-		{
-			DB.close(pstmt);
+			boolean escalate = activity.getDateLastAlert() != null;
+			countEMails += sendEmail(activity, "ActivityEndWaitTime",
+					escalate, false);
+			wfProcessRepo.setDateLastAlert(activity.getWfActivityId(), SystemTime.asInstant());
+			count++;
 		}
 
 		m_summary.append("EndWaitTime #").append(count);
@@ -300,53 +277,27 @@ public class WorkflowProcessor extends AdempiereServer
 			m_summary.append(" (").append(countEMails).append(" EMail)");
 		}
 		m_summary.append(" - ");
+	}
 
-		/**
-		 * Send inactivity alerts
-		 */
+	private void alertInactivity()
+	{
 		if (m_model.getInactivityAlertDays() > 0)
 		{
-			sql = "SELECT * "
-					+ "FROM AD_WF_Activity a "
-					+ "WHERE Processed='N' AND WFState='OS'"	// suspended
-					+ " AND (Updated+" + m_model.getInactivityAlertDays() + ") < now()"
-					+ " AND (DateLastAlert IS NULL";
-			if (m_model.getRemindDays() > 0)
+			final List<WFActivityPendingInfo> pendingActivities = wfProcessRepo.queryPendingActivitiesInactive()
+					.inactivityAlertDays(m_model.getInactivityAlertDays())
+					.remindDays(m_model.getRemindDays())
+					.adWorkflowProcessorId(m_model.getAD_WorkflowProcessor_ID())
+					.execute();
+
+			int count = 0;
+			int countEMails = 0;
+			for (final WFActivityPendingInfo activity : pendingActivities)
 			{
-				sql += " OR (DateLastAlert+" + m_model.getRemindDays()
-						+ ") < now()";
-			}
-			sql += ") AND EXISTS (SELECT * FROM AD_Workflow wf "
-					+ " INNER JOIN AD_WF_Node wfn ON (wf.AD_Workflow_ID=wfn.AD_Workflow_ID) "
-					+ "WHERE a.AD_WF_Node_ID=wfn.AD_WF_Node_ID"
-					+ " AND (wf.AD_WorkflowProcessor_ID IS NULL OR wf.AD_WorkflowProcessor_ID=?))";
-			count = 0;
-			countEMails = 0;
-			try
-			{
-				pstmt = DB.prepareStatement(sql, null);
-				pstmt.setInt(1, m_model.getAD_WorkflowProcessor_ID());
-				ResultSet rs = pstmt.executeQuery();
-				while (rs.next())
-				{
-					MWFActivity activity = new MWFActivity(getCtx(), rs, null);
-					boolean escalate = activity.getDateLastAlert() != null;
-					countEMails += sendEmail(activity, "ActivityInactivity",
-							escalate, false);
-					activity.setDateLastAlert(new Timestamp(System.currentTimeMillis()));
-					activity.save();
-					count++;
-				}
-				rs.close();
-				pstmt.close();
-			}
-			catch (SQLException e)
-			{
-				log.error("(Inactivity): " + sql, e);
-			}
-			finally
-			{
-				DB.close(pstmt);
+				boolean escalate = activity.getDateLastAlert() != null;
+				countEMails += sendEmail(activity, "ActivityInactivity",
+						escalate, false);
+				wfProcessRepo.setDateLastAlert(activity.getWfActivityId(), SystemTime.asInstant());
+				count++;
 			}
 			m_summary.append("Inactivity #").append(count);
 			if (countEMails > 0)
@@ -354,41 +305,51 @@ public class WorkflowProcessor extends AdempiereServer
 				m_summary.append(" (").append(countEMails).append(" EMail)");
 			}
 			m_summary.append(" - ");
-		}	// Inactivity
-	}	// sendAlerts
+		}    // Inactivity
+	}
 
 	/**
 	 * Send Alert EMail
-	 * 
-	 * @param activity activity
-	 * @param AD_Message message
-	 * @param toProcess true if to process owner
+	 *
+	 * @param activity     activity
+	 * @param AD_Message   message
+	 * @param toProcess    true if to process owner
 	 * @param toSupervisor true if to Supervisor
 	 * @return number of mails sent
 	 */
-	private int sendEmail(MWFActivity activity, String AD_Message,
-			boolean toProcess, boolean toSupervisor)
+	private int sendEmail(
+			final WFActivityPendingInfo activity,
+			final String AD_Message,
+			final boolean toProcess,
+			final boolean toSupervisor)
 	{
-		if (m_client == null || m_client.getAD_Client_ID() != activity.getAD_Client_ID())
+		if (m_client == null || m_client.getAD_Client_ID() != activity.getClientId().getRepoId())
 		{
-			m_client = MClient.get(getCtx(), activity.getAD_Client_ID());
+			m_client = MClient.get(getCtx(), activity.getClientId().getRepoId());
 		}
 
-		MWFProcess process = new MWFProcess(getCtx(), activity.getAD_WF_Process_ID(), null);
+		// MWFProcess process = new MWFProcess(getCtx(), activity.getAD_WF_Process_ID());
 
-		String subjectVar = activity.getNode().getName();
+		final ITranslatableString subjectVar = activity.getActivityName();
 		String message = activity.getTextMsg();
 		if (message == null || message.length() == 0)
 		{
-			message = process.getTextMsg();
+			message = activity.getProcessTextMsg();
 		}
+
 		File pdf = null;
-		final PO po = activity.getPO();
-		final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
-		if (document != null)
 		{
-			message = document.getDocumentInfo() + "\n" + message;
-			pdf = document.createPDF();
+			final TableRecordReference documentRef = activity.getDocumentRef();
+			final PO po = documentRef != null
+					? TableModelLoader.instance.getPO(documentRef)
+					: null;
+
+			final IDocument document = po != null ? Services.get(IDocumentBL.class).getDocumentOrNull(po) : null;
+			if (document != null)
+			{
+				message = document.getDocumentInfo() + "\n" + message;
+				pdf = document.createPDF();
+			}
 		}
 
 		// Inactivity Alert: Workflow Activity {}
@@ -399,7 +360,7 @@ public class WorkflowProcessor extends AdempiereServer
 		int counter = 0;
 
 		// To Activity Owner
-		final UserId activityUserId = UserId.ofRepoIdOrNull(activity.getAD_User_ID());
+		final UserId activityUserId = activity.getUserId();
 		if (activityUserId != null)
 		{
 			if (m_client.sendEMail(activityUserId, subject, message, pdf))
@@ -410,7 +371,7 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 
 		// To Process Owner
-		final UserId processUserId = UserId.ofRepoIdOrNull(process.getAD_User_ID());
+		final UserId processUserId = activity.getProcessUserId();
 		if (toProcess && processUserId != null && !list.contains(processUserId))
 		{
 			if (m_client.sendEMail(processUserId, subject, message, pdf))
@@ -421,17 +382,18 @@ public class WorkflowProcessor extends AdempiereServer
 		}
 
 		// To Activity Responsible
-		MWFResponsible responsible = MWFResponsible.get(getCtx(), activity.getAD_WF_Responsible_ID());
-		counter += sendAlertToResponsible(responsible, list, process,
-				subject, message, pdf);
+		final IADWorkflowDAO workflowDAO = Services.get(IADWorkflowDAO.class);
+		final WFResponsibleId activityResponsibleId = activity.getResponsibleId();
+		WFResponsible responsible = workflowDAO.getWFResponsibleById(activityResponsibleId);
+		counter += sendAlertToResponsible(responsible, list, activity, subject, message, pdf);
 
 		// To Process Responsible
+		final WFResponsibleId processResponsibleId = activity.getProcessResponsibleId();
 		if (toProcess
-				&& process.getAD_WF_Responsible_ID() != activity.getAD_WF_Responsible_ID())
+				&& !WFResponsibleId.equals(processResponsibleId, activityResponsibleId))
 		{
-			responsible = MWFResponsible.get(getCtx(), process.getAD_WF_Responsible_ID());
-			counter += sendAlertToResponsible(responsible, list, process,
-					subject, message, pdf);
+			responsible = workflowDAO.getWFResponsibleById(processResponsibleId);
+			counter += sendAlertToResponsible(responsible, list, activity, subject, message, pdf);
 		}
 
 		// Processor SuperVisor
@@ -450,46 +412,39 @@ public class WorkflowProcessor extends AdempiereServer
 
 	/**
 	 * Send Alert To Responsible
-	 * 
-	 * @param responsible responsible
-	 * @param alreadyNotifiedUserIds list of already sent users
-	 * @param process process
-	 * @param subject subject
-	 * @param message message
-	 * @param pdf optional pdf
+	 *
 	 * @return number of mail sent
 	 */
 	private int sendAlertToResponsible(
-			MWFResponsible responsible,
+			WFResponsible responsible,
 			final ArrayList<UserId> alreadyNotifiedUserIds,
-			MWFProcess process,
+			WFActivityPendingInfo activity,
 			String subject,
 			String message,
 			File pdf)
 	{
-		final UserId responsibleUserId = responsible.getAD_User_ID() > 0 ? UserId.ofRepoId(responsible.getAD_User_ID()) : null;
-		final RoleId responsibleRoleId = responsible.getAD_Role_ID() > 0 ? RoleId.ofRepoId(responsible.getAD_Role_ID()) : null;
-
 		int counter = 0;
 		if (responsible.isInvoker())
 		{
 			// nothing
 		}
 		// Human
-		else if (MWFResponsible.RESPONSIBLETYPE_Human.equals(responsible.getResponsibleType())
-				&& responsibleUserId != null
-				&& !alreadyNotifiedUserIds.contains(responsibleUserId))
+		else if (responsible.isHuman()
+				&& !alreadyNotifiedUserIds.contains(responsible.getUserId()))
 		{
-			if (m_client.sendEMail(responsibleUserId, subject, message, pdf))
+			if (m_client.sendEMail(responsible.getUserId(), subject, message, pdf))
 			{
 				counter++;
 			}
-			alreadyNotifiedUserIds.add(responsibleUserId);
+			alreadyNotifiedUserIds.add(responsible.getUserId());
 		}
 		// Org of the Document
-		else if (MWFResponsible.RESPONSIBLETYPE_Organization.equals(responsible.getResponsibleType()))
+		else if (responsible.getType() == WFResponsibleType.Organization)
 		{
-			PO document = process.getPO();
+			final TableRecordReference documentRef = activity.getProcessDocumentRef();
+			PO document = documentRef != null
+					? TableModelLoader.instance.getPO(documentRef)
+					: null;
 			if (document != null)
 			{
 				final OrgId orgId = OrgId.ofRepoId(document.getAD_Org_ID());
@@ -506,10 +461,9 @@ public class WorkflowProcessor extends AdempiereServer
 			}
 		}
 		// Role
-		else if (MWFResponsible.RESPONSIBLETYPE_Role.equals(responsible.getResponsibleType())
-				&& responsibleRoleId != null)
+		else if (responsible.isRole())
 		{
-			final RoleId roleId = RoleId.ofRepoId(responsible.getAD_Role_ID());
+			final RoleId roleId = responsible.getRoleId();
 			final Set<UserId> allRoleUserIds = Services.get(IRoleDAO.class).retrieveUserIdsForRoleId(roleId);
 			for (final UserId adUserId : allRoleUserIds)
 			{
@@ -524,17 +478,11 @@ public class WorkflowProcessor extends AdempiereServer
 			}
 		}
 		return counter;
-	}	// sendAlertToResponsible
+	}
 
-	/**
-	 * Get Server Info
-	 * 
-	 * @return info
-	 */
 	@Override
 	public String getServerInfo()
 	{
 		return "#" + getRunCount() + " - Last=" + m_summary.toString();
-	}	// getServerInfo
-
-}	// WorkflowProcessor
+	}
+}

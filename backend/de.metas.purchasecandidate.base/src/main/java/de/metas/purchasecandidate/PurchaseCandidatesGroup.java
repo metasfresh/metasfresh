@@ -7,6 +7,8 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.mforecast.impl.ForecastLineId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -56,7 +58,9 @@ import lombok.Value;
 @Builder(toBuilder = true)
 public class PurchaseCandidatesGroup
 {
-	/** Creates a group that consists of a single purchaseCandidate. */
+	/**
+	 * Creates a group that consists of a single purchaseCandidate.
+	 */
 	public static PurchaseCandidatesGroup of(
 			@NonNull final PurchaseDemandId purchaseDemandId,
 			@NonNull final PurchaseCandidate purchaseCandidate,
@@ -89,6 +93,10 @@ public class PurchaseCandidatesGroup
 				.purchaseDatePromised(purchaseCandidate.getPurchaseDatePromised())
 				.reminderTime(purchaseCandidate.getReminderTime())
 				//
+				.forecastLineId(purchaseCandidate.getForecastLineId())
+				//
+				.dimension(purchaseCandidate.getDimension())
+				//
 				.profitInfoOrNull(purchaseCandidate.getProfitInfoOrNull())
 				//
 				.readonly(purchaseCandidate.isProcessedOrLocked());
@@ -105,7 +113,9 @@ public class PurchaseCandidatesGroup
 		return builder.build();
 	}
 
-	/** they are needed because when a new purchase candidate is "split" from this group, it needs to inherit a reference. */
+	/**
+	 * they are needed because when a new purchase candidate is "split" from this group, it needs to inherit a reference.
+	 */
 	@NonNull
 	List<DemandGroupReference> demandGroupReferences;
 
@@ -121,15 +131,21 @@ public class PurchaseCandidatesGroup
 	@NonNull
 	VendorProductInfo vendorProductInfo;
 
-	/** note that the ASI-ID of {@link #vendorProductInfo} might be "none" */
+	/**
+	 * note that the ASI-ID of {@link #vendorProductInfo} might be "none"
+	 */
 	@NonNull
 	AttributeSetInstanceId attributeSetInstanceId;
 
-	/** quantity the shall be ordered; initially often zero, can be set to >0 be the user */
+	/**
+	 * quantity the shall be ordered; initially often zero, can be set to >0 be the user
+	 */
 	@NonNull
 	Quantity qtyToPurchase;
 
-	/** quantity where we know that is was already ordered in purchase order lines */
+	/**
+	 * quantity where we know that is was already ordered in purchase order lines
+	 */
 	@NonNull
 	Quantity purchasedQty;
 
@@ -137,6 +153,12 @@ public class PurchaseCandidatesGroup
 	ZonedDateTime purchaseDatePromised;
 	@Nullable
 	Duration reminderTime;
+
+	@Nullable
+	ForecastLineId forecastLineId;
+
+	@Nullable
+	Dimension dimension;
 
 	@Nullable
 	PurchaseProfitInfo profitInfoOrNull;

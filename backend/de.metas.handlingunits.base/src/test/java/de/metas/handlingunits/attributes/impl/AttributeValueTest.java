@@ -1,14 +1,12 @@
 package de.metas.handlingunits.attributes.impl;
 
-import de.metas.handlingunits.AbstractHUTest;
-import de.metas.handlingunits.StaticHUAssert;
-import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
-import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
-import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
-import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
-import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import java.util.Collections;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.AttributesTestHelper;
@@ -23,10 +21,15 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
-import java.util.Collections;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import de.metas.handlingunits.AbstractHUTest;
+import de.metas.handlingunits.StaticHUAssert;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
+import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
+import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
+import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
+import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
+import de.metas.util.Services;
 
 public class AttributeValueTest extends AbstractHUTest
 {
@@ -41,28 +44,33 @@ public class AttributeValueTest extends AbstractHUTest
 	@Test
 	public void testInvalidAttributeType_OnSet()
 	{
-		assertThatThrownBy(() -> {
-			final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute("A1", "UnknownType", true);
+		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
+		attribute.setValue("A1");
+		attribute.setName("A1");
+		attribute.setAttributeValueType("UnknownType");
+		attribute.setIsInstanceAttribute(true);
+		saveRecord(attribute);
 
-			final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
-			av.setValue(new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute), "value");
+		final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
+		final HUAttributePropagationContext attributeValueContext = new HUAttributePropagationContext(NullAttributeStorage.instance, new NoPropagationHUAttributePropagator(), attribute);
 
-			StaticHUAssert.assertMock("mock");
-		})
+		assertThatThrownBy(() -> av.setValue(attributeValueContext, "value"))
 				.isInstanceOf(InvalidAttributeValueException.class);
 	}
 
 	@Test
 	public void testInvalidAttributeType_OnGet()
 	{
-		assertThatThrownBy(() -> {
-			final I_M_Attribute attribute = new AttributesTestHelper().createM_Attribute("A1", "UnknownType", true);
+		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
+		attribute.setValue("A1");
+		attribute.setName("A1");
+		attribute.setAttributeValueType("UnknownType");
+		attribute.setIsInstanceAttribute(true);
+		saveRecord(attribute);
 
-			final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
-			av.getValue();
+		final IAttributeValue av = new PlainAttributeValue(NullAttributeStorage.instance, attribute);
 
-			StaticHUAssert.assertMock("mock");
-		})
+		assertThatThrownBy(() -> av.getValue())
 				.isInstanceOf(InvalidAttributeValueException.class);
 	}
 

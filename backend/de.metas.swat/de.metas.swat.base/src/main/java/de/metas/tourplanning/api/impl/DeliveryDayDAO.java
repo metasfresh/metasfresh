@@ -41,6 +41,8 @@ import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.util.lang.IContextAware;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
 import de.metas.tourplanning.api.IDeliveryDayDAO;
 import de.metas.tourplanning.api.IDeliveryDayQueryParams;
@@ -50,6 +52,7 @@ import de.metas.tourplanning.model.I_M_Tour;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -63,9 +66,12 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 	 * @param params
 	 * @return filter
 	 */
-	private final IQueryFilter<I_M_DeliveryDay> createDeliveryDayMatcher(final IDeliveryDayQueryParams params)
+	private final IQueryFilter<I_M_DeliveryDay> createDeliveryDayMatcher(@NonNull final IDeliveryDayQueryParams params)
 	{
 		Check.assumeNotNull(params, "params not null");
+
+		final BPartnerLocationId partnerLocationId = params.getBPartnerLocationId() == null ? null : params.getBPartnerLocationId();
+		final BPartnerId partnerId = partnerLocationId == null ? null : partnerLocationId.getBpartnerId();
 
 		final ICompositeQueryFilter<I_M_DeliveryDay> filter = Services.get(IQueryBL.class)
 				.createCompositeQueryFilter(I_M_DeliveryDay.class)
@@ -74,8 +80,8 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 				.addOnlyActiveRecordsFilter()
 				//
 				// for given BP & Location
-				.addInArrayFilter(I_M_DeliveryDay.COLUMNNAME_C_BPartner_ID , null, params.getBPartnerLocationId().getBpartnerId())
-				.addInArrayFilter(I_M_DeliveryDay.COLUMNNAME_C_BPartner_Location_ID, null, params.getBPartnerLocationId())
+				.addInArrayFilter(I_M_DeliveryDay.COLUMNNAME_C_BPartner_ID, null, partnerId)
+				.addInArrayFilter(I_M_DeliveryDay.COLUMNNAME_C_BPartner_Location_ID, null, partnerLocationId)
 				//
 				// DeliveryDateTimeMax <= given DeliveryDate
 				.addCompareFilter(I_M_DeliveryDay.COLUMNNAME_DeliveryDateTimeMax, Operator.LESS_OR_EQUAL, params.getDeliveryDate())
@@ -111,26 +117,30 @@ public class DeliveryDayDAO implements IDeliveryDayDAO
 		final ZonedDateTime calculationTime = params.getCalculationTime();
 		if (calculationTime != null)
 		{
-			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, calculationTime);
+			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Operator.GREATER_OR_EQUAL, calculationTime);
 		}
 
 		// the delivery days that are in the same day as the datePromised have priority over the earlier ones.
 		final LocalDate preparationDay = params.getPreparationDay();
 		if (preparationDay != null)
 		{
-			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMN_DeliveryDate, Operator.GREATER_OR_EQUAL, preparationDay);
+			queryBuilder.addCompareFilter(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Operator.GREATER_OR_EQUAL, preparationDay);
 
 			queryBuilder.orderBy()
-					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Ascending, Nulls.Last);
+					.addColumn(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Direction.Ascending, Nulls.Last);
+
 		}
 		else
 		{
 			// fallback to what it used to be: In case there is no calculation time set, simply fetch the
 			// delivery date that is closest to the promiseDate
 			queryBuilder.orderBy()
-					.addColumn(I_M_DeliveryDay.COLUMN_C_BPartner_Location_ID, Direction.Descending, Nulls.Last)
-					.addColumn(I_M_DeliveryDay.COLUMN_DeliveryDate, Direction.Descending, Nulls.Last);
+					.addColumn(I_M_DeliveryDay.COLUMNNAME_DeliveryDate, Direction.Descending, Nulls.Last);
 		}
+
+		queryBuilder.orderBy()
+				.addColumn(I_M_DeliveryDay.COLUMNNAME_C_BPartner_ID, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_DeliveryDay.COLUMNNAME_C_BPartner_Location_ID, Direction.Descending, Nulls.Last);
 
 		final I_M_DeliveryDay deliveryDay = queryBuilder
 				.create()

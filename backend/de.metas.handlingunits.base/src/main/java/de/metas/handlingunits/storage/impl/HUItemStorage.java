@@ -23,12 +23,14 @@ package de.metas.handlingunits.storage.impl;
  */
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.uom.UOMPrecision;
 import org.compiere.model.I_C_UOM;
 
 import de.metas.handlingunits.IHUCapacityBL;
@@ -53,8 +55,17 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class HUItemStorage implements IHUItemStorage
 {
@@ -144,12 +155,12 @@ public class HUItemStorage implements IHUItemStorage
 	}
 
 	@Override
-	public void addQty(final ProductId productId, final BigDecimal qty, final I_C_UOM uom)
+	public void addQty(@NonNull final ProductId productId, @NonNull final BigDecimal qtyToAdd, @NonNull final I_C_UOM uom)
 	{
 		// NOTE: we allow to add/remove qty even if HU Item is not of type Material
 		// because rollupIncremental is updating the storage on all levels
 
-		if (qty.signum() == 0)
+		if (qtyToAdd.signum() == 0)
 		{
 			return;
 		}
@@ -157,13 +168,29 @@ public class HUItemStorage implements IHUItemStorage
 		final I_M_HU_Item_Storage storageLine = getCreateStorageLine(productId, uom);
 
 		final I_C_UOM uomStorage = extractUOM(storageLine);
-		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qty, uom, uomStorage);
-		//
+		final BigDecimal qtyConv = uomConversionBL.convertQty(productId, qtyToAdd, uom, uomStorage);
+		
+		// Avoid failing if we have qtyOld=15.3035 (despite uomStorage-precision=3) and qtyConv=15.304
+		final UOMPrecision uomPrecision = UOMPrecision.ofInt(uomStorage.getStdPrecision());
+		final BigDecimal qtyOld = storageLine.getQty().setScale(uomPrecision.toInt(), uomPrecision.getRoundingMode());
+		
 		// Update storage line
-		final BigDecimal qtyOld = storageLine.getQty();
-		final BigDecimal qtyNew = qtyOld.add(qtyConv);
+		BigDecimal qtyNew = qtyOld.add(qtyConv);
 
-		Check.errorIf(qtyNew.signum() < 0, "Attempt to set negative qty on storageLine; qty={}; qtyNew={}; qtyOld={}; this={}; storageLine={}", qty, qtyNew, qtyOld, this, storageLine);
+		final BigDecimal qtyOnParent = getParentStorage().getQty(productId, uom);
+
+		if (qtyNew.signum() < 0 && !qtyOld.equals(qtyOnParent))
+		{
+			Loggables.addLog("Warning! M_HU_Item_Storage.Qty out of sync with M_HU_Storage! "
+									 + "M_HU_Item_Id: {}, M_HU_Item_Storage.Qty: {}, M_HU_Item_Storage.Product: {}, M_HU_Item_Storage.UOM: {}"
+									 + "M_HU_ID: {}, M_HU_Storage.Qty: {}, qtyToAdd: {} same UOM",
+							 storageLine.getM_HU_Item_ID(), storageLine.getQty(), storageLine.getM_Product_ID(), storageLine.getC_UOM_ID(),
+							 item.getM_HU_ID(), qtyOnParent, qtyConv);
+
+			qtyNew = qtyOnParent.add(qtyConv);
+		}
+
+		Check.errorIf(qtyNew.signum() < 0, "Attempt to set negative qty on storageLine; qtyOld={}; qtyToAdd={}; qtyNew={}; this={}; storageLine={}", qtyOld, qtyToAdd, qtyNew, this, storageLine);
 
 		storageLine.setQty(qtyNew);
 		dao.save(storageLine);

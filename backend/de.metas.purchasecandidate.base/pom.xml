@@ -36,11 +36,6 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 			
-		<!-- Lombok
-			See https://github.com/metasfresh/metasfresh/issues/1125
-			NOTE: if you don't need fancy things like @SneakyThrows then scope 'provided' it's totally fine
-			Also note that the version is managed by spring-boot.
-		 -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -59,6 +54,13 @@
 			<version>${metasfresh.version}</version>
 			<scope>test</scope>
 			<classifier>tests</classifier>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.business</groupId>
+			<artifactId>de.metas.business</artifactId>
+			<version>${metasfresh.version}</version>
+			<classifier>tests</classifier>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>

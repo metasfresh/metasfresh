@@ -690,5 +690,541 @@
         ]
       }
     }
+  },
+  "data2": [
+    {
+      "windowId": "53009",
+      "id": "1000000",
+      "fieldsByName": {
+        "ID": {
+          "field": "ID",
+          "value": 1000000,
+          "widgetType": "Integer"
+        },
+        "AD_Client_ID": {
+          "field": "AD_Client_ID",
+          "value": {
+            "key": "1000000",
+            "caption": "metasfresh"
+          },
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "AD_Client_ID"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "AD_Org_ID": {
+          "field": "AD_Org_ID",
+          "value": {
+            "key": "1000000",
+            "caption": "metasfresh AG"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "AD_Org_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DocumentNo": {
+          "field": "DocumentNo",
+          "value": "630000",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DocumentNo"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "Line": {
+          "field": "Line",
+          "value": 10,
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "Integer",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Line"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "C_DocTypeTarget_ID": {
+          "field": "C_DocTypeTarget_ID",
+          "value": {
+            "key": "540938",
+            "caption": "Waschprobe"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_DocTypeTarget_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "M_Product_ID": {
+          "field": "M_Product_ID",
+          "value": {
+            "key": "2005577",
+            "caption": "Convenience Salat 250g_P002737"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "M_Product_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "M_AttributeSetInstance_ID": {
+          "field": "M_AttributeSetInstance_ID",
+          "value": {
+            "key": "0",
+            "caption": "---"
+          },
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "ProductAttributes",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "M_AttributeSetInstance_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "S_Resource_ID": {
+          "field": "S_Resource_ID",
+          "value": {
+            "key": "540006",
+            "caption": "test"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "S_Resource_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "AD_Workflow_ID": {
+          "field": "AD_Workflow_ID",
+          "value": {
+            "key": "540075",
+            "caption": "test"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "AD_Workflow_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "M_Warehouse_ID": {
+          "field": "M_Warehouse_ID",
+          "value": {
+            "key": "540008",
+            "caption": "Hauptlager_StdWarehouse"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "M_Warehouse_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "PP_Product_BOM_ID": {
+          "field": "PP_Product_BOM_ID",
+          "value": {
+            "key": "2002873",
+            "caption": "P002737_AB Alicesalat 250g_P002737_AB Alicesalat 250g_1000370"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "PP_Product_BOM_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "PriorityRule": {
+          "field": "PriorityRule",
+          "value": {
+            "key": "5",
+            "caption": "Medium",
+            "description": "Medium Priority"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "PriorityRule"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DateOrdered": {
+          "field": "DateOrdered",
+          "value": "2020-07-08T00:00:00.000+02:00",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "ZonedDateTime",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DateOrdered"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DatePromised": {
+          "field": "DatePromised",
+          "value": "2020-07-10T00:00:00.000+02:00",
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "ZonedDateTime",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DatePromised"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DateConfirm": {
+          "field": "DateConfirm",
+          "value": null,
+          "readonly": true,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "ZonedDateTime",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DateConfirm"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "DateDelivered": {
+          "field": "DateDelivered",
+          "value": null,
+          "readonly": true,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "ZonedDateTime",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DateDelivered"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "QtyEntered": {
+          "field": "QtyEntered",
+          "value": "10",
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Quantity",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "QtyEntered"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "C_UOM_ID": {
+          "field": "C_UOM_ID",
+          "value": {
+            "key": "100",
+            "caption": "Each"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_UOM_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "QtyDelivered": {
+          "field": "QtyDelivered",
+          "value": "0",
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "Quantity",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "QtyDelivered"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "C_Order_ID": {
+          "field": "C_Order_ID",
+          "value": null,
+          "readonly": true,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_Order_ID"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "C_BPartner_ID": {
+          "field": "C_BPartner_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_BPartner_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "DocStatus": {
+          "field": "DocStatus",
+          "value": {
+            "key": "DR",
+            "caption": "Drafted"
+          },
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "DocStatus"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "IsApproved": {
+          "field": "IsApproved",
+          "value": false,
+          "readonly": true,
+          "mandatory": true,
+          "displayed": true,
+          "widgetType": "YesNo",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "IsApproved"
+          },
+          "viewEditorRenderMode": "never"
+        },
+        "M_HU_LUTU_Configuration_ID": {
+          "field": "M_HU_LUTU_Configuration_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "M_HU_LUTU_Configuration_ID"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "Posted": {
+          "field": "Posted",
+          "value": {
+            "key": "N",
+            "caption": "Not Posted"
+          },
+          "readonly": false,
+          "mandatory": false,
+          "displayed": false,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Posted"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "PlanningStatus": {
+          "field": "PlanningStatus",
+          "value": {
+            "key": "P",
+            "caption": "Planning"
+          },
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "List",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "PlanningStatus"
+          },
+          "viewEditorRenderMode": "always"
+        },
+        "V$DocumentSummary": {
+          "field": "V$DocumentSummary",
+          "value": "630000 test",
+          "readonly": true,
+          "mandatory": false,
+          "displayed": false,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "V$DocumentSummary"
+          },
+          "viewEditorRenderMode": "never"
+        }
+      },
+      "validStatus": {
+        "valid": true
+      },
+      "saveStatus": {
+        "deleted": false,
+        "saved": true,
+        "hasChanges": false,
+        "error": false,
+        "reason": "just loaded"
+      },
+      "includedTabsInfo": {
+        "AD_Tab-53036": {
+          "tabId": "AD_Tab-53036",
+          "allowCreateNew": true,
+          "allowDelete": true
+        },
+        "AD_Tab-540699": {
+          "tabId": "AD_Tab-540699",
+          "allowCreateNew": false,
+          "allowDelete": false
+        },
+        "AD_Tab-53038": {
+          "tabId": "AD_Tab-53038",
+          "allowCreateNew": false,
+          "allowDelete": false
+        },
+        "AD_Tab-53039": {
+          "tabId": "AD_Tab-53039",
+          "allowCreateNew": true,
+          "allowDelete": true
+        },
+        "AD_Tab-540614": {
+          "tabId": "AD_Tab-540614",
+          "allowCreateNew": false,
+          "allowDelete": false
+        },
+        "AD_Tab-540629": {
+          "tabId": "AD_Tab-540629",
+          "allowCreateNew": false,
+          "allowCreateNewReason": "Tab is readonly",
+          "allowDelete": false,
+          "allowDeleteReason": "Tab is readonly"
+        },
+        "AD_Tab-53041": {
+          "tabId": "AD_Tab-53041",
+          "allowCreateNew": false,
+          "allowDelete": false
+        },
+        "AD_Tab-53040": {
+          "tabId": "AD_Tab-53040",
+          "allowCreateNew": false,
+          "allowDelete": false
+        }
+      },
+      "standardActions": [
+        "new",
+        "advancedEdit",
+        "email",
+        "letter",
+        "print",
+        "delete",
+        "comments"
+      ],
+      "websocketEndpoint": "/document/53009/1000000"
+    }
+  ],
+  "websocketMessage2": {
+    "id": "1000000",
+    "stale": true,
+    "timestamp": "2020-07-08T16:13:18.741+02:00",
+    "windowId": "53009",
+    "includedTabsInfo": {
+      "AD_Tab-53039": {
+        "tabId": "AD_Tab-53039",
+        "staleRowIds": [
+          "1000032",
+          "1000031",
+          "1000030",
+          "1000029",
+          "1000028",
+          "1000027",
+          "1000026",
+          "1000033"
+        ]
+      }
+    }
   }
 }

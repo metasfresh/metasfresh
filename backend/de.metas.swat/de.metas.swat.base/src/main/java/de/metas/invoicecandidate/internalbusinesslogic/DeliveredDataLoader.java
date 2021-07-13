@@ -1,6 +1,6 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
@@ -279,7 +279,7 @@ public class DeliveredDataLoader
 					.negateIf(negateQtys);
 			deliveredQtyItem.qtyInStockUom(qtyInStockUom);
 
-			final UomId deliveryUomId = UomId.ofRepoId(icIolAssociationRecord.getC_UOM_ID());
+			final UomId deliveryUomId = UomId.optionalOfRepoId(icIolAssociationRecord.getC_UOM_ID()).orElse(stockUomId);
 			final Quantity qtyNominal = Quantitys
 					.create(
 							icIolAssociationRecord.getQtyDeliveredInUOM_Nominal(),

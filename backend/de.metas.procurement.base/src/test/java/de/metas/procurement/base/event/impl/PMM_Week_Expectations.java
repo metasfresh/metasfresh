@@ -1,6 +1,18 @@
 package de.metas.procurement.base.event.impl;
 
-import java.text.SimpleDateFormat;
+import de.metas.procurement.base.model.I_PMM_Week;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.junit.Assert;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -8,20 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.ObjectUtils;
-import org.adempiere.util.text.annotation.ToStringBuilder;
-import org.compiere.util.Env;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.junit.Assert;
-
-import com.google.common.base.Function;
-
-import de.metas.procurement.base.model.I_PMM_Week;
-import de.metas.util.Services;
 
 /*
  * #%L
@@ -47,14 +45,14 @@ import de.metas.util.Services;
 
 public class PMM_Week_Expectations
 {
-	public static final PMM_Week_Expectations newExpectations()
+	public static PMM_Week_Expectations newExpectations()
 	{
 		return new PMM_Week_Expectations();
 	}
 
 	private final List<PMM_Week_Expectation> expectationsList = new ArrayList<>();
 	private boolean strictMatching = true;
-	
+
 	private PMM_Week_Expectations()
 	{
 		super();
@@ -91,26 +89,26 @@ public class PMM_Week_Expectations
 		{
 			Assert.assertEquals("No other entries were expected", Collections.emptyMap(), records);
 		}
-		
+
 		return this;
 	}
-	
+
 	@Override
 	public String toString()
 	{
 		return ObjectUtils.toString(this);
 	}
-	
+
 	public PMM_Week_Expectations copy()
 	{
 		final PMM_Week_Expectations expectationsNew = new PMM_Week_Expectations();
 		expectationsNew.setStrictMatching(strictMatching);
-		
+
 		for (final PMM_Week_Expectation expectation : this.expectationsList)
 		{
 			expectationsNew.expectationsList.add(expectation.copy(expectationsNew));
 		}
-		
+
 		return expectationsNew;
 	}
 
@@ -183,32 +181,33 @@ public class PMM_Week_Expectations
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PMM_Week.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
-				.map(I_PMM_Week.class, new Function<I_PMM_Week, ArrayKey>()
-				{
-
-					@Override
-					public ArrayKey apply(final I_PMM_Week record)
-					{
-						return createSegmentKey(record);
-					}
-				});
+				.map(I_PMM_Week.class, this::createSegmentKey);
 	}
 
-	private final Object normalizeDate(final Date date)
+	@Nullable
+	private Object normalizeDate(final Date date)
 	{
 		if (date == null)
 		{
 			return null;
 		}
-		return dateFormat.format(date);
+		return normalizeDate(TimeUtil.asLocalDate(date));
 	}
 
-	private final Integer normalizeId(final Integer id)
+	@Nullable
+	private Object normalizeDate(@Nullable final LocalDate date)
+	{
+		if (date == null)
+		{
+			return null;
+		}
+
+		return date.toString();
+	}
+
+	@Nullable
+	private Integer normalizeId(final Integer id)
 	{
 		return id != null && id > 0 ? id : null;
 	}
-
-	@ToStringBuilder(skip = true)
-	final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-
 }

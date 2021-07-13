@@ -1,6 +1,6 @@
 package de.metas.pricing.conditions;
 
-import static de.metas.util.lang.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -51,6 +51,10 @@ public class PricingConditionsBreak
 	// Discount%
 	boolean bpartnerFlatDiscount;
 	Percent discount;
+	
+	//
+	// Price
+	BigDecimal pricingSystemSurchargeAmt;
 
 	//
 	// PaymentTerm
@@ -82,6 +86,8 @@ public class PricingConditionsBreak
 			@Nullable final Percent paymentDiscountOverrideOrNull,
 			@Nullable final PaymentTermId derivedPaymentTermIdOrNull,
 			final BigDecimal qualityDiscountPercentage,
+			@Nullable
+			final BigDecimal pricingSystemSurchargeAmt,
 			final Instant dateCreated,
 			final UserId createdById,
 			final boolean hasChanges)
@@ -93,6 +99,7 @@ public class PricingConditionsBreak
 		this.bpartnerFlatDiscount = bpartnerFlatDiscount;
 		this.discount = discount != null ? discount : Percent.ZERO;
 		this.qualityDiscountPercentage = qualityDiscountPercentage;
+		this.pricingSystemSurchargeAmt = pricingSystemSurchargeAmt;
 
 		this.paymentTermIdOrNull = paymentTermIdOrNull;
 		this.paymentDiscountOverrideOrNull = paymentDiscountOverrideOrNull;
@@ -128,6 +135,16 @@ public class PricingConditionsBreak
 				&& Objects.equals(paymentTermIdOrNull, reference.paymentTermIdOrNull)
 				&& Objects.equals(coalesce(paymentDiscountOverrideOrNull, Percent.ZERO), coalesce(reference.paymentDiscountOverrideOrNull, Percent.ZERO))
 				&& Objects.equals(derivedPaymentTermIdOrNull, reference.derivedPaymentTermIdOrNull);
+	}
+	
+	public boolean equalsByMatchCriteria(@NonNull final PricingConditionsBreak reference)
+	{
+		if (this == reference)
+		{
+			return true;
+		}
+
+		return Objects.equals(matchCriteria, reference.matchCriteria);
 	}
 
 	public boolean isTemporaryPricingConditionsBreak()

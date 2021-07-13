@@ -8,6 +8,9 @@ db:
     #   If we try to use a relative path, like `./volumes/db/data:/var/lib/postgresql/data`, we will not be able to start postgres.
     # See: https://github.com/docker-library/postgres/issues/435
     # Also google "FATAL:  data directory "/var/lib/postgresql/data" has wrong ownership HINT:  The server must be started by the user that owns the data directory."
+    #
+    # To reset your local database, you can stop the db container and delete the volume with
+    # docker volume rm metasfresh_postgres
     - metasfresh_postgres:/var/lib/postgresql/data
   environment:
     - METASFRESH_USERNAME=metasfresh
@@ -21,6 +24,7 @@ rabbitmq:
   build: rabbitmq
   expose:
     - "5672"
+    - "15672"
   restart: always
   environment:
     RABBITMQ_DEFAULT_USER: "guest"
@@ -28,6 +32,7 @@ rabbitmq:
     RABBITMQ_DEFAULT_VHOST: "/"
   ports:
     - "5672:5672"
+    - "15672:15672"
 search:
   build: search
   ulimits:
@@ -39,14 +44,27 @@ search:
       hard: 65536
   cap_add:
     - IPC_LOCK
-# to access the search api directly
-# (e.g. if you did docker-compose up search to have the dashboard with your locally running metasfresh services)
-# uncomment following ports:
   ports:
-   - "9201:9200"
-   - "9301:9300"
+   - "9200:9200"
+   - "9300:9300"
   volumes:
     - metasfresh_elasticsearch:/usr/share/elasticsearch/data
+#    - ./myvolumefolder:/usr/share/elasticsearch/data
   environment:
     - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
   restart: always
+postgrest:
+  build: postgrest
+  links:
+    - db:db
+  environment:
+    PGRST_DB_URI: postgres://metasfresh:metasfresh@db:5432/metasfresh
+    PGRST_DB_SCHEMA: public
+    PGRST_DB_ANON_ROLE: metasfresh
+  ports:
+    - "3001:3000"
+papercut-smtp:
+  build: papercut-smtp
+  ports:
+    - "25:25"
+    - "37408:37408"

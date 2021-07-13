@@ -1,20 +1,7 @@
 package de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer;
 
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.eevolution.model.X_PP_Order_BOMLine;
-import org.slf4j.Logger;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
@@ -28,19 +15,31 @@ import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateIssueCandidateRequest;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.logging.LogManager;
+import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.PPOrderBOMLineId;
-import de.metas.material.planning.pporder.PPOrderId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.eevolution.api.BOMComponentIssueMethod;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -83,6 +82,7 @@ public class CreateDraftIssuesCommand
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
+	private final transient IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 
 	//
@@ -96,6 +96,7 @@ public class CreateDraftIssuesCommand
 
 	//
 	// Status
+	@Nullable
 	private Quantity remainingQtyToIssue;
 
 	@Builder
@@ -150,12 +151,13 @@ public class CreateDraftIssuesCommand
 
 		if (remainingQtyToIssue != null && remainingQtyToIssue.signum() != 0)
 		{
-			throw new AdempiereException("Cannot issue the whole quantity required. " + remainingQtyToIssue + " remained to be issued");
+			throw new AdempiereException("Could not issue the whole quantity required. " + remainingQtyToIssue + " remained to be issued");
 		}
 
 		return candidates;
 	}
 
+	@Nullable
 	private I_PP_Order_Qty createIssueCandidateOrNull(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU hu)
@@ -199,9 +201,6 @@ public class CreateDraftIssuesCommand
 
 	/**
 	 * If not a top level HU, take it out first
-	 *
-	 * @param huContext
-	 * @param hu
 	 */
 	private void removeHuFromParentIfAny(
 			@NonNull final IHUContext huContext,
@@ -230,6 +229,7 @@ public class CreateDraftIssuesCommand
 		}
 	}
 
+	@Nullable
 	private IHUProductStorage retrieveProductStorage(
 			@NonNull final IHUContext huContext,
 			@NonNull final I_M_HU hu)
@@ -251,43 +251,53 @@ public class CreateDraftIssuesCommand
 					.setParameter("HU", hu)
 					.setParameter("ProductStorages", productStorages);
 		}
-		final IHUProductStorage productStorage = productStorages.get(0);
-		return productStorage;
+
+		return productStorages.get(0);
 	}
 
+	@Nullable
 	private I_PP_Order_Qty createIssueCandidateOrNull(
 			@NonNull final I_M_HU hu,
 			@NonNull final IHUProductStorage productStorage)
 	{
-		final ProductId productId = productStorage.getProductId();
-		final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
-
-		final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
-				.switchToSourceIfMorePrecise();
-		if (qtyToIssue.isZero())
+		try
 		{
-			return null;
+			final ProductId productId = productStorage.getProductId();
+			final I_PP_Order_BOMLine targetBOMLine = getTargetOrderBOMLine(productId);
+
+			final Quantity qtyToIssue = calculateQtyToIssue(targetBOMLine, productStorage)
+					.switchToSourceIfMorePrecise();
+			if (qtyToIssue.isZero())
+			{
+				return null;
+			}
+
+			final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
+					.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
+					.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
+					//
+					.date(movementDate)
+					//
+					.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
+					.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
+					.productId(productId)
+					//
+					.qtyToIssue(qtyToIssue)
+					//
+					.pickingCandidateId(pickingCandidateId)
+					//
+					.build());
+
+			ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
+
+			return candidate;
 		}
-
-		final I_PP_Order_Qty candidate = huPPOrderQtyDAO.save(CreateIssueCandidateRequest.builder()
-				.orderId(PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID()))
-				.orderBOMLineId(PPOrderBOMLineId.ofRepoId(targetBOMLine.getPP_Order_BOMLine_ID()))
-				//
-				.date(movementDate)
-				//
-				.locatorId(warehousesRepo.getLocatorIdByRepoIdOrNull(hu.getM_Locator_ID()))
-				.issueFromHUId(HuId.ofRepoId(hu.getM_HU_ID()))
-				.productId(productId)
-				//
-				.qtyToIssue(qtyToIssue)
-				//
-				.pickingCandidateId(pickingCandidateId)
-				//
-				.build());
-
-		ppOrderProductAttributeBL.addPPOrderProductAttributesFromIssueCandidate(candidate);
-
-		return candidate;
+		catch (final RuntimeException rte)
+		{
+			throw AdempiereException.wrapIfNeeded(rte)
+					.appendParametersToMessage()
+					.setParameter("M_HU", hu);
+		}
 	}
 
 	private I_PP_Order_BOMLine getTargetOrderBOMLine(@NonNull final ProductId productId)
@@ -300,7 +310,9 @@ public class CreateDraftIssuesCommand
 				.orElseThrow(() -> new HUException("No BOM line found for productId=" + productId + " in " + targetBOMLines));
 	}
 
-	/** @return how much quantity to take "from" and issue it to given BOM line */
+	/**
+	 * @return how much quantity to take "from" and issue it to given BOM line
+	 */
 	private Quantity calculateQtyToIssue(final I_PP_Order_BOMLine targetBOMLine, final IHUProductStorage from)
 	{
 		//
@@ -322,10 +334,12 @@ public class CreateDraftIssuesCommand
 			// => enforce the capacity to Projected Qty Required (i.e. standard Qty that needs to be issued on this line).
 			// initial concept: http://dewiki908/mediawiki/index.php/07433_Folie_Zuteilung_Produktion_Fertigstellung_POS_%28102170996938%29
 			// additional (use of projected qty required): http://dewiki908/mediawiki/index.php/07601_Calculation_of_Folie_in_Action_Receipt_%28102017845369%29
-			final String issueMethod = targetBOMLine.getIssueMethod();
-			if (X_PP_Order_BOMLine.ISSUEMETHOD_IssueOnlyForReceived.equals(issueMethod))
+			final BOMComponentIssueMethod issueMethod = BOMComponentIssueMethod.ofNullableCode(targetBOMLine.getIssueMethod());
+			if (BOMComponentIssueMethod.IssueOnlyForReceived.equals(issueMethod))
 			{
-				return ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM());
+				final PPOrderId ppOrderId = PPOrderId.ofRepoId(targetBOMLine.getPP_Order_ID());
+				final DraftPPOrderQuantities draftQtys = huPPOrderQtyBL.getDraftPPOrderQuantities(ppOrderId);
+				return ppOrderBOMBL.computeQtyToIssueBasedOnFinishedGoodReceipt(targetBOMLine, from.getC_UOM(), draftQtys);
 			}
 		}
 

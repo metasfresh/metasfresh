@@ -28,4 +28,14 @@ describe('Create new BPartner via API', function() {
   it('Check new Business Partner', function() {
     cy.visitWindow(123, bpartnerID);
   });
+
+  it('Check the Attribute in the new Business Partner', function() {
+    cy.visitWindow(123, bpartnerID);
+    cy.get('.form-field-Labels_548674 .input-body-container').click();
+    cy.get('.input-dropdown-list').should('exist');
+    cy.contains('.input-dropdown-list-option', 'Firma').click();
+    cy.get('.labels-label')
+      .contains('Firma')
+      .should('exist');
+  });
 });

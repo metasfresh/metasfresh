@@ -27,6 +27,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -53,7 +54,7 @@ import de.metas.util.Services;
  */
 public class C_Payment_DiscountAllocation_Process extends JavaProcess
 {
-	public static final String MSG_AllocationCreated = "MSG_AllocationCreated";
+	public static final AdMessageKey MSG_AllocationCreated = AdMessageKey.of("MSG_AllocationCreated");
 
 	// services
 	private final transient IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
@@ -69,6 +70,8 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 	private Timestamp p_PaymentDateTo = null;
 	private static final String PARAM_IsSOTrx = "IsSOTrx";
 	private Boolean p_isSOTrx = null;
+	private static final String PARAM_IsRunByScheduler = "IsRunByScheduler";
+	private  boolean  p_isRunByScheduler = false;
 	//
 	private static final String PARAM_AllocDateTrx = "DateTrx";
 	private Timestamp p_AllocDateTrx = null;
@@ -96,6 +99,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 		{
 			p_AllocDateTrx = Env.getDate(getCtx());
 		}
+		p_isRunByScheduler = params.getParameterAsBool(PARAM_IsRunByScheduler);
 	}
 
 	@Override
@@ -114,11 +118,10 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 			paymentWriteOff(payment);
 		}
 
-		final String message = msgBL.getMsg(getCtx(), MSG_AllocationCreated, new Object[] { counterProcessed.intValue() });
-		return message;
+		return msgBL.getMsg(getCtx(), MSG_AllocationCreated, new Object[] { counterProcessed.intValue() });
 	}
 
-	private final void paymentWriteOff(final I_C_Payment payment)
+	private void paymentWriteOff(final I_C_Payment payment)
 	{
 		final PaymentId paymentId = PaymentId.ofRepoId(payment.getC_Payment_ID());
 		final BigDecimal paymentOpenAmt = paymentDAO.getAvailableAmount(paymentId);
@@ -136,12 +139,13 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 			return;
 		}
 
+		@SuppressWarnings("UnnecessaryLocalVariable")
 		final BigDecimal amtToWriteOff = paymentOpenAmt;
 
 		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				final I_C_AllocationHdr allocationHdr = paymentBL.paymentWriteOff(payment, amtToWriteOff, p_AllocDateTrx);
 
@@ -155,7 +159,7 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 			}
 
 			@Override
-			public boolean doCatch(Throwable e) throws Throwable
+			public boolean doCatch(final Throwable e)
 			{
 				final String errmsg = "@Error@: @C_Payment_ID@ " + payment.getDocumentNo() + ": " + e.getLocalizedMessage();
 				addLog(errmsg);
@@ -167,8 +171,6 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 
 	private Iterator<I_C_Payment> createIterator()
 	{
-		// user selection..if any
-		final IQueryFilter<I_C_Payment> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		//
 		// Create the selection which we might need to update
@@ -178,7 +180,12 @@ public class C_Payment_DiscountAllocation_Process extends JavaProcess
 				.addOnlyContextClient()
 				.addEqualsFilter(I_C_Payment.COLUMNNAME_IsAllocated, false);
 
-		queryBuilder.filter(userSelectionFilter);
+		if (!p_isRunByScheduler)
+		{
+			// user selection..if any
+			final IQueryFilter<I_C_Payment> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
+			queryBuilder.filter(userSelectionFilter);
+		}
 
 		if (p_isSOTrx != null)
 		{

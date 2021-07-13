@@ -29,6 +29,7 @@ import java.util.Iterator;
 
 import javax.annotation.Nullable;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -49,7 +50,6 @@ import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 public class C_Flatrate_Term_Extend_And_Notify_User

@@ -37,7 +37,11 @@ public class CommissionTrigger
 {
 	Customer customer;
 
-	/** The direct beneficiary; usually the customer's "direct" sales rep. Will probably be part of a hierarchy. */
+	/** The direct beneficiary; Will probably be part of a hierarchy.
+	 * 
+	 * Note: used to be the customer's "direct" sales rep. Now it's the customer themselve, because they *might* be salesReps too, and might require 
+	 * some comission-threadment also for their own.
+	 */
 	Beneficiary beneficiary;
 
 	CommissionTriggerData commissionTriggerData;

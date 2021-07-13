@@ -1,17 +1,15 @@
-/**
- *
- */
 package de.metas.process;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_AD_Process;
-
 import com.google.common.collect.ImmutableMap;
-
+import com.google.common.collect.ImmutableSet;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_AD_Process;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -45,7 +43,8 @@ public enum ProcessType implements ReferenceListAwareEnum
 	JasperReportsSQL(X_AD_Process.TYPE_JasperReportsSQL), //
 	Excel(X_AD_Process.TYPE_Excel), //
 	Java(X_AD_Process.TYPE_Java), //
-	SQL(X_AD_Process.TYPE_SQL)
+	SQL(X_AD_Process.TYPE_SQL),
+	POSTGREST(X_AD_Process.TYPE_PostgREST)
 	;
 
 	public static final int AD_REFERENCE_ID = X_AD_Process.TYPE_AD_Reference_ID;
@@ -59,6 +58,7 @@ public enum ProcessType implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
+	@Nullable
 	public static String toCodeOrNull(final ProcessType type)
 	{
 		return type != null ? type.getCode() : null;
@@ -84,6 +84,11 @@ public enum ProcessType implements ReferenceListAwareEnum
 	public boolean isJasperJson()
 	{
 		return this == JasperReportsJSON;
+	}
+
+	public static ImmutableSet<ProcessType> getTypesRunnableFromAppRestController()
+	{
+		return ImmutableSet.of(SQL, Excel, POSTGREST);
 	}
 
 }

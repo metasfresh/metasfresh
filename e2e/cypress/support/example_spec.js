@@ -1455,7 +1455,7 @@ describe.skip('Kitchen Sink', function () {
       // now any cookie with the name 'session_id' will
       // not be cleared before each new test runs
       Cypress.Cookies.defaults({
-        whitelist: 'session_id',
+        preserve: 'session_id',
       })
     })
   })

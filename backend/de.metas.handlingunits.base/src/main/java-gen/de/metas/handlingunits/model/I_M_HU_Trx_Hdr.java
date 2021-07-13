@@ -1,115 +1,101 @@
 package de.metas.handlingunits.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_HU_Trx_Hdr
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_M_HU_Trx_Hdr 
 {
 
-    /** TableName=M_HU_Trx_Hdr */
-    public static final String Table_Name = "M_HU_Trx_Hdr";
+	String Table_Name = "M_HU_Trx_Hdr";
 
-    /** AD_Table_ID=540514 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540514 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object>(I_M_HU_Trx_Hdr.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_Created = new ModelColumn<>(I_M_HU_Trx_Hdr.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object>(I_M_HU_Trx_Hdr.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_IsActive = new ModelColumn<>(I_M_HU_Trx_Hdr.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set HU-Transaktionskopf.
@@ -118,7 +104,7 @@ public interface I_M_HU_Trx_Hdr
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_HU_Trx_Hdr_ID (int M_HU_Trx_Hdr_ID);
+	void setM_HU_Trx_Hdr_ID (int M_HU_Trx_Hdr_ID);
 
 	/**
 	 * Get HU-Transaktionskopf.
@@ -127,63 +113,54 @@ public interface I_M_HU_Trx_Hdr
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_HU_Trx_Hdr_ID();
+	int getM_HU_Trx_Hdr_ID();
 
-    /** Column definition for M_HU_Trx_Hdr_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_M_HU_Trx_Hdr_ID = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object>(I_M_HU_Trx_Hdr.class, "M_HU_Trx_Hdr_ID", null);
-    /** Column name M_HU_Trx_Hdr_ID */
-    public static final String COLUMNNAME_M_HU_Trx_Hdr_ID = "M_HU_Trx_Hdr_ID";
+	ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_M_HU_Trx_Hdr_ID = new ModelColumn<>(I_M_HU_Trx_Hdr.class, "M_HU_Trx_Hdr_ID", null);
+	String COLUMNNAME_M_HU_Trx_Hdr_ID = "M_HU_Trx_Hdr_ID";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Beleg verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object>(I_M_HU_Trx_Hdr.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_Processed = new ModelColumn<>(I_M_HU_Trx_Hdr.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_HU_Trx_Hdr, Object>(I_M_HU_Trx_Hdr.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_HU_Trx_Hdr, Object> COLUMN_Updated = new ModelColumn<>(I_M_HU_Trx_Hdr.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

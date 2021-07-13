@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.misc.service.IPOService;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.CustomColNames;
@@ -51,7 +52,6 @@ import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.product.IStoragePA;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public final class ReplenishForFutureQty implements IReplenishForFutureQty {
 

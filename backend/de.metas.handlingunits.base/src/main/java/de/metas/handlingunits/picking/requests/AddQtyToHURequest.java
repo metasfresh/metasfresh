@@ -2,7 +2,7 @@ package de.metas.handlingunits.picking.requests;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;

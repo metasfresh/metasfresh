@@ -1,5 +1,8 @@
 package de.metas.document.archive.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Doc_Outbound_Log
  *  @author Adempiere (generated) 
@@ -441,6 +444,29 @@ public interface I_C_Doc_Outbound_Log
     public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_EMailCount = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "EMailCount", null);
     /** Column name EMailCount */
     public static final String COLUMNNAME_EMailCount = "EMailCount";
+
+	/**
+	 * Set File Name.
+	 * Name of the local file or URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFileName (@Nullable java.lang.String FileName);
+
+	/**
+	 * Get File Name.
+	 * Name of the local file or URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFileName();
+
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_FileName = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "FileName", null);
+	String COLUMNNAME_FileName = "FileName";
 
 	/**
 	 * Set Aktiv.

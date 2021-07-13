@@ -16,6 +16,7 @@
  *****************************************************************************/
 package de.metas.cache;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -127,7 +128,7 @@ public final class CacheMgt
 		}
 	}
 
-	private void register(@NonNull final CacheInterface cache, final Boolean registerWeak)
+	private void register(@NonNull final CacheInterface cache, @Nullable final Boolean registerWeak)
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(cache))
 		{
@@ -191,6 +192,7 @@ public final class CacheMgt
 				spanMetadata);
 	}
 
+	@Nullable
 	private PerformanceMonitoringService getPerfMonService()
 	{
 		// this is called already very early in the startup phase, so we need to avoid an exception if there is no spring context yet
@@ -206,7 +208,7 @@ public final class CacheMgt
 		{
 			total = cachesByLabel.values()
 					.stream()
-					.mapToLong(cachesGroup -> cachesGroup.invalidateAllNoFail())
+					.mapToLong(CachesGroup::invalidateAllNoFail)
 					.sum();
 
 			fireGlobalCacheResetListeners(CacheInvalidateMultiRequest.all());
@@ -230,7 +232,7 @@ public final class CacheMgt
 		{
 			cacheResetListenersByTableName.values()
 					.stream()
-					.flatMap(listeners -> listeners.stream())
+					.flatMap(Collection::stream)
 					.forEach(listener -> fireCacheResetListenerNoFail(listener, multiRequest));
 		}
 		else
@@ -307,6 +309,7 @@ public final class CacheMgt
 	 */
 	public void resetLocalNowAndBroadcastOnTrxCommit(final String trxName, final CacheInvalidateMultiRequest request)
 	{
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx trx = trxManager.get(trxName, OnTrxMissingPolicy.ReturnTrxNone);
 		if (!trxManager.isActive(trx))

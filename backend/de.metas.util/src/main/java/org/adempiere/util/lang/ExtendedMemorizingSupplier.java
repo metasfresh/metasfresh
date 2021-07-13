@@ -22,6 +22,7 @@ package org.adempiere.util.lang;
  * #L%
  */
 
+import javax.annotation.Nullable;
 import java.io.Serializable;
 
 /**
@@ -31,7 +32,7 @@ import java.io.Serializable;
  */
 public final class ExtendedMemorizingSupplier<T> implements java.util.function.Supplier<T>, Serializable
 {
-	public static final <T> ExtendedMemorizingSupplier<T> of(final java.util.function.Supplier<T> supplier)
+	public static <T> ExtendedMemorizingSupplier<T> of(final java.util.function.Supplier<T> supplier)
 	{
 		if (supplier instanceof ExtendedMemorizingSupplier)
 		{
@@ -48,6 +49,7 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 	// on volatile read of "initialized".
 	// metas-ts: Setting it to be volatile none the less, because we somehow managed to get an NPE with a delegate supplier that could not have returned null.
 	// See https://github.com/metasfresh/metasfresh/issues/4985
+	@Nullable
 	private transient volatile T value;
 
 	private ExtendedMemorizingSupplier(final java.util.function.Supplier<T> delegate)
@@ -56,6 +58,7 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 	}
 
 	@Override
+	@Nullable
 	public T get()
 	{
 		// A 2-field variant of Double Checked Locking.
@@ -75,7 +78,10 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 		return value;
 	}
 
-	/** @return memorized value or <code>null</code> if not initialized */
+	/**
+	 * @return memorized value or <code>null</code> if not initialized
+	 */
+	@Nullable
 	public T peek()
 	{
 		synchronized (this)
@@ -87,9 +93,9 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 	/**
 	 * Forget memorized value
 	 *
-	 * @return
 	 * @return current value if any
 	 */
+	@Nullable
 	public T forget()
 	{
 		// https://github.com/metasfresh/metasfresh-webui-api/issues/787 - similar to the code of get();
@@ -111,7 +117,9 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 		return null;
 	}
 
-	/** @return true if this supplier has a value memorized */
+	/**
+	 * @return true if this supplier has a value memorized
+	 */
 	public boolean isInitialized()
 	{
 		return initialized;

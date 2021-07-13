@@ -1,16 +1,17 @@
 package de.metas.order;
 
-import java.util.Collection;
-import java.util.Optional;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -43,6 +44,7 @@ public class OrderLineId implements RepoIdAware
 		return new OrderLineId(repoId);
 	}
 
+	@Nullable
 	public static OrderLineId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new OrderLineId(repoId) : null;
@@ -53,7 +55,12 @@ public class OrderLineId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(final OrderLineId orderLineId)
+	public static OrderLineId cast(@NonNull final RepoIdAware id)
+	{
+		return (OrderLineId)id;
+	}
+
+	public static int toRepoId(@Nullable final OrderLineId orderLineId)
 	{
 		return orderLineId != null ? orderLineId.getRepoId() : -1;
 	}

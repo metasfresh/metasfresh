@@ -16,23 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyPrecision;
@@ -47,13 +30,28 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.security.IUserRolePermissions;
-import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Properties;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Invoice Callouts
@@ -68,6 +66,8 @@ public class CalloutInvoice extends CalloutEngine
 	private static final String CTX_UOMConversion = "UOMConversion";
 
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
+
+	protected static final String SYS_Config_C_Invoice_SOTrx_OnlyAllowBillToDefault_Contact = "C_Invoice.SOTrx_OnlyAllowBillToDefault_Contact";
 
 	/**
 	 * Invoice Header- BPartner.
@@ -89,7 +89,12 @@ public class CalloutInvoice extends CalloutEngine
 			return NO_ERROR;
 		}
 
-		final String sql = "SELECT p.AD_Language,p.C_PaymentTerm_ID,"
+		final boolean isAllowOnlyBillToDefault_Contact = Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYS_Config_C_Invoice_SOTrx_OnlyAllowBillToDefault_Contact, false);
+
+		final boolean isSOTrx = invoice.isSOTrx();
+
+		final StringBuilder sql = new StringBuilder().append("SELECT p.AD_Language,p.C_PaymentTerm_ID,"
 				+ " COALESCE(p.M_PriceList_ID,g.M_PriceList_ID) AS M_PriceList_ID, p.PaymentRule,p.POReference,"
 				+ " p.SO_Description,p.IsDiscountPrinted, "
 				+ " stats." + I_C_BPartner_Stats.COLUMNNAME_SO_CreditUsed + ", "
@@ -105,15 +110,22 @@ public class CalloutInvoice extends CalloutEngine
 				+ ")"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location l ON (p.C_BPartner_ID=l.C_BPartner_ID AND l.IsBillTo='Y' AND l.IsActive='Y')"
-				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) "
-				+ "WHERE p.C_BPartner_ID=? AND p.IsActive='Y'";		// #1
+				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) ");
 
-		final boolean isSOTrx = invoice.isSOTrx();
+		if (isAllowOnlyBillToDefault_Contact && isSOTrx)
+		{
+			sql.append(" AND c." + I_AD_User.COLUMNNAME_IsBillToContact_Default + " = 'Y'");
+		}
+		sql.append(
+				" WHERE p.C_BPartner_ID=? AND p.IsActive='Y' "
+						+ " ORDER BY c." + I_AD_User.COLUMNNAME_IsBillToContact_Default + " DESC NULLS FIRST"
+						+ ";	");		// #1
+
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
 			pstmt.setInt(1, bPartnerID);
 			rs = pstmt.executeQuery();
 			//
@@ -173,7 +185,6 @@ public class CalloutInvoice extends CalloutEngine
 				// Location
 				int bpartnerLocationId = rs.getInt("C_BPartner_Location_ID");
 				BPartnerContactId contactUserId = BPartnerContactId.ofRepoIdOrNull(bPartnerID, rs.getInt("AD_User_ID"));
-
 
 				// overwritten by InfoBP selection - works only if InfoWindow
 				// was used otherwise creates error (uses last value, may belong to different BP)
@@ -383,15 +394,15 @@ public class CalloutInvoice extends CalloutEngine
 		// No Product defined
 		if (invoiceLine.getM_Product_ID() > 0)
 		{
-			invoiceLine.setC_Charge(null);
+			invoiceLine.setC_Charge_ID(-1);
 			return "ChargeExclusively";
 		}
 
 		invoiceLine.setM_AttributeSetInstance(null);
 		invoiceLine.setS_ResourceAssignment_ID(-1);
-		invoiceLine.setC_UOM_ID(IUOMDAO.C_UOM_ID_Each); // EA
+		invoiceLine.setC_UOM_ID(UomId.EACH.getRepoId()); // EA
 
-		invoiceLine.setPrice_UOM_ID(IUOMDAO.C_UOM_ID_Each); // 07216: Make sure price UOM is also filled.
+		invoiceLine.setPrice_UOM_ID(UomId.EACH.getRepoId()); // 07216: Make sure price UOM is also filled.
 
 		calloutField.putContext(CTX_DiscountSchema, false);
 
@@ -481,7 +492,17 @@ public class CalloutInvoice extends CalloutEngine
 		final int orgID = invoiceLine.getAD_Org_ID();
 		log.debug("Org=" + orgID);
 
-		final int warehouseID = calloutField.getGlobalContextAsInt("#M_Warehouse_ID");
+		final int warehouseID;
+		if (invoice.getM_Warehouse_ID() > 0)
+		{
+			warehouseID = invoice.getM_Warehouse_ID();
+
+		}
+		else
+		{
+			warehouseID = calloutField.getGlobalContextAsInt("#M_Warehouse_ID");
+		}
+
 		log.debug("Warehouse={}", warehouseID);
 
 		//
@@ -612,7 +633,7 @@ public class CalloutInvoice extends CalloutEngine
 		{
 			priceActual = (BigDecimal)value;
 			priceEntered = LegacyUOMConversionUtils.convertToProductUOM(ctx, productID, uomToID, priceActual);
-
+ 
 			if (priceEntered == null)
 			{
 				priceEntered = priceActual;
@@ -622,20 +643,8 @@ public class CalloutInvoice extends CalloutEngine
 					+ " -> PriceEntered=" + priceEntered);
 
 			invoiceLine.setPriceEntered(priceEntered);
-
 		}
-		else if (columnName.equals("PriceEntered"))
-		{
-			priceEntered = (BigDecimal)value;
-
-			// task 08763: PriceActual = PriceEntered should be OK in invoices. see the task chant and wiki-page for details
-			priceActual = pricePrecision.round(priceEntered);
-			//
-			log.debug("amt - PriceEntered=" + priceEntered
-					+ " -> PriceActual=" + priceActual);
-
-			invoiceLine.setPriceActual(priceActual);
-		}
+		
 
 		/*
 		 * Discount entered - Calculate Actual/Entered
@@ -724,13 +733,13 @@ public class CalloutInvoice extends CalloutEngine
 			else
 			{
 				final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-				final I_C_Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
+				final de.metas.tax.api.Tax tax = taxDAO.getTaxByIdOrNull(invoiceLine.getC_Tax_ID());
 
 				if (tax != null)
 				{
 
 					final boolean taxIncluded = isTaxIncluded(invoiceLine);
-					taxAmt = Services.get(ITaxBL.class).calculateTax(tax, lineNetAmt, taxIncluded, pricePrecision.toInt());
+					taxAmt = tax.calculateTax(lineNetAmt, taxIncluded, pricePrecision.toInt());
 					invoiceLine.setTaxAmt(taxAmt);
 				}
 			}

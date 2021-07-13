@@ -15,9 +15,9 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = -728097552L;
+	private static final long serialVersionUID = -623218126L;
 
-    /** Standard Constructor */
+	/** Standard Constructor */
     public X_M_Package (Properties ctx, int M_Package_ID, String trxName)
     {
       super (ctx, M_Package_ID, trxName);
@@ -437,4 +437,17 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_TrackingInfo);
 	}
+
+	@Override
+	public void setTrackingURL (java.lang.String TrackingURL)
+	{
+		set_Value (COLUMNNAME_TrackingURL, TrackingURL);
+	}
+
+	@Override
+	public java.lang.String getTrackingURL()
+	{
+		return (java.lang.String)get_Value(COLUMNNAME_TrackingURL);
+	}
+
 }

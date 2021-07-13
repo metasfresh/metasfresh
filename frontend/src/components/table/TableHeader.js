@@ -6,30 +6,37 @@ import { shouldRenderColumn, getSizeClass } from '../../utils/tableHelpers';
 import { getTableId } from '../../reducers/tables';
 
 export default class TableHeader extends PureComponent {
-  UNSAFE_componentWillMount() {
-    this.setInitialState();
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      fields: {},
+    };
   }
 
-  setInitialState() {
-    const { orderBy } = this.props;
+  static getDerivedStateFromProps(props) {
+    if (props.orderBy) {
+      const fields = {};
+      props.orderBy &&
+        props.orderBy.map((item) => {
+          fields[item.fieldName] = item.ascending;
+        });
 
-    let fields = {};
-    orderBy &&
-      orderBy.map((item) => {
-        fields[item.fieldName] = item.ascending;
-      });
+      return {
+        fields,
+      };
+    }
 
-    this.setState({
-      fields,
-    });
+    return null;
   }
 
   handleClick = (field, sortable) => {
     if (!sortable) {
       return;
     }
+
     const {
-      sort,
+      onSortTable,
       deselect,
       page,
       tabId,
@@ -60,7 +67,7 @@ export default class TableHeader extends PureComponent {
       fields: { ...fields },
     });
 
-    sort(sortingValue, field, true, page, tabId);
+    onSortTable(sortingValue, field, true, page, tabId);
     setActiveSort(tableId, true);
 
     setTimeout(() => {
@@ -97,7 +104,7 @@ export default class TableHeader extends PureComponent {
   };
 
   renderCols = (cols) => {
-    const { sort } = this.props;
+    const { onSortTable } = this.props;
 
     return (
       cols &&
@@ -105,7 +112,7 @@ export default class TableHeader extends PureComponent {
         if (shouldRenderColumn(item)) {
           return (
             <th key={index} className={getSizeClass(item)}>
-              {sort
+              {onSortTable
                 ? this.renderSorting(
                     item.fields[0].field,
                     item.caption,
@@ -134,7 +141,7 @@ export default class TableHeader extends PureComponent {
 
 TableHeader.propTypes = {
   orderBy: PropTypes.array,
-  sort: PropTypes.any,
+  onSortTable: PropTypes.func,
   tabId: PropTypes.any,
   windowType: PropTypes.string,
   docId: PropTypes.string,

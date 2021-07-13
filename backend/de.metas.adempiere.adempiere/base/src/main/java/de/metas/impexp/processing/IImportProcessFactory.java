@@ -1,6 +1,5 @@
 package de.metas.impexp.processing;
 
-import de.metas.impexp.processing.spi.IAsyncImportProcessBuilder;
 import de.metas.util.ISingletonService;
 
 /**
@@ -23,13 +22,5 @@ public interface IImportProcessFactory extends ISingletonService
 
 	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcess(Class<ImportRecordType> modelImportClass);
 
-	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcessOrNull(Class<ImportRecordType> modelImportClass);
-
-	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableNameOrNull(String importTableName);
-
 	<ImportRecordType> IImportProcess<ImportRecordType> newImportProcessForTableName(String importTableName);
-
-	void setAsyncImportProcessBuilderFactory(final IAsyncImportProcessBuilderFactory asyncImportProcessBuilderFactory);
-
-	IAsyncImportProcessBuilder newAsyncImportProcessBuilder();
 }

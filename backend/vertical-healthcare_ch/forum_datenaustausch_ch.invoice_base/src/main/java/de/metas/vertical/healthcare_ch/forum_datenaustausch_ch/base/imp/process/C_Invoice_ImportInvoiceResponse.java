@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.Mutable;
 import org.apache.commons.io.filefilter.WildcardFileFilter;
@@ -31,7 +32,6 @@ import de.metas.process.RunOutOfTrx;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.CrossVersionServiceRegistry;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.export.invoice.InvoiceImportClientImpl;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.imp.InvoiceRejectionDetailId;

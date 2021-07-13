@@ -1,65 +1,43 @@
 /**
  * Filter element displayed inline for frequent filters
+ * To see how this should behave look at https://github.com/metasfresh/metasfresh-webui-frontend-legacy/issues/1387
+ * It seems this is not in use any more (checked that at the time of refactoring the filters Sep, 2020)
  **/
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import RawWidget from '../widget/RawWidget';
+import { connect } from 'react-redux';
+import { find } from 'lodash';
 
-import { parseDateToReadable } from './Filters';
+import { convertDateToReadable } from '../../utils/dateHelpers';
+
+import WidgetWrapper from '../../containers/WidgetWrapper';
+import { updateInlineFilter } from '../../actions/FiltersActions';
 
 class InlineFilterItem extends Component {
-  constructor(props) {
-    super(props);
+  state = { filter: this.props.parentFilter, searchString: '' };
 
-    this.state = {
-      filter: props.parentFilter,
-    };
-  }
+  static getDerivedStateFromProps(props) {
+    const {
+      active,
+      parentFilter: { filterId },
+    } = props;
+    const filterActive = active.length && find(active, { filterId });
 
-  UNSAFE_componentWillMount() {
-    this.init();
-  }
-
-  UNSAFE_componentWillReceiveProps(props) {
-    const { active } = this.props;
-
-    if (JSON.stringify(active) !== JSON.stringify(props.active)) {
-      this.init();
+    if (filterActive && filterActive.parameters.length) {
+      return { searchString: filterActive.parameters[0].value };
     }
+    return null;
   }
-
-  init = () => {
-    const { active, parentFilter } = this.props;
-    const { filter } = this.state;
-    let activeFilter;
-
-    if (active) {
-      activeFilter = active.find(
-        (item) => item.filterId === parentFilter.filterId
-      );
-    }
-
-    if (
-      filter.type &&
-      activeFilter &&
-      activeFilter.parameters &&
-      activeFilter.filterId === filter.filterId
-    ) {
-      activeFilter.parameters.map((item) => {
-        this.mergeData(
-          item.parameterName,
-          item.value != null ? item.value : '',
-          item.valueTo != null ? item.valueTo : ''
-        );
-      });
-    } else if (filter.parameters) {
-      filter.parameters.map((item) => {
-        this.mergeData(item.parameterName, '');
-      });
-    }
-  };
 
   setValue = (property, value, id, valueTo) => {
+    const {
+      filterId,
+      updateInlineFilter,
+      parentFilter: { filterId: parentFilterId },
+    } = this.props;
+    updateInlineFilter({ filterId, parentFilterId, data: value });
+
+    this.setState({ searchString: value });
     //TODO: LOOKUPS GENERATE DIFFERENT TYPE OF PROPERTY parameters
     // IT HAS TO BE UNIFIED
     //
@@ -75,12 +53,15 @@ class InlineFilterItem extends Component {
 
   mergeData = (property, value, valueTo) => {
     this.setState((prevState) => ({
+      // @TODO: This has to be rewritten to just use object spread
       filter: Object.assign({}, prevState.filter, {
         parameters: prevState.filter.parameters.map((param) => {
           if (param.parameterName === property) {
             return Object.assign({}, param, {
-              value: parseDateToReadable(param.widgetType, value),
-              valueTo: parseDateToReadable(param.widgetType, valueTo),
+              value: convertDateToReadable(param.widgetType, value),
+              valueTo: valueTo
+                ? convertDateToReadable(param.widgetType, valueTo)
+                : null, // added safety check as deepUnfreeze crashes when valueTo is undefined
             });
           } else {
             return param;
@@ -91,13 +72,10 @@ class InlineFilterItem extends Component {
   };
 
   handleApply = () => {
-    const { applyFilters } = this.props;
+    const { applyFilters, clearFilters } = this.props;
     const { filter } = this.state;
 
-    if (filter && !filter.parameters[0].value) {
-      return this.handleClear();
-    }
-
+    clearFilters(filter, true);
     applyFilters(filter);
   };
 
@@ -110,10 +88,13 @@ class InlineFilterItem extends Component {
 
   render() {
     const { data, id, windowType, onShow, onHide, viewId } = this.props;
-    const { filter } = this.state;
+    const { filter, searchString } = this.state;
+    const dataClone = { ...data };
+    dataClone.value = searchString;
 
     return (
-      <RawWidget
+      <WidgetWrapper
+        dataSource="filter-item"
         entity="documentView"
         subentity="filter"
         subentityId={filter.filterId}
@@ -122,13 +103,13 @@ class InlineFilterItem extends Component {
         widgetType={data.widgetType}
         fields={[{ ...data, emptyText: data.caption }]}
         type={data.type}
-        widgetData={[data]}
-        id={id}
+        widgetData={[dataClone]}
         range={data.range}
         caption={data.caption}
         noLabel={true}
         filterWidget={true}
         {...{
+          id,
           viewId,
           windowType,
           onShow,
@@ -140,16 +121,20 @@ class InlineFilterItem extends Component {
 }
 
 InlineFilterItem.propTypes = {
-  active: PropTypes.bool,
+  active: PropTypes.array,
   data: PropTypes.object,
   parentFilter: PropTypes.object,
   onShow: PropTypes.func,
   onHide: PropTypes.func,
-  viewId: PropTypes.number,
+  viewId: PropTypes.string,
   id: PropTypes.number,
   applyFilters: PropTypes.func,
   clearFilters: PropTypes.func,
   windowType: PropTypes.string,
+  filterId: PropTypes.string,
+  updateInlineFilter: PropTypes.func,
 };
 
-export default InlineFilterItem;
+export default connect(null, {
+  updateInlineFilter,
+})(InlineFilterItem);

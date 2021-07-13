@@ -1,33 +1,29 @@
-package de.metas.calendar.impl;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.calendar.impl;
 
-import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.util.Check;
+import de.metas.util.TypedAccessor;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -38,8 +34,10 @@ import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_Year;
 import org.compiere.util.Env;
 
-import de.metas.util.Check;
-import de.metas.util.TypedAccessor;
+import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 public class PlainCalendarDAO extends AbstractCalendarDAO
 {

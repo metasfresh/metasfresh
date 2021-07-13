@@ -1,10 +1,5 @@
 package de.metas.costing;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
 import de.metas.currency.CurrencyPrecision;
@@ -12,10 +7,15 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /*
  * #%L
@@ -42,34 +42,47 @@ import lombok.Value;
 @Value
 public class CostAmount
 {
-	public static final CostAmount of(@NonNull final BigDecimal value, final CurrencyId currencyId)
+	public static CostAmount of(
+			@NonNull final BigDecimal value,
+			final CurrencyId currencyId)
 	{
 		return new CostAmount(value, currencyId);
 	}
 
-	public static final CostAmount of(final int valueInt, final CurrencyId currencyId)
+	public static CostAmount of(
+			final int valueInt,
+			final CurrencyId currencyId)
 	{
 		return of(BigDecimal.valueOf(valueInt), currencyId);
 	}
 
-	public static final CostAmount ofMoney(@NonNull final Money money)
+	public static CostAmount of(
+			final String valueStr,
+			final CurrencyId currencyId)
+	{
+		return of(new BigDecimal(valueStr), currencyId);
+	}
+
+	public static CostAmount ofMoney(@NonNull final Money money)
 	{
 		return new CostAmount(money.toBigDecimal(), money.getCurrencyId());
 	}
 
-	public static final CostAmount zero(final CurrencyId currencyId)
+	public static CostAmount zero(final CurrencyId currencyId)
 	{
 		return new CostAmount(BigDecimal.ZERO, currencyId);
 	}
 
-	public static final CostAmount ofProductPrice(@NonNull final ProductPrice price)
+	public static CostAmount ofProductPrice(@NonNull final ProductPrice price)
 	{
 		return ofMoney(price.toMoney());
 	}
 
-	public static final CostAmount multiply(@NonNull final ProductPrice price, @NonNull final Quantity qty)
+	public static CostAmount multiply(
+			@NonNull final ProductPrice price,
+			@NonNull final Quantity qty)
 	{
-		if (price.getUomId().getRepoId() != qty.getUOMId())
+		if (!UomId.equals(price.getUomId(), qty.getUomId()))
 		{
 			throw new AdempiereException("UOM does not match: " + price + ", " + qty);
 		}
@@ -80,13 +93,15 @@ public class CostAmount
 	BigDecimal value;
 	CurrencyId currencyId;
 
-	private CostAmount(@NonNull final BigDecimal value, @NonNull final CurrencyId currencyId)
+	private CostAmount(
+			@NonNull final BigDecimal value,
+			@NonNull final CurrencyId currencyId)
 	{
 		this.value = NumberUtils.stripTrailingDecimalZeros(value);
 		this.currencyId = currencyId;
 	}
 
-	private final void assertCurrencyMatching(@NonNull final CostAmount amt)
+	private void assertCurrencyMatching(@NonNull final CostAmount amt)
 	{
 		if (!currencyId.equals(amt.currencyId))
 		{
@@ -143,7 +158,9 @@ public class CostAmount
 		return multiply(quantity.toBigDecimal());
 	}
 
-	public CostAmount multiply(@NonNull final Percent percent, final CurrencyPrecision precision)
+	public CostAmount multiply(
+			@NonNull final Percent percent,
+			final CurrencyPrecision precision)
 	{
 		if (percent.isZero())
 		{
@@ -175,13 +192,22 @@ public class CostAmount
 		return new CostAmount(value.add(amtToAdd.value), currencyId);
 	}
 
-	public CostAmount divide(@NonNull final BigDecimal divisor, @NonNull final CurrencyPrecision precision)
+	public CostAmount divide(
+			@NonNull final BigDecimal divisor,
+			@NonNull final CurrencyPrecision precision)
 	{
+		if (divisor.signum() == 0)
+		{
+			throw new AdempiereException("Diving " + this + " by ZERO is not allowed");
+		}
+
 		final BigDecimal valueNew = value.divide(divisor, precision.toInt(), RoundingMode.HALF_UP);
 		return new CostAmount(valueNew, currencyId);
 	}
 
-	public CostAmount divide(@NonNull final Quantity divisor, @NonNull final CurrencyPrecision precision)
+	public CostAmount divide(
+			@NonNull final Quantity divisor,
+			@NonNull final CurrencyPrecision precision)
 	{
 		return divide(divisor.toBigDecimal(), precision);
 	}
@@ -206,6 +232,7 @@ public class CostAmount
 		return roundToPrecisionIfNeeded(precision);
 	}
 
+	@NonNull
 	public CostAmount subtract(@NonNull final CostAmount amtToSubtract)
 	{
 		assertCurrencyMatching(amtToSubtract);

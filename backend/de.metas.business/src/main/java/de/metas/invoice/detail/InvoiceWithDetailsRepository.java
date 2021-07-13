@@ -32,7 +32,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.xmlbeans.impl.xb.xmlconfig.Extensionconfig;
 import org.compiere.model.I_C_Invoice_Detail;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -73,12 +72,7 @@ public class InvoiceWithDetailsRepository
 
 	private ImmutableMap<StagingRecordKey, I_C_Invoice_Detail> retrieveDetailRecords(@NonNull final InvoiceId invoiceId)
 	{
-		final List<I_C_Invoice_Detail> detailRecords = queryBL
-				.createQueryBuilder(I_C_Invoice_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.create()
-				.list();
+		final List<I_C_Invoice_Detail> detailRecords = getInvoiceDetailsListForInvoiceId(invoiceId);
 
 		final ImmutableMap.Builder<StagingRecordKey, I_C_Invoice_Detail> invoiceId2Record = ImmutableMap.builder();
 
@@ -180,5 +174,16 @@ public class InvoiceWithDetailsRepository
 		{
 			return new StagingRecordKey(null, invoiceLineId, detailItem.getLabel());
 		}
+	}
+
+	// also used by InvoiceWithDetailsService
+	List<I_C_Invoice_Detail> getInvoiceDetailsListForInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_Invoice_Detail.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.create()
+				.list();
 	}
 }

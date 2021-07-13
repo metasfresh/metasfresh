@@ -24,6 +24,7 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import java.util.Properties;
 
+import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -63,7 +64,7 @@ import lombok.NonNull;
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
 		final I_M_HU_PI_Item_Product tuPIItemProduct = getM_HU_PI_Item_Product(ppOrderBOMLine);
 		final ProductId cuProductId = ProductId.ofRepoId(ppOrderBOMLine.getM_Product_ID());
-		final UomId cuUOMId = UomId.ofRepoId(ppOrderBOMLine.getC_UOM_ID());
+		final UomId cuUOMId = Services.get(IPPOrderBOMBL.class).getBOMLineUOMId(ppOrderBOMLine);
 
 		// LU/TU COnfiguration
 		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);

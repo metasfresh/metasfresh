@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -46,7 +47,6 @@ import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 
 public class PlainInvoiceCandDAO extends InvoiceCandDAO
 {

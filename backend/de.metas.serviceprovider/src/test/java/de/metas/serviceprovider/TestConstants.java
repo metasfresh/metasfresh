@@ -27,7 +27,7 @@ import de.metas.project.ProjectId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.external.project.ExternalProjectType;
-import de.metas.serviceprovider.external.reference.ExternalReferenceType;
+import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.uom.UomId;
@@ -41,7 +41,7 @@ public interface TestConstants
 {
 	String MOCK_EXTERNAL_PROJECT_OWNER = "externalProjectOwner";
 	String MOCK_EXTERNAL_REFERENCE = "externalReference";
-	ExternalReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = ExternalReferenceType.ISSUE_ID;
+	ExternalServiceReferenceType MOCK_EXTERNAL_REFERENCE_TYPE = ExternalServiceReferenceType.ISSUE_ID;
 	ExternalSystem MOCK_EXTERNAL_SYSTEM = ExternalSystem.GITHUB;
 	ExternalSystem MOCK_EXTERNAL_SYSTEM_1 = ExternalSystem.EVERHOUR;
 	ExternalProjectType MOCK_EXTERNAL_PROJECT_TYPE = ExternalProjectType.EFFORT;
@@ -83,7 +83,6 @@ public interface TestConstants
 	OrgId MOCK_ORG_ID = OrgId.ANY;
 	ProjectId MOCK_PROJECT_ID = ProjectId.ofRepoId(1);
 	UserId MOCK_USER_ID = UserId.ofRepoId(1);
-	UomId MOCK_UOM_ID = UomId.ofRepoId(1);
 	IssueId MOCK_ISSUE_ID = IssueId.ofRepoId(1);
 	String MOCK_GH_TASK_ID = "gh:" + MOCK_ISSUE_ID.getRepoId();
 	String MOCK_EV_TASK_ID = "ev:" + MOCK_ISSUE_ID.getRepoId();

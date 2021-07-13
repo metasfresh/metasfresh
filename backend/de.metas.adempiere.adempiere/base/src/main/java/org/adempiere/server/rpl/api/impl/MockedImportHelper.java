@@ -23,6 +23,7 @@ package org.adempiere.server.rpl.api.impl;
  */
 
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
@@ -41,7 +42,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.XMLHelper;
 import org.adempiere.server.rpl.api.IImportHelper;
-import org.apache.activemq.util.ByteArrayInputStream;
 import org.compiere.util.Ini;
 import org.w3c.dom.Document;
 

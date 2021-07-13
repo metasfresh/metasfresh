@@ -19,7 +19,17 @@ const plugins = [
     template: './index.html',
   }),
   new WebpackGitHash(),
-  new CopyWebpackPlugin([{ from: './plugins/**', to: './', ignore: ['*.md'] }]),
+  new CopyWebpackPlugin({
+    patterns: [
+      {
+        from: './plugins/**',
+        to: './',
+        globOptions: {
+          ignore: ['*.md'],
+        },
+      },
+    ],
+  }),
 ];
 
 if (!fs.existsSync(path.join(__dirname, 'dist/plugins.js'))) {
@@ -32,6 +42,10 @@ if (!fs.existsSync(path.join(__dirname, 'dist/plugins.js'))) {
 
 module.exports = {
   mode: 'production',
+  bail: true,
+  stats: {
+    errorDetails: true,
+  },
   devtool: 'cheap-module-source-map',
   entry: ['@babel/polyfill', './src/index.jsx', './favicon.png'],
   output: {

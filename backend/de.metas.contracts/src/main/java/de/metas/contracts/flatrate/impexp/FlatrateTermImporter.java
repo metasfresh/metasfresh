@@ -3,6 +3,7 @@
  */
 package de.metas.contracts.flatrate.impexp;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
@@ -10,6 +11,7 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_I_Flatrate_Term;
 import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -18,7 +20,6 @@ import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -88,6 +89,7 @@ import java.util.Properties;
 		final ProductAndCategoryId productAndCategoryId = Services.get(IProductDAO.class).retrieveProductAndCategoryIdByProductId(productId);
 
 		final CreateFlatrateTermRequest createFlatrateTermRequest = CreateFlatrateTermRequest.builder()
+			.orgId(OrgId.ofRepoId(importRecord.getAD_Org_ID()))
 			.context(PlainContextAware.newWithThreadInheritedTrx())
 			.bPartner(importRecord.getC_BPartner())
 			.conditions(importRecord.getC_Flatrate_Conditions())
@@ -139,7 +141,7 @@ import java.util.Properties;
 		final I_AD_User billUser = FlatrateTermImportFinder.findBillUser(ctx, billPartnerId);
 		if (billUser != null)
 		{
-			contract.setBill_User(billUser);
+			contract.setBill_User_ID(billUser.getAD_User_ID());
 		}
 	}
 
@@ -159,7 +161,7 @@ import java.util.Properties;
 		final I_AD_User dropShipUser = FlatrateTermImportFinder.findDropShipUser(ctx, dropShipBPartnerId);
 		if (dropShipUser != null)
 		{
-			contract.setDropShip_User(dropShipUser);
+			contract.setDropShip_User_ID(dropShipUser.getAD_User_ID());
 		}
 	}
 
@@ -169,7 +171,7 @@ import java.util.Properties;
 		final I_C_BPartner_Location dropShipBPLocation = FlatrateTermImportFinder.findBPartnerShipToLocation(ctx, dropShipBPartnerId);
 		if (dropShipBPLocation != null)
 		{
-			contract.setDropShip_Location(dropShipBPLocation);
+			contract.setDropShip_Location_ID(dropShipBPLocation.getC_BPartner_Location_ID());
 		}
 	}
 

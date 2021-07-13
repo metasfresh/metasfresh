@@ -7,6 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.sql.Timestamp;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.tax.api.TaxId;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
@@ -43,8 +45,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.CoalesceUtil;
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -115,7 +116,7 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 
 		final Properties ctx = Env.getCtx();
 		final TaxCategoryId taxCategoryId = null;
-		Mockito.when(taxBL.getTax(
+		Mockito.when(taxBL.getTaxNotNull(
 				ctx,
 				term1,
 				taxCategoryId,
@@ -124,8 +125,8 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 				OrgId.ofRepoId(term1.getAD_Org_ID()),
 				(WarehouseId)null,
 				CoalesceUtil.firstGreaterThanZero(term1.getDropShip_Location_ID(), term1.getBill_Location_ID()),
-				SOTrx.SALES.toBoolean()))
-				.thenReturn(3);
+				SOTrx.SALES))
+				.thenReturn(TaxId.ofRepoId(3));
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();
 		final InvoiceCandidateGenerateResult candidates = flatrateTermHandler.createCandidatesFor(InvoiceCandidateGenerateRequest.of(flatrateTermHandler, term1));
@@ -195,13 +196,14 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 	{
 		final I_C_Flatrate_Term term = newInstance(I_C_Flatrate_Term.class);
 		POJOWrapper.setInstanceName(term, "term1");
-		term.setAD_Org(conditions.getAD_Org());
+		term.setAD_Org_ID(conditions.getAD_Org_ID());
 		term.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
 		term.setC_Flatrate_Conditions(conditions);
 		term.setType_Conditions(X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription);
 		term.setM_Product_ID(product.getM_Product_ID());
 		term.setStartDate(startDate);
-		term.setC_OrderLine_Term(orderLine);
+		term.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
+		term.setC_Order_Term_ID(orderLine.getC_Order_ID());
 		term.setIsAutoRenew(isAutoRenew);
 		term.setC_UOM_ID(uomId.getRepoId());
 		save(term);

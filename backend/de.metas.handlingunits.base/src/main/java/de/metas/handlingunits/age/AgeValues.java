@@ -23,7 +23,7 @@ package de.metas.handlingunits.age;
  */
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.util.time.SystemTime;
+import de.metas.common.util.time.SystemTime;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;

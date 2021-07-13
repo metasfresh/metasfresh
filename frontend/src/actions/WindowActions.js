@@ -3,6 +3,7 @@ import counterpart from 'counterpart';
 import { push, replace } from 'react-router-redux';
 import currentDevice from 'current-device';
 import { Set } from 'immutable';
+import { openInNewTab } from '../utils/index';
 
 import {
   ACTIVATE_TAB,
@@ -14,17 +15,11 @@ import {
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
   CLOSE_FILTER_BOX,
-  DELETE_QUICK_ACTIONS,
-  DELETE_TOP_ACTIONS,
   DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
   INIT_WINDOW,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
-  FETCHED_QUICK_ACTIONS,
-  FETCH_TOP_ACTIONS,
-  FETCH_TOP_ACTIONS_FAILURE,
-  FETCH_TOP_ACTIONS_SUCCESS,
   NO_CONNECTION,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
@@ -45,20 +40,29 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
+  UPDATE_TAB_LAYOUT,
+  SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
+  TOGGLE_PRINTING_OPTION,
 } from '../constants/ActionTypes';
+import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
+import { toggleFullScreen, preFormatPostDATA } from '../utils';
+import { getScope, parseToDisplay } from '../utils/documentListHelper';
 
 import {
   getData,
   patchRequest,
   getLayout,
-  topActionsRequest,
   getProcessData,
   getTabRequest,
   startProcess,
   formatParentUrl,
+  getTabLayoutRequest,
 } from '../api';
+
 import { getTableId } from '../reducers/tables';
+import { findViewByViewId } from '../reducers/viewHandler';
 import {
   addNotification,
   setNotificationProgress,
@@ -67,7 +71,7 @@ import {
   deleteNotification,
 } from './AppActions';
 import { openFile } from './GenericActions';
-import { setListIncludedView } from './ListActions';
+import { unsetIncludedView, setIncludedView } from './ViewActions';
 import { getWindowBreadcrumb } from './MenuActions';
 import {
   updateCommentsPanel,
@@ -80,41 +84,7 @@ import {
   updateTableSelection,
   updateTableRowProperty,
 } from './TableActions';
-import { toggleFullScreen, preFormatPostDATA } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
-
-/*
- * Action creator called when quick actions are successfully fetched
- */
-export function fetchedQuickActions(windowId, id, data) {
-  return {
-    type: FETCHED_QUICK_ACTIONS,
-    payload: {
-      data,
-      windowId,
-      id,
-    },
-  };
-}
-
-/*
- * Action creator to delete quick actions from the store
- */
-export function deleteQuickActions(windowId, id) {
-  return {
-    type: DELETE_QUICK_ACTIONS,
-    payload: {
-      windowId,
-      id,
-    },
-  };
-}
-
-export function deleteTopActions() {
-  return {
-    type: DELETE_TOP_ACTIONS,
-  };
-}
+import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 
 export function toggleOverlay(data) {
   return {
@@ -123,12 +93,13 @@ export function toggleOverlay(data) {
   };
 }
 
-export function openRawModal(windowId, viewId, profileId) {
+export function openRawModal({ windowId, viewId, profileId, title }) {
   return {
     type: OPEN_RAW_MODAL,
-    windowId: windowId,
-    viewId: viewId,
-    profileId: profileId,
+    windowId,
+    viewId,
+    profileId,
+    title,
   };
 }
 
@@ -228,6 +199,20 @@ export function unselectTab(scope) {
   };
 }
 
+/**
+ * @method setUpdatedTabLayout
+ * @summary Action creator to update tab's layout data in the store
+ *
+ * @param {string} tabId
+ * @param {object} layoutData
+ */
+function setUpdatedTabLayout(tabId, layoutData) {
+  return {
+    type: UPDATE_TAB_LAYOUT,
+    payload: { tabId, layoutData },
+  };
+}
+
 export function initLayoutSuccess(layout, scope) {
   return {
     type: INIT_LAYOUT_SUCCESS,
@@ -245,6 +230,7 @@ export function initDataSuccess({
   standardActions,
   validStatus,
   websocket,
+  hasComments,
 }) {
   return {
     data,
@@ -256,6 +242,7 @@ export function initDataSuccess({
     type: INIT_DATA_SUCCESS,
     validStatus,
     websocket,
+    hasComments,
   };
 }
 
@@ -331,23 +318,26 @@ export function noConnection(status) {
   };
 }
 
-export function openModal(
-  title,
+export function openModal({
+  title = '',
   windowId,
   modalType,
-  tabId,
-  rowId,
-  isAdvanced,
-  viewId,
-  viewDocumentIds,
-  dataId,
-  triggerField,
-  parentViewId,
-  parentViewSelectedIds,
-  childViewId,
-  childViewSelectedIds,
-  staticModalType
-) {
+  tabId = null,
+  rowId = null,
+  isAdvanced = false,
+  viewId = null,
+  viewDocumentIds = null,
+  dataId = null,
+  triggerField = null,
+  parentViewId = null,
+  parentViewSelectedIds = null,
+  childViewId = null,
+  childViewSelectedIds = null,
+  staticModalType = null,
+  parentWindowId = null,
+  parentDocumentId = null,
+  parentFieldId = null,
+}) {
   const isMobile =
     currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
 
@@ -357,21 +347,26 @@ export function openModal(
 
   return {
     type: OPEN_MODAL,
-    windowType: windowId,
-    tabId: tabId,
-    rowId: rowId,
-    viewId: viewId,
-    dataId: dataId,
-    title: title,
-    isAdvanced: isAdvanced,
-    viewDocumentIds: viewDocumentIds,
-    triggerField: triggerField,
-    modalType,
-    staticModalType,
-    parentViewId,
-    parentViewSelectedIds,
-    childViewId,
-    childViewSelectedIds,
+    payload: {
+      windowId,
+      tabId,
+      rowId,
+      viewId,
+      dataId,
+      title,
+      isAdvanced,
+      viewDocumentIds,
+      triggerField,
+      modalType,
+      staticModalType,
+      parentViewId,
+      parentViewSelectedIds,
+      childViewId,
+      childViewSelectedIds,
+      parentWindowId,
+      parentDocumentId,
+      parentFieldId,
+    },
   };
 }
 
@@ -394,8 +389,6 @@ export function updateModal(rowId, dataId) {
     dataId,
   };
 }
-
-// INDICATOR ACTIONS
 
 export function indicatorState(state) {
   return {
@@ -423,7 +416,28 @@ export function fetchTab({ tabId, windowId, docId, query }) {
       })
       .catch((error) => {
         //show error message ?
-        return Promise.resolve(error);
+        return Promise.reject(error);
+      });
+  };
+}
+
+/*
+ * @method updateTabLayout
+ * @summary Action creator for fetching and updating single tab's layout
+ *
+ * @param {string} windowId
+ * @param {string} tabId
+ */
+export function updateTabLayout(windowId, tabId) {
+  return (dispatch) => {
+    return getTabLayoutRequest(windowId, tabId)
+      .then(({ data }) => {
+        dispatch(setUpdatedTabLayout(tabId, data));
+
+        return Promise.resolve(tabId);
+      })
+      .catch((error) => {
+        return Promise.reject(error);
       });
   };
 }
@@ -492,17 +506,66 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
 }
 
 /*
- * Main method to generate window
+ * @method createSearchWindow
+ * @summary - special function that is used to get the window view information for the search and opens a modal with that view
+ *            this is a hacky way of opening the window as this wasn't existing for the SEARCH type (check how `NEW` was opening)
+ * param {object}
  */
-export function createWindow(
-  windowType,
-  documentId = 'NEW',
+export function createSearchWindow({
+  windowId: windowType,
+  docId,
   tabId,
   rowId,
-  isModal = false,
-  isAdvanced
-) {
+  isModal,
+  dispatch,
+  title,
+}) {
+  dispatch(
+    createView({
+      windowId: windowType,
+      viewType: 'grid',
+      refDocumentId: docId,
+      refTabId: tabId,
+      refRowIds: [rowId],
+      isModal,
+    })
+  ).then(({ windowId, viewId }) => {
+    dispatch(openRawModal({ windowId, viewId, title }));
+  });
+}
+
+/*
+ * Main method to generate window
+ */
+export function createWindow({
+  windowId: windowType,
+  docId,
+  tabId,
+  rowId,
+  isModal,
+  isAdvanced,
+  disconnected,
+  title,
+}) {
+  let disconnectedData = null;
+  let documentId = docId || 'NEW';
   return (dispatch) => {
+    if (documentId === 'SEARCH') {
+      // use specific function for search window creation
+      createSearchWindow({
+        windowId: windowType,
+        docId,
+        tabId,
+        rowId,
+        isModal,
+        isAdvanced,
+        disconnected,
+        dispatch,
+        title,
+      });
+      return false;
+    }
+
     if (documentId.toLowerCase() === 'new') {
       documentId = 'NEW';
     }
@@ -515,8 +578,10 @@ export function createWindow(
       if (!response || !response.data) {
         return Promise.resolve(null);
       }
-
-      const data = response.data[0];
+      // Note: this `documents` key comes only as a result of a PATCH, this is the reason this check is needed
+      const data = response.data.documents
+        ? response.data.documents[0]
+        : response.data[0];
       const tabs = data.includedTabsInfo;
       let docId = data.id;
 
@@ -543,7 +608,11 @@ export function createWindow(
 
       let elem = 0;
 
-      response.data.forEach((value, index) => {
+      let responseDocuments = response.data.documents
+        ? response.data.documents
+        : response.data;
+
+      responseDocuments.forEach((value, index) => {
         if (value.rowId === rowId) {
           elem = index;
         }
@@ -551,30 +620,46 @@ export function createWindow(
 
       if (documentId === 'NEW') {
         dispatch(updateModal(null, docId));
+        const { includedTabsInfo } = responseDocuments[0];
+        includedTabsInfo &&
+          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
       }
 
       // TODO: Is `elem` ever different than 0 ?
-      docId = response.data[elem].id;
-      dispatch(
-        initDataSuccess({
-          data: parseToDisplay(response.data[elem].fieldsByName),
-          docId,
-          saveStatus: data.saveStatus,
-          scope: getScope(isModal),
-          standardActions: data.standardActions,
-          validStatus: data.validStatus,
-          includedTabsInfo: data.includedTabsInfo,
-          websocket: data.websocketEndpoint,
-        })
-      );
+      docId = responseDocuments[elem].id;
+      disconnected !== 'inlineTab' &&
+        dispatch(
+          initDataSuccess({
+            data: parseToDisplay(responseDocuments[elem].fieldsByName),
+            docId,
+            saveStatus: data.saveStatus,
+            scope: getScope(isModal),
+            standardActions: data.standardActions,
+            validStatus: data.validStatus,
+            includedTabsInfo: data.includedTabsInfo,
+            websocket: data.websocketEndpoint,
+            hasComments: data.hasComments,
+          })
+        );
 
       if (isModal) {
         if (rowId === 'NEW') {
-          dispatch(
-            mapDataToState(response.data, false, 'NEW', docId, windowType)
-          );
-          dispatch(updateStatus(response.data));
-          dispatch(updateModal(data.rowId));
+          /** special case of inlineTab - disconnectedData will be used for data feed */
+          if (disconnected === 'inlineTab') {
+            disconnectedData = responseDocuments[0];
+          } else {
+            dispatch(
+              mapDataToState({
+                data: response.data,
+                isModal: false,
+                rowId: 'NEW',
+                docId,
+                windowType,
+              })
+            );
+            dispatch(updateStatus(responseDocuments));
+            dispatch(updateModal(data.rowId));
+          }
         }
       } else {
         dispatch(getWindowBreadcrumb(windowType));
@@ -601,15 +686,19 @@ export function createWindow(
               dispatch(updateTabTable(tableId, tableData));
             });
           }
-
-          dispatch(initLayoutSuccess(data, getScope(isModal)));
+          /** post get layout action triggered for the inlineTab case */
+          if (disconnectedData && disconnected === 'inlineTab') {
+            dispatch(inlineTabAfterGetLayout({ data, disconnectedData }));
+          } else {
+            dispatch(initLayoutSuccess(data, getScope(isModal)));
+          }
         })
         .catch((e) => Promise.reject(e));
     });
   };
 }
 
-const getChangelogUrl = function(windowId, docId, tabId, rowId) {
+const getChangelogUrl = function (windowId, docId, tabId, rowId) {
   let documentId = docId;
 
   if (!docId && rowId) {
@@ -648,31 +737,6 @@ export function fetchChangeLog(windowId, docId, tabId, rowId) {
         })
       );
     });
-  };
-}
-
-export function fetchTopActions(windowType, docId, tabId) {
-  return (dispatch) => {
-    dispatch({
-      type: FETCH_TOP_ACTIONS,
-    });
-
-    return topActionsRequest(windowType, docId, tabId)
-      .then((response) => {
-        dispatch({
-          type: FETCH_TOP_ACTIONS_SUCCESS,
-          payload: response.data.actions,
-        });
-
-        return Promise.resolve(response.data.actions);
-      })
-      .catch((e) => {
-        dispatch({
-          type: FETCH_TOP_ACTIONS_FAILURE,
-        });
-
-        return Promise.reject(e);
-      });
   };
 }
 
@@ -750,8 +814,9 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
 }
 
 /*
- *  Wrapper for patch request of widget elements
- *  when responses should merge store
+ * Wrapper for patch request of widget elements
+ * when responses should merge store
+ * @todo TODO: This should return a promise
  */
 export function patch(
   entity,
@@ -764,7 +829,8 @@ export function patch(
   isModal,
   isAdvanced,
   viewId,
-  isEdit
+  isEdit,
+  disconnected
 ) {
   return async (dispatch) => {
     const symbol = Symbol();
@@ -788,12 +854,35 @@ export function patch(
     try {
       const response = await patchRequest(options);
       const data =
-        response.data instanceof Array ? response.data : [response.data];
+        response.data.documents instanceof Array
+          ? response.data.documents
+          : response.data;
       const dataItem = data[0];
+      const includedTabsInfo =
+        dataItem && dataItem.includedTabsInfo
+          ? dataItem.includedTabsInfo
+          : undefined;
+
+      // prevent recursion in merge
+      data.documents &&
+        data.documents.documents &&
+        delete data.documents.documents;
 
       await dispatch(
-        mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
+        mapDataToState({
+          data,
+          isModal,
+          rowId,
+          id,
+          windowType,
+          isAdvanced,
+          disconnected,
+        })
       );
+
+      // update the inlineTabsInfo if such information is present
+      includedTabsInfo &&
+        dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
 
       if (
         dataItem &&
@@ -819,7 +908,7 @@ export function patch(
         await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
-        return data;
+        return response.data;
       }
     } catch (error) {
       await dispatch(indicatorState('error'));
@@ -836,14 +925,15 @@ export function patch(
       });
 
       await dispatch(
-        mapDataToState(
-          response.data,
+        mapDataToState({
+          data: response.data,
           isModal,
           rowId,
           id,
           windowType,
-          isAdvanced
-        )
+          isAdvanced,
+          disconnected,
+        })
       );
     }
   };
@@ -856,7 +946,6 @@ export function fireUpdateData({
   rowId,
   isModal,
   fetchAdvancedFields,
-  doNotFetchIncludedTabs,
 }) {
   return (dispatch) => {
     getData({
@@ -866,17 +955,16 @@ export function fireUpdateData({
       tabId: tabId,
       rowId: rowId,
       fetchAdvancedFields: fetchAdvancedFields,
-      doNotFetchIncludedTabs: doNotFetchIncludedTabs,
     }).then((response) => {
       dispatch(
-        mapDataToState(
-          response.data,
+        mapDataToState({
+          data: response.data,
           isModal,
           rowId,
           documentId,
           windowId,
-          fetchAdvancedFields
-        )
+          fetchAdvancedFields,
+        })
       );
     });
   };
@@ -899,7 +987,7 @@ function updateData(doc, scope) {
   };
 }
 
-function mapDataToState(data, isModal, rowId) {
+function mapDataToState({ data, isModal, rowId, disconnected }) {
   return (dispatch) => {
     const dataArray = typeof data.splice === 'function' ? data : [data];
 
@@ -915,7 +1003,10 @@ function mapDataToState(data, isModal, rowId) {
         !(index === 0 && rowId === 'NEW') &&
         (!item.rowId || (isModal && item.rowId))
       ) {
-        dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+        // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
+        // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
+        disconnected !== 'inlineTab' &&
+          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
     });
   };
@@ -950,6 +1041,8 @@ function updateStatus(responseData) {
  * in MasterWidget
  */
 export function updatePropertyValue({
+  windowId,
+  docId,
   property,
   value,
   tabId,
@@ -957,6 +1050,9 @@ export function updatePropertyValue({
   isModal,
   entity,
   tableId,
+  disconnected,
+  action,
+  ret,
 }) {
   return (dispatch) => {
     if (rowId) {
@@ -967,6 +1063,12 @@ export function updatePropertyValue({
           },
         },
       };
+      // - for the `inlineTab` type we will update the corresponding branch in the store
+      if (disconnected === 'inlineTab') {
+        action === 'patch' &&
+          dispatch(patchInlineTab({ ret, windowId, tabId, docId, rowId }));
+        return false;
+      }
 
       dispatch(updateTableRowProperty({ tableId, rowId, change }));
     } else if (!tabId || !rowId) {
@@ -1068,7 +1170,7 @@ export function createProcess({
   processType,
   rowId,
   tabId,
-  type,
+  documentType,
   viewId,
   selectedTab,
   childViewId,
@@ -1078,7 +1180,14 @@ export function createProcess({
 }) {
   let pid = null;
 
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
+    // creation of processes can be done only if there isn't any pending process
+    // https://github.com/metasfresh/metasfresh/issues/10116
+    const { processStatus } = getState().appHandler;
+    if (processStatus === 'pending') {
+      return false;
+    }
+
     await dispatch(setProcessPending());
 
     let response;
@@ -1089,7 +1198,7 @@ export function createProcess({
         processId: processType,
         rowId,
         tabId,
-        type,
+        documentType,
         viewId,
         selectedTab,
         childViewId,
@@ -1116,7 +1225,14 @@ export function createProcess({
         try {
           response = await startProcess(processType, pid);
 
-          await dispatch(handleProcessResponse(response, processType, pid));
+          // processes opening included views need the id of the parent view
+          const id = parentViewId ? parentViewId : viewId;
+          const parentView = id && findViewByViewId(getState(), id);
+          const parentId = parentView ? parentView.windowId : documentType;
+
+          await dispatch(
+            handleProcessResponse(response, processType, pid, parentId)
+          );
         } catch (error) {
           await dispatch(closeModal());
           await dispatch(setProcessSaved());
@@ -1154,7 +1270,7 @@ export function createProcess({
   };
 }
 
-export function handleProcessResponse(response, type, id) {
+export function handleProcessResponse(response, type, id, parentId) {
   return async (dispatch) => {
     const { error, summary, action } = response.data;
 
@@ -1168,23 +1284,30 @@ export function handleProcessResponse(response, type, id) {
       let keepProcessModal = false;
 
       if (action) {
+        const { windowId, viewId, documentId, targetTab } = action;
+        let urlPath;
+
         switch (action.type) {
           case 'displayQRCode':
             dispatch(toggleOverlay({ type: 'qr', data: action.code }));
             break;
           case 'openView': {
-            const { windowId, viewId } = action;
-
             await dispatch(closeModal());
-
-            if (!action.modalOverlay) {
-              window.open(`/window/${windowId}/?viewId=${viewId}`);
-
+            urlPath = `/window/${windowId}/?viewId=${viewId}`;
+            if (targetTab === 'NEW_TAB') {
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
+              return;
+            }
+            if (targetTab === 'SAME_TAB') {
+              window.open(urlPath, '_self');
               return;
             }
 
-            await dispatch(openRawModal(windowId, viewId, action.profileId));
-
+            if (targetTab === 'SAME_TAB_OVERLAY') {
+              await dispatch(
+                openRawModal({ windowId, viewId, profileId: action.profileId })
+              );
+            }
             break;
           }
           case 'openReport':
@@ -1193,24 +1316,30 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openDocument':
             await dispatch(closeModal());
+            urlPath = `/window/${windowId}/${documentId}`;
 
-            if (action.modal) {
+            if (targetTab === 'NEW_TAB') {
+              openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
+              return false;
+            }
+
+            if (targetTab === 'SAME_TAB') {
+              window.open(urlPath, '_self');
+              return false;
+            }
+
+            if (action.modal || targetTab === 'SAME_TAB_OVERLAY') {
               // Do not close process modal,
               // since it will be re-used with document view
               keepProcessModal = true;
 
               await dispatch(
-                openModal(
-                  '',
-                  action.windowId,
-                  'window',
-                  null,
-                  null,
-                  action.advanced ? action.advanced : false,
-                  '',
-                  '',
-                  action.documentId
-                )
+                openModal({
+                  windowId: action.windowId,
+                  modalType: 'window',
+                  isAdvanced: action.advanced ? action.advanced : false,
+                  dataId: action.documentId,
+                })
               );
             } else {
               await dispatch(
@@ -1220,18 +1349,19 @@ export function handleProcessResponse(response, type, id) {
             break;
           case 'openIncludedView':
             await dispatch(
-              setListIncludedView({
-                windowType: action.windowId,
+              setIncludedView({
+                windowId: action.windowId,
                 viewId: action.viewId,
                 viewProfileId: action.profileId,
+                parentId,
               })
             );
 
             break;
           case 'closeIncludedView':
             await dispatch(
-              setListIncludedView({
-                windowType: action.windowId,
+              unsetIncludedView({
+                windowId: action.windowId,
                 viewId: action.viewId,
               })
             );
@@ -1245,7 +1375,14 @@ export function handleProcessResponse(response, type, id) {
             const { windowId, viewId, rowIds } = action;
             const tableId = getTableId({ windowId, viewId });
 
-            dispatch(updateTableSelection(tableId, rowIds));
+            dispatch(
+              updateTableSelection({
+                id: tableId,
+                selection: rowIds,
+                windowId,
+                viewId,
+              })
+            );
 
             break;
           }
@@ -1262,5 +1399,39 @@ export function handleProcessResponse(response, type, id) {
         await dispatch(closeProcessModal());
       }
     }
+  };
+}
+
+/**
+ * @method setPrintingOptions
+ * @summary - action. It updates the store with the printing options fetched from /rest/api/window/{windowId}/{documentId}/printingOptions
+ * @param {object} data
+ */
+export function setPrintingOptions(data) {
+  return {
+    type: SET_PRINTING_OPTIONS,
+    payload: data,
+  };
+}
+
+/**
+ * @method resetPrintingOptions
+ * @summary - action. It reets the printing options in the store
+ */
+export function resetPrintingOptions() {
+  return {
+    type: RESET_PRINTING_OPTIONS,
+  };
+}
+
+/**
+ * @method togglePrintingOption
+ * @summary - action. It toggles in the store the printing option truth value
+ * @param {object} data
+ */
+export function togglePrintingOption(target) {
+  return {
+    type: TOGGLE_PRINTING_OPTION,
+    payload: target,
   };
 }

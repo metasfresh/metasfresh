@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.references.RecordZoomWindowFinder;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -286,7 +286,7 @@ final class NotificationMessageFormatter
 
 	private Optional<AdWindowId> getRecordWindowId(@NonNull final TableRecordReference record)
 	{
-		return recordWindowId.computeIfAbsent(record, RecordZoomWindowFinder::findAdWindowId);
+		return recordWindowId.computeIfAbsent(record, RecordWindowFinder::findAdWindowId);
 	}
 
 	private static a toLinkOrNull(final String text)

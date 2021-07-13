@@ -1,7 +1,10 @@
 package de.metas.document.sequence;
 
+import de.metas.document.sequence.spi.IDocumentNoAware;
 import de.metas.document.sequence.spi.IDocumentNoListener;
 import de.metas.util.ISingletonService;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -35,16 +38,13 @@ public interface IDocumentNoBL extends ISingletonService
 {
 	/**
 	 * Register another listener.
-	 *
-	 * @param listener
 	 */
 	void registerDocumentNoListener(IDocumentNoListener listener);
 
 	/**
 	 * Notify the listeners of a changed documentNo.
-	 *
-	 * @param model
-	 * @param newDocumentNo
 	 */
 	void fireDocumentNoChange(Object model, String newDocumentNo);
+
+	Optional<IDocumentNoAware> asDocumentNoAware(Object model);
 }

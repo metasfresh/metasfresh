@@ -33,6 +33,7 @@ import java.util.Properties;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.mmovement.api.IMovementBL;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -48,6 +49,7 @@ import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.validator.DD_Order;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.util.Services;
 
@@ -72,6 +74,7 @@ public class HUAssignmentBLTest
 		//
 		// Make sure Main handling units interceptor is registered
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(new PickingBOMService()));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order());
 
 		//
 		// BL under test

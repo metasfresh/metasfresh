@@ -13,7 +13,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.ShipmentScheduleId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
@@ -36,11 +36,11 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	 *
 	 * @param ctxAware if it has a not-null trxName, then the workpackage will be marked as ready for processing when given transaction is committed.
 	 */
-	public static final void scheduleIfNotPostponed(final IContextAware ctxAware)
+	public static void scheduleIfNotPostponed(final IContextAware ctxAware)
 	{
 		if (Services.get(IShipmentScheduleBL.class).allMissingSchedsWillBeCreatedLater())
 		{
-			logger.debug("Not scheduling WP because", CreateMissingShipmentSchedulesWorkpackageProcessor.class);
+			logger.debug("Not scheduling WP because IShipmentScheduleBL.allMissingSchedsWillBeCreatedLater() returned true", CreateMissingShipmentSchedulesWorkpackageProcessor.class);
 			return;
 		}
 

@@ -37,7 +37,6 @@ public interface IQueueProcessorListener
 	/**
 	 * Method called when an workpackage was processed.
 	 * 
-	 * @param workpackage
 	 * @param workpackageProcessor workpackage processor used to process the workpackage
 	 */
 	void onWorkpackageProcessed(final I_C_Queue_WorkPackage workpackage, final IWorkpackageProcessor workpackageProcessor);

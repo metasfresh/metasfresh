@@ -1,11 +1,17 @@
 package de.metas.banking.callout;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
+import de.metas.banking.Bank;
+import de.metas.banking.BankCreateRequest;
+import de.metas.banking.api.BankAccountAcctRepository;
+import de.metas.banking.api.BankAccountService;
+import de.metas.banking.api.BankRepository;
+import de.metas.banking.model.BankStatementLineAmounts;
+import de.metas.banking.service.impl.BankStatementBL;
+import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyBL;
+import de.metas.money.MoneyService;
+import de.metas.util.Services;
+import lombok.Builder;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -16,17 +22,12 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import de.metas.banking.Bank;
-import de.metas.banking.BankCreateRequest;
-import de.metas.banking.api.BankAccountAcctRepository;
-import de.metas.banking.api.BankAccountService;
-import de.metas.banking.api.BankRepository;
-import de.metas.banking.model.BankStatementLineAmounts;
-import de.metas.banking.service.impl.BankStatementBL;
-import de.metas.currency.CurrencyRepository;
-import de.metas.currency.ICurrencyBL;
-import de.metas.util.Services;
-import lombok.Builder;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -38,12 +39,12 @@ import lombok.Builder;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -66,7 +67,8 @@ public class C_BankStatementLine_Test
 				new BankAccountService(
 						bankRepo = new BankRepository(),
 						new BankAccountAcctRepository(),
-						new CurrencyRepository()));
+						new CurrencyRepository()),
+				new MoneyService(new CurrencyRepository()));
 		final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
 		callout = new C_BankStatementLine(bankStatementBL, currencyConversionBL);
 	}
@@ -106,7 +108,8 @@ public class C_BankStatementLine_Test
 		return bsl;
 	}
 
-	private static BigDecimal toBigDecimal(final String value)
+	@Nullable
+	private static BigDecimal toBigDecimal(@Nullable final String value)
 	{
 		return value != null ? new BigDecimal(value) : null;
 	}

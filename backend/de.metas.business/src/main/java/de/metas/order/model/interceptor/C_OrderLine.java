@@ -1,5 +1,47 @@
 package de.metas.order.model.interceptor;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
+import de.metas.order.IOrderBL;
+import de.metas.order.IOrderLineBL;
+import de.metas.order.IOrderLinePricingConditions;
+import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.CalloutOrder;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
 /*
@@ -24,69 +66,52 @@ import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.ad.callout.annotations.Callout;
-import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryUpdater;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.CalloutOrder;
-import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner_product.IBPartnerProductBL;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderBL;
-import de.metas.order.IOrderLineBL;
-import de.metas.order.IOrderLinePricingConditions;
-import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 @Interceptor(I_C_OrderLine.class)
 @Callout(I_C_OrderLine.class)
-@Component
 public class C_OrderLine
 {
+	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
-
+	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
+	private final OrderLineDetailRepository orderLineDetailRepository;
+	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
 
-	public static final String ERR_NEGATIVE_QTY_RESERVED = "MSG_NegativeQtyReserved";
-
-	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
+	C_OrderLine(
+			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
+			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
+			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService)
 	{
 		this.groupChangesHandler = groupChangesHandler;
+		this.orderLineDetailRepository = orderLineDetailRepository;
+		this.bPartnerSupplierApprovalService = bPartnerSupplierApprovalService;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void beforeDelete(@NonNull final I_C_OrderLine orderLine)
+	{
+		unlinkReferencedOrderLines(orderLine);
+		orderLineDetailRepository.deleteByOrderLineId(OrderAndLineId.ofRepoIds(orderLine.getC_Order_ID(), orderLine.getC_OrderLine_ID()));
 	}
 
 	/**
 	 * 09557: If a purchase order line is deleted, then all sales order lines need to un-reference it to avoid an FK-constraint-error
 	 * FRESH-386: likewise, also make sure that counter document lines are unlinked as well.
-	 *
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
-	 * @task https://metasfresh.atlassian.net/browse/FRESH-386
+	 * <p>
+	 * Task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
+	 * Task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void unlinkReferencedOrderLines(final I_C_OrderLine orderLine)
+	private void unlinkReferencedOrderLines(final I_C_OrderLine orderLine)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		// 09557
 		queryBL
 				.createQueryBuilder(I_C_OrderLine.class, orderLine)
@@ -109,26 +134,80 @@ public class C_OrderLine
 
 	}
 
-	/**
-	 * Set QtyOrderedInPriceUOM, just to make sure is up2date.
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered,
-			I_C_OrderLine.COLUMNNAME_Price_UOM_ID,
-			I_C_OrderLine.COLUMNNAME_C_UOM_ID,
+	}, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_M_Product_ID
 	})
-	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
+	public void validateHaddex(final I_C_OrderLine orderLine)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
-		orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		if (!orderBL.isHaddexOrder(order))
+		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+		if (productBL.isHaddexProduct(productId))
+		{
+			orderBL.validateHaddexDate(order);
+		}
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
+	public void validateSupplierApproval(final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		if (order.isSOTrx())
+		{
+			// Only purchase orders are relevant
+			return;
+		}
+
+		if (orderLine.getM_Product_ID() <= 0)
+		{
+			//nothing to do
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+		final ImmutableList<String> supplierApprovalNorms = productBL.retrieveSupplierApprovalNorms(productId);
+
+		if (Check.isEmpty(supplierApprovalNorms))
+		{
+			// nothing to validate
+			return;
+		}
+
+		final BPartnerId partnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+
+		bPartnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void setProjectToOrderline(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getC_Order_ID() > 0 && orderLine.getC_Project_ID() <= 0)
+		{
+			final I_C_Order order = orderLine.getC_Order();
+			orderLine.setC_Project_ID(order.getC_Project_ID());
+		}
 	}
 
 	/**
 	 * Set qtyOrdered, to make sure is up2date. Note that this value is also set in
-	 * {@link CalloutOrder#amt(java.util.Properties, int, org.compiere.model.GridTab, org.compiere.model.GridField, Object)}.
+	 * {@link CalloutOrder#amt(org.adempiere.ad.callout.api.ICalloutField))}.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
@@ -138,23 +217,20 @@ public class C_OrderLine
 	})
 	public void setQtyOrdered(final I_C_OrderLine orderLine)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final Quantity qtyOrdered = orderLineBL.convertQtyEnteredToStockUOM(orderLine);
 		orderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
 	}
 
 	/**
-	 *
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
+	 * Task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyOrdered,
-					I_C_OrderLine.COLUMNNAME_QtyDelivered,
-					I_C_OrderLine.COLUMNNAME_C_Order_ID })
+			I_C_OrderLine.COLUMNNAME_QtyDelivered,
+			I_C_OrderLine.COLUMNNAME_C_Order_ID })
 	public void updateReserved(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLineBL.class).updateQtyReserved(orderLine);
+		orderLineBL.updateQtyReserved(orderLine);
 	}
 
 	/**
@@ -174,16 +250,16 @@ public class C_OrderLine
 		ol.setQtyReserved(BigDecimal.ZERO);
 
 		// task: 08665 ts: but only log when in developer mode. i don't see how this warning should help the user
-		if (Services.get(IDeveloperModeBL.class).isEnabled())
+		if (developerModeBL.isEnabled())
 		{
 			final AdempiereException ex = new AdempiereException("@" + ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
-					+ "\nStorage: " + ol);
+																		 + "\nStorage: " + ol);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh/issues/3298
+	 * Task https://github.com/metasfresh/metasfresh/issues/3298
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
@@ -193,8 +269,8 @@ public class C_OrderLine
 		final boolean qtyOrderedLessThanZero = ol.getQtyOrdered().signum() < 0;
 
 		Check.errorIf(qtyOrderedLessThanZero,
-				"QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
-				ol.getQtyOrdered(), ol, ol.getC_Order_ID());
+					  "QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
+					  ol.getQtyOrdered(), ol, ol.getC_Order_ID());
 	}
 
 	// task 06727
@@ -214,9 +290,7 @@ public class C_OrderLine
 	}
 
 	/**
-	 *
-	 * @param orderLine
-	 * @task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
+	 * Task http://dewiki908/mediawiki/index.php/09285_add_deliver_and_invoice_status_to_order_window
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_QtyOrdered,
@@ -225,7 +299,7 @@ public class C_OrderLine
 	})
 	public void updateQuantities(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderBL.class).updateOrderQtySums(orderLine.getC_Order());
+		orderBL.updateOrderQtySums(orderLine.getC_Order());
 	}
 
 	@CalloutMethod(columnNames = {
@@ -263,7 +337,7 @@ public class C_OrderLine
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_DiscountSchemaBreak_ID, I_C_OrderLine.COLUMNNAME_IsTempPricingConditions })
 	public void updateNoPriceConditionsColor(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLinePricingConditions.class).updateNoPriceConditionsColor(orderLine);
+		orderLinePricingConditions.updateNoPriceConditionsColor(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
@@ -277,7 +351,7 @@ public class C_OrderLine
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final BPartnerId partnerId = BPartnerId.ofRepoId(orderLine.getC_BPartner_ID());
-		Services.get(IBPartnerProductBL.class).assertNotExcludedFromSaleToCustomer(productId, partnerId);
+		partnerProductBL.assertNotExcludedFromSaleToCustomer(productId, partnerId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
@@ -296,13 +370,12 @@ public class C_OrderLine
 		// make the BL revalidate the discounts..the new QtyEntered might also mean a new discount schema break
 		orderLine.setM_DiscountSchemaBreak(null);
 
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(orderLine)
-				.resultUOM(ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(orderLine)
+										 .resultUOM(ResultUOM.PRICE_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
+										 .updateLineNetAmt(true)
+										 .build());
 
 		logger.debug("Setting TaxAmtInfo for {}", orderLine);
 		orderLineBL.setTaxAmtInfo(orderLine);
@@ -311,8 +384,6 @@ public class C_OrderLine
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void ensureOrderLineHasShipper(final I_C_OrderLine orderLine)
 	{
-		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-
 		if (orderLine.getM_Shipper_ID() <= 0)
 		{
 			logger.debug("Making sure {} has a M_Shipper_ID", orderLine);
@@ -324,13 +395,13 @@ public class C_OrderLine
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void updateProductDescriptionFromProductBOMIfConfigured(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLineBL.class).updateProductDescriptionFromProductBOMIfConfigured(orderLine);
+		orderLineBL.updateProductDescriptionFromProductBOMIfConfigured(orderLine);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
 	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
 	{
-		Services.get(IOrderLineBL.class).updateProductDocumentNote(orderLine);
+		orderLineBL.updateProductDocumentNote(orderLine);
 	}
 }

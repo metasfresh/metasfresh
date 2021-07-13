@@ -1,12 +1,13 @@
 package org.adempiere.server.rpl.imp;
 
-import static de.metas.util.lang.CoalesceUtil.firstGreaterThanZero;
-import static de.metas.util.lang.CoalesceUtil.firstNotEmptyTrimmed;
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+import de.metas.common.util.time.SystemTime;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.process.rpl.XMLHelper;
@@ -33,7 +34,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.util.time.SystemTime;
 import lombok.NonNull;
 
 /*
@@ -215,7 +215,6 @@ public class RabbitMqListener implements MessageListener
 			if (connectionFactory != null)
 			{
 				connectionFactory.destroy();
-				connectionFactory.stop();
 				connectionFactory = null;
 			}
 		}
@@ -248,8 +247,8 @@ public class RabbitMqListener implements MessageListener
 	{
 		String text = null;
 
-		final String messageReference = "onMessage-startAt-millis-" + Long.toString(SystemTime.millis());
-		try (final IAutoCloseable closable = setupLoggable(messageReference))
+		final String messageReference = "onMessage-startAt-millis-" + SystemTime.millis();
+		try (final IAutoCloseable ignored = setupLoggable(messageReference))
 		{
 			text = extractMessageBodyAsString(message);
 
@@ -281,14 +280,14 @@ public class RabbitMqListener implements MessageListener
 			Loggables.withLogger(logger, Level.WARN)
 					.addLog("Incoming RabbitMQ message lacks content encoding info; assuming UTF-8; messageId={}", message.getMessageProperties().getMessageId());
 
-			new String(message.getBody(), StandardCharsets.UTF_8);
+			return new String(message.getBody(), StandardCharsets.UTF_8);
 		}
 
 		try
 		{
 			return new String(message.getBody(), encoding);
 		}
-		catch (UnsupportedEncodingException e)
+		catch (final UnsupportedEncodingException e)
 		{
 			throw new AdempiereException("Incoming RabbitMQ message has unsupportred encoding='" + encoding + "'; messageId=" + message.getMessageProperties().getMessageId(), e);
 		}

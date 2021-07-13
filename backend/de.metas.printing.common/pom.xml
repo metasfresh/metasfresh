@@ -22,15 +22,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>${servicemix.java.version}</source>
-					<target>${servicemix.java.version}</target>
-				</configuration>
-			</plugin>
-			
 			<!-- check our projects against the java1.6-API
 					 see http://mojo.codehaus.org/animal-sniffer-maven-plugin/index.html -->
 			<!-- 

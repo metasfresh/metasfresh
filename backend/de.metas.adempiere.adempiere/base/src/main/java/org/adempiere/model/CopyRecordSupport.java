@@ -70,6 +70,7 @@ public interface CopyRecordSupport
 	 *
 	 * @return copied value which needs to be set
 	 */
+	@Nullable
 	Object getValueToCopy(final PO to, final PO from, final String columnName);
 
 	/**
@@ -89,6 +90,9 @@ public interface CopyRecordSupport
 	 */
 	void addOnRecordCopiedListener(IOnRecordCopiedListener listener);
 
+	CopyRecordSupport addChildRecordCopiedListener(IOnRecordCopiedListener listener);
+
+	@FunctionalInterface
 	interface IOnRecordCopiedListener
 	{
 		void onRecordCopied(final PO to, final PO from);

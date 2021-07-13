@@ -43,6 +43,10 @@ import lombok.NonNull;
  * #L%
  */
 
+/**
+ * Updates {@link de.metas.material.cockpit.model.I_MD_Stock} when {@link AbstractTransactionEvent}s happen.
+ * Note that this can cause {@link de.metas.material.event.stock.StockChangedEvent}s to be fired in turn.
+ */
 @Service
 @Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
 public class TransactionEventHandlerForStockRecords
@@ -93,5 +97,4 @@ public class TransactionEventHandlerForStockRecords
 				.build();
 		return request;
 	}
-
 }

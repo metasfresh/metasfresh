@@ -1,23 +1,11 @@
 package de.metas.purchasecandidate;
 
-import static java.util.stream.Collectors.toCollection;
-
-import java.time.Duration;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.dimension.Dimension;
 import de.metas.error.AdIssueId;
+import de.metas.mforecast.impl.ForecastLineId;
+import de.metas.money.CurrencyId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -29,7 +17,10 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.Check;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -39,6 +30,19 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import static java.util.stream.Collectors.toCollection;
 
 /*
  * #%L
@@ -76,6 +80,7 @@ public class PurchaseCandidate
 	@Setter(AccessLevel.NONE)
 	private Quantity qtyToPurchaseInitial;
 
+	@Nullable
 	private PurchaseProfitInfo profitInfoOrNull;
 
 	@NonNull
@@ -83,6 +88,9 @@ public class PurchaseCandidate
 
 	@Setter(AccessLevel.NONE)
 	private ZonedDateTime purchaseDatePromisedInitial;
+
+	@Nullable
+	private ZonedDateTime purchaseDateOrdered;
 
 	private final Duration reminderTime;
 
@@ -98,16 +106,42 @@ public class PurchaseCandidate
 	@Getter(AccessLevel.NONE)
 	private final ArrayList<PurchaseErrorItem> purchaseErrorItems;
 
+	@Nullable
+	private BigDecimal price;
+	@Nullable
+	private BigDecimal priceInternal;
+	@Nullable
+	private BigDecimal priceActual;
+	@Nullable
+	private BigDecimal priceEnteredEff;
+	@Nullable
+	private Percent discount;
+	@Nullable
+	private Percent discountInternal;
+	@Nullable
+	private Percent discountEff;
+	private final boolean isManualDiscount;
+	private final boolean isManualPrice;
+	private boolean isTaxIncluded;
+	@Nullable
+	private TaxCategoryId taxCategoryId;
+	@Nullable
+	private CurrencyId currencyId;
+
 	@Builder
 	private PurchaseCandidate(
 			final PurchaseCandidateId id,
 
+			@Nullable final ExternalId externalHeaderId,
+			@Nullable final ExternalId externalLineId,
+			@Nullable final String externalPurchaseOrderUrl,
 			@NonNull final DemandGroupReference groupReference,
 			@Nullable final OrderAndLineId salesOrderAndLineIdOrNull,
 
 			final boolean prepared,
 			final boolean processed,
 			final boolean locked,
+			final boolean reqCreated,
 			//
 			@NonNull final BPartnerId vendorId,
 			//
@@ -117,20 +151,36 @@ public class PurchaseCandidate
 			@NonNull final ProductId productId,
 			@NonNull final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final String vendorProductNo,
-			//
 			@NonNull final Quantity qtyToPurchase,
-			//
 			@NonNull final ZonedDateTime purchaseDatePromised,
+			@Nullable final ZonedDateTime purchaseDateOrdered,
 			final Duration reminderTime,
-			//
 			@Nullable final PurchaseProfitInfo profitInfoOrNull,
-			//
 			@Singular final List<PurchaseItem> purchaseItems,
-			//
-			final boolean aggregatePOs)
+			final boolean aggregatePOs,
+			@Nullable final ForecastLineId forecastLineId,
+			@Nullable final Dimension dimension,
+			@Nullable final PurchaseCandidateSource source,
+			@Nullable final BigDecimal price,
+			@Nullable final BigDecimal priceInternal,
+			@Nullable final BigDecimal priceActual,
+			@Nullable final BigDecimal priceEnteredEff,
+			@Nullable final Percent discount,
+			@Nullable final Percent discountInternal,
+			@Nullable final Percent discountEff,
+			final boolean isManualDiscount,
+			final boolean isManualPrice,
+			final boolean isTaxIncluded,
+			@Nullable final TaxCategoryId taxCategoryId,
+			@Nullable final CurrencyId currencyId)
 	{
 		this.id = id;
-
+		this.priceInternal = priceInternal;
+		this.priceEnteredEff = priceEnteredEff;
+		this.discountInternal = discountInternal;
+		this.discountEff = discountEff;
+		this.isTaxIncluded = isTaxIncluded;
+		this.taxCategoryId = taxCategoryId;
 		immutableFields = PurchaseCandidateImmutableFields.builder()
 				.groupReference(groupReference)
 				.salesOrderAndLineIdOrNull(salesOrderAndLineIdOrNull)
@@ -141,22 +191,36 @@ public class PurchaseCandidate
 				.attributeSetInstanceId(attributeSetInstanceId)
 				.vendorProductNo(vendorProductNo)
 				.aggregatePOs(aggregatePOs)
+				.forecastLineId(forecastLineId)
+				.dimension(dimension)
+				.externalHeaderId(externalHeaderId)
+				.externalLineId(externalLineId)
+				.source(source)
+				.externalPurchaseOrderUrl(externalPurchaseOrderUrl)
 				.build();
 
 		state = PurchaseCandidateState.builder()
 				.prepared(prepared)
 				.processed(processed)
 				.locked(locked)
+				.reqCreated(reqCreated)
 				.build();
 
+		this.currencyId = currencyId;
 		this.qtyToPurchase = qtyToPurchase;
 		this.qtyToPurchaseInitial = qtyToPurchase;
 
 		this.purchaseDatePromised = purchaseDatePromised;
 		this.purchaseDatePromisedInitial = purchaseDatePromised;
+		this.purchaseDateOrdered = purchaseDateOrdered;
 		this.reminderTime = reminderTime;
 
 		this.profitInfoOrNull = profitInfoOrNull;
+		this.price = price;
+		this.priceActual = priceActual;
+		this.discount = discount;
+		this.isManualDiscount = isManualDiscount;
+		this.isManualPrice = isManualPrice;
 
 		this.purchaseOrderItems = purchaseItems
 				.stream()
@@ -181,6 +245,7 @@ public class PurchaseCandidate
 
 		purchaseDatePromised = from.purchaseDatePromised;
 		purchaseDatePromisedInitial = from.purchaseDatePromisedInitial;
+		purchaseDateOrdered = from.purchaseDateOrdered;
 		reminderTime = from.reminderTime;
 
 		immutableFields = from.immutableFields;
@@ -190,6 +255,18 @@ public class PurchaseCandidate
 				.map(item -> item.copy(this))
 				.collect(toCollection(ArrayList::new));
 		purchaseErrorItems = new ArrayList<>(from.purchaseErrorItems);
+		price = from.price;
+		priceActual = from.priceActual;
+		discount = from.discount;
+		isManualDiscount = from.isManualDiscount;
+		isManualPrice = from.isManualPrice;
+		isTaxIncluded = from.isTaxIncluded;
+		taxCategoryId = from.taxCategoryId;
+		priceInternal = from.priceInternal;
+		discountInternal = from.discountInternal;
+		priceEnteredEff = from.priceEnteredEff;
+		discountEff = from.discountEff;
+		currencyId = from.currencyId;
 	}
 
 	public PurchaseCandidate copy()
@@ -227,9 +304,22 @@ public class PurchaseCandidate
 		return getImmutableFields().getGroupReference();
 	}
 
+	@Nullable
 	public OrderAndLineId getSalesOrderAndLineIdOrNull()
 	{
 		return getImmutableFields().getSalesOrderAndLineIdOrNull();
+	}
+
+	@Nullable
+	public ForecastLineId getForecastLineId()
+	{
+		return getImmutableFields().getForecastLineId();
+	}
+
+	@Nullable
+	public Dimension getDimension()
+	{
+		return getImmutableFields().getDimension();
 	}
 
 	public BPartnerId getVendorId()
@@ -274,6 +364,39 @@ public class PurchaseCandidate
 	public boolean isProcessed()
 	{
 		return state.isProcessed();
+	}
+
+	public void setReqCreated(final boolean reqCreated)
+	{
+		state.setReqCreated(reqCreated);
+	}
+
+	public boolean isReqCreated()
+	{
+		return state.isReqCreated();
+	}
+
+	public @Nullable
+	PurchaseCandidateSource getSource()
+	{
+		return getImmutableFields().getSource();
+	}
+
+	public @Nullable
+	ExternalId getExternalLineId()
+	{
+		return getImmutableFields().getExternalLineId();
+	}
+
+	public @Nullable
+	ExternalId getExternalHeaderId()
+	{
+		return getImmutableFields().getExternalHeaderId();
+	}
+
+	public @Nullable
+	String getExternalPurchaseOrderUrl()	{
+		return getImmutableFields().getExternalPurchaseOrderUrl();
 	}
 
 	public boolean hasChanges()
@@ -355,12 +478,6 @@ public class PurchaseCandidate
 			innerBuilder = PurchaseOrderItem.builder().purchaseCandidate(parent);
 		}
 
-		public OrderItemBuilder purchaseItemId(final PurchaseItemId purchaseItemId)
-		{
-			innerBuilder.purchaseItemId(purchaseItemId);
-			return this;
-		}
-
 		public OrderItemBuilder datePromised(@NonNull final ZonedDateTime datePromised)
 		{
 			innerBuilder.datePromised(datePromised);
@@ -382,6 +499,12 @@ public class PurchaseCandidate
 		public OrderItemBuilder transactionReference(final ITableRecordReference transactionReference)
 		{
 			innerBuilder.transactionReference(transactionReference);
+			return this;
+		}
+
+		public OrderItemBuilder dimension(final Dimension dimension)
+		{
+			innerBuilder.dimension(dimension);
 			return this;
 		}
 
@@ -407,7 +530,7 @@ public class PurchaseCandidate
 		Check.assumeNotNull(id, "purchase candidate shall be saved: {}", this);
 
 		Check.assumeEquals(id, purchaseOrderItem.getPurchaseCandidateId(),
-				"The given purchaseOrderItem's purchaseCandidateId needs to be equan to this instance's id; purchaseOrderItem={}; this={}",
+				"The given purchaseOrderItem's purchaseCandidateId needs to be equal to this instance's id; purchaseOrderItem={}; this={}",
 				purchaseOrderItem, this);
 
 		purchaseOrderItems.add(purchaseOrderItem);

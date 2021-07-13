@@ -4,14 +4,13 @@ import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import keymap from '../../shortcuts/keymap';
-import {
-  openModal,
-  fetchTopActions,
-  deleteTopActions,
-} from '../../actions/WindowActions';
+import { TableFilterContextShortcuts } from '../keyshortcuts';
+import { openModal } from '../../actions/WindowActions';
+import { fetchTopActions, deleteTopActions } from '../../actions/Actions';
+import { addNotification } from '../../actions/AppActions';
+
 import Tooltips from '../tooltips/Tooltips';
 import TableQuickInput from './TableQuickInput';
-import { TableFilterContextShortcuts } from '../keyshortcuts';
 
 class ActionButton extends PureComponent {
   static propTypes = {
@@ -31,20 +30,13 @@ class ActionButton extends PureComponent {
       return;
     }
 
-    openModal(
-      action.caption,
-      action.processId,
-      'process',
-      null,
-      null,
-      false,
-      null,
-      [docId],
-      null,
-      null,
-      null,
-      null
-    );
+    openModal({
+      title: action.caption,
+      windowId: action.processId,
+      modalType: 'process',
+      isAdvanced: false,
+      viewDocumentIds: [docId],
+    });
   };
 
   render() {
@@ -85,6 +77,7 @@ class TableFilter extends PureComponent {
     supportQuickInput: PropTypes.bool,
     allowCreateNew: PropTypes.bool,
     openTableModal: PropTypes.func,
+    addNotification: PropTypes.func.isRequired,
   };
 
   actionButtons = null;
@@ -129,20 +122,12 @@ class TableFilter extends PureComponent {
       return;
     }
 
-    openModal(
-      action.caption,
-      action.processId,
-      'process',
-      null,
-      null,
-      false,
-      null,
-      [docId],
-      null,
-      null,
-      null,
-      null
-    );
+    openModal({
+      title: action.caption,
+      windowId: action.processId,
+      modalType: 'process',
+      viewDocumentIds: [docId],
+    });
   };
 
   /**
@@ -232,6 +217,7 @@ class TableFilter extends PureComponent {
       allowCreateNew,
       modalVisible,
       wrapperHeight,
+      addNotification,
     } = this.props;
     const { isTooltipShow, shortcutActions } = this.state;
     const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
@@ -276,9 +262,12 @@ class TableFilter extends PureComponent {
               </button>
             )}
             {!isBatchEntry && this.actionButtons}
-            {!isBatchEntry && (
-              <TableFilterContextShortcuts shortcutActions={shortcutActions} />
-            )}
+            {!isBatchEntry &&
+              (shortcutActions.length ? (
+                <TableFilterContextShortcuts
+                  shortcutActions={shortcutActions}
+                />
+              ) : null)}
           </div>
           {supportQuickInput &&
             (isBatchEntry || fullScreen) &&
@@ -289,6 +278,7 @@ class TableFilter extends PureComponent {
                 docId={docId}
                 tabId={tabId}
                 forceHeight={wrapperHeight ? wrapperHeight : null}
+                addNotification={addNotification}
               />
             )}
         </div>
@@ -329,7 +319,9 @@ const mapStateToProps = ({ windowHandler }) => ({
   modalVisible: windowHandler.modal.visible,
 });
 
-export default connect(
-  mapStateToProps,
-  { fetchTopActions, deleteTopActions, openModal }
-)(TableFilter);
+export default connect(mapStateToProps, {
+  fetchTopActions,
+  deleteTopActions,
+  openModal,
+  addNotification,
+})(TableFilter);

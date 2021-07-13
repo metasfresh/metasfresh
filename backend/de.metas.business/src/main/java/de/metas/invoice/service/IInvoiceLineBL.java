@@ -23,11 +23,15 @@ package de.metas.invoice.service;
  */
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.compiere.model.MInvoiceLine;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.location.CountryId;
+import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
@@ -47,14 +51,10 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * <p/>
 	 * <b>IMPORTANT:</b> if the il has M_InoutLine_ID<=0, the method does nothing!
 	 *
-	 * @param ctx
-	 * @param il
-	 * @param getTrxName
 	 */
-	boolean setTax(Properties ctx, org.compiere.model.I_C_InvoiceLine il, String getTrxName);
+	boolean setTaxBasedOnShipment(org.compiere.model.I_C_InvoiceLine il, String getTrxName);
 
 	/**
-	 * @param invoiceLine
 	 * @return true if invoice line's prices are locked (i.e. should be the same as linked OrderLine)
 	 */
 	boolean isPriceLocked(I_C_InvoiceLine invoiceLine);
@@ -71,7 +71,6 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * <li>a M_ProductPrice exists for the invoiceLine's product and the PLV
 	 * </ul>
 	 *
-	 * @param invoiceLine
 	 * @return C_TaxCategory_ID
 	 * @see de.metas.util.Check#assume(boolean, String, Object...)
 	 */
@@ -84,18 +83,19 @@ public interface IInvoiceLineBL extends ISingletonService
 	 * <p>
 	 * Note that this method makes use of {@link #calculatedQtyInPriceUOM(BigDecimal, I_C_InvoiceLine)}.
 	 *
-	 * @param invoiceLine
 	 * @see #calculatedQtyInPriceUOM(BigDecimal, I_C_InvoiceLine)
 	 */
 	void setQtyInvoicedInPriceUOM(I_C_InvoiceLine invoiceLine);
 
 	/**
 	 * Update the line net amount. Mainly introduced for manual invoices
-	 *
-	 * @param line
-	 * @param qtyEntered
 	 */
 	void updateLineNetAmt(I_C_InvoiceLine line, BigDecimal qtyEntered);
 
+	/**
+	 * Invoke the pricing engine to update the given invoiceLine's prices
+	 */
 	void updatePrices(I_C_InvoiceLine invoiceLine);
+
+	boolean setTaxForInvoiceLine(org.compiere.model.I_C_InvoiceLine il, OrgId orgId, Timestamp taxDate, CountryId countryFromId, BPartnerLocationId taxPartnerLocationId, boolean isSOTrx);
 }

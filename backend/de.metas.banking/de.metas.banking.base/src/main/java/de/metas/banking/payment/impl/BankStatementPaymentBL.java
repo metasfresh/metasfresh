@@ -22,17 +22,6 @@
 
 package de.metas.banking.payment.impl;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -52,6 +41,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -62,6 +52,17 @@ import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.api.PaymentReconcileReference;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Set;
 
 @Component
 public class BankStatementPaymentBL implements IBankStatementPaymentBL
@@ -69,6 +70,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBankStatementBL bankStatementBL;
 	private final MoneyService moneyService;
 
@@ -134,7 +136,7 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 		final Money expectedPaymentAmount = expectedPaymentDirection.convertStatementAmtToPayAmt(trxAmt);
 
 		return paymentBL.getPaymentIds(PaymentQuery.builder()
-				.limit(limit)
+				.limit(QueryLimit.ofInt(limit))
 				.docStatus(DocStatus.Completed)
 				.reconciled(false)
 				.direction(expectedPaymentDirection)
@@ -169,7 +171,9 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 
 		// final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
 		final OrgId orgId = OrgId.ofRepoId(bankStatementLine.getAD_Org_ID());
-		final LocalDate acctLineDate = TimeUtil.asLocalDate(bankStatementLine.getDateAcct());
+		final LocalDate dateTrx = TimeUtil.asLocalDate(
+				bankStatementLine.getValutaDate(),
+				orgDAO.getTimeZone(orgId));
 		final BankAccountId orgBankAccountId = BankAccountId.ofRepoId(bankStatement.getC_BP_BankAccount_ID());
 
 		final Money trxAmt = extractTrxAmt(bankStatementLine);
@@ -190,9 +194,10 @@ public class BankStatementPaymentBL implements IBankStatementPaymentBL
 				.orgBankAccountId(orgBankAccountId)
 				.currencyId(payAmount.getCurrencyId())
 				.payAmt(payAmount.toBigDecimal())
-				.dateAcct(acctLineDate)
-				.dateTrx(acctLineDate) // Note: DateTrx should be the same as Line.DateAcct, and not Line.StatementDate.
-				.tenderType(tenderType);
+				.dateAcct(dateTrx)
+				.dateTrx(dateTrx)
+				.tenderType(tenderType)
+				.paymentCurrencyContext(bankStatementBL.getPaymentCurrencyContext(bankStatementLine));
 
 		if (invoiceId != null)
 		{

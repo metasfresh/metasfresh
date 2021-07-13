@@ -1,23 +1,9 @@
-/**
- *
- */
 package de.metas.process.ui;
-
-import java.util.List;
-import java.util.Properties;
-import java.util.function.Supplier;
-
-import org.adempiere.ad.element.api.AdTabId;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.compiere.model.GridTab;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.logging.LogManager;
-import de.metas.process.IADProcessDAO;
+import de.metas.process.ADProcessService;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionChecker;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -25,7 +11,17 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
+import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.GridTab;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import java.util.List;
+import java.util.Properties;
+import java.util.function.Supplier;
 
 /**
  * @author tsa
@@ -53,11 +49,11 @@ public class AProcessModel
 		Check.assumeNotNull(role, "No role found for {}", ctx);
 
 		final IProcessPreconditionsContext preconditionsContext = gridTab.toPreconditionsContext();
-		final int AD_Table_ID = gridTab.getAD_Table_ID();
+		final AdTableId adTableId = AdTableId.ofRepoId(gridTab.getAD_Table_ID());
 		final AdWindowId adWindowId = preconditionsContext.getAdWindowId();
 		final AdTabId adTabId = preconditionsContext.getAdTabId();
 
-		return Services.get(IADProcessDAO.class).retrieveRelatedProcessDescriptors(AD_Table_ID, adWindowId, adTabId)
+		return SpringContextHolder.instance.getBean(ADProcessService.class).getRelatedProcessDescriptors(adTableId, adWindowId, adTabId)
 				.stream()
 				.filter(relatedProcess -> isExecutionGrantedOrLog(relatedProcess, role))
 				.map(relatedProcess -> createSwingRelatedProcess(relatedProcess, preconditionsContext))
@@ -65,13 +61,13 @@ public class AProcessModel
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private final SwingRelatedProcessDescriptor createSwingRelatedProcess(final RelatedProcessDescriptor relatedProcess, final IProcessPreconditionsContext preconditionsContext)
+	private SwingRelatedProcessDescriptor createSwingRelatedProcess(final RelatedProcessDescriptor relatedProcess, final IProcessPreconditionsContext preconditionsContext)
 	{
 		final Supplier<ProcessPreconditionsResolution> preconditionsResolutionSupplier = () -> checkPreconditionApplicable(relatedProcess, preconditionsContext);
 		return SwingRelatedProcessDescriptor.of(relatedProcess, preconditionsResolutionSupplier);
 	}
 
-	private final boolean isExecutionGrantedOrLog(final RelatedProcessDescriptor relatedProcess, final IUserRolePermissions permissions)
+	private boolean isExecutionGrantedOrLog(final RelatedProcessDescriptor relatedProcess, final IUserRolePermissions permissions)
 	{
 		if (relatedProcess.isExecutionGranted(permissions))
 		{
@@ -86,7 +82,7 @@ public class AProcessModel
 		return false;
 	}
 
-	private final boolean isEnabledOrLog(final SwingRelatedProcessDescriptor relatedProcess)
+	private boolean isEnabledOrLog(final SwingRelatedProcessDescriptor relatedProcess)
 	{
 		if (relatedProcess.isEnabled())
 		{

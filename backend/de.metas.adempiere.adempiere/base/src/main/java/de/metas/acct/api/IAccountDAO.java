@@ -2,6 +2,7 @@ package de.metas.acct.api;
 
 import java.util.Properties;
 
+import lombok.NonNull;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
@@ -31,16 +32,20 @@ import de.metas.util.ISingletonService;
 
 public interface IAccountDAO extends ISingletonService
 {
+	@NonNull
 	MAccount getById(Properties ctx, int validCombinationId);
 
+	@NonNull
 	default MAccount getById(final int validCombinationId)
 	{
 		return getById(Env.getCtx(), validCombinationId);
 	}
 
+	@NonNull
 	MAccount getById(Properties ctx, AccountId accountId);
 
-	default MAccount getById(final AccountId accountId)
+	@NonNull
+	default MAccount getById(@NonNull final AccountId accountId)
 	{
 		return getById(Env.getCtx(), accountId);
 	}

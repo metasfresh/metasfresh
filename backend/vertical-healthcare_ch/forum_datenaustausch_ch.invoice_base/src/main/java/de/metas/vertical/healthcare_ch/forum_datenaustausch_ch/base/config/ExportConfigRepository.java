@@ -1,19 +1,17 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config;
 
-import javax.annotation.Nullable;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableMap;
-
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.I_HC_Forum_Datenaustausch_Config;
 import de.metas.vertical.healthcare.forum_datenaustausch_ch.commons.model.X_HC_Forum_Datenaustausch_Config;
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.ConfigRepositoryUtil.ConfigQuery;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.ForumDatenaustauschChConstants;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlMode;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.commons.XmlVersion;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -49,7 +47,7 @@ public class ExportConfigRepository
 			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Production, XmlMode.PRODUCTION,
 			X_HC_Forum_Datenaustausch_Config.EXPORTEDXMLMODE_Test, XmlMode.TEST);
 
-	public ExportConfig getForQueryOrNull(@NonNull final ConfigQuery query)
+	public ExportConfig getForQueryOrNull(@NonNull final BPartnerQuery query)
 	{
 		final I_HC_Forum_Datenaustausch_Config configRecord = ConfigRepositoryUtil.retrieveRecordForQueryOrNull(query);
 		return ofRecordOrNull(configRecord);

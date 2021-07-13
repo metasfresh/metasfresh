@@ -43,8 +43,6 @@ public interface IHUPIItemProductBL extends ISingletonService
 	List<I_M_HU_PI_Item_Product> getCompatibleItemDefProducts(I_M_HU_PI_Version version, I_M_Product product);
 
 	/**
-	 * @param version
-	 * @param product
 	 * @return <code>true</code> if product is available in the version (or IsAllowAnyProduct), false otherwise
 	 */
 	boolean isCompatibleProduct(I_M_HU_PI_Version version, I_M_Product product);
@@ -53,9 +51,6 @@ public interface IHUPIItemProductBL extends ISingletonService
 
 	/**
 	 * Returns <code>true</code> if the given <code>piip</code> is the "virtual" one, i.e. the one referencing the virtual packing instruction.
-	 *
-	 * @param piip
-	 * @return
 	 */
 	boolean isVirtualHUPIItemProduct(I_M_HU_PI_Item_Product piip);
 
@@ -71,7 +66,6 @@ public interface IHUPIItemProductBL extends ISingletonService
 	 *
 	 * Name will be build using {@link IHUPIItemProductDisplayNameBuilder#buildItemProductDisplayName()} via {@link #buildDisplayName()}.
 	 *
-	 * @param itemProduct
 	 * @see #buildDisplayName()
 	 */
 	void setNameAndDescription(I_M_HU_PI_Item_Product itemProduct);

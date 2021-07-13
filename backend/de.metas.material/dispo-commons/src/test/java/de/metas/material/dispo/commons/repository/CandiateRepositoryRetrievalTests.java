@@ -1,34 +1,9 @@
 package de.metas.material.dispo.commons.repository;
 
-import static de.metas.material.event.EventTestHelper.AFTER_NOW;
-import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
-import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
-import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
-import static de.metas.material.event.EventTestHelper.NOW;
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
-import static de.metas.material.event.EventTestHelper.TRANSACTION_ID;
-import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.material.dispo.commons.RepositoryTestHelper;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -44,6 +19,7 @@ import de.metas.material.dispo.commons.repository.query.DemandDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.DistributionDetailsQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -52,7 +28,36 @@ import de.metas.material.dispo.model.I_MD_Candidate_Purchase_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Transaction_Detail;
 import de.metas.material.dispo.model.X_MD_Candidate;
 import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.util.time.SystemTime;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.material.event.EventTestHelper.AFTER_NOW;
+import static de.metas.material.event.EventTestHelper.ATTRIBUTE_SET_INSTANCE_ID;
+import static de.metas.material.event.EventTestHelper.BEFORE_NOW;
+import static de.metas.material.event.EventTestHelper.BPARTNER_ID;
+import static de.metas.material.event.EventTestHelper.NOW;
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.STORAGE_ATTRIBUTES_KEY;
+import static de.metas.material.event.EventTestHelper.TRANSACTION_ID;
+import static de.metas.material.event.EventTestHelper.WAREHOUSE_ID;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -83,14 +88,23 @@ public class CandiateRepositoryRetrievalTests
 
 	private RepositoryTestHelper repositoryTestHelper;
 
+	private DimensionService dimensionService;
+
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval();
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new MDCandidateDimensionFactory());
+		dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
 
-		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService());
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+
+		repositoryTestHelper = new RepositoryTestHelper(new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo));
 	}
 
 	@Test
@@ -106,7 +120,7 @@ public class CandiateRepositoryRetrievalTests
 	@Test
 	public void fromCandidateRecord_record_to_candidate()
 	{
-		final Timestamp dateProjected = SystemTime.asTimestamp();
+		final Timestamp dateProjected = de.metas.common.util.time.SystemTime.asTimestamp();
 		final I_MD_Candidate candidateRecord = newInstance(I_MD_Candidate.class);
 		candidateRecord.setDateProjected(dateProjected);
 		candidateRecord.setM_Warehouse_ID(WAREHOUSE_ID.getRepoId());

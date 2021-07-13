@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.model;
 
 
 /** Generated Interface for M_Packageable_V
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("javadoc")
 public interface I_M_Packageable_V 
@@ -14,17 +14,10 @@ public interface I_M_Packageable_V
     /** AD_Table_ID=540823 */
 //    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -36,8 +29,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -46,8 +39,8 @@ public interface I_M_Packageable_V
 	public void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -105,7 +98,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_BPartnerLocationName = "BPartnerLocationName";
 
 	/**
-	 * Set Name Geschäftspartner.
+	 * Set Partner Name.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -114,7 +107,7 @@ public interface I_M_Packageable_V
 	public void setBPartnerName (java.lang.String BPartnerName);
 
 	/**
-	 * Get Name Geschäftspartner.
+	 * Get Partner Name.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -153,7 +146,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_BPartnerValue = "BPartnerValue";
 
 	/**
-	 * Set Kunde.
+	 * Set Business Partner .
+	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -162,7 +156,8 @@ public interface I_M_Packageable_V
 	public void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
 
 	/**
-	 * Get Kunde.
+	 * Get Business Partner .
+	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -174,8 +169,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_BPartner_Customer_ID = "C_BPartner_Customer_ID";
 
 	/**
-	 * Set Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Set Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -184,8 +178,7 @@ public interface I_M_Packageable_V
 	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/**
-	 * Get Standort.
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
+	 * Get Location.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -197,8 +190,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
-	 * Set Währung.
-	 * Die Währung für diesen Eintrag
+	 * Set Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -207,8 +200,8 @@ public interface I_M_Packageable_V
 	public void setC_Currency_ID (int C_Currency_ID);
 
 	/**
-	 * Get Währung.
-	 * Die Währung für diesen Eintrag
+	 * Get Currency.
+	 * The Currency for this record
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -278,8 +271,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -293,8 +286,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -306,8 +299,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Maßeinheit.
-	 * Maßeinheit
+	 * Set UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -316,8 +309,8 @@ public interface I_M_Packageable_V
 	public void setC_UOM_ID (int C_UOM_ID);
 
 	/**
-	 * Get Maßeinheit.
-	 * Maßeinheit
+	 * Get UOM.
+	 * Unit of Measure
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -329,8 +322,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Auftragsdatum.
-	 * Datum des Auftrags
+	 * Set Date.
+	 * Date of Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -339,8 +332,8 @@ public interface I_M_Packageable_V
 	public void setDateOrdered (java.sql.Timestamp DateOrdered);
 
 	/**
-	 * Get Auftragsdatum.
-	 * Datum des Auftrags
+	 * Get Date.
+	 * Date of Order
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -354,7 +347,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
-	 * Set Lieferdatum.
+	 * Set Shipmentdate.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -363,7 +356,7 @@ public interface I_M_Packageable_V
 	public void setDeliveryDate (java.sql.Timestamp DeliveryDate);
 
 	/**
-	 * Get Lieferdatum.
+	 * Get Shipmentdate.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -452,8 +445,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -462,8 +455,8 @@ public interface I_M_Packageable_V
 	public void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -502,8 +495,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_IsDisplayed = "IsDisplayed";
 
 	/**
-	 * Set Zeilennetto.
-	 * Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	 * Set Line Net Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -512,8 +504,7 @@ public interface I_M_Packageable_V
 	public void setLineNetAmt (java.math.BigDecimal LineNetAmt);
 
 	/**
-	 * Get Zeilennetto.
-	 * Nettowert Zeile (Menge * Einzelpreis) ohne Fracht und Gebühren
+	 * Get Line Net Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -527,7 +518,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
-	 * Set Locked By.
+	 * Set lockedby_user_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -536,7 +527,7 @@ public interface I_M_Packageable_V
 	public void setLockedBy_User_ID (int LockedBy_User_ID);
 
 	/**
-	 * Get Locked By.
+	 * Get lockedby_user_id.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -577,8 +568,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Set Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -587,8 +578,8 @@ public interface I_M_Packageable_V
 	public void setM_Product_ID (int M_Product_ID);
 
 	/**
-	 * Get Produkt.
-	 * Produkt, Leistung, Artikel
+	 * Get Product.
+	 * Product, Service, Item
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -600,7 +591,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Lieferdisposition.
+	 * Set Shipment Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -609,7 +600,7 @@ public interface I_M_Packageable_V
 	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
-	 * Get Lieferdisposition.
+	 * Get Shipment Candidate.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -623,8 +614,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
-	 * Set Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Set Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -633,8 +624,8 @@ public interface I_M_Packageable_V
 	public void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
-	 * Get Lieferweg.
-	 * Methode oder Art der Warenlieferung
+	 * Get Shipper.
+	 * Method or manner of product delivery
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -652,8 +643,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
-	 * Set Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Set Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -662,8 +653,8 @@ public interface I_M_Packageable_V
 	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
-	 * Get Lager.
-	 * Lager oder Ort für Dienstleistung
+	 * Get Warehouse.
+	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -675,7 +666,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set Lagerart.
+	 * Set Warehouse Type.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -684,7 +675,7 @@ public interface I_M_Packageable_V
 	public void setM_Warehouse_Type_ID (int M_Warehouse_Type_ID);
 
 	/**
-	 * Get Lagerart.
+	 * Get Warehouse Type.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -702,7 +693,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_M_Warehouse_Type_ID = "M_Warehouse_Type_ID";
 
 	/**
-	 * Set Auftragsnr..
+	 * Set Order Document No.
+	 * Document Number of the Order
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -711,7 +703,8 @@ public interface I_M_Packageable_V
 	public void setOrderDocumentNo (java.lang.String OrderDocumentNo);
 
 	/**
-	 * Get Auftragsnr..
+	 * Get Order Document No.
+	 * Document Number of the Order
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -750,6 +743,31 @@ public interface I_M_Packageable_V
     public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, org.eevolution.model.I_PP_Order> COLUMN_PickFrom_Order_ID = new org.adempiere.model.ModelColumn<I_M_Packageable_V, org.eevolution.model.I_PP_Order>(I_M_Packageable_V.class, "PickFrom_Order_ID", org.eevolution.model.I_PP_Order.class);
     /** Column name PickFrom_Order_ID */
     public static final String COLUMNNAME_PickFrom_Order_ID = "PickFrom_Order_ID";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public void setPOReference (java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getPOReference();
+
+    /** Column definition for POReference */
+    public static final org.adempiere.model.ModelColumn<I_M_Packageable_V, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_M_Packageable_V, Object>(I_M_Packageable_V.class, "POReference", null);
+    /** Column name POReference */
+    public static final String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Bereitstellungsdatum.
@@ -850,8 +868,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
-	 * Set Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Set Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -860,8 +878,8 @@ public interface I_M_Packageable_V
 	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
 
 	/**
-	 * Get Bestellt/ Beauftragt.
-	 * Bestellt/ Beauftragt
+	 * Get Qty Ordered.
+	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -898,7 +916,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_QtyPickedAndDelivered = "QtyPickedAndDelivered";
 
 	/**
-	 * Set Menge kommissioniert (noch) nicht geliefert.
+	 * Set Qty Picked.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -907,7 +925,7 @@ public interface I_M_Packageable_V
 	public void setQtyPickedNotDelivered (java.math.BigDecimal QtyPickedNotDelivered);
 
 	/**
-	 * Get Menge kommissioniert (noch) nicht geliefert.
+	 * Get Qty Picked.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -990,7 +1008,7 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_QtyToDeliver = "QtyToDeliver";
 
 	/**
-	 * Set Zuordnung Mindesthaltbarkeit.
+	 * Set Best Before Policy.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -999,7 +1017,7 @@ public interface I_M_Packageable_V
 	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy);
 
 	/**
-	 * Get Zuordnung Mindesthaltbarkeit.
+	 * Get Best Before Policy.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1036,8 +1054,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_ShipperName = "ShipperName";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1051,8 +1069,8 @@ public interface I_M_Packageable_V
     public static final String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
