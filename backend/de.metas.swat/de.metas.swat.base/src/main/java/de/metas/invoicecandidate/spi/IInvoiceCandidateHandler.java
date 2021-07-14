@@ -168,7 +168,6 @@ public interface IInvoiceCandidateHandler
 	 * Note: usually this method should be called from {@link IInvoiceCandidateHandlerBL} only, because SPI-implementors are not expected to set the new candidates' <code>C_ILCandGenerator_ID</code>
 	 * columns.
 	 *
-	 * @param request
 	 * @return result containing invoice candidates that were created
 	 */
 	InvoiceCandidateGenerateResult createCandidatesFor(InvoiceCandidateGenerateRequest request);
