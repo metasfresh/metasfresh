@@ -73,6 +73,8 @@ public class OrderLineBuilder
 	@Nullable private BigDecimal manualPrice;
 	private BigDecimal manualDiscount;
 
+	@Nullable private String description;
+
 	private final ArrayList<OrderLineDetailCreateRequest> detailCreateRequests = new ArrayList<>();
 
 	private I_C_OrderLine createdOrderLine;
@@ -115,12 +117,18 @@ public class OrderLineBuilder
 			orderLine.setDiscount(manualDiscount);
 		}
 
-		if(dimension != null)
+		if (dimension != null)
 		{
 			dimensionService.updateRecord(orderLine, dimension);
 		}
 
 		orderLineBL.updatePrices(orderLine);
+
+		if (!Check.isBlank(description))
+		{
+			orderLine.setDescription(description);
+		}
+
 		saveRecord(orderLine);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(orderLine))
@@ -230,6 +238,12 @@ public class OrderLineBuilder
 	{
 		return ProductId.equals(getProductId(), productId)
 				&& UomId.equals(getUomId(), uomId);
+	}
+
+	public OrderLineBuilder description(@Nullable final String description)
+	{
+		this.description = description;
+		return this;
 	}
 
 	public OrderLineBuilder details(@NonNull final Collection<OrderLineDetailCreateRequest> details)
