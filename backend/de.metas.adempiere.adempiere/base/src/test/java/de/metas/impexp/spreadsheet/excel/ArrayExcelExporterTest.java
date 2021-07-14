@@ -1,25 +1,8 @@
-package de.metas.impexp.excel;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableList;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -36,6 +19,27 @@ import com.google.common.collect.ImmutableList;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.impexp.spreadsheet.excel;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import de.metas.impexp.spreadsheet.excel.ArrayExcelExporter;
+import de.metas.impexp.spreadsheet.excel.ExcelExportConstants;
+import de.metas.impexp.spreadsheet.excel.ExcelFormat;
+import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import org.adempiere.test.AdempiereTestHelper;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
 
 public class ArrayExcelExporterTest
 {

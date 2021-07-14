@@ -1,6 +1,6 @@
 package de.metas.process.model.interceptor;
 
-import de.metas.impexp.excel.process.ExportToExcelProcess;
+import de.metas.impexp.spreadsheet.process.ExportToSpreadsheetProcess;
 import de.metas.postgrest.process.PostgRESTProcessExecutor;
 import de.metas.process.ExecuteUpdateSQL;
 import de.metas.process.ProcessType;
@@ -47,7 +47,7 @@ public class AD_Process
 				process.setClassname(ExecuteUpdateSQL.class.getName());
 				break;
 			case Excel:
-				process.setClassname(ExportToExcelProcess.class.getName());
+				process.setClassname(ExportToSpreadsheetProcess.class.getName());
 				break;
 			case POSTGREST:
 				process.setClassname(PostgRESTProcessExecutor.class.getName());

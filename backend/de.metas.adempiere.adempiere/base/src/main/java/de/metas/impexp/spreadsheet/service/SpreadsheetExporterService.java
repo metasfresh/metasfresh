@@ -1,4 +1,26 @@
-package de.metas.impexp.excel.service;
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.impexp.spreadsheet.service;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,34 +46,11 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Service
-public class ExcelExporterService
+public class SpreadsheetExporterService
 {
-	private static final Logger logger = LogManager.getLogger(ExcelExporterService.class);
+	private static final Logger logger = LogManager.getLogger(SpreadsheetExporterService.class);
 
-	/** Like {@link #processDataFromSQL(String, DataConsumer)}, just with an empty evaluator. */
 	public void processDataFromSQL(
 			@NonNull final String sql,
 			@NonNull final DataConsumer<ResultSet> dataConsumer)
@@ -90,7 +89,7 @@ public class ExcelExporterService
 			loggable.addLog("Execute SQL done; push data to dataConsumer={}", dataConsumer);
 			final ResultSetMetaData meta = rs.getMetaData();
 
-			// always show excel header, even if there are no rows
+			// always show spreadsheet header, even if there are no rows
 			final List<String> header = new ArrayList<>();
 			for (int col = 1; col <= meta.getColumnCount(); col++)
 			{
@@ -111,9 +110,6 @@ public class ExcelExporterService
 		{
 			DB.close(rs, pstmt);
 			DB.close(conn);
-			rs = null;
-			pstmt = null;
-			conn = null;
 		}
 	}
 }

@@ -1,12 +1,8 @@
-package de.metas.impexp.excel.service;
-
-import java.util.List;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,7 +20,11 @@ import java.util.List;
  * #L%
  */
 
-/** Implementors of this interface can receive data from {@link ExcelExporterService} and maybe in future others. */
+package de.metas.impexp.spreadsheet.service;
+
+import java.util.List;
+
+/** Implementors of this interface can receive data from {@link SpreadsheetExporterService} and maybe in future others. */
 public interface DataConsumer<T>
 {
 	void putHeader(List<String> header);

@@ -22,11 +22,10 @@ import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workflow.WorkflowId;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -110,7 +109,7 @@ public final class ProcessInfo implements Serializable
 		className = builder.getClassname();
 		dbProcedureName = builder.getDBProcedureName();
 		sqlStatement = builder.getSQLStatement();
-		excelExportOptions = builder.getExcelExportOptions();
+		spreadsheetExportOptions = builder.getSpreadsheetExportOptions();
 		adWorkflowId = builder.getWorkflowId();
 		invokedByScheduler = builder.isInvokedByScheduler();
 		notifyUserAfterExecution = builder.isNotifyUserAfterExecution();
@@ -196,7 +195,7 @@ public final class ProcessInfo implements Serializable
 
 	@NonNull
 	@Getter
-	private final ExcelExportOptions excelExportOptions;
+	private final SpreadsheetExportOptions spreadsheetExportOptions;
 
 	private final WorkflowId adWorkflowId;
 
@@ -1201,21 +1200,27 @@ public final class ProcessInfo implements Serializable
 			}
 		}
 
-		private ExcelExportOptions getExcelExportOptions()
+		private SpreadsheetExportOptions getSpreadsheetExportOptions()
 		{
 			final I_AD_Process process = getAD_ProcessOrNull();
 			if (process == null)
 			{
-				return ExcelExportOptions.builder()
-						.translateExcelHeaders(false)
-						.applyFormatting(true)
+				return SpreadsheetExportOptions.builder()
+						.format(SpreadsheetFormat.Excel)
+						.translateHeaders(false)
 						.build();
 			}
 			else
 			{
-				return ExcelExportOptions.builder()
-						.translateExcelHeaders(process.isTranslateExcelHeaders())
-						.applyFormatting(process.isFormatExcelFile())
+				final SpreadsheetFormat spreadsheetFormat = process.getSpreadsheetFormat() == null
+						? SpreadsheetFormat.Excel
+						: SpreadsheetFormat.ofNullableCode(process.getSpreadsheetFormat());
+
+				return SpreadsheetExportOptions.builder()
+						.format(spreadsheetFormat)
+						.translateHeaders(process.isTranslateExcelHeaders())
+						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
+						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
 						.build();
 			}
 		}
@@ -1229,7 +1234,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			final String reportTemplate = adProcess.getJasperReport();
-			if (Check.isEmpty(reportTemplate, true))
+			if (reportTemplate == null || Check.isEmpty(reportTemplate, true))
 			{
 				return Optional.empty();
 			}
@@ -1934,13 +1939,4 @@ public final class ProcessInfo implements Serializable
 		}
 	} // ProcessInfoBuilder
 
-	@Value
-	@Builder
-	public static class ExcelExportOptions
-	{
-		boolean translateExcelHeaders;
-
-		@Builder.Default
-		boolean applyFormatting = true;
-	}
 }   // ProcessInfo
