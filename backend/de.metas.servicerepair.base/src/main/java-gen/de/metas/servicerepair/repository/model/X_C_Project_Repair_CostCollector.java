@@ -308,6 +308,7 @@ public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO impl
 	public static final String TYPE_RepairProductToReturn = "RPC";
 	/** RepairingConsumption = RP+ */
 	public static final String TYPE_RepairingConsumption = "RP+";
+	public static final String TYPE_RepairingServicePerformed = null /* "RS+" */; // FIXME introduce it
 	@Override
 	public void setType (final java.lang.String Type)
 	{

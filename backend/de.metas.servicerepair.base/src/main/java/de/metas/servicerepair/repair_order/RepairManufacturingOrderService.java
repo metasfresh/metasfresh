@@ -114,6 +114,7 @@ public class RepairManufacturingOrderService
 				.repairedQty(ppOrderBL.getQuantities(record).getQtyReceived())
 				.summary(record.getRepairOrderSummary())
 				.costCollectors(getCostCollectors(repairOrderId))
+				.servicesPerformed(servicesPerformedRepository.getByRepairOrderId(repairOrderId))
 				.build());
 	}
 

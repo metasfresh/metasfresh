@@ -44,7 +44,7 @@ public class RepairManufacturingOrderServicePerformedRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public List<RepairManufacturingOrderServicePerformed> getByRepairOrderId(@NonNull final PPOrderId repairOrderId)
+	public ImmutableList<RepairManufacturingOrderServicePerformed> getByRepairOrderId(@NonNull final PPOrderId repairOrderId)
 	{
 		return queryBL
 				.createQueryBuilder(I_PP_Order_RepairService.class)

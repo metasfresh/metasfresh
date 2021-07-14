@@ -52,6 +52,8 @@ public class RepairManufacturingOrderInfo
 
 	@NonNull ImmutableList<RepairManufacturingCostCollector> costCollectors;
 
+	@NonNull ImmutableList<RepairManufacturingOrderServicePerformed> servicesPerformed;
+
 	public ImmutableSet<PPOrderAndCostCollectorId> getCostCollectorIds()
 	{
 		return getCostCollectors().stream()

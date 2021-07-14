@@ -69,11 +69,8 @@ class ServiceRepairProjectTaskRepository
 		record.setType(ServiceRepairProjectTaskType.REPAIR_ORDER.getCode());
 		record.setStatus(ServiceRepairProjectTaskStatus.NOT_STARTED.getCode());
 
-		if (request.getCustomerReturnLineId() != null)
-		{
-			record.setCustomerReturn_InOut_ID(request.getCustomerReturnLineId().getInOutId().getRepoId());
-			record.setCustomerReturn_InOutLine_ID(request.getCustomerReturnLineId().getInOutLineId().getRepoId());
-		}
+		record.setCustomerReturn_InOut_ID(request.getCustomerReturnLineId().getInOutId().getRepoId());
+		record.setCustomerReturn_InOutLine_ID(request.getCustomerReturnLineId().getInOutLineId().getRepoId());
 
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(request.getAsiId().getRepoId());
@@ -133,8 +130,18 @@ class ServiceRepairProjectTaskRepository
 			return ImmutableList.of();
 		}
 
-		final List<I_C_Project_Repair_Task> recordIds = InterfaceWrapperHelper.loadByRepoIdAwares(taskIds, I_C_Project_Repair_Task.class);
-		return recordIds.stream()
+		final List<I_C_Project_Repair_Task> records = InterfaceWrapperHelper.loadByRepoIdAwares(taskIds, I_C_Project_Repair_Task.class);
+		return records.stream()
+				.map(ServiceRepairProjectTaskRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public List<ServiceRepairProjectTask> getByProjectId(@NonNull final ProjectId projectId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Repair_Task.class)
+				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_C_Project_ID, projectId)
+				.create()
+				.stream()
 				.map(ServiceRepairProjectTaskRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
