@@ -32,11 +32,11 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -91,13 +91,25 @@ public class RepairManufacturingOrderServicePerformedRepository
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qty)
 	{
-		final I_PP_Order_RepairService record = retrieveRecordByRepairOrderAndServiceId(repairOrderId, productId)
-				.orElseGet(() -> newRecord(repairOrderId, productId));
+		if (qty.signum() < 0)
+		{
+			throw new AdempiereException("Qty shall be positive or zero");
+		}
+		else if (qty.signum() == 0)
+		{
+			retrieveRecordByRepairOrderAndServiceId(repairOrderId, productId)
+					.ifPresent(InterfaceWrapperHelper::delete);
+		}
+		else
+		{
+			final I_PP_Order_RepairService record = retrieveRecordByRepairOrderAndServiceId(repairOrderId, productId)
+					.orElseGet(() -> newRecord(repairOrderId, productId));
 
-		record.setC_UOM_ID(qty.getUomId().getRepoId());
-		record.setQty(qty.toBigDecimal());
+			record.setC_UOM_ID(qty.getUomId().getRepoId());
+			record.setQty(qty.toBigDecimal());
 
-		InterfaceWrapperHelper.saveRecord(record);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
 	}
 
 	private I_PP_Order_RepairService newRecord(

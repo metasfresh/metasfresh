@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO implements I_C_Project_Repair_CostCollector, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -924403555L;
+	private static final long serialVersionUID = 1003501417L;
 
     /** Standard Constructor */
     public X_C_Project_Repair_CostCollector (final Properties ctx, final int C_Project_Repair_CostCollector_ID, @Nullable final String trxName)
@@ -308,7 +308,8 @@ public class X_C_Project_Repair_CostCollector extends org.compiere.model.PO impl
 	public static final String TYPE_RepairProductToReturn = "RPC";
 	/** RepairingConsumption = RP+ */
 	public static final String TYPE_RepairingConsumption = "RP+";
-	public static final String TYPE_RepairingServicePerformed = null /* "RS+" */; // FIXME introduce it
+	/** RepairingServicePerformed = RS+ */
+	public static final String TYPE_RepairingServicePerformed = "RS+";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

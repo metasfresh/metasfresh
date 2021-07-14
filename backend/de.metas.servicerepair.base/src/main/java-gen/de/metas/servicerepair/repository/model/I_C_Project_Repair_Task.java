@@ -2,8 +2,6 @@ package de.metas.servicerepair.repository.model;
 
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project_Repair_Task
@@ -97,28 +95,6 @@ public interface I_C_Project_Repair_Task
 	String COLUMNNAME_C_Project_Repair_Task_ID = "C_Project_Repair_Task_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -142,6 +118,28 @@ public interface I_C_Project_Repair_Task
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Customer Return.
@@ -398,6 +396,27 @@ public interface I_C_Project_Repair_Task
 	String COLUMNNAME_Repair_Order_ID = "Repair_Order_ID";
 
 	/**
+	 * Set Repair Summary.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRepairOrderSummary (@Nullable java.lang.String RepairOrderSummary);
+
+	/**
+	 * Get Repair Summary.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRepairOrderSummary();
+
+	ModelColumn<I_C_Project_Repair_Task, Object> COLUMN_RepairOrderSummary = new ModelColumn<>(I_C_Project_Repair_Task.class, "RepairOrderSummary", null);
+	String COLUMNNAME_RepairOrderSummary = "RepairOrderSummary";
+
+	/**
 	 * Set Repair CU.
 	 *
 	 * <br>Type: Search
@@ -486,7 +505,4 @@ public interface I_C_Project_Repair_Task
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	default String getRepairOrderSummary() { throw new UnsupportedOperationException(); }
-	default void setRepairOrderSummary(final String s)  { throw new UnsupportedOperationException(); }
 }

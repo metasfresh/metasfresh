@@ -566,7 +566,8 @@ public interface I_PP_Order
 	String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
-	 * Set DateStart.
+	 * Set Start Date.
+	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -575,7 +576,8 @@ public interface I_PP_Order
 	void setDateStart (@Nullable java.sql.Timestamp DateStart);
 
 	/**
-	 * Get DateStart.
+	 * Get Start Date.
+	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1629,6 +1631,27 @@ public interface I_PP_Order
 	String COLUMNNAME_QtyScrap = "QtyScrap";
 
 	/**
+	 * Set Repair Summary.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRepairOrderSummary (@Nullable java.lang.String RepairOrderSummary);
+
+	/**
+	 * Get Repair Summary.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRepairOrderSummary();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_RepairOrderSummary = new ModelColumn<>(I_PP_Order.class, "RepairOrderSummary", null);
+	String COLUMNNAME_RepairOrderSummary = "RepairOrderSummary";
+
+	/**
 	 * Set Ressource.
 	 * Resource
 	 *
@@ -1800,6 +1823,4 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_Yield = new ModelColumn<>(I_PP_Order.class, "Yield", null);
 	String COLUMNNAME_Yield = "Yield";
-
-	default String getRepairOrderSummary() { throw new UnsupportedOperationException(); }
 }

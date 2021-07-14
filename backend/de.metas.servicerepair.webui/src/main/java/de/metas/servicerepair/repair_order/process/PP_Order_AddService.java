@@ -37,12 +37,9 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 
 public class PP_Order_AddService extends JavaProcess
 		implements IProcessPrecondition, IProcessParametersCallout
@@ -50,8 +47,8 @@ public class PP_Order_AddService extends JavaProcess
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final RepairManufacturingOrderService repairManufacturingOrderService = SpringContextHolder.instance.getBean(RepairManufacturingOrderService.class);
 
-	private static final String PARAM_M_Product_ID = "M_Product_ID";
-	@Param(parameterName = PARAM_M_Product_ID, mandatory = true)
+	private static final String PARAM_Service_Product_ID = "Service_Product_ID";
+	@Param(parameterName = PARAM_Service_Product_ID, mandatory = true)
 	private ProductId serviceProductId;
 
 	@Param(parameterName = "C_UOM_ID", mandatory = true)
@@ -85,7 +82,7 @@ public class PP_Order_AddService extends JavaProcess
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
-		if (PARAM_M_Product_ID.equals(parameterName))
+		if (PARAM_Service_Product_ID.equals(parameterName))
 		{
 			if (serviceProductId != null)
 			{

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2039473194L;
+	private static final long serialVersionUID = 545450181L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -530,6 +530,8 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
 	/** ServiceRepairOrder = MRO */
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
+	/** Remittance Advice = RMA */
+	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -1205,6 +1207,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyScrap);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setRepairOrderSummary (final @Nullable java.lang.String RepairOrderSummary)
+	{
+		set_Value (COLUMNNAME_RepairOrderSummary, RepairOrderSummary);
+	}
+
+	@Override
+	public java.lang.String getRepairOrderSummary() 
+	{
+		return get_ValueAsString(COLUMNNAME_RepairOrderSummary);
 	}
 
 	@Override
