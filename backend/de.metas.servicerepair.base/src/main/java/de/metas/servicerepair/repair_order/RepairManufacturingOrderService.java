@@ -44,6 +44,7 @@ import de.metas.servicerepair.repair_order.model.RepairManufacturingCostCollecto
 import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderInfo;
 import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderServicePerformed;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -111,6 +112,7 @@ public class RepairManufacturingOrderService
 				.projectId(projectId)
 				.repairedProductId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.repairedQty(ppOrderBL.getQuantities(record).getQtyReceived())
+				.summary(record.getRepairOrderSummary())
 				.costCollectors(getCostCollectors(repairOrderId))
 				.build());
 	}

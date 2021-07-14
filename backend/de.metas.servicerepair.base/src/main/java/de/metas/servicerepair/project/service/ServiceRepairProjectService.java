@@ -441,7 +441,7 @@ public class ServiceRepairProjectService
 
 		// TODO: import from projectConsumptionSummaryRepository.getByRepairOrderId(...)
 
-		task = task.withRepairOrderDone(true);
+		task = task.withRepairOrderDone(true, repairOrder.getSummary());
 		projectTaskRepository.save(task);
 	}
 

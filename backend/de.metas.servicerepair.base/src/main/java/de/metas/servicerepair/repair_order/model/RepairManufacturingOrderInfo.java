@@ -33,6 +33,8 @@ import lombok.Value;
 import org.eevolution.api.PPOrderAndCostCollectorId;
 import org.eevolution.api.PPOrderId;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class RepairManufacturingOrderInfo
@@ -45,6 +47,8 @@ public class RepairManufacturingOrderInfo
 	 * shall be ONE
 	 */
 	@NonNull Quantity repairedQty;
+
+	@Nullable String summary;
 
 	@NonNull ImmutableList<RepairManufacturingCostCollector> costCollectors;
 

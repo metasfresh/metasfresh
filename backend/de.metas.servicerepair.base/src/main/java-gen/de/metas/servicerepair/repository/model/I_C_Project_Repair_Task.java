@@ -2,6 +2,8 @@ package de.metas.servicerepair.repository.model;
 
 import java.math.BigDecimal;
 import javax.annotation.Nullable;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Project_Repair_Task
@@ -484,4 +486,7 @@ public interface I_C_Project_Repair_Task
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	default String getRepairOrderSummary() { throw new UnsupportedOperationException(); }
+	default void setRepairOrderSummary(final String s)  { throw new UnsupportedOperationException(); }
 }
