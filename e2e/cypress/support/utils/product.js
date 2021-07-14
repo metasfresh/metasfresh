@@ -161,6 +161,7 @@ export class Product {
     cy.writeIntoStringField('PriceStd', productPrice.standardPriceAmount, true /*modal*/, null /*rewriteUrl*/, true /*noRequest*/);
     cy.writeIntoStringField('PriceLimit', productPrice.limitPriceAmount, true, null, true);
 
+    // don't set TaxCategory if there's a default one already selected
     cy.get('.form-field-C_TaxCategory_ID input')
       .invoke('val')
       .then((val) => {
