@@ -39,6 +39,7 @@ public class C_Project_CreateQuotation
 		extends ServiceOrRepairProjectBasedProcess
 		implements IProcessPrecondition
 {
+	// FIXME remove it from AD_Process_Para
 	@Param(parameterName = "ServiceRepair_Product_ID", mandatory = true)
 	private ProductId serviceProductId;
 
@@ -62,7 +63,6 @@ public class C_Project_CreateQuotation
 
 		final OrderId quotationId = projectService.createQuotationFromProject(CreateQuotationFromProjectRequest.builder()
 				.projectId(projectId)
-				.serviceProductId(serviceProductId)
 				.build());
 
 		setRecordToOpen(quotationId);
