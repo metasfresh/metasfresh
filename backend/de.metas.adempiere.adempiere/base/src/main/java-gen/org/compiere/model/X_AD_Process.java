@@ -575,4 +575,13 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	{
 		return get_ValueAsString(COLUMNNAME_WorkflowValue);
 	}
+
+	public static final String SPREADSHEETFORMAT_Excel = "xls";
+	public static final String SPREADSHEETFORMAT_CSV = "csv";
+
+	@Override
+	public String getSpreadsheetFormat() { return SPREADSHEETFORMAT_Excel; }
+
+	@Override
+	public void setSpreadsheetFormat(final String SpreadsheetFormat) { throw new UnsupportedOperationException(); }
 }

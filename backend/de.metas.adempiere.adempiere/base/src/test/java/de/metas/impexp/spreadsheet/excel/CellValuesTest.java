@@ -20,10 +20,12 @@
  * #L%
  */
 
-package de.metas.impexp.excel;
+package de.metas.impexp.spreadsheet.excel;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.impexp.spreadsheet.excel.CellValue;
+import de.metas.impexp.spreadsheet.excel.CellValues;
 import org.assertj.core.api.Assertions;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.Nested;

@@ -945,4 +945,10 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_WorkflowValue = new ModelColumn<>(I_AD_Process.class, "WorkflowValue", null);
 	String COLUMNNAME_WorkflowValue = "WorkflowValue";
+
+	// FIXME add the proper columns and generate the model
+	String getSpreadsheetFormat();
+	void setSpreadsheetFormat(final String SpreadsheetFormat);
+
+	default String getCSV_FieldDelimiter() { throw new UnsupportedOperationException(); }
 }
