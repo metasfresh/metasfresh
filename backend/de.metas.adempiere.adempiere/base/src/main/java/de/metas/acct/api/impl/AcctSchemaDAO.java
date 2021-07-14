@@ -78,21 +78,32 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
-	public AcctSchema getByCliendAndOrg(final Properties ctx)
+	public AcctSchema getByClientAndOrg(final Properties ctx)
 	{
 		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
 		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
 
-		return getByCliendAndOrg(clientId, orgId);
+		return getByClientAndOrg(clientId, orgId);
 	}
 
 	@Override
-	public final AcctSchema getByCliendAndOrg(final ClientId clientId, final OrgId orgId)
+	public final AcctSchema getByClientAndOrg(final ClientId clientId, final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrg(clientId, orgId);
 		return getById(acctSchemaId);
 	}
 
+	@Nullable
+	public final AcctSchema getByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
+		if (acctSchemaId == null)
+		{
+			return null;
+		}
+		return getById(acctSchemaId);
+	}
+	
 	@Override
 	public AcctSchemaId getAcctSchemaIdByClientAndOrg(final ClientId clientId, final OrgId orgId)
 	{

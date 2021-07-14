@@ -581,7 +581,7 @@ public class Login
 			return;
 		}
 
-		final AcctSchema acctSchema = acctSchemaDAO.getByCliendAndOrg(ctx.getSessionContext()); // could throw AccountingException
+		final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrg(ctx.getSessionContext()); // could throw AccountingException
 		ctx.setAcctSchema(acctSchema);
 
 		acctSchema.getSchemaElementTypes()
