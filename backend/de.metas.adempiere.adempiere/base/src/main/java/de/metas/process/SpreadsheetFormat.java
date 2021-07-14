@@ -50,4 +50,10 @@ public enum SpreadsheetFormat implements ReferenceListAwareEnum
 	{
 		return index.ofNullableCode(code);
 	}
+
+	public boolean isFormatExcelFile()
+	{
+		return this == Excel;
+	}
+
 }

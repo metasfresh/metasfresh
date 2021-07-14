@@ -1212,11 +1212,13 @@ public final class ProcessInfo implements Serializable
 			}
 			else
 			{
+				final SpreadsheetFormat spreadsheetFormat = SpreadsheetFormat.ofCode(process.getSpreadsheetFormat());
+
 				return SpreadsheetExportOptions.builder()
-						.format(SpreadsheetFormat.ofCode(process.getSpreadsheetFormat()))
+						.format(spreadsheetFormat)
 						.translateHeaders(process.isTranslateExcelHeaders())
-						.excelApplyFormatting(process.isFormatExcelFile())
-						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSV_FieldDelimiter()))
+						.excelApplyFormatting(spreadsheetFormat.isFormatExcelFile())
+						.csvFieldDelimiter(StringUtils.trimBlankToNull(process.getCSVFieldDelimiter()))
 						.build();
 			}
 		}
