@@ -96,7 +96,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	@Nullable
 	public final AcctSchema getByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
+		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
 		if (acctSchemaId == null)
 		{
 			return null;
@@ -105,14 +105,19 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 	
 	@Override
-	public AcctSchemaId getAcctSchemaIdByClientAndOrg(final ClientId clientId, final OrgId orgId)
+	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
+		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
 		if (acctSchemaId == null)
 		{
 			throw new AdempiereException("No accounting schema found for AD_Client_ID=" + clientId + " and AD_Org_ID=" + orgId);
 		}
 		return acctSchemaId;
+	}
+
+	protected AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
 	}
 
 	@Override
