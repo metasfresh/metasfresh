@@ -23,10 +23,12 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.contracts.FlatrateTransitionId;
+import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.uom.UomId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 public class StepDefConstants
@@ -34,6 +36,9 @@ public class StepDefConstants
 	public static final String TABLECOLUMN_IDENTIFIER = "Identifier";
 
 	public static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(540008);
+	public static final ResourceId PLANT_ID = ResourceId.ofRepoId(540011);
+	public static final LocatorId LOCATOR_ID = LocatorId.ofRepoId(WAREHOUSE_ID, 540007);
+	public static final DocTypeId DOC_TYPE_ID_MMI = DocTypeId.ofRepoId(1000023);
 	public static final OrgId ORG_ID = OrgId.ofRepoId(1000000);
 	public static final CountryId COUNTRY_ID = CountryId.ofRepoId(101);
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);

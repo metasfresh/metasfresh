@@ -2,6 +2,7 @@ package org.adempiere.mm.attributes.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.event.commons.AttributeKeyPartType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
@@ -15,7 +16,6 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -102,7 +102,7 @@ public final class AttributesKeys
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
 			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeCode);
-			return valueBD != null
+			return BigDecimal.ZERO.compareTo(CoalesceUtil.coalesceNotNull(valueBD, BigDecimal.ZERO)) != 0
 					? AttributesKeyPart.ofNumberAttribute(attributeId, valueBD)
 					: null;
 		}
@@ -195,12 +195,14 @@ public final class AttributesKeys
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			final boolean isNull = InterfaceWrapperHelper.isNull(ai, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
-			if (isNull)
+
+			final BigDecimal valueBD = ai.getValueNumber();
+
+			if (BigDecimal.ZERO.compareTo(CoalesceUtil.coalesceNotNull(valueBD, BigDecimal.ZERO)) == 0)
 			{
 				return null;
 			}
-			final BigDecimal valueBD = ai.getValueNumber();
+
 			return AttributesKeyPart.ofNumberAttribute(attributeId, valueBD);
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))
