@@ -82,7 +82,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("http://{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/error");
+				.toD("{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/error");
 		//@formatter:on
 	}
 

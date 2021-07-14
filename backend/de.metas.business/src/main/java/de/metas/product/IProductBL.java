@@ -50,7 +50,7 @@ public interface IProductBL extends ISingletonService
 
 	I_M_Product getByIdInTrx(ProductId productId);
 
-	ProductId getProductIdByValue(String productValue);
+	ProductId getProductIdByValue(OrgId orgId, String productValue);
 
 	UOMPrecision getUOMPrecision(I_M_Product product);
 

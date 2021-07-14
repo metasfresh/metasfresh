@@ -40,7 +40,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -61,7 +60,19 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.I_C_BPartner_Stats;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -118,7 +129,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	@NonNull
 	BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId);
-	
+
 	/**
 	 * @deprecated in all cases i can imagine, if the caller has a {@code bpartnerLocationId}, they need the actual record, even if it is inactive.
 	 * Think e.g. of a completed shipment. Therefore, please consider using {@link #getBPartnerLocationByIdEvenInactive(BPartnerLocationId)} instead.
@@ -265,7 +276,6 @@ public interface IBPartnerDAO extends ISingletonService
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
 	CountryId getCountryId(BPartnerLocationId bpLocationId);
-	
 	/**
 	 * Retrieve default/first bill to location.
 	 *
@@ -376,4 +386,5 @@ public interface IBPartnerDAO extends ISingletonService
 
 	I_C_BPartner_Location retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
 
+	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
 }

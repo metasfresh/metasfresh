@@ -42,6 +42,7 @@ import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditIte
 import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditItem.ManufacturingOrderReportAuditItemBuilder;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
 import de.metas.order.OrderLineId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -241,8 +242,10 @@ class ManufacturingOrderReportProcessCommand
 	{
 		final PPOrderId orderId = extractPPOrderId(issue);
 
+		final OrgId orgId = OrgId.ofRepoId(getOrderById(orderId).getAD_Org_ID());
 		final String productNo = issue.getProductNo();
-		final ProductId productId = productBL.getProductIdByValue(productNo);
+		
+		final ProductId productId = productBL.getProductIdByValue(orgId, productNo);
 		if (productId == null)
 		{
 			throw new AdempiereException("No product found for productNo=" + productNo)

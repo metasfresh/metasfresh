@@ -91,7 +91,6 @@ import org.compiere.model.I_C_BP_PrintFormat;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_Stats;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
@@ -1741,4 +1740,14 @@ public class BPartnerDAO implements IBPartnerDAO
 				.printFormatId(PrintFormatId.ofRepoId(record.getAD_PrintFormat_ID()))
 				.build();
 	}
+
+	@Override
+	public List<I_C_BPartner> retrieveByIds(@NonNull final Set<BPartnerId> bpartnerIds)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds)
+				.create()
+				.list();
+	}
+
 }

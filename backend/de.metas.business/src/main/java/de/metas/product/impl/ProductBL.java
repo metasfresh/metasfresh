@@ -13,6 +13,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -78,9 +79,14 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public ProductId getProductIdByValue(String productValue)
+	public ProductId getProductIdByValue(
+			@NonNull final OrgId orgId,
+			@NonNull final String productValue)
 	{
-		return productsRepo.retrieveProductIdByValue(productValue);
+		final ProductQuery query = ProductQuery.builder()
+				.orgId(orgId)
+				.value(productValue).build();
+		return productsRepo.retrieveProductIdBy(query);
 	}
 
 	@Override
