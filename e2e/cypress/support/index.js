@@ -46,7 +46,7 @@ before(function () {
 
   cy.loginViaAPI().then(() => {
     cy.log('logged in successfully');
-  }, { timeout: 10000 });
+  }, { timeout: 20000 });
 
   // const autoLogin = function () {
   //   return cy.loginViaForm();
