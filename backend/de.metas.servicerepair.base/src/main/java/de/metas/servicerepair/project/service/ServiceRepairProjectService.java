@@ -412,7 +412,8 @@ public class ServiceRepairProjectService
 				//
 				.repairOrder(repairOrder)
 				//
-				.build();
+				.build()
+				.execute();
 	}
 
 	public void unimportCostsFromRepairOrder(@NonNull final RepairManufacturingOrderInfo repairOrder)
