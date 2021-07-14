@@ -14,8 +14,8 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
-import de.metas.impexp.excel.JdbcExcelExporter;
-import de.metas.impexp.excel.service.ExcelExporterService;
+import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
+import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -53,7 +53,7 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 {
 
 	private final static String tableName = "\"de.metas.fresh\".product_specifications_v";
-	private final ExcelExporterService excelExporterService = SpringContextHolder.instance.getBean(ExcelExporterService.class);
+	private final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
 	@Override
 	protected String doIt() throws Exception
@@ -65,7 +65,7 @@ public class ExportProductSpecifications extends JavaProcess implements IProcess
 
 		jdbcExcelExporter.setFontCharset(Font.ANSI_CHARSET);
 
-		excelExporterService.processDataFromSQL(getSql(), jdbcExcelExporter);
+		spreadsheetExporterService.processDataFromSQL(getSql(), jdbcExcelExporter);
 
 		final File tempFile = jdbcExcelExporter.getResultFile();
 

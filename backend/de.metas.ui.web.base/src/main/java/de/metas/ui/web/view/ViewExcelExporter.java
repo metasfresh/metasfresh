@@ -17,11 +17,11 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.i18n.Language;
-import de.metas.impexp.excel.AbstractExcelExporter;
-import de.metas.impexp.excel.CellValue;
-import de.metas.impexp.excel.CellValues;
-import de.metas.impexp.excel.ExcelExportConstants;
-import de.metas.impexp.excel.ExcelFormat;
+import de.metas.impexp.spreadsheet.excel.AbstractExcelExporter;
+import de.metas.impexp.spreadsheet.excel.CellValue;
+import de.metas.impexp.spreadsheet.excel.CellValues;
+import de.metas.impexp.spreadsheet.excel.ExcelExportConstants;
+import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.util.PageIndex;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;

@@ -1,21 +1,8 @@
-package de.metas.impexp.excel;
-
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,17 +20,28 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.impexp.spreadsheet.excel;
+
+import javax.annotation.concurrent.Immutable;
+
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
+
 /**
- * Cell value returned by {@link AbstractExcelExporter#getValueAt(int, int)}.
+ * Cell value.
  *
  * For more helpers please check {@link CellValues} utility class.
- *
- * @author metas-dev <dev@metasfresh.com>
  */
 @Immutable
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Value
-public final class CellValue
+public class CellValue
 {
 	public static CellValue ofDate(final Object dateObj)
 	{
@@ -70,12 +68,11 @@ public final class CellValue
 		return new CellValue(CellValueType.String, string);
 	}
 
-	@NonNull
-	private CellValueType type;
+	@NonNull CellValueType type;
 
 	@NonNull
 	@Getter(AccessLevel.NONE)
-	private Object valueObj;
+	Object valueObj;
 
 	public boolean isDate()
 	{

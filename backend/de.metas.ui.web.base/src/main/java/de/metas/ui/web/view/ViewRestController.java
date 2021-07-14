@@ -23,8 +23,8 @@
 package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.impexp.excel.ExcelFormat;
-import de.metas.impexp.excel.ExcelFormats;
+import de.metas.impexp.spreadsheet.excel.ExcelFormat;
+import de.metas.impexp.spreadsheet.excel.ExcelFormats;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
