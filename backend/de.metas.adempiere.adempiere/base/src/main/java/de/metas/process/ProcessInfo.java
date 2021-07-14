@@ -1212,7 +1212,9 @@ public final class ProcessInfo implements Serializable
 			}
 			else
 			{
-				final SpreadsheetFormat spreadsheetFormat = SpreadsheetFormat.ofCode(process.getSpreadsheetFormat());
+				final SpreadsheetFormat spreadsheetFormat = process.getSpreadsheetFormat() == null
+						? SpreadsheetFormat.Excel
+						: SpreadsheetFormat.ofNullableCode(process.getSpreadsheetFormat());
 
 				return SpreadsheetExportOptions.builder()
 						.format(spreadsheetFormat)
