@@ -3,6 +3,7 @@ package de.metas.handlingunits.material.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorFromInventoryLineService;
 import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorService;
 import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptorsFromHUAssignmentService;
 import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptor;
@@ -119,12 +120,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 	{
 		final I_M_Transaction transaction = createShipmentTransaction();
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
 		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				modelProductDescriptorExtractor);
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -150,12 +153,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
 		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				modelProductDescriptorExtractor);
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -185,12 +190,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
 		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				modelProductDescriptorExtractor);
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		//
 		// invoke the method under test
@@ -263,12 +270,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		transaction.setM_InOutLine(inoutLine);
 		save(transaction);
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
 		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				modelProductDescriptorExtractor);
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator
@@ -295,12 +304,14 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 	{
 		final I_M_Transaction transaction = createReceiptTransaction();
 
+		final HUDescriptorFromInventoryLineService huDescriptorFromInventoryLineService = Mockito.mock(HUDescriptorFromInventoryLineService.class);
 		final ModelProductDescriptorExtractor modelProductDescriptorExtractor = Mockito.mock(ModelProductDescriptorExtractor.class);
 		final HUDescriptorsFromHUAssignmentService huDescriptionFactory = createM_Transaction_HuDescriptor("7");
 		final TransactionEventFactory transactionEventCreator = new TransactionEventFactory(
 				huDescriptionFactory,
 				new ReplenishInfoRepository(),
-				modelProductDescriptorExtractor);
+				modelProductDescriptorExtractor,
+				huDescriptorFromInventoryLineService);
 
 		// invoke the method under test
 		final List<MaterialEvent> events = transactionEventCreator

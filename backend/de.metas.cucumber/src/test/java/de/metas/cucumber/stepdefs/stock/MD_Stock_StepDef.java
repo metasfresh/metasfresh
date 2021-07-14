@@ -67,7 +67,10 @@ public class MD_Stock_StepDef
 		DB.executeUpdateEx("TRUNCATE TABLE M_Cost cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateEx("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
 		DB.executeUpdateEx("TRUNCATE TABLE X_MRP_ProductInfo_Detail_MV cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Stock cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateEx("TRUNCATE TABLE MD_Stock", ITrx.TRXNAME_None);
+		DB.executeUpdateEx("TRUNCATE TABLE m_hu_item_storage cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateEx("TRUNCATE TABLE m_hu_storage cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateEx("TRUNCATE TABLE m_hu_trx_line cascade", ITrx.TRXNAME_None);
 	}
 
 	private void validateMD_Stock(@NonNull final Map<String, String> row)

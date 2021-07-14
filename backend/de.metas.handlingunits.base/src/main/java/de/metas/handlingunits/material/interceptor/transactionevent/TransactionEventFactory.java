@@ -64,16 +64,19 @@ public final class TransactionEventFactory
 	private final HUDescriptorsFromHUAssignmentService huDescriptorsViaHUAssignmentsService;
 	private final ReplenishInfoRepository replenishInfoRepository;
 	private final ModelProductDescriptorExtractor modelProductDescriptorExtractor;
+	private final HUDescriptorFromInventoryLineService huDescriptorsViaInventoryLineService;
 
 	public TransactionEventFactory(
 			@NonNull final HUDescriptorsFromHUAssignmentService huDescriptorsViaHUAssignmentsService,
 			@NonNull final ReplenishInfoRepository replenishInfoRepository,
-			@NonNull final ModelProductDescriptorExtractor modelProductDescriptorExtractor)
+			@NonNull final ModelProductDescriptorExtractor modelProductDescriptorExtractor,
+			@NonNull final HUDescriptorFromInventoryLineService huDescriptorsViaInventoryLineService)
 	{
 		this.huDescriptorsViaHUAssignmentsService = huDescriptorsViaHUAssignmentsService;
 		this.replenishInfoRepository = replenishInfoRepository;
 		this.inOutLineEventCreator = new TransactionEventFactoryForInOutLine(huDescriptorsViaHUAssignmentsService, replenishInfoRepository);
 		this.modelProductDescriptorExtractor = modelProductDescriptorExtractor;
+		this.huDescriptorsViaInventoryLineService = huDescriptorsViaInventoryLineService;
 	}
 
 	public List<MaterialEvent> createEventsForTransaction(
@@ -96,7 +99,7 @@ public final class TransactionEventFactory
 		}
 		else if (transaction.getInventoryLineId() != null)
 		{
-			result.addAll(ImmutableList.of(createEventForInventoryLine(transaction, deleted)));
+			result.add(createEventForInventoryLine(transaction, deleted));
 		}
 		return result.build();
 	}
@@ -249,6 +252,8 @@ public final class TransactionEventFactory
 				.quantity(deltaQty)
 				.build();
 
+		final List<HUDescriptor> huDescriptors = huDescriptorsViaInventoryLineService.createHuDescriptorsForInventoryLine(inventoryLineRecord, deleted);
+
 		final AbstractTransactionEvent event;
 		if (deleted)
 		{
@@ -259,6 +264,7 @@ public final class TransactionEventFactory
 					.transactionId(transaction.getTransactionId())
 					.materialDescriptor(materialDescriptor)
 					.directMovementWarehouse(directMovementWarehouse)
+					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}
 		else
@@ -273,6 +279,7 @@ public final class TransactionEventFactory
 					.materialDescriptor(materialDescriptor)
 					.directMovementWarehouse(directMovementWarehouse)
 					.minMaxDescriptor(minMaxDescriptor)
+					.huOnHandQtyChangeDescriptors(huDescriptors)
 					.build();
 		}
 		return event;

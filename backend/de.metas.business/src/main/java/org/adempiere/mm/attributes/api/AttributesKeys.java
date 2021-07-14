@@ -102,7 +102,7 @@ public final class AttributesKeys
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
 			final BigDecimal valueBD = attributeSet.getValueAsBigDecimal(attributeCode);
-			return !BigDecimal.ZERO.equals(CoalesceUtil.coalesceNotNull(valueBD, BigDecimal.ZERO))
+			return BigDecimal.ZERO.compareTo(CoalesceUtil.coalesceNotNull(valueBD, BigDecimal.ZERO)) != 0
 					? AttributesKeyPart.ofNumberAttribute(attributeId, valueBD)
 					: null;
 		}
@@ -198,7 +198,7 @@ public final class AttributesKeys
 
 			final BigDecimal valueBD = ai.getValueNumber();
 
-			if (BigDecimal.ZERO.equals(CoalesceUtil.coalesceNotNull(valueBD, BigDecimal.ZERO)))
+			if (BigDecimal.ZERO.compareTo(CoalesceUtil.coalesceNotNull(valueBD, BigDecimal.ZERO)) == 0)
 			{
 				return null;
 			}
