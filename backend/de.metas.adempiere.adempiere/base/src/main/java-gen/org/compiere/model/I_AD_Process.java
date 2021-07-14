@@ -292,6 +292,27 @@ public interface I_AD_Process
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set CSV Field Delimiter.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCSVFieldDelimiter (@Nullable java.lang.String CSVFieldDelimiter);
+
+	/**
+	 * Get CSV Field Delimiter.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCSVFieldDelimiter();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_CSVFieldDelimiter = new ModelColumn<>(I_AD_Process.class, "CSVFieldDelimiter", null);
+	String COLUMNNAME_CSVFieldDelimiter = "CSVFieldDelimiter";
+
+	/**
 	 * Set Description.
 	 *
 	 * <br>Type: Text
@@ -449,29 +470,6 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_IsDirectPrint = new ModelColumn<>(I_AD_Process.class, "IsDirectPrint", null);
 	String COLUMNNAME_IsDirectPrint = "IsDirectPrint";
-
-	/**
-	 * Set Format Excel File.
-	 * If set the resulting excel report will have the cells formatted (borders, colors, etc). For huge reports, this is not feasible because it seems like it takes a huge amount of time for Excel to open big reports with stylish cells.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsFormatExcelFile (boolean IsFormatExcelFile);
-
-	/**
-	 * Get Format Excel File.
-	 * If set the resulting excel report will have the cells formatted (borders, colors, etc). For huge reports, this is not feasible because it seems like it takes a huge amount of time for Excel to open big reports with stylish cells.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isFormatExcelFile();
-
-	ModelColumn<I_AD_Process, Object> COLUMN_IsFormatExcelFile = new ModelColumn<>(I_AD_Process.class, "IsFormatExcelFile", null);
-	String COLUMNNAME_IsFormatExcelFile = "IsFormatExcelFile";
 
 	/**
 	 * Set Notify user after execution.
@@ -809,6 +807,27 @@ public interface I_AD_Process
 	String COLUMNNAME_ShowHelp = "ShowHelp";
 
 	/**
+	 * Set SpreadsheetFormat.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSpreadsheetFormat (@Nullable java.lang.String SpreadsheetFormat);
+
+	/**
+	 * Get SpreadsheetFormat.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSpreadsheetFormat();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_SpreadsheetFormat = new ModelColumn<>(I_AD_Process.class, "SpreadsheetFormat", null);
+	String COLUMNNAME_SpreadsheetFormat = "SpreadsheetFormat";
+
+	/**
 	 * Set SQLStatement.
 	 *
 	 * <br>Type: TextLong
@@ -945,10 +964,4 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_WorkflowValue = new ModelColumn<>(I_AD_Process.class, "WorkflowValue", null);
 	String COLUMNNAME_WorkflowValue = "WorkflowValue";
-
-	// FIXME add the proper columns and generate the model
-	String getSpreadsheetFormat();
-	void setSpreadsheetFormat(final String SpreadsheetFormat);
-
-	default String getCSV_FieldDelimiter() { throw new UnsupportedOperationException(); }
 }
