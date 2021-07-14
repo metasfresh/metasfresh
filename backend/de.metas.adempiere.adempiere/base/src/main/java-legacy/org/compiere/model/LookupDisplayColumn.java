@@ -16,10 +16,10 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.Serializable;
-
 import de.metas.util.Check;
+import lombok.Builder;
 
+import java.io.Serializable;
 
 /**
  *  Lookup Display Column Value Object
@@ -42,9 +42,9 @@ public class LookupDisplayColumn implements ILookupDisplayColumn, Serializable
 	 * @param isTranslated translated
 	 * @param ad_Reference_ID display type
 	 * @param ad_Reference_Value_ID table/list reference id
-	 * @param formatPattern
 	 */
-	public LookupDisplayColumn(
+	@Builder
+	private LookupDisplayColumn(
 			final String columnName,
 			final String columnSQL,
 			final boolean isTranslated,
