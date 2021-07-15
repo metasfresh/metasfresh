@@ -64,8 +64,6 @@ public class JsonRemittanceAdviceLineProducer
 {
 	private static final Logger logger = Logger.getLogger(JsonRemittanceAdviceLineProducer.class.getName());
 
-
-
 	@NonNull REMADVListLineItemExtensionType remadvLineItemExtension;
 
 	public static JsonRemittanceAdviceLineProducer of(@NonNull final REMADVListLineItemExtensionType remadvListLineItemExtensionType)
@@ -84,25 +82,29 @@ public class JsonRemittanceAdviceLineProducer
 			{
 				throw new RuntimeException("No MonetaryAmounts found for line!");
 			}
+			
+			final BigDecimal invoiceGrossAmount = asBigDecimalAbs(monetaryAmounts.getInvoiceGrossAmount()).orElse(null);
 
+			final BigDecimal remittedAmount = asBigDecimalAbs(monetaryAmounts.getRemittedAmount())
+					.orElseThrow(() -> new RuntimeException("RemittedAmount not found on line!"));
+			final BigDecimal serviceFeeAmount = getServiceFeeAmount(monetaryAmounts);
+			final BigDecimal paymentDiscountAmount = getPaymentDiscountAmount(monetaryAmounts);
+
+			// the difference might be a few cents, rappen etc. we will add it to the discount
+			final BigDecimal difference = (invoiceGrossAmount != null ? invoiceGrossAmount : BigDecimal.ZERO)
+					.subtract(remittedAmount)
+					.subtract(serviceFeeAmount)
+					.subtract(paymentDiscountAmount);
+			
 			return JsonRemittanceAdviceLine.builder()
 					.invoiceIdentifier(getInvoiceIdentifier())
-
 					.bpartnerIdentifier(getBPartnerIdentifier().orElse(null))
-
 					.invoiceBaseDocType(getInvoiceDocType().orElse(null))
-
 					.dateInvoiced(getDateInvoiced().orElse(null))
-
-					.remittedAmount(asBigDecimalAbs(monetaryAmounts.getRemittedAmount())
-							.orElseThrow(() -> new RuntimeException("RemittedAmount not found on line!")))
-
-					.invoiceGrossAmount(asBigDecimalAbs(monetaryAmounts.getInvoiceGrossAmount()).orElse(null))
-
-					.paymentDiscountAmount(getPaymentDiscountAmount(monetaryAmounts))
-
-					.serviceFeeAmount(getServiceFeeAmount(monetaryAmounts))
-
+					.remittedAmount(remittedAmount)
+					.invoiceGrossAmount(invoiceGrossAmount)
+					.paymentDiscountAmount(paymentDiscountAmount.add(difference))
+					.serviceFeeAmount(serviceFeeAmount)
 					.serviceFeeVatRate(getServiceFeeVATRate(monetaryAmounts).orElse(null))
 					.build();
 		}
