@@ -19,7 +19,7 @@ INSERT INTO t_alter_column values('m_inout','POReference','VARCHAR(1024)',null,n
 --Make it identifier
 -- 2021-07-01T09:44:28.307Z
 -- URL zum Konzept
-UPDATE AD_Column SET IsIdentifier='Y', SeqNo=10,Updated=TO_TIMESTAMP('2021-07-01 11:44:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=3799
+UPDATE AD_Column SET IsIdentifier='Y', SeqNo=10,Updated=TO_TIMESTAMP('2021-07-01 11:44:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=3799;
 
 -- Display it in window
 -- 2021-07-01T09:46:55.825Z
