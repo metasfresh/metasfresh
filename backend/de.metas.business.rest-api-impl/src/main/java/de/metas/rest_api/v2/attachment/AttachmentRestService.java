@@ -89,7 +89,7 @@ public class AttachmentRestService
 		final byte[] data = Base64.getDecoder().decode(attachment.getData().getBytes());
 
 		final String contentType = attachment.getMimeType() != null
-				? MimeType.getExtensionByType(attachment.getMimeType())
+				? attachment.getMimeType()
 				: MimeType.getMimeType(attachment.getFileName());
 
 		final AttachmentEntryCreateRequest request = AttachmentEntryCreateRequest.builder()
