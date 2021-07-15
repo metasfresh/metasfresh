@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2039473194L;
+	private static final long serialVersionUID = 2050498979L;
 
     /** Standard Constructor */
     public X_PP_Order (final Properties ctx, final int PP_Order_ID, @Nullable final String trxName)
@@ -94,6 +94,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
+	public void setCanBeExportedFrom (final @Nullable java.sql.Timestamp CanBeExportedFrom)
+	{
+		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
+	}
+
+	@Override
+	public java.sql.Timestamp getCanBeExportedFrom() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
+	}
+
+	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
@@ -163,6 +175,18 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getC_DocTypeTarget_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeTarget_ID);
+	}
+
+	@Override
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -270,30 +294,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
-	}
-
-	@Override
-	public void setCanBeExportedFrom (final @Nullable java.sql.Timestamp CanBeExportedFrom)
-	{
-		set_Value (COLUMNNAME_CanBeExportedFrom, CanBeExportedFrom);
-	}
-
-	@Override
-	public java.sql.Timestamp getCanBeExportedFrom() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
-	}
-
-	@Override
-	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -530,6 +530,8 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public static final String DOCBASETYPE_CustomsInvoice = "CUI";
 	/** ServiceRepairOrder = MRO */
 	public static final String DOCBASETYPE_ServiceRepairOrder = "MRO";
+	/** Remittance Advice = RMA */
+	public static final String DOCBASETYPE_RemittanceAdvice = "RMA";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -804,21 +806,6 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
-	{
-		if (M_Warehouse_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
-	}
-
-	@Override
-	public int getM_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
 	public void setMRP_AllowCleanup (final boolean MRP_AllowCleanup)
 	{
 		set_Value (COLUMNNAME_MRP_AllowCleanup, MRP_AllowCleanup);
@@ -852,6 +839,21 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public boolean isMRP_ToDelete() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_MRP_ToDelete);
+	}
+
+	@Override
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
 	@Override
@@ -1208,30 +1210,30 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
+	public void setRepairOrderSummary (final @Nullable java.lang.String RepairOrderSummary)
 	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+		set_Value (COLUMNNAME_RepairOrderSummary, RepairOrderSummary);
 	}
 
 	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
+	public java.lang.String getRepairOrderSummary() 
 	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+		return get_ValueAsString(COLUMNNAME_RepairOrderSummary);
 	}
 
 	@Override
-	public void setS_Resource_ID (final int S_Resource_ID)
+	public void setRepairServicePerformed_Product_ID (final int RepairServicePerformed_Product_ID)
 	{
-		if (S_Resource_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, null);
+		if (RepairServicePerformed_Product_ID < 1) 
+			set_Value (COLUMNNAME_RepairServicePerformed_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+			set_Value (COLUMNNAME_RepairServicePerformed_Product_ID, RepairServicePerformed_Product_ID);
 	}
 
 	@Override
-	public int getS_Resource_ID() 
+	public int getRepairServicePerformed_Product_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+		return get_ValueAsInt(COLUMNNAME_RepairServicePerformed_Product_ID);
 	}
 
 	@Override
@@ -1256,6 +1258,33 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 	public java.lang.String getSerNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_SerNo);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getS_Resource()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+	}
+
+	@Override
+	public void setS_Resource_ID (final int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+	}
+
+	@Override
+	public int getS_Resource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
 	}
 
 	@Override

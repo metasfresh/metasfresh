@@ -34,6 +34,7 @@ import lombok.NonNull;
 
 public final class GroupCreator
 {
+	// services
 	private final GroupRepository groupsRepo;
 	private final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory;
 

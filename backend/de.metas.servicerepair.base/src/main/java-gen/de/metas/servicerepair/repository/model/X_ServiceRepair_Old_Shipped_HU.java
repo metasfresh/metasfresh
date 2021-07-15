@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ServiceRepair_Old_Shipped_HU extends org.compiere.model.PO implements I_ServiceRepair_Old_Shipped_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1009577124L;
+	private static final long serialVersionUID = -1903705946L;
 
     /** Standard Constructor */
     public X_ServiceRepair_Old_Shipped_HU (final Properties ctx, final int ServiceRepair_Old_Shipped_HU_ID, @Nullable final String trxName)
@@ -86,6 +86,18 @@ public class X_ServiceRepair_Old_Shipped_HU extends org.compiere.model.PO implem
 	public int getM_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
+	}
+
+	@Override
+	public void setNote (final @Nullable java.lang.String Note)
+	{
+		set_Value (COLUMNNAME_Note, Note);
+	}
+
+	@Override
+	public java.lang.String getNote() 
+	{
+		return get_ValueAsString(COLUMNNAME_Note);
 	}
 
 	@Override

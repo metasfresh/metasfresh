@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Project_Repair_Task extends org.compiere.model.PO implements I_C_Project_Repair_Task, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1478686627L;
+	private static final long serialVersionUID = 403931517L;
 
     /** Standard Constructor */
     public X_C_Project_Repair_Task (final Properties ctx, final int C_Project_Repair_Task_ID, @Nullable final String trxName)
@@ -264,6 +264,33 @@ public class X_C_Project_Repair_Task extends org.compiere.model.PO implements I_
 	public int getRepair_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Repair_Order_ID);
+	}
+
+	@Override
+	public void setRepairOrderSummary (final @Nullable java.lang.String RepairOrderSummary)
+	{
+		set_Value (COLUMNNAME_RepairOrderSummary, RepairOrderSummary);
+	}
+
+	@Override
+	public java.lang.String getRepairOrderSummary() 
+	{
+		return get_ValueAsString(COLUMNNAME_RepairOrderSummary);
+	}
+
+	@Override
+	public void setRepairServicePerformed_Product_ID (final int RepairServicePerformed_Product_ID)
+	{
+		if (RepairServicePerformed_Product_ID < 1) 
+			set_Value (COLUMNNAME_RepairServicePerformed_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_RepairServicePerformed_Product_ID, RepairServicePerformed_Product_ID);
+	}
+
+	@Override
+	public int getRepairServicePerformed_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_RepairServicePerformed_Product_ID);
 	}
 
 	@Override

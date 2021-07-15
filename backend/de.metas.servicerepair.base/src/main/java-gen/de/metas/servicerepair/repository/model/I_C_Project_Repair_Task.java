@@ -95,28 +95,6 @@ public interface I_C_Project_Repair_Task
 	String COLUMNNAME_C_Project_Repair_Task_ID = "C_Project_Repair_Task_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -140,6 +118,28 @@ public interface I_C_Project_Repair_Task
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Customer Return.
@@ -394,6 +394,47 @@ public interface I_C_Project_Repair_Task
 
 	ModelColumn<I_C_Project_Repair_Task, org.eevolution.model.I_PP_Order> COLUMN_Repair_Order_ID = new ModelColumn<>(I_C_Project_Repair_Task.class, "Repair_Order_ID", org.eevolution.model.I_PP_Order.class);
 	String COLUMNNAME_Repair_Order_ID = "Repair_Order_ID";
+
+	/**
+	 * Set Repair Summary.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRepairOrderSummary (@Nullable java.lang.String RepairOrderSummary);
+
+	/**
+	 * Get Repair Summary.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRepairOrderSummary();
+
+	ModelColumn<I_C_Project_Repair_Task, Object> COLUMN_RepairOrderSummary = new ModelColumn<>(I_C_Project_Repair_Task.class, "RepairOrderSummary", null);
+	String COLUMNNAME_RepairOrderSummary = "RepairOrderSummary";
+
+	/**
+	 * Set Repair Service Performed.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRepairServicePerformed_Product_ID (int RepairServicePerformed_Product_ID);
+
+	/**
+	 * Get Repair Service Performed.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRepairServicePerformed_Product_ID();
+
+	String COLUMNNAME_RepairServicePerformed_Product_ID = "RepairServicePerformed_Product_ID";
 
 	/**
 	 * Set Repair CU.

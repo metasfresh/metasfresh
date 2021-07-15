@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.servicerepair.repair_order;
+package de.metas.servicerepair.repair_order.model;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -32,6 +32,8 @@ import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.api.PPOrderAndCostCollectorId;
 import org.eevolution.api.PPOrderId;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -46,7 +48,11 @@ public class RepairManufacturingOrderInfo
 	 */
 	@NonNull Quantity repairedQty;
 
+	@Nullable String summary;
+
 	@NonNull ImmutableList<RepairManufacturingCostCollector> costCollectors;
+
+	@Nullable ProductId servicePerformedId;
 
 	public ImmutableSet<PPOrderAndCostCollectorId> getCostCollectorIds()
 	{
