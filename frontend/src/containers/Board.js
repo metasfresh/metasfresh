@@ -17,7 +17,7 @@ import Sidenav from '../components/board/Sidenav';
 
 /**
  * @file Class based component.
- * @module Filters
+ * @module Board
  * @extends Component
  */
 class Board extends Component {
@@ -26,7 +26,7 @@ class Board extends Component {
 
     this.state = {
       sidenav: false,
-      board: null,
+      board: props.board || null,
       targetIndicator: {
         laneId: null,
         index: null,
@@ -35,18 +35,10 @@ class Board extends Component {
     };
   }
 
-  /**
-   * @method UNSAFE_componentWillMount
-   * @summary ToDo: Describe the method
-   */
   UNSAFE_componentWillMount = () => {
     this.init();
   };
 
-  /**
-   * @method componentWillUnmount
-   * @summary ToDo: Describe the method
-   */
   componentWillUnmount = () => {
     disconnectWS.call(this);
   };
@@ -80,34 +72,38 @@ class Board extends Component {
    */
   init = () => {
     const { boardId } = this.props;
+    // in case it's a 404 page because we couldn't match any url
+    const { board } = this.state;
 
-    getData({
-      entity: 'board',
-      docType: boardId,
-    })
-      .then((res) => {
-        this.setState(
-          {
-            board: res.data,
-          },
-          () => {
-            connectWS.call(this, res.data.websocketEndpoint, (msg) => {
-              msg.events.map((event) => {
-                switch (event.changeType) {
-                  case 'laneCardsChanged':
-                    this.laneCardsChanged(event);
-                    break;
-                }
-              });
-            });
-          }
-        );
+    if (!board) {
+      getData({
+        entity: 'board',
+        docType: boardId,
       })
-      .catch(() => {
-        this.setState({
-          board: 404,
+        .then((res) => {
+          this.setState(
+            {
+              board: res.data,
+            },
+            () => {
+              connectWS.call(this, res.data.websocketEndpoint, (msg) => {
+                msg.events.map((event) => {
+                  switch (event.changeType) {
+                    case 'laneCardsChanged':
+                      this.laneCardsChanged(event);
+                      break;
+                  }
+                });
+              });
+            }
+          );
+        })
+        .catch(() => {
+          this.setState({
+            board: '404',
+          });
         });
-      });
+    }
   };
 
   /**
@@ -270,10 +266,6 @@ class Board extends Component {
     this.setState({ sidenavViewId: id });
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   */
   render() {
     const { modal, rawModal, pluginModal, breadcrumb, indicator } = this.props;
 
@@ -295,7 +287,7 @@ class Board extends Component {
             setViewId={this.setSidenavViewId}
           />
         )}
-        {board === 404 ? (
+        {board === '404' ? (
           <BlankPage what="Board" />
         ) : (
           <div className="board">
@@ -343,6 +335,7 @@ Board.propTypes = {
   indicator: PropTypes.string.isRequired,
   pluginModal: PropTypes.object,
   boardId: PropTypes.any,
+  board: PropTypes.string,
 };
 
 /**

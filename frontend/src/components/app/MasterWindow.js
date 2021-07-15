@@ -4,6 +4,7 @@ import React, { PureComponent } from 'react';
 
 import { discardNewRequest } from '../../api';
 import { getTableId } from '../../reducers/tables';
+import history from '../../services/History';
 
 import BlankPage from '../BlankPage';
 import Container from '../Container';
@@ -102,9 +103,8 @@ export default class MasterWindow extends PureComponent {
   componentWillUnmount() {
     const {
       master,
-      push,
       location: { pathname },
-      params: { windowType, docId: documentId },
+      params: { windowId, docId: documentId },
     } = this.props;
     const { isDeleted } = this.state;
     const isDocumentNotSaved =
@@ -116,9 +116,10 @@ export default class MasterWindow extends PureComponent {
       const result = window.confirm('Do you really want to leave?');
 
       if (result) {
-        discardNewRequest({ windowType, documentId });
+        // discardNewRequest({ windowType, documentId });
+        discardNewRequest({ windowType: windowId, documentId });
       } else {
-        push(pathname);
+        history.push(pathname);
       }
     }
   }
@@ -327,7 +328,7 @@ export default class MasterWindow extends PureComponent {
         processStatus={processStatus}
         closeModalCallback={this.closeModalCallback}
         setModalTitle={this.setModalTitle}
-        windowId={params.windowType}
+        windowId={params.windowId}
         docId={params.docId}
         showSidelist
         modalHidden={!modal.visible}
@@ -397,6 +398,5 @@ MasterWindow.propTypes = {
   attachFileAction: PropTypes.func,
   sortTab: PropTypes.func,
   onSortTable: PropTypes.func,
-  push: PropTypes.func,
   updateTabRowsData: PropTypes.func.isRequired,
 };

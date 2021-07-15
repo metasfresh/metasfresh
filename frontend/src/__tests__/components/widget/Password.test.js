@@ -14,7 +14,7 @@ const createDummyProps = function(props) {
     {
       onChange: jest.fn(),
     },
-    props.widgetProprties)
+    props.widgetProperties)
   };
 };
 
@@ -23,6 +23,7 @@ describe('Password component', () => {
     const props = createDummyProps({
       ...fixtures.props1,
     });
+
     const wrapper = shallow(<Password {...props} />);
     const html = wrapper.html();
 

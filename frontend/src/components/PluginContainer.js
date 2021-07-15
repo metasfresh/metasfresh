@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+
+import history from '../services/History';
 import Container from '../components/Container';
 
 const pluginWrapper = function pluginWrapper(WrappedComponent, ChildComponent) {
@@ -17,13 +17,12 @@ class PluginContainer extends Component {
   renderChildren() {
     const { pluginModal, component, dispatch } = this.props;
     const { store } = this.context;
-    const redirectPush = bindActionCreators(push, dispatch);
 
     const TagName = component;
     const renderedTag = (
       <TagName
         {...this.props}
-        redirectPush={redirectPush}
+        redirectPush={history.push}
         dispatch={dispatch}
         store={store}
       />

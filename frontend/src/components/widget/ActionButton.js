@@ -400,4 +400,6 @@ const mapStateToProps = ({ windowHandler, appHandler }) => ({
   processStatus: appHandler.processStatus,
 });
 
-export default connect(mapStateToProps, { fetchTopActions })(ActionButton);
+export default connect(mapStateToProps, { fetchTopActions }, null, {
+  forwardRef: true,
+})(ActionButton);

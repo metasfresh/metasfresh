@@ -11,6 +11,7 @@ export const initialState = {
   inbox: {
     notifications: [],
     unreadCount: 0,
+    pending: false,
   },
   keymap: {},
   hotkeys: {},
@@ -107,10 +108,29 @@ export default function appHandler(state = initialState, action) {
       };
 
     case types.CLEAR_NOTIFICATIONS:
+      if (state.inbox.notifications.length === 0) {
+        return state;
+      }
+
       return {
         ...state,
+        inbox: {
+          notifications: [],
+          unreadCount: 0,
+          pending: false,
+        },
         notifications: {},
       };
+
+    case types.GET_NOTIFICATIONS_REQUEST: {
+      return {
+        ...state,
+        inbox: {
+          ...state.inbox,
+          pending: true,
+        },
+      };
+    }
 
     // END OF NOTIFICATION ACTIONS
     case types.GET_NOTIFICATIONS_SUCCESS: {
@@ -120,6 +140,7 @@ export default function appHandler(state = initialState, action) {
           ...state.inbox,
           notifications: action.notifications,
           unreadCount: action.unreadCount,
+          pending: false,
         },
       };
     }

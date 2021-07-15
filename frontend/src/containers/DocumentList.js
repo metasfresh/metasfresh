@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import { Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get, debounce } from 'lodash';
@@ -9,6 +8,7 @@ import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { locationSearchRequest, getViewRowsByIds } from '../api';
 import { connectWS, disconnectWS } from '../utils/websockets';
 import { deepUnfreeze } from '../utils';
+import history from '../services/History';
 
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
@@ -57,6 +57,11 @@ import DocumentList from '../components/app/DocumentList';
 
 // TODO: This can be further simplified by extracting methods that are not responsible
 // for fetching data to a child container/component (or maybe back to DocumentList component)
+/**
+ * @file Class based container.
+ * @module DocumentList
+ * @extends Component
+ */
 class DocumentListContainer extends Component {
   constructor(props) {
     super(props);
@@ -142,9 +147,6 @@ class DocumentListContainer extends Component {
      * We want to refresh the window (generate new viewId)
      * OR
      * The reference ID is changed
-     *
-     * TODO: This could probably be handled by a combination of
-     * middleware reacting to route changes and reducers
      */
 
     if (
@@ -687,7 +689,6 @@ class DocumentListContainer extends Component {
       windowId,
       isSideListShow,
       viewData,
-      push,
       page,
       sort,
       setListSorting,
@@ -699,7 +700,7 @@ class DocumentListContainer extends Component {
       return;
     }
 
-    push(`/window/${windowId}/${id}`);
+    history.push(`/window/${windowId}/${id}`);
 
     if (!isSideListShow) {
       // Caching last settings
@@ -714,9 +715,9 @@ class DocumentListContainer extends Component {
    * @summary Redirect to a new document
    */
   redirectToNewDocument = () => {
-    const { push, windowId } = this.props;
+    const { windowId } = this.props;
 
-    push(`/window/${windowId}/new`);
+    history.push(`/window/${windowId}/new`);
   };
 
   /**
@@ -811,7 +812,6 @@ export default connect(
     setListSorting,
     setListId,
     showIncludedView,
-    push,
     updateRawModal,
     deselectTableRows,
     fetchLocationConfig,

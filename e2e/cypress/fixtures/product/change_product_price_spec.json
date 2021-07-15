@@ -1,10 +1,10 @@
 {
     "productName": "ProductName",
-    "productCategoryName": "ProductCategory",
+    "productCategoryName": "ProductCategoryName",
     "bpName": "Customer",
   
     "priceList": "Testpreise Kunden (Deutschland)_Germany - Deutschland_EUR_2015-01-01",
-    "taxCatergory": "Regular Tax Rate 19% (Germany)",
+    "taxCatergory": "Reduced VAT",
     "amount": 0,
     "paymentTerm": "Immediatlely",
     "customerPricingSystem": "Testpreisliste Kunden"

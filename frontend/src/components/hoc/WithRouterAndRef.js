@@ -1,5 +1,5 @@
 import React, { forwardRef } from 'react';
-import { withRouter } from 'react-router';
+import { withRouter } from 'react-router-dom';
 
 /**
  * @method withRouterAndRef

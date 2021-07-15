@@ -49,7 +49,6 @@ const DLpropTypes = {
   setListPagination: PropTypes.func.isRequired,
   setListSorting: PropTypes.func.isRequired,
   setListId: PropTypes.func.isRequired,
-  push: PropTypes.func.isRequired,
   updateRawModal: PropTypes.func.isRequired,
   deselectTableRows: PropTypes.func.isRequired,
   fetchLocationConfig: PropTypes.func.isRequired,
@@ -72,12 +71,14 @@ const DLmapStateToProps = (state, props) => {
     refDocumentId: queryRefDocumentId,
     refTabId: queryRefTabId,
   } = props;
+
   let master = getView(state, windowId, isModal);
 
   // use empty view's data. This is used in tests
   if (!master) {
     master = viewState;
   }
+
   // modals use viewId from layout data, and not from the url
   let viewId = master.viewId ? master.viewId : queryViewId;
   let sort = querySort || master.sort;
@@ -141,7 +142,7 @@ const DLmapStateToProps = (state, props) => {
     parentSelected: parentSelector(state, parentTableId),
     modal: state.windowHandler.modal,
     rawModalVisible: state.windowHandler.rawModal.visible,
-    filters: filters ? filters : {},
+    filters,
     filterId,
   };
 };

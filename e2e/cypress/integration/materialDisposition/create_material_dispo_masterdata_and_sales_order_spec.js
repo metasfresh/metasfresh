@@ -98,7 +98,7 @@ describe('Create products, BOMs and planning data', function() {
     cy.fixture('product/simple_product.json').then(productJson => {
       Object.assign(new Product(), productJson)
         .setName(componentProductName)
-        .setProductCategory(productCategoryName + '_' + productCategoryName)
+        .setProductCategory(productCategoryName)
         .setStocked(true)
         .setPurchased(false)
         .setSold(false)
@@ -142,7 +142,7 @@ describe('Create products, BOMs and planning data', function() {
       cy.fixture('product/simple_product.json').then(productJson => {
         Object.assign(new Product(), productJson)
           .setName(secondComponentProductName)
-          .setProductCategory(productCategoryName + '_' + productCategoryName)
+          .setProductCategory(productCategoryName)
           .setStocked(true)
           .setPurchased(false)
           .setSold(false)
