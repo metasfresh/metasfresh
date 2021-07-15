@@ -58,7 +58,6 @@ import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTM
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOCUMENT_ZONE_ID;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOC_PREFIX;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.GLN_PREFIX;
-import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.TAX_RATES_TO_IGNORE;
 
 @Value
 public class JsonRemittanceAdviceLineProducer
@@ -290,7 +289,6 @@ public class JsonRemittanceAdviceLineProducer
 				.map(VATType::getItem)
 				.flatMap(List::stream)
 				.map(ItemType::getTaxRate)
-				.filter(type -> !TAX_RATES_TO_IGNORE.contains(type.toString()))
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (vatTaxRateSet.size() > 1)
