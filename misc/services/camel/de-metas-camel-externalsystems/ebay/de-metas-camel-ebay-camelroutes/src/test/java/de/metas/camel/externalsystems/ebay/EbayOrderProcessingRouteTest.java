@@ -24,11 +24,15 @@ package de.metas.camel.externalsystems.ebay;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -66,10 +70,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.ebay.api.OrderApi;
+import de.metas.camel.externalsystems.ebay.api.model.LineItem;
+import de.metas.camel.externalsystems.ebay.api.model.Order;
 import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 
 /**
@@ -181,7 +189,7 @@ public class EbayOrderProcessingRouteTest
 		ObjectMapper mapper = new ObjectMapper();
 		InputStream is = EbayOrderProcessingRouteTest.class.getResourceAsStream("/examples/01_ebay-new-order-single-item-of-consumer.json");
 		OrderSearchPagedCollection mockResult = mapper.readValue(is, OrderSearchPagedCollection.class);
-
+		
 		when(orderApi.getOrders(any(), any(), any(), any(), any())).thenReturn(mockResult);
 
 		// prepare auth api
@@ -199,6 +207,24 @@ public class EbayOrderProcessingRouteTest
 		assertThat(createdOLCProcessor.called).isEqualTo(1);
 		assertThat(createProductProcessor.called).isEqualTo(1);
 		assertThat(createProductPriceProcessor.called).isEqualTo(1);
+		
+		
+		//validate OLC 
+		JsonOLCandCreateBulkRequest metasOLCr = createdOLCProcessor.jolccbr;
+		
+		Order ebayOrder = mockResult.getOrders().get(0);
+		assertEquals(ebayOrder.getLineItems().size(), metasOLCr.getRequests().size(), "Matching number of line items generated");
+		
+		
+		//validate line item (values from 01_ebay-new-order-single-item-of-consumer.json).
+		JsonOLCandCreateRequest joccr = metasOLCr.getRequests().get(0);
+		
+		assertEquals( BigDecimal.valueOf(1), joccr.getQty());
+		assertEquals("EUR", joccr.getCurrencyCode());
+		assertEquals("34324", joccr.getProductIdentifier());
+		assertEquals( BigDecimal.valueOf(8.9), joccr.getPrice());
+		
+		
 	}
 
 	@Configuration
@@ -253,10 +279,16 @@ public class EbayOrderProcessingRouteTest
 	{
 		private int called = 0;
 		
+		private JsonOLCandCreateBulkRequest jolccbr;
+		
 		@Override
 		public void process(final Exchange exchange)
 		{
 			called++;
+			
+			Object body = exchange.getIn().getBody();
+			assertNotNull(body, "OCL must be created");
+			jolccbr = (JsonOLCandCreateBulkRequest) body;
 		}
 	}
 
