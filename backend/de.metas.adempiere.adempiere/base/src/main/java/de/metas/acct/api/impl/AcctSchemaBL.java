@@ -29,6 +29,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -111,18 +112,26 @@ public class AcctSchemaBL implements IAcctSchemaBL
 	{
 		if (acctSchema.isAutoSetDebtoridAndCreditorid())
 		{
-			final String value = bpartner.getValue();
+			String value = bpartner.getValue();
 			//as per c_bpartner_datev_no_generate.sql, we should be updating only values with length between 5 and 7
-			if (value.length() >= 5 && value.length() <= 7 && StringUtils.isNumber(value))
+			if (Check.isNotBlank(value))
 			{
-				final String valueAsString = Strings.padStart(value, 7, '0').substring(0, 7);
-				bpartner.setCreditorId(Integer.parseInt(acctSchema.getCreditorIdPrefix() + valueAsString));
-				bpartner.setDebtorId(Integer.parseInt(acctSchema.getDebtorIdPrefix() + valueAsString));
+				if (value.startsWith("<") && value.endsWith(">"))
+				{
+					value = value.substring(1, value.length() - 1);
+				}
+				if (value.length() >= 5 && value.length() <= 7 && StringUtils.isNumber(value))
+				{
+					final String valueAsString = Strings.padStart(value, 7, '0').substring(0, 7);
+					bpartner.setCreditorId(Integer.parseInt(acctSchema.getCreditorIdPrefix() + valueAsString));
+					bpartner.setDebtorId(Integer.parseInt(acctSchema.getDebtorIdPrefix() + valueAsString));
+				}
+				else
+				{
+					Loggables.withLogger(logger, Level.DEBUG).addLog("value {} for bpartnerId {} must be a number with 5 to 7 digits", value, bpartner.getC_BPartner_ID());
+				}
 			}
-			else
-			{
-				Loggables.withLogger(logger, Level.DEBUG).addLog("value {} for bpartnerId {} must be a number with 5 to 7 digits", value, bpartner.getC_BPartner_ID());
-			}
+
 		}
 	}
 }

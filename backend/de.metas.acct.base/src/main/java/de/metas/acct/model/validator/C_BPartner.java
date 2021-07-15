@@ -47,7 +47,7 @@ public class C_BPartner
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_C_BPartner.COLUMNNAME_Value, I_C_BPartner.COLUMNNAME_AD_Org_ID })
 	public void beforeSave(final I_C_BPartner bpartner)
 	{
