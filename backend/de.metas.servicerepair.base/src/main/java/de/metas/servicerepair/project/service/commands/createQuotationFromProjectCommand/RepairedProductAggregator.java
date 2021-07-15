@@ -23,40 +23,52 @@
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderFactory;
+import de.metas.order.OrderLineBuilder;
+import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateLine;
+import de.metas.product.ProductId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.util.Check;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 class RepairedProductAggregator implements QuotationLinesGroupAggregator
 {
+	// Services
 	private final ProjectQuotationPriceCalculator priceCalculator;
 
-	private final QuotationLinesGroupKey key;
-	private final String repairOrderSummary;
-
+	// Parameters
+	@NonNull private final QuotationLinesGroupKey key;
+	@Nullable private final String repairOrderSummary;
+	@Nullable private final ProductId repairServicePerformedId;
 	private final ArrayList<ServiceRepairProjectCostCollector> costCollectorsToAggregate = new ArrayList<>();
 
-	private QuotationLineAggregator repairedProductToReturnLine;
-	private final ArrayList<QuotationLineAggregator> performedServiceLines = new ArrayList<>();
+	// Fields populated after createOrderLines is called:
+	private ServiceRepairProjectCostCollector repairedProductToReturnCostCollector;
+	private OrderLineBuilder repairedProductToReturnLineBuilder;
+	private OrderLineBuilder servicePerformedLineBuilder;
 
 	@Builder
 	private RepairedProductAggregator(
 			@NonNull final ProjectQuotationPriceCalculator priceCalculator,
 			@NonNull final QuotationLinesGroupKey key,
-			@Nullable final String repairOrderSummary)
+			@Nullable final String repairOrderSummary, @Nullable final ProductId repairServicePerformedId)
 	{
 		if (key.getType() != QuotationLinesGroupKey.Type.REPAIRED_PRODUCT)
 		{
@@ -66,6 +78,7 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 		this.priceCalculator = priceCalculator;
 		this.key = key;
 		this.repairOrderSummary = repairOrderSummary;
+		this.repairServicePerformedId = repairServicePerformedId;
 	}
 
 	@Override
@@ -85,29 +98,29 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 
 		//
 		// Repaired product
-		{
-			final ServiceRepairProjectCostCollector repairedProductToReturnCostCollector = removeSingleCostCollectorOfType(ServiceRepairProjectCostCollectorType.RepairedProductToReturn);
-
-			repairedProductToReturnLine = newLineAggregator(QuotationLineAggregator.extractKey(repairedProductToReturnCostCollector))
-					.description(repairOrderSummary)
-					.add(repairedProductToReturnCostCollector);
-		}
+		repairedProductToReturnCostCollector = removeSingleCostCollectorOfType(ServiceRepairProjectCostCollectorType.RepairedProductToReturn);
+		repairedProductToReturnLineBuilder = orderFactory.newOrderLine()
+				.productId(repairedProductToReturnCostCollector.getProductId())
+				.asiId(repairedProductToReturnCostCollector.getAsiId())
+				.qty(repairedProductToReturnCostCollector.getQtyReservedOrConsumed())
+				.manualPrice(Money.zero(priceCalculator.getCurrencyId()))
+				.description(repairOrderSummary)
+				.details(
+						removeCostCollectorsOfType(ServiceRepairProjectCostCollectorType.RepairingConsumption)
+								.stream()
+								.map(priceCalculator::computeOrderLineDetailCreateRequest)
+								.collect(ImmutableList.toImmutableList()));
 
 		//
-		// Materials consumed while repairing
-		repairedProductToReturnLine.addAsDetails(removeCostCollectorsOfType(ServiceRepairProjectCostCollectorType.RepairingConsumption));
-
-		//
-		// Services performed while repairing
-		for (final ServiceRepairProjectCostCollector costCollector : removeCostCollectorsOfType(ServiceRepairProjectCostCollectorType.RepairingServicePerformed))
+		// Service performed while repairing
+		if (repairServicePerformedId != null)
 		{
-			final QuotationLineKey lineKey = QuotationLineAggregator.extractKey(costCollector);
-			performedServiceLines.add(newLineAggregator(lineKey).add(costCollector).zeroPrice(false));
+			servicePerformedLineBuilder = orderFactory.newOrderLine()
+					.productId(repairServicePerformedId)
+					.qty(BigDecimal.ONE);
 
-			if (costCollector.getWarrantyCase().isYes())
-			{
-				performedServiceLines.add(newLineAggregator(lineKey).addNegated(costCollector).zeroPrice(false));
-			}
+			// NOTE: we create the line with regular price.
+			// In case it's a warranty case we will add a 100% discount compensation line (see below).
 		}
 
 		// Other cost collectors
@@ -116,11 +129,6 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 		{
 			throw new AdempiereException("Following cost collectors cannot be handled: " + costCollectorsToAggregate);
 		}
-
-		//
-		// Actually create order lines
-		repairedProductToReturnLine.createOrderLines(orderFactory);
-		performedServiceLines.forEach(serviceAgg -> serviceAgg.createOrderLines(orderFactory));
 	}
 
 	private ServiceRepairProjectCostCollector removeSingleCostCollectorOfType(
@@ -153,27 +161,43 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 		return result.build();
 	}
 
-	private QuotationLineAggregator newLineAggregator(@NonNull final QuotationLineKey lineKey)
-	{
-		return QuotationLineAggregator.builder()
-				.priceCalculator(priceCalculator)
-				.key(lineKey)
-				.build();
-	}
-
 	@Override
 	public Stream<Map.Entry<ServiceRepairProjectCostCollectorId, OrderAndLineId>> streamQuotationLineIdsIndexedByCostCollectorId()
 	{
-		return Stream.concat(
-				repairedProductToReturnLine.streamQuotationLineIdsIndexedByCostCollectorId(),
-				performedServiceLines.stream().flatMap(QuotationLineAggregator::streamQuotationLineIdsIndexedByCostCollectorId));
+		if (repairedProductToReturnCostCollector == null || repairedProductToReturnLineBuilder == null)
+		{
+			throw new AdempiereException("Order/quotation line for repaired product was not created yet");
+		}
+
+		final LinkedHashMap<ServiceRepairProjectCostCollectorId, OrderAndLineId> orderAndLineIds = new LinkedHashMap<>();
+
+		orderAndLineIds.put(repairedProductToReturnCostCollector.getId(), repairedProductToReturnLineBuilder.getCreatedOrderAndLineId());
+
+		if (servicePerformedLineBuilder != null)
+		{
+			orderAndLineIds.put(repairedProductToReturnCostCollector.getId(), servicePerformedLineBuilder.getCreatedOrderAndLineId());
+		}
+
+		return orderAndLineIds.entrySet().stream();
 	}
 
 	@Override
 	public GroupTemplate getGroupTemplate()
 	{
-		return GroupTemplate.builder()
+		final GroupTemplate.GroupTemplateBuilder builder = GroupTemplate.builder()
 				.name(".") // TODO: come up with a better name
-				.build();
+				;
+
+		if (repairedProductToReturnCostCollector.getWarrantyCase().isYes()
+				&& repairServicePerformedId != null)
+		{
+			builder.line(GroupTemplateLine.builder()
+					.productId(repairServicePerformedId)
+					.compensationType(GroupCompensationType.Discount)
+					.percentage(Percent.ONE_HUNDRED)
+					.build());
+		}
+
+		return builder.build();
 	}
 }

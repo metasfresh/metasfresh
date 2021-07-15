@@ -35,6 +35,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.reservation.ReserveHUsRequest;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListVersionId;
@@ -102,6 +103,7 @@ public class ServiceRepairProjectService
 	private final ServiceRepairProjectTaskRepository projectTaskRepository;
 	private final ServiceRepairProjectCostCollectorRepository projectCostCollectorRepository;
 	private final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository;
+	private final OrderGroupRepository orderGroupRepository;
 
 	public ServiceRepairProjectService(
 			@NonNull final HUReservationService huReservationService,
@@ -110,7 +112,8 @@ public class ServiceRepairProjectService
 			@NonNull final RepairManufacturingOrderService repairManufacturingOrderService,
 			@NonNull final ServiceRepairProjectTaskRepository projectTaskRepository,
 			@NonNull final ServiceRepairProjectCostCollectorRepository projectCostCollectorRepository,
-			@NonNull final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository)
+			@NonNull final ServiceRepairProjectConsumptionSummaryRepository projectConsumptionSummaryRepository,
+			@NonNull final OrderGroupRepository orderGroupRepository)
 	{
 		this.huReservationService = huReservationService;
 		this.projectService = projectService;
@@ -119,6 +122,7 @@ public class ServiceRepairProjectService
 		this.projectTaskRepository = projectTaskRepository;
 		this.projectCostCollectorRepository = projectCostCollectorRepository;
 		this.projectConsumptionSummaryRepository = projectConsumptionSummaryRepository;
+		this.orderGroupRepository = orderGroupRepository;
 	}
 
 	public ServiceRepairProjectInfo getById(@NonNull final ProjectId projectId)
@@ -235,10 +239,10 @@ public class ServiceRepairProjectService
 		return projectTaskRepository.getByProjectId(projectId);
 	}
 
-
 	public OrderId createQuotationFromProject(@NonNull final CreateQuotationFromProjectRequest request)
 	{
 		return CreateQuotationFromProjectCommand.builder()
+				.orderGroupRepository(orderGroupRepository)
 				.projectService(this)
 				.projectId(request.getProjectId())
 				.build()
@@ -429,6 +433,10 @@ public class ServiceRepairProjectService
 				.collect(ImmutableList.toImmutableList());
 
 		deleteCostCollectors(costCollectorsToDelete, false);
+
+		projectTaskRepository.save(
+				projectTaskRepository.getById(taskId)
+						.withRepairOrderNotDone());
 	}
 
 	private void deleteCostCollectors(

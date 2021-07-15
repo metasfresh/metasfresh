@@ -9,12 +9,14 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -99,13 +101,21 @@ public class GroupTemplateRepository
 
 	private GroupTemplateLine toGroupTemplateLine(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs)
 	{
-		final BigDecimal percentage = schemaLinePO.getCompleteOrderDiscount();
 		return GroupTemplateLine.builder()
 				.id(GroupTemplateLineId.ofRepoIdOrNull(schemaLinePO.getC_CompensationGroup_SchemaLine_ID()))
 				.groupMatcher(createGroupMatcher(schemaLinePO, allSchemaLinePOs))
 				.productId(ProductId.ofRepoId(schemaLinePO.getM_Product_ID()))
-				.percentage(percentage != null && percentage.signum() != 0 ? percentage : null)
+				.percentage(extractPercentage(schemaLinePO))
 				.build();
+	}
+
+	@Nullable
+	private static Percent extractPercentage(final I_C_CompensationGroup_SchemaLine schemaLinePO)
+	{
+		final BigDecimal percentageBD = schemaLinePO.getCompleteOrderDiscount();
+		return percentageBD != null && percentageBD.signum() != 0
+				? Percent.of(percentageBD)
+				: null;
 	}
 
 	private GroupMatcher createGroupMatcher(final I_C_CompensationGroup_SchemaLine schemaLinePO, final List<I_C_CompensationGroup_SchemaLine> allSchemaLinePOs)

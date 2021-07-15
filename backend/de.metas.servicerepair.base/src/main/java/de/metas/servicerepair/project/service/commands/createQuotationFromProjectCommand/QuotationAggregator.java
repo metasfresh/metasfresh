@@ -189,6 +189,7 @@ public class QuotationAggregator
 					.priceCalculator(priceCalculator)
 					.key(key)
 					.repairOrderSummary(task.getRepairOrderSummary())
+					.repairServicePerformedId(task.getRepairServicePerformedId())
 					.build();
 		}
 		else if (key.getType() == QuotationLinesGroupKey.Type.OTHERS)

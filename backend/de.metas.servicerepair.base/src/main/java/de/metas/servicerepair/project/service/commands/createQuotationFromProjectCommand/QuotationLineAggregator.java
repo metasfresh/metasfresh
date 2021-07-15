@@ -22,13 +22,11 @@
 
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
-import de.metas.currency.CurrencyPrecision;
 import de.metas.money.Money;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.OrderLineDetailCreateRequest;
-import de.metas.pricing.IPricingResult;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
@@ -107,36 +105,8 @@ class QuotationLineAggregator
 
 	private void addAsDetail(@NonNull final ServiceRepairProjectCostCollector costCollector)
 	{
-		final OrderLineDetailCreateRequest detail = computeOrderLineDetailCreateRequest(costCollector);
+		final OrderLineDetailCreateRequest detail = priceCalculator.computeOrderLineDetailCreateRequest(costCollector);
 		details.add(detail);
-	}
-
-	private OrderLineDetailCreateRequest computeOrderLineDetailCreateRequest(final ServiceRepairProjectCostCollector costCollector)
-	{
-		final Quantity qty = costCollector.getQtyReservedOrConsumed();
-
-		//
-		// Price & Amount precision
-		final Money price;
-		final CurrencyPrecision amountPrecision;
-		if (costCollector.getType().isZeroPrice())
-		{
-			price = Money.zero(priceCalculator.getCurrencyId());
-			amountPrecision = CurrencyPrecision.TWO;
-		}
-		else
-		{
-			final IPricingResult pricingResult = priceCalculator.calculatePrice(costCollector);
-			price = pricingResult.getPriceStdAsMoney();
-			amountPrecision = pricingResult.getPrecision();
-		}
-
-		return OrderLineDetailCreateRequest.builder()
-				.productId(costCollector.getProductId())
-				.qty(qty)
-				.price(price)
-				.amount(price.multiply(qty.toBigDecimal()).round(amountPrecision))
-				.build();
 	}
 
 	public void createOrderLines(@NonNull final OrderFactory orderFactory)

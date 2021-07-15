@@ -33,7 +33,6 @@ import de.metas.servicerepair.project.repository.requests.CreateProjectCostColle
 import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.servicerepair.repair_order.model.RepairManufacturingCostCollector;
 import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderInfo;
-import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderServicePerformed;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -89,17 +88,12 @@ public class ImportProjectCostsFromRepairOrderCommand
 			createCostCollector_RepairingConsumption(task, mfgCostCollector);
 		}
 
-		for (final RepairManufacturingOrderServicePerformed servicePerformed : repairOrder.getServicesPerformed())
-		{
-			createCostCollector_RepairingServicePerformed(task, servicePerformed);
-		}
-
 		if (!projectCostCollectorRepository.matchesByTaskAndProduct(task.getId(), repairOrder.getRepairedProductId()))
 		{
 			createCostCollector_RepairedProductToReturn(task);
 		}
 
-		task = task.withRepairOrderDone(true, repairOrder.getSummary());
+		task = task.withRepairOrderDone(repairOrder.getSummary(), repairOrder.getServicePerformedId());
 		projectTaskRepository.save(task);
 
 	}
@@ -114,19 +108,6 @@ public class ImportProjectCostsFromRepairOrderCommand
 				.productId(mfgCostCollector.getProductId())
 				.qtyConsumed(mfgCostCollector.getQtyConsumed())
 				.repairOrderCostCollectorId(mfgCostCollector.getId())
-				.warrantyCase(task.getWarrantyCase())
-				.build());
-	}
-
-	private void createCostCollector_RepairingServicePerformed(
-			@NonNull final ServiceRepairProjectTask task,
-			@NonNull final RepairManufacturingOrderServicePerformed servicePerformed)
-	{
-		serviceRepairProjectService.createCostCollector(CreateProjectCostCollectorRequest.builder()
-				.taskId(task.getId())
-				.type(ServiceRepairProjectCostCollectorType.RepairingServicePerformed)
-				.productId(servicePerformed.getServiceId())
-				.qtyConsumed(servicePerformed.getQty())
 				.warrantyCase(task.getWarrantyCase())
 				.build());
 	}

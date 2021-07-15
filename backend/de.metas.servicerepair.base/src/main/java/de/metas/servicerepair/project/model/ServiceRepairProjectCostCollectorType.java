@@ -40,10 +40,7 @@ public enum ServiceRepairProjectCostCollectorType implements ReferenceListAwareE
 	 * Materials consumed while repairing the main product (via repair/manufacturing order)
 	 */
 	RepairingConsumption(X_C_Project_Repair_CostCollector.TYPE_RepairingConsumption, false),
-	/**
-	 * Services performed while repairing the main product (via repair/manufacturing order)
-	 */
-	RepairingServicePerformed(X_C_Project_Repair_CostCollector.TYPE_RepairingServicePerformed, false),
+
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ServiceRepairProjectCostCollectorType> index = ReferenceListAwareEnums.index(values());

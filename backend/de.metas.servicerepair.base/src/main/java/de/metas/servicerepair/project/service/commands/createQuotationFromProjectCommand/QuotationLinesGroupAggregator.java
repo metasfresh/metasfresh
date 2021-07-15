@@ -40,7 +40,6 @@ interface QuotationLinesGroupAggregator
 	{
 		final ServiceRepairProjectCostCollectorType costCollectorType = costCollector.getType();
 		if (costCollectorType == ServiceRepairProjectCostCollectorType.RepairedProductToReturn
-				|| costCollectorType == ServiceRepairProjectCostCollectorType.RepairingServicePerformed
 				|| costCollectorType == ServiceRepairProjectCostCollectorType.RepairingConsumption)
 		{
 			return QuotationLinesGroupKey.builder()

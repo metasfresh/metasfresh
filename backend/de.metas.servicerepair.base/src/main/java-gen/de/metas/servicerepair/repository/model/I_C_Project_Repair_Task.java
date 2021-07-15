@@ -417,6 +417,26 @@ public interface I_C_Project_Repair_Task
 	String COLUMNNAME_RepairOrderSummary = "RepairOrderSummary";
 
 	/**
+	 * Set Repair Service Performed.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRepairServicePerformed_Product_ID (int RepairServicePerformed_Product_ID);
+
+	/**
+	 * Get Repair Service Performed.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRepairServicePerformed_Product_ID();
+
+	String COLUMNNAME_RepairServicePerformed_Product_ID = "RepairServicePerformed_Product_ID";
+
+	/**
 	 * Set Repair CU.
 	 *
 	 * <br>Type: Search

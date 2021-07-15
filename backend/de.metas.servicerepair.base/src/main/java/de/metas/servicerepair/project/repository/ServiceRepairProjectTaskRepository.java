@@ -167,6 +167,7 @@ class ServiceRepairProjectTaskRepository
 				.repairOrderId(PPOrderId.ofRepoIdOrNull(record.getRepair_Order_ID()))
 				.isRepairOrderDone(record.isRepairOrderDone())
 				.repairOrderSummary(StringUtils.trimBlankToNull(record.getRepairOrderSummary()))
+				.repairServicePerformedId(ProductId.ofRepoIdOrNull(record.getRepairServicePerformed_Product_ID()))
 				.repairVhuId(HuId.ofRepoIdOrNull(record.getRepair_VHU_ID()))
 				//
 				.build();
@@ -199,6 +200,7 @@ class ServiceRepairProjectTaskRepository
 
 		record.setRepair_Order_ID(PPOrderId.toRepoId(from.getRepairOrderId()));
 		record.setRepairOrderSummary(from.getRepairOrderSummary());
+		record.setRepairServicePerformed_Product_ID(ProductId.toRepoId(from.getRepairServicePerformedId()));
 		record.setIsRepairOrderDone(from.isRepairOrderDone());
 	}
 

@@ -45,19 +45,22 @@ public class GroupTemplateLine
 
 	@Nullable GroupTemplateLineId id;
 	@NonNull ProductId productId;
+	@Nullable GroupCompensationType compensationType;
 	@Nullable Percent percentage;
-	@Nullable GroupMatcher groupMatcher;
+	@NonNull GroupMatcher groupMatcher;
 
 	@Builder
 	private GroupTemplateLine(
 			@Nullable final GroupTemplateLineId id,
 			@NonNull final ProductId productId,
-			@Nullable final BigDecimal percentage,
+			@Nullable final GroupCompensationType compensationType,
+			@Nullable final Percent percentage,
 			@Nullable final GroupMatcher groupMatcher)
 	{
 		this.id = id;
 		this.productId = productId;
-		this.percentage = Percent.ofNullable(percentage);
+		this.compensationType = compensationType;
+		this.percentage = percentage;
 		this.groupMatcher = groupMatcher != null ? groupMatcher : GroupMatchers.ALWAYS;
 	}
 

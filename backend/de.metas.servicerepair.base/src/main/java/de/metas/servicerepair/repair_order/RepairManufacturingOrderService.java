@@ -42,9 +42,7 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectTaskStatus;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskType;
 import de.metas.servicerepair.repair_order.model.RepairManufacturingCostCollector;
 import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderInfo;
-import de.metas.servicerepair.repair_order.model.RepairManufacturingOrderServicePerformed;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -74,14 +72,11 @@ public class RepairManufacturingOrderService
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final ProductPlanningService productPlanningService;
-	private final RepairManufacturingOrderServicePerformedRepository servicesPerformedRepository;
 
 	public RepairManufacturingOrderService(
-			@NonNull final ProductPlanningService productPlanningService,
-			@NonNull final RepairManufacturingOrderServicePerformedRepository servicesPerformedRepository)
+			@NonNull final ProductPlanningService productPlanningService)
 	{
 		this.productPlanningService = productPlanningService;
-		this.servicesPerformedRepository = servicesPerformedRepository;
 	}
 
 	public boolean isCompletedRepairOrder(@NonNull final PPOrderId ppOrderId)
@@ -114,7 +109,7 @@ public class RepairManufacturingOrderService
 				.repairedQty(ppOrderBL.getQuantities(record).getQtyReceived())
 				.summary(record.getRepairOrderSummary())
 				.costCollectors(getCostCollectors(repairOrderId))
-				.servicesPerformed(servicesPerformedRepository.getByRepairOrderId(repairOrderId))
+				.servicePerformedId(ProductId.ofRepoIdOrNull(record.getRepairServicePerformed_Product_ID()))
 				.build());
 	}
 
@@ -246,20 +241,4 @@ public class RepairManufacturingOrderService
 
 		return repairOrderId;
 	}
-
-	public Optional<RepairManufacturingOrderServicePerformed> getPerformedService(
-			@NonNull final PPOrderId repairOrderId,
-			@NonNull final ProductId serviceId)
-	{
-		return servicesPerformedRepository.getByRepairOrderAndServiceId(repairOrderId, serviceId);
-	}
-
-	public void updateServicePerformed(
-			@NonNull final PPOrderId repairOrderId,
-			@NonNull final ProductId productId,
-			@NonNull final Quantity qty)
-	{
-		servicesPerformedRepository.addOrUpdateServicePerformed(repairOrderId, productId, qty);
-	}
-
 }

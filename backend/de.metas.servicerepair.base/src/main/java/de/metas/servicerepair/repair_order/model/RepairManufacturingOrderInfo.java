@@ -52,7 +52,7 @@ public class RepairManufacturingOrderInfo
 
 	@NonNull ImmutableList<RepairManufacturingCostCollector> costCollectors;
 
-	@NonNull ImmutableList<RepairManufacturingOrderServicePerformed> servicesPerformed;
+	@Nullable ProductId servicePerformedId;
 
 	public ImmutableSet<PPOrderAndCostCollectorId> getCostCollectorIds()
 	{

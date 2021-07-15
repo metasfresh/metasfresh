@@ -8,6 +8,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.money.Money;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -18,6 +19,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -59,6 +61,7 @@ public class OrderLineBuilder
 {
 	private static final Logger logger = LogManager.getLogger(OrderLineBuilder.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
@@ -195,9 +198,18 @@ public class OrderLineBuilder
 	public OrderLineBuilder addQty(@NonNull final Quantity qtyToAdd)
 	{
 		assertNotBuilt();
+		return qty(Quantity.addNullables(this.qty, qtyToAdd));
+	}
 
-		this.qty = Quantity.addNullables(this.qty, qtyToAdd);
-		return this;
+	public OrderLineBuilder qty(@NonNull final BigDecimal qty)
+	{
+		if (productId == null)
+		{
+			throw new AdempiereException("Setting BigDecimal Qty not allowed if the product was not already set");
+		}
+
+		final I_C_UOM uom = productBL.getStockUOM(productId);
+		return qty(Quantity.of(qty, uom));
 	}
 
 	@Nullable
