@@ -122,7 +122,7 @@ public class CreateQuotationFromProjectCommand
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
 				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_Proposal)
+				.docSubType(X_C_DocType.DOCSUBTYPE_CostEstimate)
 				.adClientId(project.getClientAndOrgId().getClientId().getRepoId())
 				.adOrgId(project.getClientAndOrgId().getOrgId().getRepoId())
 				.build());

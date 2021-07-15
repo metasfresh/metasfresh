@@ -74,7 +74,7 @@ public interface I_C_DocType
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Druck - Format.
+	 * Set Print Format.
 	 * Data Print Format
 	 *
 	 * <br>Type: TableDir
@@ -84,7 +84,7 @@ public interface I_C_DocType
 	void setAD_PrintFormat_ID (int AD_PrintFormat_ID);
 
 	/**
-	 * Get Druck - Format.
+	 * Get Print Format.
 	 * Data Print Format
 	 *
 	 * <br>Type: TableDir
