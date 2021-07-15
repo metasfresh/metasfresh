@@ -44,4 +44,6 @@ public interface GetAttachmentRouteConstants
 	String ALBERTA_ATTACHMENT_CREATEDAT = "alberta_attachment_createdAt";
 	String ALBERTA_ATTACHMENT_ENDPOINT = "alberta_attachment_endpoint";
 	String ALBERTA_ATTACHMENT_ENDPOINT_VALUE = "/attachment";
+
+	String MIME_TYPE_PDF = "application/pdf";
 }

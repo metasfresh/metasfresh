@@ -122,7 +122,7 @@ public class GetProductsCommand
 		productBPartners = retrieveJsonProductVendors(productIds);
 
 		final ImmutableList<JsonProduct> products = productsToExport.stream()
-				.filter(product -> since.isAfter(DEFAULT_SINCE) || !wasAlreadyExported(product))
+				.filter(product -> since.equals(DEFAULT_SINCE) || since.isAfter(DEFAULT_SINCE) || !wasAlreadyExported(product))
 				.map(this::toJsonProduct)
 				.collect(ImmutableList.toImmutableList());
 

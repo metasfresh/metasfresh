@@ -57,7 +57,7 @@ public class PrepareInstitutionToBPartnerProcessor implements Processor
 		final String apiKey = connectionDetails.getApiKey();
 		final String tenant = connectionDetails.getTenant();
 		final String orgCode = routeContext.getOrgCode();
-
+		
 		final JsonBPartnerRole role = routeContext.getRole();
 		final String albertaResourceId = routeContext.getAlbertaResourceId();
 
@@ -115,7 +115,7 @@ public class PrepareInstitutionToBPartnerProcessor implements Processor
 	{
 		if (EmptyUtil.isEmpty(resource))
 		{
-			throw new RuntimeCamelException("No resource returned for identifier:" + resourceIdentifier + " of resource type:" + resourceType.getName());
+			throw new RuntimeCamelException("The " + resourceType.getSimpleName() + " with identifier=" + resourceIdentifier + " was *not* found on alberta.");
 		}
 	}
 }

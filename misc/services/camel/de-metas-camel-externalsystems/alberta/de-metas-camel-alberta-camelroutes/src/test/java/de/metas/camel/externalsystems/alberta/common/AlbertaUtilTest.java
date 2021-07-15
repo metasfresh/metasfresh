@@ -22,40 +22,35 @@
 
 package de.metas.camel.externalsystems.alberta.common;
 
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.threeten.bp.OffsetDateTime;
-import org.threeten.bp.temporal.TemporalField;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
-import java.time.LocalDate;
 
-import static org.threeten.bp.temporal.ChronoField.EPOCH_DAY;
-import static org.threeten.bp.temporal.ChronoField.MILLI_OF_SECOND;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class AlbertaUtil
+class AlbertaUtilTest
 {
-	@Nullable
-	public static Instant asInstant(@Nullable final OffsetDateTime offsetDateTime)
+	@Test
+	void asInstant1()
 	{
-		if (offsetDateTime == null)
-		{
-			return null;
-		}
-
-		// we can't loose the millis.
-		final long millis = offsetDateTime.toEpochSecond() * 1000 + offsetDateTime.getLong(MILLI_OF_SECOND);
-
-		return Instant.ofEpochMilli(millis);
+		final Instant instant1 = AlbertaUtil.asInstant(OffsetDateTime.parse("2021-07-15T10:20:37.123Z"));
+		assertThat(instant1).isEqualTo(Instant.parse("2021-07-15T10:20:37.123Z"));
 	}
 
-	@Nullable
-	public static LocalDate asJavaLocalDate(@Nullable final org.threeten.bp.LocalDate localDate)
+	@Test
+	void asInstant2()
 	{
-		if (localDate == null)
-		{
-			return null;
-		}
+		final Instant instant2 = AlbertaUtil.asInstant(OffsetDateTime.parse("2021-07-15T10:20:37.999Z"));
+		assertThat(instant2).isEqualTo(Instant.parse("2021-07-15T10:20:37.999Z"));
+	}
 
-		return LocalDate.ofEpochDay(localDate.getLong(EPOCH_DAY));
+	@Test
+	void asInstant3()
+	{
+		final Instant instant3 = AlbertaUtil.asInstant(OffsetDateTime.parse("2021-07-15T10:20:37Z"));
+		assertThat(instant3).isEqualTo(Instant.parse("2021-07-15T10:20:37.000Z"));
 	}
 }
