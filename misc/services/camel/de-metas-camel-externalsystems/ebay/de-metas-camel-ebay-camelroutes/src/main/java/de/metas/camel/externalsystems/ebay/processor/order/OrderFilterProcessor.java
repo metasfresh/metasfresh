@@ -22,21 +22,22 @@
 
 package de.metas.camel.externalsystems.ebay.processor.order;
 
-import de.metas.camel.externalsystems.common.DateAndImportStatus;
-import de.metas.camel.externalsystems.ebay.EbayImportOrdersRouteContext;
-import de.metas.camel.externalsystems.ebay.EbayUtils;
-import de.metas.camel.externalsystems.ebay.api.model.Order;
+import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.ebay.ProcessorHelper.getPropertyOrThrowError;
+
+import java.time.LocalDate;
+import java.time.ZoneId;
+
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.Instant;
-import java.time.LocalDate;
-
-import static de.metas.camel.externalsystems.ebay.EbayConstants.OrderFulfillmentStatus;
-import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
-import static de.metas.camel.externalsystems.ebay.ProcessorHelper.getPropertyOrThrowError;
+import de.metas.camel.externalsystems.common.DateAndImportStatus;
+import de.metas.camel.externalsystems.ebay.EbayConstants.OrderFulfillmentStatus;
+import de.metas.camel.externalsystems.ebay.EbayImportOrdersRouteContext;
+import de.metas.camel.externalsystems.ebay.EbayUtils;
+import de.metas.camel.externalsystems.ebay.api.model.Order;
 
 public class OrderFilterProcessor implements Processor
 {
@@ -68,7 +69,7 @@ public class OrderFilterProcessor implements Processor
 			//remember order TS for future calls.
 			LocalDate created = order.getCreationDate() != null ? EbayUtils.toLocalDate(order.getCreationDate()) : null;
 			if(created != null) {
-				importOrdersRouteContext.setNextImportStartingTimestamp(DateAndImportStatus.of(true, Instant.from(created)));
+				importOrdersRouteContext.setNextImportStartingTimestamp(DateAndImportStatus.of(true, created.atStartOfDay(ZoneId.systemDefault()).toInstant()));
 			}
 		}
 		else
@@ -79,7 +80,7 @@ public class OrderFilterProcessor implements Processor
 			//remember order TS for future calls.
 			LocalDate created = order.getCreationDate() != null ? EbayUtils.toLocalDate(order.getCreationDate()) : null;
 			if(created != null) {
-				importOrdersRouteContext.setNextImportStartingTimestamp(DateAndImportStatus.of(true, Instant.from(created)));
+				importOrdersRouteContext.setNextImportStartingTimestamp(DateAndImportStatus.of(true, created.atStartOfDay(ZoneId.systemDefault()).toInstant()));
 			}
 		}
 
