@@ -163,8 +163,10 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 	{
 		return olCandCreateRequestBuilder
 				.externalLineId(orderLine.getLineItemId())
-				.productIdentifier("TODO")
-				.price(new BigDecimal(orderLine.getTotal().getValue()))
+				.productIdentifier(orderLine.getSku())
+				//TODO: better currency handling.
+				.price(new BigDecimal(orderLine.getTotal().getConvertedFromValue()))
+				.currencyCode(orderLine.getTotal().getConvertedFromCurrency())
 				.qty(BigDecimal.valueOf(orderLine.getQuantity()))
 				.description(orderLine.getTitle())
 				.dateCandidate(getDateCandidate(order))
