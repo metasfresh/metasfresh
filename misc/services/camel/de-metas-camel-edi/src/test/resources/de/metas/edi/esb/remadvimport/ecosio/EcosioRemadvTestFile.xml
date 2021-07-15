@@ -149,7 +149,7 @@
                                         <edifact:ReasonCode>90</edifact:ReasonCode>
                                         <edifact:AdjustmentMonetaryAmount>
                                             <edifact:AmountTypeCode>265</edifact:AmountTypeCode>
-                                            <edifact:Amount>3</edifact:Amount><!-- JsonRemittanceAdviceLine.serviceFeeAmount computation term -->
+                                            <edifact:Amount>-3</edifact:Amount><!-- JsonRemittanceAdviceLine.serviceFeeAmount computation term -->
                                         </edifact:AdjustmentMonetaryAmount>
                                         <edifact:Tax>
                                             <edifact:VAT>

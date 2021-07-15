@@ -116,8 +116,9 @@ public class JsonRemittanceAdviceLineProducer
 	@Nullable
 	private BigDecimal getServiceFeeAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
 	{
-		final BigDecimal adjustmentServiceFeeAmountTerm1 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_67).orElse(null);
-		final BigDecimal adjustmentServiceFeeAmountTerm2 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_90).orElse(null);
+		// note that the amounts are negative in the XML, we need to negate them
+		final BigDecimal adjustmentServiceFeeAmountTerm1 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_67).map(BigDecimal::negate).orElse(null);
+		final BigDecimal adjustmentServiceFeeAmountTerm2 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_90).map(BigDecimal::negate).orElse(null);
 
 		return sumNullableBigDecimals(adjustmentServiceFeeAmountTerm1, adjustmentServiceFeeAmountTerm2);
 	}
@@ -125,8 +126,9 @@ public class JsonRemittanceAdviceLineProducer
 	@Nullable
 	private BigDecimal getPaymentDiscountAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
 	{
-		final BigDecimal paymentDiscountAmount = asBigDecimalAbs(monetaryAmounts.getPaymentDiscountAmount()).orElse(null);
-		final BigDecimal adjustmentDiscountAmount = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_19).orElse(null);
+		// these amounts are also negative in the XML, we need to negate them
+		final BigDecimal paymentDiscountAmount = asBigDecimalAbs(monetaryAmounts.getPaymentDiscountAmount()).map(BigDecimal::negate).orElse(null);
+		final BigDecimal adjustmentDiscountAmount = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_19).map(BigDecimal::negate).orElse(null);
 
 		final BigDecimal paymentDiscountTotalAmount = sumNullableBigDecimals(paymentDiscountAmount, adjustmentDiscountAmount);
 
@@ -254,7 +256,7 @@ public class JsonRemittanceAdviceLineProducer
 	@NonNull
 	private Optional<BigDecimal> asBigDecimalAbs(@Nullable final MonetaryAmountType monetaryAmountType)
 	{
-		return asBigDecimal(monetaryAmountType).map(BigDecimal::abs);
+		return asBigDecimal(monetaryAmountType);
 	}
 
 	@NonNull
