@@ -6,6 +6,7 @@
 		<groupId>de.metas.camel.externalsystems</groupId>
 		<artifactId>ebay</artifactId>
 		<version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
 	</parent>
 	
 	 <!-- FRESH-271: we need an explicit version here, otherwise versions-maven-plugin
@@ -16,7 +17,7 @@
 	<properties>
 		<java.version>14</java.version>
 		<spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-		<camel.version>3.7.2</camel.version>
+		<camel.version>3.7.3</camel.version>
 		<guava.version>30.1.1-jre</guava.version>
 		<smooks.version>1.7.1</smooks.version>
 		<!-- 3.8.0 is currently the latest and greatest. Spring boot declares some 
@@ -66,29 +67,26 @@
 	<dependencies>
 
 		<dependency>
+			<groupId>de.metas.camel.externalsystems</groupId>
+			<artifactId>de-metas-camel-externalsystems-common</artifactId>
+			<version>10.0.0</version>
+		</dependency>
+		
+		<dependency>
 			<groupId>de.metas.common.externalsystem</groupId>
 			<artifactId>de-metas-common-externalsystem</artifactId>
 			<version>${metasfresh-common.version}</version>
-			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>de.metas.common.externalreference</groupId>
 			<artifactId>de-metas-common-externalreference</artifactId>
 			<version>${metasfresh-common.version}</version>
-			<scope>compile</scope>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.camel.externalsystems</groupId>
-			<artifactId>de-metas-camel-externalsystems-common</artifactId>
-			<version>${metasfresh-common.version}</version>
-			<scope>compile</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>de.metas.common.ordercandidates</groupId>
 			<artifactId>de-metas-common-ordercandidates</artifactId>
 			<version>${metasfresh-common.version}</version>
-			<scope>compile</scope>
 		</dependency>
 
 		<dependency>
@@ -116,6 +114,7 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
 		</dependency>
 
 		<dependency>

@@ -67,7 +67,6 @@ import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 /**
@@ -147,9 +146,8 @@ public class EbayOrderProcessingRouteTest
 		parameters.put(ExternalSystemConstants.PARAM_TENANT, "tenant");
 		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, "ua");
 		parameters.put(ExternalSystemConstants.PARAM_BASE_PATH, "bp");
-		parameters.put(EbayConstants.PARAM_API_MODE, "sandbox");
-		parameters.put(EbayConstants.PARAM_API_AUTH_CODE, "");
 		parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER, "%5B2016-03-21T08:25:43.511Z%5D");
+		parameters.put(ExternalSystemConstants.PARAM_API_MODE, ApiMode.SANDBOX.name());
 
 		JsonExternalSystemRequest jesr = new JsonExternalSystemRequest(
 				"orgCode",
@@ -176,7 +174,7 @@ public class EbayOrderProcessingRouteTest
 		Optional<RefreshToken> rtoken = Optional.of(new RefreshToken());
 
 		OAuthResponse res = new OAuthResponse(token, rtoken);
-		when(authApi.exchangeCodeForAccessToken(any(), anyString())).thenReturn(res);
+		when(authApi.getApplicationToken(any(), any())).thenReturn(res);
 
 		// send message
 		template.sendBodyAndHeaders("direct:" + GetEbayOrdersRouteBuilder.GET_ORDERS_ROUTE_ID, jesr, body);
