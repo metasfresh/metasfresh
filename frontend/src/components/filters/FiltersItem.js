@@ -64,6 +64,8 @@ class FiltersItem extends PureComponent {
   }
 
   componentDidMount() {
+    this.mounted = true;
+
     if (this.widgetsContainer) {
       this.widgetsContainer.addEventListener('scroll', this.handleScroll);
     }
@@ -98,6 +100,8 @@ class FiltersItem extends PureComponent {
   }
 
   componentWillUnmount() {
+    this.mounted = false;
+
     const { closeFilterBox } = this.props;
 
     if (this.widgetsContainer) {
@@ -350,18 +354,21 @@ class FiltersItem extends PureComponent {
    * @param {array} toChange
    */
   updateItems = (toChange) => {
-    const { filter } = this.state;
-    if (filter.parameters) {
-      filter.parameters.map((filterItem) => {
-        if (filterItem.parameterName === toChange.widgetField) {
-          filterItem.defaultValue = toChange.value;
-          filterItem.value = toChange.value;
-          filterItem.valueTo = toChange.valueTo;
-        }
-        return filterItem;
-      });
+    if (this.mounted) {
+      const { filter } = this.state;
+
+      if (filter.parameters) {
+        filter.parameters.map((filterItem) => {
+          if (filterItem.parameterName === toChange.widgetField) {
+            filterItem.defaultValue = toChange.value;
+            filterItem.value = toChange.value;
+            filterItem.valueTo = toChange.valueTo;
+          }
+          return filterItem;
+        });
+      }
+      this.setState({ filter });
     }
-    this.setState({ filter });
   };
 
   /**
