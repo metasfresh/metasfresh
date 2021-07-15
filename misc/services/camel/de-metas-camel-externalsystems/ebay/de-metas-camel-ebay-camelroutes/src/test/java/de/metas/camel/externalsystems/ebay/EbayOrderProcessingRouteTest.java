@@ -22,19 +22,18 @@
 
 package de.metas.camel.externalsystems.ebay;
 
-import com.ebay.api.client.auth.oauth2.OAuth2Api;
-import com.ebay.api.client.auth.oauth2.model.AccessToken;
-import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
-import com.ebay.api.client.auth.oauth2.model.RefreshToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.ebay.api.OrderApi;
-import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
-import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.common.externalsystem.JsonExternalSystemName;
-import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+
 import org.apache.camel.CamelContext;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
@@ -58,16 +57,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
+import com.ebay.api.client.auth.oauth2.OAuth2Api;
+import com.ebay.api.client.auth.oauth2.model.AccessToken;
+import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
+import com.ebay.api.client.auth.oauth2.model.RefreshToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.ebay.api.OrderApi;
+import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
+import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonExternalSystemName;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 
 /**
  * Unit test which instantiates the complete ebay order processing route and feeds a
@@ -87,15 +90,8 @@ public class EbayOrderProcessingRouteTest
 	@Autowired
 	protected CamelContext camelContext;
 
-	// @EndpointInject("metasfresh.upsert-bpartner.camel.uri")
 	@EndpointInject("mock:result")
 	protected MockEndpoint resultEndpoint;
-
-	@EndpointInject("mock:direct:metasfresh.upsert-bpartner-v2.camel.uri")
-	protected MockEndpoint resultBParnters;
-
-	@EndpointInject("mock:direct:To-MF_PushOLCandidates-Route")
-	protected MockEndpoint resultOLCs;
 
 	@Produce("direct:start")
 	protected ProducerTemplate template;
@@ -129,16 +125,35 @@ public class EbayOrderProcessingRouteTest
 
 		// mock result of bpartner upsert.
 		final MockUpsertBPartnerProcessor createdBPartnerProcessor = new MockUpsertBPartnerProcessor();
+		final MockUpsertOLCProcessor createdOLCProcessor = new MockUpsertOLCProcessor();
 		AdviceWith.adviceWith(camelContext, GetEbayOrdersRouteBuilder.PROCESS_ORDERS_ROUTE_ID,
-				advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+				advice -> {
+					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+							.skipSendToOriginalEndpoint()
+							.process(createdBPartnerProcessor);
+
+					advice.interceptSendToEndpoint("direct:" + MF_PUSH_OL_CANDIDATES_ROUTE_ID)
 						.skipSendToOriginalEndpoint()
-						.process(createdBPartnerProcessor));
+						.process(createdOLCProcessor);
+				});
+		
+		// mock result of product upsert.
+		final MockUpsertProductProcessor createProductProcessor = new MockUpsertProductProcessor();
+		final MockUpsertProductPriceProcessor createProductPriceProcessor = new MockUpsertProductPriceProcessor();
+		AdviceWith.adviceWith(camelContext, GetEbayOrdersRouteBuilder.PROCESS_PRODUCTS_ROUTE_ID, 
+				advice -> {
+					
+					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI)
+							.skipSendToOriginalEndpoint()
+							.process(createProductProcessor);
+
+					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_PRICE_V2_CAMEL_URI)
+						.skipSendToOriginalEndpoint()
+						.process(createProductPriceProcessor);
+				});
 
 		camelContext.start();
 
-		// our assertions for the example json
-		resultBParnters.expectedMessageCount(1);
-		resultOLCs.expectedMessageCount(1);
 
 		// prepare api call
 		Map<String, String> parameters = new HashMap<>();
@@ -180,9 +195,10 @@ public class EbayOrderProcessingRouteTest
 		template.sendBodyAndHeaders("direct:" + GetEbayOrdersRouteBuilder.GET_ORDERS_ROUTE_ID, jesr, body);
 
 		// check assertions
-		resultBParnters.assertIsSatisfied();
-		resultOLCs.assertIsSatisfied();
 		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
+		assertThat(createdOLCProcessor.called).isEqualTo(1);
+		assertThat(createProductProcessor.called).isEqualTo(1);
+		assertThat(createProductPriceProcessor.called).isEqualTo(1);
 	}
 
 	@Configuration
@@ -207,6 +223,40 @@ public class EbayOrderProcessingRouteTest
 			called++;
 			final InputStream upsertBPartnerResponse = EbayOrderProcessingRouteTest.class.getResourceAsStream("/metas-mock-results/01_CamelUpsertBPartnerCompositeResponse.json");
 			exchange.getIn().setBody(upsertBPartnerResponse);
+		}
+	}
+	
+	private static class MockUpsertProductProcessor implements Processor
+	{
+		private int called = 0;
+		
+		public void process(final Exchange exchange)
+		{
+			called++;
+			final InputStream upsertBPartnerResponse = EbayOrderProcessingRouteTest.class.getResourceAsStream("/metas-mock-results/02_CamelUpsertProductRequest.json");
+			exchange.getIn().setBody(upsertBPartnerResponse);
+		}
+	}
+	
+	private static class MockUpsertProductPriceProcessor implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockUpsertOLCProcessor implements Processor
+	{
+		private int called = 0;
+		
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
 		}
 	}
 

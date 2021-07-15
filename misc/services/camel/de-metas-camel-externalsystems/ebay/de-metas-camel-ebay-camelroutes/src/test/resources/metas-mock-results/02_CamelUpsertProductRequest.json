@@ -1,0 +1,20 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestProductUpsert": {
+    "requestItems": [
+      {
+        "productIdentifier": "ext-ebay-34324",
+        "requestProduct": {
+          "code": "34324",
+          "name": "2 NFC-Sticker NTAG 213, IP68, blau & schwarz",
+          "type": "ITEM",
+          "uomCode": "PCE"
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}
