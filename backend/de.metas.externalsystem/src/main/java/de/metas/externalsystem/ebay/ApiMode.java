@@ -22,17 +22,35 @@
 
 package de.metas.externalsystem.ebay;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.collect.ImmutableMap;
 import de.metas.externalsystem.model.X_ExternalSystem_Config_Ebay;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 @AllArgsConstructor
+@Getter
 public enum ApiMode implements ReferenceListAwareEnum
 {
 	PRODUCTION(X_ExternalSystem_Config_Ebay.API_MODE_PRODUCTION),
 	SANDBOX(X_ExternalSystem_Config_Ebay.API_MODE_SANDBOX);
 
-	@Getter
 	private final String code;
+
+	@JsonCreator
+	public static ApiMode ofCode(@NonNull final String code)
+	{
+		final ApiMode type = typesByCode.get(code);
+		if (type == null)
+		{
+			throw new AdempiereException("No " + ApiMode.class + " found for code: " + code);
+		}
+		return type;
+	}
+
+	private static final ImmutableMap<String, ApiMode> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 }
