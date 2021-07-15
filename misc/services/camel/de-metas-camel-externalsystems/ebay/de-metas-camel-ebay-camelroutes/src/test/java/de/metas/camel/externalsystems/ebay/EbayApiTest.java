@@ -143,15 +143,23 @@ public class EbayApiTest
 		driver.get(authorizeUrl);
 		Thread.sleep(4000);
 
+		//enter username
 		WebElement userId = (new WebDriverWait(driver, 10))
 				.until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector("input[type='text']"))));
-		WebElement password = driver.findElement(By.cssSelector("input[type='password']"));
-
 		userId.sendKeys(prop.getProperty("ebay.app.userid"));
-		password.sendKeys(prop.getProperty("ebay.app.userpass"));
-		driver.findElement(By.name("sgnBt")).submit();
-
+		
+		driver.findElement(By.name("signin-continue-btn")).click();
 		Thread.sleep(4000);
+		
+		//enter password
+		WebElement password = (new WebDriverWait(driver, 10))
+				.until(ExpectedConditions.visibilityOf(driver.findElement(By.cssSelector("input[type='password']"))));
+				
+		password.sendKeys(prop.getProperty("ebay.app.userpass"));
+		
+		//submit
+		Thread.sleep(4000);
+		driver.findElement(By.name("sgnBt")).submit();
 
 		String url = null;
 		if (driver.getCurrentUrl().contains("code="))
