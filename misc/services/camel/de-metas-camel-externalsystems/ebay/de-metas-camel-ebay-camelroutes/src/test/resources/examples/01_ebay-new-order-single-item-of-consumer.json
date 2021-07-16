@@ -1,0 +1,149 @@
+{
+	"href": "https://api.ebay.com/sell/fulfillment/v1/order?filter=creationdate:%5B2021-05-01T08:25:43.511Z..%5D&limit=50&offset=0",
+	"total": 1,
+	"limit": 50,
+	"offset": 0,
+	"orders": [
+		{
+			"orderId": "07-07160-2343",
+			"legacyOrderId": "124145389616-2415984324234",
+			"creationDate": "2021-06-04T08:51:06.000Z",
+			"lastModifiedDate": "2021-06-04T08:53:53.000Z",
+			"orderFulfillmentStatus": "NOT_STARTED",
+			"orderPaymentStatus": "PAID",
+			"sellerId": "nfctagshop",
+			"buyer": {
+				"username": "nfc21-consumer-01",
+				"taxAddress": {
+					"postalCode": "45481",
+					"countryCode": "DE"
+				}
+			},
+			"pricingSummary": {
+				"priceSubtotal": {
+					"value": "10.8",
+					"currency": "USD",
+					"convertedFromValue": "8.9",
+					"convertedFromCurrency": "EUR"
+				},
+				"deliveryCost": {
+					"value": "0.0",
+					"currency": "USD",
+					"convertedFromValue": "0.0",
+					"convertedFromCurrency": "EUR"
+				},
+				"total": {
+					"value": "10.8",
+					"currency": "USD",
+					"convertedFromValue": "8.9",
+					"convertedFromCurrency": "EUR"
+				}
+			},
+			"cancelStatus": {
+				"cancelState": "NONE_REQUESTED",
+				"cancelRequests": []
+			},
+			"paymentSummary": {
+				"totalDueSeller": {
+					"value": "8.87",
+					"currency": "USD",
+					"convertedFromValue": "7.31",
+					"convertedFromCurrency": "EUR"
+				},
+				"refunds": [],
+				"payments": [
+					{
+						"paymentMethod": "EBAY",
+						"paymentReferenceId": "420004_S",
+						"amount": {
+							"value": "8.87",
+							"currency": "USD",
+							"convertedFromValue": "7.31",
+							"convertedFromCurrency": "EUR"
+						},
+						"paymentStatus": "PAID"
+					}
+				]
+			},
+			"fulfillmentStartInstructions": [
+				{
+					"fulfillmentInstructionsType": "SHIP_TO",
+					"minEstimatedDeliveryDate": "2021-06-07T22:00:00.000Z",
+					"maxEstimatedDeliveryDate": "2021-06-08T22:00:00.000Z",
+					"ebaySupportedFulfillment": false,
+					"shippingStep": {
+						"shipTo": {
+							"fullName": "Carl Consumer",
+							"contactAddress": {
+								"addressLine1": "Consumer Str. 42",
+								"city": "Mülheim",
+								"postalCode": "45481",
+								"countryCode": "DE"
+							},
+							"primaryPhone": {
+								
+							},
+							"email": "545458d8d4dd62654324234d@members.ebay.com"
+						},
+						"shippingCarrierCode": "Deutsche Post",
+						"shippingServiceCode": "DE_DeutschePostBrief"
+					}
+				}
+			],
+			"fulfillmentHrefs": [],
+			"lineItems": [
+				{
+					"lineItemId": "10042355857307",
+					"legacyItemId": "124145389616",
+					"sku": "34324",
+					"title": "2 NFC-Sticker NTAG 213, IP68, blau & schwarz",
+					"lineItemCost": {
+						"value": "10.8",
+						"currency": "USD",
+						"convertedFromValue": "8.9",
+						"convertedFromCurrency": "EUR"
+					},
+					"quantity": 1,
+					"soldFormat": "FIXED_PRICE",
+					"listingMarketplaceId": "EBAY_DE",
+					"purchaseMarketplaceId": "EBAY_DE",
+					"lineItemFulfillmentStatus": "NOT_STARTED",
+					"total": {
+						"value": "10.8",
+						"currency": "USD",
+						"convertedFromValue": "8.9",
+						"convertedFromCurrency": "EUR"
+					},
+					"deliveryCost": {
+						"shippingCost": {
+							"value": "0.0",
+							"currency": "USD",
+							"convertedFromValue": "0.0",
+							"convertedFromCurrency": "EUR"
+						}
+					},
+					"appliedPromotions": [],
+					"taxes": [],
+					"lineItemFulfillmentInstructions": {
+						"minEstimatedDeliveryDate": "2021-06-07T22:00:00.000Z",
+						"maxEstimatedDeliveryDate": "2021-06-08T22:00:00.000Z",
+						"guaranteedDelivery": false
+					}
+				}
+			],
+			"salesRecordReference": "10269",
+			"totalFeeBasisAmount": {
+				"value": "10.8",
+				"currency": "USD",
+				"convertedFromValue": "8.9",
+				"convertedFromCurrency": "EUR"
+			},
+			"totalMarketplaceFee": {
+				"value": "1.93",
+				"currency": "USD",
+				"convertedFromValue": "1.59",
+				"convertedFromCurrency": "EUR"
+			}
+		}
+	]
+}

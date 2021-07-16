@@ -188,14 +188,6 @@
         <finalName>${project.artifactId}</finalName>
 
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-
             <!-- Allows the example to be run via 'mvn camel:run' -->
             <plugin>
                 <groupId>org.apache.camel</groupId>
