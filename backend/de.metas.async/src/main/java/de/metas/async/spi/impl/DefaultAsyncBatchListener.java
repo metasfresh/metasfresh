@@ -30,7 +30,7 @@ import de.metas.util.Services;
  */
 public class DefaultAsyncBatchListener implements IAsyncBatchListener
 {
-	private static final AdMessageKey MSG_ASYNC_PROCESSED = AdMessageKey.of("Notice_Async_Processed");
+	private static final AdMessageKey MSG_ASYNC_PROCESSED = AdMessageKey.of("DefaultAsyncBatchListener_AsyncBatch_Processed");
 
 	@Override
 	public void createNotice(final I_C_Async_Batch asyncBatch)
