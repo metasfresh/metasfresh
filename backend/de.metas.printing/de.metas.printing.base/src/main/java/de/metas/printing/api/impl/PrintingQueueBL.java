@@ -113,13 +113,7 @@ public class PrintingQueueBL implements IPrintingQueueBL
 
 			// 03870
 			item.setAD_Org_ID(archiveRecord.getAD_Org_ID());
-
-			// set async batch
-			final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(archiveRecord, Async_Constants.C_Async_Batch);
-			if (asyncBatch != null)
-			{
-				item.setC_Async_Batch_ID(asyncBatch.getC_Async_Batch_ID());
-			}
+			item.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
 
 			// 03829: set the values for new columns
 			item.setAD_User_ID(Env.getAD_User_ID(localCtx)); // printingQueueHandler might/should override this

@@ -60,28 +60,7 @@ public class DefaultAsyncBatchListener implements IAsyncBatchListener
 
 	private static UserNotificationsConfig createUserNotificationsConfigOrNull(final UserId recipientUserId, final I_C_Async_Batch_Type asyncBatchType)
 	{
-		final Set<NotificationType> notificationTypes = extractNotificationTypes(asyncBatchType);
-		if (notificationTypes.isEmpty())
-		{
-			return null;
-		}
-
 		final INotificationBL notifications = Services.get(INotificationBL.class);
-		return notifications.getUserNotificationsConfig(recipientUserId).deriveWithNotificationTypes(notificationTypes);
+		return notifications.getUserNotificationsConfig(recipientUserId);
 	}
-
-	private static Set<NotificationType> extractNotificationTypes(final I_C_Async_Batch_Type asyncBatchType)
-	{
-		final ImmutableSet.Builder<NotificationType> notificationTypes = ImmutableSet.<NotificationType> builder();
-		if (asyncBatchType.isSendMail())
-		{
-			notificationTypes.add(NotificationType.EMail);
-		}
-		else if (asyncBatchType.isSendNotification())
-		{
-			notificationTypes.add(NotificationType.Notice);
-		}
-		return notificationTypes.build();
-	}
-
 }

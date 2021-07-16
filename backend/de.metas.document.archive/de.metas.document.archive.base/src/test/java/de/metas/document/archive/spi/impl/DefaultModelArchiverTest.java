@@ -39,7 +39,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_C_Invoice;
+import de.metas.invoicecandidate.model.I_C_Invoice;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
@@ -97,6 +97,7 @@ class DefaultModelArchiverTest
 		invoice.setDocumentNo("ExpectedDocumentNo");
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
 		invoice.setC_DocType_ID(docTypeId.getRepoId());
+		invoice.setC_Async_Batch_ID(1);
 		InterfaceWrapperHelper.save(invoice);
 
 		final ArchiveResult archiveResult = archive(invoice);
@@ -107,6 +108,7 @@ class DefaultModelArchiverTest
 		Assertions.assertThat(archiveRecord.getC_BPartner_ID()).isEqualTo(invoice.getC_BPartner_ID());
 		Assertions.assertThat(archiveRecord.getAD_Language()).isEqualTo("ro_RO");
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
+		Assertions.assertThat(archiveRecord.getC_Async_Batch_ID()).isEqualTo(invoice.getC_Async_Batch_ID());
 	}
 
 	@Test
@@ -123,6 +125,7 @@ class DefaultModelArchiverTest
 		final I_Test record = InterfaceWrapperHelper.newInstance(I_Test.class);
 		record.setName("ExpectedDocumentNo");
 		record.setC_BPartner_ID(bpartnerId.getRepoId());
+		record.setC_Async_Batch_ID(1);
 		InterfaceWrapperHelper.save(record);
 
 		final ArchiveResult archiveResult = archive(record);
@@ -133,5 +136,6 @@ class DefaultModelArchiverTest
 		Assertions.assertThat(archiveRecord.getC_BPartner_ID()).isEqualTo(record.getC_BPartner_ID());
 		Assertions.assertThat(archiveRecord.getAD_Language()).isEqualTo("ro_RO");
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
+		Assertions.assertThat(archiveRecord.getC_Async_Batch_ID()).isEqualTo(record.getC_Async_Batch_ID());
 	}
 }

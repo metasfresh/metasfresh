@@ -6,6 +6,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for AD_Archive
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_AD_Archive 
 {
 
@@ -123,7 +124,7 @@ public interface I_AD_Archive
 	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
 	/**
-	 * Set Prozess.
+	 * Set Process.
 	 * Process or Report
 	 *
 	 * <br>Type: Search
@@ -133,7 +134,7 @@ public interface I_AD_Archive
 	void setAD_Process_ID (int AD_Process_ID);
 
 	/**
-	 * Get Prozess.
+	 * Get Process.
 	 * Process or Report
 	 *
 	 * <br>Type: Search
@@ -193,6 +194,27 @@ public interface I_AD_Archive
 
 	ModelColumn<I_AD_Archive, Object> COLUMN_BinaryData = new ModelColumn<>(I_AD_Archive.class, "BinaryData", null);
 	String COLUMNNAME_BinaryData = "BinaryData";
+
+	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	ModelColumn<I_AD_Archive, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_AD_Archive.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
 	 * Set Business Partner.

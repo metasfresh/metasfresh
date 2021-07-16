@@ -70,6 +70,9 @@ public class DocumentReportResult
 	ArchiveResult lastArchive;
 
 	@Nullable
+	Integer asyncBatchId;
+
+	@Nullable
 	public String getFilename()
 	{
 		return data != null ? data.getReportFilename() : null;
