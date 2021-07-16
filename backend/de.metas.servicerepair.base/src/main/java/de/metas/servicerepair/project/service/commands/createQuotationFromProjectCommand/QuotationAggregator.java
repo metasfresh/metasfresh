@@ -28,6 +28,7 @@ import com.google.common.collect.Maps;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.order.OrderFactory;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.OrderGroupRepository;
@@ -130,9 +131,8 @@ public class QuotationAggregator
 
 		//
 		// Group the order lines
-		linesGroups
-				.values()
-				.forEach(this::groupOrderLinesIfNeeded);
+		linesGroups.values().forEach(this::groupOrderLinesIfNeeded);
+		orderGroupRepository.renumberOrderLinesForOrderId(OrderId.ofRepoId(quotation.getC_Order_ID()));
 
 		//
 		//
@@ -140,7 +140,8 @@ public class QuotationAggregator
 				linesGroups.values()
 						.stream()
 						.flatMap(QuotationLinesGroupAggregator::streamQuotationLineIdsIndexedByCostCollectorId)
-						.collect(GuavaCollectors.toImmutableMap()));
+						.distinct()
+						.collect(GuavaCollectors.toImmutableListMultimap()));
 
 		//
 		return quotation;

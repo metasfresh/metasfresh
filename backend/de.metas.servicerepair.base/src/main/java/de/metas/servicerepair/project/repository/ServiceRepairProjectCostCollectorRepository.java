@@ -180,7 +180,7 @@ class ServiceRepairProjectCostCollectorRepository
 				throw new AdempiereException("No record found for " + costCollectorId);
 			}
 
-			final OrderAndLineId customerQuotationLineId = map.getOrderAndLineId(costCollectorId);
+			final OrderAndLineId customerQuotationLineId = map.getFirstOrderAndLineId(costCollectorId);
 
 			record.setQuotation_Order_ID(customerQuotationLineId.getOrderRepoId());
 			record.setQuotation_OrderLine_ID(customerQuotationLineId.getOrderLineRepoId());

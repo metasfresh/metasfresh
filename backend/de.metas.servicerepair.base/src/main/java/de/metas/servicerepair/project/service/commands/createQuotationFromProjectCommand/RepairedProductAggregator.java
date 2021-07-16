@@ -35,6 +35,7 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -44,7 +45,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -169,16 +170,16 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 			throw new AdempiereException("Order/quotation line for repaired product was not created yet");
 		}
 
-		final LinkedHashMap<ServiceRepairProjectCostCollectorId, OrderAndLineId> orderAndLineIds = new LinkedHashMap<>();
+		final LinkedHashSet<Map.Entry<ServiceRepairProjectCostCollectorId, OrderAndLineId>> orderAndLineIds = new LinkedHashSet<>();
 
-		orderAndLineIds.put(repairedProductToReturnCostCollector.getId(), repairedProductToReturnLineBuilder.getCreatedOrderAndLineId());
+		orderAndLineIds.add(GuavaCollectors.entry(repairedProductToReturnCostCollector.getId(), repairedProductToReturnLineBuilder.getCreatedOrderAndLineId()));
 
 		if (servicePerformedLineBuilder != null)
 		{
-			orderAndLineIds.put(repairedProductToReturnCostCollector.getId(), servicePerformedLineBuilder.getCreatedOrderAndLineId());
+			orderAndLineIds.add(GuavaCollectors.entry(repairedProductToReturnCostCollector.getId(), servicePerformedLineBuilder.getCreatedOrderAndLineId()));
 		}
 
-		return orderAndLineIds.entrySet().stream();
+		return orderAndLineIds.stream();
 	}
 
 	@Override
