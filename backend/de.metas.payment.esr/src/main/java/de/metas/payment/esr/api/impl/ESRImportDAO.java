@@ -37,6 +37,7 @@ import javax.annotation.Nullable;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -51,15 +52,24 @@ import org.compiere.util.Env;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementLineId;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -73,7 +83,9 @@ import lombok.NonNull;
 public class ESRImportDAO implements IESRImportDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
+	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	
 	/**
 	 * Used to order lines by <code>LineNo, ESR_ImportLine_ID</code>.
 	 */
@@ -366,5 +378,30 @@ public class ESRImportDAO implements IESRImportDAO
 				.map(ESRImportId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 		return notReconciledESRImportIds;
+	}
+	
+	@Override
+	public Set<PaymentId> findExistentPaymentIds(@NonNull final I_ESR_ImportLine esrLine)
+	{
+		final BPartnerId bpartnerId =  BPartnerId.ofRepoId(esrLine.getC_BPartner_ID());
+		final Money trxAmt = extractESRPaymentAmt(esrLine);
+		final PaymentDirection expectedPaymentDirection = PaymentDirection.ofBankStatementAmount(trxAmt);
+
+		return paymentBL.getPaymentIds(PaymentQuery.builder()
+				.limit(QueryLimit.ofInt(1))
+				.docStatus(DocStatus.Completed)
+				.direction(expectedPaymentDirection)
+				.dateTrx(esrLine.getPaymentDate())
+				.bpartnerId(bpartnerId)
+				.invoiceId(InvoiceId.ofRepoId(esrLine.getC_Invoice_ID()))
+				.payAmt(trxAmt)
+				.build());
+	}
+	
+	private Money extractESRPaymentAmt(@NonNull final I_ESR_ImportLine esrLine)
+	{
+		final BankAccountId bankAccountId = BankAccountId.ofRepoId(esrLine.getESR_Import().getC_BP_BankAccount_ID());
+		final BankAccount bankAccount = bpBankAccountDAO.getById(bankAccountId);
+		return Money.of(esrLine.getAmount(), bankAccount.getCurrencyId());
 	}
 }

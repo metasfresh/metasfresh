@@ -111,4 +111,6 @@ public interface IESRImportDAO extends ISingletonService
 	List<I_ESR_Import> getByIds(@NonNull Set<ESRImportId> esrImportIds);
 
 	ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(@NonNull Set<ESRImportId> esrImportIds);
+
+	Set<PaymentId> findExistentPaymentIds(@NonNull I_ESR_ImportLine esrLine);
 }

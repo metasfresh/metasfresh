@@ -517,6 +517,17 @@ public class ESRImportBL implements IESRImportBL
 				{
 					continue;
 				}
+				
+				refresh(line);
+				final PaymentId payemntId =  fetchDuplicatePaymentIfExists(line);
+				if (payemntId != null)
+				{
+					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+					handleUnsuppordedTrxType(esrImport, line);
+					esrImportDAO.save(line);
+					continue;
+				}
+				
 				linesToProcess.add(line);
 			}
 
@@ -590,6 +601,20 @@ public class ESRImportBL implements IESRImportBL
 				esrImport.setProcessed(true);
 				esrImportDAO.save(esrImport);
 			}
+		}
+	}
+
+	private PaymentId fetchDuplicatePaymentIfExists(@NonNull final I_ESR_ImportLine line)
+	{
+		final Set<PaymentId> existentPaymentIds = esrImportDAO.findExistentPaymentIds(line);
+
+		if (existentPaymentIds.isEmpty())
+		{
+			return null;
+		}
+		else
+		{
+			return existentPaymentIds.iterator().next();
 		}
 	}
 
