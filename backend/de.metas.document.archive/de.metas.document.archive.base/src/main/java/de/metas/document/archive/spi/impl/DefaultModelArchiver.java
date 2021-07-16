@@ -2,7 +2,9 @@ package de.metas.document.archive.spi.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
@@ -77,6 +79,7 @@ public class DefaultModelArchiver
 	// services
 	private static final Logger logger = LogManager.getLogger(DefaultModelArchiver.class);
 	private final transient IArchiveBL archiveBL = Services.get(org.adempiere.archive.api.IArchiveBL.class);
+	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final transient IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
 	private DocumentReportService _documentReportService; // lazy
@@ -124,12 +127,17 @@ public class DefaultModelArchiver
 		final Object record = getRecord();
 		final TableRecordReference recordRef = TableRecordReference.of(record);
 
+		final Integer asyncBatchId = asyncBatchBL.getAsyncBatchId(record)
+				.map(AsyncBatchId::getRepoId)
+				.orElse(null);
+
 		final DocumentReportResult report = getDocumentReportService()
 				.createReport(DocumentReportRequest.builder()
 									  .flavor(flavor)
 									  .documentRef(recordRef)
 									  .printFormatIdToUse(getPrintFormatId().orElse(null))
 									  .printPreview(true)
+									  .asyncBatchId(asyncBatchId)
 									  //
 									  .clientId(InterfaceWrapperHelper.getClientId(record).orElse(ClientId.SYSTEM))
 									  .orgId(InterfaceWrapperHelper.getOrgId(record).orElse(OrgId.ANY))
@@ -191,6 +199,7 @@ public class DefaultModelArchiver
 																	  .data(report.getDataAsByteArray())
 																	  .force(true)
 																	  .save(true)
+																	  .asyncBatchId(report.getAsyncBatchId())
 																	  .trxName(ITrx.TRXNAME_ThreadInherited)
 																	  .recordRef(report.getDocumentRef())
 																	  .processId(report.getReportProcessId())
