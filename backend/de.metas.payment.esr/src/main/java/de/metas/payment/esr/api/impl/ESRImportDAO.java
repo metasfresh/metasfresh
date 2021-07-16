@@ -393,7 +393,7 @@ public class ESRImportDAO implements IESRImportDAO
 				.direction(expectedPaymentDirection)
 				.dateTrx(esrLine.getPaymentDate())
 				.bpartnerId(bpartnerId)
-				.invoiceId(InvoiceId.ofRepoId(esrLine.getC_Invoice_ID()))
+				.invoiceId(InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID()))
 				.payAmt(trxAmt)
 				.build());
 	}
