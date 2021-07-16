@@ -99,11 +99,19 @@ public class JsonProduct
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			dataType = "java.lang.String", //
-			value = "This translates to `ManufacturerArticleNumber`.")
+			value = "This translates to `C_BPartner.Name` of the product's manufacturer.")
+	@Nullable
+	@JsonProperty("manufacturerName")
+	String manufacturerName;
+	
+	@ApiModelProperty( //
+			allowEmptyValue = true, //
+			dataType = "java.lang.String", //
+			value = "This translates to `M_Product.ManufacturerArticleNumber`.")
 	@Nullable
 	@JsonProperty("manufacturerNumber")
 	String manufacturerNumber;
-
+	
 	@NonNull
 	@Singular
 	@JsonProperty("bpartners")
