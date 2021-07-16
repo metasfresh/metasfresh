@@ -20,16 +20,36 @@
  * #L%
  */
 
-package de.metas.servicerepair.project.service.requests;
+package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
-import de.metas.project.ProjectId;
+import de.metas.servicerepair.customerreturns.WarrantyCase;
+import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @Value
 @Builder
-public class CreateQuotationFromProjectRequest
+class QuotationLinesGroupKey
 {
-	@NonNull ProjectId projectId;
+	public static QuotationLinesGroupKey OTHERS = QuotationLinesGroupKey.builder().type(Type.OTHERS).build();
+
+	public enum Type
+	{
+		REPAIRED_PRODUCT,
+		OTHERS
+	}
+
+	@NonNull Type type;
+
+	@Nullable WarrantyCase warrantyCase;
+	@Nullable ServiceRepairProjectTaskId taskId;
+
+	public static boolean equals(@Nullable final QuotationLinesGroupKey key1, @Nullable final QuotationLinesGroupKey key2)
+	{
+		return Objects.equals(key1, key2);
+	}
 }

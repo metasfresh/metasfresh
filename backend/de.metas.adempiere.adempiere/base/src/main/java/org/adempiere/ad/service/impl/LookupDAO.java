@@ -565,14 +565,14 @@ public class LookupDAO implements ILookupDAO
 			rs = pstmt.executeQuery();
 			while (rs.next())
 			{
-				final LookupDisplayColumn ldc = new LookupDisplayColumn(
-						rs.getString(1) // columnName
-						, rs.getString(7) // ColumnSQL
-						, DisplayType.toBoolean(rs.getString(2)) // isTranslated
-						, rs.getInt(3) // AD_Reference_ID
-						, rs.getInt(4) // AD_Reference_Value_ID
-						, rs.getString(8) // FormatPattern
-				);
+				final LookupDisplayColumn ldc = LookupDisplayColumn.builder()
+						.columnName(rs.getString(1))
+						.columnSQL(rs.getString(7))
+						.isTranslated(DisplayType.toBoolean(rs.getString(2)))
+						.ad_Reference_ID(rs.getInt(3))
+						.ad_Reference_Value_ID(rs.getInt(4))
+						.formatPattern(rs.getString(8))
+						.build();
 				lookupDisplayColumns.add(ldc);
 				// s_log.debug("getLookup_TableDir: " + ColumnName + " - " + ldc);
 				//
