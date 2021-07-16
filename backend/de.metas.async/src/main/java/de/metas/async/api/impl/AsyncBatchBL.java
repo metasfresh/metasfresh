@@ -410,7 +410,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(model, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
 
-		return asyncBatchId.map(AsyncBatchId::ofRepoId);
+		return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
 	}
 
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)
