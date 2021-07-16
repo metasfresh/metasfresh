@@ -8,6 +8,7 @@
       "description": "My new description updated",
       "uom": "Stk",
       "manufacturerId": 2156474,
+      "manufacturerName": "myManufacturerName",
       "manufacturerNumber": "myNewManufacturerNumber",
       "bpartners": [],
       "albertaProductInfo": {
