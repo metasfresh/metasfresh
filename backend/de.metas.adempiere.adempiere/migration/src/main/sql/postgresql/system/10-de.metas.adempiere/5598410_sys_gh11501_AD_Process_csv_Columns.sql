@@ -172,7 +172,7 @@ UPDATE AD_Column SET DefaultValue='xls',Updated=TO_TIMESTAMP('2021-07-14 21:20:4
 
 
 UPDATE AD_Process SET spreadsheetformat = 'xls'
-WHERE spreadsheetformat IS NULL;
+WHERE spreadsheetformat IS NULL  AND TYPE = 'Excel';;
 
 
 
