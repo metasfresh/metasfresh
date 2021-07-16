@@ -74,17 +74,18 @@ public class C_OrderLine
 		}
 
 		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
-		final GroupTemplateId groupTemplateId = groupChangesHandler.getGroupTemplateId(groupId);
-
-		if (groupChangesHandler.isProductExcludedFromFlatrateConditions(groupTemplateId, ProductId.ofRepoId(orderLine.getM_Product_ID())))
+		if (groupId != null)
 		{
-			return;
+			final GroupTemplateId groupTemplateId = groupChangesHandler.getGroupTemplateId(groupId);
+
+			if (groupChangesHandler.isProductExcludedFromFlatrateConditions(groupTemplateId, ProductId.ofRepoId(orderLine.getM_Product_ID())))
+			{
+				return;
+			}
+			final int flatrateConditionsId = orderLine.getC_Flatrate_Conditions_ID();
+			final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
+			setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
 		}
-
-		final int flatrateConditionsId = orderLine.getC_Flatrate_Conditions_ID();
-		final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
-		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
-
 		groupChangesHandler.recreateGroupOnOrderLineChanged(orderLine);
 	}
 
