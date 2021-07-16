@@ -22,7 +22,8 @@
 
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.order.OrderAndLineId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
@@ -36,7 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 public class QuotationLineIdsByCostCollectorIdIndex
 {
 	@Getter(AccessLevel.NONE)
-	@NonNull ImmutableMap<ServiceRepairProjectCostCollectorId, OrderAndLineId> map;
+	@NonNull ImmutableListMultimap<ServiceRepairProjectCostCollectorId, OrderAndLineId> map;
 
 	public boolean isEmpty()
 	{
@@ -48,13 +49,16 @@ public class QuotationLineIdsByCostCollectorIdIndex
 		return map.keySet();
 	}
 
-	public OrderAndLineId getOrderAndLineId(@NonNull final ServiceRepairProjectCostCollectorId costCollectorId)
+	public OrderAndLineId getFirstOrderAndLineId(@NonNull final ServiceRepairProjectCostCollectorId costCollectorId)
 	{
-		final OrderAndLineId orderAndLineId = map.get(costCollectorId);
-		if (orderAndLineId == null)
+		final ImmutableList<OrderAndLineId> orderAndLineIds = map.get(costCollectorId);
+		if (orderAndLineIds.isEmpty())
 		{
-			throw new AdempiereException("No order and line ID found for " + costCollectorId + " in " + this);
+			throw new AdempiereException("No order and line IDs found for " + costCollectorId + " in " + this);
 		}
-		return orderAndLineId;
+		else
+		{
+			return orderAndLineIds.get(0);
+		}
 	}
 }
