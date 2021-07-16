@@ -8,6 +8,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.util.ISingletonService;
+import java.util.Optional;
 
 /**
  * @author cg
@@ -83,4 +84,7 @@ public interface IAsyncBatchBL extends ISingletonService
 	 */
 	void markWorkpackageNotified(I_C_Queue_WorkPackage_Notified workpackageNotified);
 
+	Optional<AsyncBatchId> getAsyncBatchId(Object model);
+
+	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
 }

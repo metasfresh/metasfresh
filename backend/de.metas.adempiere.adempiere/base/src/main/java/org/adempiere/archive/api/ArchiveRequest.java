@@ -55,6 +55,9 @@ public class ArchiveRequest
 	 */
 	boolean save;
 
+	@Nullable
+	Integer asyncBatchId;
+
 	@NonNull
 	@Builder.Default
 	Properties ctx = Env.getCtx();

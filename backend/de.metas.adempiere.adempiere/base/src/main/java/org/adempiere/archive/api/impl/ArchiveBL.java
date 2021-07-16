@@ -30,6 +30,7 @@ import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessInfo;
 import de.metas.report.DocumentReportFlavor;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
@@ -128,6 +129,7 @@ public class ArchiveBL implements IArchiveBL
 
 		archive.setDocumentNo(request.getDocumentNo());
 		archive.setName(request.getArchiveName());
+		archive.setC_Async_Batch_ID(NumberUtils.asInt(request.getAsyncBatchId(), -1));
 		archive.setIsReport(request.isReport());
 		//
 		archive.setAD_Process_ID(AdProcessId.toRepoId(request.getProcessId()));
