@@ -385,12 +385,10 @@ public class ESRImportDAO implements IESRImportDAO
 	{
 		final BPartnerId bpartnerId =  BPartnerId.ofRepoId(esrLine.getC_BPartner_ID());
 		final Money trxAmt = extractESRPaymentAmt(esrLine);
-		final PaymentDirection expectedPaymentDirection = PaymentDirection.ofBankStatementAmount(trxAmt);
 
 		return paymentBL.getPaymentIds(PaymentQuery.builder()
 				.limit(QueryLimit.ofInt(1))
 				.docStatus(DocStatus.Completed)
-				.direction(expectedPaymentDirection)
 				.dateTrx(esrLine.getPaymentDate())
 				.bpartnerId(bpartnerId)
 				.invoiceId(InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID()))
