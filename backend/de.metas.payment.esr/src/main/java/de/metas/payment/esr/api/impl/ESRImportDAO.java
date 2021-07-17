@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -381,12 +382,12 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 	
 	@Override
-	public Set<PaymentId> findExistentPaymentIds(@NonNull final I_ESR_ImportLine esrLine)
+	public Optional<PaymentId> findExistentPaymentId(@NonNull final I_ESR_ImportLine esrLine)
 	{
 		final BPartnerId bpartnerId =  BPartnerId.ofRepoId(esrLine.getC_BPartner_ID());
 		final Money trxAmt = extractESRPaymentAmt(esrLine);
 
-		return paymentBL.getPaymentIds(PaymentQuery.builder()
+		Set<PaymentId> existentPaymentIds = paymentBL.getPaymentIds(PaymentQuery.builder()
 				.limit(QueryLimit.ofInt(1))
 				.docStatus(DocStatus.Completed)
 				.dateTrx(esrLine.getPaymentDate())
@@ -394,6 +395,17 @@ public class ESRImportDAO implements IESRImportDAO
 				.invoiceId(InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID()))
 				.payAmt(trxAmt)
 				.build());
+		
+
+		if (existentPaymentIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else
+		{
+			return Optional.of(existentPaymentIds.iterator().next());
+		}
+
 	}
 	
 	private Money extractESRPaymentAmt(@NonNull final I_ESR_ImportLine esrLine)

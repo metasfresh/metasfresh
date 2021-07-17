@@ -1,6 +1,6 @@
 package de.metas.payment.esr.actionhandler.impl;
 
-import java.util.Set;
+import java.util.Optional;
 
 /*
  * #%L
@@ -48,16 +48,16 @@ public class DuplicatePaymentESRActionHandler extends AbstractESRActionHandler
 	{
 		super.process(line, message);
 
-		final Set<PaymentId> existentPaymentIds = esrImportDAO.findExistentPaymentIds(line);
+		final Optional<PaymentId> existentPaymentId = esrImportDAO.findExistentPaymentId(line);
 		
-		if (existentPaymentIds.isEmpty())
+		if (existentPaymentId.isPresent())
 		{
-			logger.warn("No payment found for line : " + line.getESR_ImportLine_ID());
-			return false;
+			return true;
 		}
 		else
 		{
-			return true;
+			logger.warn("No payment found for line : " + line.getESR_ImportLine_ID());
+			return false;			
 		}
 	}
 

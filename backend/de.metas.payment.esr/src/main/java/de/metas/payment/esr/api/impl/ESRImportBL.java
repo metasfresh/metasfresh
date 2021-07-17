@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -607,16 +608,9 @@ public class ESRImportBL implements IESRImportBL
 
 	private PaymentId fetchDuplicatePaymentIfExists(@NonNull final I_ESR_ImportLine line)
 	{
-		final Set<PaymentId> existentPaymentIds = esrImportDAO.findExistentPaymentIds(line);
+		final Optional<PaymentId> existentPaymentId = esrImportDAO.findExistentPaymentId(line);
 
-		if (existentPaymentIds.isEmpty())
-		{
-			return null;
-		}
-		else
-		{
-			return existentPaymentIds.iterator().next();
-		}
+		return existentPaymentId.orElse(null);
 	}
 
 	/**
