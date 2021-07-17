@@ -609,7 +609,7 @@ public class ESRImportBL implements IESRImportBL
 	private PaymentId fetchDuplicatePaymentIfExists(@NonNull final I_ESR_ImportLine line)
 	{
 		final Optional<PaymentId> existentPaymentId = esrImportDAO.findExistentPaymentId(line);
-
+		
 		return existentPaymentId.orElse(null);
 	}
 

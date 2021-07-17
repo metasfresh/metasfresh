@@ -1586,6 +1586,8 @@ public class ESRImportTest extends ESRTestBase
 		final String ESR_Rendered_AccountNo = "01-067789-3";
 
 		final I_ESR_ImportLine esrImportLine1 = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", false);
+		esrImportLine1.setESRLineText(esrLineText);
+		save(esrImportLine1);
 		
 		final I_ESR_Import esrImport = esrImportLine1.getESR_Import();
 
@@ -1593,6 +1595,8 @@ public class ESRImportTest extends ESRTestBase
 
 		
 		final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
+		esrImportLine2.setESRLineText(esrLineText);
+		save(esrImportLine2);
 		final I_ESR_Import esrImport2 = esrImportLine2.getESR_Import();
 		esrImportBL.process(esrImport2);
 

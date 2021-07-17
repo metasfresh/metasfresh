@@ -67,7 +67,6 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
-import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.PaymentQuery;
@@ -364,6 +363,24 @@ public class ESRImportDAO implements IESRImportDAO
 				.create()
 				.firstOnly(I_ESR_ImportLine.class);
 	}
+	
+	@Override
+	public List<I_ESR_ImportLine> fetchESRLinesForESRLineText(final String esrImportLineText)
+	{
+		if (esrImportLineText == null)
+		{
+			return Collections.emptyList();	
+		}
+		
+		final String strippedText = esrImportLineText.trim();
+
+		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_ESR_ImportLine.COLUMNNAME_ESRLineText, strippedText, /* ignoreCase */true)
+				.create()
+				.list(I_ESR_ImportLine.class);
+	}
+
 
 	@Override
 	public ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(final Set<ESRImportId> esrImportIds)
@@ -387,7 +404,7 @@ public class ESRImportDAO implements IESRImportDAO
 		final BPartnerId bpartnerId =  BPartnerId.ofRepoId(esrLine.getC_BPartner_ID());
 		final Money trxAmt = extractESRPaymentAmt(esrLine);
 
-		Set<PaymentId> existentPaymentIds = paymentBL.getPaymentIds(PaymentQuery.builder()
+		final Set<PaymentId> existentPaymentIds = paymentBL.getPaymentIds(PaymentQuery.builder()
 				.limit(QueryLimit.ofInt(1))
 				.docStatus(DocStatus.Completed)
 				.dateTrx(esrLine.getPaymentDate())
@@ -397,15 +414,21 @@ public class ESRImportDAO implements IESRImportDAO
 				.build());
 		
 
-		if (existentPaymentIds.isEmpty())
-		{
-			return Optional.empty();
-		}
-		else
-		{
-			return Optional.of(existentPaymentIds.iterator().next());
-		}
-
+		 List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText());
+		 while (existentPaymentIds.iterator().hasNext())
+		 {
+			 final PaymentId paymentId = existentPaymentIds.iterator().next();
+			 for (final I_ESR_ImportLine line : lines)
+			 {
+				 if (line.getC_Payment_ID() == paymentId.getRepoId())
+				 {
+					 return  Optional.of(paymentId);
+				 }
+			 }
+			 return Optional.empty();
+		 }
+		
+		return Optional.empty();
 	}
 	
 	private Money extractESRPaymentAmt(@NonNull final I_ESR_ImportLine esrLine)
