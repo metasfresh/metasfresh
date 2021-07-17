@@ -503,7 +503,7 @@ public class ESRImportBL implements IESRImportBL
 				// skip lines that have a payment, but are not are not yet processed (because a user needs to select an action)
 				// 08500: skip the lines with payments
 				refresh(line);
-				if (line.getC_Payment_ID() > 0)
+				if (line.getC_Payment_ID() > 0 )
 				{
 					continue;
 				}
@@ -1065,11 +1065,12 @@ public class ESRImportBL implements IESRImportBL
 			final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
 			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
 			final BigDecimal invoiceOpenAmt = invoice.getGrandTotal().subtract(externalAllocationsSum);
+			final PaymentId paymentId =  fetchDuplicatePaymentIfExists(importLine);
 			if (importLine.getAmount().compareTo(invoiceOpenAmt) == 0)
 			{
 				importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
 			}
-			else if (X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched.equals(importLine.getESR_Document_Status()))
+			else if (X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched.equals(importLine.getESR_Document_Status()) && paymentId == null)
 			{
 				importLine.setESR_Payment_Action(null);
 			}
@@ -1205,7 +1206,7 @@ public class ESRImportBL implements IESRImportBL
 			for (int j = 0; j <= idxSetProcessed; j++)
 			{
 				final I_ESR_ImportLine fullyMatchedImportLine = linesWithSameInvoice.get(j);
-				if (fullyMatchedImportLine.getC_Payment_ID() > 0)
+				if (fullyMatchedImportLine.getC_Payment_ID() > 0 && !X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(fullyMatchedImportLine.getESR_Payment_Action()))
 				{
 					final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(fullyMatchedImportLine.getC_Payment_ID()));
 
@@ -1215,7 +1216,7 @@ public class ESRImportBL implements IESRImportBL
 						fullyMatchedImportLine.setProcessed(true);
 						fullyMatchedImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
 					}
-					else
+					else 
 					{
 						if (fullyMatchedImportLine.getAmount().compareTo(invoiceOpenAmt) == 0)
 						{
