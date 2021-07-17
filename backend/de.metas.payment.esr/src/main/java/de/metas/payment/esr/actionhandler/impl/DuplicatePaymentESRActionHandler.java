@@ -57,10 +57,6 @@ public class DuplicatePaymentESRActionHandler extends AbstractESRActionHandler
 		}
 		else
 		{
-			final PaymentId paymentId = existentPaymentIds.iterator().next();
-			line.setC_Payment_ID(paymentId.getRepoId());
-			esrImportDAO.save(line);
-			
 			return true;
 		}
 	}
