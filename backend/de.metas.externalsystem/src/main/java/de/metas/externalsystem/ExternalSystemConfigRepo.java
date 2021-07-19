@@ -272,7 +272,7 @@ public class ExternalSystemConfigRepo
 		return ExternalSystemParentConfig.builder()
 				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
-				.camelUrl(CoalesceUtil.coalesceNotNull(externalSystemConfigRecord.getCamelURL(), "NOT-SET")) // TODO: remove when this branch is updated
+				.camelUrl(CoalesceUtil.coalesce(externalSystemConfigRecord.getCamelURL(), "NOT-SET")) // TODO: remove when this branch is updated
 				.name(externalSystemConfigRecord.getName());
 	}
 
