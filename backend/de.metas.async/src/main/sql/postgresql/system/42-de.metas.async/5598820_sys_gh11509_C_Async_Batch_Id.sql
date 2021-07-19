@@ -1853,7 +1853,7 @@ $$
     BEGIN
         -- 2021-07-16T08:13:35.690Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-        /* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate', 'ALTER TABLE public.C_Invoice_Candidate ADD COLUMN C_Async_Batch_ID NUMERIC(10)');
+        /* DDL */ PERFORM public.db_alter_table('C_Invoice_Candidate', 'ALTER TABLE public.C_Invoice_Candidate ADD COLUMN C_Async_Batch_ID NUMERIC(10)');
 
         -- 2021-07-16T08:13:36.399Z
         -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
