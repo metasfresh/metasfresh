@@ -20,8 +20,8 @@ DELETE FROM AD_Field WHERE AD_Field_ID=596165
 
 -- 2021-07-13T16:11:22.858Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE C_Invoice_Candidate DROP COLUMN IF EXISTS C_Async_Batch_ID')
-;
+--/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE C_Invoice_Candidate DROP COLUMN IF EXISTS C_Async_Batch_ID')
+--;
 
 -- 2021-07-13T15:42:57.968Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -1848,14 +1848,22 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=552525
 DELETE FROM AD_Column WHERE AD_Column_ID=552525
 ;
 
--- 2021-07-16T08:13:35.690Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN C_Async_Batch_ID NUMERIC(10)')
-;
+DO
+$$
+    BEGIN
+        -- 2021-07-16T08:13:35.690Z
+        -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+        /* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate', 'ALTER TABLE public.C_Invoice_Candidate ADD COLUMN C_Async_Batch_ID NUMERIC(10)');
 
--- 2021-07-16T08:13:36.399Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-ALTER TABLE C_Invoice_Candidate ADD CONSTRAINT CAsyncBatch_CInvoiceCandidate FOREIGN KEY (C_Async_Batch_ID) REFERENCES public.C_Async_Batch DEFERRABLE INITIALLY DEFERRED
+        -- 2021-07-16T08:13:36.399Z
+        -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+        ALTER TABLE C_Invoice_Candidate
+            ADD CONSTRAINT CAsyncBatch_CInvoiceCandidate FOREIGN KEY (C_Async_Batch_ID) REFERENCES public.C_Async_Batch DEFERRABLE INITIALLY DEFERRED;
+    EXCEPTION
+        WHEN SQLSTATE '42701' THEN
+            RAISE NOTICE 'Column C_Invoice_Candidate.C_Async_Batch_ID already existed; Ignoring; Error-Code %, Message=%', SQLSTATE, SQLERRM;
+    END;
+$$
 ;
 
 -- 2021-07-16T08:22:40.884Z
