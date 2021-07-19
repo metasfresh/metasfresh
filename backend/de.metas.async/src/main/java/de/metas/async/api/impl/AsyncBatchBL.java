@@ -168,7 +168,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		}
 	}
 
-	private final void save(final I_C_Async_Batch asyncBatch)
+	private void save(final I_C_Async_Batch asyncBatch)
 	{
 		Services.get(IQueueDAO.class).save(asyncBatch);
 	}
