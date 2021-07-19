@@ -117,7 +117,7 @@ public class ESRImportBL implements IESRImportBL
 
 	private static final String MSG_GroupLinesNegativeAmount = "GroupLinesNegativeAmount";
 
-	private static final  AdMessageKey ESR_NO_HAS_WRONG_ORG_2P =  AdMessageKey.of("de.metas.payment.esr.EsrNoHasWrongOrg");
+	private static final AdMessageKey ESR_NO_HAS_WRONG_ORG_2P = AdMessageKey.of("de.metas.payment.esr.EsrNoHasWrongOrg");
 
 	/**
 	 * Filled by {@link #registerActionHandler(String, IESRActionHandler)}.
@@ -303,11 +303,11 @@ public class ESRImportBL implements IESRImportBL
 		if (!fitTrxQtys)
 		{
 			esrImport.setDescription(ESRDataLoaderUtil.addMsgToString(esrImport.getDescription(),
-					"The counted transactions ("
-							+ trxQty
-							+ ") do not fit the control transaction quantities ("
-							+ esrImport.getESR_Control_Trx_Qty()
-							+ "). The document will not be processed."));
+																	  "The counted transactions ("
+																			  + trxQty
+																			  + ") do not fit the control transaction quantities ("
+																			  + esrImport.getESR_Control_Trx_Qty()
+																			  + "). The document will not be processed."));
 		}
 		esrImportDAO.save(esrImport);
 	}
@@ -420,8 +420,8 @@ public class ESRImportBL implements IESRImportBL
 		if (line.getC_Invoice_ID() > 0
 				&& !line.getC_Invoice().isPaid()
 				&& line.getC_Invoice().getAD_Org_ID() == line.getAD_Org_ID() // only if orgs match
-		// we also want to handle invoices that are already paid, because this line links them to another payment
-		/* && !line.getC_Invoice().isPaid() */)
+			// we also want to handle invoices that are already paid, because this line links them to another payment
+			/* && !line.getC_Invoice().isPaid() */)
 		{
 			key = Util.mkKey(
 					line.getAD_Org_ID(),
@@ -504,7 +504,7 @@ public class ESRImportBL implements IESRImportBL
 				// skip lines that have a payment, but are not are not yet processed (because a user needs to select an action)
 				// 08500: skip the lines with payments
 				refresh(line);
-				if (line.getC_Payment_ID() > 0 )
+				if (line.getC_Payment_ID() > 0)
 				{
 					continue;
 				}
@@ -518,9 +518,9 @@ public class ESRImportBL implements IESRImportBL
 				{
 					continue;
 				}
-				
+
 				refresh(line);
-				final PaymentId payemntId =  fetchDuplicatePaymentIfExists(line);
+				final PaymentId payemntId = fetchDuplicatePaymentIfExists(line);
 				if (payemntId != null)
 				{
 					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
@@ -529,7 +529,7 @@ public class ESRImportBL implements IESRImportBL
 					esrImportDAO.save(line);
 					continue;
 				}
-				
+
 				linesToProcess.add(line);
 			}
 
@@ -609,13 +609,13 @@ public class ESRImportBL implements IESRImportBL
 	private PaymentId fetchDuplicatePaymentIfExists(@NonNull final I_ESR_ImportLine line)
 	{
 		final Optional<PaymentId> existentPaymentId = esrImportDAO.findExistentPaymentId(line);
-		
+
 		return existentPaymentId.orElse(null);
 	}
 
 	/**
 	 * @param esrImport the line's ESR-Import. Needed because there might be different settings for different clients and orgs.
-	 * @param line the line in question
+	 * @param line      the line in question
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
 	private void handleUnsuppordedTrxType(final I_ESR_Import esrImport, final I_ESR_ImportLine line)
@@ -879,8 +879,8 @@ public class ESRImportBL implements IESRImportBL
 
 			final boolean ignoreIsAutoAllocateAvailableAmt = true; // task 09167: when processing ESR lines (i.e. from this method) we always allocate the payment to the invoice.
 			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice,
-					payment,
-					ignoreIsAutoAllocateAvailableAmt);
+																		  payment,
+																		  ignoreIsAutoAllocateAvailableAmt);
 			esrImportDAO.save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
 		});
 
@@ -1059,10 +1059,17 @@ public class ESRImportBL implements IESRImportBL
 			final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
 			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
 			final BigDecimal invoiceOpenAmt = invoice.getGrandTotal().subtract(externalAllocationsSum);
-			final PaymentId paymentId =  fetchDuplicatePaymentIfExists(importLine);
+			final PaymentId paymentId = fetchDuplicatePaymentIfExists(importLine);
 			if (importLine.getAmount().compareTo(invoiceOpenAmt) == 0)
 			{
-				importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
+				if (paymentId != null)
+				{
+					importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+				}
+				else
+				{
+					importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
+				}
 			}
 			else if (X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched.equals(importLine.getESR_Document_Status()) && paymentId == null)
 			{
@@ -1090,9 +1097,9 @@ public class ESRImportBL implements IESRImportBL
 			final String invoiceOrgName = orgsRepo.retrieveOrgValue(invoice.getAD_Org_ID());
 			final String importLineOrgName = orgsRepo.retrieveOrgValue(importLine.getAD_Org_ID());
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine,
-					Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
-							invoiceOrgName,
-							importLineOrgName }));
+											   Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
+													   invoiceOrgName,
+													   importLineOrgName }));
 		}
 
 		importLine.setC_Invoice(invoice);
@@ -1210,7 +1217,7 @@ public class ESRImportBL implements IESRImportBL
 						fullyMatchedImportLine.setProcessed(true);
 						fullyMatchedImportLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts);
 					}
-					else 
+					else
 					{
 						if (fullyMatchedImportLine.getAmount().compareTo(invoiceOpenAmt) == 0)
 						{
@@ -1381,8 +1388,6 @@ public class ESRImportBL implements IESRImportBL
 			esrImportDAO.save(esrImport);
 		}
 	}
-
-	
 
 	@Override
 	public void linkESRImportLineToBankStatement(@NonNull final I_ESR_ImportLine esrImportLine, @NonNull final BankStatementAndLineAndRefId bankStatementLineRefId)
