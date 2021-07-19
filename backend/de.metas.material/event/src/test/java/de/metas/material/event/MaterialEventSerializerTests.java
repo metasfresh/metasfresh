@@ -710,7 +710,6 @@ public class MaterialEventSerializerTests
 						.huId(30)
 						.productDescriptor(createProductDescriptor())
 						.quantity(TEN)
-						.quantityDelta(ONE)
 						.build())
 				.build();
 	}

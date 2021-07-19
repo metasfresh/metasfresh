@@ -282,7 +282,6 @@ public class OnePurchase_SeveralReceipts_Test
 								.productDescriptor(transactionProductDescriptor)
 								.huId(11112222) // dummy
 								.quantity(qtyBD)
-								.quantityDelta(qtyBD)
 								.build()))
 				.build());
 		dumpAllCandidates("After TransactionCreatedEvent: date=" + date + ", qty=" + qty + ", monthsUntilExpiry=" + monthsUntilExpiry);
