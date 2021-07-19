@@ -1,3 +1,4 @@
+
 CREATE OR REPLACE VIEW de_metas_invoicecandidate.c_invoice_candidate_diagnose_haschanges_error_v AS
 SELECT p.Value,
        p.Name,
