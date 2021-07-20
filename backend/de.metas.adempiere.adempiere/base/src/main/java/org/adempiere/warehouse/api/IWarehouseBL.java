@@ -25,6 +25,7 @@ package org.adempiere.warehouse.api;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Locator;
@@ -58,5 +59,6 @@ public interface IWarehouseBL extends ISingletonService
 	@Nullable
 	CountryId getCountryId(WarehouseId warehouseId);
 
+	@NonNull
 	OrgId getWarehouseOrgId(WarehouseId warehouseId);
 }

@@ -76,7 +76,6 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 	private static final Logger logger = LogManager.getLogger(SpecificRelationTypeRelatedDocumentsProvider.class);
 
-	private final boolean directed;
 	private final RelatedDocumentsId relatedDocumentsId;
 	private final String internalName;
 	private final boolean isTableRecordIdTarget;
@@ -89,7 +88,6 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 	private SpecificRelationTypeRelatedDocumentsProvider(@NonNull final Builder builder)
 	{
-		directed = builder.isDirected();
 		relatedDocumentsId = builder.getRelatedDocumentsId();
 		internalName = builder.getInternalName();
 
@@ -120,7 +118,6 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 				.omitNullValues()
 				.add("relatedDocumentsId", relatedDocumentsId)
 				.add("internalName", internalName)
-				.add("directed", directed)
 				.add("source", source)
 				.add("target", target)
 				.add("isReferenceTarget", isTableRecordIdTarget)
@@ -188,11 +185,6 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 								.build()));
 	}
 
-	public boolean isDirected()
-	{
-		return directed;
-	}
-
 	public boolean isTableRecordIdTarget()
 	{
 		return isTableRecordIdTarget;
@@ -229,36 +221,8 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		Check.assumeNotNull(source, "The Source cannot be null");
 
-		if (isDirected())
-		{
-			// the type is directed, so our destination is always the *target* reference
-			return ImmutablePair.of(source, target);
-		}
-		else if (source.getTableName().equals(target.getTableName()))
-		{
-			// this relation type is from one table to the same table
-			// use the window-id to distinguish
-			if (AdWindowId.equals(fromDocument.getAD_Window_ID(), getRefTableAD_Window_ID(source.getTableRefInfo(), fromDocument.isSOTrx())))
-			{
-				return ImmutablePair.of(source, target);
-			}
-			else
-			{
-				return ImmutablePair.of(target, source);
-			}
-		}
-		else
-		{
-			if (fromDocument.getTableName().equals(source.getTableName()))
-			{
-				return ImmutablePair.of(source, target);
-			}
-			else
-			{
-				return ImmutablePair.of(target, source);
-			}
-		}
-
+		// our destination is always the *target* reference
+		return ImmutablePair.of(source, target);
 	}
 
 	private MQuery mkZoomOriginQuery(final IZoomSource fromDocument)
@@ -529,7 +493,6 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		private CustomizedWindowInfoMap customizedWindowInfoMap = CustomizedWindowInfoMap.empty();
 
-		private Boolean directed;
 		private String internalName;
 		private int adRelationTypeId;
 		private boolean isTableRecordIDTarget = false;
@@ -604,18 +567,6 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 				return getRelatedDocumentsId().toJson();
 			}
 			return internalName;
-		}
-
-		public Builder setDirected(final boolean directed)
-		{
-			this.directed = directed;
-			return this;
-		}
-
-		private boolean isDirected()
-		{
-			Check.assumeNotNull(directed, "Parameter directed is not null");
-			return directed;
 		}
 
 		public Builder setSource_Reference_ID(final int sourceReferenceId)

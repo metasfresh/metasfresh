@@ -108,4 +108,9 @@ public interface IOrgDAO extends ISingletonService
 
 	/** @return organization's time zone or system time zone; never returns null */
 	ZoneId getTimeZone(OrgId orgId);
+
+    /**
+     * @return true if the given org falls under the european One-Stop-Shop (OSS) regulations
+     */
+	boolean isEUOneStopShop(@NonNull OrgId orgId);
 }

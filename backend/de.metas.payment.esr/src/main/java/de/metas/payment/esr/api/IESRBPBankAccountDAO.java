@@ -60,4 +60,5 @@ public interface IESRBPBankAccountDAO extends ISingletonService
 	 */
 	public List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(BankAccountId bankAcctId);
 
+	public List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(String IBAN);
 }

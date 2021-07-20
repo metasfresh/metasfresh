@@ -96,7 +96,6 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		return "  SELECT " //
 				+ "    rt.AD_RelationType_ID AS " + I_AD_RelationType.COLUMNNAME_AD_RelationType_ID
 				+ ",   rt.Name AS " + I_AD_RelationType.COLUMNNAME_Name
-				+ ",   rt.IsDirected AS " + I_AD_RelationType.COLUMNNAME_IsDirected
 				+ ",   ref.AD_Reference_ID AS " + COLUMNNAME_AD_Reference_ID
 				+ ",   tab.WhereClause AS " + COLUMNNAME_WhereClause
 				+ ",   tab.OrderByClause AS " + COLUMNNAME_OrderByClause
@@ -270,7 +269,6 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 
 		return SpecificRelationTypeRelatedDocumentsProvider.builder()
 				.setCustomizedWindowInfoMap(customizedWindowInfoMapRepository.get())
-				.setDirected(relationType.isDirected())
 				.setAD_RelationType_ID(relationType.getAD_RelationType_ID())
 				.setInternalName(relationType.getInternalName())
 				//

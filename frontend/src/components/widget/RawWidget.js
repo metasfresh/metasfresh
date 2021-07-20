@@ -7,7 +7,7 @@ import { List as ImmutableList } from 'immutable';
 import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
-
+import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
 import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
@@ -475,6 +475,34 @@ export class RawWidget extends PureComponent {
     );
   };
 
+  /**
+   * @method isScanQRbuttonPanel
+   * @returns boolean value indicating that we care in the case where the widget is rendered within a panel layout and has a barcodeScannerType (qrcode)
+   */
+  isScanQRbuttonPanel = () => {
+    const { barcodeScannerType, layoutType } = this.props;
+    return barcodeScannerType === 'qrCode' && layoutType === 'panel'
+      ? true
+      : false;
+  };
+
+  /**
+   * @method getAdaptedFieldColSize
+   * @returns adaptive size for the case when we have barcodeScannerType and `panel` layout type
+   */
+  getAdaptedFieldColSize = () =>
+    this.isScanQRbuttonPanel() ? 'col-sm-7' : 'col-sm-9';
+
+  /**
+   * @method onDetectedQR
+   * @summary After the QR code is detected the value of the field is updated with the corresponding string
+   * @param {string} qrCode
+   */
+  onDetectedQR = (qrCode) => {
+    const { widgetField, handleChange } = this.props;
+    handleChange(widgetField, qrCode);
+  };
+
   render() {
     const {
       caption,
@@ -495,6 +523,8 @@ export class RawWidget extends PureComponent {
       fieldLabelClass,
       fieldInputClass,
     } = this.props;
+
+    const fieldColSize = this.getAdaptedFieldColSize();
 
     const { errorPopup, clearedFieldWarning, tooltipToggled, isFocused } =
       this.state;
@@ -558,7 +588,8 @@ export class RawWidget extends PureComponent {
             ? 'col-sm-12 '
             : type === 'primaryLongLabels'
             ? 'col-sm-6'
-            : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex' : '');
+            : fieldColSize + ' ') +
+          (fields[0].devices ? 'form-group-flex' : '');
       }
     }
 
@@ -653,6 +684,10 @@ export class RawWidget extends PureComponent {
               />
             )}
           </div>
+          {/* this is a special case for displaying the scan button on the right side of the field */}
+          {this.isScanQRbuttonPanel() && (
+            <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+          )}
         </div>
       </div>
     );
