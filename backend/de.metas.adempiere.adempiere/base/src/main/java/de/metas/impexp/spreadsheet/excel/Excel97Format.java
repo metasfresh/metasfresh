@@ -1,15 +1,8 @@
-package de.metas.impexp.excel;
-
-import org.apache.poi.ss.SpreadsheetVersion;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2018 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,58 +20,56 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
  * #L%
  */
 
-/**
- * Excel Open XML format (XLSX, aka Excel 2007)
- *
- * @author metas-dev <dev@metasfresh.com>
- */
-final class ExcelOpenXMLFormat implements ExcelFormat
-{
-	public static final String FILE_EXTENSION = "xlsx";
+package de.metas.impexp.spreadsheet.excel;
 
+import org.apache.poi.hssf.usermodel.HSSFHeader;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.SpreadsheetVersion;
+import org.apache.poi.ss.usermodel.Workbook;
+
+/**
+ * Excel 97 legacy format
+ */
+final class Excel97Format implements ExcelFormat
+{
 	@Override
 	public String getFileExtension()
 	{
-		return FILE_EXTENSION;
+		return "xls";
 	}
 
 	@Override
 	public String getName()
 	{
-		return "Excel (XML)";
+		return "Excel 97";
 	}
 
 	@Override
-	public Workbook createWorkbook(final boolean useStreamingImplementation)
+	public Workbook createWorkbook(final boolean useStreamingImplementation_IGNORED)
 	{
-		if (useStreamingImplementation)
-		{
-			return new SXSSFWorkbook();
-		}
-		else
-		{
-			return new XSSFWorkbook();
-		}
+		return new HSSFWorkbook();
+	}
+
+	public String page()
+	{
+		return HSSFHeader.page();
 	}
 
 	@Override
 	public String getCurrentPageMarkupTag()
 	{
-		// see XSSFHeaderFooter javadoc
-		return "&P";
+		return HSSFHeader.page();
 	}
 
 	@Override
 	public String getTotalPagesMarkupTag()
 	{
-		// see XSSFHeaderFooter javadoc
-		return "&N";
+		return HSSFHeader.numPages();
 	}
 
 	@Override
 	public int getLastRowIndex()
 	{
-		return SpreadsheetVersion.EXCEL2007.getLastRowIndex();
+		return SpreadsheetVersion.EXCEL97.getLastRowIndex();
 	}
-
 }
