@@ -186,8 +186,6 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 
 	/**
 	 * Send note to the user who created the async batch with the result
-	 * 
-	 * @param asyncBatch
 	 */
 	public void sendNote(final I_C_Async_Batch asyncBatch)
 	{
