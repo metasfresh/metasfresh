@@ -10,7 +10,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **companyName** | **String** | The company name associated with the buyer or eBay shipping partner. This field is only returned if defined/applicable to the buyer or eBay shipping partner. |  [optional]
 **contactAddress** | [**Address**](Address.md) |  |  [optional]
-**email** | **String** | This field shows the email address of the buyer. The email address of a buyer will be masked 14 days after order creation. This field will still be returned for the order, but it will not contain the buyer&#39;s email address, but instead, something like &#39;Invalid Request&#39;. Note: This field always contains the email address of the buyer even with a Global Shipping Program shipment. |  [optional]
+**email** | **String** | This field contains the email address of the buyer. This address will be returned for up to 14 days from order creation. If an order is more than 14 days old, no address is returned. Note: If returned, this field contains the email address of the buyer, even for Global Shipping Program shipments. |  [optional]
 **fullName** | **String** | The full name of the buyer or eBay shipping partner. |  [optional]
 **primaryPhone** | [**PhoneNumber**](PhoneNumber.md) |  |  [optional]
 

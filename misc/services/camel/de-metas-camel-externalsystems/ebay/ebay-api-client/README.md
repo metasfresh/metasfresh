@@ -1,6 +1,6 @@
 # Preamble
 
-	openapi-generator generate -i https://developer.ebay.com/api-docs/master/sell/fulfillment/openapi/3/sell_fulfillment_v1_oas3.yaml --api-package de.metas.camel.externalsystems.ebay.api --model-package de.metas.camel.externalsystems.ebay.api.model --invoker-package de.metas.camel.externalsystems.ebay.api.invoker  --group-id de.metas.camel.externalsystems  --artifact-id ebay-fulfillment-api-client -g java 	--library okhttp-gson -o /Users/werner/Dev/tmp/gen2 
+	openapi-generator generate -i https://developer.ebay.com/api-docs/master/sell/fulfillment/openapi/3/sell_fulfillment_v1_oas3.yaml --api-package de.metas.camel.externalsystems.ebay.api --model-package de.metas.camel.externalsystems.ebay.api.model --invoker-package de.metas.camel.externalsystems.ebay.api.invoker  --group-id de.metas.camel.externalsystems  --artifact-id ebay-fulfillment-api-client -g java --library okhttp-gson --additional-properties dateLibrary=java8 -o /output 
 	
 
 

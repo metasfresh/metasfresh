@@ -92,7 +92,7 @@
 		<dependency>
 			<groupId>de.metas.camel.externalsystems</groupId>
 			<artifactId>ebay-fulfillment-api-client</artifactId>
-			<version>1.19.4</version>
+			<version>1.19.7</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ebay.auth</groupId>
