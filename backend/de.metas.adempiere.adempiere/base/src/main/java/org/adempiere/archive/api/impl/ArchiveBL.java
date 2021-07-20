@@ -22,6 +22,7 @@ package org.adempiere.archive.api.impl;
  * #L%
  */
 
+import com.google.common.io.ByteStreams;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
@@ -41,6 +42,7 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IClientDAO;
@@ -51,8 +53,11 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +67,7 @@ public class ArchiveBL implements IArchiveBL
 {
 	@Override
 	@Nullable
-	public I_AD_Archive archive(final byte[] data,
+	public I_AD_Archive archive(final Resource data,
 								final ArchiveInfo archiveInfo,
 								final boolean force,
 								final boolean save,
@@ -87,7 +92,7 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	private static ArchiveRequest createArchiveRequest(
-			final byte[] data,
+			final Resource data,
 			final ArchiveInfo archiveInfo,
 			final boolean force,
 			final boolean save,
@@ -139,8 +144,26 @@ public class ArchiveBL implements IArchiveBL
 
 		archive.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 
-		final byte[] data = request.getData();
-		storage.setBinaryData(archive, data);
+		final Resource data = request.getData();
+		final byte[] byteArray;
+		if(data instanceof ByteArrayResource)
+		{
+			byteArray = ((ByteArrayResource)data).getByteArray();
+		}
+		else
+		{
+			try
+			{
+				byteArray = ByteStreams.toByteArray(data.getInputStream());
+			}
+			catch (final IOException e)
+			{
+				throw AdempiereException.wrapIfNeeded(e)
+						.appendParametersToMessage()
+						.setParameter("request", request);
+			}
+		}
+		storage.setBinaryData(archive, byteArray);
 
 		//FRESH-349: Set ad_pinstance
 		archive.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
@@ -152,7 +175,7 @@ public class ArchiveBL implements IArchiveBL
 
 		return ArchiveResult.builder()
 				.archiveRecord(archive)
-				.data(data)
+				.data(byteArray)
 				.build();
 	}
 
@@ -352,8 +375,10 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public Optional<byte[]> getLastArchiveBinaryData(@NonNull final TableRecordReference reference)
+	public Optional<Resource> getLastArchiveBinaryData(@NonNull final TableRecordReference reference)
 	{
-		return getLastArchive(reference).map(this::getBinaryData);
+		return getLastArchive(reference)
+				.map(this::getBinaryData)
+				.map(ByteArrayResource::new);
 	}
 }

@@ -157,7 +157,7 @@ public class JdbcCSVExporter implements DataConsumer<ResultSet>
 
 	private CSVWriter createWriter()
 	{
-		File outputFile;
+		final File outputFile;
 		try
 		{
 			outputFile = File.createTempFile("Report_", ".csv");

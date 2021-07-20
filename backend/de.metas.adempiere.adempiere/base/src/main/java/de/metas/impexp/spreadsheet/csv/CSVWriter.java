@@ -57,7 +57,7 @@ public class CSVWriter
 	private final DateFormat dateFormat;
 
 	@Getter
-	private File outputFile;
+	private final File outputFile;
 	private Writer writer;
 	private boolean headerAppended = false;
 

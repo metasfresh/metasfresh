@@ -24,6 +24,7 @@ import de.metas.logging.LogManager;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
+import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
@@ -53,6 +54,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import javax.print.DocFlavor;
@@ -882,9 +884,15 @@ public class ReportEngine implements PrintServiceAttributeListener
 		{
 			if (getPrintFormat().getJasperProcess_ID() > 0)
 			{
-				final byte[] data = createPdfDataInvokeReportProcess();
-				final ByteArrayInputStream stream = new ByteArrayInputStream(data == null ? new byte[] {} : data);
-				FileUtil.copy(stream, file);
+				final Resource data = createPdfDataInvokeReportProcess();
+				if (data == null)
+				{
+					FileUtil.copy(new ByteArrayInputStream(new byte[] {}), file);
+				}
+				else
+				{
+					FileUtil.copy(data.getInputStream(), file);
+				}
 			}
 			else
 			{
@@ -902,32 +910,7 @@ public class ReportEngine implements PrintServiceAttributeListener
 		return file2.exists();
 	}    // createPDF
 
-	public byte[] createPDFData()
-	{
-		try
-		{
-
-			// 03744: begin
-			if (getPrintFormat() != null && getPrintFormat().getJasperProcess_ID() > 0)
-			{
-				return createPdfDataInvokeReportProcess();
-			}
-			else
-			{
-				// 03744: end
-				if (m_layout == null)
-					layout();
-				return Document.getPDFAsArray(m_layout.getPageable(false));
-			} // 03744
-		}
-		catch (final RuntimeException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
-		// return null;
-	}    // createPDFData
-
-	private byte[] createPdfDataInvokeReportProcess()
+	private Resource createPdfDataInvokeReportProcess()
 	{
 		final Properties ctx = Env.getCtx(); // ReportEngine.getCtx() fails, because the ctx would be taken from an "old-school" layout
 
@@ -941,7 +924,9 @@ public class ReportEngine implements PrintServiceAttributeListener
 				.buildAndPrepareExecution()
 				.onErrorThrowException(true)
 				.executeSync();
-		return processExecutor.getResult().getReportDataAsByteArray();
+		
+		final ReportResultData reportData = processExecutor.getResult().getReportData();
+		return reportData != null ? reportData.getReportData() : null;
 	}
 
 	/**************************************************************************

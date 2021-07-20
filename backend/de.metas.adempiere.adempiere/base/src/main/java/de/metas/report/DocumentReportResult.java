@@ -24,7 +24,9 @@ package de.metas.report;
 
 import javax.annotation.Nullable;
 
+import com.google.common.io.ByteStreams;
 import org.adempiere.archive.api.ArchiveResult;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.bpartner.BPartnerId;
@@ -35,6 +37,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
 @Value
 @Builder
@@ -65,7 +72,7 @@ public class DocumentReportResult
 	@NonNull
 	@Builder.Default
 	PrintCopies copies = PrintCopies.ONE;
-	
+
 	@Nullable
 	ArchiveResult lastArchive;
 
@@ -84,8 +91,12 @@ public class DocumentReportResult
 	}
 
 	@Nullable
-	public byte[] getDataAsByteArray()
+	public Resource getDataOrNull()
 	{
-		return data != null ? data.getReportData() : null;
+		if (data == null)
+		{
+			return null;
+		}
+		return data.getReportData();
 	}
 }
