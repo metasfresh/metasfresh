@@ -22,9 +22,30 @@
 
 package de.metas.camel.externalsystems.ebay.processor.order;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT;
+
+import java.io.IOException;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
+
 import com.ebay.api.client.auth.oauth2.CredentialUtil;
 import com.ebay.api.client.auth.oauth2.OAuth2Api;
 import com.ebay.api.client.auth.oauth2.model.OAuthResponse;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.ebay.ApiMode;
 import de.metas.camel.externalsystems.ebay.CredentialParams;
@@ -37,26 +58,11 @@ import de.metas.camel.externalsystems.ebay.api.invoker.auth.OAuth;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
 import de.metas.camel.externalsystems.ebay.api.model.OrderSearchPagedCollection;
 import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.JsonExternalSystemEbayConfigMappings;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.yaml.snakeyaml.Yaml;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
-import static de.metas.camel.externalsystems.ebay.EbayConstants.ROUTE_PROPERTY_EBAY_AUTH_CLIENT;
 
 /**
  * Processor to load orders from the eBay fulfilment api.
@@ -144,6 +150,7 @@ public class GetEbayOrdersProcessor implements Processor
 			final EbayImportOrdersRouteContext ordersContext = EbayImportOrdersRouteContext.builder()
 					.orgCode(request.getOrgCode())
 					.externalSystemRequest(request)
+					.ebayConfigMappings(getEbayOrderMappingRules(request).orElse(null))
 					.build();
 
 			exchange.setProperty(EbayConstants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
@@ -175,4 +182,26 @@ public class GetEbayOrdersProcessor implements Processor
 
 		return oAuth2Api.getApplicationToken(apiMode.getEnvironment(), SCOPE_LIST);
 	}
+	
+	@NonNull
+	private Optional<JsonExternalSystemEbayConfigMappings> getEbayOrderMappingRules(@NonNull final JsonExternalSystemRequest request)
+	{
+		final String ebayMappings = request.getParameters().get(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS);
+
+		if (Check.isBlank(ebayMappings))
+		{
+			return Optional.empty();
+		}
+
+		final ObjectMapper mapper = new ObjectMapper();
+		try
+		{
+			return Optional.of(mapper.readValue(ebayMappings, JsonExternalSystemEbayConfigMappings.class));
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+
 }

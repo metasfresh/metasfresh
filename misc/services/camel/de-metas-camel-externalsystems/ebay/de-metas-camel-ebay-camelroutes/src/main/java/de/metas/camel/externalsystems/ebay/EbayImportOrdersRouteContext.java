@@ -22,8 +22,16 @@
 
 package de.metas.camel.externalsystems.ebay;
 
+import java.time.Instant;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.ebay.api.model.Order;
+import de.metas.common.externalsystem.JsonExternalSystemEbayConfigMappings;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -31,12 +39,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-
-import javax.annotation.Nullable;
-import java.time.Instant;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Context to store all properties of a single eBay order and processed meta-data
@@ -54,7 +56,7 @@ public class EbayImportOrdersRouteContext
 	@Setter(AccessLevel.NONE)
 	private final String orgCode;
 
-	/** Para, */
+	/** Initiator of this request and params for it. */
 	@NonNull
 	@Setter(AccessLevel.NONE)
 	private JsonExternalSystemRequest externalSystemRequest;
@@ -86,6 +88,11 @@ public class EbayImportOrdersRouteContext
 	@Setter(AccessLevel.NONE)
 	@Getter(AccessLevel.NONE)
 	private DateAndImportStatus nextImportStartingTimestamp;
+	
+	/** Configuration object with mappings. E.g. customer group to select for new customers or sync advise. */
+	@Nullable
+	@Setter(AccessLevel.NONE)
+	private JsonExternalSystemEbayConfigMappings ebayConfigMappings;
 	
 
 	@NonNull
