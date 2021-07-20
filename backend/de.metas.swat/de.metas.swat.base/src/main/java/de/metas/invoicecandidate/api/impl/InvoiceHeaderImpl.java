@@ -79,6 +79,8 @@ import javax.annotation.Nullable;
 
 	private PaymentTermId paymentTermId;
 
+	private int C_Async_Batch_ID;
+
 	/* package */ InvoiceHeaderImpl()
 	{
 	}
@@ -302,6 +304,17 @@ import javax.annotation.Nullable;
 	public String getExternalId()
 	{
 		return externalId;
+	}
+
+	@Override
+	public int getC_Async_Batch_ID()
+	{
+		return C_Async_Batch_ID;
+	}
+
+	public void setC_Async_Batch_ID(final int C_Async_Batch_ID)
+	{
+		this.C_Async_Batch_ID = C_Async_Batch_ID;
 	}
 
 	public String setExternalId(String externalId)

@@ -215,6 +215,7 @@ public class DocumentReportService
 				.flavor(request.getFlavor())
 				.data(processResult.getReportData())
 				.reportPInstanceId(processResult.getReportPInstanceId())
+				.asyncBatchId(request.getAsyncBatchId())
 				//
 				.documentRef(request.getDocumentRef())
 				.reportProcessId(request.getReportProcessId())

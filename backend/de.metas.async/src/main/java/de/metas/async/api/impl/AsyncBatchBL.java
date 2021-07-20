@@ -29,6 +29,7 @@ package de.metas.async.api.impl;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -58,6 +59,7 @@ import de.metas.async.spi.NullWorkpackagePrio;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import javax.annotation.Nullable;
 
 public class AsyncBatchBL implements IAsyncBatchBL
 {
@@ -97,7 +99,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
-		if (X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatchType.getNotificationType()))
+		if (asyncBatchType != null && X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatchType.getNotificationType()))
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
 			final String trxName = InterfaceWrapperHelper.getTrxName(workPackage);
@@ -160,6 +162,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			asyncBatch.setLastProcessed(processed);
 			asyncBatch.setLastProcessed_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
 			asyncBatch.setCountProcessed(asyncBatch.getCountProcessed() + 1);
+
+			if (checkProcessed(asyncBatch))
+			{
+				asyncBatch.setProcessed(true);
+			}
 			save(asyncBatch);
 		}
 		finally
@@ -326,6 +333,10 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 
 		final I_C_Async_Batch_Type asyncBatchType = asyncBatchRecord.getC_Async_Batch_Type();
+		if (asyncBatchType == null)
+		{
+			return false;
+		}
 		final String keepAliveTimeHours = asyncBatchType.getKeepAliveTimeHours();
 
 		// if null or empty, keep alive for ever
@@ -391,5 +402,23 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	{
 		workpackageNotified.setIsNotified(true);
 		InterfaceWrapperHelper.save(workpackageNotified);
+	}
+
+	@NonNull
+	public Optional<AsyncBatchId> getAsyncBatchId(@Nullable final Object model)
+	{
+		if (model == null)
+		{
+			return Optional.empty();
+		}
+
+		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(model, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
+
+		return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
+	}
+
+	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		return asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 	}
 }

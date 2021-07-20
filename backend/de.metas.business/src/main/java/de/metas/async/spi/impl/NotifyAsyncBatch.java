@@ -78,12 +78,6 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
 		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
 
-		// do nothing is the flag for sending mail is not checked
-		if (!asyncBatchType.isSendMail())
-		{
-			return;
-		}
-
 		final Properties ctx = InterfaceWrapperHelper.getCtx(asyncBatch);
 		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
 
@@ -192,19 +186,11 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 
 	/**
 	 * Send note to the user who created the async batch with the result
-	 * 
-	 * @param asyncBatch
 	 */
 	public void sendNote(final I_C_Async_Batch asyncBatch)
 	{
 		final I_C_Async_Batch_Type asyncBatchType = asyncBatch.getC_Async_Batch_Type();
 		Check.assumeNotNull(asyncBatchType, "Async Batch type should not be null for async batch! ", asyncBatch.getC_Async_Batch_ID());
-
-		// do nothing is the flag for sending notification is not checked
-		if (!asyncBatchType.isSendNotification())
-		{
-			return;
-		}
 
 		asyncBatchListener.applyListener(asyncBatch);
 	}

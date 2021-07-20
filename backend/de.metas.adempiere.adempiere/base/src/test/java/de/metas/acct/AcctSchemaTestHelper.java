@@ -123,9 +123,9 @@ public class AcctSchemaTestHelper
 		}
 
 		@Override
-		public AcctSchemaId getAcctSchemaIdByClientAndOrg(
-				final ClientId clientId,
-				final OrgId orgId)
+		public AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(
+				@NonNull final ClientId clientId,
+				@NonNull final OrgId orgId)
 		{
 			logger.debug("Always returning acctSchemaId={} for clientId={} and orgId={}", acctSchemaId, clientId, orgId);
 			return acctSchemaId;

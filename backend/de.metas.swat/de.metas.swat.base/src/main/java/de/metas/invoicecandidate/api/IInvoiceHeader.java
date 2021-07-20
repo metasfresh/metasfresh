@@ -71,4 +71,6 @@ public interface IInvoiceHeader
 	PaymentTermId getPaymentTermId();
 
 	String getExternalId();
+
+	int getC_Async_Batch_ID();
 }
