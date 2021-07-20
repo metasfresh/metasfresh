@@ -74,7 +74,7 @@ Map build(final MvnConf mvnConf,
 			//junit 'junit.xml' // commenting out; might be that it published "everything"
 		}
 					
-		sh "webpack --config webpack.prod.js --bail --display-error-details"
+		sh "webpack --config webpack.prod.js"
 
 		// https://github.com/metasfresh/metasfresh-webui-frontend/issues/292
 		// add a file info.json whose shall look similar to the info which spring-boot provides unter the /info URL

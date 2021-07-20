@@ -100,13 +100,8 @@ export default class Table extends PureComponent {
   };
 
   handleClick = (e, item) => {
-    const {
-      keyProperty,
-      selected,
-      onSelect,
-      onDeselect,
-      featureType,
-    } = this.props;
+    const { keyProperty, selected, onSelect, onDeselect, featureType } =
+      this.props;
     const disableMultiSel = featureType === 'SEARCH' ? true : false;
     const id = item[keyProperty];
 
@@ -248,9 +243,8 @@ export default class Table extends PureComponent {
 
               handleSelect(array[currentId + 1], false, 0);
 
-              const focusedElem = document.getElementsByClassName(
-                'js-attributes'
-              )[0];
+              const focusedElem =
+                document.getElementsByClassName('js-attributes')[0];
 
               if (focusedElem) {
                 focusedElem.getElementsByTagName('input')[0].focus();
@@ -430,8 +424,11 @@ export default class Table extends PureComponent {
 
   updateHeight = (heightNew) => {
     heightNew = heightNew ? heightNew : 0;
-    this.tableContainer.style.paddingBottom = `${this.initialPaddingBottom +
-      heightNew}px`;
+    if (this.tableContainer) {
+      this.tableContainer.style.paddingBottom = `${
+        this.initialPaddingBottom + heightNew
+      }px`;
+    }
   };
 
   render() {

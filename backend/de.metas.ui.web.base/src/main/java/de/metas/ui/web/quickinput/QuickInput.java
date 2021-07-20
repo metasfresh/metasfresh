@@ -6,6 +6,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -28,6 +29,8 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.util.Check;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -67,8 +70,7 @@ public final class QuickInput
 	public static QuickInput getQuickInputOrNull(final ICalloutField calloutField)
 	{
 		final Object documentObj = calloutField.getModel(Object.class);
-		final QuickInput quickInput = InterfaceWrapperHelper.getDynAttribute(documentObj, DYNATTR_QuickInput);
-		return quickInput;
+		return InterfaceWrapperHelper.getDynAttribute(documentObj, DYNATTR_QuickInput);
 	}
 
 	private static final Logger logger = LogManager.getLogger(QuickInput.class);
@@ -81,6 +83,7 @@ public final class QuickInput
 
 	private final Document quickInputDocument;
 
+	@Nullable
 	private transient Document rootDocument;
 
 	// State
@@ -117,10 +120,7 @@ public final class QuickInput
 		{
 			quickInputDocument.setDynAttribute(DYNATTR_QuickInput, this);
 		}
-		else
-		{
-			// quickInputDocument.setDynAttribute(DYNATTR_QuickInput, null); // NOTE: cannot call it because it will throw exception (document not writable)
-		}
+		// else quickInputDocument.setDynAttribute(DYNATTR_QuickInput, null); // NOTE: cannot call it because it will throw exception (document not writable)
 
 		rootDocument = null; // we are not copying it on purpose
 
@@ -175,11 +175,6 @@ public final class QuickInput
 	public DocumentId getId()
 	{
 		return quickInputDocument.getDocumentId();
-	}
-
-	public String getTargetTableName()
-	{
-		return quickInputDocument.getEntityDescriptor().getTableName();
 	}
 
 	public DetailId getDetailId()
@@ -269,11 +264,11 @@ public final class QuickInput
 				.transform(lookupValuesList -> JSONLookupValuesList.ofLookupValuesList(lookupValuesList, adLanguage));
 	}
 
-	public JSONLookupValuesList getFieldTypeaheadValues(final String fieldName, final String query, final String adLanguage)
+	public JSONLookupValuesPage getFieldTypeaheadValues(final String fieldName, final String query, final String adLanguage)
 	{
 		return getQuickInputDocument()
 				.getFieldLookupValuesForQuery(fieldName, query)
-				.transform(lookupValuesList -> JSONLookupValuesList.ofLookupValuesList(lookupValuesList, adLanguage));
+				.transform(page -> JSONLookupValuesPage.of(page, adLanguage));
 	}
 
 	public boolean hasField(final String fieldName)

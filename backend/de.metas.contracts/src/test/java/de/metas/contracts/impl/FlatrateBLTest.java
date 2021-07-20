@@ -35,6 +35,7 @@ import java.sql.Timestamp;
 
 import java.util.Properties;
 
+import de.metas.lang.SOTrx;
 import de.metas.tax.api.TaxId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pricing.model.I_C_PricingRule;
@@ -253,7 +254,7 @@ public class FlatrateBLTest extends ContractsTestBase
 						any(OrgId.class),
 						any(WarehouseId.class),
 						anyInt(),
-						anyBoolean()))
+						any(SOTrx.class)))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 

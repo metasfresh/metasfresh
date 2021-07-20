@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 259687044L;
+	private static final long serialVersionUID = 966411405L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -252,18 +252,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public org.compiere.model.I_C_Greeting getC_Greeting()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
-	}
-
-	@Override
-	public void setC_Greeting(final org.compiere.model.I_C_Greeting C_Greeting)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
-	}
-
-	@Override
 	public void setC_Greeting_ID (final int C_Greeting_ID)
 	{
 		if (C_Greeting_ID < 1) 
@@ -303,33 +291,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public int getC_Job_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Job_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_Title getC_Title()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
-	}
-
-	@Override
-	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
-	}
-
-	@Override
-	public void setC_Title_ID (final int C_Title_ID)
-	{
-		if (C_Title_ID < 1) 
-			set_Value (COLUMNNAME_C_Title_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
-	}
-
-	@Override
-	public int getC_Title_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
 
 	@Override
@@ -415,6 +376,33 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getContactLimitationReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_ContactLimitationReason);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Title getC_Title()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class);
+	}
+
+	@Override
+	public void setC_Title(final org.compiere.model.I_C_Title C_Title)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Title_ID, org.compiere.model.I_C_Title.class, C_Title);
+	}
+
+	@Override
+	public void setC_Title_ID (final int C_Title_ID)
+	{
+		if (C_Title_ID < 1) 
+			set_Value (COLUMNNAME_C_Title_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
+	}
+
+	@Override
+	public int getC_Title_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
 
 	@Override
@@ -677,6 +665,27 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return get_ValueAsBoolean(COLUMNNAME_IsInPayroll);
 	}
 
+	/** 
+	 * IsInvoiceEmailEnabled AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISINVOICEEMAILENABLED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISINVOICEEMAILENABLED_Yes = "Y";
+	/** No = N */
+	public static final String ISINVOICEEMAILENABLED_No = "N";
+	@Override
+	public void setIsInvoiceEmailEnabled (final @Nullable java.lang.String IsInvoiceEmailEnabled)
+	{
+		set_Value (COLUMNNAME_IsInvoiceEmailEnabled, IsInvoiceEmailEnabled);
+	}
+
+	@Override
+	public java.lang.String getIsInvoiceEmailEnabled() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsInvoiceEmailEnabled);
+	}
+
 	@Override
 	public void setIsLoginAsHostKey (final boolean IsLoginAsHostKey)
 	{
@@ -687,6 +696,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isLoginAsHostKey() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLoginAsHostKey);
+	}
+
+	@Override
+	public void setIsMembershipContact (final boolean IsMembershipContact)
+	{
+		set_Value (COLUMNNAME_IsMembershipContact, IsMembershipContact);
+	}
+
+	@Override
+	public boolean isMembershipContact() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMembershipContact);
 	}
 
 	@Override
@@ -990,6 +1011,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getRegistry() 
 	{
 		return get_ValueAsString(COLUMNNAME_Registry);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
 	@Override

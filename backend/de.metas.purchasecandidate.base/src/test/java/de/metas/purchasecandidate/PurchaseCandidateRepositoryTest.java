@@ -130,6 +130,7 @@ public class PurchaseCandidateRepositoryTest
 				.allSatisfy(candidateRecord -> {
 					assertThat(candidateRecord.getC_PurchaseCandidate_ID()).isEqualTo(id.getRepoId());
 					assertThat(candidateRecord.getDemandReference()).isEqualTo("nextDemandReference");
+					assertThat(candidateRecord.getExternalPurchaseOrderURL()).isEqualTo("example.com");
 				});
 	}
 

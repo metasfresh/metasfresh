@@ -322,12 +322,8 @@ class FiltersItem extends PureComponent {
    */
   handleScroll = () => {
     const { openFilterBox } = this.props;
-    const {
-      top,
-      left,
-      bottom,
-      right,
-    } = this.widgetsContainer.getBoundingClientRect();
+    const { top, left, bottom, right } =
+      this.widgetsContainer.getBoundingClientRect();
 
     openFilterBox({ top, left, bottom, right });
   };
@@ -360,6 +356,7 @@ class FiltersItem extends PureComponent {
         if (filterItem.parameterName === toChange.widgetField) {
           filterItem.defaultValue = toChange.value;
           filterItem.value = toChange.value;
+          filterItem.valueTo = toChange.valueTo;
         }
         return filterItem;
       });
@@ -373,12 +370,8 @@ class FiltersItem extends PureComponent {
    * @todo Write the documentation
    */
   handleApply = () => {
-    const {
-      applyFilters,
-      closeFilterMenu,
-      returnBackToDropdown,
-      isActive,
-    } = this.props;
+    const { applyFilters, closeFilterMenu, returnBackToDropdown, isActive } =
+      this.props;
     const { filter, activeFilter } = this.state;
 
     if (
@@ -518,9 +511,7 @@ class FiltersItem extends PureComponent {
               )}
             </div>
             <div
-              className={`form-group row filter-content filter-${
-                data.filterId
-              }`}
+              className={`form-group row filter-content filter-${data.filterId}`}
             >
               <div className="col-sm-12">
                 {filter.parameters &&
@@ -683,10 +674,7 @@ FiltersItem.propTypes = {
   closeFilterBox: PropTypes.func.isRequired,
 };
 
-export default connect(
-  null,
-  {
-    openFilterBox,
-    closeFilterBox,
-  }
-)(FiltersItem);
+export default connect(null, {
+  openFilterBox,
+  closeFilterBox,
+})(FiltersItem);

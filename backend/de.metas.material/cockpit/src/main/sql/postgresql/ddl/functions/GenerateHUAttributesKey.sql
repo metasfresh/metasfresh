@@ -10,10 +10,10 @@ AS $BODY$
 		FROM (
 			SELECT
 				(case
-					when a.AttributeValueType = 'S' then a.M_Attribute_ID || '=' || coalesce(hua.Value, '')::varchar
-					when a.AttributeValueType = 'N' then a.M_Attribute_ID || '=' || coalesce(trim(hua.ValueNumber::varchar, '0'), '')
-					when a.AttributeValueType = 'D' then a.M_Attribute_ID || '=' || coalesce(to_char(hua.ValueDate, 'YYYY-MM-DD'), '')::varchar
-					when a.AttributeValueType = 'L' then av.M_AttributeValue_ID::varchar
+					when a.AttributeValueType = 'S' and coalesce(hua.Value, '') != '' then a.M_Attribute_ID || '=' || coalesce(hua.Value, '')::varchar
+					when a.AttributeValueType = 'N' and coalesce(hua.valuenumber,0) != 0 then a.M_Attribute_ID || '=' || coalesce(trim(hua.ValueNumber::varchar, '0'), '')
+					when a.AttributeValueType = 'D' and hua.valuedate is not null then a.M_Attribute_ID || '=' || coalesce(to_char(hua.ValueDate, 'YYYY-MM-DD'), '')::varchar
+					when a.AttributeValueType = 'L' and av.m_attributevalue_id is not null then av.M_AttributeValue_ID::varchar
 					else null
 				end) as keyPart
 			FROM M_HU hu

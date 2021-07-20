@@ -205,7 +205,19 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
-	public void setHelp (final java.lang.String Help)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
+	{
+		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	@Override
+	public java.lang.String getDocumentNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
+	}
+
+	@Override
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}

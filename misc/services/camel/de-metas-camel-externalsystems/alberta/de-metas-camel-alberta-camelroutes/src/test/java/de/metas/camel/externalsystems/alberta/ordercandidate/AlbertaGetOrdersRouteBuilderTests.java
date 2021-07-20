@@ -24,13 +24,15 @@ package de.metas.camel.externalsystems.alberta.ordercandidate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.metas.camel.externalsystems.alberta.patient.AlbertaConnectionDetails;
+import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.v2.BPLocationCamelRequest;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.externalreference.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.client.ApiException;
 import io.swagger.client.JSON;
 import io.swagger.client.api.DoctorApi;
@@ -54,11 +56,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.List;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -78,10 +82,13 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 
 	private static final String JSON_OL_CAND_CREATE_REQUEST = "60_CreateOLCandRequest.json";
 
+	private static final String JSON_UPSERT_RUNTIME_PARAM_REQUEST = "70_UpsertRuntimeParamRequest.json";
+
 	private static final String MOCK_ESR_QUERY_REQUEST = "mock:queryExternalRefRequest";
 	private static final String MOCK_UPSERT_BPARTNER_REQUEST = "mock:upsertBPartnerRequest";
 	private static final String MOCK_UPSERT_BPARTNER_DELIVERY_ADDRESS_REQUEST = "mock:upsertBPartnerDeliveryAddressRequest";
 	private static final String MOCK_CREATE_OLCAND_REQUEST = "mock:upsertOLCandRequest";
+	private static final String MOCK_UPSERT_RUNTIME_PRAMS = "mock:order-upsertRuntimeParam";
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
@@ -152,6 +159,12 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 
 		mockCreateOlCandEndpoint.expectedBodiesReceived(jsonOLCandCreateBulkRequest);
 
+		final MockEndpoint mockUpsertRuntimeParamEP = getMockEndpoint(MOCK_UPSERT_RUNTIME_PRAMS);
+		final InputStream expectedRuntimeParamIS = this.getClass().getResourceAsStream(JSON_UPSERT_RUNTIME_PARAM_REQUEST);
+		final JsonESRuntimeParameterUpsertRequest expectedRuntimeParamRequest = objectMapper.readValue(expectedRuntimeParamIS, JsonESRuntimeParameterUpsertRequest.class);
+
+		mockUpsertRuntimeParamEP.expectedBodiesReceived(expectedRuntimeParamRequest);
+
 		//fire the route
 		template.sendBody("direct:" + AlbertaGetOrdersRouteBuilder.GET_ORDERS_ROUTE_ID, "Nothing relevant");
 
@@ -173,6 +186,18 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 							  advice -> advice.weaveById(AlbertaGetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID)
 									  .replace()
 									  .process(new MockGetOrdersApiProcessor()));
+
+		AdviceWith.adviceWith(context, AlbertaGetOrdersRouteBuilder.SALES_ORDER_UPSERT_RUNTIME_PARAMS_ROUTE_ID,
+							  advice -> {
+								  advice.weaveById(AlbertaGetOrdersRouteBuilder.RUNTIME_PARAMS_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_UPSERT_RUNTIME_PRAMS);
+
+								  advice.interceptSendToEndpoint("direct:" + MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
+										  .skipSendToOriginalEndpoint()
+										  .process((exchange -> System.out.println("Do nothing")));
+							  });
+
 
 		AdviceWith.adviceWith(context, AlbertaGetOrdersRouteBuilder.IMPORT_MISSING_BP_ROUTE_ID,
 							  advice -> {
@@ -236,6 +261,11 @@ public class AlbertaGetOrdersRouteBuilderTests extends CamelTestSupport
 			exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_PHARMACY_API, preparePharmacyApiClient(json));
 			exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_ORG_CODE, "001");
 			exchange.setProperty(GetPatientsRouteConstants.ROUTE_PROPERTY_ALBERTA_CONN_DETAILS, getMockConnectionDetails());
+
+			final NextImportSinceTimestamp nextImportSinceTimestamp = new NextImportSinceTimestamp(Instant.ofEpochSecond(0));
+			exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_UPDATED_AFTER, nextImportSinceTimestamp);
+			exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_COMMAND, "getSalesOrders");
+			exchange.setProperty(GetOrdersRouteConstants.ROUTE_PROPERTY_EXTERNAL_SYSTEM_CONFIG_ID, JsonMetasfreshId.of(100));
 
 			exchange.getIn().setBody(getMockOrders(json));
 		}

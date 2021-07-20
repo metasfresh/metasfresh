@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -41,6 +42,11 @@ public class JsonAlbertaProductInfo
 	@JsonProperty("albertaProductId")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	String albertaProductId;
+
+	@JsonProperty("productGroupId")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Nullable
+	String productGroupId;
 
 	@JsonProperty("additionalDescription")
 	@JsonInclude(JsonInclude.Include.NON_NULL)

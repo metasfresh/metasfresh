@@ -69,7 +69,7 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.to("http://{{metasfresh.create-externalreference.api.uri}}");
+				.to("{{metasfresh.create-externalreference.api.uri}}");
 
 		from("{{" + ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI + "}}")
 				.routeId(LOOKUP_ROUTE_ID)
@@ -88,7 +88,7 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("http://{{metasfresh.lookup-externalreference.api.uri}}/${header.orgCode}");
+				.toD("{{metasfresh.lookup-externalreference.api.uri}}/${header.orgCode}");
 
 		from("{{" + ExternalSystemCamelConstants.MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI + "}}")
 				.routeId(UPSERT_ROUTE_ID)
@@ -108,6 +108,6 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
-				.toD("http://{{metasfresh.upsert-externalreference.api.uri}}/${header.orgCode}");
+				.toD("{{metasfresh.upsert-externalreference.api.uri}}/${header.orgCode}");
 	}
 }

@@ -319,7 +319,9 @@ const mapStateToProps = ({ windowHandler }) => ({
   modalVisible: windowHandler.modal.visible,
 });
 
-export default connect(
-  mapStateToProps,
-  { fetchTopActions, deleteTopActions, openModal, addNotification }
-)(TableFilter);
+export default connect(mapStateToProps, {
+  fetchTopActions,
+  deleteTopActions,
+  openModal,
+  addNotification,
+})(TableFilter);

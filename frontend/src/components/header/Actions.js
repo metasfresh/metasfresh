@@ -25,14 +25,8 @@ class Actions extends Component {
   };
 
   async componentDidMount() {
-    const {
-      windowType,
-      entity,
-      docId,
-      notfound,
-      activeTab,
-      selected,
-    } = this.props;
+    const { windowType, entity, docId, notfound, activeTab, selected } =
+      this.props;
     const requests = [this.requestActions()];
 
     if (!windowType || docId === 'notfound' || notfound) {

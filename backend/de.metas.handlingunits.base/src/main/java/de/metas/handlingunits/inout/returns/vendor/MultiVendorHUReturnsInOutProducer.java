@@ -22,13 +22,18 @@
 
 package de.metas.handlingunits.inout.returns.vendor;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_InOut;
+import de.metas.handlingunits.model.I_M_InOutLine;
+import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,18 +49,12 @@ import org.compiere.model.X_M_Transaction;
 import org.compiere.util.Env;
 import org.compiere.util.Util.ArrayKey;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.hutransaction.IHUTrxBL;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.handlingunits.model.I_M_InOut;
-import de.metas.handlingunits.model.I_M_InOutLine;
-import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Producer for multiple vendor returns for a given collection of HUs.
@@ -212,7 +211,7 @@ public class MultiVendorHUReturnsInOutProducer
 	{
 		if (_movementDate == null)
 		{
-			_movementDate = Env.getDate(Env.getCtx()); // use login date by default
+			_movementDate = Env.getDate(); // use login date by default
 		}
 		return _movementDate;
 	}

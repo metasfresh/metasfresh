@@ -1,15 +1,15 @@
 package de.metas.util.lang;
 
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import de.metas.externalsystem.IExternalSystemChildConfigId;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Stopwatch;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
+import de.metas.util.Check;
+import lombok.NonNull;
+import lombok.ToString;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -22,13 +22,11 @@ import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Stopwatch;
-
-import de.metas.JsonObjectMapperHolder;
-import de.metas.util.Check;
-import lombok.NonNull;
-import lombok.ToString;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -80,6 +78,7 @@ public class All_RepoIdAware_Classes_Test
 			//
 			.skip(ServiceRepairProjectCostCollectorId.class)
 			.skip(ServiceRepairProjectTaskId.class)
+			.skip(InvoiceVerificationRunId.class)
 			//
 			.skip(ExternalSystemOtherConfigId.class)
 			;

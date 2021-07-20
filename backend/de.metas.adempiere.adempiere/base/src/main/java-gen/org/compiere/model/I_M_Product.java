@@ -30,6 +30,27 @@ public interface I_M_Product
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Additional Product Info.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAdditional_produktinfos (@Nullable java.lang.String Additional_produktinfos);
+
+	/**
+	 * Get Additional Product Info.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAdditional_produktinfos();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Additional_produktinfos = new ModelColumn<>(I_M_Product.class, "Additional_produktinfos", null);
+	String COLUMNNAME_Additional_produktinfos = "Additional_produktinfos";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -52,25 +73,102 @@ public interface I_M_Product
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Additional Product Info.
+	 * Set CompensationGroup Schema Category.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAdditional_produktinfos (@Nullable java.lang.String Additional_produktinfos);
+	void setC_CompensationGroup_Schema_Category_ID (int C_CompensationGroup_Schema_Category_ID);
 
 	/**
-	 * Get Additional Product Info.
+	 * Get CompensationGroup Schema Category.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getAdditional_produktinfos();
+	int getC_CompensationGroup_Schema_Category_ID();
 
-	ModelColumn<I_M_Product, Object> COLUMN_Additional_produktinfos = new ModelColumn<>(I_M_Product.class, "Additional_produktinfos", null);
-	String COLUMNNAME_Additional_produktinfos = "Additional_produktinfos";
+	@Nullable org.compiere.model.I_C_CompensationGroup_Schema_Category getC_CompensationGroup_Schema_Category();
+
+	void setC_CompensationGroup_Schema_Category(@Nullable org.compiere.model.I_C_CompensationGroup_Schema_Category C_CompensationGroup_Schema_Category);
+
+	ModelColumn<I_M_Product, org.compiere.model.I_C_CompensationGroup_Schema_Category> COLUMN_C_CompensationGroup_Schema_Category_ID = new ModelColumn<>(I_M_Product.class, "C_CompensationGroup_Schema_Category_ID", org.compiere.model.I_C_CompensationGroup_Schema_Category.class);
+	String COLUMNNAME_C_CompensationGroup_Schema_Category_ID = "C_CompensationGroup_Schema_Category_ID";
+
+	/**
+	 * Set Compensation Group Schema.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_Schema_ID (int C_CompensationGroup_Schema_ID);
+
+	/**
+	 * Get Compensation Group Schema.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_Schema_ID();
+
+	@Nullable de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema();
+
+	void setC_CompensationGroup_Schema(@Nullable de.metas.order.model.I_C_CompensationGroup_Schema C_CompensationGroup_Schema);
+
+	ModelColumn<I_M_Product, de.metas.order.model.I_C_CompensationGroup_Schema> COLUMN_C_CompensationGroup_Schema_ID = new ModelColumn<>(I_M_Product.class, "C_CompensationGroup_Schema_ID", de.metas.order.model.I_C_CompensationGroup_Schema.class);
+	String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
+
+	/**
+	 * Set Klassifizierung.
+	 * Classification for grouping
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setClassification (@Nullable java.lang.String Classification);
+
+	/**
+	 * Get Klassifizierung.
+	 * Classification for grouping
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getClassification();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Classification = new ModelColumn<>(I_M_Product.class, "Classification", null);
+	String COLUMNNAME_Classification = "Classification";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Created = new ModelColumn<>(I_M_Product.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Umsatzrealisierung.
@@ -120,54 +218,6 @@ public interface I_M_Product
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Set Klassifizierung.
-	 * Classification for grouping
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setClassification (@Nullable java.lang.String Classification);
-
-	/**
-	 * Get Klassifizierung.
-	 * Classification for grouping
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getClassification();
-
-	ModelColumn<I_M_Product, Object> COLUMN_Classification = new ModelColumn<>(I_M_Product.class, "Classification", null);
-	String COLUMNNAME_Classification = "Classification";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_M_Product, Object> COLUMN_Created = new ModelColumn<>(I_M_Product.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Customer Label Name.
@@ -970,6 +1020,70 @@ public interface I_M_Product
 	String COLUMNNAME_LowLevel = "LowLevel";
 
 	/**
+	 * Set Manufacturer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturerArticleNumber (@Nullable java.lang.String ManufacturerArticleNumber);
+
+	/**
+	 * Get Manufacturer number.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getManufacturerArticleNumber();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ManufacturerArticleNumber = new ModelColumn<>(I_M_Product.class, "ManufacturerArticleNumber", null);
+	String COLUMNNAME_ManufacturerArticleNumber = "ManufacturerArticleNumber";
+
+	/**
+	 * Set Manufacturer.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturer_ID (int Manufacturer_ID);
+
+	/**
+	 * Get Manufacturer.
+	 * Hersteller des Produktes
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getManufacturer_ID();
+
+	String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
+
+	/**
+	 * Set Product description of manufacturer.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturerProductDescription (@Nullable java.lang.String ManufacturerProductDescription);
+
+	/**
+	 * Get Product description of manufacturer.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getManufacturerProductDescription();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ManufacturerProductDescription = new ModelColumn<>(I_M_Product.class, "ManufacturerProductDescription", null);
+	String COLUMNNAME_ManufacturerProductDescription = "ManufacturerProductDescription";
+
+	/**
 	 * Set Merkmals-Satz.
 	 * Product Attribute Set
 	 *
@@ -1185,49 +1299,6 @@ public interface I_M_Product
 	String COLUMNNAME_M_ProductPlanningSchema_Selector = "M_ProductPlanningSchema_Selector";
 
 	/**
-	 * Set Manufacturer.
-	 * Hersteller des Produktes
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setManufacturer_ID (int Manufacturer_ID);
-
-	/**
-	 * Get Manufacturer.
-	 * Hersteller des Produktes
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getManufacturer_ID();
-
-	String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
-
-	/**
-	 * Set Manufacturer number.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setManufacturerArticleNumber (@Nullable java.lang.String ManufacturerArticleNumber);
-
-	/**
-	 * Get Manufacturer number.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getManufacturerArticleNumber();
-
-	ModelColumn<I_M_Product, Object> COLUMN_ManufacturerArticleNumber = new ModelColumn<>(I_M_Product.class, "ManufacturerArticleNumber", null);
-	String COLUMNNAME_ManufacturerArticleNumber = "ManufacturerArticleNumber";
-
-	/**
 	 * Set Exclude from MRP.
 	 *
 	 * <br>Type: List
@@ -1291,28 +1362,6 @@ public interface I_M_Product
 	String COLUMNNAME_NetWeight = "NetWeight";
 
 	/**
-	 * Set Package UOM.
-	 * UOM of the package
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPackage_UOM_ID (int Package_UOM_ID);
-
-	/**
-	 * Get Package UOM.
-	 * UOM of the package
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPackage_UOM_ID();
-
-	String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
-
-	/**
 	 * Set Package Size.
 	 * Size of a package
 	 *
@@ -1334,6 +1383,28 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_PackageSize = new ModelColumn<>(I_M_Product.class, "PackageSize", null);
 	String COLUMNNAME_PackageSize = "PackageSize";
+
+	/**
+	 * Set Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackage_UOM_ID (int Package_UOM_ID);
+
+	/**
+	 * Get Package UOM.
+	 * UOM of the package
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPackage_UOM_ID();
+
+	String COLUMNNAME_Package_UOM_ID = "Package_UOM_ID";
 
 	/**
 	 * Set Process Now.
@@ -1380,6 +1451,31 @@ public interface I_M_Product
 	String COLUMNNAME_ProductType = "ProductType";
 
 	/**
+	 * Set Ursprungsland.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRawMaterialOrigin_ID (int RawMaterialOrigin_ID);
+
+	/**
+	 * Get Ursprungsland.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRawMaterialOrigin_ID();
+
+	@Nullable org.compiere.model.I_C_Country getRawMaterialOrigin();
+
+	void setRawMaterialOrigin(@Nullable org.compiere.model.I_C_Country RawMaterialOrigin);
+
+	ModelColumn<I_M_Product, org.compiere.model.I_C_Country> COLUMN_RawMaterialOrigin_ID = new ModelColumn<>(I_M_Product.class, "RawMaterialOrigin_ID", org.compiere.model.I_C_Country.class);
+	String COLUMNNAME_RawMaterialOrigin_ID = "RawMaterialOrigin_ID";
+
+	/**
 	 * Set EMail-Vorlage.
 	 * Text templates for mailings
 	 *
@@ -1407,29 +1503,47 @@ public interface I_M_Product
 	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
 
 	/**
-	 * Set Ursprungsland.
+	 * Set Product safety information.
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setRawMaterialOrigin_ID (int RawMaterialOrigin_ID);
+	void setSafetyInfo (@Nullable java.lang.String SafetyInfo);
 
 	/**
-	 * Get Ursprungsland.
+	 * Get Product safety information.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSafetyInfo();
+
+	ModelColumn<I_M_Product, Object> COLUMN_SafetyInfo = new ModelColumn<>(I_M_Product.class, "SafetyInfo", null);
+	String COLUMNNAME_SafetyInfo = "SafetyInfo";
+
+	/**
+	 * Set Account manager.
+	 * Sales Representative or Company Agent
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getRawMaterialOrigin_ID();
+	void setSalesRep_ID (int SalesRep_ID);
 
-	@Nullable org.compiere.model.I_C_Country getRawMaterialOrigin();
+	/**
+	 * Get Account manager.
+	 * Sales Representative or Company Agent
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSalesRep_ID();
 
-	void setRawMaterialOrigin(@Nullable org.compiere.model.I_C_Country RawMaterialOrigin);
-
-	ModelColumn<I_M_Product, org.compiere.model.I_C_Country> COLUMN_RawMaterialOrigin_ID = new ModelColumn<>(I_M_Product.class, "RawMaterialOrigin_ID", org.compiere.model.I_C_Country.class);
-	String COLUMNNAME_RawMaterialOrigin_ID = "RawMaterialOrigin_ID";
+	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Set Aufwandsart.
@@ -1457,55 +1571,6 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, org.compiere.model.I_S_ExpenseType> COLUMN_S_ExpenseType_ID = new ModelColumn<>(I_M_Product.class, "S_ExpenseType_ID", org.compiere.model.I_S_ExpenseType.class);
 	String COLUMNNAME_S_ExpenseType_ID = "S_ExpenseType_ID";
-
-	/**
-	 * Set Ressource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Ressource.
-	 * Resource
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getS_Resource_ID();
-
-	@Nullable org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_M_Product, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_M_Product.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
-	 * Set Account manager.
-	 * Sales Representative or Company Agent
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSalesRep_ID (int SalesRep_ID);
-
-	/**
-	 * Get Account manager.
-	 * Sales Representative or Company Agent
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getSalesRep_ID();
-
-	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
 
 	/**
 	 * Set Regaltiefe.
@@ -1577,6 +1642,50 @@ public interface I_M_Product
 	String COLUMNNAME_ShelfWidth = "ShelfWidth";
 
 	/**
+	 * Set Shop Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShopDescription (@Nullable java.lang.String ShopDescription);
+
+	/**
+	 * Get Shop Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShopDescription();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ShopDescription = new ModelColumn<>(I_M_Product.class, "ShopDescription", null);
+	String COLUMNNAME_ShopDescription = "ShopDescription";
+
+	/**
+	 * Set Shop inventory.
+	 * Shop invenntory qty
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShopInventoryQty (@Nullable BigDecimal ShopInventoryQty);
+
+	/**
+	 * Get Shop inventory.
+	 * Shop invenntory qty
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getShopInventoryQty();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ShopInventoryQty = new ModelColumn<>(I_M_Product.class, "ShopInventoryQty", null);
+	String COLUMNNAME_ShopInventoryQty = "ShopInventoryQty";
+
+	/**
 	 * Set SKU.
 	 * Stock Keeping Unit
 	 *
@@ -1598,6 +1707,54 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_SKU = new ModelColumn<>(I_M_Product.class, "SKU", null);
 	String COLUMNNAME_SKU = "SKU";
+
+	/**
+	 * Set Ressource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Ressource.
+	 * Resource
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	@Nullable org.compiere.model.I_S_Resource getS_Resource();
+
+	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
+
+	ModelColumn<I_M_Product, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_M_Product.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set Trademark.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTrademark (@Nullable java.lang.String Trademark);
+
+	/**
+	 * Get Trademark.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTrademark();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Trademark = new ModelColumn<>(I_M_Product.class, "Trademark", null);
+	String COLUMNNAME_Trademark = "Trademark";
 
 	/**
 	 * Set UnitsPerPack.

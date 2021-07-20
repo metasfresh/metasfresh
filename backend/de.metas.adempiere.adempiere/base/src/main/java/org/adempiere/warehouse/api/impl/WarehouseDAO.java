@@ -19,6 +19,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehousePickingGroup;
 import org.adempiere.warehouse.WarehousePickingGroupId;
@@ -28,7 +29,6 @@ import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.compiere.model.I_M_Warehouse_Type;
@@ -403,7 +403,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		return getByIds(warehouseIds);
 	}
 
-	private Set<WarehouseId> getAllWarehouseIds()
+	public Set<WarehouseId> getAllWarehouseIds()
 	{
 		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
@@ -665,5 +665,21 @@ public class WarehouseDAO implements IWarehouseDAO
 				.firstId();
 
 		return WarehouseId.ofRepoIdOrNull(productRepoId);
+	}
+
+	@Override
+	public WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(final int locatorRepoId)
+	{
+		Check.assumeGreaterThanZero(locatorRepoId, "locatorRepoId");
+
+		final I_M_Locator locator = getLocatorByRepoId(locatorRepoId);
+		final String locatorValue = locator.getValue();
+		final I_M_Warehouse warehouse = getById(WarehouseId.ofRepoId(locator.getM_Warehouse_ID()));
+		final String warehouseValue = warehouse.getValue();
+
+		return WarehouseAndLocatorValue.builder()
+				.warehouseValue(warehouseValue)
+				.locatorValue(locatorValue)
+				.build();
 	}
 }

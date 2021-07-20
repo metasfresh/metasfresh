@@ -24,6 +24,7 @@ package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
@@ -42,6 +43,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
@@ -114,6 +116,22 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
 
 		return externalSystemConfigRecord.getType();
+	}
+
+	@NonNull
+	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType) {
+		switch (externalSystemType)
+		{
+			case Alberta:
+				return getAllByTypeAlberta();
+			case Shopware6:
+			case Other:
+				throw new AdempiereException("Method not supported")
+						.appendParametersToMessage()
+						.setParameter("externalSystemType", externalSystemType);
+			default:
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+		}
 	}
 
 	@NonNull
@@ -279,6 +297,7 @@ public class ExternalSystemConfigRepo
 				.sw6PaymentMethod(record.getSW6_Payment_Method())
 				.description(record.getDescription())
 				.seqNo(record.getSeqNo())
+				.isInvoiceEmailEnabled(StringUtils.toBoolean(record.getIsInvoiceEmailEnabled(), null))
 				.bpartnerIfExists(record.getBPartner_IfExists())
 				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
 				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
@@ -293,7 +312,6 @@ public class ExternalSystemConfigRepo
 		return ExternalSystemParentConfig.builder()
 				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
-				.camelUrl(externalSystemConfigRecord.getCamelURL())
 				.name(externalSystemConfigRecord.getName());
 	}
 
@@ -304,5 +322,16 @@ public class ExternalSystemConfigRepo
 		return getById(id.getParentConfigId())
 				.childConfig(childConfig)
 				.build();
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeAlberta()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

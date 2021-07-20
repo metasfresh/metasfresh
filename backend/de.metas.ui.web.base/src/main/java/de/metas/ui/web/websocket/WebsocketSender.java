@@ -178,7 +178,6 @@ public class WebsocketSender implements InitializingBean
 		}
 
 		eventsLog.logEvent(destination, payload);
-		System.out.println("\tSent to " + destination + ": " + payload);
 	}
 
 	@lombok.Value

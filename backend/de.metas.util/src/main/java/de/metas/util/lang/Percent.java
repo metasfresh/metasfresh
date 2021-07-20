@@ -66,7 +66,8 @@ public class Percent
 		}
 	}
 
-	public static Percent ofNullable(final BigDecimal value)
+	@Nullable
+	public static Percent ofNullable(@Nullable final BigDecimal value)
 	{
 		return value != null ? of(value) : null;
 	}

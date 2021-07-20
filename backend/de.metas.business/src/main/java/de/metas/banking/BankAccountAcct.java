@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import java.util.Optional;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -33,6 +35,7 @@ import lombok.Value;
  */
 @Value
 @Builder
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class BankAccountAcct
 {
 	@NonNull
@@ -55,4 +58,7 @@ public class BankAccountAcct
 	AccountId interestExpenseAcct;
 	@NonNull
 	AccountId paymentBankFeeAcct;
+
+	@NonNull
+	Optional<AccountId> paymentWriteOffAcct;
 }

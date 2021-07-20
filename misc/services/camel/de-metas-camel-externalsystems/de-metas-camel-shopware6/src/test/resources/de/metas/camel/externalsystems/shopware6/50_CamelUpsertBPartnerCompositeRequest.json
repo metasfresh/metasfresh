@@ -55,9 +55,11 @@
               {
                 "contactIdentifier": "ext-Shopware6-customerId",
                 "contact": {
+                  "name": "firstName lastName",
                   "firstName": "firstName",
                   "lastName": "lastName",
-                  "email": "someEamil@web.de"
+                  "email": "someEamil@web.de",
+                  "invoiceEmailEnabled":true
                 }
               }
             ],

@@ -1,3 +1,4 @@
+@from:cucumber
 Feature: create or update BPartner v2
   As a user
   I want create or update a BPartner record
@@ -5,13 +6,15 @@ Feature: create or update BPartner v2
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
+  @from:cucumber
   Scenario: create a BPartner record
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2-pre/bpartner/001' and fulfills with '201' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
    "requestItems":[
       {
          "bpartnerIdentifier":"ext-ALBERTA-001",
+         "externalReferenceUrl":"www.ExternalReferenceURL.com",
          "bpartnerComposite":{
             "bpartner":{
                "code":"test_code",
@@ -64,7 +67,8 @@ Feature: create or update BPartner v2
                         "code":"c11",
                         "name":"test_name_c11",
                         "email":"test_email",
-                        "fax":"fax"
+                        "fax":"fax",
+                        "invoiceEmailEnabled" : false
                      }
                   },
                   {
@@ -73,7 +77,8 @@ Feature: create or update BPartner v2
                         "code":"c22",
                         "name":"test_name_c22",
                         "email":null,
-                        "fax":"test_fax"
+                        "fax":"test_fax",
+                        "invoiceEmailEnabled" : true
                      }
                   }
                ]
@@ -95,12 +100,15 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       |
       | ext-ALBERTA-001    | gln-l22            | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | l22     | null       |
     And verify that contact was created for bpartner
-      | bpartnerIdentifier | contactIdentifier | Name          | OPT.Email  | OPT.Fax  | Code |
-      | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  |
-      | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  |
+      | bpartnerIdentifier | contactIdentifier | Name          | OPT.Email  | OPT.Fax  | Code | OPT.InvoiceEmailEnabled |
+      | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  | false                   |
+      | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  | true                    |
+    And verify that S_ExternalReference was created
+      | ExternalSystem | Type     | ExternalReference | ExternalReferenceURL         |
+      | ALBERTA        | BPartner | 001               | www.ExternalReferenceURL.com |
 
   Scenario: Update a BPartner record
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2-pre/bpartner/001' and fulfills with '201' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
    "requestItems":[
@@ -132,7 +140,7 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      |
 
   Scenario: Update a BPartner contact record
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2-pre/bpartner/001' and fulfills with '201' status code
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
    "requestItems":[
@@ -147,7 +155,8 @@ Feature: create or update BPartner v2
                         "code":"c11",
                         "name":"test_name_c11_updated",
                         "email":"test_email_updated",
-                        "fax":"fax_updated"
+                        "fax":"fax_updated",
+                        "invoiceEmailEnabled" : true
                      }
                   }
                ]
@@ -162,5 +171,58 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that contact was updated for bpartner
-      | bpartnerIdentifier | contactIdentifier | Name                  | OPT.Email          | OPT.Fax     | Code |
-      | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11_updated | test_email_updated | fax_updated | c11  |
+      | bpartnerIdentifier | contactIdentifier | Name                  | OPT.Email          | OPT.Fax     | Code | OPT.InvoiceEmailEnabled |
+      | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11_updated | test_email_updated | fax_updated | c11  | true                    |
+
+  Scenario: Update a BPartner contact record and Create another contact record
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
+    """
+{
+   "requestItems":[
+      {
+         "bpartnerIdentifier":"ext-ALBERTA-001",
+         "bpartnerComposite":{
+            "contacts":{
+               "requestItems":[
+                  {
+                     "contactIdentifier":"ext-ALBERTA-c11",
+                     "contact":{
+                        "code":"c11",
+                        "name":"test_name_c11_updated_again",
+                        "email":"test_email_updated_again",
+                        "fax":"fax_updated_again",
+                        "invoiceEmailEnabled" : false
+                     }
+                  },
+                  {
+                     "contactIdentifier":"ext-ALBERTA-c33",
+                     "contact":{
+                        "code":"c33",
+                        "name":"test_name_c33_created",
+                        "email":"test_email_created",
+                        "fax":"fax_created",
+                        "invoiceEmailEnabled" : true
+                     }
+                  }
+               ],
+               "syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"DONT_UPDATE"
+   }
+            }
+         }
+      }
+   ],
+   "syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"DONT_UPDATE"
+   }
+}
+"""
+    Then verify that contact was not modified for bpartner
+      | bpartnerIdentifier | contactIdentifier | Name                  | OPT.Email          | OPT.Fax     | Code | OPT.InvoiceEmailEnabled |
+      | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11_updated | test_email_updated | fax_updated | c11  | true                    |
+
+    And verify that contact was created for bpartner
+      | bpartnerIdentifier | contactIdentifier | Name                  | OPT.Email          | OPT.Fax     | Code | OPT.InvoiceEmailEnabled |
+      | ext-ALBERTA-001    | ext-ALBERTA-c33   | test_name_c33_created | test_email_created | fax_created | c22  | true                    |

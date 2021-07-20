@@ -1,0 +1,85 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestBPartnerUpsert": {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "1000",
+        "externalVersion": null,
+        "bpartnerComposite": {
+          "bpartner": null,
+          "contacts": {
+            "requestItems": [
+              {
+                "contactIdentifier": "ext-ALBERTA-userId",
+                "contact": {
+                  "metasfreshBPartnerId": null,
+                  "metasfreshBPartnerIdSet": false,
+                  "code": null,
+                  "codeSet": false,
+                  "active": null,
+                  "activeSet": false,
+                  "name": "userFirstName userLastName",
+                  "nameSet": true,
+                  "firstName": "userFirstName",
+                  "firstNameSet": true,
+                  "lastName": "userLastName",
+                  "lastNameSet": true,
+                  "email": "userEmail@email.com",
+                  "emailSet": true,
+                  "phone": null,
+                  "phoneSet": false,
+                  "fax": null,
+                  "faxSet": false,
+                  "mobilePhone": null,
+                  "mobilePhoneSet": false,
+                  "defaultContact": null,
+                  "defaultContactSet": false,
+                  "shipToDefault": null,
+                  "shipToDefaultSet": false,
+                  "billToDefault": null,
+                  "billToDefaultSet": false,
+                  "newsletter": null,
+                  "newsletterSet": false,
+                  "description": null,
+                  "descriptionSet": false,
+                  "sales": null,
+                  "salesSet": false,
+                  "salesDefault": null,
+                  "salesDefaultSet": false,
+                  "purchase": null,
+                  "purchaseSet": false,
+                  "purchaseDefault": null,
+                  "purchaseDefaultSet": false,
+                  "subjectMatter": null,
+                  "subjectMatterSet": false,
+                  "invoiceEmailEnabled": null,
+                  "invoiceEmailEnabledSet": false,
+                  "birthday": null,
+                  "birthdaySet": false,
+                  "syncAdvise": null,
+                  "syncAdviseSet": false
+                },
+                "jsonAlbertaContact": {
+                  "gender": null,
+                  "genderSet": false,
+                  "title": null,
+                  "titleSet": false,
+                  "timestamp": 1551289949.000000000,
+                  "timestampSet": true
+                }
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

@@ -188,6 +188,7 @@ public class ExternalReferenceRestControllerService
 					.externalReferenceType(type)
 					.recordId(metasfreshId.getValue())
 					.version(reference.getVersion())
+					.externalReferenceUrl(reference.getExternalReferenceUrl())
 					.build();
 			externalReferenceRepository.save(externalReference);
 		}
@@ -338,6 +339,7 @@ public class ExternalReferenceRestControllerService
 				.externalReference(request.getExternalReferenceItem().getLookupItem().getId())
 				.recordId(request.getExternalReferenceItem().getMetasfreshId().getValue())
 				.version(request.getExternalReferenceItem().getVersion())
+				.externalReferenceUrl(request.getExternalReferenceItem().getExternalReferenceUrl())
 				.build();
 	}
 
@@ -356,6 +358,7 @@ public class ExternalReferenceRestControllerService
 				.externalReference(candidate.getExternalReference())
 				.recordId(candidate.getRecordId())
 				.version(candidate.getVersion())
+				.externalReferenceUrl(candidate.getExternalReferenceUrl())
 				.build();
 	}
 }

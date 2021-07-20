@@ -46,7 +46,4 @@ Overlay.propTypes = {
   showOverlay: PropTypes.bool,
 };
 
-export default connect(
-  null,
-  { toggleOverlay }
-)(Overlay);
+export default connect(null, { toggleOverlay })(Overlay);

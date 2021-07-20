@@ -1,20 +1,18 @@
 package de.metas.material.event.commons;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
+import de.metas.JsonObjectMapperHolder;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueId;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.Month;
 
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeValueId;
-import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.JsonObjectMapperHolder;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -78,6 +76,12 @@ public class AttributesKeyTest
 	public void ofString_NONE()
 	{
 		assertThat(AttributesKey.ofString("   ")).isSameAs(AttributesKey.NONE);
+	}
+
+	@Test
+	public void ofString_ValueEmpty()
+	{
+		assertThat(AttributesKey.ofString("540044=§&§540047=").getAsString()).isEqualTo(AttributesKey.NONE.getAsString());
 	}
 
 	@Test

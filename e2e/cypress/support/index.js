@@ -32,24 +32,24 @@ Cypress.on('uncaught:exception', (err) => {
 //   return false
 // });
 
-Cypress.on('emit:counterpartTranslations', messages => {
+Cypress.on('emit:counterpartTranslations', (messages) => {
   Cypress.messages = messages;
 });
 
-Cypress.on('window:alert', text => {
+Cypress.on('window:alert', (text) => {
   cy.log(`Alert modal confirmed: ${text}`);
 });
 
-before(function() {
-  // no clue why i have to add this wait, but it seems to be the only way the getLanguageSpecific workaround... works
-  cy.loginViaAPI().wait(300);
-
-  Cypress.Cookies.defaults({
-    preserve: ['SESSION', 'isLogged'],
+before(function () {
+  const autoLogin = function () {
+    return cy.loginViaForm();
+  };
+  autoLogin().then((msg) => {
+    cy.log(msg);
   });
 });
 
-Cypress.on('scrolled', $el => {
+Cypress.on('scrolled', ($el) => {
   $el.get(0).scrollIntoView({
     block: 'center',
     inline: 'center',

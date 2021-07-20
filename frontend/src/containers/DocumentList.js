@@ -447,7 +447,10 @@ class DocumentListContainer extends Component {
         }
 
         if (isIncluded) {
-          const parentId = isModal ? parentWindowType : parentDefaultViewId;
+          const parentId =
+            isModal || isModal === undefined
+              ? parentWindowType
+              : parentDefaultViewId;
           setIncludedView({
             windowId,
             viewId: newViewId,
@@ -761,9 +764,7 @@ class DocumentListContainer extends Component {
       includedView &&
       includedView.windowId &&
       includedView.viewId;
-    const triggerSpinner = layout.supportAttributes
-      ? layoutPending
-      : layoutPending || pending;
+    const triggerSpinner = layoutPending || pending;
 
     return (
       <DocumentList

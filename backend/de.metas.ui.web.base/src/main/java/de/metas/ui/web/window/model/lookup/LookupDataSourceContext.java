@@ -1,33 +1,6 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.ad.validationRule.INamePairPredicate;
-import org.adempiere.ad.validationRule.IValidationContext;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatee2;
-import org.compiere.util.NamePair;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.logging.LogManager;
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.security.impl.AccessSqlStringExpression;
@@ -41,6 +14,32 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
+import org.adempiere.ad.validationRule.INamePairPredicate;
+import org.adempiere.ad.validationRule.IValidationContext;
+import org.adempiere.ad.validationRule.NamePairPredicates;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatee2;
+import org.compiere.util.NamePair;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
 
 /*
  * #%L
@@ -68,7 +67,6 @@ import lombok.ToString;
  * Effective context used to validate lookups data.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Immutable
 @ToString
@@ -105,12 +103,12 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 	private LookupDataSourceContext(
 			final String lookupTableName,
-			final Map<String, Object> values,
-			final Object idToFilter,
-			final INamePairPredicate postQueryPredicate)
+			@NonNull final ImmutableMap<String, Object> parameterValues,
+			@Nullable final Object idToFilter,
+			@Nullable final INamePairPredicate postQueryPredicate)
 	{
 		this.lookupTableName = lookupTableName;
-		parameterValues = ImmutableMap.copyOf(values);
+		this.parameterValues = parameterValues;
 		this.idToFilter = idToFilter;
 		this.postQueryPredicate = postQueryPredicate;
 	}
@@ -148,12 +146,26 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 	public int getLimit(final int defaultValue)
 	{
-		return get_ValueAsInt(SqlForFetchingLookups.PARAM_Limit.getName(), defaultValue);
+		final Integer limit = get_ValueAsInt(SqlForFetchingLookups.PARAM_Limit.getName(), null);
+		return limit != null && limit > 0 ? limit : defaultValue;
+	}
+
+	public LookupDataSourceContext withLimit(final int limit)
+	{
+		final Integer limitEffective = limit > 0 ? limit : null;
+		return withParameter(SqlForFetchingLookups.PARAM_Limit.getName(), limitEffective);
 	}
 
 	public int getOffset(final int defaultValue)
 	{
-		return get_ValueAsInt(SqlForFetchingLookups.PARAM_Offset.getName(), defaultValue);
+		final Integer offset = get_ValueAsInt(SqlForFetchingLookups.PARAM_Offset.getName(), null);
+		return offset != null && offset >= 0 ? offset : defaultValue;
+	}
+
+	public LookupDataSourceContext withOffset(final int offset)
+	{
+		final Integer offsetEffective = Math.max(offset, 0);
+		return withParameter(SqlForFetchingLookups.PARAM_Offset.getName(), offsetEffective);
 	}
 
 	public String getAD_Language()
@@ -289,15 +301,14 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 	public boolean acceptItem(final NamePair item)
 	{
-		if (postQueryPredicate == null)
-		{
-			return true;
-		}
-		else
-		{
-			return postQueryPredicate.accept(this, item);
-		}
+		return postQueryPredicate == null || postQueryPredicate.accept(this, item);
 	}
+
+	public boolean isPostQueryPredicateAcceptingAll()
+	{
+		return postQueryPredicate == null || NamePairPredicates.ACCEPT_ALL.equals(postQueryPredicate);
+	}
+
 
 	public Object getIdToFilter()
 	{
@@ -342,6 +353,31 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return viewId;
 	}
 
+	public LookupDataSourceContext withParameter(@NonNull final String parameterName, @Nullable final Object newValue)
+	{
+		final Object currentValue = parameterValues.get(parameterName);
+		if (Objects.equals(currentValue, newValue))
+		{
+			return this;
+		}
+
+		final LinkedHashMap<String, Object> newParameterValues = new LinkedHashMap<>(parameterValues);
+		if (newValue != null)
+		{
+			newParameterValues.put(parameterName, newValue);
+		}
+		else
+		{
+			newParameterValues.remove(parameterName);
+		}
+
+		return new LookupDataSourceContext(
+				lookupTableName,
+				ImmutableMap.copyOf(newParameterValues),
+				idToFilter,
+				postQueryPredicate);
+	}
+
 	//
 	//
 	//
@@ -354,13 +390,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	{
 		private Evaluatee parentEvaluatee;
 		private final String lookupTableName;
-		private INamePairPredicate postQueryPredicate = INamePairPredicate.NULL;
+		private INamePairPredicate postQueryPredicate = NamePairPredicates.ACCEPT_ALL;
 		private final Map<String, Object> name2value = new HashMap<>();
 		private Object idToFilter;
 		private Collection<CtxName> _requiredParameters;
 		private boolean _requiredParameters_copyOnAdd = false;
 
-		private final Map<String, Object> valuesCollected = new LinkedHashMap<>();
+		private final LinkedHashMap<String, Object> valuesCollected = new LinkedHashMap<>();
 
 		private Builder(final String lookupTableName)
 		{
@@ -397,7 +433,11 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 			//
 			// Build the effective context
-			return new LookupDataSourceContext(lookupTableName, valuesCollected, idToFilter, postQueryPredicate);
+			return new LookupDataSourceContext(
+					lookupTableName,
+					ImmutableMap.copyOf(valuesCollected),
+					idToFilter,
+					postQueryPredicate);
 		}
 
 		private Collection<CtxName> getRequiredParameters()
@@ -407,7 +447,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 		/**
 		 * Advises the builder that provided parameters shall be present the context that will be build.
-		 *
+		 * <p>
 		 * NOTE: previous required parameters, if any, will be lost.
 		 *
 		 * @param requiredParameters the required parameters which might also contain default values to fall back to.
@@ -421,8 +461,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 		/**
 		 * Advises the builder that given parameter shall be present the context that will be build
-		 *
-		 * @param requiredParameter
 		 */
 		public Builder requiresParameter(@NonNull final CtxName requiredParameter)
 		{
@@ -551,13 +589,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return this;
 		}
 
-		private Builder collectContextValues(
+		private void collectContextValues(
 				@Nullable final Collection<CtxName> parameters,
 				final boolean failIfNotFound)
 		{
 			if (parameters == null || parameters.isEmpty())
 			{
-				return this;
+				return;
 			}
 
 			for (final CtxName parameterName : parameters)
@@ -565,7 +603,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				collectContextValue(parameterName, failIfNotFound);
 			}
 
-			return this;
 		}
 
 		private void collectContextValue(

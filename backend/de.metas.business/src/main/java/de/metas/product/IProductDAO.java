@@ -1,5 +1,7 @@
 package de.metas.product;
 
+import de.metas.order.compensationGroup.GroupCategoryId;
+import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
@@ -99,10 +101,13 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
 	
-	// TODO uncoment again when merging master
-	// Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
-
 	void clearIndividualMasterDataFromProduct(ProductId productId);
+
+	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
+
+	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
+			@NonNull GroupCategoryId groupCategoryId,
+			@NonNull OrgId targetOrgId);
 
 	@Value
 	class ProductQuery

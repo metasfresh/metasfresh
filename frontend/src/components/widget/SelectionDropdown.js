@@ -83,10 +83,8 @@ export default class SelectionDropdown extends Component {
    * @param {*} up
    */
   scrollIntoView(element, up) {
-    const {
-      top: topMax,
-      bottom: bottomMax,
-    } = this.wrapper.getBoundingClientRect();
+    const { top: topMax, bottom: bottomMax } =
+      this.wrapper.getBoundingClientRect();
     const { top, bottom } = element.getBoundingClientRect();
 
     if (top < topMax || bottom > bottomMax) {

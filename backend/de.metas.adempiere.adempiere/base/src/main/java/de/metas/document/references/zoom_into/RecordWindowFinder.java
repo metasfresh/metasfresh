@@ -26,8 +26,10 @@ import de.metas.cache.CCache;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -121,6 +123,7 @@ public class RecordWindowFinder
 	@Nullable private final AdWindowId alreadyKnownWindowId;
 	private boolean checkRecordPresentInWindow = false; // false to be backwards compatible
 	private boolean checkParentRecord = false; // false to be backwards compatible
+	private boolean ignoreExcludeFromZoomTargetsFlag;
 
 	//
 	// State
@@ -128,7 +131,7 @@ public class RecordWindowFinder
 	@Nullable private SOTrx _recordSOTrx_Effective = null;
 	@NonNull private final HashMap<String, Boolean> checkRecordIsMatchingWhereClauseCache = new HashMap<>();
 
-	private static final CCache<String, GenericZoomIntoTableInfo> tableInfoByTableName = CCache.<String, GenericZoomIntoTableInfo>builder()
+	private static final CCache<TableInfoCacheKey, GenericZoomIntoTableInfo> tableInfoByTableName = CCache.<TableInfoCacheKey, GenericZoomIntoTableInfo>builder()
 			.tableName(I_AD_Table.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Window.Table_Name)
@@ -201,6 +204,12 @@ public class RecordWindowFinder
 	public RecordWindowFinder checkParentRecord()
 	{
 		this.checkParentRecord = true;
+		return this;
+	}
+
+	public RecordWindowFinder ignoreExcludeFromZoomTargetsFlag()
+	{
+		this.ignoreExcludeFromZoomTargetsFlag = true;
 		return this;
 	}
 
@@ -324,7 +333,7 @@ public class RecordWindowFinder
 
 		final GenericZoomIntoTableInfo tableInfo = getTableInfo();
 		final String tableName = tableInfo.getTableName();
-		final String keyColumnName = tableInfo.getKeyColumnName();
+		final String keyColumnName = tableInfo.getSingleKeyColumnName();
 		final int recordId = getRecord_ID();
 
 		final MQuery query = new MQuery(tableName);
@@ -363,7 +372,7 @@ public class RecordWindowFinder
 				return null;
 			}
 
-			final String keyColumnName = getTableInfo().getKeyColumnName();
+			final String keyColumnName = getTableInfo().getSingleKeyColumnName();
 			return keyColumnName + "=" + recordId;
 		}
 	}
@@ -372,14 +381,16 @@ public class RecordWindowFinder
 	{
 		if (_tableInfo == null)
 		{
-			_tableInfo = tableInfoByTableName.getOrLoad(getTableName(), this::retrieveTableInfo);
+			_tableInfo = tableInfoByTableName.getOrLoad(
+					TableInfoCacheKey.builder().tableName(getTableName()).ignoreExcludeFromZoomTargetsFlag(ignoreExcludeFromZoomTargetsFlag).build(),
+					this::retrieveTableInfo);
 		}
 		return _tableInfo;
 	}
 
-	private GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final String tableName)
+	private GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final TableInfoCacheKey key)
 	{
-		return tableInfoRepository.retrieveTableInfo(tableName)
+		return tableInfoRepository.retrieveTableInfo(key.getTableName(), key.isIgnoreExcludeFromZoomTargetsFlag())
 				.withCustomizedWindowIds(customizedWindowInfoMapRepository.get());
 	}
 
@@ -438,5 +449,13 @@ public class RecordWindowFinder
 			logger.warn("Failed retrieving parent record ID from current record. Returning empty. \n\tthis={} \n\tSQL: {}", this, sql, ex);
 			return Optional.empty();
 		}
+	}
+
+	@Value
+	@Builder
+	private static class TableInfoCacheKey
+	{
+		@NonNull String tableName;
+		boolean ignoreExcludeFromZoomTargetsFlag;
 	}
 }

@@ -5,6 +5,7 @@ import java.util.List;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.organization.ClientAndOrgId;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -81,7 +82,7 @@ import de.metas.util.Services;
 	/**
 	 * @return true if given receipt schedule is eligible for receiving HUs
 	 */
-	public static final ProcessPreconditionsResolution checkEligibleForReceivingHUs(final I_M_ReceiptSchedule receiptSchedule)
+	public static ProcessPreconditionsResolution checkEligibleForReceivingHUs(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		// Receipt schedule shall not be already closed
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);

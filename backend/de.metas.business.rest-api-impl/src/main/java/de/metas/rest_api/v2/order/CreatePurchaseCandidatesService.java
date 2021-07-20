@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.order;
 
+import ch.qos.logback.classic.Level;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonExternalId;
@@ -38,7 +39,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
-import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
+import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -50,11 +51,12 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.quantity.Quantity;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.warehouse.WarehouseService;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -67,8 +69,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -80,6 +81,8 @@ import java.util.Optional;
 @Service
 public class CreatePurchaseCandidatesService
 {
+	private final static transient Logger logger = LogManager.getLogger(CreatePurchaseCandidatesService.class);
+
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
@@ -89,23 +92,29 @@ public class CreatePurchaseCandidatesService
 	private final JsonRetrieverService jsonRetrieverService;
 	private final CurrencyRepository currencyRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final WarehouseService warehouseService;
 
 	public CreatePurchaseCandidatesService(
 			@NonNull final PurchaseCandidateRepository purchaseCandidateRepo,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final WarehouseService warehouseService)
 	{
 		this.purchaseCandidateRepo = purchaseCandidateRepo;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.currencyRepository = currencyRepository;
 		this.externalReferenceService = externalReferenceService;
+		this.warehouseService = warehouseService;
 	}
 
 	public Optional<JsonPurchaseCandidate> createCandidate(@RequestBody final JsonPurchaseCandidateCreateItem request)
 	{
-		if (wasPurchaseCandAlreadyCreated(request))
+		final Optional<PurchaseCandidateId> alreadyCreatedCandId = retrieveAlreadyCreatedCandId(request);
+		if (alreadyCreatedCandId.isPresent())
 		{
+			Loggables.withLogger(logger, Level.INFO).addLog("C_PurchaseCandidate_ID={} with ExternalHeaderId={} and ExternalLineId={} already exists; -> ignore request",
+															alreadyCreatedCandId.get().getRepoId(), request.getExternalHeaderId(), request.getExternalLineId());
 			return Optional.empty();
 		}
 
@@ -116,6 +125,7 @@ public class CreatePurchaseCandidatesService
 								   .metasfreshId(JsonMetasfreshId.of(save.getRepoId()))
 								   .externalHeaderId(JsonExternalId.of(purchaseCandidate.getExternalHeaderId().getValue()))
 								   .externalLineId(JsonExternalId.of(purchaseCandidate.getExternalLineId().getValue()))
+								   .externalPurchaseOrderUrl(purchaseCandidate.getExternalPurchaseOrderUrl())
 								   .processed(false)
 								   .build());
 	}
@@ -146,8 +156,9 @@ public class CreatePurchaseCandidatesService
 				.orgId(orgId)
 				.externalHeaderId(ExternalId.of(request.getExternalHeaderId()))
 				.externalLineId(ExternalId.of(request.getExternalLineId()))
+				.externalPurchaseOrderUrl(request.getExternalPurchaseOrderUrl())
 				.productId(productId)
-				.warehouseId(getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
+				.warehouseId(warehouseService.getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
 				.purchaseDatePromised(datePromised)
 				.purchaseDateOrdered(request.getPurchaseDateOrdered())
 				.vendorId(vendorId)
@@ -171,16 +182,16 @@ public class CreatePurchaseCandidatesService
 		return purchaseCandidate;
 	}
 
-	private boolean wasPurchaseCandAlreadyCreated(@NonNull final JsonPurchaseCandidateCreateItem purchaseCandRequest)
+	private Optional<PurchaseCandidateId> retrieveAlreadyCreatedCandId(@NonNull final JsonPurchaseCandidateCreateItem purchaseCandRequest)
 	{
 		if (Check.isBlank(purchaseCandRequest.getExternalHeaderId())
 				|| Check.isBlank(purchaseCandRequest.getExternalLineId()))
 		{
-			return false;
+			return Optional.empty();
 		}
 
 		return purchaseCandidateRepo.getByExternalHeaderAndLineId(purchaseCandRequest.getExternalHeaderId(),
-																  purchaseCandRequest.getExternalLineId()).isPresent();
+																  purchaseCandRequest.getExternalLineId());
 
 	}
 
@@ -273,83 +284,5 @@ public class CreatePurchaseCandidatesService
 			default:
 				throw new InvalidIdentifierException(productExternalIdentifier.getRawValue());
 		}
-	}
-
-	@NonNull
-	private WarehouseId getWarehouseByIdentifier(
-			@NonNull final OrgId orgId,
-			@NonNull final String warehouseIdentifier)
-	{
-		final Optional<ExternalIdentifier> optionalExternalIdentifier = ExternalIdentifier.ofOptional(warehouseIdentifier);
-
-		if (!optionalExternalIdentifier.isPresent())
-		{
-			return getWarehouseByIdentifierString(orgId, warehouseIdentifier);
-		}
-
-		final ExternalIdentifier warehouseExternalIdentifier = optionalExternalIdentifier.get();
-
-		switch (warehouseExternalIdentifier.getType())
-		{
-			case METASFRESH_ID:
-				return WarehouseId.ofRepoId(warehouseExternalIdentifier.asMetasfreshId().getValue());
-			case EXTERNAL_REFERENCE:
-				return externalReferenceService.resolveExternalReference(orgId, warehouseExternalIdentifier, WarehouseExternalReferenceType.WAREHOUSE)
-						.map(metasfreshId -> WarehouseId.ofRepoId(metasfreshId.getValue()))
-						.orElseThrow(() -> MissingResourceException.builder()
-								.resourceName("warehouseIdentifier")
-								.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
-								.build());
-			case VALUE:
-				final WarehouseId warehouseId = Services.get(IWarehouseDAO.class).getWarehouseIdByValue(warehouseExternalIdentifier.asValue());
-				if (warehouseId == null)
-				{
-					throw MissingResourceException.builder()
-							.resourceName("warehouseIdentifier")
-							.resourceIdentifier(warehouseExternalIdentifier.getRawValue())
-							.build();
-				}
-				return warehouseId;
-			default:
-				throw new InvalidIdentifierException(warehouseIdentifier);
-		}
-	}
-
-	@NonNull
-	private WarehouseId getWarehouseByIdentifierString(
-			@NonNull final OrgId orgId,
-			@NonNull final String warehouseIdentifier)
-	{
-		final IdentifierString warehouseString = IdentifierString.of(warehouseIdentifier);
-		final IWarehouseDAO.WarehouseQuery.WarehouseQueryBuilder builder = IWarehouseDAO.WarehouseQuery.builder().orgId(orgId);
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
-		final WarehouseId result;
-		if (warehouseString.getType().equals(IdentifierString.Type.METASFRESH_ID))
-		{
-			result = WarehouseId.ofRepoId(warehouseString.asMetasfreshId().getValue());
-		}
-		else
-		{
-			if (warehouseString.getType().equals(IdentifierString.Type.EXTERNAL_ID))
-			{
-				builder.externalId(warehouseString.asExternalId());
-			}
-			else if (warehouseString.getType().equals(IdentifierString.Type.VALUE))
-			{
-				builder.value(warehouseString.asValue());
-			}
-			else
-			{
-				throw new InvalidIdentifierException(warehouseIdentifier);
-			}
-			result = warehouseDAO.retrieveWarehouseIdBy(builder.build());
-		}
-		if (result == null)
-		{
-			throw new InvalidIdentifierException(warehouseIdentifier);
-		}
-
-		return result;
 	}
 }

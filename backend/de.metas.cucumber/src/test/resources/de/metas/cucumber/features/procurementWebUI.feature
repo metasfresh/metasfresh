@@ -1,5 +1,7 @@
+@from:cucumber
 Feature: metasfresh communicates with the procurement-WebUI via RabbitMQ
-  
+
+  @from:cucumber
   Scenario: metasfresh provides bpartner data to the procurement-WebUI
     Given metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
