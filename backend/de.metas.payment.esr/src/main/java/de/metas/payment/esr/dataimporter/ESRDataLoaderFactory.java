@@ -9,6 +9,9 @@ import de.metas.payment.esr.model.X_ESR_Import;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.exceptions.AdempiereException;
+
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -39,6 +42,19 @@ public class ESRDataLoaderFactory
 			@NonNull final I_ESR_Import header,
 			@NonNull final InputStream input)
 	{
+		// TODO
+		// final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(inpu);
+		// if (Check.isEmpty(guessedType))
+		// {
+		// 	throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE);
+		// }
+		// else
+		// {
+		// 	addLog("Assuming and updating type={} for ESR_Import={}", guessedType, esrImport);
+		// 	esrImport.setDataType(guessedType);
+		// 	save(esrImport);
+		// }
+
 		if (X_ESR_Import.DATATYPE_Camt54.equalsIgnoreCase(header.getDataType()))
 		{
 			return new ESRDataImporterCamt54(header, input);

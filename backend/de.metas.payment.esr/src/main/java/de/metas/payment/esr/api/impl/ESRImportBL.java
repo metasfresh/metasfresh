@@ -1,53 +1,9 @@
 package de.metas.payment.esr.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
-import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigDecimal;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.PeriodClosedException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.compiere.model.MAllocationHdr;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnable;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.attachments.AttachmentEntry;
@@ -69,6 +25,7 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
+import de.metas.migration.scanner.IFileRef;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -97,6 +54,55 @@ import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.PeriodClosedException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.apache.commons.io.FileUtils;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.compiere.model.MAllocationHdr;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.TrxRunnable;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 
 @Service
 public class ESRImportBL implements IESRImportBL
@@ -116,7 +122,7 @@ public class ESRImportBL implements IESRImportBL
 
 	private static final String MSG_GroupLinesNegativeAmount = "GroupLinesNegativeAmount";
 
-	private static final  AdMessageKey ESR_NO_HAS_WRONG_ORG_2P =  AdMessageKey.of("de.metas.payment.esr.EsrNoHasWrongOrg");
+	private static final AdMessageKey ESR_NO_HAS_WRONG_ORG_2P = AdMessageKey.of("de.metas.payment.esr.EsrNoHasWrongOrg");
 
 	/**
 	 * Filled by {@link #registerActionHandler(String, IESRActionHandler)}.
@@ -171,6 +177,32 @@ public class ESRImportBL implements IESRImportBL
 		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoIdOrNull(esrImport.getAD_AttachmentEntry_ID());
 
 		final byte[] data = attachmentEntryService.retrieveData(attachmentEntryId);
+		AttachmentEntry attachmentEntry = attachmentEntryService.getById(attachmentEntryId);
+
+		extracted(data, attachmentEntry, esrImport);
+
+		// final URI uri = attachmentEntry.getUrl();
+		// final Path path = Paths.get(uri);
+		// final File zipFile = new File(path.toString());
+		//
+		// final File unzippedFile = unzip(zipFile);
+		//
+		// final DirectoryScriptScanner directoryScriptScanner = new DirectoryScriptScanner(new FileRef(unzippedFile));
+		//
+		// while (directoryScriptScanner.hasNext())
+		// {
+		// 	final IScript next = directoryScriptScanner.next();
+		//
+		// 	final File localFile = next.getLocalFile();
+		// 	try
+		// 	{
+		// 		byte[] fileContent = Files.readAllBytes(localFile.toPath());
+		// 	}
+		// 	catch (IOException e)
+		// 	{
+		// 		e.printStackTrace();
+		// 	}
+		// }
 
 		// there is no actual data
 		if (data == null || data.length == 0)
@@ -180,6 +212,162 @@ public class ESRImportBL implements IESRImportBL
 
 		final ByteArrayInputStream in = new ByteArrayInputStream(data);
 		loadAndEvaluateESRImportStream(esrImport, in);
+	}
+
+	private void extracted(final byte[] data, final AttachmentEntry attachmentEntry, @NonNull final I_ESR_Import esrImport)
+	{
+		ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
+		ZipInputStream zipStream = new ZipInputStream(byteStream);
+
+		try
+		{
+			final File unzipDir = Files.createTempDirectory("ZipFile" + "-")
+					.toFile();
+			unzipDir.deleteOnExit();
+			byte[] buffer = new byte[1024];
+
+			ZipEntry zipEntry = zipStream.getNextEntry();
+			while (zipEntry != null)
+			{
+				final File file = newFile(unzipDir, zipEntry);
+
+				if (zipEntry.isDirectory())
+				{
+					if (!file.isDirectory() && !file.mkdirs())
+					{
+						throw new IOException("Failed to create directory " + file);
+					}
+				}
+				else
+				{
+					// fix for Windows-created archives
+					File parent = file.getParentFile();
+					if (!parent.isDirectory() && !parent.mkdirs())
+					{
+						throw new IOException("Failed to create directory " + parent);
+					}
+
+					// write file content
+					FileOutputStream fos = new FileOutputStream(file);
+					int len;
+					while ((len = zipStream.read(buffer)) > 0)
+					{
+						fos.write(buffer, 0, len);
+					}
+					fos.close();
+				}
+
+				final byte[] bytes = FileUtils.readFileToByteArray(file);
+
+				final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
+				loadAndEvaluateESRImportStream(esrImport, in);
+
+				zipEntry = zipStream.getNextEntry();
+			}
+			zipStream.closeEntry();
+			zipStream.close();
+		}
+		catch (final Exception ex)
+		{
+			throw new RuntimeException("Cannot unzip " + attachmentEntry.getFilename(), ex);
+		}
+	}
+
+	public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException
+	{
+		File destFile = new File(destinationDir, zipEntry.getName());
+
+		String destDirPath = destinationDir.getCanonicalPath();
+		String destFilePath = destFile.getCanonicalPath();
+
+		if (!destFilePath.startsWith(destDirPath + File.separator))
+		{
+			throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+		}
+
+		return destFile;
+	}
+
+	public static File unzip(@NonNull final File zipFile)
+	{
+		try
+		{
+			final File unzipDir = Files.createTempDirectory(zipFile.getName() + "-")
+					.toFile();
+			unzipDir.deleteOnExit();
+
+			final ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
+			ZipEntry zipEntry = zis.getNextEntry();
+			while (zipEntry != null)
+			{
+				unzipEntry(unzipDir, zipEntry, zis);
+
+				zipEntry = zis.getNextEntry();
+			}
+			zis.closeEntry();
+			zis.close();
+
+			return unzipDir;
+		}
+		catch (final Exception ex)
+		{
+			throw new RuntimeException("Cannot unzip " + zipFile, ex);
+		}
+	}
+
+	public static File unzipEntry(
+			final File destinationDir,
+			final ZipEntry zipEntry,
+			final ZipInputStream zipInputStream) throws IOException
+	{
+		final File destFile = new File(destinationDir, zipEntry.getName());
+		if (zipEntry.isDirectory())
+		{
+			destFile.mkdirs();
+		}
+		else
+		{
+			final String destDirPath = destinationDir.getCanonicalPath();
+			final String destFilePath = destFile.getCanonicalPath();
+			if (!destFilePath.startsWith(destDirPath + File.separator))
+			{
+				throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+			}
+
+			try (final FileOutputStream fos = new FileOutputStream(destFile))
+			{
+				final byte[] buffer = new byte[4096];
+				int len;
+				while ((len = zipInputStream.read(buffer)) > 0)
+				{
+					fos.write(buffer, 0, len);
+				}
+			}
+		}
+		return destFile;
+	}
+
+	private static final File[] retrieveChildren(final IFileRef fileRef)
+	{
+		final File file = fileRef.getFile();
+		if (file == null)
+		{
+			return new File[] {};
+		}
+
+		if (!file.isDirectory())
+		{
+			return new File[] {};
+		}
+
+		final File[] children = file.listFiles();
+		if (children == null)
+		{
+			return new File[] {};
+		}
+
+		Arrays.sort(children); // make sure the files are sorted lexicographically
+		return children;
 	}
 
 	@VisibleForTesting
@@ -302,11 +490,11 @@ public class ESRImportBL implements IESRImportBL
 		if (!fitTrxQtys)
 		{
 			esrImport.setDescription(ESRDataLoaderUtil.addMsgToString(esrImport.getDescription(),
-					"The counted transactions ("
-							+ trxQty
-							+ ") do not fit the control transaction quantities ("
-							+ esrImport.getESR_Control_Trx_Qty()
-							+ "). The document will not be processed."));
+																	  "The counted transactions ("
+																			  + trxQty
+																			  + ") do not fit the control transaction quantities ("
+																			  + esrImport.getESR_Control_Trx_Qty()
+																			  + "). The document will not be processed."));
 		}
 		esrImportDAO.save(esrImport);
 	}
@@ -419,8 +607,8 @@ public class ESRImportBL implements IESRImportBL
 		if (line.getC_Invoice_ID() > 0
 				&& !line.getC_Invoice().isPaid()
 				&& line.getC_Invoice().getAD_Org_ID() == line.getAD_Org_ID() // only if orgs match
-		// we also want to handle invoices that are already paid, because this line links them to another payment
-		/* && !line.getC_Invoice().isPaid() */)
+			// we also want to handle invoices that are already paid, because this line links them to another payment
+			/* && !line.getC_Invoice().isPaid() */)
 		{
 			key = Util.mkKey(
 					line.getAD_Org_ID(),
@@ -595,7 +783,7 @@ public class ESRImportBL implements IESRImportBL
 
 	/**
 	 * @param esrImport the line's ESR-Import. Needed because there might be different settings for different clients and orgs.
-	 * @param line the line in question
+	 * @param line      the line in question
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
 	private void handleUnsuppordedTrxType(final I_ESR_Import esrImport, final I_ESR_ImportLine line)
@@ -859,8 +1047,8 @@ public class ESRImportBL implements IESRImportBL
 
 			final boolean ignoreIsAutoAllocateAvailableAmt = true; // task 09167: when processing ESR lines (i.e. from this method) we always allocate the payment to the invoice.
 			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice,
-					payment,
-					ignoreIsAutoAllocateAvailableAmt);
+																		  payment,
+																		  ignoreIsAutoAllocateAvailableAmt);
 			esrImportDAO.save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
 		});
 
@@ -1069,9 +1257,9 @@ public class ESRImportBL implements IESRImportBL
 			final String invoiceOrgName = orgsRepo.retrieveOrgValue(invoice.getAD_Org_ID());
 			final String importLineOrgName = orgsRepo.retrieveOrgValue(importLine.getAD_Org_ID());
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine,
-					Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
-							invoiceOrgName,
-							importLineOrgName }));
+											   Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
+													   invoiceOrgName,
+													   importLineOrgName }));
 		}
 
 		importLine.setC_Invoice(invoice);
@@ -1360,8 +1548,6 @@ public class ESRImportBL implements IESRImportBL
 			esrImportDAO.save(esrImport);
 		}
 	}
-
-	
 
 	@Override
 	public void linkESRImportLineToBankStatement(@NonNull final I_ESR_ImportLine esrImportLine, @NonNull final BankStatementAndLineAndRefId bankStatementLineRefId)

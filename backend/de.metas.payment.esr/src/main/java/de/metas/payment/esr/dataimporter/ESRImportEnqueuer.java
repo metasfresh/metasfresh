@@ -109,9 +109,10 @@ public class ESRImportEnqueuer
 
 		final ESRImportEnqueuerDataSource fromDataSource = getFromDataSource();
 
+
 		//
 		// Check/update data type
-		checkUpdateDataType(esrImport, fromDataSource.getFilename());
+		//checkUpdateDataType(esrImport, fromDataSource.getFilename());
 
 		// Set the hash of the file in the esr header
 		{

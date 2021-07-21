@@ -400,7 +400,7 @@ public class ESRTestBase
 	protected I_ESR_PostFinanceUserNumber createPostFinanceUserNumber(final I_C_BP_BankAccount account, final String esrNoForPostFinanceUser)
 	{
 		final I_ESR_PostFinanceUserNumber postFinanceUserNumber = newInstance(I_ESR_PostFinanceUserNumber.class);
-		postFinanceUserNumber.setC_BP_BankAccount(account);
+		postFinanceUserNumber.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		postFinanceUserNumber.setESR_RenderedAccountNo(esrNoForPostFinanceUser);
 		save(postFinanceUserNumber);
 
