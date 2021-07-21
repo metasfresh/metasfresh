@@ -152,30 +152,6 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=650419
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,650419,0,540632,541055,587146,'F',TO_TIMESTAMP('2021-07-21 12:33:57','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'In Verarbeitung',15,0,0,TO_TIMESTAMP('2021-07-21 12:33:57','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.migration-sql
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-
 -- change the order of the fields
 -- 2021-07-21T09:48:20.755Z
 -- URL zum Konzept
