@@ -70,12 +70,15 @@ public class ExternalSystemWooCommerceHouseKeepingTask implements IStartupHouseK
 
 		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getAllByType(ExternalSystemType.WOO);
 
-		parentConfigList.forEach((config -> ProcessInfo.builder()
-				.setAD_Process_ID(processId)
-				.setAD_User_ID(UserId.METASFRESH.getRepoId())
-				.addParameter(PARAM_EXTERNAL_REQUEST, WooCommerceCommand.EnableRestAPI.getValue())
-				.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
-				.buildAndPrepareExecution()
-				.executeSync()));
+		parentConfigList
+				.stream()
+				.peek(config -> Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " for WooCommerce config " + config.getChildConfig().getId()))
+				.forEach((config -> ProcessInfo.builder()
+						.setAD_Process_ID(processId)
+						.setAD_User_ID(UserId.METASFRESH.getRepoId())
+						.addParameter(PARAM_EXTERNAL_REQUEST, WooCommerceCommand.EnableRestAPI.getValue())
+						.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
+						.buildAndPrepareExecution()
+						.executeSync()));
 	}
 }
