@@ -20,22 +20,18 @@
  * #L%
  */
 
-package de.metas.externalsystem;
+package de.metas.externalsystem.woocommerce;
 
-import org.junit.jupiter.api.Test;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
-import static org.assertj.core.api.Assertions.*;
-
-class ExternalSystemTypeTest
+@AllArgsConstructor
+public enum WooCommerceCommand
 {
-	@Test
-	void ofCodeOrNameOrNull()
-	{
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("S6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Shopware6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("A")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Alberta")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("WOO")).isEqualTo(ExternalSystemType.WOO);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("blah")).isNull();
-	}
+	// value for ad_reference=541371
+	EnableRestAPI("enableRestAPI"),
+	DisableRestAPI("disableRestAPI");
+
+	@Getter
+	private final String value;
 }
