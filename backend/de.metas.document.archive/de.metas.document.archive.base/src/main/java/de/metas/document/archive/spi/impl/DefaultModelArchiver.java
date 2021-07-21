@@ -196,7 +196,7 @@ public class DefaultModelArchiver
 
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
 																	  .flavor(report.getFlavor())
-																	  .data(report.getDataAsByteArray())
+																	  .data(report.getDataOrNull())
 																	  .force(true)
 																	  .save(true)
 																	  .asyncBatchId(report.getAsyncBatchId())
