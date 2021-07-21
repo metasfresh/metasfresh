@@ -110,6 +110,8 @@ public class ESRTestBase
 	protected IPaymentDAO paymentDAO;
 	protected ESRImportBL esrImportBL;
 
+	protected String filename = "test.v11";
+
 	@BeforeEach
 	public final void beforeTest()
 	{

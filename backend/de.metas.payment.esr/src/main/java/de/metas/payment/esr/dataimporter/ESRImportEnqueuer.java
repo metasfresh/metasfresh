@@ -206,6 +206,9 @@ public class ESRImportEnqueuer
 
 	private String computeESRHashAndCheckForDuplicates(final I_ESR_Import esrImport, final byte[] fileContent)
 	{
+		final Properties ctx = InterfaceWrapperHelper.getCtx(esrImport);
+		final int orgRecordId = esrImport.getAD_Org_ID();
+
 		final String esrHash = esrImportBL.computeMD5Checksum(fileContent);
 
 		//
@@ -217,8 +220,8 @@ public class ESRImportEnqueuer
 		}
 		else
 		{
-			final Properties ctx = InterfaceWrapperHelper.getCtx(esrImport);
-			final Iterator<I_ESR_Import> esrImports = esrImportDAO.retrieveESRImports(ctx, esrImport.getAD_Org_ID());
+
+			final Iterator<I_ESR_Import> esrImports = esrImportDAO.retrieveESRImports(ctx, orgRecordId);
 
 			// will turn true if another identical hash was seen in the list of esr imports
 			boolean seen = false;

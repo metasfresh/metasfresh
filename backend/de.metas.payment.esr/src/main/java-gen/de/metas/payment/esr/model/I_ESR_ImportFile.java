@@ -52,6 +52,28 @@ public interface I_ESR_ImportFile
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+
+	/**
+	 * Get Partner Bank Account.
+	 * Bank Account of the Business Partner
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_BankAccount_ID();
+
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

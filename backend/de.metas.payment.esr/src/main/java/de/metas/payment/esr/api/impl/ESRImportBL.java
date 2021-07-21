@@ -25,7 +25,6 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
-import de.metas.migration.scanner.IFileRef;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -87,7 +86,6 @@ import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -172,37 +170,12 @@ public class ESRImportBL implements IESRImportBL
 
 	private void loadAndEvaluateESRImportFile0(@NonNull final I_ESR_Import esrImport)
 	{
+
 		//
 		// Fetch data to be imported from attachment
 		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoIdOrNull(esrImport.getAD_AttachmentEntry_ID());
 
 		final byte[] data = attachmentEntryService.retrieveData(attachmentEntryId);
-		AttachmentEntry attachmentEntry = attachmentEntryService.getById(attachmentEntryId);
-
-		extracted(data, attachmentEntry, esrImport);
-
-		// final URI uri = attachmentEntry.getUrl();
-		// final Path path = Paths.get(uri);
-		// final File zipFile = new File(path.toString());
-		//
-		// final File unzippedFile = unzip(zipFile);
-		//
-		// final DirectoryScriptScanner directoryScriptScanner = new DirectoryScriptScanner(new FileRef(unzippedFile));
-		//
-		// while (directoryScriptScanner.hasNext())
-		// {
-		// 	final IScript next = directoryScriptScanner.next();
-		//
-		// 	final File localFile = next.getLocalFile();
-		// 	try
-		// 	{
-		// 		byte[] fileContent = Files.readAllBytes(localFile.toPath());
-		// 	}
-		// 	catch (IOException e)
-		// 	{
-		// 		e.printStackTrace();
-		// 	}
-		// }
 
 		// there is no actual data
 		if (data == null || data.length == 0)
@@ -211,56 +184,41 @@ public class ESRImportBL implements IESRImportBL
 		}
 
 		final ByteArrayInputStream in = new ByteArrayInputStream(data);
-		loadAndEvaluateESRImportStream(esrImport, in);
+
+		AttachmentEntry attachmentEntry = attachmentEntryService.getById(attachmentEntryId);
+
+		if (esrImport.isArchiveFile())
+		{
+			loadAndEvaluateZip( esrImport, in, attachmentEntry.getFilename());
+		}
+
+		else
+		{
+
+			loadAndEvaluateESRImportStream(esrImport, in, attachmentEntry.getFilename());
+		}
 	}
 
-	private void extracted(final byte[] data, final AttachmentEntry attachmentEntry, @NonNull final I_ESR_Import esrImport)
+
+
+	private void loadAndEvaluateZip( @NonNull final I_ESR_Import esrImport, ByteArrayInputStream in,  String filename)
 	{
-		ByteArrayInputStream byteStream = new ByteArrayInputStream(data);
-		ZipInputStream zipStream = new ZipInputStream(byteStream);
+
+		final ZipInputStream zipStream = new ZipInputStream(in);
 
 		try
 		{
 			final File unzipDir = Files.createTempDirectory("ZipFile" + "-")
 					.toFile();
 			unzipDir.deleteOnExit();
-			byte[] buffer = new byte[1024];
+			final byte[] buffer = new byte[1024];
 
 			ZipEntry zipEntry = zipStream.getNextEntry();
 			while (zipEntry != null)
 			{
-				final File file = newFile(unzipDir, zipEntry);
+				final ByteArrayInputStream unzippedInput = getUnzippedInputStream(zipStream, unzipDir, buffer, zipEntry);
 
-				if (zipEntry.isDirectory())
-				{
-					if (!file.isDirectory() && !file.mkdirs())
-					{
-						throw new IOException("Failed to create directory " + file);
-					}
-				}
-				else
-				{
-					// fix for Windows-created archives
-					File parent = file.getParentFile();
-					if (!parent.isDirectory() && !parent.mkdirs())
-					{
-						throw new IOException("Failed to create directory " + parent);
-					}
-
-					// write file content
-					FileOutputStream fos = new FileOutputStream(file);
-					int len;
-					while ((len = zipStream.read(buffer)) > 0)
-					{
-						fos.write(buffer, 0, len);
-					}
-					fos.close();
-				}
-
-				final byte[] bytes = FileUtils.readFileToByteArray(file);
-
-				final ByteArrayInputStream in = new ByteArrayInputStream(bytes);
-				loadAndEvaluateESRImportStream(esrImport, in);
+				loadAndEvaluateESRImportStream(esrImport, unzippedInput, filename);
 
 				zipEntry = zipStream.getNextEntry();
 			}
@@ -269,8 +227,48 @@ public class ESRImportBL implements IESRImportBL
 		}
 		catch (final Exception ex)
 		{
-			throw new RuntimeException("Cannot unzip " + attachmentEntry.getFilename(), ex);
+			throw new RuntimeException("Cannot unzip " + filename, ex);
 		}
+	}
+
+	@NonNull
+	private ByteArrayInputStream getUnzippedInputStream(final ZipInputStream zipStream,
+			final File unzipDir,
+			final byte[] buffer,
+			final ZipEntry zipEntry) throws IOException
+	{
+		final File file = newFile(unzipDir, zipEntry);
+
+		if (zipEntry.isDirectory())
+		{
+			if (!file.isDirectory() && !file.mkdirs())
+			{
+				throw new IOException("Failed to create directory " + file);
+			}
+		}
+		else
+		{
+
+			final File parent = file.getParentFile();
+			if (!parent.isDirectory() && !parent.mkdirs())
+			{
+				throw new IOException("Failed to create directory " + parent);
+			}
+
+			// write file content
+			final FileOutputStream fos = new FileOutputStream(file);
+			int len;
+			while ((len = zipStream.read(buffer)) > 0)
+			{
+				fos.write(buffer, 0, len);
+			}
+			fos.close();
+		}
+
+		final byte[] unzippedData = FileUtils.readFileToByteArray(file);
+
+		final ByteArrayInputStream unzippedInput = new ByteArrayInputStream(unzippedData);
+		return unzippedInput;
 	}
 
 	public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException
@@ -288,92 +286,11 @@ public class ESRImportBL implements IESRImportBL
 		return destFile;
 	}
 
-	public static File unzip(@NonNull final File zipFile)
-	{
-		try
-		{
-			final File unzipDir = Files.createTempDirectory(zipFile.getName() + "-")
-					.toFile();
-			unzipDir.deleteOnExit();
-
-			final ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
-			ZipEntry zipEntry = zis.getNextEntry();
-			while (zipEntry != null)
-			{
-				unzipEntry(unzipDir, zipEntry, zis);
-
-				zipEntry = zis.getNextEntry();
-			}
-			zis.closeEntry();
-			zis.close();
-
-			return unzipDir;
-		}
-		catch (final Exception ex)
-		{
-			throw new RuntimeException("Cannot unzip " + zipFile, ex);
-		}
-	}
-
-	public static File unzipEntry(
-			final File destinationDir,
-			final ZipEntry zipEntry,
-			final ZipInputStream zipInputStream) throws IOException
-	{
-		final File destFile = new File(destinationDir, zipEntry.getName());
-		if (zipEntry.isDirectory())
-		{
-			destFile.mkdirs();
-		}
-		else
-		{
-			final String destDirPath = destinationDir.getCanonicalPath();
-			final String destFilePath = destFile.getCanonicalPath();
-			if (!destFilePath.startsWith(destDirPath + File.separator))
-			{
-				throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
-			}
-
-			try (final FileOutputStream fos = new FileOutputStream(destFile))
-			{
-				final byte[] buffer = new byte[4096];
-				int len;
-				while ((len = zipInputStream.read(buffer)) > 0)
-				{
-					fos.write(buffer, 0, len);
-				}
-			}
-		}
-		return destFile;
-	}
-
-	private static final File[] retrieveChildren(final IFileRef fileRef)
-	{
-		final File file = fileRef.getFile();
-		if (file == null)
-		{
-			return new File[] {};
-		}
-
-		if (!file.isDirectory())
-		{
-			return new File[] {};
-		}
-
-		final File[] children = file.listFiles();
-		if (children == null)
-		{
-			return new File[] {};
-		}
-
-		Arrays.sort(children); // make sure the files are sorted lexicographically
-		return children;
-	}
-
 	@VisibleForTesting
 	public void loadAndEvaluateESRImportStream(
 			@NonNull final I_ESR_Import esrImport,
-			@NonNull final InputStream in)
+			@NonNull final InputStream in,
+			@NonNull final String filename)
 	{
 		int countLines = 0;
 		if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_CHECK_DUPLICATED, false))
@@ -381,7 +298,7 @@ public class ESRImportBL implements IESRImportBL
 			countLines = esrImportDAO.countLines(esrImport, null);
 		}
 
-		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImport, in);
+		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImport, in, filename);
 		final ESRStatement esrStatement = loader.importData();
 		try
 		{

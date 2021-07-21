@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ESR_ImportFile extends org.compiere.model.PO implements I_ESR_ImportFile, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -773984722L;
+	private static final long serialVersionUID = 750335378L;
 
     /** Standard Constructor */
     public X_ESR_ImportFile (final Properties ctx, final int ESR_ImportFile_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_ESR_ImportFile extends org.compiere.model.PO implements I_ESR_Imp
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
+	{
+		if (C_BP_BankAccount_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
+	}
+
+	@Override
+	public int getC_BP_BankAccount_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
 
 	/** 

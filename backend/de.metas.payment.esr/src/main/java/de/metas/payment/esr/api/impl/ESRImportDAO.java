@@ -35,6 +35,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
@@ -301,6 +302,16 @@ public class ESRImportDAO implements IESRImportDAO
 				.addEqualsFilter(I_ESR_Import.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
 				.iterate(I_ESR_Import.class);
+	}
+
+	@Override
+	public Iterator<I_ESR_ImportFile> retrieveESRImportFiles(final Properties ctx, final int orgId)
+	{
+		return queryBL.createQueryBuilder(I_ESR_ImportFile.class, ctx, ITrx.TRXNAME_None)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ESR_ImportFile.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.iterate(I_ESR_ImportFile.class);
 	}
 
 	@Override

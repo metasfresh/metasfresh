@@ -88,15 +88,15 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 
 		assertThat(esrImport.isValid()).isFalse();
 	}
@@ -117,10 +117,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
@@ -131,7 +131,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		invoice.setDocumentNo("164363");
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
@@ -162,10 +162,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
@@ -178,7 +178,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
@@ -209,10 +209,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
@@ -224,7 +224,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		invoice.setDocumentNo("164363");
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
@@ -256,10 +256,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		account.setC_BPartner_ID(bp.getC_BPartner_ID());
 		save(account);
@@ -273,7 +273,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(invoice);
 
 		final String esrImportLineText = "0020105993102345370001000000070016436390000000100000000000016050116050116050100000000000000000000000";
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
 
@@ -298,15 +298,15 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.isValid()).isFalse();
@@ -324,15 +324,15 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		System.out.println(esrImportLine.getESRPostParticipantNumber() + "    ->    " + account.getESR_RenderedAccountNo().split("-"));
@@ -353,15 +353,15 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
@@ -380,10 +380,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-888888-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-888888-0",
+															 currencyEUR);
 
 		final String esrNoForPostFinanceUser = "010599310";
 
@@ -392,7 +392,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(esrNoForPostFinanceUser);
@@ -408,10 +408,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-888888-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-888888-0",
+															 currencyEUR);
 
 		final String renderedEsrNoForPostFinanceUser = "01-059931-0";
 		final String unRenderedEsrNoForPostFinanceUser = "010599310";
@@ -421,7 +421,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(unRenderedEsrNoForPostFinanceUser);
@@ -437,10 +437,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-888888-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-888888-0",
+															 currencyEUR);
 
 		final String esrNoForPostFinanceUser = "01-0599310";
 
@@ -449,9 +449,12 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		assertThatThrownBy(() -> esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes())))
+		assertThatThrownBy(() -> esrImportBL.loadAndEvaluateESRImportStream(esrImport,
+																			new ByteArrayInputStream(esrImportLineText.getBytes()),
+																			filename))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("01-0599310 contains three '-' separated parts");
+
 	}
 
 	@Test
@@ -464,10 +467,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-888888-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-888888-0",
+															 currencyEUR);
 
 		final String esrNoForPostFinanceUser = "088888880";
 
@@ -476,7 +479,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
@@ -499,10 +502,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -539,7 +542,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// I_ESR_Import esrImport = esrImportLine.getESR_Import();
@@ -559,10 +562,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -580,7 +583,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		// allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// System.out.println(org.getAD_Org_ID() + " -------> " + esrImportLine.getOrg());
@@ -600,10 +603,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-				Env.getAD_Org_ID(getCtx()),
-				Env.getAD_User_ID(getCtx()),
-				"01-059931-0",
-				currencyEUR);
+															 Env.getAD_Org_ID(getCtx()),
+															 Env.getAD_User_ID(getCtx()),
+															 "01-059931-0",
+															 currencyEUR);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
@@ -645,7 +648,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.isESR_IsManual_ReferenceNo()).isTrue();

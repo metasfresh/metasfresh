@@ -44,7 +44,7 @@ public class ESRReverseBookingLineMatcherTest extends ESRTestBase
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.getESRTrxType()).isEqualTo(ESRConstants.ESRTRXTYPE_ReverseBooking);

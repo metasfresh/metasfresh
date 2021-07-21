@@ -221,7 +221,7 @@ public class ESRImportTest extends ESRTestBase
 		// register listeners
 		Services.get(IESRLineHandlersService.class).registerESRLineListener(new DefaultESRLineHandler()); // 08741
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream((esrLineText + '\n' + esrLineText).getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream((esrLineText + '\n' + esrLineText).getBytes()), filename);
 
 		// start processing
 		esrImportBL.process(esrImport);
@@ -690,7 +690,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()), filename);
 
 		// start processing
 		esrImportBL.process(esrImport);
@@ -830,7 +830,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()), filename);
 
 		// start processing
 		esrImportBL.process(esrImport);
@@ -971,7 +971,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()), filename);
 
 		// start processing
 		esrImportBL.process(esrImport);
@@ -1196,7 +1196,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()), filename);
 
 		esrImportBL.process(esrImport);
 
@@ -1308,7 +1308,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()), filename);
 
 		esrImportBL.process(esrImport);
 
@@ -1423,7 +1423,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrLineText.getBytes()), filename);
 
 		esrImportBL.process(esrImport);
 
@@ -1539,7 +1539,9 @@ public class ESRImportTest extends ESRTestBase
 		// first line
 		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream((esrLineText + '\n' + esrLineText + '\n' + esrLineText).getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport,
+												   new ByteArrayInputStream((esrLineText + '\n' + esrLineText + '\n' + esrLineText).getBytes()),
+												   filename);
 
 		esrImportBL.process(esrImport);
 

@@ -31,6 +31,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
@@ -88,6 +89,8 @@ public interface IESRImportDAO extends ISingletonService
 	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineIds(Collection<BankStatementLineId> bankStatementLineIds);
 
 	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineRefId(BankStatementAndLineAndRefId bankStatementLineRefId);
+
+	Iterator<I_ESR_ImportFile> retrieveESRImportFiles(Properties ctx, int orgId);
 
 	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
 

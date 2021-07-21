@@ -192,7 +192,7 @@ public class ESRImportBLTest extends ESRTestBase
 		save(esrReferenceNumberDocument);
 
 		// invoke the code under test
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 		refresh(esrImport, true);
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
@@ -297,7 +297,7 @@ public class ESRImportBLTest extends ESRTestBase
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 
 		final BigDecimal grandTotal = new BigDecimal("123.56");
 

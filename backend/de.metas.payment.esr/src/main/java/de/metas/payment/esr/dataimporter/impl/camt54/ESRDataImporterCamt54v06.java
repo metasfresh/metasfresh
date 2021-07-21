@@ -14,6 +14,7 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
 
@@ -40,7 +41,6 @@ import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
-import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -98,10 +98,10 @@ public class ESRDataImporterCamt54v06
 {
 	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
 
-	private final I_ESR_Import header;
+	private final I_ESR_ImportFile header;
 	private final MultiVersionStreamReaderDelegate xsr;
 
-	public ESRDataImporterCamt54v06(@NonNull final I_ESR_Import header, @NonNull final MultiVersionStreamReaderDelegate xsr)
+	public ESRDataImporterCamt54v06(@NonNull final I_ESR_ImportFile header, @NonNull final MultiVersionStreamReaderDelegate xsr)
 	{
 		this.header = header;
 		this.xsr = xsr;

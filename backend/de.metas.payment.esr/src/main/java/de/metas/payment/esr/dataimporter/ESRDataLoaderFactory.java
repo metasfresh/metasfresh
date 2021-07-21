@@ -5,6 +5,7 @@ import java.io.InputStream;
 import de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRDataImporterV11;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.X_ESR_Import;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -40,10 +41,14 @@ public class ESRDataLoaderFactory
 {
 	public IESRDataImporter createImporter(
 			@NonNull final I_ESR_Import header,
-			@NonNull final InputStream input)
+			@NonNull final InputStream input,
+			@NonNull final String fileName)
 	{
 		// TODO
-		// final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(inpu);
+		final String guessedType = guessTypeFromFileName(fileName);
+
+		final I_ESR_ImportFile esrImportFile = null; //todo
+
 		// if (Check.isEmpty(guessedType))
 		// {
 		// 	throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE);
@@ -57,7 +62,7 @@ public class ESRDataLoaderFactory
 
 		if (X_ESR_Import.DATATYPE_Camt54.equalsIgnoreCase(header.getDataType()))
 		{
-			return new ESRDataImporterCamt54(header, input);
+			return new ESRDataImporterCamt54(esrImportFile, input);
 		}
 		else if (X_ESR_Import.DATATYPE_V11.equalsIgnoreCase(header.getDataType()))
 		{

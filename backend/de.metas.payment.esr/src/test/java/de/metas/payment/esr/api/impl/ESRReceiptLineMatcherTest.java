@@ -41,7 +41,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 
 		final I_ESR_Import esrImport = createImport();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 
 		assertThat(esrImport.getESR_Control_Amount()).isEqualByComparingTo("920");
 		assertThat(esrImport.getESR_Control_Trx_Qty()).isEqualByComparingTo("25");
@@ -60,7 +60,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 		final String esrImportLineText = "9990105993109999999999999999999999999990000000920000000000000";
 		final I_ESR_Import esrImport = createImport();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 
 		assertThat(esrImport.isValid()).isFalse();
 		assertThat(esrImport.getDescription()).contains("ESR_Wrong_Ctrl_Line_Length_[61]");
@@ -72,7 +72,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 		final String esrImportLineText = "999010599310999999999999999999999999999000000092x00000000000025130118000000000000000000";
 		final I_ESR_Import esrImport = createImport();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 
 		assertThat(esrImport.isValid()).isFalse();
 	}
@@ -83,7 +83,7 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 		final String esrImportLineText = "99901059931099999999999999999999999999900000009200000000000002x130118000000000000000000";
 		final I_ESR_Import esrImport = createImport();
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()));
+		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
 
 		assertThat(esrImport.isValid()).isFalse();
 	}
