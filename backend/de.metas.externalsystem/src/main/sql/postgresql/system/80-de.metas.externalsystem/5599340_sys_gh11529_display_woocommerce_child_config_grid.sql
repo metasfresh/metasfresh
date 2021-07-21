@@ -53,3 +53,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=650415
 /* DDL */ select AD_Element_Link_Create_Missing_Field(650415)
 ;
 
+-- 2021-07-21T14:26:15.826Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=587144
+;
+
