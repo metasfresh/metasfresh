@@ -20,7 +20,7 @@
  * #L%
  */
 
-package org.adempiere.util.lang;
+package de.metas.util.lang;
 
 import com.google.common.io.ByteStreams;
 import lombok.NonNull;

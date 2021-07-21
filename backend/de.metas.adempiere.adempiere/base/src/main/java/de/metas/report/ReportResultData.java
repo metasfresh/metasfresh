@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.SpringResourceUtils;
+import de.metas.util.lang.SpringResourceUtils;
 import org.apache.commons.io.FileUtils;
 import org.compiere.util.MimeType;
 import org.springframework.core.io.FileSystemResource;

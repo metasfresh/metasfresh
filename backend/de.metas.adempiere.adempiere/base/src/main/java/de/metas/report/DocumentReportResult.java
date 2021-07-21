@@ -24,9 +24,7 @@ package de.metas.report;
 
 import javax.annotation.Nullable;
 
-import com.google.common.io.ByteStreams;
 import org.adempiere.archive.api.ArchiveResult;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
 import de.metas.bpartner.BPartnerId;
@@ -37,11 +35,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -52,7 +48,7 @@ public class DocumentReportResult
 	DocumentReportFlavor flavor = DocumentReportFlavor.PRINT;
 
 	@Nullable
-	ReportResultData data;
+	ReportResultData reportResultData;
 
 	@Nullable
 	TableRecordReference documentRef;
@@ -82,21 +78,21 @@ public class DocumentReportResult
 	@Nullable
 	public String getFilename()
 	{
-		return data != null ? data.getReportFilename() : null;
+		return reportResultData != null ? reportResultData.getReportFilename() : null;
 	}
 
 	public boolean isNoData()
 	{
-		return data == null || data.isEmpty();
+		return reportResultData == null || reportResultData.isEmpty();
 	}
 
 	@Nullable
-	public Resource getDataOrNull()
+	public Optional<Resource> getReportData()
 	{
-		if (data == null)
+		if (reportResultData == null)
 		{
-			return null;
+			return Optional.empty();
 		}
-		return data.getReportData();
+		return Optional.of(reportResultData.getReportData());
 	}
 }

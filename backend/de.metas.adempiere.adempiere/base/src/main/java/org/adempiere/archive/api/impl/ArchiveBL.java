@@ -45,7 +45,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IClientDAO;
-import org.adempiere.util.lang.SpringResourceUtils;
+import de.metas.util.lang.SpringResourceUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
@@ -57,7 +57,6 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
