@@ -22,7 +22,6 @@ package org.adempiere.archive.api.impl;
  * #L%
  */
 
-import com.google.common.io.ByteStreams;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
@@ -46,6 +45,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.SpringResourceUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
@@ -68,10 +68,10 @@ public class ArchiveBL implements IArchiveBL
 	@Override
 	@Nullable
 	public I_AD_Archive archive(final Resource data,
-								final ArchiveInfo archiveInfo,
-								final boolean force,
-								final boolean save,
-								final String trxName)
+			final ArchiveInfo archiveInfo,
+			final boolean force,
+			final boolean save,
+			final String trxName)
 	{
 		final ArchiveRequest request = createArchiveRequest(data, archiveInfo, force, save, trxName);
 		return archive(request).getArchiveRecord();
@@ -144,25 +144,7 @@ public class ArchiveBL implements IArchiveBL
 
 		archive.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 
-		final Resource data = request.getData();
-		final byte[] byteArray;
-		if(data instanceof ByteArrayResource)
-		{
-			byteArray = ((ByteArrayResource)data).getByteArray();
-		}
-		else
-		{
-			try
-			{
-				byteArray = ByteStreams.toByteArray(data.getInputStream());
-			}
-			catch (final IOException e)
-			{
-				throw AdempiereException.wrapIfNeeded(e)
-						.appendParametersToMessage()
-						.setParameter("request", request);
-			}
-		}
+		final byte[] byteArray = extractByteArray(request);
 		storage.setBinaryData(archive, byteArray);
 
 		//FRESH-349: Set ad_pinstance
@@ -177,6 +159,20 @@ public class ArchiveBL implements IArchiveBL
 				.archiveRecord(archive)
 				.data(byteArray)
 				.build();
+	}
+
+	private byte[] extractByteArray(@NonNull final ArchiveRequest request)
+	{
+		try
+		{
+			return SpringResourceUtils.toByteArray(request.getData());
+		}
+		catch (final RuntimeException e)
+		{ // augment and rethrow
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("request", request);
+		}
 	}
 
 	/**
@@ -226,7 +222,8 @@ public class ArchiveBL implements IArchiveBL
 		return bpartnerBL.getLanguageForModel(record).map(Language::getAD_Language).orElse(initialLanguage);
 	}
 
-	private Properties createContext(@NonNull final ArchiveRequest request)
+	private Properties createContext(
+			@NonNull final ArchiveRequest request)
 	{
 		final TableRecordReference recordRef = request.getRecordRef();
 		if (recordRef == null)
@@ -251,7 +248,8 @@ public class ArchiveBL implements IArchiveBL
 
 	}
 
-	private boolean isToArchive(@NonNull final ArchiveRequest request)
+	private boolean isToArchive(
+			@NonNull final ArchiveRequest request)
 	{
 		final String autoArchive = getAutoArchiveType(request.getCtx());
 
@@ -359,7 +357,8 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public Optional<I_AD_Archive> getLastArchive(@NonNull final TableRecordReference reference)
+	public Optional<I_AD_Archive> getLastArchive(
+			@NonNull final TableRecordReference reference)
 	{
 		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 		final List<I_AD_Archive> lastArchives = archiveDAO.retrieveLastArchives(Env.getCtx(), reference, QueryLimit.ONE);
@@ -375,7 +374,8 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public Optional<Resource> getLastArchiveBinaryData(@NonNull final TableRecordReference reference)
+	public Optional<Resource> getLastArchiveBinaryData(
+			@NonNull final TableRecordReference reference)
 	{
 		return getLastArchive(reference)
 				.map(this::getBinaryData)
