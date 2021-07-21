@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.externalsystem
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,22 +20,30 @@
  * #L%
  */
 
-package de.metas.externalsystem;
+package de.metas.camel.externalsystems.common.auth;
 
-import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.Test;
+
+import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.*;
 
-class ExternalSystemTypeTest
+public class JsonExpireTokenResponseTest
 {
+	private final ObjectMapper mapper = new ObjectMapper();
+
 	@Test
-	void ofCodeOrNameOrNull()
+	public void serializeDeserialize() throws IOException
 	{
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("S6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Shopware6")).isEqualTo(ExternalSystemType.Shopware6);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("A")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Alberta")).isEqualTo(ExternalSystemType.Alberta);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("WOO")).isEqualTo(ExternalSystemType.WOO);
-		assertThat(ExternalSystemType.ofCodeOrNameOrNull("blah")).isNull();
+		final JsonExpireTokenResponse request = JsonExpireTokenResponse.builder()
+				.numberOfAuthenticatedTokens(2)
+				.build();
+
+		final String string = mapper.writeValueAsString(request);
+
+		final JsonExpireTokenResponse result = mapper.readValue(string, JsonExpireTokenResponse.class);
+
+		assertThat(result).isEqualTo(request);
 	}
 }

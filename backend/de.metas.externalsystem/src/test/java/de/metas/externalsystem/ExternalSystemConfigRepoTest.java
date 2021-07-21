@@ -27,10 +27,12 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
+import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -312,5 +314,78 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Woocommerce_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_WooCommerce);
+		saveRecord(parentRecord);
+
+		final I_ExternalSystem_Config_WooCommerce childRecord = newInstance(I_ExternalSystem_Config_WooCommerce.class);
+		childRecord.setCamelHttpResourceAuthKey("authKey");
+		childRecord.setExternalSystemValue("testWoocommerceValue");
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemWooCommerceConfigId id = ExternalSystemWooCommerceConfigId.ofRepoId(childRecord.getExternalSystem_Config_WooCommerce_ID());
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Woocommerce_getTypeAndValue()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_WooCommerce);
+		saveRecord(parentRecord);
+
+		final String value = "testWoocommerceValue";
+
+		final I_ExternalSystem_Config_WooCommerce childRecord = newInstance(I_ExternalSystem_Config_WooCommerce.class);
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.WOO, value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Woocommerce_getByTypeAndValue_wrongType()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_WooCommerce);
+		saveRecord(parentRecord);
+
+		final String value = "testWoocommerceValue";
+
+		final I_ExternalSystem_Config_WooCommerce childRecord = newInstance(I_ExternalSystem_Config_WooCommerce.class);
+		childRecord.setCamelHttpResourceAuthKey("apiKey");
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+
+		//then
+		assertThat(externalSystemParentConfig).isEmpty();
 	}
 }
