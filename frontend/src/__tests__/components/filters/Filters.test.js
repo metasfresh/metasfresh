@@ -4,6 +4,7 @@ import { mount, shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
+import { act } from 'react-dom/test-utils';
 
 import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
@@ -20,7 +21,7 @@ import filtersStoreTwo from '../../../../test_setup/fixtures/filters/filtersStor
 import filtersStoreThree from '../../../../test_setup/fixtures/filters/filtersStoreThree.json';
 const mockStore = configureStore([]);
 
-const createStore = function(state = {}) {
+const createStore = function (state = {}) {
   const res = merge(
     {
       appHandler: {
@@ -197,6 +198,7 @@ describe('Filters tests', () => {
         },
         filters: filtersStoreTwo,
       });
+
       const store = mockStore(initialState);
       const wrapper = mount(
         <ShortcutProvider hotkeys={hotkeys} keymap={keymap}>
@@ -217,10 +219,12 @@ describe('Filters tests', () => {
         wrapper.find('.form-field-Processed input[type="checkbox"]').length
       ).toBe(1);
 
-      wrapper
-        .find('.form-field-Processed input[type="checkbox"]')
-        .simulate('change', { target: { checked: false } });
-      wrapper.update();
+      act(() => {
+        wrapper
+          .find('.form-field-Processed input[type="checkbox"]')
+          .simulate('change');
+        wrapper.update();
+      });
 
       expect(
         wrapper.find('.form-field-Processed input[type="checkbox"]').checked
@@ -230,6 +234,7 @@ describe('Filters tests', () => {
       wrapper
         .find('.filter-widget .filter-btn-wrapper .applyBtn')
         .simulate('click');
+
       wrapper.update();
 
       const filterResult = [
@@ -244,6 +249,13 @@ describe('Filters tests', () => {
                 description: '1000003_TestVendor',
               },
               valueTo: null,
+              defaultValue: null,
+              defaultValueTo: null,
+            },
+            {
+              parameterName: 'Processed',
+              value: false,
+              valueTo: '',
               defaultValue: null,
               defaultValueTo: null,
             },
