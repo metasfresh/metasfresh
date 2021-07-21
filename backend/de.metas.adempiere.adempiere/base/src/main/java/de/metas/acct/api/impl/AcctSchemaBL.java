@@ -27,6 +27,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -134,7 +135,6 @@ public class AcctSchemaBL implements IAcctSchemaBL
 					Loggables.withLogger(logger, Level.DEBUG).addLog("value {} for bpartnerId {} must be a number with 5 to 7 digits", value, bpartner.getC_BPartner_ID());
 				}
 			}
-
 		}
 	}
 }
