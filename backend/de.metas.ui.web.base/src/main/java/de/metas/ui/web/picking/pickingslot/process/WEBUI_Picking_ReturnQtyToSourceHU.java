@@ -15,7 +15,9 @@ import de.metas.process.IProcessDefaultParametersProvider;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.ui.web.handlingunits.HUEditorRowType;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
@@ -67,6 +69,7 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final HuId2SourceHUsService sourceHUsRepository = SpringContextHolder.instance.getBean(HuId2SourceHUsService.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
@@ -146,16 +149,22 @@ public class WEBUI_Picking_ReturnQtyToSourceHU
 
 		final HuId huId = getSelectedHUId();
 
+		final Quantity qtyToRemove = Quantity.of(qtyCU, productBL.getStockUOM(productId));
+
 		pickingCandidateService.removeQtyFromHU(RemoveQtyFromHURequest.builder()
-				.qtyCU(qtyCU)
+				.qtyToRemove(qtyToRemove)
 				.huId(huId)
 				.productId(productId)
 				.build());
 
+		return MSG_OK;
+	}
+
+	@Override
+	protected void postProcess(final boolean success)
+	{
 		invalidateView();
 		invalidateParentView();
-
-		return MSG_OK;
 	}
 
 	private HuId getSelectedHUId()
