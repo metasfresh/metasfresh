@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.alberta.attachment.processor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
+import de.metas.camel.externalsystems.alberta.attachment.AttachmentUtil;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
@@ -51,6 +52,7 @@ import static de.metas.camel.externalsystems.alberta.common.ExternalIdentifierFo
 
 public class AttachmentProcessor implements Processor
 {
+
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
@@ -69,8 +71,11 @@ public class AttachmentProcessor implements Processor
 
 		final String base64FileData = Base64.getEncoder().encodeToString(fileData);
 
+		final String effectiveFileName = AttachmentUtil.appendPDFSuffix(file.getName());
+		
 		final JsonAttachment jsonAttachment = JsonAttachment.builder()
-				.fileName(file.getName())
+				.fileName(effectiveFileName)
+				.mimeType(GetAttachmentRouteConstants.MIME_TYPE_PDF)
 				.data(base64FileData)
 				.tags(computeTags(attachment))
 				.build();

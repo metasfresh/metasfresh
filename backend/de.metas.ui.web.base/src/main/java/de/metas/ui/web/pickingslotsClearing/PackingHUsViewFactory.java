@@ -89,9 +89,9 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 			final @NonNull JSONFilterViewRequest filterViewRequest,
 			final @NonNull Supplier<IViewsRepository> viewsRepo)
 	{
-		final ViewId packingHUsViewId = packingHUsView.getViewId();
+		final ViewId newPackingHUsViewId = PackingHUsViewKey.incrementPackingHUsViewIdVersion(packingHUsView.getViewId());
 		return createPackingHUsView(
-				PackingHUsViewKey.ofPackingHUsViewId(packingHUsViewId),
+				PackingHUsViewKey.ofPackingHUsViewId(newPackingHUsViewId),
 				filterViewRequest);
 	}
 
@@ -131,7 +131,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 	private PickingSlotsClearingView getPickingSlotsClearingView(final ViewId packingHUsViewId)
 	{
 		final ViewId pickingSlotsClearingViewId = PackingHUsViewKey.extractPickingSlotClearingViewId(packingHUsViewId);
-		return  viewsRepo.getView(pickingSlotsClearingViewId, PickingSlotsClearingView.class);
+		return viewsRepo.getView(pickingSlotsClearingViewId, PickingSlotsClearingView.class);
 	}
 
 	@Override
@@ -188,7 +188,7 @@ public class PackingHUsViewFactory implements IViewFactory, IViewsIndexStorage
 		return huEditorViewFactory.createView(request);
 	}
 
-	private RelatedProcessDescriptor createProcessDescriptor(Class<? extends JavaProcess> processClass)
+	private RelatedProcessDescriptor createProcessDescriptor(final Class<? extends JavaProcess> processClass)
 	{
 		return RelatedProcessDescriptor.builder()
 				.processId(adProcessDAO.retrieveProcessIdByClass(processClass))

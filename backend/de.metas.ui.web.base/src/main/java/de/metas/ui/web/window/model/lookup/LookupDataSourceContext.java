@@ -9,6 +9,7 @@ import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
 import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
@@ -93,6 +94,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 	public static final CtxName PARAM_Filter = CtxNames.parse("Filter");
 	public static final CtxName PARAM_FilterSql = CtxNames.parse("FilterSql");
+	public static final CtxName PARAM_FilterSqlWithoutWildcards = CtxNames.parse("FilterSqlWithoutWildcards");
 	public static final CtxName PARAM_ViewId = CtxNames.parse("ViewId");
 	public static final CtxName PARAM_ViewSize = CtxNames.parse("ViewSize");
 
@@ -182,8 +184,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	@Override
 	public <T> T get_ValueAsObject(final String variableName)
 	{
-		@SuppressWarnings("unchecked")
-		final T valueCasted = (T)parameterValues.get(variableName);
+		@SuppressWarnings("unchecked") final T valueCasted = (T)parameterValues.get(variableName);
 		return valueCasted;
 	}
 
@@ -308,7 +309,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	{
 		return postQueryPredicate == null || NamePairPredicates.ACCEPT_ALL.equals(postQueryPredicate);
 	}
-
 
 	public Object getIdToFilter()
 	{
@@ -508,6 +508,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		{
 			requiresParameter(PARAM_Filter);
 			requiresParameter(PARAM_FilterSql);
+			requiresParameter(PARAM_FilterSqlWithoutWildcards);
 			requiresParameter(SqlForFetchingLookups.PARAM_Limit);
 			requiresParameter(SqlForFetchingLookups.PARAM_Offset);
 			return this;
@@ -544,6 +545,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		{
 			putValue(PARAM_Filter, filter);
 			putValue(PARAM_FilterSql, convertFilterToSql(filter));
+			putValue(PARAM_FilterSqlWithoutWildcards, convertFilterToSqlWithoutWildcards(filter));
 			putValue(SqlForFetchingLookups.PARAM_Offset, offset);
 			putValue(SqlForFetchingLookups.PARAM_Limit, limit);
 
@@ -567,6 +569,19 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				searchSql += "%";
 			}
 
+			return DB.TO_STRING(searchSql);
+		}
+
+		private static String convertFilterToSqlWithoutWildcards(final String filter)
+		{
+			if (filter == FILTER_Any
+					|| filter == null
+					|| Check.isBlank(filter))
+			{
+				return "''";
+			}
+
+			final String searchSql = filter.replace("%", "").trim();
 			return DB.TO_STRING(searchSql);
 		}
 

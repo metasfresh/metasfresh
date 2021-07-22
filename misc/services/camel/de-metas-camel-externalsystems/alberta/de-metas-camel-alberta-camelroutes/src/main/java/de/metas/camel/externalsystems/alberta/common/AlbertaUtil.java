@@ -23,12 +23,14 @@
 package de.metas.camel.externalsystems.alberta.common;
 
 import org.threeten.bp.OffsetDateTime;
+import org.threeten.bp.temporal.TemporalField;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
 
 import static org.threeten.bp.temporal.ChronoField.EPOCH_DAY;
+import static org.threeten.bp.temporal.ChronoField.MILLI_OF_SECOND;
 
 public class AlbertaUtil
 {
@@ -40,7 +42,10 @@ public class AlbertaUtil
 			return null;
 		}
 
-		return Instant.ofEpochSecond(offsetDateTime.toEpochSecond());
+		// we can't loose the millis.
+		final long millis = offsetDateTime.toEpochSecond() * 1000 + offsetDateTime.getLong(MILLI_OF_SECOND);
+
+		return Instant.ofEpochMilli(millis);
 	}
 
 	@Nullable
