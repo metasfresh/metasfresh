@@ -1,19 +1,7 @@
 package de.metas.material.dispo.commons;
 
-import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
-import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-import de.metas.document.dimension.DimensionService;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import com.google.common.collect.ImmutableList;
-
+import de.metas.document.dimension.DimensionService;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -21,6 +9,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail
 import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.ddorder.DDOrder;
@@ -29,6 +18,16 @@ import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderRequestedEvent;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+
+import static de.metas.material.event.EventTestHelper.PRODUCT_ID;
+import static de.metas.material.event.EventTestHelper.createMaterialDescriptor;
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -61,8 +60,9 @@ public class CandidateServiceTests
 	{
 		final DimensionService dimensionService = Mockito.mock(DimensionService.class);
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 		requestMaterialOrderService = new RequestMaterialOrderService(
-				new CandidateRepositoryRetrieval(dimensionService),
+				new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo),
 				postMaterialEventService);
 	}
 

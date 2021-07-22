@@ -1,20 +1,21 @@
 package de.metas.material.dispo.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 /** Generated Interface for MD_Candidate
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_MD_Candidate 
+public interface I_MD_Candidate
 {
 
 	String Table_Name = "MD_Candidate";
 
-//	/** AD_Table_ID=540808 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=540808 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -289,138 +290,8 @@ public interface I_MD_Candidate
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Business case.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_BusinessCase (@Nullable java.lang.String MD_Candidate_BusinessCase);
-
-	/**
-	 * Get Business case.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMD_Candidate_BusinessCase();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
-	String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
-
-	/**
-	 * Set Gruppen-ID.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_GroupId (int MD_Candidate_GroupId);
-
-	/**
-	 * Get Gruppen-ID.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Candidate_GroupId();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_GroupId = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_GroupId", null);
-	String COLUMNNAME_MD_Candidate_GroupId = "MD_Candidate_GroupId";
-
-	/**
-	 * Set Dispositionskandidat.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_ID (int MD_Candidate_ID);
-
-	/**
-	 * Get Dispositionskandidat.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Candidate_ID();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_ID", null);
-	String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
-
-	/**
-	 * Set Elterndatensatz.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_Parent_ID (int MD_Candidate_Parent_ID);
-
-	/**
-	 * Get Elterndatensatz.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getMD_Candidate_Parent_ID();
-
-	@Nullable de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate_Parent();
-
-	void setMD_Candidate_Parent(@Nullable de.metas.material.dispo.model.I_MD_Candidate MD_Candidate_Parent);
-
-	ModelColumn<I_MD_Candidate, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_Parent_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Parent_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
-	String COLUMNNAME_MD_Candidate_Parent_ID = "MD_Candidate_Parent_ID";
-
-	/**
-	 * Set Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_Status (@Nullable java.lang.String MD_Candidate_Status);
-
-	/**
-	 * Get Status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMD_Candidate_Status();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Status = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Status", null);
-	String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
-
-	/**
-	 * Set Typ.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMD_Candidate_Type (java.lang.String MD_Candidate_Type);
-
-	/**
-	 * Get Typ.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getMD_Candidate_Type();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Type = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Type", null);
-	String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
-
-	/**
-	 * Set Prognose.
-	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	 * Set Forecast.
+	 * Material Forecast
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -429,8 +300,8 @@ public interface I_MD_Candidate
 	void setM_Forecast_ID (int M_Forecast_ID);
 
 	/**
-	 * Get Prognose.
-	 * Vorhersagen zu Material-/Produkt-/Artikelentwicklung
+	 * Get Forecast.
+	 * Material Forecast
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -511,6 +382,136 @@ public interface I_MD_Candidate
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Business case.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_BusinessCase (@Nullable java.lang.String MD_Candidate_BusinessCase);
+
+	/**
+	 * Get Business case.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMD_Candidate_BusinessCase();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_BusinessCase = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_BusinessCase", null);
+	String COLUMNNAME_MD_Candidate_BusinessCase = "MD_Candidate_BusinessCase";
+
+	/**
+	 * Set Gruppen-ID.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_GroupId (int MD_Candidate_GroupId);
+
+	/**
+	 * Get Gruppen-ID.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Candidate_GroupId();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_GroupId = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_GroupId", null);
+	String COLUMNNAME_MD_Candidate_GroupId = "MD_Candidate_GroupId";
+
+	/**
+	 * Set Dispo Candidate.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_ID (int MD_Candidate_ID);
+
+	/**
+	 * Get Dispo Candidate.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Candidate_ID();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_ID", null);
+	String COLUMNNAME_MD_Candidate_ID = "MD_Candidate_ID";
+
+	/**
+	 * Set Elterndatensatz.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_Parent_ID (int MD_Candidate_Parent_ID);
+
+	/**
+	 * Get Elterndatensatz.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMD_Candidate_Parent_ID();
+
+	@Nullable de.metas.material.dispo.model.I_MD_Candidate getMD_Candidate_Parent();
+
+	void setMD_Candidate_Parent(@Nullable de.metas.material.dispo.model.I_MD_Candidate MD_Candidate_Parent);
+
+	ModelColumn<I_MD_Candidate, de.metas.material.dispo.model.I_MD_Candidate> COLUMN_MD_Candidate_Parent_ID = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Parent_ID", de.metas.material.dispo.model.I_MD_Candidate.class);
+	String COLUMNNAME_MD_Candidate_Parent_ID = "MD_Candidate_Parent_ID";
+
+	/**
+	 * Set Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_Status (@Nullable java.lang.String MD_Candidate_Status);
+
+	/**
+	 * Get Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMD_Candidate_Status();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Status = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Status", null);
+	String COLUMNNAME_MD_Candidate_Status = "MD_Candidate_Status";
+
+	/**
+	 * Set Typ.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMD_Candidate_Type (java.lang.String MD_Candidate_Type);
+
+	/**
+	 * Get Typ.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getMD_Candidate_Type();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_MD_Candidate_Type = new ModelColumn<>(I_MD_Candidate.class, "MD_Candidate_Type", null);
+	String COLUMNNAME_MD_Candidate_Type = "MD_Candidate_Type";
+
+	/**
 	 * Set Quantity.
 	 * Quantity
 	 *
@@ -582,6 +583,31 @@ public interface I_MD_Candidate
 	String COLUMNNAME_Qty_Display = "Qty_Display";
 
 	/**
+	 * Set Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQty_Planned_Display (@Nullable BigDecimal Qty_Planned_Display);
+
+	/**
+	 * Get Menge.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	BigDecimal getQty_Planned_Display();
+
+	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new ModelColumn<>(I_MD_Candidate.class, "Qty_Planned_Display", null);
+	String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
+
+	/**
 	 * Set Fulfilled quantity.
 	 * Summe der bereits eingetretenden Materialbewegungen
 	 *
@@ -630,31 +656,6 @@ public interface I_MD_Candidate
 	String COLUMNNAME_QtyFulfilled_Display = "QtyFulfilled_Display";
 
 	/**
-	 * Set Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setQty_Planned_Display (@Nullable BigDecimal Qty_Planned_Display);
-
-	/**
-	 * Get Menge.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	BigDecimal getQty_Planned_Display();
-
-	ModelColumn<I_MD_Candidate, Object> COLUMN_Qty_Planned_Display = new ModelColumn<>(I_MD_Candidate.class, "Qty_Planned_Display", null);
-	String COLUMNNAME_Qty_Planned_Display = "Qty_Planned_Display";
-
-	/**
 	 * Set Höchstmenge.
 	 * Maximaler ATP. Wenn die Material-Dispo eine Aufstockung veranlasst, dann auf diese Menge.
 	 *
@@ -701,7 +702,7 @@ public interface I_MD_Candidate
 	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -712,7 +713,7 @@ public interface I_MD_Candidate
 	/**
 	 * Get SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
