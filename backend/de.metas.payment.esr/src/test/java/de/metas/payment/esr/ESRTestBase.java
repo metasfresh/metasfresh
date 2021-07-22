@@ -398,7 +398,28 @@ public class ESRTestBase
 
 		return esrImportLine;
 	}
+	
 
+	protected I_ESR_ImportLine createESR_ImportLineFromOtherLine(@NonNull final I_ESR_ImportLine line)
+	{
+		final I_ESR_Import esrImport = createImport();
+		esrImport.setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
+		save(esrImport);
+		
+		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class, contextProvider);
+		esrImportLine.setESR_Import(esrImport);
+		esrImportLine.setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
+		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
+		esrImportLine.setESRPostParticipantNumber(line.getESRPostParticipantNumber());
+		esrImportLine.setESRFullReferenceNumber(line.getESRFullReferenceNumber());
+		esrImportLine.setAmount(line.getAmount());
+		esrImportLine.setC_Invoice_ID(line.getC_Invoice_ID());
+		esrImportLine.setPaymentDate(line.getPaymentDate());
+		save(esrImportLine);
+		
+		return  esrImportLine;
+	}
+	
 	protected I_ESR_PostFinanceUserNumber createPostFinanceUserNumber(final I_C_BP_BankAccount account, final String esrNoForPostFinanceUser)
 	{
 		final I_ESR_PostFinanceUserNumber postFinanceUserNumber = newInstance(I_ESR_PostFinanceUserNumber.class);

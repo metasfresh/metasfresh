@@ -26,6 +26,7 @@ import java.util.Collection;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -113,4 +114,8 @@ public interface IESRImportDAO extends ISingletonService
 	List<I_ESR_Import> getByIds(@NonNull Set<ESRImportId> esrImportIds);
 
 	ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(@NonNull Set<ESRImportId> esrImportIds);
+
+	 Optional<PaymentId> findExistentPaymentId(@NonNull I_ESR_ImportLine esrLine);
+
+	 List<I_ESR_ImportLine> fetchESRLinesForESRLineText(String esrImportLineText);
 }

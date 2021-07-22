@@ -1575,5 +1575,50 @@ public class ESRImportTest extends ESRTestBase
 		refresh(esrImportLine3, true);
 		assertThat(esrImportLine3.isProcessed(), is(true));
 	}
+	
+	@Test
+	public void testDuplicatePayments()
+	{
+		final String grandTotal = "50";
+		final String esrLineText = "01201067789300000001060012345600654321400000050009072  030014040914041014041100001006800000000000090                          ";
+		final String completeRef = ESRTransactionLineMatcherUtil.extractReferenceNumberStr(esrLineText);
+
+		final String partnerValue = "123456";
+		final String invDocNo = "654321";
+		final String ESR_Rendered_AccountNo = "01-067789-3";
+
+		final I_ESR_ImportLine esrImportLine1 = setupESR_ImportLine(invDocNo, grandTotal, false, completeRef, /* refNo, */ ESR_Rendered_AccountNo, partnerValue, "50", false);
+		esrImportLine1.setESRLineText(esrLineText);
+		save(esrImportLine1);
+		
+		final I_ESR_Import esrImport = esrImportLine1.getESR_Import();
+
+		esrImportBL.process(esrImport);
+
+		
+		final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
+		esrImportLine2.setESRLineText(esrLineText);
+		save(esrImportLine2);
+		final I_ESR_Import esrImport2 = esrImportLine2.getESR_Import();
+		esrImportBL.process(esrImport2);
+
+		
+		// check import line
+		refresh(esrImportLine1, true);
+		assertThat(esrImportLine1.isValid(), is(true));
+		assertThat(esrImportLine1.isProcessed(), is(true));
+		assertThat(esrImportLine1.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Fit_Amounts));
+		assertThat(esrImportLine1.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched));
+		assertThat(esrImportLine1.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine1.getMatchErrorMsg(), nullValue());
+		
+		refresh(esrImportLine2, true);
+		assertThat(esrImportLine2.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment));
+		assertThat(esrImportLine1.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine1.getMatchErrorMsg(), nullValue());
+
+		// check the payment
+		assertThat(esrImportLine2.getC_Payment_ID(), is(esrImportLine2.getC_Payment_ID()));
+	}
 
 }

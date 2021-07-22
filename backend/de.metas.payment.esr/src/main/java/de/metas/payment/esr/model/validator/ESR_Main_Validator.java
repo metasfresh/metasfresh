@@ -31,6 +31,7 @@ import de.metas.banking.payment.IPaymentStringParserFactory;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.esr.actionhandler.impl.DiscountESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.DunningESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.DuplicatePaymentESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.UnableToAssignESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.WithCurrenttInvoiceESRActionHandler;
@@ -72,7 +73,8 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Discount, new DiscountESRActionHandler());
-
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment, new DuplicatePaymentESRActionHandler());
+		
 		//
 		// Register ESR Payment Parsers
 		Services.get(IPaymentStringParserFactory.class).registerParser(ESRRegularLineParser.TYPE, ESRRegularLineParser.instance);
