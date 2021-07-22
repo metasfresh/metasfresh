@@ -136,7 +136,9 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			asyncBatch.setLastEnqueued(enqueued);
 			final int countEnqueued = asyncBatch.getCountEnqueued() + offset;
 			asyncBatch.setCountEnqueued(countEnqueued);
-			asyncBatch.setIsProcessing(checkProcessing(asyncBatch));
+			// we just enqueued something, so we are clearly not done yet
+			asyncBatch.setIsProcessing(true);
+			asyncBatch.setProcessed(false);
 			save(asyncBatch);
 			return countEnqueued;
 		}
@@ -232,10 +234,10 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@VisibleForTesting
 	/* package */boolean checkProcessed(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		if (asyncBatch.isProcessed())
-		{
-			return true;
-		}
+		// if (asyncBatch.isProcessed())
+		// {
+		// 	return true;
+		// }
 
 		final int countEnqueued = asyncBatch.getCountEnqueued();
 		final int countProcessed = asyncBatch.getCountProcessed();
