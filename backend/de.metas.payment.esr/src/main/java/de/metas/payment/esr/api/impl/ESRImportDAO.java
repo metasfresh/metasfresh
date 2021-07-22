@@ -99,7 +99,7 @@ public class ESRImportDAO implements IESRImportDAO
 	{
 		saveRecord(esrImportLine);
 	}
-	
+
 	@Override
 	public List<I_ESR_Import> getByIds(@NonNull final Set<ESRImportId> esrImportIds)
 	{

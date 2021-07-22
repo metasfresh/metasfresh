@@ -31,7 +31,6 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import de.metas.payment.esr.model.I_ESR_ImportFile;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 

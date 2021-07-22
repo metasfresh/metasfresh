@@ -7,6 +7,7 @@ import de.metas.payment.esr.dataimporter.impl.v11.ESRDataImporterV11;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.X_ESR_Import;
+import de.metas.payment.esr.model.X_ESR_ImportFile;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -60,11 +61,11 @@ public class ESRDataLoaderFactory
 		// 	save(esrImport);
 		// }
 
-		if (X_ESR_Import.DATATYPE_Camt54.equalsIgnoreCase(header.getDataType()))
+		if (X_ESR_ImportFile.DATATYPE_Camt54.equalsIgnoreCase(header.getDataType()))
 		{
 			return new ESRDataImporterCamt54(esrImportFile, input);
 		}
-		else if (X_ESR_Import.DATATYPE_V11.equalsIgnoreCase(header.getDataType()))
+		else if (X_ESR_ImportFile.DATATYPE_V11.equalsIgnoreCase(header.getDataType()))
 		{
 			return new ESRDataImporterV11(input);
 		}
@@ -72,6 +73,8 @@ public class ESRDataLoaderFactory
 		Check.errorIf(true, "The given ESR_Import has unexpected DataType={}; header={}", header.getDataType(), header);
 		return null;
 	}
+
+
 
 	/**
 	 * Tries to guess the {@link I_ESR_Import#COLUMN_DataType} from the given {@code fileName}. May return {@code null}.

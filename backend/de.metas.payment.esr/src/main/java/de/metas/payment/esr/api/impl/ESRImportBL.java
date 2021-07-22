@@ -101,10 +101,14 @@ import java.util.zip.ZipInputStream;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Service
 public class ESRImportBL implements IESRImportBL
 {
+	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE =  AdMessageKey.of("ESR_Import_LoadFromFile.CantGuessFileType");
+	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES = AdMessageKey.of("ESR_Import_LoadFromFile.InconsitentTypes");
+
 	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
 	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -230,7 +234,34 @@ public class ESRImportBL implements IESRImportBL
 			throw new RuntimeException("Cannot unzip " + filename, ex);
 		}
 	}
-
+	private void checkUpdateDataType(final I_ESR_Import esrImport, final String fileName)
+	{
+		if (Check.isEmpty(esrImport.getDataType()))
+		{
+			// see if the filename tells us which type to assume
+			final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(fileName);
+			if (Check.isEmpty(guessedType))
+			{
+				throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE);
+			}
+			else
+			{
+				logger.info("Assuming and updating type={} for ESR_Import={}", guessedType, esrImport);
+				esrImport.setDataType(guessedType);
+				save(esrImport);
+			}
+		}
+		else
+		{
+			// see if the filename tells us that the user made a mistake
+			final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(fileName);
+			if (!Check.isEmpty(guessedType) && !guessedType.equalsIgnoreCase(esrImport.getDataType()))
+			{
+				// throw error, telling the user to check the ESI_import's type
+				throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES);
+			}
+		}
+	}
 	@NonNull
 	private ByteArrayInputStream getUnzippedInputStream(final ZipInputStream zipStream,
 			final File unzipDir,
@@ -298,6 +329,7 @@ public class ESRImportBL implements IESRImportBL
 			countLines = esrImportDAO.countLines(esrImport, null);
 		}
 
+		checkUpdateDataType()
 		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImport, in, filename);
 		final ESRStatement esrStatement = loader.importData();
 		try

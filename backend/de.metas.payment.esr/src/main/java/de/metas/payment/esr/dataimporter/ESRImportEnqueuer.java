@@ -64,8 +64,6 @@ import javax.annotation.Nullable;
 public class ESRImportEnqueuer
 {
 
-	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES = AdMessageKey.of("ESR_Import_LoadFromFile.InconsitentTypes");
-	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE =  AdMessageKey.of("ESR_Import_LoadFromFile.CantGuessFileType");
 	public static final  AdMessageKey LINES_ALREADY_EXIST_PLEASE_CHOOSE_A_NEW_ESR_MSG =  AdMessageKey.of("de.metas.payment.esr.dataimporter.ESRImportEnqueuer.LinesAlreadyExistChoseNewESR");
 
 	public static final ESRImportEnqueuer newInstance()
@@ -175,34 +173,34 @@ public class ESRImportEnqueuer
 
 	}
 
-	private void checkUpdateDataType(final I_ESR_Import esrImport, final String fileName)
-	{
-		if (Check.isEmpty(esrImport.getDataType()))
-		{
-			// see if the filename tells us which type to assume
-			final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(fileName);
-			if (Check.isEmpty(guessedType))
-			{
-				throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE);
-			}
-			else
-			{
-				addLog("Assuming and updating type={} for ESR_Import={}", guessedType, esrImport);
-				esrImport.setDataType(guessedType);
-				save(esrImport);
-			}
-		}
-		else
-		{
-			// see if the filename tells us that the user made a mistake
-			final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(fileName);
-			if (!Check.isEmpty(guessedType) && !guessedType.equalsIgnoreCase(esrImport.getDataType()))
-			{
-				// throw error, telling the user to check the ESI_import's type
-				throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES);
-			}
-		}
-	}
+	// private void checkUpdateDataType(final I_ESR_Import esrImport, final String fileName)
+	// {
+	// 	if (Check.isEmpty(esrImport.getDataType()))
+	// 	{
+	// 		// see if the filename tells us which type to assume
+	// 		final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(fileName);
+	// 		if (Check.isEmpty(guessedType))
+	// 		{
+	// 			throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE);
+	// 		}
+	// 		else
+	// 		{
+	// 			addLog("Assuming and updating type={} for ESR_Import={}", guessedType, esrImport);
+	// 			esrImport.setDataType(guessedType);
+	// 			save(esrImport);
+	// 		}
+	// 	}
+	// 	else
+	// 	{
+	// 		// see if the filename tells us that the user made a mistake
+	// 		final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(fileName);
+	// 		if (!Check.isEmpty(guessedType) && !guessedType.equalsIgnoreCase(esrImport.getDataType()))
+	// 		{
+	// 			// throw error, telling the user to check the ESI_import's type
+	// 			throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES);
+	// 		}
+	// 	}
+	// }
 
 	private String computeESRHashAndCheckForDuplicates(final I_ESR_Import esrImport, final byte[] fileContent)
 	{
