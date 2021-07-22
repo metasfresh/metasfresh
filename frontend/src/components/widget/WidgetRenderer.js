@@ -570,7 +570,7 @@ class WidgetRenderer extends PureComponent {
         const entry = widgetData[0];
 
         if (entry && entry.value && Array.isArray(entry.value.values)) {
-          values = entry.value.values;
+          values = [...entry.value.values];
         }
 
         return (
@@ -581,7 +581,7 @@ class WidgetRenderer extends PureComponent {
             subentityId={subentityId}
             tabId={tabId}
             rowId={rowId}
-            windowType={windowType}
+            windowId={windowType}
             viewId={viewId}
             selected={values}
             readonly={readonly}
