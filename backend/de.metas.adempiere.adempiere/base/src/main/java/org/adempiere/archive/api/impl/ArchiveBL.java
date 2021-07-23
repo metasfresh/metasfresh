@@ -41,9 +41,11 @@ import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.archive.api.IArchiveStorageFactory;
 import org.adempiere.archive.spi.IArchiveStorage;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IClientDAO;
+import de.metas.util.lang.SpringResourceUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
@@ -51,6 +53,8 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.io.InputStream;
@@ -62,11 +66,11 @@ public class ArchiveBL implements IArchiveBL
 {
 	@Override
 	@Nullable
-	public I_AD_Archive archive(final byte[] data,
-								final ArchiveInfo archiveInfo,
-								final boolean force,
-								final boolean save,
-								final String trxName)
+	public I_AD_Archive archive(final Resource data,
+			final ArchiveInfo archiveInfo,
+			final boolean force,
+			final boolean save,
+			final String trxName)
 	{
 		final ArchiveRequest request = createArchiveRequest(data, archiveInfo, force, save, trxName);
 		return archive(request).getArchiveRecord();
@@ -87,7 +91,7 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	private static ArchiveRequest createArchiveRequest(
-			final byte[] data,
+			final Resource data,
 			final ArchiveInfo archiveInfo,
 			final boolean force,
 			final boolean save,
@@ -139,8 +143,8 @@ public class ArchiveBL implements IArchiveBL
 
 		archive.setC_BPartner_ID(BPartnerId.toRepoId(request.getBpartnerId()));
 
-		final byte[] data = request.getData();
-		storage.setBinaryData(archive, data);
+		final byte[] byteArray = extractByteArray(request);
+		storage.setBinaryData(archive, byteArray);
 
 		//FRESH-349: Set ad_pinstance
 		archive.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
@@ -152,8 +156,22 @@ public class ArchiveBL implements IArchiveBL
 
 		return ArchiveResult.builder()
 				.archiveRecord(archive)
-				.data(data)
+				.data(byteArray)
 				.build();
+	}
+
+	private byte[] extractByteArray(@NonNull final ArchiveRequest request)
+	{
+		try
+		{
+			return SpringResourceUtils.toByteArray(request.getData());
+		}
+		catch (final RuntimeException e)
+		{ // augment and rethrow
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("request", request);
+		}
 	}
 
 	/**
@@ -203,7 +221,8 @@ public class ArchiveBL implements IArchiveBL
 		return bpartnerBL.getLanguageForModel(record).map(Language::getAD_Language).orElse(initialLanguage);
 	}
 
-	private Properties createContext(@NonNull final ArchiveRequest request)
+	private Properties createContext(
+			@NonNull final ArchiveRequest request)
 	{
 		final TableRecordReference recordRef = request.getRecordRef();
 		if (recordRef == null)
@@ -228,7 +247,8 @@ public class ArchiveBL implements IArchiveBL
 
 	}
 
-	private boolean isToArchive(@NonNull final ArchiveRequest request)
+	private boolean isToArchive(
+			@NonNull final ArchiveRequest request)
 	{
 		final String autoArchive = getAutoArchiveType(request.getCtx());
 
@@ -336,7 +356,8 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public Optional<I_AD_Archive> getLastArchive(@NonNull final TableRecordReference reference)
+	public Optional<I_AD_Archive> getLastArchive(
+			@NonNull final TableRecordReference reference)
 	{
 		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 		final List<I_AD_Archive> lastArchives = archiveDAO.retrieveLastArchives(Env.getCtx(), reference, QueryLimit.ONE);
@@ -352,8 +373,11 @@ public class ArchiveBL implements IArchiveBL
 	}
 
 	@Override
-	public Optional<byte[]> getLastArchiveBinaryData(@NonNull final TableRecordReference reference)
+	public Optional<Resource> getLastArchiveBinaryData(
+			@NonNull final TableRecordReference reference)
 	{
-		return getLastArchive(reference).map(this::getBinaryData);
+		return getLastArchive(reference)
+				.map(this::getBinaryData)
+				.map(ByteArrayResource::new);
 	}
 }

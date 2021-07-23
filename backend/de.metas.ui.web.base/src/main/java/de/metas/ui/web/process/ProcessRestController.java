@@ -46,6 +46,7 @@ import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -324,7 +325,7 @@ public class ProcessRestController
 
 	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
 	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
-	public ResponseEntity<byte[]> getReport(
+	public ResponseEntity<Resource> getReport(
 			@PathVariable("processId") final String processIdStr,
 			@PathVariable("pinstanceId") final String pinstanceIdStr,
 			@PathVariable("filename") final String filename)
@@ -342,7 +343,7 @@ public class ProcessRestController
 			final OpenReportAction action = executionResult.getAction(OpenReportAction.class);
 			final String reportFilename = action.getFilename();
 			final String reportContentType = action.getContentType();
-			final byte[] reportData = action.getReportData();
+			final Resource reportData = action.getReportData();
 
 			final String reportFilenameEffective = CoalesceUtil.coalesce(filename, reportFilename, "");
 
