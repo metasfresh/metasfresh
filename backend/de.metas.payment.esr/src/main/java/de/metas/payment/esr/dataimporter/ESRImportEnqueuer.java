@@ -70,7 +70,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-@Service
 public class ESRImportEnqueuer
 {
 	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE = AdMessageKey.of("ESR_Import_LoadFromFile.CantGuessFileType");
