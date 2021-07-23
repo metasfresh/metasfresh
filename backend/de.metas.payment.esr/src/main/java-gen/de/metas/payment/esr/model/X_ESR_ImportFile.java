@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ESR_ImportFile extends org.compiere.model.PO implements I_ESR_ImportFile, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 750335378L;
+	private static final long serialVersionUID = -131331594L;
 
     /** Standard Constructor */
     public X_ESR_ImportFile (final Properties ctx, final int ESR_ImportFile_ID, @Nullable final String trxName)
@@ -33,6 +33,33 @@ public class X_ESR_ImportFile extends org.compiere.model.PO implements I_ESR_Imp
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_AttachmentEntry getAD_AttachmentEntry()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_AttachmentEntry_ID, org.compiere.model.I_AD_AttachmentEntry.class);
+	}
+
+	@Override
+	public void setAD_AttachmentEntry(final org.compiere.model.I_AD_AttachmentEntry AD_AttachmentEntry)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_AttachmentEntry_ID, org.compiere.model.I_AD_AttachmentEntry.class, AD_AttachmentEntry);
+	}
+
+	@Override
+	public void setAD_AttachmentEntry_ID (final int AD_AttachmentEntry_ID)
+	{
+		if (AD_AttachmentEntry_ID < 1) 
+			set_Value (COLUMNNAME_AD_AttachmentEntry_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_AttachmentEntry_ID, AD_AttachmentEntry_ID);
+	}
+
+	@Override
+	public int getAD_AttachmentEntry_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_AttachmentEntry_ID);
 	}
 
 	@Override

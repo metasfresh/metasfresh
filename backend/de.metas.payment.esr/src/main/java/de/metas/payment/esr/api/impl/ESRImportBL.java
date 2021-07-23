@@ -1,6 +1,7 @@
 package de.metas.payment.esr.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -48,6 +49,7 @@ import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.exception.ESRImportLockedException;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Check;
@@ -61,7 +63,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
-import org.apache.commons.io.FileUtils;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
@@ -76,13 +77,10 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -95,19 +93,14 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Service
 public class ESRImportBL implements IESRImportBL
 {
-	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE =  AdMessageKey.of("ESR_Import_LoadFromFile.CantGuessFileType");
-	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES = AdMessageKey.of("ESR_Import_LoadFromFile.InconsitentTypes");
 
 	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
 	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
@@ -175,162 +168,43 @@ public class ESRImportBL implements IESRImportBL
 	private void loadAndEvaluateESRImportFile0(@NonNull final I_ESR_Import esrImport)
 	{
 
-		//
-		// Fetch data to be imported from attachment
-		final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoIdOrNull(esrImport.getAD_AttachmentEntry_ID());
+		final ImmutableList<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveESRImportFiles(esrImport);
 
-		final byte[] data = attachmentEntryService.retrieveData(attachmentEntryId);
-
-		// there is no actual data
-		if (data == null || data.length == 0)
-		{
-			return;
-		}
-
-		final ByteArrayInputStream in = new ByteArrayInputStream(data);
-
-		AttachmentEntry attachmentEntry = attachmentEntryService.getById(attachmentEntryId);
-
-		if (esrImport.isArchiveFile())
-		{
-			loadAndEvaluateZip( esrImport, in, attachmentEntry.getFilename());
-		}
-
-		else
+		for (final I_ESR_ImportFile esrImportFile : esrImportFiles)
 		{
 
-			loadAndEvaluateESRImportStream(esrImport, in, attachmentEntry.getFilename());
-		}
-	}
+			//
+			// Fetch data to be imported from attachment
+			final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoIdOrNull(esrImportFile.getAD_AttachmentEntry_ID());
 
+			final byte[] data = attachmentEntryService.retrieveData(attachmentEntryId);
 
-
-	private void loadAndEvaluateZip( @NonNull final I_ESR_Import esrImport, ByteArrayInputStream in,  String filename)
-	{
-
-		final ZipInputStream zipStream = new ZipInputStream(in);
-
-		try
-		{
-			final File unzipDir = Files.createTempDirectory("ZipFile" + "-")
-					.toFile();
-			unzipDir.deleteOnExit();
-			final byte[] buffer = new byte[1024];
-
-			ZipEntry zipEntry = zipStream.getNextEntry();
-			while (zipEntry != null)
+			// there is no actual data
+			if (data == null || data.length == 0)
 			{
-				final ByteArrayInputStream unzippedInput = getUnzippedInputStream(zipStream, unzipDir, buffer, zipEntry);
-
-				loadAndEvaluateESRImportStream(esrImport, unzippedInput, filename);
-
-				zipEntry = zipStream.getNextEntry();
-			}
-			zipStream.closeEntry();
-			zipStream.close();
-		}
-		catch (final Exception ex)
-		{
-			throw new RuntimeException("Cannot unzip " + filename, ex);
-		}
-	}
-	private void checkUpdateDataType(final I_ESR_Import esrImport, final String fileName)
-	{
-		if (Check.isEmpty(esrImport.getDataType()))
-		{
-			// see if the filename tells us which type to assume
-			final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(fileName);
-			if (Check.isEmpty(guessedType))
-			{
-				throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE);
-			}
-			else
-			{
-				logger.info("Assuming and updating type={} for ESR_Import={}", guessedType, esrImport);
-				esrImport.setDataType(guessedType);
-				save(esrImport);
-			}
-		}
-		else
-		{
-			// see if the filename tells us that the user made a mistake
-			final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(fileName);
-			if (!Check.isEmpty(guessedType) && !guessedType.equalsIgnoreCase(esrImport.getDataType()))
-			{
-				// throw error, telling the user to check the ESI_import's type
-				throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES);
-			}
-		}
-	}
-	@NonNull
-	private ByteArrayInputStream getUnzippedInputStream(final ZipInputStream zipStream,
-			final File unzipDir,
-			final byte[] buffer,
-			final ZipEntry zipEntry) throws IOException
-	{
-		final File file = newFile(unzipDir, zipEntry);
-
-		if (zipEntry.isDirectory())
-		{
-			if (!file.isDirectory() && !file.mkdirs())
-			{
-				throw new IOException("Failed to create directory " + file);
-			}
-		}
-		else
-		{
-
-			final File parent = file.getParentFile();
-			if (!parent.isDirectory() && !parent.mkdirs())
-			{
-				throw new IOException("Failed to create directory " + parent);
+				return;
 			}
 
-			// write file content
-			final FileOutputStream fos = new FileOutputStream(file);
-			int len;
-			while ((len = zipStream.read(buffer)) > 0)
-			{
-				fos.write(buffer, 0, len);
-			}
-			fos.close();
+			final ByteArrayInputStream in = new ByteArrayInputStream(data);
+
+			AttachmentEntry attachmentEntry = attachmentEntryService.getById(attachmentEntryId);
+
+			loadAndEvaluateESRImportStream(esrImportFile, in);
 		}
-
-		final byte[] unzippedData = FileUtils.readFileToByteArray(file);
-
-		final ByteArrayInputStream unzippedInput = new ByteArrayInputStream(unzippedData);
-		return unzippedInput;
-	}
-
-	public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException
-	{
-		File destFile = new File(destinationDir, zipEntry.getName());
-
-		String destDirPath = destinationDir.getCanonicalPath();
-		String destFilePath = destFile.getCanonicalPath();
-
-		if (!destFilePath.startsWith(destDirPath + File.separator))
-		{
-			throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
-		}
-
-		return destFile;
 	}
 
 	@VisibleForTesting
 	public void loadAndEvaluateESRImportStream(
-			@NonNull final I_ESR_Import esrImport,
-			@NonNull final InputStream in,
-			@NonNull final String filename)
+			@NonNull final I_ESR_ImportFile esrImportFile,
+			@NonNull final InputStream in)
 	{
 		int countLines = 0;
 		if (sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_CHECK_DUPLICATED, false))
 		{
-			countLines = esrImportDAO.countLines(esrImport, null);
+			countLines = esrImportDAO.countLines(esrImportFile, null);
 		}
 
-		checkUpdateDataType()
-		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImport, in, filename);
+		final IESRDataImporter loader = ESRDataLoaderFactory.createImporter(esrImportFile, in);
 		final ESRStatement esrStatement = loader.importData();
 		try
 		{
@@ -341,16 +215,16 @@ public class ESRImportBL implements IESRImportBL
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 
-		esrImport.setESR_Control_Amount(esrStatement.getCtrlAmount());
-		esrImport.setESR_Control_Trx_Qty(esrStatement.getCtrlQty());
-		esrImport.setIsReceipt(true);
+		esrImportFile.setESR_Control_Amount(esrStatement.getCtrlAmount());
+		esrImportFile.setESR_Control_Trx_Qty(esrStatement.getCtrlQty());
+		//esrImportFile.setIsReceipt(true);
 		for (final String errorMsg : esrStatement.getErrorMsgs())
 		{
-			esrImport.setDescription(ESRDataLoaderUtil.addMsgToString(esrImport.getDescription(), errorMsg));
+			esrImportFile.setDescription(ESRDataLoaderUtil.addMsgToString(esrImportFile.getDescription(), errorMsg));
 		}
 
 		// TODO verify that the bankaccounts match!
-		esrImportDAO.save(esrImport);
+		esrImportDAO.save(esrImportFile);
 
 		final List<ESRTransaction> transactions = esrStatement.getTransactions();
 		int lineNo = 0;
@@ -364,22 +238,22 @@ public class ESRImportBL implements IESRImportBL
 			// if there are already lines before starting reading the file, means that we already tried to import once
 			if (countLines > 0)
 			{
-				existentLine = esrImportDAO.fetchLineForESRLineText(esrImport, esrTransaction.getTransactionKey());
+				existentLine = esrImportDAO.fetchLineForESRLineText(esrImportFile, esrTransaction.getTransactionKey());
 				if (existentLine != null)
 				{
 					continue;
 				}
 			}
 
-			createEsrImportLine(esrImport, lineNo, esrTransaction);
+			createEsrImportLine(esrImportFile, lineNo, esrTransaction);
 		}
 
-		evaluate(esrImport);
+		evaluate(esrImportFile);
 	}
 
-	private I_ESR_ImportLine createEsrImportLine(final I_ESR_Import esrImport, final int lineNo, final ESRTransaction esrTransaction)
+	private I_ESR_ImportLine createEsrImportLine(final I_ESR_ImportFile esrImportFile, final int lineNo, final ESRTransaction esrTransaction)
 	{
-		final I_ESR_ImportLine importLine = ESRDataLoaderUtil.newLine(esrImport);
+		final I_ESR_ImportLine importLine = ESRDataLoaderUtil.newLine(esrImportFile);
 		importLine.setLineNo(lineNo * 10);
 
 		// first that the more basic error messages that might have been collected by the importer
@@ -401,71 +275,72 @@ public class ESRImportBL implements IESRImportBL
 		return importLine;
 	}
 
-	private void evaluate(final I_ESR_Import esrImport)
+	private void evaluate(final I_ESR_ImportFile esrImportFile)
 	{
 		BigDecimal importAmt = BigDecimal.ZERO;
 		int trxQty = 0;
 
-		final List<I_ESR_ImportLine> esrImportLines = esrImportDAO.retrieveLines(esrImport);
+		final ImmutableList<I_ESR_ImportLine> esrImportLines = esrImportDAO.retrieveESRImportLinesFromFile(esrImportFile);
 
 		for (final I_ESR_ImportLine importLine : esrImportLines)
 		{
 			//
 			// now do different validations with the values loaded from the input file
-			evaluateLine(esrImport, importLine);
+			evaluateLine(importLine);
 
 			importAmt = importAmt.add(importLine.getAmount());
 			trxQty++;
 		}
 
 		final boolean hasLines = esrImportLines.size() > 0;
-		final boolean fitAmounts = importAmt.compareTo(esrImport.getESR_Control_Amount()) == 0;
-		final boolean fitTrxQtys = evaluateTrxQty(esrImport, trxQty);
+		final boolean fitAmounts = importAmt.compareTo(esrImportFile.getESR_Control_Amount()) == 0;
+		final boolean fitTrxQtys = evaluateTrxQty(esrImportFile, trxQty);
 
-		esrImport.setIsValid(hasLines && fitAmounts && fitTrxQtys);
+		esrImportFile.setIsValid(hasLines && fitAmounts && fitTrxQtys);
 
 		if (!hasLines)
 		{
-			esrImport.setDescription(ESRDataLoaderUtil.addMsgToString(esrImport.getDescription(), "ESR Document has no lines"));
+			esrImportFile.setDescription(ESRDataLoaderUtil.addMsgToString(esrImportFile.getDescription(), "ESR Document has no lines"));
 		}
 		if (!fitAmounts)
 		{
-			esrImport.setDescription(ESRDataLoaderUtil.addMsgToString(esrImport.getDescription(), "The calculated amount for lines ("
+			esrImportFile.setDescription(ESRDataLoaderUtil.addMsgToString(esrImportFile.getDescription(), "The calculated amount for lines ("
 					+ importAmt
 					+ ")  does not fit the control amount ("
-					+ esrImport.getESR_Control_Amount()
+					+ esrImportFile.getESR_Control_Amount()
 					+ "). The document will not be processed."));
 		}
 		if (!fitTrxQtys)
 		{
-			esrImport.setDescription(ESRDataLoaderUtil.addMsgToString(esrImport.getDescription(),
-																	  "The counted transactions ("
-																			  + trxQty
-																			  + ") do not fit the control transaction quantities ("
-																			  + esrImport.getESR_Control_Trx_Qty()
-																			  + "). The document will not be processed."));
+			esrImportFile.setDescription(ESRDataLoaderUtil.addMsgToString(esrImportFile.getDescription(),
+																		  "The counted transactions ("
+																				  + trxQty
+																				  + ") do not fit the control transaction quantities ("
+																				  + esrImportFile.getESR_Control_Trx_Qty()
+																				  + "). The document will not be processed."));
 		}
-		esrImportDAO.save(esrImport);
+		esrImportDAO.save(esrImportFile);
 	}
 
 	@VisibleForTesting
 	boolean evaluateTrxQty(
-			@NonNull final I_ESR_Import esrImport,
+			@NonNull final I_ESR_ImportFile esrImportFile,
 			final int trxQty)
 	{
-		if (InterfaceWrapperHelper.isNull(esrImport, I_ESR_Import.COLUMNNAME_ESR_Control_Trx_Qty))
+		if (InterfaceWrapperHelper.isNull(esrImportFile, I_ESR_ImportFile.COLUMNNAME_ESR_Control_Trx_Qty))
 		{
 			// in the case of camt-54, the value is not mandatory. If it is not provided, we need to assume that it's OK
 			return true;
 		}
 
-		final boolean fitTrxQtys = (new BigDecimal(trxQty).compareTo(esrImport.getESR_Control_Trx_Qty()) == 0);
+		final boolean fitTrxQtys = (new BigDecimal(trxQty).compareTo(esrImportFile.getESR_Control_Trx_Qty()) == 0);
 		return fitTrxQtys;
 	}
 
 	@VisibleForTesting
-	public void evaluateLine(@NonNull final I_ESR_Import esrImport, @NonNull final I_ESR_ImportLine importLine)
+	public void evaluateLine(@NonNull final I_ESR_ImportLine importLine)
 	{
+
 		if (isReverseBookingLine(importLine))
 		{
 			// set payment action
@@ -474,11 +349,11 @@ public class ESRImportBL implements IESRImportBL
 			// set error message for the user
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRConstants.ESR_Reverse_Booking));
 		}
-
+		final I_ESR_ImportFile esrImportFile = esrImportDAO.getImportFileById(importLine.getESR_ImportFile_ID());
 		// post account number
-		if (esrImport.getC_BP_BankAccount_ID() > 0) // TODO this might not be the case in unit tests.
+		if (esrImportFile.getC_BP_BankAccount_ID() > 0) // TODO this might not be the case in unit tests.
 		{
-			ESRDataLoaderUtil.evaluateESRAccountNumber(esrImport, importLine);
+			ESRDataLoaderUtil.evaluateESRAccountNumber(esrImportFile, importLine);
 		}
 
 		// The reference number of the ESR Import line
@@ -647,7 +522,7 @@ public class ESRImportBL implements IESRImportBL
 				// Check/Validate
 				if (!line.isValid())
 				{
-					evaluateLine(esrImport, line);
+					evaluateLine(line);
 				}
 				// finally, skip lines that have no bpartner set
 				if (line.getC_BPartner_ID() <= 0)
@@ -1524,4 +1399,5 @@ public class ESRImportBL implements IESRImportBL
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
 }

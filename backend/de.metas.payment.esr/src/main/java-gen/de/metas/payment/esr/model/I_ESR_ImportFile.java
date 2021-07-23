@@ -18,6 +18,31 @@ public interface I_ESR_ImportFile
 
 
 	/**
+	 * Set Attachment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_AttachmentEntry_ID (int AD_AttachmentEntry_ID);
+
+	/**
+	 * Get Attachment.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_AttachmentEntry_ID();
+
+	@Nullable org.compiere.model.I_AD_AttachmentEntry getAD_AttachmentEntry();
+
+	void setAD_AttachmentEntry(@Nullable org.compiere.model.I_AD_AttachmentEntry AD_AttachmentEntry);
+
+	ModelColumn<I_ESR_ImportFile, org.compiere.model.I_AD_AttachmentEntry> COLUMN_AD_AttachmentEntry_ID = new ModelColumn<>(I_ESR_ImportFile.class, "AD_AttachmentEntry_ID", org.compiere.model.I_AD_AttachmentEntry.class);
+	String COLUMNNAME_AD_AttachmentEntry_ID = "AD_AttachmentEntry_ID";
+
+	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *

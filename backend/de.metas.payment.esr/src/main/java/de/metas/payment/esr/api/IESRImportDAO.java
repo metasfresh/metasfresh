@@ -32,6 +32,8 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 
@@ -56,6 +58,8 @@ public interface IESRImportDAO extends ISingletonService
 
 	void save(@NonNull I_ESR_ImportLine esrImportLine);
 
+	void save(@NonNull I_ESR_ImportFile esrImportFile);
+
 	List<I_ESR_ImportLine> retrieveLines(I_ESR_Import esrImport);
 
 	List<I_ESR_ImportLine> retrieveLines(ESRImportId esrImportId);
@@ -66,8 +70,8 @@ public interface IESRImportDAO extends ISingletonService
 	 * Retrieve all ESR import lines that have the same <code>ESR_Import</code> and reference the given <code>invoice</code>.
 	 *
 	 * @return the lines that reference the given invoice and the given {@code esrImportLine}'s {@link I_ESR_Import}.<br>
-	 *         <b>IMPORTANT</b>: Note that the given <code>esrImportLine</code> itself will <b>always</b> be included in the list, even if it doesn't reference the given invoice when this method is
-	 *         called! If the list loaded from storage already contains a line with the same ID, then that line will be replaced with the given <code>esrImportLine</code>.
+	 * <b>IMPORTANT</b>: Note that the given <code>esrImportLine</code> itself will <b>always</b> be included in the list, even if it doesn't reference the given invoice when this method is
+	 * called! If the list loaded from storage already contains a line with the same ID, then that line will be replaced with the given <code>esrImportLine</code>.
 	 */
 	List<I_ESR_ImportLine> retrieveLinesForInvoice(I_ESR_ImportLine esrImportLine, I_C_Invoice invoice);
 
@@ -86,11 +90,11 @@ public interface IESRImportDAO extends ISingletonService
 	 */
 	Iterator<I_ESR_Import> retrieveESRImports(Properties ctx, int orgID);
 
+	Iterator<I_ESR_ImportFile> retrieveESRImportFiles(Properties ctx, int orgID);
+
 	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineIds(Collection<BankStatementLineId> bankStatementLineIds);
 
 	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineRefId(BankStatementAndLineAndRefId bankStatementLineRefId);
-
-	Iterator<I_ESR_ImportFile> retrieveESRImportFiles(Properties ctx, int orgId);
 
 	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
 
@@ -103,19 +107,23 @@ public interface IESRImportDAO extends ISingletonService
 	 */
 	int countLines(I_ESR_Import esrImport, @Nullable Boolean processed);
 
-	/***
-	 * gets the esr line for the specified esr import header and esrlinetext
-	 *
-	 * @param import1
-	 * @param esrImportLineText
-	 */
-	I_ESR_ImportLine fetchLineForESRLineText(I_ESR_Import import1, String esrImportLineText);
+	int countLines(@NonNull I_ESR_ImportFile esrImportFile, @Nullable Boolean processed);
 
 	List<I_ESR_Import> getByIds(@NonNull Set<ESRImportId> esrImportIds);
 
 	ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(@NonNull Set<ESRImportId> esrImportIds);
 
-	 Optional<PaymentId> findExistentPaymentId(@NonNull I_ESR_ImportLine esrLine);
+	Optional<PaymentId> findExistentPaymentId(@NonNull I_ESR_ImportLine esrLine);
 
-	 List<I_ESR_ImportLine> fetchESRLinesForESRLineText(String esrImportLineText);
+	I_ESR_ImportLine fetchLineForESRLineText(@NonNull I_ESR_ImportFile esrImportFile, @NonNull String esrImportLineText);
+
+	List<I_ESR_ImportLine> fetchESRLinesForESRLineText(String esrImportLineText);
+
+	I_ESR_ImportFile createESRImportFile(@NonNull I_ESR_Import header);
+
+	ImmutableList<I_ESR_ImportFile> retrieveESRImportFiles(I_ESR_Import esrImport);
+
+	ImmutableList<I_ESR_ImportLine> retrieveESRImportLinesFromFile(@NonNull I_ESR_ImportFile esrImportFile);
+
+	I_ESR_ImportFile getImportFileById(int esr_importFile_id);
 }

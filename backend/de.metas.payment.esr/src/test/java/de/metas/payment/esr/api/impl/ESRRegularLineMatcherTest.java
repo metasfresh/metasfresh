@@ -1,46 +1,5 @@
 package de.metas.payment.esr.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.io.ByteArrayInputStream;
-
-/*
- * #%L
- * de.metas.payment.esr
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
@@ -56,8 +15,25 @@ import de.metas.payment.esr.ESRTestUtil;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
+import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 public class ESRRegularLineMatcherTest extends ESRTestBase
 {
@@ -96,7 +72,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		assertThat(esrImport.isValid()).isFalse();
 	}
@@ -126,12 +104,17 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		save(account);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+
+		save(esrImport);
+
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(bp.getC_BPartner_ID());
 		invoice.setDocumentNo("164363");
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
@@ -139,7 +122,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
-		esrImportBL.evaluateLine(esrImport, esrImportLine);
+		esrImportBL.evaluateLine(esrImportLine);
 
 		assertThat(esrImportLine.getC_BPartner_ID())
 				.as("BPartner not the same in ESR Line and Invoice")
@@ -172,13 +155,17 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 
+		save(esrImport);
+
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(bp.getC_BPartner_ID());
 		invoice.setDocumentNo("164363");
 
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
@@ -186,7 +173,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
-		esrImportBL.evaluateLine(esrImport, esrImportLine);
+		esrImportBL.evaluateLine(esrImportLine);
 
 		assertThat(esrImportLine.getC_BPartner_ID())
 				.as("BPartner not the same in ESR Line and Invoice")
@@ -219,12 +206,16 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 
+		save(esrImport);
+
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(bp.getC_BPartner_ID());
 		invoice.setDocumentNo("164363");
 		save(invoice);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
@@ -232,7 +223,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
 
-		esrImportBL.evaluateLine(esrImport, esrImportLine);
+		esrImportBL.evaluateLine(esrImportLine);
 
 		assertThat(esrImportLine.getC_BPartner_ID())
 				.as("BPartner not the same in ESR Line and Invoice")
@@ -267,19 +258,21 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setC_BPartner_ID(bp.getC_BPartner_ID());
 		invoice.setDocumentNo("164363");
 		save(invoice);
 
 		final String esrImportLineText = "0020105993102345370001000000070016436390000000100000000000016050116050116050100000000000000000000000";
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 		assertThat(esrImportLine.getC_BPartner_ID()).isLessThanOrEqualTo(0); // guard. we assume that the matcher did not know how to find 'bp'
 
 		esrImportLine.setC_Invoice(invoice);
 		save(esrImportLine);
-		esrImportBL.evaluateLine(esrImport, esrImportLine);
+		esrImportBL.evaluateLine(esrImportLine);
 
 		assertThat(esrImportLine.getC_BPartner_ID())
 				.as("BPartner not the same in ESR Line and Invoice")
@@ -306,7 +299,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.isValid()).isFalse();
@@ -332,7 +327,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		System.out.println(esrImportLine.getESRPostParticipantNumber() + "    ->    " + account.getESR_RenderedAccountNo().split("-"));
@@ -361,7 +358,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
@@ -392,7 +391,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(esrNoForPostFinanceUser);
@@ -421,7 +422,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.getESRPostParticipantNumber()).isEqualTo(unRenderedEsrNoForPostFinanceUser);
@@ -449,9 +452,10 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		assertThatThrownBy(() -> esrImportBL.loadAndEvaluateESRImportStream(esrImport,
-																			new ByteArrayInputStream(esrImportLineText.getBytes()),
-																			filename))
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		assertThatThrownBy(() -> esrImportBL.loadAndEvaluateESRImportStream(esrImportFile,
+																			new ByteArrayInputStream(esrImportLineText.getBytes())))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("01-0599310 contains three '-' separated parts");
 
@@ -479,7 +483,9 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		final String[] unrenderedAccountNoParts = account.getESR_RenderedAccountNo().split("-");
@@ -509,6 +515,8 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
+
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 
 		final I_C_ReferenceNo referenceNo = newInstance(I_C_ReferenceNo.class);
 		referenceNo.setReferenceNo(referenceNumberStr);
@@ -542,7 +550,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// I_ESR_Import esrImport = esrImportLine.getESR_Import();
@@ -570,6 +578,8 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
 		partner.setValue("partner1");
 		save(partner);
@@ -583,7 +593,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		// allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		// System.out.println(org.getAD_Org_ID() + " -------> " + esrImportLine.getOrg());
@@ -619,6 +629,8 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 		final I_C_DocType type = newInstance(I_C_DocType.class);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_APCreditMemo);
 		save(type);
@@ -648,7 +660,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		allocAmt.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		save(allocAmt);
 
-		esrImportBL.loadAndEvaluateESRImportStream(esrImport, new ByteArrayInputStream(esrImportLineText.getBytes()), filename);
+		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 		final I_ESR_ImportLine esrImportLine = ESRTestUtil.retrieveSingleLine(esrImport);
 
 		assertThat(esrImportLine.isESR_IsManual_ReferenceNo()).isTrue();

@@ -41,29 +41,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class ESRDataLoaderFactory
 {
 	public IESRDataImporter createImporter(
-			@NonNull final I_ESR_Import header,
-			@NonNull final InputStream input,
-			@NonNull final String fileName)
+			@NonNull final I_ESR_ImportFile header,
+			@NonNull final InputStream input)
 	{
-		// TODO
-		final String guessedType = guessTypeFromFileName(fileName);
-
-		final I_ESR_ImportFile esrImportFile = null; //todo
-
-		// if (Check.isEmpty(guessedType))
-		// {
-		// 	throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE);
-		// }
-		// else
-		// {
-		// 	addLog("Assuming and updating type={} for ESR_Import={}", guessedType, esrImport);
-		// 	esrImport.setDataType(guessedType);
-		// 	save(esrImport);
-		// }
-
 		if (X_ESR_ImportFile.DATATYPE_Camt54.equalsIgnoreCase(header.getDataType()))
 		{
-			return new ESRDataImporterCamt54(esrImportFile, input);
+			return new ESRDataImporterCamt54(header, input);
 		}
 		else if (X_ESR_ImportFile.DATATYPE_V11.equalsIgnoreCase(header.getDataType()))
 		{
