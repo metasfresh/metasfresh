@@ -87,6 +87,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.accountNo(record.getAccountNo())
 				.currencyId(CurrencyId.ofRepoId(record.getC_Currency_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.routingNo(record.getRoutingNo())
 				.build();
 	}
 

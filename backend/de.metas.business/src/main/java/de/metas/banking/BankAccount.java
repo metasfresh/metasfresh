@@ -1,13 +1,13 @@
 package de.metas.banking;
 
-import javax.annotation.Nullable;
-
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -67,6 +67,9 @@ public class BankAccount
 
 	@NonNull
 	OrgId orgId;
+
+	@Nullable
+	String routingNo;
 	
 	
 	public boolean isAccountNoMatching(@NonNull final String accountNo) 
