@@ -21,7 +21,7 @@ BEGIN
 
     UPDATE externalsystem_config SET isactive = 'N' WHERE 1 = 1;
 
-    RAISE NOTICE '% !! ExternalSystem records deactivated !!', CLOCK_TIMESTAMP();
+    RAISE NOTICE '% !! Deactivated ExternalSystem records !!', CLOCK_TIMESTAMP();
 
     UPDATE ad_scheduler
     SET isactive = 'N'
