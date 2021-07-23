@@ -809,7 +809,7 @@ public class InterfaceWrapperHelper
 		return helpers.getPO(model, strict);
 	}
 
-	public static int getId(final Object model)
+	public static int getId(@Nullable final Object model)
 	{
 		if (model == null)
 		{
