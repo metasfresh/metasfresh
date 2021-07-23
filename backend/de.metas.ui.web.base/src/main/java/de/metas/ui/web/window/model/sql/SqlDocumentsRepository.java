@@ -893,7 +893,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final LabelsLookup lookup = LabelsLookup.cast(documentField.getDescriptor().getLookupDescriptor().orElse(null));
 
 		final int linkId = document.getFieldView(lookup.getLinkColumnName()).getValueAsInt(-1);
-		final Set<String> listValuesInDatabase = lookup.retrieveExistingValues(linkId).getKeysAsString();
+		final Set<String> listValuesInDatabase = lookup.retrieveExistingValuesByLinkId(linkId).getKeysAsString();
 
 		final LookupValuesList lookupValuesList = documentField.getValueAs(LookupValuesList.class);
 		final HashSet<String> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeysAsString()) : new HashSet<>();
@@ -905,7 +905,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			listValuesToDelete.removeAll(listValuesToSave);
 			if (!listValuesToDelete.isEmpty())
 			{
-				final int countDeleted = lookup.retrieveExistingValuesRecordQuery(linkId)
+				final int countDeleted = lookup.queryValueRecordsByLinkId(linkId)
 						.addInArrayFilter(lookup.getLabelsValueColumnName(), lookup.normalizeStringIds(listValuesToDelete))
 						.create()
 						.delete();

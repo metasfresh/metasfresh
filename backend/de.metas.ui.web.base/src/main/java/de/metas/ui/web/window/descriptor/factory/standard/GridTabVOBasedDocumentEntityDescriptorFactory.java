@@ -37,10 +37,12 @@ import de.metas.ui.web.window.model.lookup.TimeZoneLookupDescriptor;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -107,9 +109,9 @@ import java.util.Set;
 	// State
 	private final DocumentEntityDescriptor.Builder _documentEntityBuilder;
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
-    private final IESSystem esSystem = Services.get(IESSystem.class);
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 
-    @lombok.Builder
+	@lombok.Builder
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTabVO,
@@ -246,7 +248,7 @@ import java.util.Set;
 		// Fields descriptor
 		gridTabVO
 				.getFields()
-				.forEach(gridFieldVO -> createAndAddDocumentField(
+				.forEach(gridFieldVO -> createAndAddField_Standard(
 						entityDescriptorBuilder,
 						gridFieldVO,
 						isTreatFieldAsKey(gridFieldVO, gridTabVO)));
@@ -255,7 +257,7 @@ import java.util.Set;
 		// Labels field descriptors
 		labelsUIElements
 				// .stream().filter(uiElement -> X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels.equals(uiElement.getAD_UI_ElementType())) // assume they are already filtered
-				.forEach(labelUIElement -> createAndAddLabelsDocumentField(entityDescriptorBuilder, labelUIElement));
+				.forEach(labelUIElement -> createAndAddField_Labels(entityDescriptorBuilder, labelUIElement));
 
 		return entityDescriptorBuilder;
 	}
@@ -300,7 +302,7 @@ import java.util.Set;
 		return documentEntity().getFieldBuilder(fieldName);
 	}
 
-	private void createAndAddDocumentField(
+	private void createAndAddField_Standard(
 			final DocumentEntityDescriptor.Builder entityDescriptorBuilder,
 			final GridFieldVO gridFieldVO,
 			final boolean keyColumn)
@@ -513,11 +515,11 @@ import java.util.Set;
 			return databaseLookupDescriptorProvider;
 		}
 
-		if(esSystem.getEnabled().isFalse())
-        {
-            return databaseLookupDescriptorProvider;
-	    }
-        
+		if (esSystem.getEnabled().isFalse())
+		{
+			return databaseLookupDescriptorProvider;
+		}
+
 		final ESModelIndexersRegistry esModelIndexersRegistry = SpringContextHolder.instance.getBean(ESModelIndexersRegistry.class);
 		final ESModelIndexer modelIndexer = esModelIndexersRegistry.getFullTextSearchModelIndexer(modelTableName)
 				.orElse(null);
@@ -694,20 +696,19 @@ import java.util.Set;
 		return null;
 	}
 
-	private void createAndAddLabelsDocumentField(final DocumentEntityDescriptor.Builder entityDescriptor, final I_AD_UI_Element labelsUIElement)
+	private void createAndAddField_Labels(final DocumentEntityDescriptor.Builder entityDescriptor, final I_AD_UI_Element labelsUIElement)
 	{
-		final String labelsFieldName = getLabelsFieldName(labelsUIElement);
-		final String tablename = entityDescriptor.getTableName().orElseThrow(() -> new AdempiereException("No tablename defined for " + entityDescriptor));
-		final LabelsLookup lookupDescriptor = createLabelsLookup(labelsUIElement, tablename);
+		final String tableName = entityDescriptor.getTableName().orElseThrow(() -> new AdempiereException("No tableName defined for " + entityDescriptor));
+		final LabelsLookup lookupDescriptor = createLabelsLookup(labelsUIElement, tableName);
 
 		final SqlDocumentEntityDataBindingDescriptor.Builder entityBindings = entityDescriptor.getDataBindingBuilder(SqlDocumentEntityDataBindingDescriptor.Builder.class);
 		final SqlDocumentFieldDataBindingDescriptor fieldBinding = SqlDocumentFieldDataBindingDescriptor.builder()
-				.setFieldName(labelsFieldName)
-				// .setTableName(entityBindings.getTableName())
-				// .setTableAlias(entityBindings.getTableAlias())
-				// .setColumnName(sqlColumnName)
-				// .setColumnSql(sqlColumnSql)
-				.setVirtualColumn(false)
+				.setFieldName(lookupDescriptor.getFieldName())
+				.setTableName(entityBindings.getTableName())
+				.setTableAlias(entityBindings.getTableAlias())
+				.setColumnName(lookupDescriptor.getFieldName())
+				.setColumnSql(lookupDescriptor.getSqlForFetchingValueIdsByLinkId(tableName))
+				.setVirtualColumn(true)
 				.setMandatory(false)
 				.setWidgetType(DocumentFieldWidgetType.Labels)
 				.setValueClass(DocumentFieldWidgetType.Labels.getValueClass())
@@ -717,35 +718,19 @@ import java.util.Set;
 		entityBindings.addField(fieldBinding);
 
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(labelsUIElement);
-		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(labelsFieldName)
+
+		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(lookupDescriptor.getFieldName())
 				.setCaption(trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName()))
 				.setDescription(trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Description, labelsUIElement.getDescription()))
-				//
-				.setKey(false)
-				//
-				.setWidgetType(DocumentFieldWidgetType.Labels)
+				.setKey(fieldBinding.isKeyColumn())
+				.setWidgetType(fieldBinding.getWidgetType())
 				.setValueClass(fieldBinding.getValueClass())
 				.setLookupDescriptorProvider(lookupDescriptor)
-				//
-				// .setDefaultValueExpression(defaultValueExpression)
-				//
-				// .addCharacteristicIfTrue(keyColumn, Characteristic.SideListField)
-				// .addCharacteristicIfTrue(keyColumn, Characteristic.GridViewField)
-				// .addCharacteristicIfTrue(gridFieldVO.isSelectionColumn(), Characteristic.AllowFiltering)
-				//
-				// .setReadonlyLogic(readonlyLogic)
-				// .setAlwaysUpdateable(alwaysUpdateable)
-				// .setMandatoryLogic(gridFieldVO.isMandatory() ? ConstantLogicExpression.TRUE : gridFieldVO.getMandatoryLogic())
-
-				//
+				.setReadonlyLogic(false)
+				.setDisplayLogic(extractLabelDisplayLogic(labelsUIElement))
+				.setVirtualField(fieldBinding.isVirtualColumn())
 				.setDefaultFilterInfo(createLabelsDefaultFilterInfo(labelsUIElement))
 				.setDataBinding(fieldBinding);
-
-		final String labelDisplayLogic = getLabelDisplayLogic(labelsUIElement);
-		if (!Check.isBlank(labelDisplayLogic))
-		{
-			fieldBuilder.setDisplayLogic(labelDisplayLogic);
-		}
 
 		//
 		// Add Field builder to document entity
@@ -756,18 +741,22 @@ import java.util.Set;
 		collectSpecialField(fieldBuilder);
 	}
 
-	private String getLabelDisplayLogic(final I_AD_UI_Element labelsUIElement)
+	private static ILogicExpression extractLabelDisplayLogic(final I_AD_UI_Element labelsUIElement)
 	{
 		final I_AD_Field labelField = labelsUIElement.getLabels_Selector_Field();
-		if(labelField == null)
+		if (labelField == null)
 		{
 			throw new AdempiereException(I_AD_UI_Element.COLUMNNAME_Labels_Selector_Field_ID + " shall not be null for " + labelsUIElement);
 		}
 
-		return labelField.getDisplayLogic();
+		return StringUtils.trimBlankToOptional(labelField.getDisplayLogic())
+				.map(LogicExpressionCompiler.instance::compile)
+				.orElse(ConstantLogicExpression.TRUE);
 	}
 
-	private static LabelsLookup createLabelsLookup(final I_AD_UI_Element labelsUIElement, final String tableName)
+	private static LabelsLookup createLabelsLookup(
+			@NonNull final I_AD_UI_Element labelsUIElement,
+			@NonNull final String tableName)
 	{
 		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
 		final String labelsTableName = labelsTab.getAD_Table().getTableName();
@@ -826,6 +815,7 @@ import java.util.Set;
 		final LookupDescriptor labelsValuesLookupDescriptor = labelsValuesLookupDescriptorBuilder.buildForDefaultScope();
 
 		return LabelsLookup.builder()
+				.fieldName(extractLabelsFieldName(labelsUIElement))
 				.labelsTableName(labelsTableName)
 				.labelsValueColumnName(labelsValueColumnName)
 				.labelsValuesLookupDescriptor(labelsValuesLookupDescriptor)
@@ -835,9 +825,10 @@ import java.util.Set;
 				.build();
 	}
 
-	public static String getLabelsFieldName(final I_AD_UI_Element uiElement)
+	@NonNull
+	public static String extractLabelsFieldName(final @NonNull I_AD_UI_Element labelsUIElement)
 	{
-		return "Labels_" + uiElement.getAD_UI_Element_ID();
+		return "Labels_" + labelsUIElement.getAD_UI_Element_ID();
 	}
 
 	@Nullable

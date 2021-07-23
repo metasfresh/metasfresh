@@ -15,10 +15,11 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.PlainContextAware;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -52,38 +53,56 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		return (LabelsLookup)lookupDescriptor;
 	}
 
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Getter
+	@NonNull
+	private final String fieldName;
+
 	/**
 	 * Labels table name (e.g. C_BPartner_Attribute)
 	 */
 	@Getter
+	@NonNull
 	private final String labelsTableName;
+
 	/**
 	 * Labels reference List column name (e.g. C_BPartner_Attribute's Attribute)
 	 */
 	@Getter
+	@NonNull
 	private final String labelsValueColumnName;
+	@NonNull
 	private final LookupDataSource labelsValuesLookupDataSource;
 	@Getter
 	private final boolean labelsValuesUseNumericKey;
+
 	/**
 	 * Labels tableName's link column name (e.g. C_BPartner_Attribute's C_BPartner_ID)
 	 */
 	@Getter
+	@NonNull
 	private final String labelsLinkColumnName;
+
 	/**
 	 * Table name (e.g. C_BPartner)
 	 */
+	@NonNull
 	private final String tableName;
+
 	/**
 	 * Table's link column name (e.g. C_BPartner's C_BPartner_ID)
 	 */
 	@Getter
+	@NonNull
 	private final String linkColumnName;
 
-	private final Set<CtxName> parameters;
+	@NonNull
+	private final ImmutableSet<CtxName> parameters;
 
 	@Builder
 	private LabelsLookup(
+			@NonNull final String fieldName,
 			@NonNull final String tableName,
 			@NonNull final String linkColumnName,
 			@NonNull final String labelsTableName,
@@ -91,6 +110,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 			@NonNull final String labelsLinkColumnName,
 			@NonNull final LookupDescriptor labelsValuesLookupDescriptor)
 	{
+		this.fieldName = fieldName;
 		this.labelsTableName = labelsTableName;
 		this.labelsValueColumnName = labelsValueColumnName;
 		this.labelsValuesLookupDataSource = LookupDataSourceFactory.instance.getLookupDataSource(labelsValuesLookupDescriptor);
@@ -108,14 +128,14 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		return DocumentFieldWidgetType.Labels.getValueClass();
 	}
 
-	public LookupValuesList retrieveExistingValues(final int linkId)
+	public LookupValuesList retrieveExistingValuesByLinkId(final int linkId)
 	{
 		if (linkId <= 0)
 		{
 			return LookupValuesList.EMPTY;
 		}
 
-		final List<String> existingItems = retrieveExistingValuesRecordQuery(linkId)
+		final List<String> existingItems = queryValueRecordsByLinkId(linkId)
 				.create()
 				.listDistinct(labelsValueColumnName, String.class);
 		if (existingItems.isEmpty())
@@ -123,13 +143,18 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 			return LookupValuesList.EMPTY;
 		}
 
-		return labelsValuesLookupDataSource.findByIdsOrdered(existingItems);
+		return retrieveExistingValuesByIds(existingItems);
 	}
 
-	public IQueryBuilder<Object> retrieveExistingValuesRecordQuery(final int linkId)
+	public LookupValuesList retrieveExistingValuesByIds(@NonNull final Collection<?> ids)
 	{
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(labelsTableName, PlainContextAware.newWithThreadInheritedTrx())
+		return !ids.isEmpty() ? labelsValuesLookupDataSource.findByIdsOrdered(ids) : LookupValuesList.EMPTY;
+	}
+
+	public IQueryBuilder<Object> queryValueRecordsByLinkId(final int linkId)
+	{
+		return queryBL
+				.createQueryBuilder(labelsTableName)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(getLabelsLinkColumnName(), linkId); // parent link
 	}
@@ -153,6 +178,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	}
 
 	@Override
+	@Nullable
 	public String getCachePrefix()
 	{
 		return null; // not important because isCached() returns false
@@ -258,9 +284,17 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		{
 			return Integer.parseInt(stringId);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed converting `" + stringId + "` to int.", ex);
 		}
+	}
+
+	public String getSqlForFetchingValueIdsByLinkId(@NonNull final String tableNameOrAlias)
+	{
+		return "SELECT array_agg(" + labelsValueColumnName + ")"
+				+ " FROM " + labelsTableName
+				+ " WHERE " + labelsLinkColumnName + "=" + tableNameOrAlias + "." + linkColumnName
+				+ " AND IsActive='Y'";
 	}
 }
