@@ -54,11 +54,6 @@ public class SqlForFetchingLookupById
 		this.sql = sql;
 	}
 
-	public IStringExpression toStringExpression()
-	{
-		return sql;
-	}
-
 	public IStringExpression toStringExpression(@NonNull final String joinOnColumnNameFQ)
 	{
 		return sql.resolvePartial(Evaluatees
