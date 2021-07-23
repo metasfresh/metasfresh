@@ -170,7 +170,7 @@ public interface I_ESR_ImportFile
 	/**
 	 * Set Sum Control Amount.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: Number
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -179,7 +179,7 @@ public interface I_ESR_ImportFile
 	/**
 	 * Get Sum Control Amount.
 	 *
-	 * <br>Type: Amount
+	 * <br>Type: Number
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

@@ -1481,3 +1481,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE ESR_ImportFile ADD CONSTRAINT ADAttachmentEntry_ESRImportFile FOREIGN KEY (AD_AttachmentEntry_ID) REFERENCES public.AD_AttachmentEntry DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- 2021-07-23T14:49:04.166Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=22,Updated=TO_TIMESTAMP('2021-07-23 17:49:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=575158
+;
+
+-- 2021-07-23T14:49:09.774Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('esr_importfile','ESR_Control_Amount','NUMERIC',null,null)
+;
+
