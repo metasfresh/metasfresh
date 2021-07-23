@@ -44,6 +44,7 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -452,6 +453,7 @@ public class ESRImportDAO implements IESRImportDAO
 		esrImportFile.setESR_Import_ID(header.getESR_Import_ID());
 		esrImportFile.setAD_Org_ID(header.getAD_Org_ID());
 		esrImportFile.setC_BP_BankAccount_ID(header.getC_BP_BankAccount_ID());
+		esrImportFile.setESR_Control_Amount(BigDecimal.ZERO);
 		saveRecord(esrImportFile);
 
 		return esrImportFile;
