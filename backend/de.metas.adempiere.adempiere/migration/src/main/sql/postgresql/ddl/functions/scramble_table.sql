@@ -2,7 +2,7 @@
 --## Function to scramble all string columns of a given table
 --..unless they are flagged with personalDataCategory = NP (not personal)
 
-CREATE OR REPLACE FUNCTION public.scramble_table(
+CREATE OR REPLACE FUNCTION ops.scramble_table(
     p_tableName character varying,
     p_dryRun    boolean = TRUE)
     RETURNS void
@@ -36,7 +36,7 @@ BEGIN
                 THEN
                     v_scramble_update_stmt = v_scramble_update_stmt || ', ';
                 END IF;
-                v_scramble_update_stmt = v_scramble_update_stmt || v_columnName || ' = ' || 'public.scramble_string(' || v_columnName || ')';
+                v_scramble_update_stmt = v_scramble_update_stmt || v_columnName || ' = ' || 'ops.scramble_string(' || v_columnName || ')';
                 v_columnsToScrambleCnt = v_columnsToScrambleCnt + 1;
             END IF;
         END LOOP;
@@ -56,6 +56,6 @@ BEGIN
 END;
 $BODY$
 ;
-COMMENT ON FUNCTION public.scramble_table(character varying, boolean)
+COMMENT ON FUNCTION ops.scramble_table(character varying, boolean)
     IS 'Uses the function scramble_string to scramble all string-columns of the given table, unless they are marked with PersonalDataCategory=NP (not-personal).
 If called with p_dryRun := true, then the corresponding update statement is just constructed but not executed.';
