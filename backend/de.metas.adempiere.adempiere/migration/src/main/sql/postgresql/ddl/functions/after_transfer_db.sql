@@ -52,5 +52,5 @@ $BODY$
 COMMENT ON FUNCTION ops.after_transfer_db(p_source_instance text, p_target_instance text, p_target_webui_url text,
     p_target_metasfresh_pw text,
     p_target_has_reports_service boolean) IS
-    'Example: select ops.after_transfer_db(''instancesprod'',''instancesdev'', ''webui.frontend.url'', ''secret'', true)'
+    'Example: select ops.after_transfer_db(p_source_instance := ''instancesprod'', p_target_instance := ''instancesdev'', p_target_webui_url := ''webui.frontend.url'', p_target_metasfresh_pw := ''secret'', p_target_has_reports_service := true)'
 ;
