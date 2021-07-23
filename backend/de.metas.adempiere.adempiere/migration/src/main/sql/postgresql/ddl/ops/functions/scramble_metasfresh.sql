@@ -1,7 +1,7 @@
 
 --## Function to scramble all metasfresh-tables
 
-CREATE OR REPLACE FUNCTION public.scramble_metasfresh(
+CREATE OR REPLACE FUNCTION ops.scramble_metasfresh(
     p_dryRun boolean = TRUE)
     RETURNS void
     LANGUAGE 'plpgsql'
@@ -19,19 +19,19 @@ BEGIN
         ORDER BY t.TableName
         LOOP
             RAISE NOTICE '% !! TableName = % !!', clock_timestamp(), v_tableName;
-            EXECUTE public.scramble_table(v_tableName, p_dryRun);
+            EXECUTE ops.scramble_table(v_tableName, p_dryRun);
         END LOOP;
 END;
 $BODY$
 ;
 
-COMMENT ON FUNCTION public.scramble_metasfresh(boolean)
+COMMENT ON FUNCTION ops.scramble_metasfresh(boolean)
     IS 'Uses the function scramble_table to scramble the string-columns of all metasfresh-tables, unless they are marked with PersonalDataCategory=NP (not-personal).
 If called with p_dryRun := TRUE (the default value!), then the corresponding update statements are just constructed but not executed.
     
 "Scrambled" means that all numbers, characters etc are replaced with random chars. 
 Only whitespaces and a few other chars are left unchanged, so that e.g. the formatting of an address field is left intact.
-See the DB-function `public.scramble_string(character varying, character varying)` for more details.
+See the DB-function `ops.scramble_string(character varying, character varying)` for more details.
 
 scramble_metasfresh() might take quite some time to finish on large databases.
 You might consider emptying certain large tables before running it.
@@ -52,6 +52,6 @@ delete from C_Queue_WorkPackage where true;
 update M_ShipmentSchedule_ExportAudit set forwardeddata=null where true;
 
 -- scramble
-select scramble_metasfresh(false);
+select ops.scramble_metasfresh(false);
 ';
---SELECT public.scramble_metasfresh(p_dryRun := FALSE);
+--SELECT ops.scramble_metasfresh(p_dryRun := FALSE);
