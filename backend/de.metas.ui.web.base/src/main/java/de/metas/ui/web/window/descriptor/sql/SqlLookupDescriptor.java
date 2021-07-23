@@ -335,8 +335,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 	public static final class Builder
 	{
 		// Parameters
-		private String ctxColumnName;
-		private String ctxTableName;
+		@Nullable private String ctxColumnName;
+		@Nullable private String ctxTableName;
 
 		private DocumentFieldWidgetType widgetType;
 		private Integer displayType;
@@ -380,8 +380,8 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 		}
 
 		private static LookupDescriptorProvider buildProvider(
-				final String sqlTableName,
-				final String sqlColumnName,
+				@Nullable final String sqlTableName,
+				@Nullable final String sqlColumnName,
 				final DocumentFieldWidgetType widgetType, final int displayType,
 				final int AD_Reference_Value_ID,
 				final int AD_Val_Rule_ID,
@@ -741,7 +741,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return postQueryPredicate;
 		}
 
-		public Builder setCtxColumnName(final String columnName)
+		public Builder setCtxColumnName(@Nullable final String columnName)
 		{
 			this.ctxColumnName = columnName;
 			return this;
@@ -794,6 +794,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			return Optional.ofNullable(WindowId.ofNullable(zoomIntoAdWindowId));
 		}
 
+		@Nullable
 		private LookupSource getLookupSourceType()
 		{
 			return DescriptorsFactoryHelper.extractLookupSource(displayType, AD_Reference_Value_ID);
