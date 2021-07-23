@@ -190,7 +190,7 @@ public class ESRTestBase
 		file.setDataType(X_ESR_Import.DATATYPE_V11);
 		file.setESR_Import_ID(esrImport.getESR_Import_ID());
 		file.setC_BP_BankAccount_ID(esrImport.getC_BP_BankAccount_ID());
-		file.setAD_Org_ID(esrImport.getESR_Import_ID());
+		file.setAD_Org_ID(esrImport.getAD_Org_ID());
 
 		save(file);
 

@@ -214,11 +214,12 @@ public class ESRImportTest extends ESRTestBase
 		save(esrReferenceNumberDocument);
 
 		final I_ESR_Import esrImport = createImport();
-		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 		// register listeners
 		Services.get(IESRLineHandlersService.class).registerESRLineListener(new DefaultESRLineHandler()); // 08741
 

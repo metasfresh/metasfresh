@@ -450,7 +450,8 @@ public class ESRImportDAO implements IESRImportDAO
 	{
 		final I_ESR_ImportFile esrImportFile = newInstance(I_ESR_ImportFile.class);
 		esrImportFile.setESR_Import_ID(header.getESR_Import_ID());
-
+		esrImportFile.setAD_Org_ID(header.getAD_Org_ID());
+		esrImportFile.setC_BP_BankAccount_ID(header.getC_BP_BankAccount_ID());
 		saveRecord(esrImportFile);
 
 		return esrImportFile;
