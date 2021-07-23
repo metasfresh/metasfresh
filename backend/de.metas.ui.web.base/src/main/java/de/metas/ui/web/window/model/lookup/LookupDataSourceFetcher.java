@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
@@ -59,7 +58,7 @@ public interface LookupDataSourceFetcher
 	/** @return true if this fetcher already has caching embedded so on upper levels, caching is not needed */
 	boolean isCached();
 	/** @return cache prefix; relevant only if {@link #isCached()} returns <code>false</code> */
-	String getCachePrefix();
+	@Nullable String getCachePrefix();
 	default List<CCacheStats> getCacheStats() { return ImmutableList.of(); }
 	//@formatter:on
 
