@@ -360,6 +360,7 @@ public class ESRTestBase
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
 		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
@@ -395,6 +396,7 @@ public class ESRTestBase
 	{
 		final I_ESR_Import esrImport = createImport();
 		esrImport.setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
+		esrImport.setAD_Org_ID(org.getAD_Org_ID());
 		save(esrImport);
 
 		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);

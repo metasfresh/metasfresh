@@ -1632,7 +1632,7 @@ public class ESRImportTest extends ESRTestBase
 		refresh(esrImportLine2, true);
 		assertThat(esrImportLine2.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment));
 		assertThat(esrImportLine2.getImportErrorMsg(), nullValue());
-		assertThat(esrImportLine2.getMatchErrorMsg(), nullValue());
+		assertThat(esrImportLine2.getMatchErrorMsg(), is("Rechnung " + invDocNo + " wurde im System als bereits bezahlt markiert"));
 
 		// check the payment
 		assertThat(esrImportLine2.getC_Payment_ID(), is(esrImportLine2.getC_Payment_ID()));
