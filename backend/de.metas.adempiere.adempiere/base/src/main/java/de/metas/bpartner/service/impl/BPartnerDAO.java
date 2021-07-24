@@ -1796,4 +1796,12 @@ public class BPartnerDAO implements IBPartnerDAO
 		return BPartnerId.ofRepoId(newBPartner.getC_BPartner_ID());
 	}
 
+	@Override
+	public List<I_C_BPartner> retrieveByIds(@NonNull final Set<BPartnerId> bpartnerIds)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addInArrayFilter(I_C_BPartner.COLUMNNAME_C_BPartner_ID, bpartnerIds)
+				.create()
+				.list();
+	}
 }

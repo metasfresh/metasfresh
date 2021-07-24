@@ -1,6 +1,7 @@
 package de.metas.ui.web.handlingunits.process;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.adempiere.ad.trx.api.ITrx;
@@ -30,6 +31,7 @@ import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.core.io.ByteArrayResource;
 
 /*
  * #%L
@@ -97,14 +99,14 @@ public class WEBUI_M_HU_PrintFinishedGoodsLabel
 		final HUToReport hu = getSingleSelectedRow().getAsHUToReport();
 
 		// create selection
-		final List<HuId> distinctHuIds = Arrays.asList(hu.getHUId());
+		final List<HuId> distinctHuIds = ImmutableList.of(hu.getHUId());
 		DB.createT_Selection(getPinstanceId(), distinctHuIds, ITrx.TRXNAME_None);
 
 		// print
 		final ReportResult label = printLabel();
 
 		// preview
-		getResult().setReportData(label.getReportContent(), buildFilename(), OutputType.PDF.getContentType());
+		getResult().setReportData(new ByteArrayResource(label.getReportContent()), buildFilename(), OutputType.PDF.getContentType());
 
 		return MSG_OK;
 	}

@@ -4,6 +4,8 @@ FROM c_bpartner_location loc
 WHERE m_warehouse.c_bpartner_location_id = loc.c_bpartner_location_id
 ;
 
+COMMIT;
+
 ALTER TABLE c_bpartner_location
     ADD UNIQUE (c_bpartner_id, c_bpartner_location_id)
 ;

@@ -1,91 +1,81 @@
 package de.metas.async.model;
 
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Async_Batch
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Async_Batch 
 {
 
-    /** TableName=C_Async_Batch */
-    public static final String Table_Name = "C_Async_Batch";
+	String Table_Name = "C_Async_Batch";
 
-    /** AD_Table_ID=540620 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540620 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Prozess-Instanz.
-	 * Instanz eines Prozesses
+	 * Set Process Instance.
+	 * Instance of a Process
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_PInstance_ID (int AD_PInstance_ID);
+	void setAD_PInstance_ID (int AD_PInstance_ID);
 
 	/**
-	 * Get Prozess-Instanz.
-	 * Instanz eines Prozesses
+	 * Get Process Instance.
+	 * Instance of a Process
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_PInstance_ID();
+	int getAD_PInstance_ID();
 
-	public org.compiere.model.I_AD_PInstance getAD_PInstance();
+	@Nullable org.compiere.model.I_AD_PInstance getAD_PInstance();
 
-	public void setAD_PInstance(org.compiere.model.I_AD_PInstance AD_PInstance);
+	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
 
-    /** Column definition for AD_PInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new org.adempiere.model.ModelColumn<I_C_Async_Batch, org.compiere.model.I_AD_PInstance>(I_C_Async_Batch.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
-    /** Column name AD_PInstance_ID */
-    public static final String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
+	ModelColumn<I_C_Async_Batch, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_C_Async_Batch.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
+	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
 	/**
 	 * Set Async Batch.
@@ -94,7 +84,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Async_Batch_ID (int C_Async_Batch_ID);
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
 
 	/**
 	 * Get Async Batch.
@@ -103,12 +93,10 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Async_Batch_ID();
+	int getC_Async_Batch_ID();
 
-    /** Column definition for C_Async_Batch_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_C_Async_Batch_ID = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "C_Async_Batch_ID", null);
-    /** Column name C_Async_Batch_ID */
-    public static final String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Async_Batch.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
 	 * Set Async Batch Type.
@@ -117,7 +105,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Async_Batch_Type_ID (int C_Async_Batch_Type_ID);
+	void setC_Async_Batch_Type_ID (int C_Async_Batch_Type_ID);
 
 	/**
 	 * Get Async Batch Type.
@@ -126,16 +114,14 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Async_Batch_Type_ID();
+	int getC_Async_Batch_Type_ID();
 
-	public de.metas.async.model.I_C_Async_Batch_Type getC_Async_Batch_Type();
+	@Nullable de.metas.async.model.I_C_Async_Batch_Type getC_Async_Batch_Type();
 
-	public void setC_Async_Batch_Type(de.metas.async.model.I_C_Async_Batch_Type C_Async_Batch_Type);
+	void setC_Async_Batch_Type(@Nullable de.metas.async.model.I_C_Async_Batch_Type C_Async_Batch_Type);
 
-    /** Column definition for C_Async_Batch_Type_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Async_Batch_Type> COLUMN_C_Async_Batch_Type_ID = new org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Async_Batch_Type>(I_C_Async_Batch.class, "C_Async_Batch_Type_ID", de.metas.async.model.I_C_Async_Batch_Type.class);
-    /** Column name C_Async_Batch_Type_ID */
-    public static final String COLUMNNAME_C_Async_Batch_Type_ID = "C_Async_Batch_Type_ID";
+	ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Async_Batch_Type> COLUMN_C_Async_Batch_Type_ID = new ModelColumn<>(I_C_Async_Batch.class, "C_Async_Batch_Type_ID", de.metas.async.model.I_C_Async_Batch_Type.class);
+	String COLUMNNAME_C_Async_Batch_Type_ID = "C_Async_Batch_Type_ID";
 
 	/**
 	 * Set Enqueued.
@@ -144,7 +130,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCountEnqueued (int CountEnqueued);
+	void setCountEnqueued (int CountEnqueued);
 
 	/**
 	 * Get Enqueued.
@@ -153,12 +139,10 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCountEnqueued();
+	int getCountEnqueued();
 
-    /** Column definition for CountEnqueued */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_CountEnqueued = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "CountEnqueued", null);
-    /** Column name CountEnqueued */
-    public static final String COLUMNNAME_CountEnqueued = "CountEnqueued";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_CountEnqueued = new ModelColumn<>(I_C_Async_Batch.class, "CountEnqueued", null);
+	String COLUMNNAME_CountEnqueued = "CountEnqueued";
 
 	/**
 	 * Set Expected.
@@ -167,7 +151,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCountExpected (int CountExpected);
+	void setCountExpected (int CountExpected);
 
 	/**
 	 * Get Expected.
@@ -176,12 +160,10 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCountExpected();
+	int getCountExpected();
 
-    /** Column definition for CountExpected */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_CountExpected = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "CountExpected", null);
-    /** Column name CountExpected */
-    public static final String COLUMNNAME_CountExpected = "CountExpected";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_CountExpected = new ModelColumn<>(I_C_Async_Batch.class, "CountExpected", null);
+	String COLUMNNAME_CountExpected = "CountExpected";
 
 	/**
 	 * Set Verarbeitet.
@@ -190,7 +172,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCountProcessed (int CountProcessed);
+	void setCountProcessed (int CountProcessed);
 
 	/**
 	 * Get Verarbeitet.
@@ -199,63 +181,56 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCountProcessed();
+	int getCountProcessed();
 
-    /** Column definition for CountProcessed */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_CountProcessed = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "CountProcessed", null);
-    /** Column name CountProcessed */
-    public static final String COLUMNNAME_CountProcessed = "CountProcessed";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_CountProcessed = new ModelColumn<>(I_C_Async_Batch.class, "CountProcessed", null);
+	String COLUMNNAME_CountProcessed = "CountProcessed";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_Created = new ModelColumn<>(I_C_Async_Batch.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Beschreibung.
+	 * Set Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Beschreibung.
+	 * Get Description.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_Description = new ModelColumn<>(I_C_Async_Batch.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set First Enqueued.
@@ -264,7 +239,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setFirstEnqueued (java.sql.Timestamp FirstEnqueued);
+	void setFirstEnqueued (@Nullable java.sql.Timestamp FirstEnqueued);
 
 	/**
 	 * Get First Enqueued.
@@ -273,37 +248,54 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getFirstEnqueued();
+	@Nullable java.sql.Timestamp getFirstEnqueued();
 
-    /** Column definition for FirstEnqueued */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_FirstEnqueued = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "FirstEnqueued", null);
-    /** Column name FirstEnqueued */
-    public static final String COLUMNNAME_FirstEnqueued = "FirstEnqueued";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_FirstEnqueued = new ModelColumn<>(I_C_Async_Batch.class, "FirstEnqueued", null);
+	String COLUMNNAME_FirstEnqueued = "FirstEnqueued";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Async_Batch.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Processing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsProcessing (boolean IsProcessing);
+
+	/**
+	 * Get Processing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessing();
+
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_IsProcessing = new ModelColumn<>(I_C_Async_Batch.class, "IsProcessing", null);
+	String COLUMNNAME_IsProcessing = "IsProcessing";
 
 	/**
 	 * Set Last Enqueued.
@@ -312,7 +304,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLastEnqueued (java.sql.Timestamp LastEnqueued);
+	void setLastEnqueued (@Nullable java.sql.Timestamp LastEnqueued);
 
 	/**
 	 * Get Last Enqueued.
@@ -321,12 +313,10 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getLastEnqueued();
+	@Nullable java.sql.Timestamp getLastEnqueued();
 
-    /** Column definition for LastEnqueued */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_LastEnqueued = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "LastEnqueued", null);
-    /** Column name LastEnqueued */
-    public static final String COLUMNNAME_LastEnqueued = "LastEnqueued";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_LastEnqueued = new ModelColumn<>(I_C_Async_Batch.class, "LastEnqueued", null);
+	String COLUMNNAME_LastEnqueued = "LastEnqueued";
 
 	/**
 	 * Set Last Processed.
@@ -335,7 +325,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLastProcessed (java.sql.Timestamp LastProcessed);
+	void setLastProcessed (@Nullable java.sql.Timestamp LastProcessed);
 
 	/**
 	 * Get Last Processed.
@@ -344,12 +334,10 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getLastProcessed();
+	@Nullable java.sql.Timestamp getLastProcessed();
 
-    /** Column definition for LastProcessed */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_LastProcessed = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "LastProcessed", null);
-    /** Column name LastProcessed */
-    public static final String COLUMNNAME_LastProcessed = "LastProcessed";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_LastProcessed = new ModelColumn<>(I_C_Async_Batch.class, "LastProcessed", null);
+	String COLUMNNAME_LastProcessed = "LastProcessed";
 
 	/**
 	 * Set LastProcessed WorkPackage.
@@ -358,7 +346,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLastProcessed_WorkPackage_ID (int LastProcessed_WorkPackage_ID);
+	void setLastProcessed_WorkPackage_ID (int LastProcessed_WorkPackage_ID);
 
 	/**
 	 * Get LastProcessed WorkPackage.
@@ -367,16 +355,14 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getLastProcessed_WorkPackage_ID();
+	int getLastProcessed_WorkPackage_ID();
 
-	public de.metas.async.model.I_C_Queue_WorkPackage getLastProcessed_WorkPackage();
+	@Nullable de.metas.async.model.I_C_Queue_WorkPackage getLastProcessed_WorkPackage();
 
-	public void setLastProcessed_WorkPackage(de.metas.async.model.I_C_Queue_WorkPackage LastProcessed_WorkPackage);
+	void setLastProcessed_WorkPackage(@Nullable de.metas.async.model.I_C_Queue_WorkPackage LastProcessed_WorkPackage);
 
-    /** Column definition for LastProcessed_WorkPackage_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Queue_WorkPackage> COLUMN_LastProcessed_WorkPackage_ID = new org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Queue_WorkPackage>(I_C_Async_Batch.class, "LastProcessed_WorkPackage_ID", de.metas.async.model.I_C_Queue_WorkPackage.class);
-    /** Column name LastProcessed_WorkPackage_ID */
-    public static final String COLUMNNAME_LastProcessed_WorkPackage_ID = "LastProcessed_WorkPackage_ID";
+	ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Queue_WorkPackage> COLUMN_LastProcessed_WorkPackage_ID = new ModelColumn<>(I_C_Async_Batch.class, "LastProcessed_WorkPackage_ID", de.metas.async.model.I_C_Queue_WorkPackage.class);
+	String COLUMNNAME_LastProcessed_WorkPackage_ID = "LastProcessed_WorkPackage_ID";
 
 	/**
 	 * Set Name.
@@ -385,7 +371,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -394,12 +380,10 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_Name = new ModelColumn<>(I_C_Async_Batch.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Parent_Async_Batch_ID.
@@ -408,7 +392,7 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setParent_Async_Batch_ID (int Parent_Async_Batch_ID);
+	void setParent_Async_Batch_ID (int Parent_Async_Batch_ID);
 
 	/**
 	 * Get Parent_Async_Batch_ID.
@@ -417,67 +401,58 @@ public interface I_C_Async_Batch
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getParent_Async_Batch_ID();
+	int getParent_Async_Batch_ID();
 
-	public de.metas.async.model.I_C_Async_Batch getParent_Async_Batch();
+	@Nullable de.metas.async.model.I_C_Async_Batch getParent_Async_Batch();
 
-	public void setParent_Async_Batch(de.metas.async.model.I_C_Async_Batch Parent_Async_Batch);
+	void setParent_Async_Batch(@Nullable de.metas.async.model.I_C_Async_Batch Parent_Async_Batch);
 
-    /** Column definition for Parent_Async_Batch_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Async_Batch> COLUMN_Parent_Async_Batch_ID = new org.adempiere.model.ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Async_Batch>(I_C_Async_Batch.class, "Parent_Async_Batch_ID", de.metas.async.model.I_C_Async_Batch.class);
-    /** Column name Parent_Async_Batch_ID */
-    public static final String COLUMNNAME_Parent_Async_Batch_ID = "Parent_Async_Batch_ID";
+	ModelColumn<I_C_Async_Batch, de.metas.async.model.I_C_Async_Batch> COLUMN_Parent_Async_Batch_ID = new ModelColumn<>(I_C_Async_Batch.class, "Parent_Async_Batch_ID", de.metas.async.model.I_C_Async_Batch.class);
+	String COLUMNNAME_Parent_Async_Batch_ID = "Parent_Async_Batch_ID";
 
 	/**
-	 * Set Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
-	 * Get Verarbeitet.
-	 * Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
+	 * Get Processed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_Processed = new ModelColumn<>(I_C_Async_Batch.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Async_Batch, Object>(I_C_Async_Batch.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_Async_Batch, Object> COLUMN_Updated = new ModelColumn<>(I_C_Async_Batch.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

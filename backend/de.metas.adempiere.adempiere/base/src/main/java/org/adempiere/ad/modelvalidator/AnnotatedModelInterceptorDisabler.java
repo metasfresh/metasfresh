@@ -93,7 +93,7 @@ import lombok.NonNull;
 		return SYS_CONFIG_NAME_PREFIX + pointcutId;
 	}
 
-	private static final ImmutableSet<String> retrieveDisabledPointcutIds()
+	private static ImmutableSet<String> retrieveDisabledPointcutIds()
 	{
 		final boolean removePrefix = true;
 		return Services.get(ISysConfigBL.class)

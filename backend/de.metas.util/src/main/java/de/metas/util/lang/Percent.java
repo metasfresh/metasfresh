@@ -109,7 +109,7 @@ public class Percent
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"), 2)} returns an instance of "33.33%".
 	 * <li>{@code Percent.of(new BigDecimal("2"), new BigDecimal("100"), 2)} returns an instance of "2%".
 	 *
-	 * @param denominator if zero, then {@link #ZERO} percent is returned.
+	 * @param denominator if zero, then ZERO percent is returned.
 	 * @return a percent instance with max. two digits after the decimal point.
 	 */
 	public static Percent of(
@@ -143,6 +143,7 @@ public class Percent
 		return Percent.of(percentValue);
 	}
 
+	@Nullable
 	public static BigDecimal toBigDecimalOrNull(@Nullable final Percent paymentDiscountOverrideOrNull)
 	{
 		if (paymentDiscountOverrideOrNull == null)
@@ -159,8 +160,7 @@ public class Percent
 
 	public static final Percent ZERO = new Percent(BigDecimal.ZERO);
 
-	@Getter(AccessLevel.NONE)
-	private final BigDecimal value;
+	@Getter(AccessLevel.NONE) BigDecimal value;
 
 	private Percent(@NonNull final BigDecimal valueAsBigDecimal)
 	{
@@ -219,7 +219,7 @@ public class Percent
 		return of(this.value.subtract(percent.value));
 	}
 
-	public Percent multiply(@NonNull final Percent percent, int precision)
+	public Percent multiply(@NonNull final Percent percent, final int precision)
 	{
 		if (isOneHundred())
 		{
@@ -279,7 +279,7 @@ public class Percent
 	{
 		return addToBase(base,precision,RoundingMode.HALF_UP);
 	}
-	
+
 	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision, final RoundingMode roundingMode)
 	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
@@ -297,6 +297,7 @@ public class Percent
 			// make sure the base we work with does not have more digits than we expect from the given precision.
 			final BigDecimal baseToUse = base.setScale(precision, roundingMode);
 
+			//noinspection BigDecimalMethodWithoutRoundingCalled
 			return baseToUse
 					.setScale(precision + 2)
 					.divide(ONE_HUNDRED_VALUE, RoundingMode.UNNECESSARY) // no rounding needed because we raised the current precision by 2
@@ -334,6 +335,7 @@ public class Percent
 			// make sure the base we work with does not have more digits than we expect from the given precision.
 			final BigDecimal baseToUse = base.setScale(precision, roundingMode);
 
+			//noinspection BigDecimalMethodWithoutRoundingCalled
 			return baseToUse
 					.setScale(precision + 2)
 					.divide(ONE_HUNDRED_VALUE, RoundingMode.UNNECESSARY) // no rounding needed because we raised the current precision by 2
@@ -347,6 +349,7 @@ public class Percent
 	 */
 	public Percent roundToHalf(@NonNull final RoundingMode roundingMode)
 	{
+		@SuppressWarnings("BigDecimalMethodWithoutRoundingCalled")
 		final BigDecimal newPercentValue = toBigDecimal()
 				.multiply(TWO_VALUE)
 				.setScale(0, roundingMode)

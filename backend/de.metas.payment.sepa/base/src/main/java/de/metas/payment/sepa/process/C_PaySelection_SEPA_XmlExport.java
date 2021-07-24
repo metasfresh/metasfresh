@@ -17,6 +17,7 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PaySelection;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.util.Optional;
 
@@ -97,7 +98,7 @@ public class C_PaySelection_SEPA_XmlExport
 		getResult().setReportData(ReportResultData.builder()
 				.reportFilename(xml.getFilename())
 				.reportContentType(xml.getContentType())
-				.reportData(xml.getContent())
+				.reportData(new ByteArrayResource(xml.getContent()))
 				.build());
 
 		return MSG_OK;
