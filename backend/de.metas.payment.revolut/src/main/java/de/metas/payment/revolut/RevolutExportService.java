@@ -29,6 +29,7 @@ import de.metas.payment.revolut.model.RevolutPaymentExport;
 import de.metas.report.ReportResultData;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -80,7 +81,7 @@ public class RevolutExportService
 		final byte[] fileDataBytes = fileData.getBytes(StandardCharsets.UTF_8);
 
 		return ReportResultData.builder()
-				.reportData(fileDataBytes)
+				.reportData(new ByteArrayResource(fileDataBytes))
 				.reportFilename(EXPORT_FILE_NAME_TEMPLATE
 										.replace(EXPORT_ID_PLACEHOLDER, String.valueOf(paySelectionId.getRepoId()))
 										.replace(TIMESTAMP_PLACEHOLDER, String.valueOf(System.currentTimeMillis())))
