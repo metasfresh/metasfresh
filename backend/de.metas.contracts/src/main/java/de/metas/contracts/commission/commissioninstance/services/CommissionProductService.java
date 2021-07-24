@@ -1,12 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import de.metas.contracts.ConditionsId;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
@@ -15,6 +8,12 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Product;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -43,6 +42,7 @@ public class CommissionProductService
 {
 	private static final Logger logger = LogManager.getLogger(CommissionProductService.class);
 
+	@NonNull
 	public ProductId getCommissionProduct(@NonNull final ConditionsId conditionsId)
 	{
 		final I_C_Flatrate_Conditions conditionsRecord = InterfaceWrapperHelper.loadOutOfTrx(conditionsId, I_C_Flatrate_Conditions.class);

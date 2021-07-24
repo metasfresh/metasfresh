@@ -1242,6 +1242,15 @@ public class InterfaceWrapperHelper
 		return Optional.ofNullable(value);
 	}
 
+	@NonNull
+	public static <T> Optional<T> getValueOptional(final Object model, final String columnName)
+	{
+		final boolean throwExIfColumnNotFound = false;
+		final boolean useOverrideColumnIfAvailable = false;
+		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
+		return Optional.ofNullable(value);
+	}
+
 	/**
 	 * Gets [columnName]_Override if the override column is available and not null, else column name value is returned.
 	 *

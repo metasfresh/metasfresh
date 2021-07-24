@@ -20,6 +20,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.ReportResultData;
 import de.metas.util.Services;
+import org.springframework.core.io.ByteArrayResource;
 
 /**
  * Process that creates SEPA xmls in 3 steps:
@@ -98,7 +99,7 @@ public class C_PaySelection_SEPA_XmlExport
 		getResult().setReportData(ReportResultData.builder()
 				.reportFilename(xml.getFilename())
 				.reportContentType(xml.getContentType())
-				.reportData(xml.getContent())
+				.reportData(new ByteArrayResource(xml.getContent()))
 				.build());
 
 		return MSG_OK;
