@@ -163,8 +163,7 @@ public class QuotationAggregator
 
 		orderGroupRepository.prepareNewGroup()
 				.groupTemplate(groupTemplate)
-				.linesToGroup(orderLineIds)
-				.createGroup();
+				.createGroup(orderLineIds);
 	}
 
 	private static ImmutableList<OrderLineId> getOrderLineIds(@NonNull final QuotationLinesGroupAggregator linesGroup)

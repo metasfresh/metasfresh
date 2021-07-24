@@ -29,7 +29,7 @@ import de.metas.order.OrderFactory;
 import de.metas.order.OrderLineBuilder;
 import de.metas.order.compensationGroup.GroupCompensationType;
 import de.metas.order.compensationGroup.GroupTemplate;
-import de.metas.order.compensationGroup.GroupTemplateLine;
+import de.metas.order.compensationGroup.GroupTemplateCompensationLine;
 import de.metas.product.ProductId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
@@ -192,7 +192,7 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 		if (repairedProductToReturnCostCollector.getWarrantyCase().isYes()
 				&& repairServicePerformedId != null)
 		{
-			builder.line(GroupTemplateLine.builder()
+			builder.compensationLine(GroupTemplateCompensationLine.builder()
 					.productId(repairServicePerformedId)
 					.compensationType(GroupCompensationType.Discount)
 					.percentage(Percent.ONE_HUNDRED)
