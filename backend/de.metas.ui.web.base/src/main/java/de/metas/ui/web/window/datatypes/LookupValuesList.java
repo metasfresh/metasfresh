@@ -217,13 +217,15 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	/**
 	 * @return first lookup value found for <code>id</code> or null
 	 */
+	@Nullable
 	public LookupValue getById(final Object id)
 	{
 		final ImmutableList<LookupValue> values = valuesById.get(normalizeId(id));
 		return values.isEmpty() ? null : values.get(0);
 	}
 
-	private static Object normalizeId(final Object id)
+	@Nullable
+	private static Object normalizeId(@Nullable final Object id)
 	{
 		if (id == null)
 		{
