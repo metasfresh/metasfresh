@@ -52,7 +52,10 @@ public class X_C_Doc_Outbound_Log extends org.compiere.model.PO implements I_C_D
 		@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 		{
-			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+		if (C_Async_Batch_ID < 1) 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
 	}
 
 	@Override
