@@ -256,6 +256,7 @@ public class PaymentAndInvoiceRowsRepo
 					.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
 					.evaluationDate(loadingContext.getEvaluationDate())
 					.customerId(invoiceToAllocate.getBpartnerId())
+					.docTypeId(invoiceToAllocate.getDocTypeId())
 					.invoiceId(invoiceId)
 					.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
 					.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.ofBoolean(serviceInvoiceAlreadyGenerated))

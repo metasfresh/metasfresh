@@ -30,11 +30,11 @@ import org.compiere.print.PrintData;
 import org.compiere.print.PrintDataElement;
 
 import de.metas.i18n.Language;
-import de.metas.impexp.excel.AbstractExcelExporter;
-import de.metas.impexp.excel.CellValue;
-import de.metas.impexp.excel.CellValues;
-import de.metas.impexp.excel.ExcelExportConstants;
-import de.metas.impexp.excel.ExcelFormat;
+import de.metas.impexp.spreadsheet.excel.AbstractExcelExporter;
+import de.metas.impexp.spreadsheet.excel.CellValue;
+import de.metas.impexp.spreadsheet.excel.CellValues;
+import de.metas.impexp.spreadsheet.excel.ExcelExportConstants;
+import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import lombok.Builder;
 import lombok.NonNull;
 

@@ -127,7 +127,7 @@ final class CreatePPOrderCostsCommand
 		}
 
 		final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
-		acctSchema = acctSchemasRepo.getByCliendAndOrg(clientId, orgId);
+		acctSchema = acctSchemasRepo.getByClientAndOrg(clientId, orgId);
 	}
 
 	public PPOrderCosts execute()

@@ -45,16 +45,19 @@ class JsonRemittanceAdviceLineProducerTest
 		final REMADVListLineItemExtensionType remadvListLineItemExtensionType = objectFactory.createREMADVListLineItemExtensionType();
 		final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts = objectFactory.createREMADVListLineItemExtensionTypeMonetaryAmounts();
 
+		// we only take into account the rates from reasonCodes 67 and 90
 		monetaryAmounts.getAdjustment().add(createAdjustmentType("19", "2.5"));
-		monetaryAmounts.getAdjustment().add(createAdjustmentType("23", "2.5"));
+		
+		// we assume that reasonCodes 67 and 90 always have a common vat rate
 		monetaryAmounts.getAdjustment().add(createAdjustmentType("67", "7.7"));
+		monetaryAmounts.getAdjustment().add(createAdjustmentType("90", "7.7"));
 
 		remadvListLineItemExtensionType.setMonetaryAmounts(monetaryAmounts);
 
 		final Optional<BigDecimal> serviceFeeVATRate = JsonRemittanceAdviceLineProducer.of(remadvListLineItemExtensionType).getServiceFeeVATRate(monetaryAmounts);
 
 		assertThat(serviceFeeVATRate).isPresent();
-		assertThat(serviceFeeVATRate.get()).isEqualByComparingTo("2.5");
+		assertThat(serviceFeeVATRate.get()).isEqualByComparingTo("7.7");
 	}
 
 	private AdjustmentType createAdjustmentType(final String reasonCode, final String taxRate)

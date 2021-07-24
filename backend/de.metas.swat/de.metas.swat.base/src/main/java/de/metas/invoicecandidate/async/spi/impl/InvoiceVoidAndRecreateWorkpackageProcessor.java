@@ -13,11 +13,6 @@ import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.util.Services;
 
-/**
- * @author cg
- *
- */
-
 public class InvoiceVoidAndRecreateWorkpackageProcessor implements IWorkpackageProcessor
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
