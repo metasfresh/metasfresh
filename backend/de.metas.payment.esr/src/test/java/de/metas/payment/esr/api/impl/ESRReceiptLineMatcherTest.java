@@ -23,8 +23,8 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
-		assertThat(esrImport.getESR_Control_Amount()).isEqualByComparingTo("920");
-		assertThat(esrImport.getESR_Control_Trx_Qty()).isEqualByComparingTo("25");
+		assertThat(esrImportFile.getESR_Control_Amount()).isEqualByComparingTo("920");
+		assertThat(esrImportFile.getESR_Control_Trx_Qty()).isEqualByComparingTo("25");
 
 		// TODO: there needs to be an error because "missing trx lines"
 		// Assert.assertEquals("Invalid TrxType", ESRConstants.ESRTRXTYPE_Receipt, esrImportLine.getESRTrxType());
@@ -44,8 +44,8 @@ public class ESRReceiptLineMatcherTest extends ESRTestBase
 
 		esrImportBL.loadAndEvaluateESRImportStream(esrImportFile, new ByteArrayInputStream(esrImportLineText.getBytes()));
 
-		assertThat(esrImport.isValid()).isFalse();
-		assertThat(esrImport.getDescription()).contains("ESR_Wrong_Ctrl_Line_Length_[61]");
+		assertThat(esrImportFile.isValid()).isFalse();
+		assertThat(esrImportFile.getDescription()).contains("ESR_Wrong_Ctrl_Line_Length_[61]");
 	}
 
 	@Test

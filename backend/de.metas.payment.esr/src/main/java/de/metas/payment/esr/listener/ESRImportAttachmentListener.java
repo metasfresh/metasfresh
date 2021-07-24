@@ -37,11 +37,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 
-import java.io.IOException;
-import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-
 import static de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus.SUCCESS;
 import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_DESC;
 import static de.metas.payment.esr.ESRConstants.ESR_ASYNC_BATCH_NAME;
@@ -57,12 +52,12 @@ public class ESRImportAttachmentListener implements AttachmentListener
 
 	@Override
 	public AttachmentListenerConstants.ListenerWorkStatus afterRecordLinked(
-							final AttachmentEntry attachmentEntry,
-							final TableRecordReference tableRecordReference)
+			final AttachmentEntry attachmentEntry,
+			final TableRecordReference tableRecordReference)
 	{
 		final I_ESR_Import esrImport = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_ESR_Import.class);
 
-		boolean isAttachment = attachmentEntry.getFilename().endsWith(".zip");
+		final boolean isAttachment = attachmentEntry.getFilename().endsWith(".zip");
 
 		esrImport.setIsArchiveFile(isAttachment);
 		final RunESRImportRequest runESRImportRequest = RunESRImportRequest.builder()

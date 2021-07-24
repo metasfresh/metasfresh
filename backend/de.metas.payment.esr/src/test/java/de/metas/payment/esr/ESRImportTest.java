@@ -24,6 +24,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.esr.actionhandler.impl.DuplicatePaymentESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.UnableToAssignESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.WithCurrenttInvoiceESRActionHandler;
@@ -1611,11 +1612,13 @@ public class ESRImportTest extends ESRTestBase
 
 		esrImportBL.process(esrImport);
 
+
 		final I_ESR_ImportLine esrImportLine2 = createESR_ImportLineFromOtherLine(esrImportLine1);
 		esrImportLine2.setESRLineText(esrLineText);
 		save(esrImportLine2);
 		final I_ESR_Import esrImport2 = esrImportLine2.getESR_Import();
 		esrImportBL.process(esrImport2);
+
 
 		// check import line
 		refresh(esrImportLine1, true);
@@ -1628,8 +1631,8 @@ public class ESRImportTest extends ESRTestBase
 
 		refresh(esrImportLine2, true);
 		assertThat(esrImportLine2.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment));
-		assertThat(esrImportLine1.getImportErrorMsg(), nullValue());
-		assertThat(esrImportLine1.getMatchErrorMsg(), nullValue());
+		assertThat(esrImportLine2.getImportErrorMsg(), nullValue());
+		assertThat(esrImportLine2.getMatchErrorMsg(), nullValue());
 
 		// check the payment
 		assertThat(esrImportLine2.getC_Payment_ID(), is(esrImportLine2.getC_Payment_ID()));

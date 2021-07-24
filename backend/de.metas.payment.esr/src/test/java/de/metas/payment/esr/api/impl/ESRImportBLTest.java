@@ -100,23 +100,22 @@ public class ESRImportBLTest extends ESRTestBase
 	{
 		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
 
-		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
-
 		save(esrImport);
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 
 		// https://github.com/metasfresh/metasfresh/issues/2106
 		assertThat(esrImportBL.evaluateTrxQty(esrImportFile, 23))
 				.as("esrImport has no information, so assume it's OK and return true")
 				.isTrue();
 
-		esrImport.setESR_Control_Trx_Qty(BigDecimal.ZERO);
-		save(esrImport);
+		esrImportFile.setESR_Control_Trx_Qty(BigDecimal.ZERO);
+		save(esrImportFile);
 		assertThat(esrImportBL.evaluateTrxQty(esrImportFile, 23))
 				.as("zero is not 23, so return false")
 				.isFalse();
 
-		esrImport.setESR_Control_Trx_Qty(new BigDecimal("23.000"));
-		save(esrImport);
+		esrImportFile.setESR_Control_Trx_Qty(new BigDecimal("23.000"));
+		save(esrImportFile);
 		assertThat(esrImportBL.evaluateTrxQty(esrImportFile, 23))
 				.as("if numbers match, it shall return true")
 				.isTrue();

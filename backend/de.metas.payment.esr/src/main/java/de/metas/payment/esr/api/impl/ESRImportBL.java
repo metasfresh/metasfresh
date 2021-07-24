@@ -90,6 +90,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -172,7 +173,6 @@ public class ESRImportBL implements IESRImportBL
 
 		for (final I_ESR_ImportFile esrImportFile : esrImportFiles)
 		{
-
 			//
 			// Fetch data to be imported from attachment
 			final AttachmentEntryId attachmentEntryId = AttachmentEntryId.ofRepoIdOrNull(esrImportFile.getAD_AttachmentEntry_ID());
@@ -186,8 +186,6 @@ public class ESRImportBL implements IESRImportBL
 			}
 
 			final ByteArrayInputStream in = new ByteArrayInputStream(data);
-
-			AttachmentEntry attachmentEntry = attachmentEntryService.getById(attachmentEntryId);
 
 			loadAndEvaluateESRImportStream(esrImportFile, in);
 		}
@@ -603,6 +601,13 @@ public class ESRImportBL implements IESRImportBL
 				esrImportDAO.save(esrImport);
 			}
 		}
+	}
+
+	private PaymentId fetchDuplicatePaymentIfExists(@NonNull final I_ESR_ImportLine line)
+	{
+		final Optional<PaymentId> existentPaymentId = esrImportDAO.findExistentPaymentId(line);
+
+		return existentPaymentId.orElse(null);
 	}
 
 	/**
@@ -1051,11 +1056,19 @@ public class ESRImportBL implements IESRImportBL
 			final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
 			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
 			final BigDecimal invoiceOpenAmt = invoice.getGrandTotal().subtract(externalAllocationsSum);
+			final PaymentId paymentId = fetchDuplicatePaymentIfExists(importLine);
 			if (importLine.getAmount().compareTo(invoiceOpenAmt) == 0)
 			{
-				importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
+				if (paymentId != null)
+				{
+					importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+				}
+				else
+				{
+					importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
+				}
 			}
-			else if (X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched.equals(importLine.getESR_Document_Status()))
+			else if (X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched.equals(importLine.getESR_Document_Status()) && paymentId == null)
 			{
 				importLine.setESR_Payment_Action(null);
 			}
@@ -1191,7 +1204,7 @@ public class ESRImportBL implements IESRImportBL
 			for (int j = 0; j <= idxSetProcessed; j++)
 			{
 				final I_ESR_ImportLine fullyMatchedImportLine = linesWithSameInvoice.get(j);
-				if (fullyMatchedImportLine.getC_Payment_ID() > 0)
+				if (fullyMatchedImportLine.getC_Payment_ID() > 0 && !X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(fullyMatchedImportLine.getESR_Payment_Action()))
 				{
 					final I_C_Payment payment = paymentDAO.getById(PaymentId.ofRepoId(fullyMatchedImportLine.getC_Payment_ID()));
 

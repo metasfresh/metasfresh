@@ -29,8 +29,6 @@ public class ESRReverseBookingLineMatcherTest extends ESRTestBase
 
 		final I_ESR_Import esrImport = createImport();
 
-		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
-
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
@@ -42,6 +40,7 @@ public class ESRReverseBookingLineMatcherTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class);
 		refNoType.setName("InvoiceReference");
 		save(refNoType);

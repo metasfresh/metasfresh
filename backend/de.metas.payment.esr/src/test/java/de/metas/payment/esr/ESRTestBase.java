@@ -397,8 +397,10 @@ public class ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
 		final I_ESR_ImportLine esrImportLine = newInstance(I_ESR_ImportLine.class, contextProvider);
 		esrImportLine.setESR_Import(esrImport);
+		esrImportLine.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
 		esrImportLine.setC_BP_BankAccount_ID(line.getC_BP_BankAccount_ID());
 		esrImportLine.setAD_Org_ID(org.getAD_Org_ID());
 		esrImportLine.setESRPostParticipantNumber(line.getESRPostParticipantNumber());
