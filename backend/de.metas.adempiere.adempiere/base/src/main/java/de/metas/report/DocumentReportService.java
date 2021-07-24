@@ -120,7 +120,7 @@ public class DocumentReportService
 				.printPreview(true)
 				.build());
 
-		return result.getData();
+		return result.getReportResultData();
 	}
 
 	public DocumentReportResult createReport(@NonNull final DocumentReportRequest request)
@@ -213,8 +213,9 @@ public class DocumentReportService
 
 		return DocumentReportResult.builder()
 				.flavor(request.getFlavor())
-				.data(processResult.getReportData())
+				.reportResultData(processResult.getReportData())
 				.reportPInstanceId(processResult.getReportPInstanceId())
+				.asyncBatchId(request.getAsyncBatchId())
 				//
 				.documentRef(request.getDocumentRef())
 				.reportProcessId(request.getReportProcessId())

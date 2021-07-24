@@ -1,46 +1,38 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.async.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Async_Batch
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_Batch, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1062241078L;
+	private static final long serialVersionUID = 859483800L;
 
     /** Standard Constructor */
-    public X_C_Async_Batch (Properties ctx, int C_Async_Batch_ID, String trxName)
+    public X_C_Async_Batch (final Properties ctx, final int C_Async_Batch_ID, @Nullable final String trxName)
     {
       super (ctx, C_Async_Batch_ID, trxName);
-      /** if (C_Async_Batch_ID == 0)
-        {
-			setC_Async_Batch_ID (0);
-			setName (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_Async_Batch (Properties ctx, ResultSet rs, String trxName)
+    public X_C_Async_Batch (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_PInstance getAD_PInstance()
@@ -49,56 +41,39 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	@Override
-	public void setAD_PInstance(org.compiere.model.I_AD_PInstance AD_PInstance)
+	public void setAD_PInstance(final org.compiere.model.I_AD_PInstance AD_PInstance)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_PInstance_ID, org.compiere.model.I_AD_PInstance.class, AD_PInstance);
 	}
 
-	/** Set Prozess-Instanz.
-		@param AD_PInstance_ID 
-		Instanz eines Prozesses
-	  */
 	@Override
-	public void setAD_PInstance_ID (int AD_PInstance_ID)
+	public void setAD_PInstance_ID (final int AD_PInstance_ID)
 	{
 		if (AD_PInstance_ID < 1) 
 			set_Value (COLUMNNAME_AD_PInstance_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_PInstance_ID, Integer.valueOf(AD_PInstance_ID));
+			set_Value (COLUMNNAME_AD_PInstance_ID, AD_PInstance_ID);
 	}
 
-	/** Get Prozess-Instanz.
-		@return Instanz eines Prozesses
-	  */
 	@Override
-	public int getAD_PInstance_ID () 
+	public int getAD_PInstance_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_PInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_PInstance_ID);
 	}
 
-	/** Set Async Batch.
-		@param C_Async_Batch_ID Async Batch	  */
 	@Override
-	public void setC_Async_Batch_ID (int C_Async_Batch_ID)
+	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
 		if (C_Async_Batch_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_Async_Batch_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_Async_Batch_ID, Integer.valueOf(C_Async_Batch_ID));
+			set_ValueNoCheck (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
 	}
 
-	/** Get Async Batch.
-		@return Async Batch	  */
 	@Override
-	public int getC_Async_Batch_ID () 
+	public int getC_Async_Batch_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Async_Batch_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
 
 	@Override
@@ -108,152 +83,120 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	@Override
-	public void setC_Async_Batch_Type(de.metas.async.model.I_C_Async_Batch_Type C_Async_Batch_Type)
+	public void setC_Async_Batch_Type(final de.metas.async.model.I_C_Async_Batch_Type C_Async_Batch_Type)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Async_Batch_Type_ID, de.metas.async.model.I_C_Async_Batch_Type.class, C_Async_Batch_Type);
 	}
 
-	/** Set Async Batch Type.
-		@param C_Async_Batch_Type_ID Async Batch Type	  */
 	@Override
-	public void setC_Async_Batch_Type_ID (int C_Async_Batch_Type_ID)
+	public void setC_Async_Batch_Type_ID (final int C_Async_Batch_Type_ID)
 	{
 		if (C_Async_Batch_Type_ID < 1) 
 			set_Value (COLUMNNAME_C_Async_Batch_Type_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Async_Batch_Type_ID, Integer.valueOf(C_Async_Batch_Type_ID));
+			set_Value (COLUMNNAME_C_Async_Batch_Type_ID, C_Async_Batch_Type_ID);
 	}
 
-	/** Get Async Batch Type.
-		@return Async Batch Type	  */
 	@Override
-	public int getC_Async_Batch_Type_ID () 
+	public int getC_Async_Batch_Type_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Async_Batch_Type_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_Type_ID);
 	}
 
-	/** Set Enqueued.
-		@param CountEnqueued Enqueued	  */
 	@Override
-	public void setCountEnqueued (int CountEnqueued)
+	public void setCountEnqueued (final int CountEnqueued)
 	{
-		set_Value (COLUMNNAME_CountEnqueued, Integer.valueOf(CountEnqueued));
+		set_Value (COLUMNNAME_CountEnqueued, CountEnqueued);
 	}
 
-	/** Get Enqueued.
-		@return Enqueued	  */
 	@Override
-	public int getCountEnqueued () 
+	public int getCountEnqueued() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CountEnqueued);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_CountEnqueued);
 	}
 
-	/** Set Expected.
-		@param CountExpected Expected	  */
 	@Override
-	public void setCountExpected (int CountExpected)
+	public void setCountExpected (final int CountExpected)
 	{
-		set_Value (COLUMNNAME_CountExpected, Integer.valueOf(CountExpected));
+		set_Value (COLUMNNAME_CountExpected, CountExpected);
 	}
 
-	/** Get Expected.
-		@return Expected	  */
 	@Override
-	public int getCountExpected () 
+	public int getCountExpected() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CountExpected);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_CountExpected);
 	}
 
-	/** Set Verarbeitet.
-		@param CountProcessed Verarbeitet	  */
 	@Override
-	public void setCountProcessed (int CountProcessed)
+	public void setCountProcessed (final int CountProcessed)
 	{
-		set_Value (COLUMNNAME_CountProcessed, Integer.valueOf(CountProcessed));
+		set_Value (COLUMNNAME_CountProcessed, CountProcessed);
 	}
 
-	/** Get Verarbeitet.
-		@return Verarbeitet	  */
 	@Override
-	public int getCountProcessed () 
+	public int getCountProcessed() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_CountProcessed);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_CountProcessed);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set First Enqueued.
-		@param FirstEnqueued First Enqueued	  */
 	@Override
-	public void setFirstEnqueued (java.sql.Timestamp FirstEnqueued)
+	public void setFirstEnqueued (final @Nullable java.sql.Timestamp FirstEnqueued)
 	{
 		set_Value (COLUMNNAME_FirstEnqueued, FirstEnqueued);
 	}
 
-	/** Get First Enqueued.
-		@return First Enqueued	  */
 	@Override
-	public java.sql.Timestamp getFirstEnqueued () 
+	public java.sql.Timestamp getFirstEnqueued() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_FirstEnqueued);
+		return get_ValueAsTimestamp(COLUMNNAME_FirstEnqueued);
 	}
 
-	/** Set Last Enqueued.
-		@param LastEnqueued Last Enqueued	  */
 	@Override
-	public void setLastEnqueued (java.sql.Timestamp LastEnqueued)
+	public void setIsProcessing (final boolean IsProcessing)
+	{
+		set_Value (COLUMNNAME_IsProcessing, IsProcessing);
+	}
+
+	@Override
+	public boolean isProcessing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsProcessing);
+	}
+
+	@Override
+	public void setLastEnqueued (final @Nullable java.sql.Timestamp LastEnqueued)
 	{
 		set_Value (COLUMNNAME_LastEnqueued, LastEnqueued);
 	}
 
-	/** Get Last Enqueued.
-		@return Last Enqueued	  */
 	@Override
-	public java.sql.Timestamp getLastEnqueued () 
+	public java.sql.Timestamp getLastEnqueued() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastEnqueued);
+		return get_ValueAsTimestamp(COLUMNNAME_LastEnqueued);
 	}
 
-	/** Set Last Processed.
-		@param LastProcessed Last Processed	  */
 	@Override
-	public void setLastProcessed (java.sql.Timestamp LastProcessed)
+	public void setLastProcessed (final @Nullable java.sql.Timestamp LastProcessed)
 	{
 		set_Value (COLUMNNAME_LastProcessed, LastProcessed);
 	}
 
-	/** Get Last Processed.
-		@return Last Processed	  */
 	@Override
-	public java.sql.Timestamp getLastProcessed () 
+	public java.sql.Timestamp getLastProcessed() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_LastProcessed);
+		return get_ValueAsTimestamp(COLUMNNAME_LastProcessed);
 	}
 
 	@Override
@@ -263,47 +206,36 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	@Override
-	public void setLastProcessed_WorkPackage(de.metas.async.model.I_C_Queue_WorkPackage LastProcessed_WorkPackage)
+	public void setLastProcessed_WorkPackage(final de.metas.async.model.I_C_Queue_WorkPackage LastProcessed_WorkPackage)
 	{
 		set_ValueFromPO(COLUMNNAME_LastProcessed_WorkPackage_ID, de.metas.async.model.I_C_Queue_WorkPackage.class, LastProcessed_WorkPackage);
 	}
 
-	/** Set LastProcessed WorkPackage.
-		@param LastProcessed_WorkPackage_ID LastProcessed WorkPackage	  */
 	@Override
-	public void setLastProcessed_WorkPackage_ID (int LastProcessed_WorkPackage_ID)
+	public void setLastProcessed_WorkPackage_ID (final int LastProcessed_WorkPackage_ID)
 	{
 		if (LastProcessed_WorkPackage_ID < 1) 
 			set_Value (COLUMNNAME_LastProcessed_WorkPackage_ID, null);
 		else 
-			set_Value (COLUMNNAME_LastProcessed_WorkPackage_ID, Integer.valueOf(LastProcessed_WorkPackage_ID));
+			set_Value (COLUMNNAME_LastProcessed_WorkPackage_ID, LastProcessed_WorkPackage_ID);
 	}
 
-	/** Get LastProcessed WorkPackage.
-		@return LastProcessed WorkPackage	  */
 	@Override
-	public int getLastProcessed_WorkPackage_ID () 
+	public int getLastProcessed_WorkPackage_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_LastProcessed_WorkPackage_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_LastProcessed_WorkPackage_ID);
 	}
 
-	/** Set Name.
-		@param Name Name	  */
 	@Override
-	public void setName (java.lang.String Name)
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
 	@Override
@@ -313,56 +245,35 @@ public class X_C_Async_Batch extends org.compiere.model.PO implements I_C_Async_
 	}
 
 	@Override
-	public void setParent_Async_Batch(de.metas.async.model.I_C_Async_Batch Parent_Async_Batch)
+	public void setParent_Async_Batch(final de.metas.async.model.I_C_Async_Batch Parent_Async_Batch)
 	{
 		set_ValueFromPO(COLUMNNAME_Parent_Async_Batch_ID, de.metas.async.model.I_C_Async_Batch.class, Parent_Async_Batch);
 	}
 
-	/** Set Parent_Async_Batch_ID.
-		@param Parent_Async_Batch_ID Parent_Async_Batch_ID	  */
 	@Override
-	public void setParent_Async_Batch_ID (int Parent_Async_Batch_ID)
+	public void setParent_Async_Batch_ID (final int Parent_Async_Batch_ID)
 	{
 		if (Parent_Async_Batch_ID < 1) 
 			set_Value (COLUMNNAME_Parent_Async_Batch_ID, null);
 		else 
-			set_Value (COLUMNNAME_Parent_Async_Batch_ID, Integer.valueOf(Parent_Async_Batch_ID));
+			set_Value (COLUMNNAME_Parent_Async_Batch_ID, Parent_Async_Batch_ID);
 	}
 
-	/** Get Parent_Async_Batch_ID.
-		@return Parent_Async_Batch_ID	  */
 	@Override
-	public int getParent_Async_Batch_ID () 
+	public int getParent_Async_Batch_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Parent_Async_Batch_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Parent_Async_Batch_ID);
 	}
 
-	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setProcessed (final boolean Processed)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_Processed, Processed);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
-	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 }

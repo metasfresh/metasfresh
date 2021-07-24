@@ -809,7 +809,7 @@ public class InterfaceWrapperHelper
 		return helpers.getPO(model, strict);
 	}
 
-	public static int getId(final Object model)
+	public static int getId(@Nullable final Object model)
 	{
 		if (model == null)
 		{
@@ -1237,6 +1237,15 @@ public class InterfaceWrapperHelper
 	public static <T> Optional<T> getValue(final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;
+		final boolean useOverrideColumnIfAvailable = false;
+		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
+		return Optional.ofNullable(value);
+	}
+
+	@NonNull
+	public static <T> Optional<T> getValueOptional(final Object model, final String columnName)
+	{
+		final boolean throwExIfColumnNotFound = false;
 		final boolean useOverrideColumnIfAvailable = false;
 		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 		return Optional.ofNullable(value);

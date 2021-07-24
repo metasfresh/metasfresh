@@ -68,6 +68,9 @@ public class DocumentReportRequest
 	@Nullable
 	Language reportLanguage;
 
+	@Nullable
+	Integer asyncBatchId;
+
 	@NonNull
 	@Builder.Default
 	DocumentPrintOptions printOptions = DocumentPrintOptions.NONE;

@@ -75,7 +75,9 @@ public class ElementValueRepository
 	{
 		return Services.get(IQueryBL.class).createQueryBuilder(I_C_ElementValue.class)
 				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_Parent_ID, parentId)
+				.addOnlyContextClient()
 				.create()
+				.setOnlyActiveRecords(true)
 				.map(I_C_ElementValue.class, I_C_ElementValue::getValue);
 	}
 
