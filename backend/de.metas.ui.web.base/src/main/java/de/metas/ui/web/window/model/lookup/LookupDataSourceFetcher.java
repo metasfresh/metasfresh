@@ -4,12 +4,15 @@ import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -47,6 +50,20 @@ public interface LookupDataSourceFetcher
 
 	@Nullable
 	LookupValue retrieveLookupValueById(@NonNull LookupDataSourceContext evalCtx);
+
+	default LookupDataSourceContext.Builder newContextForFetchingByIds(@NonNull final Collection<?> ids)
+	{
+		return newContextForFetchingById(null)
+				.putFilterById(IdsToFilter.ofMultipleValues(ids));
+	}
+
+	default LookupValuesList retrieveLookupValueByIdsInOrder(@NonNull final LookupDataSourceContext evalCtx)
+	{
+		return evalCtx.streamSingleIdContexts()
+				.map(this::retrieveLookupValueById)
+				.filter(Objects::nonNull)
+				.collect(LookupValuesList.collect());
+	}
 
 	LookupDataSourceContext.Builder newContextForFetchingList();
 

@@ -15,6 +15,7 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
@@ -138,7 +139,21 @@ class FullyCachedLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public DocumentZoomIntoInfo getDocumentZoomInto(int id)
+	public @NonNull LookupValuesList findByIdsOrdered(@NonNull final Collection<?> ids)
+	{
+		final ImmutableList<Object> idsNormalized = LookupValue.normalizeIds(ids, fetcher.isNumericKey());
+		if (idsNormalized.isEmpty())
+		{
+			return LookupValuesList.EMPTY;
+		}
+
+		final LookupValuesList partition = getLookupValuesList(Evaluatees.empty());
+		return partition.getByIdsInOrder(idsNormalized);
+	}
+
+
+	@Override
+	public DocumentZoomIntoInfo getDocumentZoomInto(final int id)
 	{
 		final String tableName = fetcher.getLookupTableName()
 				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to " + DocumentZoomIntoInfo.class + " because the fetcher returned null TableName: " + fetcher));

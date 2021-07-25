@@ -229,13 +229,14 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	@Override
 	public LookupDataSourceContext.Builder newContextForFetchingById(final Object id)
 	{
-		return LookupDataSourceContext.builder(tableName).putFilterById(id);
+		return LookupDataSourceContext.builder(tableName)
+				.putFilterById(IdsToFilter.ofSingleValue(id));
 	}
 
 	@Override
 	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		final String id = evalCtx.getIdToFilterAsString();
+		final Object id = evalCtx.getSingleIdToFilterAsObject();
 		if (id == null)
 		{
 			throw new IllegalStateException("No ID provided in " + evalCtx);

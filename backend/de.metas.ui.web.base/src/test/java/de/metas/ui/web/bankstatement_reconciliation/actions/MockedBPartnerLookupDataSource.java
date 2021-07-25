@@ -3,8 +3,8 @@ package de.metas.ui.web.bankstatement_reconciliation.actions;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache.CCacheStats;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
@@ -13,7 +13,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -41,7 +44,22 @@ import java.util.Optional;
 final class MockedBPartnerLookupDataSource implements LookupDataSource
 {
 	@Override
-	public LookupValue findById(final Object idObj)
+	public IntegerLookupValue findById(@Nullable final Object idObj)
+	{
+		return createIntegerLookupValue(idObj);
+	}
+
+	@Override
+	public @NonNull LookupValuesList findByIdsOrdered(final @NonNull Collection<?> ids)
+	{
+		return ids.stream()
+				.map(MockedBPartnerLookupDataSource::createIntegerLookupValue)
+				.filter(Objects::nonNull)
+				.collect(LookupValuesList.collect());
+	}
+
+	@Nullable
+	private static IntegerLookupValue createIntegerLookupValue(@Nullable final Object idObj)
 	{
 		if (idObj == null)
 		{

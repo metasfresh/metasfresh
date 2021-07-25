@@ -1,8 +1,6 @@
 package de.metas.ui.web.window.descriptor.sql;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
@@ -464,21 +462,14 @@ public final class DocumentFieldValueLoaders
 
 			if (isDisplayColumnAvailable)
 			{
-				final DisplayNameAndDescription result = DocumentFieldValueLoaders.extractDisplayNameAndDescription(
-						rs,
-						sqlDisplayColumnName,
-						adLanguage);
+				final IntegerLookupValue lookupValue = SqlForFetchingLookupById.retrieveIntegerLookupValue(rs, sqlDisplayColumnName, adLanguage);
+				if (lookupValue != null)
+				{
+					return lookupValue;
+				}
+			}
 
-				return IntegerLookupValue.builder()
-						.id(id)
-						.displayName(result.getDisplayName())
-						.description(result.getDescription())
-						.build();
-			}
-			else
-			{
-				return IntegerLookupValue.unknown(id);
-			}
+			return IntegerLookupValue.unknown(id);
 		}
 	}
 
@@ -505,64 +496,15 @@ public final class DocumentFieldValueLoaders
 
 			if (isDisplayColumnAvailable)
 			{
-				final DisplayNameAndDescription result = DocumentFieldValueLoaders.extractDisplayNameAndDescription(
-						rs,
-						sqlDisplayColumnName,
-						adLanguage);
+				final StringLookupValue lookupValue = SqlForFetchingLookupById.retrieveStringLookupValue(rs, sqlDisplayColumnName, adLanguage);
+				if (lookupValue != null)
+				{
+					return lookupValue;
+				}
+			}
 
-				return StringLookupValue.builder()
-						.id(key)
-						.displayName(result.getDisplayName())
-						.description(result.getDescription())
-						.build();
-			}
-			else
-			{
-				return StringLookupValue.unknown(key);
-			}
+			return StringLookupValue.unknown(key);
 		}
-	}
-
-	private static DisplayNameAndDescription extractDisplayNameAndDescription(
-			@NonNull final ResultSet rs,
-			final String sqlDisplayColumnName,
-			final String adLanguage) throws SQLException
-	{
-		final ITranslatableString displayName;
-		final ITranslatableString description;
-
-		final Array array = rs.getArray(sqlDisplayColumnName);
-		if (array == null)
-		{
-			displayName = TranslatableStrings.empty();
-			description = TranslatableStrings.empty();
-		}
-		else
-		{
-			final String[] nameAndDescription = (String[])array.getArray();
-			displayName = TranslatableStrings.singleLanguage(adLanguage, nameAndDescription[0]);
-
-			final boolean hasDescription = nameAndDescription.length > 1;
-			if (hasDescription)
-			{
-				description = TranslatableStrings.singleLanguage(adLanguage, nameAndDescription[1]);
-			}
-			else
-			{
-				description = TranslatableStrings.empty();
-			}
-		}
-		return new DisplayNameAndDescription(displayName, description);
-	}
-
-	@Value
-	private static class DisplayNameAndDescription
-	{
-		@NonNull
-		ITranslatableString displayName;
-
-		@NonNull
-		ITranslatableString description;
 	}
 
 	@Value

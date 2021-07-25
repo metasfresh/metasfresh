@@ -48,7 +48,6 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.ICachedStringExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
@@ -67,6 +66,8 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupInfo;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
@@ -82,6 +83,10 @@ import java.util.Set;
 @Immutable
 public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 {
+	public static final String SQL_PARAM_VALUE_ShowInactive_Yes = "Y"; // i.e. show all
+	public static final String SQL_PARAM_VALUE_ShowInactive_No = "N";
+	public static final CtxName SQL_PARAM_ShowInactive = CtxNames.ofNameAndDefaultValue("SqlShowInactive", SQL_PARAM_VALUE_ShowInactive_No);
+
 	public static Builder builder()
 	{
 		return new Builder();
@@ -577,12 +582,10 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					.build();
 
 			final SqlForFetchingLookupById sqlForFetchingLookupById = SqlForFetchingLookupById.builder()
-					.sql(IStringExpression.composer()
-							.append("SELECT ").append("ARRAY[").append(displayColumnSql).append(", NULL]")
-							.append("\n FROM ").append(tableName) // FROM
-							.append("\n WHERE ").append(keyColumnNameFQ).append("=").append(SqlForFetchingLookupById.SQL_PARAM_KeyId)
-							.build()
-							.caching())
+					.keyColumnNameFQ(keyColumnNameFQ)
+					.numericKey(true)
+					.displayColumn(ConstantStringExpression.of(displayColumnSql))
+					.sqlFrom(ConstantStringExpression.of(tableName))
 					.build();
 
 			//
@@ -627,8 +630,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			if (!lookupInfo.isShowInactiveValues())
 			{
 				sqlWhereFinal.appendIfNotEmpty("\n AND ");
-				sqlWhereFinal.append(" /* active */ ('").append(SqlForFetchingLookupById.SQL_PARAM_ShowInactive)
-						.append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
+				sqlWhereFinal.append(" /* active */ ('").append(SQL_PARAM_ShowInactive).append("'='Y' OR ").append(tableName).append(".IsActive='Y')");
 			}
 
 			return sqlWhereFinal.build();
@@ -670,7 +672,7 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 					.build();
 		}
 
-		private SqlForFetchingLookupById buildSqlForFetchingById(final MLookupInfo lookupInfo)
+		private static SqlForFetchingLookupById buildSqlForFetchingById(@NonNull final MLookupInfo lookupInfo)
 		{
 			final IStringExpression displayColumnSQL = TranslatableParameterizedStringExpression.of(lookupInfo.getDisplayColumnSql());
 
@@ -697,31 +699,19 @@ public final class SqlLookupDescriptor implements ISqlLookupDescriptor
 			}
 
 			final IStringExpression fromSqlPart = TranslatableParameterizedStringExpression.of(lookupInfo.getFromSqlPart());
-
 			final String keyColumnFQ = lookupInfo.getKeyColumnFQ();
 			final int displayType = lookupInfo.getDisplayType();
-			final String whereClauseSqlPart = lookupInfo.getWhereClauseSqlPart(); // assuming this is constant!
-
-			final CompositeStringExpression.Builder sqlBuilder = IStringExpression
-					.composer()
-					.append("SELECT ")
-					.append("\n ARRAY[").append(displayColumnSQL).append(", ").append(descriptionColumnSQL).append(",").append(lookupInfo.getActiveColumnSQL()).append(", ").append(validationMsgColumnSQL).append("]")
-					.append("\n FROM ")
-					.append(fromSqlPart)
-					.append("\n WHERE ")
-					.append(keyColumnFQ).append("=").append(SqlForFetchingLookupById.SQL_PARAM_KeyId)
-					.append(" ");
-
 			final boolean listOrButton = DisplayType.List == displayType || DisplayType.Button == displayType;
-			if (listOrButton)
-			{
-				// FIXME: make it better: this is actually adding the AD_Ref_List.AD_Reference_ID=....
-				sqlBuilder.append(" AND " + whereClauseSqlPart);
-			}
 
-			final ICachedStringExpression sql = sqlBuilder.build().caching();
 			return SqlForFetchingLookupById.builder()
-					.sql(sql)
+					.keyColumnNameFQ(keyColumnFQ)
+					.numericKey(lookupInfo.isNumericKey())
+					.displayColumn(displayColumnSQL)
+					.descriptionColumn(descriptionColumnSQL)
+					.activeColumn(lookupInfo.getActiveColumnSQL())
+					.validationMsgColumn(validationMsgColumnSQL)
+					.sqlFrom(fromSqlPart)
+					.additionalWhereClause(listOrButton ? lookupInfo.getWhereClauseSqlPart() : null) // this is actually adding the AD_Ref_List.AD_Reference_ID=....
 					.build();
 		}
 

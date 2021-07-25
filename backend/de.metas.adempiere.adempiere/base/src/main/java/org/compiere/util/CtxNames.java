@@ -88,9 +88,17 @@ public class CtxNames
 		{
 			return null;
 		}
-		return ctxNames.stream()
-				.map(CtxName::getName)
-				.collect(ImmutableSet.toImmutableSet());
+		else
+		{
+			return ctxNames.stream()
+					.map(CtxName::getName)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+	}
+
+	public boolean containsName(@NonNull final Collection<CtxName> ctxNames, @NonNull final String name)
+	{
+		return ctxNames.stream().anyMatch(ctxName -> name.equals(ctxName.getName()));
 	}
 
 	public static CtxName ofNameAndDefaultValue(

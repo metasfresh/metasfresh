@@ -1,35 +1,34 @@
 package de.metas.ui.web.address;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_Country;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.ICountryDAO;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.model.lookup.IdsToFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Country;
+import org.compiere.util.Env;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -143,13 +142,13 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	{
 		return LookupDataSourceContext.builder(CONTEXT_LookupTableName)
 				.requiresAD_Language()
-				.putFilterById(id);
+				.putFilterById(IdsToFilter.ofSingleValue(id));
 	}
 
 	@Override
 	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		final Object id = evalCtx.getIdToFilter();
+		final Object id = evalCtx.getSingleIdToFilterAsObject();
 		if (id == null)
 		{
 			throw new IllegalStateException("No ID provided in " + evalCtx);
