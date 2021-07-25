@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Product
  *  @author metasfresh (generated) 
@@ -1474,6 +1475,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, org.compiere.model.I_C_Country> COLUMN_RawMaterialOrigin_ID = new ModelColumn<>(I_M_Product.class, "RawMaterialOrigin_ID", org.compiere.model.I_C_Country.class);
 	String COLUMNNAME_RawMaterialOrigin_ID = "RawMaterialOrigin_ID";
+
+	/**
+	 * Set Requires Supplier Approval.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRequiresSupplierApproval (boolean RequiresSupplierApproval);
+
+	/**
+	 * Get Requires Supplier Approval.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRequiresSupplierApproval();
+
+	ModelColumn<I_M_Product, Object> COLUMN_RequiresSupplierApproval = new ModelColumn<>(I_M_Product.class, "RequiresSupplierApproval", null);
+	String COLUMNNAME_RequiresSupplierApproval = "RequiresSupplierApproval";
 
 	/**
 	 * Set EMail-Vorlage.

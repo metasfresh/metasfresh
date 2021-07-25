@@ -114,6 +114,35 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Woocommerce_getById=[
+  {
+    "id" : 100001,
+    "type" : "WOO",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testWoocommerceValue",
+      "camelHttpResourceAuthKey" : "authKey"
+    }
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Woocommerce_getTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "WOO",
+    "name" : "name",
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testWoocommerceValue"
+    }
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config_getById=[
   {
     "id" : 100001,

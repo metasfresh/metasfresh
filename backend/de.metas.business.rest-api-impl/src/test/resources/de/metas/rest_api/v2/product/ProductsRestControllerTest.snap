@@ -8,6 +8,7 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
     "ean" : "ean1",
     "uom" : "Ea",
     "manufacturerId" : null,
+    "manufacturerName" : null,
     "manufacturerNumber" : null,
     "bpartners" : [ {
       "bPartnerId" : 1,
@@ -41,6 +42,7 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
     "ean" : "ean2",
     "uom" : "Kg",
     "manufacturerId" : null,
+    "manufacturerName" : null,
     "manufacturerNumber" : null,
     "bpartners" : [ ]
   } ]

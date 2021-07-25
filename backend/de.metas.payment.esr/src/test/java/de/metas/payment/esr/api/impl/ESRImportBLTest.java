@@ -659,6 +659,17 @@ public class ESRImportBLTest extends ESRTestBase
 		final I_C_DocType type = newInstance(I_C_DocType.class);
 		type.setDocBaseType(X_C_DocType.DOCBASETYPE_ARInvoice);
 		save(type);
+		
+		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
+		
+		// bank account
+		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
+		account.setC_Bank_ID(999);
+		account.setIsEsrAccount(true);
+		account.setAD_Org_ID(Env.getAD_Org_ID(getCtx()));
+		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
+		account.setC_Currency_ID(currencyEUR.getRepoId());
+		save(account);
 
 		final BigDecimal invoiceGrandTotal = INVOICE_GRANDTOTAL;
 		invoice = newInstance(I_C_Invoice.class);
@@ -671,6 +682,7 @@ public class ESRImportBLTest extends ESRTestBase
 		save(invoice);
 
 		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
+		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();

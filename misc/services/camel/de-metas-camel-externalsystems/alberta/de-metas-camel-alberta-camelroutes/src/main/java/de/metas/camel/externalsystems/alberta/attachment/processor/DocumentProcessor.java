@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.alberta.attachment.processor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
+import de.metas.camel.externalsystems.alberta.attachment.AttachmentUtil;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
@@ -63,9 +64,12 @@ public class DocumentProcessor implements Processor
 
 		final String base64FileData = Base64.getEncoder().encodeToString(fileData);
 
+		final String effectiveFileName = AttachmentUtil.appendPDFSuffix(document.getName());
+
 		final JsonAttachment jsonAttachment = JsonAttachment.builder()
-				.fileName(document.getName())
+				.fileName(effectiveFileName)
 				.data(base64FileData)
+				.mimeType(GetAttachmentRouteConstants.MIME_TYPE_PDF)
 				.tags(computeTags(document))
 				.build();
 
@@ -75,13 +79,12 @@ public class DocumentProcessor implements Processor
 				.attachment(jsonAttachment)
 				.build();
 
-		if (document.getCreatedAt() != null)
+		if (document.getUpdatedAt() != null)
 		{
-			routeContext.setNextDocumentImportStartDate(AlbertaUtil.asInstant(document.getCreatedAt()));
+			routeContext.setNextDocumentImportStartDate(AlbertaUtil.asInstant(document.getUpdatedAt()));
 		}
 		exchange.getIn().setBody(jsonRequest);
 	}
-
 	@NonNull
 	final File getFile(
 			@NonNull final GetAttachmentRouteContext context,

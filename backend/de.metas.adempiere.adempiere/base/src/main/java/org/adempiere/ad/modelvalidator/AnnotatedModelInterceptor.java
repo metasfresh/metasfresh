@@ -1,10 +1,13 @@
 package org.adempiere.ad.modelvalidator;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Set;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Stopwatch;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableSet;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -15,16 +18,10 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Stopwatch;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Wrapping class which introspect an object, identifies it's pointcuts (ModelChange, DocValidate etc) and maps them to {@link ModelValidator} interface.
@@ -257,8 +254,8 @@ import lombok.NonNull;
 		}
 	}
 
-	@VisibleForTesting
-	private final void executeNow(
+
+	private void executeNow(
 			@NonNull final Object po,
 			@NonNull final Pointcut pointcut,
 			final int timing)

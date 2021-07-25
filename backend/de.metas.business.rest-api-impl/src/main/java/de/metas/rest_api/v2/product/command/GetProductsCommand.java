@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
@@ -60,6 +61,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class GetProductsCommand
@@ -82,6 +84,8 @@ public class GetProductsCommand
 	private final String externalSystemConfigValue;
 
 	private ImmutableListMultimap<ProductId, JsonProductBPartner> productBPartners;
+
+	private ImmutableMap<JsonMetasfreshId, String> bpartnerId2Name;
 
 	@Nullable
 	private ImmutableMap<ProductId, AlbertaCompositeProductInfo> productId2AlbertaInfo;
@@ -121,14 +125,32 @@ public class GetProductsCommand
 
 		productBPartners = retrieveJsonProductVendors(productIds);
 
+		final ImmutableSet<BPartnerId> manufacturerIds = productsToExport.stream()
+				.map(I_M_Product::getManufacturer_ID)
+				.map(BPartnerId::ofRepoIdOrNull)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		bpartnerId2Name = retrieveBPartnerNames(manufacturerIds);
+
 		final ImmutableList<JsonProduct> products = productsToExport.stream()
-				.filter(product -> since.isAfter(DEFAULT_SINCE) || !wasAlreadyExported(product))
+				.filter(product -> since.equals(DEFAULT_SINCE) || since.isAfter(DEFAULT_SINCE) || !wasAlreadyExported(product))
 				.map(this::toJsonProduct)
 				.collect(ImmutableList.toImmutableList());
 
 		return JsonGetProductsResponse.builder()
 				.products(products)
 				.build();
+	}
+
+	private ImmutableMap<JsonMetasfreshId, String> retrieveBPartnerNames(@NonNull final ImmutableSet<BPartnerId> manufacturerIds)
+	{
+		return servicesFacade
+				.getPartnerRecords(manufacturerIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> JsonMetasfreshId.of(record.getC_BPartner_ID()),
+						record -> record.getName()));
 	}
 
 	@NonNull
@@ -160,6 +182,7 @@ public class GetProductsCommand
 				.productNo(productRecord.getValue())
 				.productCategoryId(JsonMetasfreshId.of(productRecord.getM_Product_Category_ID()))
 				.manufacturerId(manufacturerId)
+				.manufacturerName(bpartnerId2Name.get(manufacturerId))
 				.manufacturerNumber(productRecord.getManufacturerArticleNumber())
 				.name(trls.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()).translate(adLanguage))
 				.description(trls.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()).translate(adLanguage))

@@ -22,27 +22,10 @@
 
 package de.metas.report;
 
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.archive.api.ArchiveResult;
-import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.Profiles;
 import de.metas.document.DocTypeId;
 import de.metas.logging.LogManager;
@@ -58,6 +41,20 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.archive.api.ArchiveResult;
+import org.adempiere.archive.api.IArchiveBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
 
 @Service
 @Profile(Profiles.PROFILE_NOT_ReportService_Standalone)
@@ -120,7 +117,7 @@ public class DocumentReportService
 				.printPreview(true)
 				.build());
 
-		return result.getData();
+		return result.getReportResultData();
 	}
 
 	public DocumentReportResult createReport(@NonNull final DocumentReportRequest request)
@@ -213,8 +210,9 @@ public class DocumentReportService
 
 		return DocumentReportResult.builder()
 				.flavor(request.getFlavor())
-				.data(processResult.getReportData())
+				.reportResultData(processResult.getReportData())
 				.reportPInstanceId(processResult.getReportPInstanceId())
+				.asyncBatchId(request.getAsyncBatchId())
 				//
 				.documentRef(request.getDocumentRef())
 				.reportProcessId(request.getReportProcessId())

@@ -25,6 +25,7 @@ import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.document.sequence.SequenceUtil;
 import de.metas.document.sequence.impl.IPreliminaryDocumentNoBuilder;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
@@ -3626,20 +3627,16 @@ public abstract class PO
 					value = null;
 				}
 
-				if (Check.isEmpty(value))
+				if (Check.isBlank(value))
 				{
-					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
-
-					value = documentNoFactory.createValueBuilderFor(this)
-							.setFailOnError(true) // backward compatiblity: initially here an DBException was thrown
-							.build();
+					value = SequenceUtil.createValueFor(this);
 					set_ValueNoCheck(index, value);
 				}
 			}
 			else if (p_info.isColumnMandatory(index))
 			{
 				final String value = (String)get_Value(index);
-				if (value == null || value.length() == 0)
+				if (Check.isBlank(value))
 				{
 					// gh #213 as of yesterday we make a distinction between NULL and "", so we need to set NULL here. Otherwise, the DB won't return anything for us.
 					set_ValueNoCheck(index, Null.NULL);

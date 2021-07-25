@@ -84,7 +84,7 @@ public interface IOrderBL extends ISingletonService
 
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
-		
+
 	@NonNull BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
@@ -116,7 +116,6 @@ public interface IOrderBL extends ISingletonService
 	void setM_PricingSystem_ID(I_C_Order order, boolean overridePricingSystem);
 
 	PriceListId retrievePriceListId(I_C_Order order, PricingSystemId pricingSystemIdOverride);
-
 
 	/**
 	 * Sets Target Document Type based on {@link I_C_Order#isSOTrx()} (Standard Order or PO)

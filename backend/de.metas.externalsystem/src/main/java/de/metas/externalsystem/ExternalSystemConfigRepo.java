@@ -32,12 +32,15 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
+import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
+import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -74,6 +77,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemShopware6ConfigId.cast(id));
 			case Other:
 				return getById(ExternalSystemOtherConfigId.cast(id));
+			case WOO:
+				return getById(ExternalSystemWooCommerceConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -87,16 +92,20 @@ public class ExternalSystemConfigRepo
 			case Alberta:
 				return getAlbertaConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
-
 			case Shopware6:
 				return getShopware6ConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
+			case WOO:
+				return getWooCommerceConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
 	}
 
-	public Optional<IExternalSystemChildConfig> getChildByParentIdAndType(@NonNull final ExternalSystemParentConfigId id, @NonNull final ExternalSystemType externalSystemType)
+	public Optional<IExternalSystemChildConfig> getChildByParentIdAndType(
+			@NonNull final ExternalSystemParentConfigId id,
+			@NonNull final ExternalSystemType externalSystemType)
 	{
 		switch (externalSystemType)
 		{
@@ -107,6 +116,8 @@ public class ExternalSystemConfigRepo
 			case Other:
 				final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
 				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
+			case WOO:
+				return getWooCommerceConfigByParentId(id);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -121,11 +132,14 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType) {
+	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType)
+	{
 		switch (externalSystemType)
 		{
 			case Alberta:
 				return getAllByTypeAlberta();
+			case WOO:
+				return getAllByTypeWOO();
 			case Shopware6:
 			case Other:
 				throw new AdempiereException("Method not supported")
@@ -377,6 +391,67 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemWooCommerceConfigId id)
+	{
+		final I_ExternalSystem_Config_WooCommerce config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_WooCommerce.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_WooCommerce config)
+	{
+		final ExternalSystemWooCommerceConfig child = buildExternalSystemWooCommerceConfig(config);
+
+		return getById(child.getParentId())
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemWooCommerceConfig buildExternalSystemWooCommerceConfig(@NonNull final I_ExternalSystem_Config_WooCommerce config)
+	{
+		return ExternalSystemWooCommerceConfig.builder()
+				.id(ExternalSystemWooCommerceConfigId.ofRepoId(config.getExternalSystem_Config_WooCommerce_ID()))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.value(config.getExternalSystemValue())
+				.camelHttpResourceAuthKey(config.getCamelHttpResourceAuthKey())
+				.build();
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_WooCommerce> getWooCommerceConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_WooCommerce.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_WooCommerce.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_WooCommerce.class);
+	}
+
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getWooCommerceConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_WooCommerce.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_WooCommerce.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_WooCommerce.class)
+				.map(this::buildExternalSystemWooCommerceConfig);
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeWOO()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_WooCommerce.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
 	private Optional<ExternalSystemParentConfig> getShopware6ConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
 	{
 		final IQueryBuilder<I_ExternalSystem_Config_Shopware6> queryBuilder = queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6.class);
@@ -462,4 +537,6 @@ public class ExternalSystemConfigRepo
 
 		return record;
 	}
+}
+
 }

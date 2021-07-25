@@ -510,4 +510,17 @@ public final class ProductBL implements IProductBL
 		return attributesRepo.getAttributeSetById(attributeSetId);
 	}
 
+	@Override
+	public ImmutableList<String> retrieveSupplierApprovalNorms(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+
+		if(!product.isRequiresSupplierApproval())
+		{
+			return ImmutableList.of();
+		}
+
+		return productsRepo.retrieveSupplierApprovalNorms(productId);
+	}
+
 }
