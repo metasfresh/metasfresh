@@ -310,7 +310,7 @@ public final class AdempiereServerMgr
 			int index = m_servers.indexOf(server);
 			server = AdempiereServer.create(server.getModel());
 			if (server == null)
-				m_servers.remove(index);//
+				m_servers.remove(index);
 			else
 				m_servers.set(index, server);
 			server.start();
@@ -522,6 +522,12 @@ public final class AdempiereServerMgr
 		return null;
 	}	// getServer
 
+
+	/**
+	 * Remove Server with ID
+	 *
+	 * @param serverID server id
+	 */
 	public void removeServerWithId(@NonNull final String serverID)
 	{
 		int matchedIndex = -1;

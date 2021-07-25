@@ -23,17 +23,27 @@
 package de.metas.externalsystem.rabbitmq;
 
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 
 @Configuration
+@EnableRabbit
 public class ExternalSystemQueueConfig
 {
+	public static final String QUEUE_ManageSchedulerEvents = "ManageSchedulerEvents";
+
 	@Bean(name = QUEUE_NAME_MF_TO_ES)
 	public Queue metasfreshToProcurementWebQueue()
 	{
 		return new Queue(QUEUE_NAME_MF_TO_ES);
+	}
+
+	@Bean(name = QUEUE_ManageSchedulerEvents)
+	public Queue manageSchedulerEvents()
+	{
+		return new Queue(QUEUE_ManageSchedulerEvents);
 	}
 }

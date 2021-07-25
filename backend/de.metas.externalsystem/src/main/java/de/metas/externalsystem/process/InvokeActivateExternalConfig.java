@@ -27,17 +27,17 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
+import de.metas.externalsystem.rabbitmq.request.ManageSchedulerRequest;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.SpringContextHolder;
 
 import java.util.Optional;
@@ -46,52 +46,24 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 {
 	private final static AdMessageKey MSG_ERR_NO_EXTERNAL_SELECTION = AdMessageKey.of("NoExternalSelection");
 	private final static AdMessageKey MSG_ERR_MULTIPLE_EXTERNAL_SELECTION = AdMessageKey.of("MultipleExternalSelection");
+	private final static AdMessageKey MSG_ERR_EXTERNAL_SYSTEM_CONFIG_ACTIVE = AdMessageKey.of("MSG_ERR_ExternalSystemConfigActive");
 
 	protected final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
-
 	protected final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@Override
 	protected String doIt()
 	{
-		activateRecord();
+		final ExternalSystemMessageSender externalSystemMessageSender = SpringContextHolder.instance.getBean(ExternalSystemMessageSender.class);
 
-		// final SchedulerServiceImpl schedulerService = SpringContextHolder.instance.getBean(SchedulerServiceImpl.class);
+		activateRecord();
 
 		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(getExternalSystemType().getExternalSystemProcessClassName());
 
-		// final Optional<I_AD_Scheduler> scheduler = schedulerService.getSchedulerByProcessIdIfUnique(targetProcessId);
-		//
-		// if (!scheduler.isPresent())
-		// {
-		// 	throw new AdempiereException("No scheduler found for process")
-		// 			.appendParametersToMessage()
-		// 			.setParameter("processId", targetProcessId);
-		// }
-		//
-		// final I_AD_Scheduler targetScheduler = scheduler.get();
-		//
-		// schedulerService.activateScheduler(targetScheduler);
-
-		trxManager.runInNewTrx(() -> {
-
-			Services.get(ITrxManager.class)
-					.getCurrentTrxListenerManagerOrAutoCommit()
-					.runAfterCommit(() -> trxManager.runInNewTrx(() -> {
-						{
-							{final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
-								processInfoBuilder.setAD_Process_ID(584864);//todo set from db
-								processInfoBuilder.addParameter("AD_Scheduler_ID", 550069);
-
-								processInfoBuilder
-										.buildAndPrepareExecution()
-										.switchContextWhenRunning()
-										.executeASync();
-							}
-						}
-					}));
-		});
-
+		externalSystemMessageSender.sendSchedulerRequest(ManageSchedulerRequest.builder()
+																 .adProcessId(targetProcessId)
+																 .enable(true)
+																 .build());
 		return MSG_OK;
 	}
 
@@ -114,7 +86,7 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 
 			if (config.get().getIsActive())
 			{
-				return ProcessPreconditionsResolution.reject("ExternalSystemConfig active - nothing to activate");//todo fp:
+				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_EXTERNAL_SYSTEM_CONFIG_ACTIVE));
 			}
 		}
 
@@ -126,7 +98,6 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 	{
 		final ExternalSystemConfigQuery query = ExternalSystemConfigQuery.builder()
 				.parentConfigId(externalSystemParentConfigId)
-				.isActive(false)
 				.build();
 
 		return externalSystemConfigRepo.getByQuery(getExternalSystemType(), query);

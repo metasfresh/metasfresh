@@ -475,15 +475,15 @@ public class ExternalSystemConfigRepo
 	{
 		final ExternalSystemShopware6Config configToSave = ExternalSystemShopware6Config.cast(config.getChildConfig());
 
-		final I_ExternalSystem_Config_Shopware6 existingRecord = prepareRecord(configToSave);
+		final I_ExternalSystem_Config_Shopware6 existingRecord = toShopware6Record(configToSave);
 		InterfaceWrapperHelper.save(existingRecord);
 
-		final I_ExternalSystem_Config externalSystemConfig = prepareRecord(config);
+		final I_ExternalSystem_Config externalSystemConfig = toRecord(config);
 		InterfaceWrapperHelper.save(externalSystemConfig);
 	}
 
 	@NonNull
-	private I_ExternalSystem_Config_Shopware6 prepareRecord(@NonNull final ExternalSystemShopware6Config config)
+	private I_ExternalSystem_Config_Shopware6 toShopware6Record(@NonNull final ExternalSystemShopware6Config config)
 	{
 		final I_ExternalSystem_Config_Shopware6 record = InterfaceWrapperHelper.loadOrNew(config.getId(), I_ExternalSystem_Config_Shopware6.class);
 
@@ -527,7 +527,7 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private I_ExternalSystem_Config prepareRecord(@NonNull final ExternalSystemParentConfig config)
+	private I_ExternalSystem_Config toRecord(@NonNull final ExternalSystemParentConfig config)
 	{
 		final I_ExternalSystem_Config record = InterfaceWrapperHelper.loadOrNew(config.getId(), I_ExternalSystem_Config.class);
 
@@ -537,6 +537,4 @@ public class ExternalSystemConfigRepo
 
 		return record;
 	}
-}
-
 }

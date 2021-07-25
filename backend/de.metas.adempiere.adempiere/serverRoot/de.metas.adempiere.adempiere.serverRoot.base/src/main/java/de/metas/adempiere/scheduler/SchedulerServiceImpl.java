@@ -30,13 +30,10 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.scheduler.SchedulerDao;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.MScheduler;
-import org.compiere.model.X_AD_Scheduler;
 import org.compiere.server.AdempiereServer;
 import org.compiere.server.AdempiereServerGroup;
 import org.compiere.server.AdempiereServerMgr;
@@ -60,22 +57,32 @@ public class SchedulerServiceImpl
 		this.schedulerDao = schedulerDao;
 	}
 
-	public void activateScheduler(@NonNull final I_AD_Scheduler scheduler)
+	public void enableScheduler(@NonNull final I_AD_Scheduler scheduler)
 	{
-		enableScheduler(scheduler);
+		activateScheduler(scheduler);
 
 		final UserId supervisorId = UserId.ofRepoIdOrNull(scheduler.getSupervisor_ID());
 
-		if (supervisorId == null)
+		if (supervisorId != null)
 		{
-			throw new AdempiereException("No supervisor found to enable for scheduler")
-					.appendParametersToMessage()
-					.setParameter("schedulerId", scheduler.getAD_Scheduler_ID());
+			activateSupervisor(supervisorId);
 		}
 
-		enableSupervisor(supervisorId);
-
 		startScheduler(scheduler);
+	}
+
+	public void disableScheduler(@NonNull final I_AD_Scheduler scheduler)
+	{
+		deactivateScheduler(scheduler);
+
+		final UserId supervisorId = UserId.ofRepoIdOrNull(scheduler.getSupervisor_ID());
+
+		if (supervisorId != null)
+		{
+			deactivateSupervisor(supervisorId);
+		}
+
+		stopScheduler(scheduler);
 	}
 
 	public Optional<I_AD_Scheduler> getSchedulerByProcessIdIfUnique(@NonNull final AdProcessId processId)
@@ -83,8 +90,36 @@ public class SchedulerServiceImpl
 		return schedulerDao.getSchedulerByProcessIdIfUnique(processId);
 	}
 
-	private void startScheduler(@NonNull final MScheduler schedulerModel)
+	private void activateScheduler(@NonNull final I_AD_Scheduler scheduler)
 	{
+		scheduler.setIsActive(true);
+		schedulerDao.save(scheduler);
+	}
+
+	private void deactivateScheduler(@NonNull final I_AD_Scheduler scheduler)
+	{
+		scheduler.setIsActive(false);
+		schedulerDao.save(scheduler);
+	}
+
+	private void activateSupervisor(@NonNull final UserId userId)
+	{
+		final I_AD_User user = userDAO.getById(userId);
+		user.setIsActive(true);
+		userDAO.save(user);
+	}
+
+	private void deactivateSupervisor(@NonNull final UserId userId)
+	{
+		final I_AD_User user = userDAO.getById(userId);
+		user.setIsActive(false);
+		userDAO.save(user);
+	}
+
+	private void startScheduler(@NonNull final I_AD_Scheduler adScheduler)
+	{
+		final MScheduler schedulerModel = new MScheduler(Env.getCtx(), adScheduler.getAD_Scheduler_ID(), null);
+
 		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get();
 
 		final AdempiereServer scheduler = adempiereServerMgr.getServer(schedulerModel.getServerID());
@@ -98,58 +133,16 @@ public class SchedulerServiceImpl
 		Loggables.withLogger(logger, Level.DEBUG).addLog("Started " + schedulerModel.getName());
 	}
 
-	private void enableScheduler(@NonNull final I_AD_Scheduler scheduler)
+	private void stopScheduler(@NonNull final I_AD_Scheduler adScheduler)
 	{
-		scheduler.setIsActive(true);
-
-		schedulerDao.save(scheduler);
-	}
-
-	private void enableSupervisor(@NonNull final UserId userId)
-	{
-		final I_AD_User user = userDAO.getById(userId);
-		user.setIsActive(true);
-		userDAO.save(user);
-	}
-
-	private void startScheduler(@NonNull final I_AD_Scheduler adScheduler)
-	{
-		final MScheduler schedulerModel = new MScheduler(Env.getCtx(), adScheduler.getAD_Scheduler_ID(), ITrx.TRXNAME_ThreadInherited);
-
-		startScheduler(schedulerModel);
-	}
-
-	public void disableScheduler(@NonNull final I_AD_Scheduler adScheduler)
-	{
-		final MScheduler schedulerModel = new MScheduler(Env.getCtx(), adScheduler.getAD_Scheduler_ID(), ITrx.TRXNAME_ThreadInherited);
+		final MScheduler schedulerModel = new MScheduler(Env.getCtx(), adScheduler.getAD_Scheduler_ID(), null);
 
 		final AdempiereServerMgr adempiereServerMgr = AdempiereServerMgr.get();
 
-		final AdempiereServer scheduler = adempiereServerMgr.getServer(schedulerModel.getServerID());
-
-		if (scheduler == null)
-			return;
-
-		try
-		{
-			scheduler.interrupt();
-			Thread.sleep(10);    // 1/100 sec
-		}
-		catch (final Exception e)
-		{
-			Loggables.withLogger(logger, Level.ERROR).addLog("Stopped " + schedulerModel.getName());
-		}
+		adempiereServerMgr.stop(schedulerModel.getServerID());
 
 		adempiereServerMgr.removeServerWithId(schedulerModel.getServerID());
 
 		AdempiereServerGroup.get().dump();
-
-		if (scheduler.getModel() instanceof MScheduler)
-		{
-			final MScheduler targetScheduler = (MScheduler)scheduler.getModel();
-			targetScheduler.setStatus(X_AD_Scheduler.STATUS_Stopped);
-			targetScheduler.setIsActive(false);
-			targetScheduler.saveEx();
-		}
 	}
 }

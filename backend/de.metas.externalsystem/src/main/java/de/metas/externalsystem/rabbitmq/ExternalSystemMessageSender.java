@@ -25,6 +25,7 @@ package de.metas.externalsystem.rabbitmq;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.externalsystem.rabbitmq.request.ManageSchedulerRequest;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.amqp.core.Message;
@@ -37,19 +38,24 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+import static de.metas.externalsystem.rabbitmq.ExternalSystemQueueConfig.QUEUE_ManageSchedulerEvents;
 
 @Service
 public class ExternalSystemMessageSender
 {
 	private final RabbitTemplate rabbitTemplate;
 	private final Queue queue;
+	private final Queue schedulerQueue;
 
 	public ExternalSystemMessageSender(
 			@NonNull final RabbitTemplate rabbitTemplate,
-			@NonNull @Qualifier(QUEUE_NAME_MF_TO_ES) final Queue queue)
+			@NonNull @Qualifier(QUEUE_NAME_MF_TO_ES) final Queue queue,
+			@NonNull @Qualifier(QUEUE_ManageSchedulerEvents) final Queue schedulerQueue
+	)
 	{
 		this.rabbitTemplate = rabbitTemplate;
 		this.queue = queue;
+		this.schedulerQueue = schedulerQueue;
 	}
 
 	public void send(@NonNull final JsonExternalSystemRequest externalSystemRequest)
@@ -71,5 +77,26 @@ public class ExternalSystemMessageSender
 		messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
 
 		rabbitTemplate.convertAndSend(queue.getName(), new Message(messageAsBytes, messageProperties));
+	}
+
+	public void sendSchedulerRequest(@NonNull final ManageSchedulerRequest manageSchedulerRequest)
+	{
+		final byte[] messageAsBytes;
+		try
+		{
+			messageAsBytes = JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsBytes(manageSchedulerRequest);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new AdempiereException("Exception serializing manageSchedulerRequest", e)
+					.appendParametersToMessage()
+					.setParameter("manageSchedulerRequest", manageSchedulerRequest);
+		}
+
+		final MessageProperties messageProperties = new MessageProperties();
+		messageProperties.setContentEncoding(StandardCharsets.UTF_8.displayName());
+		messageProperties.setContentType(MessageProperties.CONTENT_TYPE_JSON);
+
+		rabbitTemplate.convertAndSend(schedulerQueue.getName(), new Message(messageAsBytes, messageProperties));
 	}
 }

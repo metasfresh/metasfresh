@@ -40,18 +40,15 @@ import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v2.SyncAdvise.IfNotExists;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.process.ProcessInfo;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
-import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -113,20 +110,6 @@ public class BpartnerRestController
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifierStr)
 	{
-		//todo fp
-		Services.get(ITrxManager.class)
-				.runInNewTrx(() -> {
-
-			final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
-			processInfoBuilder.setAD_Process_ID(584864);//todo set from db
-			processInfoBuilder.addParameter("AD_Scheduler_ID", 550069);
-
-			processInfoBuilder
-					.buildAndPrepareExecution()
-					.executeSync();
-		});
-
-
 		return retrieveBPartner(null, bpartnerIdentifierStr);
 	}
 
