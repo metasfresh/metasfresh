@@ -545,6 +545,10 @@ import java.util.Set;
 		{
 			return ConstantLogicExpression.TRUE;
 		}
+		else if(gridFieldVO.isVirtualColumn())
+		{
+			return ConstantLogicExpression.TRUE;
+		}
 		//
 		// Readonly logic in case of parent link column which is not parent link in this window.
 		// NOTE: in SwingUI/application dictionary, in case a column is flagged as ParentLink it is automatically flagged as IsUpdateable=N.
