@@ -413,7 +413,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final Integer idToFilter = evalCtx.getIdToFilterAsInt(-1);
 		if (idToFilter != null && idToFilter > 0)
 		{
-			sqlWhereClause.append("\n AND p.").append(I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID).append(sqlWhereClauseParams.placeholder(idToFilter));
+			sqlWhereClause.append("\n AND p.").append(I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID).append("=").append(sqlWhereClauseParams.placeholder(idToFilter));
 		}
 	}
 
