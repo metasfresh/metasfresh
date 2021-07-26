@@ -210,6 +210,7 @@ public class ESRImportEnqueuer
 		final AttachmentEntryId attachmentEntryId = attachmentEntry.getId();
 
 		esrImportFile.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());
+		esrImportFile.setFileName(filename);
 		esrImportDAO.save(esrImportFile);
 	}
 
