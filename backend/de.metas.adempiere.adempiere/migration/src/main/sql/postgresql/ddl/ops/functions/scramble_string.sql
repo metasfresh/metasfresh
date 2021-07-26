@@ -1,5 +1,4 @@
-
-CREATE OR REPLACE FUNCTION public.scramble_string(
+CREATE OR REPLACE FUNCTION ops.scramble_string(
     p_string            character varying,
     p_delimiter_pattern character varying = '[@,{}\s]' /*by default, use comma and white-spaces as the delimiter */)
     RETURNS text
@@ -31,12 +30,12 @@ END;
 $BODY$
 ;
 
-COMMENT ON FUNCTION public.scramble_string(character varying, character varying)
+COMMENT ON FUNCTION ops.scramble_string(character varying, character varying)
     IS 'Takes a string an returns a scrambled version of that string, leaving certain characters intact.
 By default, both commas and whitespaces (incl line breaks) are left intact, but this can be varied with the p_delimiter_pattern parameter.
 Examples: 
-  select scramble_string(''Support-User, IT''); might return the string "4anePaQlNpz0, 2k", preserving the command and the space.
-  select scramble_string(''Support-User, IT'', ''[-,\s]''); might return the string "mXUgmFl-0FZc, nb", addionally preserving the minus sign.
+  select ops.scramble_string(''Support-User, IT''); might return the string "4anePaQlNpz0, 2k", preserving the command and the space.
+  select ops.scramble_string(''Support-User, IT'', ''[-,\s]''); might return the string "mXUgmFl-0FZc, nb", addionally preserving the minus sign.
 
 To scramble all rendered addresses on all C_Invoices while keeping only the formatting (spaces, tabs, newlines), you can do
-  update c_invoice set bpartneraddress=scramble_string(bpartneraddress, ''[\s]'');';
+  update c_invoice set bpartneraddress=ops.scramble_string(bpartneraddress, ''[\s]'');';
