@@ -168,7 +168,7 @@ public class ESRImportBL implements IESRImportBL
 	private void loadAndEvaluateESRImportFile0(@NonNull final I_ESR_Import esrImport)
 	{
 
-		final ImmutableList<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveESRImportFiles(esrImport);
+		final ImmutableList<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveActiveESRImportFiles(esrImport);
 
 		for (final I_ESR_ImportFile esrImportFile : esrImportFiles)
 		{
@@ -277,7 +277,7 @@ public class ESRImportBL implements IESRImportBL
 		BigDecimal importAmt = BigDecimal.ZERO;
 		int trxQty = 0;
 
-		final ImmutableList<I_ESR_ImportLine> esrImportLines = esrImportDAO.retrieveESRImportLinesFromFile(esrImportFile);
+		final ImmutableList<I_ESR_ImportLine> esrImportLines = esrImportDAO.retrieveActiveESRImportLinesFromFile(esrImportFile);
 
 		for (final I_ESR_ImportLine importLine : esrImportLines)
 		{
@@ -606,7 +606,7 @@ public class ESRImportBL implements IESRImportBL
 		finally
 		{
 			// cg: just make sure that the esr import is not set to processed too early
-			if (isAllLinesProcessed(allLines))
+			if (areAllLinesProcessed(allLines))
 			{
 				esrImport.setProcessed(true);
 				esrImportDAO.save(esrImport);
@@ -904,26 +904,29 @@ public class ESRImportBL implements IESRImportBL
 	public boolean isProcessed(final I_ESR_Import esrImport)
 	{
 		final List<I_ESR_ImportLine> allLines = esrImportDAO.retrieveLines(esrImport);
-		return isAllLinesProcessed(allLines);
+		return areAllLinesProcessed(allLines);
 	}
 
-	private boolean isAllLinesProcessed(final List<I_ESR_ImportLine> allLines)
+	private boolean areAllLinesProcessed(final List<I_ESR_ImportLine> allLines)
 	{
-		if (allLines.size() == 0)
+		if (Check.isEmpty(allLines))
+		{
+			return false;
+		}
+		return allLines.stream()
+				.allMatch(line -> line.isProcessed());
+	}
+
+	private boolean areAllFilesProcessed(final List<I_ESR_ImportFile> allFiles)
+	{
+		if (Check.isEmpty(allFiles))
 		{
 			return false;
 		}
 
-		final List<I_ESR_ImportLine> linesProcessed = new ArrayList<>();
-		for (final I_ESR_ImportLine line : allLines)
-		{
-			if (line.isProcessed())
-			{
-				linesProcessed.add(line);
-			}
-		}
+		return allFiles.stream()
+				.allMatch(file -> file.isProcessed());
 
-		return allLines.size() == linesProcessed.size();
 	}
 
 	@Override
@@ -936,23 +939,37 @@ public class ESRImportBL implements IESRImportBL
 			throw new AdempiereException("@Processed@: @Y@");
 		}
 
-		// create payments before completing
 		process(esrImport);
 
-		final List<I_ESR_ImportLine> allLines = esrImportDAO.retrieveLines(esrImport);
+		final List<I_ESR_ImportFile> allFiles = esrImportDAO.retrieveActiveESRImportFiles(esrImport);
 
-		for (final I_ESR_ImportLine line : allLines)
+		for (final I_ESR_ImportFile file : allFiles)
 		{
-			processLine(message, line);
+			processFile(message, file);
 		}
 
 		// cg: just make sure that the esr import is not set to processed too early
-		if (isAllLinesProcessed(allLines))
+		if (areAllFilesProcessed(allFiles))
 		{
 			esrImport.setProcessed(true);
 			esrImportDAO.save(esrImport);
 		}
 
+	}
+
+	private void processFile(final String message, final I_ESR_ImportFile file)
+	{
+		final List<I_ESR_ImportLine> linesOfFile = esrImportDAO.retrieveActiveESRImportLinesFromFile(file);
+		for (final I_ESR_ImportLine line : linesOfFile)
+		{
+			processLine(message, line);
+		}
+
+		if (areAllLinesProcessed(linesOfFile))
+		{
+			file.setProcessed(true);
+			esrImportDAO.save(file);
+		}
 	}
 
 	private void processLine(final String message, final I_ESR_ImportLine line)

@@ -90,7 +90,7 @@ public interface IESRImportDAO extends ISingletonService
 	 */
 	Iterator<I_ESR_Import> retrieveESRImports(Properties ctx, int orgID);
 
-	Iterator<I_ESR_ImportFile> retrieveESRImportFiles(Properties ctx, int orgID);
+	Iterator<I_ESR_ImportFile> retrieveActiveESRImportFiles(Properties ctx, int orgID);
 
 	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineIds(Collection<BankStatementLineId> bankStatementLineIds);
 
@@ -121,9 +121,9 @@ public interface IESRImportDAO extends ISingletonService
 
 	I_ESR_ImportFile createESRImportFile(@NonNull I_ESR_Import header);
 
-	ImmutableList<I_ESR_ImportFile> retrieveESRImportFiles(I_ESR_Import esrImport);
+	ImmutableList<I_ESR_ImportFile> retrieveActiveESRImportFiles(I_ESR_Import esrImport);
 
-	ImmutableList<I_ESR_ImportLine> retrieveESRImportLinesFromFile(@NonNull I_ESR_ImportFile esrImportFile);
+	ImmutableList<I_ESR_ImportLine> retrieveActiveESRImportLinesFromFile(@NonNull I_ESR_ImportFile esrImportFile);
 
 	I_ESR_ImportFile getImportFileById(int esr_importFile_id);
 }

@@ -355,7 +355,7 @@ public class ESRImportEnqueuer
 		}
 		else
 		{
-			final Iterator<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveESRImportFiles(ctx, orgRecordId);
+			final Iterator<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveActiveESRImportFiles(ctx, orgRecordId);
 
 			// will turn true if another identical hash was seen in the list of esr imports
 			boolean seen = false;

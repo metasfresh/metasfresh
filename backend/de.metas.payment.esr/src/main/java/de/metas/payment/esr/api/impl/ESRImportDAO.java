@@ -301,7 +301,7 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public Iterator<I_ESR_ImportFile> retrieveESRImportFiles(final Properties ctx, final int orgId)
+	public Iterator<I_ESR_ImportFile> retrieveActiveESRImportFiles(final Properties ctx, final int orgId)
 	{
 		return queryBL.createQueryBuilder(I_ESR_ImportFile.class, ctx, ITrx.TRXNAME_None)
 				.addOnlyActiveRecordsFilter()
@@ -460,7 +460,7 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public ImmutableList<I_ESR_ImportFile> retrieveESRImportFiles(@NonNull final I_ESR_Import esrImport)
+	public ImmutableList<I_ESR_ImportFile> retrieveActiveESRImportFiles(@NonNull final I_ESR_Import esrImport)
 	{
 		return queryBL.createQueryBuilder(I_ESR_ImportFile.class)
 				.addOnlyActiveRecordsFilter()
@@ -470,7 +470,7 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public ImmutableList<I_ESR_ImportLine> retrieveESRImportLinesFromFile(@NonNull final I_ESR_ImportFile esrImportFile)
+	public ImmutableList<I_ESR_ImportLine> retrieveActiveESRImportLinesFromFile(@NonNull final I_ESR_ImportFile esrImportFile)
 	{
 		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
 				.addOnlyActiveRecordsFilter()
