@@ -98,7 +98,8 @@ public class C_PaySelection_RevolutPayment_CSVExport extends JavaProcess impleme
 
 		final List<RevolutPaymentExport> savedRevolutPaymentExportList = revolutExportService.saveAll(revolutPaymentExportList);
 
-		final ReportResultData reportResultData = revolutExportService.exportToCsv(PaySelectionId.ofRepoId(paySelection.getC_PaySelection_ID()), savedRevolutPaymentExportList);
+		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(paySelection.getC_PaySelection_ID());
+		final ReportResultData reportResultData = revolutExportService.exportToCsv(paySelectionId, savedRevolutPaymentExportList);
 
 		paySelection.setLastRevolutExport(Timestamp.from(Instant.now()));
 		paySelection.setLastRevolutExportBy_ID(getAD_User_ID());
