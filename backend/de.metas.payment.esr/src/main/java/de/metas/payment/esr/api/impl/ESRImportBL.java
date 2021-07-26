@@ -453,14 +453,14 @@ public class ESRImportBL implements IESRImportBL
 	{
 		final IMutable<Integer> processedLinesCount = new Mutable<>();
 		lockAndProcess(esrImport, () -> {
-			final int count = process0(esrImport);
+			final int count = processAndCountLines(esrImport);
 			processedLinesCount.setValue(count);
 		});
 
 		return processedLinesCount.getValue();
 	}
 
-	private int process0(final I_ESR_Import esrImport)
+	private int processAndCountLines(final I_ESR_Import esrImport)
 	{
 		if (esrImport.isProcessed())
 		{
