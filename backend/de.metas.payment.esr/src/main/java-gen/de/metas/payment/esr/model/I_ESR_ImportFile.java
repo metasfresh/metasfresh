@@ -325,6 +325,29 @@ public interface I_ESR_ImportFile
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Receipt.
+	 * This is a sales transaction (receipt)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReceipt (boolean IsReceipt);
+
+	/**
+	 * Get Receipt.
+	 * This is a sales transaction (receipt)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReceipt();
+
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_IsReceipt = new ModelColumn<>(I_ESR_ImportFile.class, "IsReceipt", null);
+	String COLUMNNAME_IsReceipt = "IsReceipt";
+
+	/**
 	 * Set Is Valid.
 	 * The element is valid
 	 *

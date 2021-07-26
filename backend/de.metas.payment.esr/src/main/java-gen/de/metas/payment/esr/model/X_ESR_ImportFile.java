@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ESR_ImportFile extends org.compiere.model.PO implements I_ESR_ImportFile, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -131331594L;
+	private static final long serialVersionUID = 1840449226L;
 
     /** Standard Constructor */
     public X_ESR_ImportFile (final Properties ctx, final int ESR_ImportFile_ID, @Nullable final String trxName)
@@ -200,6 +200,18 @@ public class X_ESR_ImportFile extends org.compiere.model.PO implements I_ESR_Imp
 	public java.lang.String getHash() 
 	{
 		return get_ValueAsString(COLUMNNAME_Hash);
+	}
+
+	@Override
+	public void setIsReceipt (final boolean IsReceipt)
+	{
+		set_Value (COLUMNNAME_IsReceipt, IsReceipt);
+	}
+
+	@Override
+	public boolean isReceipt() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReceipt);
 	}
 
 	@Override

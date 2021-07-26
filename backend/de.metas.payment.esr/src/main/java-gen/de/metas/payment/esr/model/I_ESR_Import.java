@@ -342,8 +342,8 @@ public interface I_ESR_Import
 	String COLUMNNAME_IsArchiveFile = "IsArchiveFile";
 
 	/**
-	 * Set Zahlungseingang.
-	 * Dies ist eine Verkaufs-Transaktion (Zahlungseingang)
+	 * Set Receipt.
+	 * This is a sales transaction (receipt)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -352,8 +352,8 @@ public interface I_ESR_Import
 	void setIsReceipt (boolean IsReceipt);
 
 	/**
-	 * Get Zahlungseingang.
-	 * Dies ist eine Verkaufs-Transaktion (Zahlungseingang)
+	 * Get Receipt.
+	 * This is a sales transaction (receipt)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

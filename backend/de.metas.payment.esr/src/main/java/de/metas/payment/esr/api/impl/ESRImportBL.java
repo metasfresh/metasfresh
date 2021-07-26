@@ -102,7 +102,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 @Service
 public class ESRImportBL implements IESRImportBL
 {
-
 	private static final transient Logger logger = LogManager.getLogger(ESRImportBL.class);
 	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
@@ -215,7 +214,7 @@ public class ESRImportBL implements IESRImportBL
 
 		esrImportFile.setESR_Control_Amount(esrStatement.getCtrlAmount());
 		esrImportFile.setESR_Control_Trx_Qty(esrStatement.getCtrlQty());
-		//esrImportFile.setIsReceipt(true);
+		esrImportFile.setIsReceipt(true);
 		for (final String errorMsg : esrStatement.getErrorMsgs())
 		{
 			esrImportFile.setDescription(ESRDataLoaderUtil.addMsgToString(esrImportFile.getDescription(), errorMsg));
@@ -944,93 +943,7 @@ public class ESRImportBL implements IESRImportBL
 
 		for (final I_ESR_ImportLine line : allLines)
 		{
-
-			if (line.isProcessed())
-			{
-				continue; // this is usually true for the 999-line
-			}
-			if (!line.isActive())
-			{
-				continue;
-			}
-
-			// check partners first
-			final BPartnerId esrPartnerId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID());
-			final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0
-					? bpartnerDAO.getById(line.getC_Invoice().getC_BPartner_ID())
-					: null;
-
-			final PaymentId importLinePaymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
-			final I_C_Payment importLinePayment = importLinePaymentId == null ? null
-					: paymentDAO.getById(importLinePaymentId);
-
-			final int paymentPartnerRecordId = importLinePayment == null ? -1
-					: importLinePayment.getC_BPartner_ID();
-
-			final I_C_BPartner paymentPartner = paymentPartnerRecordId <= 0 ? null
-					: bpartnerDAO.getById(paymentPartnerRecordId);
-
-			if (esrPartnerId != null)
-			{
-				if (invPartner != null)
-				{
-					if (invPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
-					{
-						final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
-						logger.warn(ex.getLocalizedMessage(), ex);
-						ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
-						esrImportDAO.save(line);
-						continue;
-					}
-				}
-
-				if (paymentPartner != null)
-				{
-					if (paymentPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
-					{
-						final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
-						logger.warn(ex.getLocalizedMessage(), ex);
-						ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
-						esrImportDAO.save(line);
-						continue;
-					}
-				}
-			}
-
-			final String actionType = line.getESR_Payment_Action();
-			if (Check.isEmpty(actionType, true))
-			{
-				final AdempiereException ex = new AdempiereException("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
-				logger.warn(ex.getLocalizedMessage(), ex);
-				ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
-				esrImportDAO.save(line);
-				continue;
-			}
-
-			final IESRActionHandler handler = handlers.get(actionType);
-			if (handler == null)
-			{
-				final AdempiereException ex = new AdempiereException("@NotSupported@ @ESR_Payment_Action@: " + actionType);
-				logger.warn(ex.getLocalizedMessage(), ex);
-				ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
-				esrImportDAO.save(line);
-				continue;
-			}
-
-			try
-			{
-				final boolean processed = handler.process(line, message);
-				line.setProcessed(processed);
-			}
-			catch (final Exception e)
-			{
-				logger.warn(e.getLocalizedMessage(), e);
-				ESRDataLoaderUtil.addMatchErrorMsg(line, e.getLocalizedMessage());
-				esrImportDAO.save(line);
-				continue;
-			}
-
-			esrImportDAO.save(line);
+			processLine(message, line);
 		}
 
 		// cg: just make sure that the esr import is not set to processed too early
@@ -1040,6 +953,96 @@ public class ESRImportBL implements IESRImportBL
 			esrImportDAO.save(esrImport);
 		}
 
+	}
+
+	private void processLine(final String message, final I_ESR_ImportLine line)
+	{
+		if (line.isProcessed())
+		{
+			return;
+		}
+		if (!line.isActive())
+		{
+			return;
+		}
+
+		// check partners first
+		final BPartnerId esrPartnerId = BPartnerId.ofRepoIdOrNull(line.getC_BPartner_ID());
+		final I_C_BPartner invPartner = line.getC_Invoice_ID() > 0
+				? bpartnerDAO.getById(line.getC_Invoice().getC_BPartner_ID())
+				: null;
+
+		final PaymentId importLinePaymentId = PaymentId.ofRepoIdOrNull(line.getC_Payment_ID());
+		final I_C_Payment importLinePayment = importLinePaymentId == null ? null
+				: paymentDAO.getById(importLinePaymentId);
+
+		final int paymentPartnerRecordId = importLinePayment == null ? -1
+				: importLinePayment.getC_BPartner_ID();
+
+		final I_C_BPartner paymentPartner = paymentPartnerRecordId <= 0 ? null
+				: bpartnerDAO.getById(paymentPartnerRecordId);
+
+		if (esrPartnerId != null)
+		{
+			if (invPartner != null)
+			{
+				if (invPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
+				{
+					final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_INV_PARTNER + "@");
+					logger.warn(ex.getLocalizedMessage(), ex);
+					ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
+					esrImportDAO.save(line);
+					return;
+				}
+			}
+
+			if (paymentPartner != null)
+			{
+				if (paymentPartner.getC_BPartner_ID() != esrPartnerId.getRepoId())
+				{
+					final AdempiereException ex = new AdempiereException("@" + ESRConstants.ESR_DIFF_PAYMENT_PARTNER + "@");
+					logger.warn(ex.getLocalizedMessage(), ex);
+					ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
+					esrImportDAO.save(line);
+					return;
+				}
+			}
+		}
+
+		final String actionType = line.getESR_Payment_Action();
+		if (Check.isEmpty(actionType, true))
+		{
+			final AdempiereException ex = new AdempiereException("@" + ESRConstants.ERR_ESR_LINE_WITH_NO_PAYMENT_ACTION + "@");
+			logger.warn(ex.getLocalizedMessage(), ex);
+			ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
+			esrImportDAO.save(line);
+			return;
+		}
+
+		final IESRActionHandler handler = handlers.get(actionType);
+		if (handler == null)
+		{
+			final AdempiereException ex = new AdempiereException("@NotSupported@ @ESR_Payment_Action@: " + actionType);
+			logger.warn(ex.getLocalizedMessage(), ex);
+			ESRDataLoaderUtil.addMatchErrorMsg(line, ex.getLocalizedMessage());
+			esrImportDAO.save(line);
+			return;
+		}
+
+		try
+		{
+			final boolean processed = handler.process(line, message);
+			line.setProcessed(processed);
+		}
+		catch (final Exception e)
+		{
+			logger.warn(e.getLocalizedMessage(), e);
+			ESRDataLoaderUtil.addMatchErrorMsg(line, e.getLocalizedMessage());
+			esrImportDAO.save(line);
+			return;
+		}
+
+		esrImportDAO.save(line);
 	}
 
 	private boolean isReverseBookingLine(final I_ESR_ImportLine line)

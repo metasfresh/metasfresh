@@ -25,10 +25,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.io.FileUtils;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
@@ -125,7 +123,7 @@ public class ESRImportEnqueuer
 			final AttachmentEntryId fromAttachmentEntryId;
 			if (fromDataSource.getAttachmentEntryId() == null)
 			{
-				final AttachmentEntryService attachmentEntryService = Adempiere.getBean(AttachmentEntryService.class);
+				final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 				final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
 						esrImport,
 						fromDataSource.getFilename(),
@@ -155,7 +153,7 @@ public class ESRImportEnqueuer
 
 		final ByteArrayInputStream in = new ByteArrayInputStream(data);
 
-		AttachmentEntry attachmentEntry = attachmentEntryService.getById(attachmentEntryId);
+		final AttachmentEntry attachmentEntry = attachmentEntryService.getById(attachmentEntryId);
 
 		if (esrImport.isArchiveFile())
 		{
@@ -165,11 +163,8 @@ public class ESRImportEnqueuer
 		else
 		{
 
-			createImportFileFromSingleAttachment(esrImport, in, attachmentEntry.getFilename());
+			createImportFileFromSingleAttachment(esrImport, data, attachmentEntry.getFilename());
 		}
-		//
-		// Check/update data type
-		//checkUpdateDataType(esrImport, fromDataSource.getFilename());
 
 		//
 		// Enqueue for importing async
@@ -198,13 +193,30 @@ public class ESRImportEnqueuer
 
 	}
 
-	private void createImportFileFromSingleAttachment(final I_ESR_Import esrImport, final ByteArrayInputStream in, final String filename)
+	private void createImportFileFromSingleAttachment(@NonNull final I_ESR_Import esrImport,
+			final byte[] data,
+			@NonNull final String filename)
 	{
+		final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
+		checkUpdateDataType(esrImportFile, filename);
+
+		final String hash = computeESRHashAndCheckForDuplicates(esrImportFile, data);
+		esrImportFile.setHash(hash);
+
+		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
+				esrImportFile,
+				filename,
+				data);
+		final AttachmentEntryId attachmentEntryId = attachmentEntry.getId();
+
+		esrImportFile.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());
+		esrImportDAO.save(esrImportFile);
 	}
 
-	private void createImportFilesFromZips(@NonNull final I_ESR_Import esrImport, ByteArrayInputStream in, String filename)
+	private void createImportFilesFromZips(@NonNull final I_ESR_Import esrImport,
+			@NonNull final ByteArrayInputStream in,
+			@NonNull final String filename)
 	{
-
 		final ZipInputStream zipStream = new ZipInputStream(in);
 
 		try
@@ -221,8 +233,6 @@ public class ESRImportEnqueuer
 
 				final byte[] unzippedData = FileUtils.readFileToByteArray(unzippedFile);
 
-				final AttachmentEntryId fromAttachmentEntryId;
-
 				final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
 				checkUpdateDataType(esrImportFile, unzippedFile.getName());
 				computeESRHashAndCheckForDuplicates(esrImportFile, unzippedData);
@@ -231,9 +241,9 @@ public class ESRImportEnqueuer
 						esrImportFile,
 						unzippedFile.getName(),
 						unzippedData);
-				fromAttachmentEntryId = attachmentEntry.getId();
+				final AttachmentEntryId attachmentEntryId = attachmentEntry.getId();
 
-				esrImportFile.setAD_AttachmentEntry_ID(fromAttachmentEntryId.getRepoId());
+				esrImportFile.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());
 				InterfaceWrapperHelper.save(esrImportFile);
 
 				zipEntry = zipStream.getNextEntry();
@@ -259,7 +269,7 @@ public class ESRImportEnqueuer
 			}
 			else
 			{
-				loggable.addLog("Assuming and updating type={} for ESR_Import={}", guessedType, esrImportFile);
+				addLog("Assuming and updating type={} for ESR_Import={}", guessedType, esrImportFile);
 				esrImportFile.setDataType(guessedType);
 				save(esrImportFile);
 			}
@@ -313,12 +323,13 @@ public class ESRImportEnqueuer
 		return file;
 	}
 
-	public static File newFile(File destinationDir, ZipEntry zipEntry) throws IOException
+	public static File newFile(@NonNull final File destinationDir, @NonNull final ZipEntry zipEntry)
+			throws IOException
 	{
-		File destFile = new File(destinationDir, zipEntry.getName());
+		final File destFile = new File(destinationDir, zipEntry.getName());
 
-		String destDirPath = destinationDir.getCanonicalPath();
-		String destFilePath = destFile.getCanonicalPath();
+		final String destDirPath = destinationDir.getCanonicalPath();
+		final String destFilePath = destFile.getCanonicalPath();
 
 		if (!destFilePath.startsWith(destDirPath + File.separator))
 		{
@@ -328,7 +339,7 @@ public class ESRImportEnqueuer
 		return destFile;
 	}
 
-	private String computeESRHashAndCheckForDuplicates(final I_ESR_ImportFile esrImportFile, final byte[] fileContent)
+	private String computeESRHashAndCheckForDuplicates(@NonNull final I_ESR_ImportFile esrImportFile, final byte[] fileContent)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(esrImportFile);
 		final int orgRecordId = esrImportFile.getAD_Org_ID();
@@ -344,14 +355,13 @@ public class ESRImportEnqueuer
 		}
 		else
 		{
-
-			final Iterator<I_ESR_ImportFile> esrImportFiless = esrImportDAO.retrieveESRImportFiles(ctx, orgRecordId);
+			final Iterator<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveESRImportFiles(ctx, orgRecordId);
 
 			// will turn true if another identical hash was seen in the list of esr imports
 			boolean seen = false;
-			while (esrImportFiless.hasNext())
+			while (esrImportFiles.hasNext())
 			{
-				if (esrHash.equals(esrImportFiless.next().getHash()))
+				if (esrHash.equals(esrImportFiles.next().getHash()))
 				{
 					seen = true;
 					break;
