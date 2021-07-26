@@ -1516,3 +1516,53 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 
 
+-- 2021-07-26T14:35:51.533Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2021-07-26 17:35:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546331
+;
+
+-- 2021-07-26T14:36:09.307Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2021-07-26 17:36:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=564723
+;
+
+-- 2021-07-26T14:36:10.760Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2021-07-26 17:36:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546330
+;
+
+-- 2021-07-26T14:36:13.849Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2021-07-26 17:36:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546329
+;
+
+-- 2021-07-26T14:37:39.923Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,575161,650472,0,540442,0,TO_TIMESTAMP('2021-07-26 17:37:39','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Archive File',140,90,0,1,1,TO_TIMESTAMP('2021-07-26 17:37:39','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T14:37:39.957Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=650472 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-07-26T14:37:39.991Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579510) 
+;
+
+-- 2021-07-26T14:37:40.037Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=650472
+;
+
+-- 2021-07-26T14:37:40.070Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(650472)
+;
+
+-- 2021-07-26T14:38:25.764Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,650472,0,540442,540790,587176,'F',TO_TIMESTAMP('2021-07-26 17:38:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Archive File',5,0,0,TO_TIMESTAMP('2021-07-26 17:38:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
