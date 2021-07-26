@@ -126,14 +126,15 @@ public class PaySelectionService
 						.appendParametersToMessage()
 						.setParameter("bankAccountId", bankAccountId));
 
-		final Bank bank = bankRepository.getById(bpBankAccount.getBankId());
-
-		if (bank.getLocationId() != null)
+		if(bpBankAccount.getBankId() != null)
 		{
-			final CountryId countryId = locationDAO.getCountryIdByLocationId(bank.getLocationId());
-			revolutPaymentExportBuilder.recipientBankCountryId(countryId);
+			final Bank bank = bankRepository.getById(bpBankAccount.getBankId());
+			if (bank.getLocationId() != null)
+			{
+				final CountryId countryId = locationDAO.getCountryIdByLocationId(bank.getLocationId());
+				revolutPaymentExportBuilder.recipientBankCountryId(countryId);
+			}
 		}
-
 		final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(bpBankAccount.getCurrencyId());
 		final Amount amount = Amount.of(line.getPayAmt(), currencyCode);
 
