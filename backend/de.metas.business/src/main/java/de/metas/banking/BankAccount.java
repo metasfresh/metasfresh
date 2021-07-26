@@ -41,7 +41,7 @@ public class BankAccount
 	@NonNull
 	BankAccountId id;
 
-	@NonNull
+	@Nullable // C_BP_BankAccount.C_Bank_ID is not mandatory!
 	BankId bankId;
 
 	@Nullable

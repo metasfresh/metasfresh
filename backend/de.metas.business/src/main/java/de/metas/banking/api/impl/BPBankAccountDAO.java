@@ -78,7 +78,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	{
 		return BankAccount.builder()
 				.id(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
-				.bankId(BankId.ofRepoId(record.getC_Bank_ID()))
+				.bankId(BankId.ofRepoIdOrNull(record.getC_Bank_ID())) // C_BP_BankAccount.C_Bank_ID is not mandatory!
 				.accountName(StringUtils.trimBlankToNull(record.getA_Name()))
 				.esrRenderedAccountNo(record.getESR_RenderedAccountNo())
 				.IBAN(StringUtils.trimBlankToNull(record.getIBAN()))
