@@ -109,6 +109,16 @@ public class ESRImportBL implements IESRImportBL
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IPeriodBL periodBL = Services.get(IPeriodBL.class);
+	private final ILockManager lockManager = Services.get(ILockManager.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 	/**
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
@@ -138,7 +148,7 @@ public class ESRImportBL implements IESRImportBL
 			@NonNull final I_ESR_Import esrImport,
 			@NonNull final Runnable processor)
 	{
-		final ILockManager lockManager = Services.get(ILockManager.class);
+
 		if (!lockManager.lock(esrImport))
 		{
 			throw new ESRImportLockedException(esrImport);
@@ -337,14 +347,14 @@ public class ESRImportBL implements IESRImportBL
 	@VisibleForTesting
 	public void evaluateLine(@NonNull final I_ESR_ImportLine importLine)
 	{
-
 		if (isReverseBookingLine(importLine))
 		{
 			// set payment action
 			importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
 
 			// set error message for the user
-			ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRConstants.ESR_Reverse_Booking));
+
+			ESRDataLoaderUtil.addMatchErrorMsg(importLine, msgBL.getMsg(Env.getCtx(), ESRConstants.ESR_Reverse_Booking));
 		}
 		final I_ESR_ImportFile esrImportFile = esrImportDAO.getImportFileById(importLine.getESR_ImportFile_ID());
 		// post account number
@@ -359,7 +369,7 @@ public class ESRImportBL implements IESRImportBL
 		// task 05917: check if the the payment date from the ESR file is OK for us
 		try
 		{
-			Services.get(IPeriodBL.class).testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), X_C_DocType.DOCBASETYPE_APPayment, importLine.getAD_Org_ID());
+			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), X_C_DocType.DOCBASETYPE_APPayment, importLine.getAD_Org_ID());
 		}
 		catch (PeriodClosedException p)
 		{
@@ -679,7 +689,6 @@ public class ESRImportBL implements IESRImportBL
 			// }
 			esrImportDAO.save(line);
 
-			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 			documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 			esrImportDAO.save(line);
@@ -828,7 +837,7 @@ public class ESRImportBL implements IESRImportBL
 			payment.setC_Currency_ID(invoice.getC_Currency_ID());
 
 			// Note that we set OverUnderAmt to make it clear the we don't have Discount or WriteOff
-			final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
 			final BigDecimal invoiceOpenAmt = invoiceDAO.retrieveOpenAmt(invoice);
 			final BigDecimal overUnderAmt = sum.subtract(invoiceOpenAmt);
 			if (X_ESR_ImportLine.ESR_DOCUMENT_STATUS_TotallyMatched.equals(importLine.getESR_Document_Status())
@@ -846,11 +855,9 @@ public class ESRImportBL implements IESRImportBL
 			// guard; there was some crappy code in MPayment, there might be more
 			Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
 
-			final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 			documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 			final boolean ignoreProcessed = false;
 
-			final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 			invoiceBL.testAllocation(invoice, ignoreProcessed);
 			invoiceDAO.save(invoice);
 
@@ -878,17 +885,16 @@ public class ESRImportBL implements IESRImportBL
 		// make sure that we don't end up with inter-org allocations
 		Check.assume(invoice.getAD_Org_ID() == payment.getAD_Org_ID(), "Invoice {} and payment {} have the same AD_Org_ID");
 
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 		final String trxName = trxManager.getThreadInheritedTrxName(OnTrxMissingPolicy.ReturnTrxNone);
 		trxManager.run(trxName, (TrxRunnable)trxName1 -> {
 			// must assure that the invoice has transaction
 			refresh(invoice, trxName1);
 
 			final boolean ignoreIsAutoAllocateAvailableAmt = true; // task 09167: when processing ESR lines (i.e. from this method) we always allocate the payment to the invoice.
-			Services.get(IAllocationBL.class).autoAllocateSpecificPayment(invoice,
-																		  payment,
-																		  ignoreIsAutoAllocateAvailableAmt);
+
+			allocationBL.autoAllocateSpecificPayment(invoice,
+													 payment,
+													 ignoreIsAutoAllocateAvailableAmt);
 			esrImportDAO.save(importLine); // saving, because updateLinesOpenAmt doesn't save the line it was called with
 		});
 
@@ -1083,8 +1089,7 @@ public class ESRImportBL implements IESRImportBL
 		// cg: if we have a payment and the open amount matches pay amount set status allocate with current invoice
 		if (importLine.getC_Invoice_ID() == invoice.getC_Invoice_ID() && importLine.getC_Payment_ID() > 0)
 		{
-			// services
-			final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+
 			final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
 			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
 			final BigDecimal invoiceOpenAmt = invoice.getGrandTotal().subtract(externalAllocationsSum);
@@ -1122,11 +1127,11 @@ public class ESRImportBL implements IESRImportBL
 		if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
 		{
 			final Properties ctx = getCtx(importLine);
-			final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+
 			final String invoiceOrgName = orgsRepo.retrieveOrgValue(invoice.getAD_Org_ID());
 			final String importLineOrgName = orgsRepo.retrieveOrgValue(importLine.getAD_Org_ID());
 			ESRDataLoaderUtil.addMatchErrorMsg(importLine,
-											   Services.get(IMsgBL.class).getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
+											   msgBL.getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
 													   invoiceOrgName,
 													   importLineOrgName }));
 		}
@@ -1147,7 +1152,7 @@ public class ESRImportBL implements IESRImportBL
 		final MAllocationHdr[] allocs = MAllocationHdr.getOfPayment(ctx, payment.getC_Payment_ID(), trxName);
 		for (final MAllocationHdr alloc : allocs)
 		{
-			Services.get(IDocumentBL.class).processEx(alloc, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+			documentBL.processEx(alloc, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 		}
 
 		payment.setC_Invoice_ID(-1);
@@ -1180,9 +1185,6 @@ public class ESRImportBL implements IESRImportBL
 	// note: package level for testing purpose
 	/* package */void updateOpenAmtAndStatusDontSave(final I_C_Invoice invoice, final List<I_ESR_ImportLine> linesWithSameInvoice)
 	{
-		// services
-		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
-
 		// We start by collecting the C_Payment_IDs from our lines
 		final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
 		for (final I_ESR_ImportLine importLine : linesWithSameInvoice)
