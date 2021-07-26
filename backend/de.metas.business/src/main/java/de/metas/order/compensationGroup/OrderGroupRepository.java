@@ -1,43 +1,10 @@
 package de.metas.order.compensationGroup;
 
-import static org.adempiere.model.InterfaceWrapperHelper.delete;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import de.metas.product.acct.api.ActivityId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.MutableInt;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Order_CompensationGroup;
-import org.eevolution.api.ProductBOMId;
-import org.springframework.stereotype.Component;
-
-import java.util.Objects;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
@@ -47,6 +14,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group.GroupBuilder;
 import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
@@ -61,6 +29,34 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.MutableInt;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Order_CompensationGroup;
+import org.eevolution.api.ProductBOMId;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -403,8 +399,8 @@ public class OrderGroupRepository implements GroupRepository
 	 * note to dev: keep in sync with {@link #createCompensationLine(I_C_OrderLine)}
 	 */
 	private void updateOrderLineFromCompensationLine(final I_C_OrderLine compensationLinePO,
-			final GroupCompensationLine compensationLine,
-			final GroupId groupId)
+													 final GroupCompensationLine compensationLine,
+													 final GroupId groupId)
 	{
 		compensationLinePO.setC_Order_CompensationGroup_ID(groupId.getOrderCompensationGroupId());
 		compensationLinePO.setIsGroupCompensationLine(true);
@@ -460,7 +456,7 @@ public class OrderGroupRepository implements GroupRepository
 	}
 
 	private Group createNewGroupFromOrderLines(@NonNull final List<I_C_OrderLine> orderLines,
-			@NonNull final GroupTemplate newGroupTemplate)
+											   @NonNull final GroupTemplate newGroupTemplate)
 	{
 		Check.assumeNotEmpty(orderLines, "orderLines is not empty");
 		orderLines.forEach(OrderGroupCompensationUtils::assertNotInGroup);
@@ -471,12 +467,13 @@ public class OrderGroupRepository implements GroupRepository
 		assertOrderNotProcessed(order);
 
 		final GroupId groupId = createNewGroupId(GroupCreateRequest.builder()
-														 .orderId(orderId)
-														 .name(newGroupTemplate.getName())
-														 .activityId(newGroupTemplate.getActivityId())
-														 .productCategoryId(newGroupTemplate.getProductCategoryId())
-														 .groupTemplateId(newGroupTemplate.getId())
-														 .build());
+				.orderId(orderId)
+				.name(newGroupTemplate.getName())
+				.isNamePrinted(newGroupTemplate.isNamePrinted())
+				.activityId(newGroupTemplate.getActivityId())
+				.productCategoryId(newGroupTemplate.getProductCategoryId())
+				.groupTemplateId(newGroupTemplate.getId())
+				.build());
 		setGroupIdToLines(orderLines, groupId);
 
 		setActivityToLines(orderLines, newGroupTemplate.getActivityId());
@@ -529,6 +526,7 @@ public class OrderGroupRepository implements GroupRepository
 		final I_C_Order_CompensationGroup groupPO = newInstance(I_C_Order_CompensationGroup.class);
 		groupPO.setC_Order_ID(request.getOrderId().getRepoId());
 		groupPO.setName(request.getName());
+		groupPO.setIsNamePrinted(request.isNamePrinted());
 
 		groupPO.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
 
@@ -752,9 +750,9 @@ public class OrderGroupRepository implements GroupRepository
 
 		final Consumer<Collection<I_C_OrderLine>> orderLinesSequenceUpdater = orderLines -> orderLines.stream()
 				.sorted(Comparator.<I_C_OrderLine, Integer>comparing(orderLine -> !orderLine.isGroupCompensationLine() ? 0 : 1)
-								.thenComparing(orderLine -> OrderGroupCompensationUtils.isGeneratedCompensationLine(orderLine) ? 0 : 1)
-								.thenComparing(I_C_OrderLine::getLine)
-								.thenComparing(I_C_OrderLine::getC_OrderLine_ID))
+						.thenComparing(orderLine -> OrderGroupCompensationUtils.isGeneratedCompensationLine(orderLine) ? 0 : 1)
+						.thenComparing(I_C_OrderLine::getLine)
+						.thenComparing(I_C_OrderLine::getC_OrderLine_ID))
 				.forEach(orderLineSequenceUpdater);
 
 		//
