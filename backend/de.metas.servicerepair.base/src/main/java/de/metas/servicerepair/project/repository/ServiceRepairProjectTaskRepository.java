@@ -40,6 +40,7 @@ import de.metas.servicerepair.project.repository.requests.CreateSparePartsProjec
 import de.metas.servicerepair.repository.model.I_C_Project_Repair_Task;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -68,11 +69,8 @@ class ServiceRepairProjectTaskRepository
 		record.setType(ServiceRepairProjectTaskType.REPAIR_ORDER.getCode());
 		record.setStatus(ServiceRepairProjectTaskStatus.NOT_STARTED.getCode());
 
-		if (request.getCustomerReturnLineId() != null)
-		{
-			record.setCustomerReturn_InOut_ID(request.getCustomerReturnLineId().getInOutId().getRepoId());
-			record.setCustomerReturn_InOutLine_ID(request.getCustomerReturnLineId().getInOutLineId().getRepoId());
-		}
+		record.setCustomerReturn_InOut_ID(request.getCustomerReturnLineId().getInOutId().getRepoId());
+		record.setCustomerReturn_InOutLine_ID(request.getCustomerReturnLineId().getInOutLineId().getRepoId());
 
 		record.setM_Product_ID(request.getProductId().getRepoId());
 		record.setM_AttributeSetInstance_ID(request.getAsiId().getRepoId());
@@ -132,8 +130,18 @@ class ServiceRepairProjectTaskRepository
 			return ImmutableList.of();
 		}
 
-		final List<I_C_Project_Repair_Task> recordIds = InterfaceWrapperHelper.loadByRepoIdAwares(taskIds, I_C_Project_Repair_Task.class);
-		return recordIds.stream()
+		final List<I_C_Project_Repair_Task> records = InterfaceWrapperHelper.loadByRepoIdAwares(taskIds, I_C_Project_Repair_Task.class);
+		return records.stream()
+				.map(ServiceRepairProjectTaskRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public List<ServiceRepairProjectTask> getByProjectId(@NonNull final ProjectId projectId)
+	{
+		return queryBL.createQueryBuilder(I_C_Project_Repair_Task.class)
+				.addEqualsFilter(I_C_Project_Repair_Task.COLUMNNAME_C_Project_ID, projectId)
+				.create()
+				.stream()
 				.map(ServiceRepairProjectTaskRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -158,6 +166,8 @@ class ServiceRepairProjectTaskRepository
 				.customerReturnLineId(InOutAndLineId.ofRepoIdOrNull(record.getCustomerReturn_InOut_ID(), record.getCustomerReturn_InOutLine_ID()))
 				.repairOrderId(PPOrderId.ofRepoIdOrNull(record.getRepair_Order_ID()))
 				.isRepairOrderDone(record.isRepairOrderDone())
+				.repairOrderSummary(StringUtils.trimBlankToNull(record.getRepairOrderSummary()))
+				.repairServicePerformedId(ProductId.ofRepoIdOrNull(record.getRepairServicePerformed_Product_ID()))
 				.repairVhuId(HuId.ofRepoIdOrNull(record.getRepair_VHU_ID()))
 				//
 				.build();
@@ -189,6 +199,9 @@ class ServiceRepairProjectTaskRepository
 		record.setQtyConsumed(from.getQtyConsumed().toBigDecimal());
 
 		record.setRepair_Order_ID(PPOrderId.toRepoId(from.getRepairOrderId()));
+		record.setRepairOrderSummary(from.getRepairOrderSummary());
+		record.setRepairServicePerformed_Product_ID(ProductId.toRepoId(from.getRepairServicePerformedId()));
+		record.setIsRepairOrderDone(from.isRepairOrderDone());
 	}
 
 	public void changeById(

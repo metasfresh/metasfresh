@@ -80,9 +80,6 @@ public class C_Payment
 
 		if (orderId == null)
 		{
-			record.setPayAmt(BigDecimal.ZERO);
-			record.setDiscountAmt(null);
-
 			return;
 		}
 

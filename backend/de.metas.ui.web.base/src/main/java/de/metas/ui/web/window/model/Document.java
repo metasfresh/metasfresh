@@ -1761,7 +1761,7 @@ public final class Document
 		for (final IDocumentField documentField : getFields())
 		{
 			// skip virtual fields, those does not matter
-			if (documentField.isVirtualField())
+			if (documentField.isReadonlyVirtualField())
 			{
 				continue;
 			}
