@@ -244,6 +244,7 @@ public class ESRImportEnqueuer
 				final AttachmentEntryId attachmentEntryId = attachmentEntry.getId();
 
 				esrImportFile.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());
+				esrImportFile.setFileName(unzippedFile.getName());
 				InterfaceWrapperHelper.save(esrImportFile);
 
 				zipEntry = zipStream.getNextEntry();
