@@ -56,6 +56,8 @@ public interface IESRImportDAO extends ISingletonService
 
 	void saveOutOfTrx(@NonNull I_ESR_Import esrImport);
 
+	void saveOutOfTrx(@NonNull I_ESR_ImportFile esrImportFile);
+
 	void save(@NonNull I_ESR_ImportLine esrImportLine);
 
 	void save(@NonNull I_ESR_ImportFile esrImportFile);

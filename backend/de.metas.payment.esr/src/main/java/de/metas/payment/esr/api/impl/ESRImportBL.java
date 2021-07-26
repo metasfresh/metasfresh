@@ -463,8 +463,8 @@ public class ESRImportBL implements IESRImportBL
 	{
 		final IMutable<Integer> processedLinesCount = new Mutable<>();
 		lockAndProcess(esrImport, () -> {
-			final int count = processAndCountLines(esrImport);
-			processedLinesCount.setValue(count);
+			final int linesCount = processAndCountLines(esrImport);
+			processedLinesCount.setValue(linesCount);
 		});
 
 		return processedLinesCount.getValue();
@@ -477,8 +477,33 @@ public class ESRImportBL implements IESRImportBL
 			throw new AdempiereException("@Processed@: @Y@");
 		}
 
+		final List<I_ESR_ImportFile> allFiles = esrImportDAO.retrieveActiveESRImportFiles(esrImport);
+
+		int totalNumberOfLines = 0;
+		for (I_ESR_ImportFile file : allFiles)
+		{
+			final int numberOfLinesFromFile = processLinesFromFile(file);
+
+			esrImport.setDescription(esrImport.getDescription() + file.getDescription());
+			esrImportDAO.saveOutOfTrx(esrImport); // out of transaction: we want to not be rollback
+
+			totalNumberOfLines = totalNumberOfLines + numberOfLinesFromFile;
+		}
+
+		// cg: just make sure that the esr import is not set to processed too early
+		if (areAllFilesProcessed(allFiles))
+		{
+			esrImport.setProcessed(true);
+			esrImportDAO.save(esrImport);
+		}
+		return totalNumberOfLines;
+	}
+
+	private int processLinesFromFile(final I_ESR_ImportFile file)
+	{
+		final List<I_ESR_ImportLine> allLines = esrImportDAO.retrieveActiveESRImportLinesFromFile(file);
 		final List<I_ESR_ImportLine> linesToProcess = new ArrayList<>();
-		final List<I_ESR_ImportLine> allLines = esrImportDAO.retrieveLines(esrImport);
+
 		try
 		{
 			if (allLines.isEmpty())
@@ -488,67 +513,11 @@ public class ESRImportBL implements IESRImportBL
 
 			for (final I_ESR_ImportLine line : allLines)
 			{
-				// skip the control line
-				if (ESRTransactionLineMatcherUtil.isControlLine(line))
+				final boolean lineWasAlreadyHandled = handleEsrImportLine(line);
+				if (!lineWasAlreadyHandled)
 				{
-					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Control_Line);
-					esrImportDAO.save(line);
-					continue;
+					linesToProcess.add(line);
 				}
-
-				// skip reverse booking lines from regular processing
-				// the admin should deal with them manually
-				if (isReverseBookingLine(line))
-				{
-					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
-					handleUnsuppordedTrxType(esrImport, line);
-					esrImportDAO.save(line);
-					continue;
-				}
-				if (ESRConstants.ESRTRXTYPE_UNKNOWN.equals(line.getESRTrxType()))
-				{
-					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
-					handleUnsuppordedTrxType(esrImport, line);
-					esrImportDAO.save(line);
-					continue;
-				}
-
-				// Skip already processed lines
-				if (line.isProcessed())
-				{
-					continue;
-				}
-
-				// skip lines that have a payment, but are not are not yet processed (because a user needs to select an action)
-				// 08500: skip the lines with payments
-				refresh(line);
-				if (line.getC_Payment_ID() > 0)
-				{
-					continue;
-				}
-				// Check/Validate
-				if (!line.isValid())
-				{
-					evaluateLine(line);
-				}
-				// finally, skip lines that have no bpartner set
-				if (line.getC_BPartner_ID() <= 0)
-				{
-					continue;
-				}
-
-				refresh(line);
-				final PaymentId payemntId = fetchDuplicatePaymentIfExists(line);
-				if (payemntId != null)
-				{
-					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
-					handleUnsuppordedTrxType(esrImport, line);
-					line.setC_Payment_ID(payemntId.getRepoId());
-					esrImportDAO.save(line);
-					continue;
-				}
-
-				linesToProcess.add(line);
 			}
 
 			final Map<ArrayKey, List<I_ESR_ImportLine>> invoiceKey2Line = groupLines(linesToProcess);
@@ -598,7 +567,7 @@ public class ESRImportBL implements IESRImportBL
 				}
 			}
 
-			esrImportDAO.save(esrImport);
+			esrImportDAO.save(file);
 			return linesToProcess.size();
 		}
 		catch (final Exception e)
@@ -607,8 +576,8 @@ public class ESRImportBL implements IESRImportBL
 			final String message = e.getMessage();
 			if (message != null && message.startsWith("Assumption failure:"))
 			{
-				esrImport.setDescription(esrImport.getDescription() + " > Fehler: Es ist ein Fehler beim Import aufgetreten! " + e.getLocalizedMessage());
-				esrImportDAO.saveOutOfTrx(esrImport); // out of transaction: we want to not be rollback
+				file.setDescription(file.getDescription() + " > Fehler: Es ist ein Fehler beim Import aufgetreten! " + e.getLocalizedMessage());
+				esrImportDAO.saveOutOfTrx(file); // out of transaction: we want to not be rollback
 			}
 
 			throw AdempiereException.wrapIfNeeded(e);
@@ -618,10 +587,74 @@ public class ESRImportBL implements IESRImportBL
 			// cg: just make sure that the esr import is not set to processed too early
 			if (areAllLinesProcessed(allLines))
 			{
-				esrImport.setProcessed(true);
-				esrImportDAO.save(esrImport);
+				file.setProcessed(true);
+				esrImportDAO.save(file);
 			}
 		}
+	}
+
+	private boolean handleEsrImportLine(@NonNull final I_ESR_ImportLine line)
+	{
+		// skip the control line
+		if (ESRTransactionLineMatcherUtil.isControlLine(line))
+		{
+			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Control_Line);
+			esrImportDAO.save(line);
+			return true;
+		}
+
+		// skip reverse booking lines from regular processing
+		// the admin should deal with them manually
+		if (isReverseBookingLine(line))
+		{
+			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Reverse_Booking);
+			handleUnsupportedTrxType(line);
+			esrImportDAO.save(line);
+			return true;
+		}
+		if (ESRConstants.ESRTRXTYPE_UNKNOWN.equals(line.getESRTrxType()))
+		{
+			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income);
+			handleUnsupportedTrxType(line);
+			esrImportDAO.save(line);
+			return true;
+		}
+
+		// Skip already processed lines
+		if (line.isProcessed())
+		{
+			return true;
+		}
+
+		// skip lines that have a payment, but are not are not yet processed (because a user needs to select an action)
+		// 08500: skip the lines with payments
+		refresh(line);
+		if (line.getC_Payment_ID() > 0)
+		{
+			return true;
+		}
+		// Check/Validate
+		if (!line.isValid())
+		{
+			evaluateLine(line);
+		}
+		// finally, skip lines that have no bpartner set
+		if (line.getC_BPartner_ID() <= 0)
+		{
+			return true;
+		}
+
+		refresh(line);
+		final PaymentId payemntId = fetchDuplicatePaymentIfExists(line);
+		if (payemntId != null)
+		{
+			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+			handleUnsupportedTrxType(line);
+			line.setC_Payment_ID(payemntId.getRepoId());
+			esrImportDAO.save(line);
+			return true;
+		}
+		return false;
 	}
 
 	private PaymentId fetchDuplicatePaymentIfExists(@NonNull final I_ESR_ImportLine line)
@@ -632,14 +665,12 @@ public class ESRImportBL implements IESRImportBL
 	}
 
 	/**
-	 * @param esrImport the line's ESR-Import. Needed because there might be different settings for different clients and orgs.
-	 * @param line      the line in question
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118
 	 */
-	private void handleUnsuppordedTrxType(final I_ESR_Import esrImport, final I_ESR_ImportLine line)
+	private void handleUnsupportedTrxType(@NonNull final I_ESR_ImportLine line)
 	{
-		final boolean flagUnsupporedTypesAsDone = sysConfigBL.getBooleanValue(CFG_PROCESS_UNSPPORTED_TRX_TYPES, false, esrImport.getAD_Client_ID(), esrImport.getAD_Org_ID());
-		if (flagUnsupporedTypesAsDone)
+		final boolean flagUnsupportedTypesAsDone = sysConfigBL.getBooleanValue(CFG_PROCESS_UNSPPORTED_TRX_TYPES, false, line.getAD_Client_ID(), line.getAD_Org_ID());
+		if (flagUnsupportedTypesAsDone)
 		{
 			line.setIsValid(true);
 			line.setProcessed(true);
@@ -932,7 +963,6 @@ public class ESRImportBL implements IESRImportBL
 
 		return allFiles.stream()
 				.allMatch(file -> file.isProcessed());
-
 	}
 
 	@Override
@@ -951,7 +981,7 @@ public class ESRImportBL implements IESRImportBL
 
 		for (final I_ESR_ImportFile file : allFiles)
 		{
-			processFile(message, file);
+			processLinesFromFile(message, file);
 		}
 
 		// cg: just make sure that the esr import is not set to processed too early
@@ -963,12 +993,12 @@ public class ESRImportBL implements IESRImportBL
 
 	}
 
-	private void processFile(final String message, final I_ESR_ImportFile file)
+	private void processLinesFromFile(final String message, final I_ESR_ImportFile file)
 	{
 		final List<I_ESR_ImportLine> linesOfFile = esrImportDAO.retrieveActiveESRImportLinesFromFile(file);
 		for (final I_ESR_ImportLine line : linesOfFile)
 		{
-			processLine(message, line);
+			handleEsrImportLine(message, line);
 		}
 
 		if (areAllLinesProcessed(linesOfFile))
@@ -978,7 +1008,7 @@ public class ESRImportBL implements IESRImportBL
 		}
 	}
 
-	private void processLine(final String message, final I_ESR_ImportLine line)
+	private void handleEsrImportLine(final String message, final I_ESR_ImportLine line)
 	{
 		if (line.isProcessed())
 		{

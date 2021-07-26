@@ -85,6 +85,13 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
+	public void saveOutOfTrx(@NonNull final I_ESR_ImportFile esrImportFile)
+	{
+		InterfaceWrapperHelper.save(esrImportFile, ITrx.TRXNAME_None);
+	}
+
+
+	@Override
 	public void save(@NonNull final I_ESR_ImportLine esrImportLine)
 	{
 		saveRecord(esrImportLine);
