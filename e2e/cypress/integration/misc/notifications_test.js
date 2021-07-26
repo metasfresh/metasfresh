@@ -4,7 +4,15 @@ const NOTIFICATION_FIXTURE = notificationFixtures['540375'];
 
 describe('Test notifications', function() {
   before(function() {
+    cy.server();
+    cy.route('GET', '/rest/api/notifications/all?limit=20').as('notificationsAlias');
+
     cy.visit('/');
+
+    cy.wait(`@notificationsAlias`, {
+      requestTimeout: 10000,
+      responseTimeout: 10000,
+    });
   });
 
   it('Check if new notifications are added correctly', function() {

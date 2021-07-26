@@ -2,14 +2,11 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import history from '../../services/History';
 import { getElementBreadcrumb } from '../../actions/MenuActions';
 import BookmarkButton from './BookmarkButton';
 
 class MenuOverlayItem extends Component {
-  constructor(props) {
-    super(props);
-  }
-
   componentDidMount() {
     const { query } = this.props;
     if (!query && document.getElementsByClassName('js-menu-overlay')[0]) {
@@ -35,7 +32,7 @@ class MenuOverlayItem extends Component {
       handleNewRedirect(elementId);
     } else if (type === 'window' || type === 'board') {
       if (breadcrumb[1] && breadcrumb[1].nodeId === nodeId) {
-        window.location.reload();
+        history.go(0);
       } else {
         this.handleClick(elementId, type);
       }
@@ -277,4 +274,7 @@ const mapStateToProps = (state) => {
     breadcrumb: state.menuHandler.breadcrumb,
   };
 };
-export default connect(mapStateToProps)(MenuOverlayItem);
+
+export default connect(mapStateToProps, null, null, { forwardRef: true })(
+  MenuOverlayItem
+);

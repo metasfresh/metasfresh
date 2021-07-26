@@ -14,13 +14,14 @@
 // ***********************************************************
 
 import 'cypress-skip-and-only-ui/support';
+import 'cypress-localstorage-commands';
 import './commands/general';
 import './commands/navigation';
 import './commands/form';
 import './commands/action';
 import './commands/test';
 
-Cypress.on('uncaught:exception', (err) => {
+Cypress.on('uncaught:exception', () => {
   //(err, runnable) => {
   // returning false here prevents Cypress from
   // failing the test
@@ -41,12 +42,26 @@ Cypress.on('window:alert', (text) => {
 });
 
 before(function () {
-  const autoLogin = function () {
-    return cy.loginViaForm();
-  };
-  autoLogin().then((msg) => {
-    cy.log(msg);
+  cy.clearLocalStorageSnapshot();
+
+  cy.loginViaAPI().then(() => {
+    cy.log('logged in successfully');
+  }, { timeout: 20000 });
+
+  // const autoLogin = function () {
+  //   return cy.loginViaForm();
+  // };
+  // autoLogin().then((msg) => {
+  //   cy.log(msg);
+  // });
+
+  Cypress.Cookies.defaults({
+    preserve: ['SESSION', 'isLogged'],
   });
+});
+
+beforeEach(() => {
+  cy.restoreLocalStorage();
 });
 
 Cypress.on('scrolled', ($el) => {
