@@ -36,6 +36,10 @@
     "runMode": 2,
     "openMode": 1
   },
+  "component": {
+    "componentFolder": "cypress/integration/components",
+    "testFiles": "**/*spec.{js,jsx,ts,tsx}"
+  },
   "env": {
     "cypress-plugin-snapshots": {
       "autoCleanUp": false,
