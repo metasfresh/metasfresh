@@ -194,6 +194,27 @@ public interface I_C_Order_CompensationGroup
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Name Printed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNamePrinted (boolean IsNamePrinted);
+
+	/**
+	 * Get Name Printed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNamePrinted();
+
+	ModelColumn<I_C_Order_CompensationGroup, Object> COLUMN_IsNamePrinted = new ModelColumn<>(I_C_Order_CompensationGroup.class, "IsNamePrinted", null);
+	String COLUMNNAME_IsNamePrinted = "IsNamePrinted";
+
+	/**
 	 * Set Product Category.
 	 * Category of a Product
 	 *
