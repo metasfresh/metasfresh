@@ -56,7 +56,7 @@ import java.util.function.IntFunction;
 public abstract class LookupValue
 {
 	@Nullable
-	public static Object normalizeId(final Object idObj, final boolean numericKey)
+	public static Object normalizeId(@Nullable final Object idObj, final boolean numericKey)
 	{
 		if (idObj == null)
 		{
