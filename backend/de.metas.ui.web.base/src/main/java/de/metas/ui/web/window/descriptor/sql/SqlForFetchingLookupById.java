@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.sql;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
@@ -21,6 +22,7 @@ import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
+import org.compiere.util.ValueNamePairValidationInformation;
 
 import javax.annotation.Nullable;
 import java.sql.Array;
@@ -55,16 +57,15 @@ import java.util.Optional;
 @ToString
 public class SqlForFetchingLookupById
 {
-	private static final ConstantStringExpression SQL_NULL = ConstantStringExpression.of("NULL");
-
 	private final String keyColumnNameFQ;
 	private final boolean numericKey;
 	private final String additionalWhereClause;
 
 	private final IStringExpression sqlSelectFrom;
-	// private final IStringExpression sqlBySingleId;
 	@Getter
 	private final ImmutableSet<CtxName> parameters;
+
+	private static final ConstantStringExpression SQL_NULL = ConstantStringExpression.of("NULL");
 
 	@Builder
 	private SqlForFetchingLookupById(
@@ -214,11 +215,18 @@ public class SqlForFetchingLookupById
 		}
 		else
 		{
+			final ValueNamePairValidationInformation validationInformation = StringUtils.trimBlankToOptional(array[4])
+					.map(questionMsg -> ValueNamePairValidationInformation.builder()
+							.question(AdMessageKey.of(questionMsg))
+							.build())
+					.orElse(null);
+
 			return LookupValue.StringLookupValue.builder()
 					.id(idString)
 					.displayName(displayNameTrl)
 					.description(descriptionTrl)
 					.active(active)
+					.validationInformation(validationInformation)
 					.build();
 		}
 	}
