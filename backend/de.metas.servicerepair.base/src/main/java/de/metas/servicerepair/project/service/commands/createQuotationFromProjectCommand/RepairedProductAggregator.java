@@ -56,6 +56,7 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 
 	// Parameters
 	@NonNull private final QuotationLinesGroupKey key;
+	@NonNull private final String groupCaption;
 	@Nullable private final String repairOrderSummary;
 	@Nullable private final ProductId repairServicePerformedId;
 	private final ArrayList<ServiceRepairProjectCostCollector> costCollectorsToAggregate = new ArrayList<>();
@@ -69,7 +70,9 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 	private RepairedProductAggregator(
 			@NonNull final ProjectQuotationPriceCalculator priceCalculator,
 			@NonNull final QuotationLinesGroupKey key,
-			@Nullable final String repairOrderSummary, @Nullable final ProductId repairServicePerformedId)
+			@NonNull final String groupCaption,
+			@Nullable final String repairOrderSummary,
+			@Nullable final ProductId repairServicePerformedId)
 	{
 		if (key.getType() != QuotationLinesGroupKey.Type.REPAIRED_PRODUCT)
 		{
@@ -78,6 +81,7 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 
 		this.priceCalculator = priceCalculator;
 		this.key = key;
+		this.groupCaption = groupCaption;
 		this.repairOrderSummary = repairOrderSummary;
 		this.repairServicePerformedId = repairServicePerformedId;
 	}
@@ -186,8 +190,8 @@ class RepairedProductAggregator implements QuotationLinesGroupAggregator
 	public GroupTemplate getGroupTemplate()
 	{
 		final GroupTemplate.GroupTemplateBuilder builder = GroupTemplate.builder()
-				.name(".") // TODO: come up with a better name
-				;
+				.name(groupCaption)
+				.isNamePrinted(false);
 
 		if (repairedProductToReturnCostCollector.getWarrantyCase().isYes()
 				&& repairServicePerformedId != null)
