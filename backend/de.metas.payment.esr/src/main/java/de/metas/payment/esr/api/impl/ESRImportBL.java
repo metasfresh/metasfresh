@@ -1113,12 +1113,14 @@ public class ESRImportBL implements IESRImportBL
 	@Override
 	public void setInvoice(final I_ESR_ImportLine importLine, final I_C_Invoice invoice)
 	{
+
 		// we always update the open amount, even if the invoice reference hasn't changed
 		updateLinesOpenAmt(importLine, invoice);
 
 		// cg: if we have a payment and the open amount matches pay amount set status allocate with current invoice
 		if (importLine.getC_Invoice_ID() == invoice.getC_Invoice_ID() && importLine.getC_Payment_ID() > 0)
 		{
+			// services
 
 			final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
 			final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
@@ -1215,6 +1217,12 @@ public class ESRImportBL implements IESRImportBL
 	// note: package level for testing purpose
 	/* package */void updateOpenAmtAndStatusDontSave(final I_C_Invoice invoice, final List<I_ESR_ImportLine> linesWithSameInvoice)
 	{
+		/*
+			Can't use the DAO from above because of mocked tests
+		 */
+		final IAllocationDAO allocationDAOLocal = Services.get(IAllocationDAO.class);
+
+
 		// We start by collecting the C_Payment_IDs from our lines
 		final Set<Integer> linesOwnPaymentIDs = new HashSet<>();
 		for (final I_ESR_ImportLine importLine : linesWithSameInvoice)
@@ -1233,7 +1241,7 @@ public class ESRImportBL implements IESRImportBL
 		// Then we get the invoice GrandTotal MINUS the amounts that were already allocated from UNRELATED payments, credit-memos etc.
 		// So in invoiceOpenAmt we IGNORE the payments of our lines..if there are no other payments or credit-memos, then the open amount is the invoice's GrandTotal, even if our lines actually paid
 		// the whole invoice.
-		final BigDecimal externalAllocationsSum = allocationDAO.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
+		final BigDecimal externalAllocationsSum = allocationDAOLocal.retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoice, linesOwnPaymentIDs);
 		final BigDecimal invoiceOpenAmt = invoice.getGrandTotal().subtract(externalAllocationsSum);
 
 		boolean openAmtTrhesholdCrossed = false;

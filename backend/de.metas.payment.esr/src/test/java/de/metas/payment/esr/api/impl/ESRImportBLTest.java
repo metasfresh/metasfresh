@@ -690,11 +690,14 @@ public class ESRImportBLTest extends ESRTestBase
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
 		save(esrImport);
 
+		final I_ESR_ImportFile esrImportFile = createImportFile(esrImport);
+
 		final List<I_ESR_ImportLine> lines = new ArrayList<>();
 		if (lineNo1 > 0)
 		{
 			final I_ESR_ImportLine esrImportLine1 = newInstance(I_ESR_ImportLine.class);
 			esrImportLine1.setESR_Import_ID(esrImport.getESR_Import_ID());
+			esrImportLine1.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
 			esrImportLine1.setC_BPartner_ID(partner.getC_BPartner_ID());
 			esrImportLine1.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			esrImportLine1.setAD_Org_ID(org.getAD_Org_ID());
@@ -708,6 +711,7 @@ public class ESRImportBLTest extends ESRTestBase
 		{
 			final I_ESR_ImportLine esrImportLine2 = newInstance(I_ESR_ImportLine.class);
 			esrImportLine2.setESR_Import_ID(esrImport.getESR_Import_ID());
+			esrImportLine2.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
 			esrImportLine2.setC_BPartner_ID(partner.getC_BPartner_ID());
 			esrImportLine2.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			esrImportLine2.setAD_Org_ID(org.getAD_Org_ID());
@@ -721,6 +725,7 @@ public class ESRImportBLTest extends ESRTestBase
 		{
 			final I_ESR_ImportLine esrImportLine3 = newInstance(I_ESR_ImportLine.class);
 			esrImportLine3.setESR_Import_ID(esrImport.getESR_Import_ID());
+			esrImportLine3.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
 			esrImportLine3.setC_BPartner_ID(partner.getC_BPartner_ID());
 			esrImportLine3.setC_Invoice_ID(invoice.getC_Invoice_ID());
 			esrImportLine3.setAD_Org_ID(org.getAD_Org_ID());
