@@ -112,13 +112,13 @@ public class BankStatementImportProcessTest
 
 		SpringContextHolder.registerJUnitBean(ImportTableDescriptorRepository.class, new ImportTableDescriptorRepository()
 		{
-			public ImportTableDescriptor getByTableId(AdTableId adTableId)
+			public ImportTableDescriptor getByTableId(final @NonNull AdTableId adTableId)
 			{
 				return importTableDescriptor;
 			}
 
 			@Override
-			public ImportTableDescriptor getByTableName(@NonNull String tableName)
+			public ImportTableDescriptor getByTableName(final @NonNull String tableName)
 			{
 				return importTableDescriptor;
 			}
@@ -307,10 +307,7 @@ public class BankStatementImportProcessTest
 		{
 			final I_I_BankStatement statement = mkRecord().build();
 
-			assertThatExceptionOfType(AdempiereException.class)
-					.isThrownBy(() -> BankStatementImportProcess.getAmtFormat(statement))
-					.withMessageContaining("Invalid")
-					.withMessageContaining("format");
+			assertThat(BankStatementImportProcess.getAmtFormat(statement)).isEqualTo(X_I_BankStatement.AMTFORMAT_Straight);
 		}
 
 		@Test
@@ -368,7 +365,7 @@ public class BankStatementImportProcessTest
 
 		private RecordBuilder mkRecord()
 		{
-			return record().bankStatementId(bankStatementId).statementLineDate("2020-03-22").currencyId(euroCurrencyId);
+			return record().bankStatementId(bankStatementId).statementLineDate("2020-03-22").trxAmt(BigDecimal.ZERO.toString()).currencyId(euroCurrencyId);
 		}
 	}
 }
