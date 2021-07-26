@@ -42,6 +42,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
@@ -341,7 +342,8 @@ public class DocumentCollection
 		assertNewDocumentAllowed(entityDescriptor);
 
 		final DocumentsRepository documentsRepository = entityDescriptor.getDataBinding().getDocumentsRepository();
-		@SuppressWarnings("UnnecessaryLocalVariable") final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
+		@SuppressWarnings("UnnecessaryLocalVariable")
+		final Document document = documentsRepository.createNewDocument(entityDescriptor, Document.NULL, changesCollector);
 		// NOTE: we assume document is writable
 		// NOTE: we are not adding it to index. That shall be done on "commit".
 		return document;
@@ -858,7 +860,8 @@ public class DocumentCollection
 		@Override
 		public Object getFieldValue(final String fieldName)
 		{
-			return document.getFieldView(fieldName).getValue();
+			final Object value = document.getFieldView(fieldName).getValue();
+			return value instanceof LookupValue ? ((LookupValue)value).getId() : value;
 		}
 
 		/**

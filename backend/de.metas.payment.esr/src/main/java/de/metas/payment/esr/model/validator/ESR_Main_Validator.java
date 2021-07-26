@@ -1,36 +1,16 @@
 package de.metas.payment.esr.model.validator;
 
-/*
- * #%L
- * de.metas.payment.esr
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
 import de.metas.banking.bankstatement.match.api.IPaymentBatchFactory;
 import de.metas.banking.bankstatement.match.spi.impl.ESRPaymentBatchProvider;
 import de.metas.banking.payment.IPaymentStringParserFactory;
+import de.metas.banking.payment.PaymentParserType;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.payment.esr.actionhandler.impl.DiscountESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.DunningESRActionHandler;
+import de.metas.payment.esr.actionhandler.impl.DuplicatePaymentESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.MoneyTransferedBackESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.UnableToAssignESRActionHandler;
 import de.metas.payment.esr.actionhandler.impl.WithCurrenttInvoiceESRActionHandler;
@@ -42,6 +22,7 @@ import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.payment.esr.spi.impl.DefaultESRLineHandler;
 import de.metas.payment.spi.impl.ESRCreaLogixStringParser;
 import de.metas.payment.spi.impl.ESRRegularLineParser;
+import de.metas.payment.spi.impl.QRCodeStringParser;
 import de.metas.util.Services;
 
 public class ESR_Main_Validator extends AbstractModuleInterceptor
@@ -72,11 +53,14 @@ public class ESR_Main_Validator extends AbstractModuleInterceptor
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice, new WithCurrenttInvoiceESRActionHandler());
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income, new UnableToAssignESRActionHandler());
 		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Discount, new DiscountESRActionHandler());
-
+		esrImportBL.registerActionHandler(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment, new DuplicatePaymentESRActionHandler());
+		
 		//
 		// Register ESR Payment Parsers
-		Services.get(IPaymentStringParserFactory.class).registerParser(ESRRegularLineParser.TYPE, ESRRegularLineParser.instance);
-		Services.get(IPaymentStringParserFactory.class).registerParser(ESRCreaLogixStringParser.TYPE, ESRCreaLogixStringParser.instance);
+		final IPaymentStringParserFactory paymentStringParserFactory = Services.get(IPaymentStringParserFactory.class);
+		paymentStringParserFactory.registerParser(PaymentParserType.ESRRegular.getType(), ESRRegularLineParser.instance);
+		paymentStringParserFactory.registerParser(PaymentParserType.ESRCreaLogix.getType(), ESRCreaLogixStringParser.instance);
+		paymentStringParserFactory.registerParser(PaymentParserType.QRCode.getType(), new QRCodeStringParser());
 
 		//
 		// Payment batch provider for Bank Statement matching

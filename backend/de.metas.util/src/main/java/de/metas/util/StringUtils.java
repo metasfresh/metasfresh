@@ -298,7 +298,7 @@ public final class StringUtils
 	 * <li>false if value is null or other
 	 * </ul>
 	 */
-	public static boolean toBoolean(final Object value)
+	public static boolean toBoolean(@Nullable final Object value)
 	{
 		final Boolean defaultValue = Boolean.FALSE;
 		return toBoolean(value, defaultValue);

@@ -62,6 +62,7 @@ import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -1492,7 +1493,7 @@ public class MOrder extends X_C_Order implements IDocument
 				for (final MTax cTax : cTaxes)
 				{
 					final CurrencyPrecision taxPrecision = orderBL.getTaxPrecision(this);
-					final boolean taxIncluded = orderBL.isTaxIncluded(this, cTax);
+					final boolean taxIncluded = orderBL.isTaxIncluded(this, TaxUtils.from(cTax));
 					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
 					//
 					final MOrderTax newOTax = new MOrderTax(getCtx(), 0, trxName);

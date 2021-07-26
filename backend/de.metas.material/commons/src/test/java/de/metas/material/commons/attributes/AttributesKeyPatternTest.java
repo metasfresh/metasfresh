@@ -46,7 +46,7 @@ public class AttributesKeyPatternTest
 		{
 			final String attrib1 = "123456=9999-12-12";
 			final String attrib2 = "123654=1";
-			final String attrib3 = "987654=";
+			final String attrib3 = "987654=2";
 			final String attrib4 = "1010101=01/99";
 			final  AttributesKey key = AttributesKey.ofString(attrib1 + "§&§" + attrib2 + "§&§" + attrib3 + "§&§" + attrib4);
 			final AttributesKeyPattern attributesKeyPattern = AttributesKeyPatternsUtil.ofAttributeKey(key);

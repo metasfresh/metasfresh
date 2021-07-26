@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.lang.SOTrx;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -207,7 +208,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				locationId, // shipC_BPartner_Location_ID
-				false); // isSOTrx same as in vendor return
+				SOTrx.PURCHASE); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId.getRepoId());
 
 		//

@@ -153,12 +153,7 @@ public class HUSplitBuilderCoreEngine
 	}
 
 	/**
-	 * Set a value to be passed to {@link HULoader#setAutomaticallyMovePackingMaterials(boolean)} when {@link #performSplit()} is invoked.
-	 * <p>
 	 * The default is {@code true}. Set to falls if you split a "real" TU from and aggregate HU, because in that case, additional package material is needed.
-	 *
-	 * @param automaticallyMovePackingMaterials
-	 * @return
 	 */
 	public HUSplitBuilderCoreEngine withAutomaticallyMovePackingMaterials(final boolean automaticallyMovePackingMaterials)
 	{
@@ -167,18 +162,16 @@ public class HUSplitBuilderCoreEngine
 	}
 
 	/**
-	 * Performs the actual split. Also see {@link #of(IHUContext, I_M_HU, Function, IAllocationDestination)}.
+	 * Performs the actual split.
 	 * <p>
 	 * Note: if this instance's {@link #destination} is not {@code instanceof} {@link IHUProducerAllocationDestination}, then this method will always return an empty list.
-	 *
-	 * @return
 	 */
 	public List<I_M_HU> performSplit()
 	{
 		final List<I_M_HU> splitHUs = new ArrayList<>();
 
 		huTrxBL.createHUContextProcessorExecutor(huContextInitital)
-				.run((IHUContextProcessor)localHuContext -> {
+				.run(localHuContext -> {
 					// Make a copy of the processing context, we will need to modify it
 					final IMutableHUContext localHuContextCopy = localHuContext.copyAsMutable();
 					if(!automaticallyMovePackingMaterials)
@@ -206,7 +199,7 @@ public class HUSplitBuilderCoreEngine
 		return splitHUs;
 	}
 
-	private List<I_M_HU> performSplit0(final IHUContext localHuContextCopy)
+	private List<I_M_HU> performSplit0(@NonNull final IHUContext localHuContextCopy)
 	{
 		//
 		// using thread-inherited to let this split key work in transaction and out of transaction

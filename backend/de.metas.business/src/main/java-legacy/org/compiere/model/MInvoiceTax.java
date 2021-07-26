@@ -16,12 +16,12 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Properties;
-
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.logging.LogManager;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
@@ -29,11 +29,11 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.logging.LogManager;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  * Invoice Tax Model
@@ -109,7 +109,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(line);
 		
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(line.getC_Tax_ID());
+		final Tax tax = taxDAO.getTaxByIdOrNull(line.getC_Tax_ID());
 
 
 		// Create New
@@ -117,7 +117,7 @@ public class MInvoiceTax extends X_C_InvoiceTax
 		retValue.set_TrxName(trxName);
 		retValue.setClientOrg(line);
 		retValue.setC_Invoice_ID(line.getC_Invoice_ID());
-		retValue.setC_Tax(tax);
+		retValue.setC_Tax_ID(tax.getTaxId().getRepoId());
 		retValue.setIsWholeTax(tax.isWholeTax());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);

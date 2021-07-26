@@ -28,14 +28,17 @@ import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.GetExternalReferenceByRecordIdReq;
 import de.metas.externalreference.product.ProductExternalReferenceType;
+import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaDataQuery;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import lombok.NonNull;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.springframework.stereotype.Service;
 
@@ -48,11 +51,15 @@ import java.util.function.Function;
 @Service
 public class AlbertaProductService
 {
-	private final AlbertaProductDAO albertaProductDAO;
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
-	private final ExternalReferenceRepository externalReferenceRepository;
 
-	public AlbertaProductService(final AlbertaProductDAO albertaProductDAO, final ExternalReferenceRepository externalReferenceRepository)
+	private final ExternalReferenceRepository externalReferenceRepository;
+	private final AlbertaProductDAO albertaProductDAO;
+
+	public AlbertaProductService(
+			@NonNull final AlbertaProductDAO albertaProductDAO,
+			@NonNull final ExternalReferenceRepository externalReferenceRepository)
 	{
 		this.albertaProductDAO = albertaProductDAO;
 		this.externalReferenceRepository = externalReferenceRepository;
@@ -94,7 +101,23 @@ public class AlbertaProductService
 				.product2Therapies(albertaProductDAO.getTherapies(dataQuery))
 				.product2PackagingUnits(albertaProductDAO.getPackagingUnits(dataQuery))
 				.getAlbertaArticleIdSupplier(this::getAlbertaArticleIdByProductId)
+				.getProductGroupIdentifierSupplier(this::getProductGroupIdentifierByProductId)
 				.build();
+	}
+
+	@NonNull
+	private Optional<String> getProductGroupIdentifierByProductId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productDAO.getById(productId);
+
+		final GetExternalReferenceByRecordIdReq getExternalReferenceByRecordIdReq = GetExternalReferenceByRecordIdReq.builder()
+				.recordId(product.getM_Product_Category_ID())
+				.externalSystem(AlbertaExternalSystem.ALBERTA)
+				.externalReferenceType(ProductCategoryExternalReferenceType.PRODUCT_CATEGORY)
+				.build();
+
+		return externalReferenceRepository.getExternalReferenceByMFReference(getExternalReferenceByRecordIdReq)
+				.map(ExternalReference::getExternalReference);
 	}
 
 	@NonNull

@@ -52,7 +52,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class M_PriceList_StepDef
 {
@@ -203,7 +203,7 @@ public class M_PriceList_StepDef
 
 		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMN_C_TaxCategory_ID.getColumnName() + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
 		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
-		assertThat(taxCategoryId).as("Missing taxCagegory for internalName=%s", taxCategoryInternalName).isPresent();
+		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
 
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
 

@@ -24,7 +24,6 @@ package de.metas.servicerepair.project.service.commands.createQuotationFromProje
 
 import de.metas.product.ProductId;
 import de.metas.servicerepair.customerreturns.WarrantyCase;
-import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -40,11 +39,22 @@ import java.util.Objects;
 class QuotationLineKey
 {
 	@NonNull ServiceRepairProjectCostCollectorType type;
+	@NonNull QuotationLinesGroupKey groupKey;
 	@NonNull ProductId productId;
 	@NonNull @Builder.Default AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
-	@NonNull @Builder.Default WarrantyCase warrantyCase = WarrantyCase.NO;
 	@NonNull UomId uomId;
-	@Nullable ServiceRepairProjectCostCollectorId singleCostCollectorId;
 
 	public static boolean equals(@Nullable final QuotationLineKey o1, @Nullable final QuotationLineKey o2) { return Objects.equals(o1, o2); }
+
+	public boolean isZeroPrice()
+	{
+		return getType().isZeroPrice()
+				|| isWarrantyCase();
+	}
+
+	public boolean isWarrantyCase()
+	{
+		final WarrantyCase warrantyCase = groupKey.getWarrantyCase();
+		return warrantyCase != null && warrantyCase.isYes();
+	}
 }

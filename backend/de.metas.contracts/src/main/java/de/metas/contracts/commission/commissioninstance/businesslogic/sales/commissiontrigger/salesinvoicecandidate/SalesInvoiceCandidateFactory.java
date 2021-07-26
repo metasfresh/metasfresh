@@ -18,12 +18,12 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Tax;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -201,12 +201,11 @@ public class SalesInvoiceCandidateFactory
 			return commissionPoints;
 		}
 
-		final I_C_Tax taxRecord = taxDAO.getTaxById(effectiveTaxRepoId);
+		final Tax taxRecord = taxDAO.getTaxById(effectiveTaxRepoId);
 
 		final CurrencyPrecision precision = invoiceCandBL.extractPricePrecision(icRecord);
 
-		final BigDecimal taxAdjustedAmount = taxBL.calculateBaseAmt(
-				taxRecord,
+		final BigDecimal taxAdjustedAmount = taxRecord.calculateBaseAmt(
 				commissionPoints.toBigDecimal(),
 				icRecord.isTaxIncluded(),
 				precision.toInt());

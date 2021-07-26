@@ -2,6 +2,7 @@ package de.metas.invoice.invoiceProcessingServiceCompany;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.document.DocTypeId;
 import de.metas.invoice.InvoiceId;
 import de.metas.organization.OrgId;
 import de.metas.util.OptionalBoolean;
@@ -51,6 +52,9 @@ public class InvoiceProcessingFeeComputeRequest
 
 	@NonNull
 	Amount invoiceGrandTotal;
+
+	@NonNull
+	DocTypeId docTypeId;
 
 	@NonNull
 	@Builder.Default

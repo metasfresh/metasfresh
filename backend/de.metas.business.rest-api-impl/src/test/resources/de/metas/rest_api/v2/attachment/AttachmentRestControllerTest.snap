@@ -8,6 +8,6 @@ de.metas.rest_api.v2.attachment.AttachmentRestControllerTest.createAttachment=[
     ],
     "attachmentId" : "100001",
     "filename" : "test.txt",
-    "mimeType" : ".txt"
+    "mimeType" : "text/plain"
   }
 ]

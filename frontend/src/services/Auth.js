@@ -1,5 +1,4 @@
 import SockJs from 'sockjs-client';
-
 import Stomp from 'stompjs/lib/stomp.min.js';
 
 class Auth {
@@ -22,6 +21,7 @@ class Auth {
   initSessionClient = (topic, cb) => {
     this.sessionClient = Stomp.Stomp.over(new SockJs(config.WS_URL));
     this.sessionClient.debug = null;
+
     this.sessionClient.connect({}, () => {
       this.sessionClient.connected &&
         this.sessionClient.subscribe(topic, (msg) => {

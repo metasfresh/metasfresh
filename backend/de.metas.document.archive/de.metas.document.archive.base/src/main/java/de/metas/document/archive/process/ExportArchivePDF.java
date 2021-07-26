@@ -16,6 +16,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.springframework.core.io.ByteArrayResource;
 
 public class ExportArchivePDF extends JavaProcess implements IProcessPrecondition
 {
@@ -72,7 +73,7 @@ public class ExportArchivePDF extends JavaProcess implements IProcessPreconditio
 		}
 		else
 		{
-			getResult().setReportData(data, filename, contentType);
+			getResult().setReportData(new ByteArrayResource(data), filename, contentType);
 		}
 	}
 }

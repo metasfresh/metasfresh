@@ -4,6 +4,9 @@ import Enzyme, { shallow, render, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import { JSDOM } from 'jsdom';
 import EventSource from 'eventsourcemock';
+import React from "react" 
+
+React.useLayoutEffect = React.useEffect 
 
 // React 16 Enzyme adapter
 Enzyme.configure({ adapter: new Adapter() });
@@ -51,7 +54,7 @@ window.HTMLDivElement.prototype.getBoundingClientRect = function() {
 //   console.log('EXCEPTION', err);
 // });
 
-export const serverTestPort = '10001'; // everything from 10000-65535 should be fine, setting it lower could make it collide with other open ports
+export const serverTestPort = 10001; // everything from 10000-65535 should be fine, setting it lower could make it collide with other open ports
 
 global.EventSource = EventSource;
 global.window = window;

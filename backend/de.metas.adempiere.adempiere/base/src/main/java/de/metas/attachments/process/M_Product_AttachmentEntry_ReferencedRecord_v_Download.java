@@ -8,6 +8,8 @@ import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product_AttachmentEntry_ReferencedRecord_v;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 
@@ -50,7 +52,7 @@ public class M_Product_AttachmentEntry_ReferencedRecord_v_Download extends JavaP
 		final AttachmentEntryId entryId = AttachmentEntryId.ofRepoId(record.getAD_AttachmentEntry_ID());
 
 		final AttachmentEntry entry = attachmentEntryService.getById(entryId);
-		final byte[] data = attachmentEntryService.retrieveData(entry.getId());
+		final Resource data = new ByteArrayResource(attachmentEntryService.retrieveData(entry.getId()));
 
 		getResult().setReportData(data, entry.getFilename(), entry.getMimeType());
 

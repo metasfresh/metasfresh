@@ -174,7 +174,7 @@ class WorkpackageProcessorTask implements Runnable
 						.type(Type.ASYNC_WORKPACKAGE)
 						.name("Workpackage-Processor - " + queueProcessor.getName())
 						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
-						.label("de.metas.async.C_Queue_WorkPackage_ID", Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+						.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
 						.build());
 	}
 

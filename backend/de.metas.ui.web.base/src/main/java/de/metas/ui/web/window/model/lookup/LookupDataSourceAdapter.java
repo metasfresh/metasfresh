@@ -3,12 +3,14 @@ package de.metas.ui.web.window.model.lookup;
 import com.google.common.base.MoreObjects;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,7 +40,6 @@ import java.util.Optional;
  * Wraps an {@link LookupDataSourceFetcher}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 final class LookupDataSourceAdapter implements LookupDataSource
 {
@@ -117,7 +118,7 @@ final class LookupDataSourceAdapter implements LookupDataSource
 		//
 		// Build the validation context
 		final LookupDataSourceContext evalCtx = fetcher.newContextForFetchingById(idNormalized)
-				.putFilterById(idNormalized)
+				.putFilterById(IdsToFilter.ofSingleValue(idNormalized))
 				.putShowInactive(true)
 				.build();
 
@@ -132,11 +133,21 @@ final class LookupDataSourceAdapter implements LookupDataSource
 	}
 
 	@Override
+	public @NonNull LookupValuesList findByIdsOrdered(final @NonNull Collection<?> ids)
+	{
+		final LookupDataSourceContext evalCtx = fetcher.newContextForFetchingByIds(ids)
+				.putShowInactive(true)
+				.build();
+
+		return fetcher.retrieveLookupValueByIdsInOrder(evalCtx);
+	}
+
+	@Override
 	public List<CCacheStats> getCacheStats()
 	{
 		return fetcher.getCacheStats();
 	}
-	
+
 	@Override
 	public void cacheInvalidate()
 	{

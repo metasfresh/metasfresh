@@ -3,8 +3,7 @@ import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { List } from 'immutable';
-import { connect } from 'react-redux';
-import { goBack, push } from 'react-router-redux';
+import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 
 import {
@@ -13,7 +12,6 @@ import {
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
-import { loginSuccess } from '../../actions/AppActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawList from '../widget/List/RawList';
 import PasswordRecovery from './PasswordRecovery';
@@ -88,16 +86,19 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleSuccess = () => {
-    const { redirect, dispatch } = this.props;
+    const { auth, history } = this.props;
 
     getUserLang().then((response) => {
       //GET language shall always return a result
       Moment.locale(response.data['key']);
 
+      const redirect = auth.redirectRoute;
+
       if (redirect) {
-        dispatch(goBack());
+        auth.clearRedirectRoute();
+        history.push(redirect);
       } else {
-        dispatch(push('/'));
+        history.push('/');
       }
     });
   };
@@ -108,11 +109,9 @@ class LoginForm extends Component {
    * @param {*} err
    */
   checkIfAlreadyLogged(err) {
-    const { router } = this.context;
-
     return localLoginRequest().then((response) => {
       if (response.data) {
-        return router.push('/');
+        return history.push('/');
       }
 
       return Promise.reject(err);
@@ -189,7 +188,7 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleLogin = () => {
-    const { dispatch, auth } = this.props;
+    const { auth } = this.props;
     const { roleSelect, role } = this.state;
 
     this.setState(
@@ -200,7 +199,7 @@ class LoginForm extends Component {
         if (roleSelect) {
           return loginCompletionRequest(role)
             .then(() => {
-              dispatch(loginSuccess(auth));
+              auth.login();
               this.handleSuccess();
             })
             .catch((err) => {
@@ -234,8 +233,9 @@ class LoginForm extends Component {
    * @summary ToDo: Describe the method.
    */
   handleForgotPassword = () => {
-    const { dispatch } = this.props;
-    dispatch(push('/forgottenPassword'));
+    const { history } = this.props;
+
+    history.push('/forgottenPassword');
   };
 
   /**
@@ -393,15 +393,11 @@ class LoginForm extends Component {
 }
 
 LoginForm.propTypes = {
-  dispatch: PropTypes.func.isRequired,
   path: PropTypes.string,
   token: PropTypes.string,
   redirect: PropTypes.any,
   auth: PropTypes.object,
+  history: PropTypes.object.isRequired,
 };
 
-LoginForm.contextTypes = {
-  router: PropTypes.object.isRequired,
-};
-
-export default connect()(LoginForm);
+export default withRouter(LoginForm);

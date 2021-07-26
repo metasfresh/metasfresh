@@ -40,14 +40,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PasswordGeneratorTest
 {
 	@Nested
 	class GetPasswordTest
 	{
-	private final PasswordGenerator generator = new PasswordGenerator();
+		private final PasswordGenerator generator = new PasswordGenerator();
 
 		@ParameterizedTest
 		@ValueSource(ints = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 })
@@ -152,7 +152,8 @@ class PasswordGeneratorTest
 
 			final ImmutableAttributeSet actualPasswords = generatorService.generate(
 					GeneratedComponentRequest.builder()
-							.attributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, null).build())
+							.targetHUAttributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, null).build())
+							.bomLineAttributes(ImmutableAttributeSet.EMPTY)
 							.productId(passwordProductId)
 							.qty(1)
 							.clientId(ClientId.METASFRESH)
@@ -168,7 +169,8 @@ class PasswordGeneratorTest
 
 			final ImmutableAttributeSet actualPasswords = generatorService.generate(
 					GeneratedComponentRequest.builder()
-							.attributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, "1234").build())
+							.targetHUAttributes(ImmutableAttributeSet.builder().attributeValue(AttributeConstants.RouterPassword, "1234").build())
+							.bomLineAttributes(ImmutableAttributeSet.EMPTY)
 							.productId(passwordProductId)
 							.qty(1)
 							.clientId(ClientId.METASFRESH)
@@ -205,7 +207,7 @@ class PasswordGeneratorTest
 			InterfaceWrapperHelper.save(param);
 		}
 
-	private 	void mkAttribute(final AttributeCode attributeCode)
+		private void mkAttribute(final AttributeCode attributeCode)
 		{
 			final I_M_Attribute po = InterfaceWrapperHelper.newInstance(I_M_Attribute.class);
 			po.setName(attributeCode.getCode());

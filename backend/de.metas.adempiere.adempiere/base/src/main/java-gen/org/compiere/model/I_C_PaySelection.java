@@ -2,7 +2,7 @@ package org.compiere.model;
 
 
 /** Generated Interface for C_PaySelection
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
 public interface I_C_PaySelection 
@@ -308,10 +308,99 @@ public interface I_C_PaySelection
 	 */
 	public boolean isReconciled();
 
-    /** Column definition for IsReconciled */
-    public static final org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_IsReconciled = new org.adempiere.model.ModelColumn<I_C_PaySelection, Object>(I_C_PaySelection.class, "IsReconciled", null);
-    /** Column name IsReconciled */
-    public static final String COLUMNNAME_IsReconciled = "IsReconciled";
+	/** Column definition for IsReconciled */
+	public static final org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_IsReconciled = new org.adempiere.model.ModelColumn<I_C_PaySelection, Object>(I_C_PaySelection.class, "IsReconciled", null);
+	/** Column name IsReconciled */
+	public static final String COLUMNNAME_IsReconciled = "IsReconciled";
+
+	public void setIsExportBatchBookings (boolean IsExportBatchBookings);
+
+	boolean isExportBatchBookings();
+
+	public static final org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_IsExportBatchBookings = new org.adempiere.model.ModelColumn<>(I_C_PaySelection.class, "IsExportBatchBookings", null);
+	String COLUMNNAME_IsExportBatchBookings = "IsExportBatchBookings";
+
+	/**
+	 * Set Last Revolut Export.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLastRevolutExport (java.sql.Timestamp LastRevolutExport);
+
+	/**
+	 * Get Last Revolut Export.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getLastRevolutExport();
+
+	org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_LastRevolutExport = new org.adempiere.model.ModelColumn<>(I_C_PaySelection.class, "LastRevolutExport", null);
+	String COLUMNNAME_LastRevolutExport = "LastRevolutExport";
+
+	/**
+	 * Set Last Revolut Export by.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLastRevolutExportBy_ID (int LastRevolutExportBy_ID);
+
+	/**
+	 * Get Last Revolut Export by.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLastRevolutExportBy_ID();
+
+	String COLUMNNAME_LastRevolutExportBy_ID = "LastRevolutExportBy_ID";
+
+	/**
+	 * Set Last SEPA Export.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLastSepaExport (java.sql.Timestamp LastSepaExport);
+
+	/**
+	 * Get Last SEPA Export.
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getLastSepaExport();
+
+	org.adempiere.model.ModelColumn<I_C_PaySelection, Object> COLUMN_LastSepaExport = new org.adempiere.model.ModelColumn<>(I_C_PaySelection.class, "LastSepaExport", null);
+	String COLUMNNAME_LastSepaExport = "LastSepaExport";
+
+	/**
+	 * Set Last SEPA Export by.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLastSepaExportBy_ID (int LastSepaExportBy_ID);
+
+	/**
+	 * Get Last SEPA Export by.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLastSepaExportBy_ID();
+
+	String COLUMNNAME_LastSepaExportBy_ID = "LastSepaExportBy_ID";
 
 	/**
 	 * Set Name.

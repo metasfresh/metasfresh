@@ -81,7 +81,6 @@ public class HUDescriptorService
 					.huId(huRecord.getM_HU_ID())
 					.productDescriptor(productDescriptor)
 					.quantity(deleted ? BigDecimal.ZERO : quantity)
-					.quantityDelta(deleted ? quantity.negate() : quantity)
 					.build();
 			descriptors.add(descriptor);
 		}

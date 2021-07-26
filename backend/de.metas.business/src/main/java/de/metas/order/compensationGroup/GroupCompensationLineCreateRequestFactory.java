@@ -1,6 +1,5 @@
 package de.metas.order.compensationGroup;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.Discount;
@@ -9,6 +8,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
@@ -54,13 +54,20 @@ public class GroupCompensationLineCreateRequestFactory
 		final I_M_Product product = productBL.getById(productId);
 		final I_C_UOM uom = productBL.getStockUOM(product);
 
-		final GroupCompensationType type = extractGroupCompensationType(product);
+		final GroupCompensationType type = templateLine.getCompensationType() != null
+				? templateLine.getCompensationType()
+				: extractGroupCompensationType(product);
+
 		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
 
-		Percent percentage = Percent.ZERO;
+		final Percent percentage;
 		if (GroupCompensationType.Discount.equals(type) && GroupCompensationAmtType.Percent.equals(amtType))
 		{
 			percentage = calculateDefaultDiscountPercentage(templateLine, group);
+		}
+		else
+		{
+			percentage = Percent.ZERO;
 		}
 
 		return GroupCompensationLineCreateRequest.builder()
@@ -77,12 +84,16 @@ public class GroupCompensationLineCreateRequestFactory
 
 	private static GroupCompensationType extractGroupCompensationType(final I_M_Product product)
 	{
-		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(product.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
+		return GroupCompensationType.ofAD_Ref_List_Value(
+				StringUtils.trimBlankToOptional(product.getGroupCompensationType())
+						.orElse(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
 	private static GroupCompensationAmtType extractGroupCompensationAmtType(final I_M_Product product)
 	{
-		return GroupCompensationAmtType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(product.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
+		return GroupCompensationAmtType.ofAD_Ref_List_Value(
+				StringUtils.trimBlankToOptional(product.getGroupCompensationAmtType())
+						.orElse(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
 	}
 
 	private Percent calculateDefaultDiscountPercentage(final GroupTemplateCompensationLine templateLine, final Group group)
