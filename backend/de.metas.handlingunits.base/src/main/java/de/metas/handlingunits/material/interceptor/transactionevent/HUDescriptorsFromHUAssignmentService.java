@@ -57,7 +57,7 @@ public class HUDescriptorsFromHUAssignmentService
 {
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
-	private HUDescriptorService huDescriptorService;
+	private final HUDescriptorService huDescriptorService;
 
 	public HUDescriptorsFromHUAssignmentService(@NonNull final HUDescriptorService huDescriptorService)
 	{

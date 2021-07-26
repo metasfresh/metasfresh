@@ -1,85 +1,76 @@
 package de.metas.async.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Async_Batch_Type
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Async_Batch_Type 
 {
 
-    /** TableName=C_Async_Batch_Type */
-    public static final String Table_Name = "C_Async_Batch_Type";
+	String Table_Name = "C_Async_Batch_Type";
 
-    /** AD_Table_ID=540625 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540625 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Set Textbaustein.
+	 * Set Boiler Plate.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
+	void setAD_BoilerPlate_ID (int AD_BoilerPlate_ID);
 
 	/**
-	 * Get Textbaustein.
+	 * Get Boiler Plate.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_BoilerPlate_ID();
+	int getAD_BoilerPlate_ID();
 
-    /** Column definition for AD_BoilerPlate_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_AD_BoilerPlate_ID = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "AD_BoilerPlate_ID", null);
-    /** Column name AD_BoilerPlate_ID */
-    public static final String COLUMNNAME_AD_BoilerPlate_ID = "AD_BoilerPlate_ID";
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_AD_BoilerPlate_ID = new ModelColumn<>(I_C_Async_Batch_Type.class, "AD_BoilerPlate_ID", null);
+	String COLUMNNAME_AD_BoilerPlate_ID = "AD_BoilerPlate_ID";
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
-	 * Organisatorische Einheit des Mandanten
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Async Batch Type.
@@ -88,7 +79,7 @@ public interface I_C_Async_Batch_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Async_Batch_Type_ID (int C_Async_Batch_Type_ID);
+	void setC_Async_Batch_Type_ID (int C_Async_Batch_Type_ID);
 
 	/**
 	 * Get Async Batch Type.
@@ -97,159 +88,104 @@ public interface I_C_Async_Batch_Type
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Async_Batch_Type_ID();
+	int getC_Async_Batch_Type_ID();
 
-    /** Column definition for C_Async_Batch_Type_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_C_Async_Batch_Type_ID = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "C_Async_Batch_Type_ID", null);
-    /** Column name C_Async_Batch_Type_ID */
-    public static final String COLUMNNAME_C_Async_Batch_Type_ID = "C_Async_Batch_Type_ID";
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_C_Async_Batch_Type_ID = new ModelColumn<>(I_C_Async_Batch_Type.class, "C_Async_Batch_Type_ID", null);
+	String COLUMNNAME_C_Async_Batch_Type_ID = "C_Async_Batch_Type_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_Created = new ModelColumn<>(I_C_Async_Batch_Type.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Interner Name.
+	 * Set Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setInternalName (java.lang.String InternalName);
+	void setInternalName (String InternalName);
 
 	/**
-	 * Get Interner Name.
+	 * Get Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getInternalName();
+	String getInternalName();
 
-    /** Column definition for InternalName */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_InternalName = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "InternalName", null);
-    /** Column name InternalName */
-    public static final String COLUMNNAME_InternalName = "InternalName";
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_InternalName = new ModelColumn<>(I_C_Async_Batch_Type.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Send Mail.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsSendMail (boolean IsSendMail);
-
-	/**
-	 * Get Send Mail.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isSendMail();
-
-    /** Column definition for IsSendMail */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_IsSendMail = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "IsSendMail", null);
-    /** Column name IsSendMail */
-    public static final String COLUMNNAME_IsSendMail = "IsSendMail";
-
-	/**
-	 * Set Send Notification.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setIsSendNotification (boolean IsSendNotification);
-
-	/**
-	 * Get Send Notification.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public boolean isSendNotification();
-
-    /** Column definition for IsSendNotification */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_IsSendNotification = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "IsSendNotification", null);
-    /** Column name IsSendNotification */
-    public static final String COLUMNNAME_IsSendNotification = "IsSendNotification";
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Async_Batch_Type.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Keep Alive Time (Hours).
+	 * If set greater than zero, the batch has to be processed within the given number of hours, or it is flagged with Error=Yes.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setKeepAliveTimeHours (java.lang.String KeepAliveTimeHours);
+	void setKeepAliveTimeHours (@Nullable String KeepAliveTimeHours);
 
 	/**
 	 * Get Keep Alive Time (Hours).
+	 * If set greater than zero, the batch has to be processed within the given number of hours, or it is flagged with Error=Yes.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getKeepAliveTimeHours();
+	@Nullable String getKeepAliveTimeHours();
 
-    /** Column definition for KeepAliveTimeHours */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_KeepAliveTimeHours = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "KeepAliveTimeHours", null);
-    /** Column name KeepAliveTimeHours */
-    public static final String COLUMNNAME_KeepAliveTimeHours = "KeepAliveTimeHours";
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_KeepAliveTimeHours = new ModelColumn<>(I_C_Async_Batch_Type.class, "KeepAliveTimeHours", null);
+	String COLUMNNAME_KeepAliveTimeHours = "KeepAliveTimeHours";
 
 	/**
 	 * Set Benachrichtigungs-Art.
@@ -259,7 +195,7 @@ public interface I_C_Async_Batch_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setNotificationType (java.lang.String NotificationType);
+	void setNotificationType (@Nullable String NotificationType);
 
 	/**
 	 * Get Benachrichtigungs-Art.
@@ -269,61 +205,56 @@ public interface I_C_Async_Batch_Type
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getNotificationType();
+	@Nullable String getNotificationType();
 
-    /** Column definition for NotificationType */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_NotificationType = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "NotificationType", null);
-    /** Column name NotificationType */
-    public static final String COLUMNNAME_NotificationType = "NotificationType";
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_NotificationType = new ModelColumn<>(I_C_Async_Batch_Type.class, "NotificationType", null);
+	String COLUMNNAME_NotificationType = "NotificationType";
 
 	/**
 	 * Set Skip Timeout (millis).
+	 * Interval in which metasfresh checkes whether the batch was meanwhile processed
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSkipTimeoutMillis (int SkipTimeoutMillis);
+	void setSkipTimeoutMillis (int SkipTimeoutMillis);
 
 	/**
 	 * Get Skip Timeout (millis).
+	 * Interval in which metasfresh checkes whether the batch was meanwhile processed
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getSkipTimeoutMillis();
+	int getSkipTimeoutMillis();
 
-    /** Column definition for SkipTimeoutMillis */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_SkipTimeoutMillis = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "SkipTimeoutMillis", null);
-    /** Column name SkipTimeoutMillis */
-    public static final String COLUMNNAME_SkipTimeoutMillis = "SkipTimeoutMillis";
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_SkipTimeoutMillis = new ModelColumn<>(I_C_Async_Batch_Type.class, "SkipTimeoutMillis", null);
+	String COLUMNNAME_SkipTimeoutMillis = "SkipTimeoutMillis";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Async_Batch_Type, Object>(I_C_Async_Batch_Type.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_Async_Batch_Type, Object> COLUMN_Updated = new ModelColumn<>(I_C_Async_Batch_Type.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

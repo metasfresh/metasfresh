@@ -23,6 +23,10 @@ public interface IDocTypeBL extends ISingletonService
 	boolean isSalesQuotation(I_C_DocType dt);
 
 	/**
+	 * @return true if it's a sales cost estimate
+	 */
+	boolean isSalesCostEstimate(I_C_DocType dt);
+	/**
 	 * @return true if it's a sales proposal (Not binding)
 	 */
 	boolean isSalesProposal(DocTypeId docTypeId);

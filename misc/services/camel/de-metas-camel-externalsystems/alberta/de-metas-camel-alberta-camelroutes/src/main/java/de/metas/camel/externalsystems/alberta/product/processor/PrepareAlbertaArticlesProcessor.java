@@ -67,10 +67,6 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 			return Optional.empty();
 		}
 
-		final String manufacturerId = product.getManufacturerId() != null
-				? String.valueOf(product.getManufacturerId().getValue())
-				: null;
-
 		final Article article = new Article();
 		
 		final String productNo = product.getProductNo();
@@ -79,7 +75,7 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 		article.customerNumber(productNo)
 				.name(product.getName())
 				.description(product.getDescription())
-				.manufacturer(manufacturerId)
+				.manufacturer(product.getManufacturerName())
 				.manufacturerNumber(product.getManufacturerNumber());
 
 		final JsonAlbertaProductInfo albertaProductInfo = product.getAlbertaProductInfo();

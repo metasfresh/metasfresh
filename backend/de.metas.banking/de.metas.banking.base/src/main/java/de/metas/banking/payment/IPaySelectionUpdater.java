@@ -34,7 +34,7 @@ import de.metas.payment.PaymentRule;
  * Use {@link IPaySelectionBL#newPaySelectionUpdater()} to get your own.
  *
  * @author tsa
- * @task 08972
+ * task 08972
  */
 public interface IPaySelectionUpdater
 {
@@ -56,8 +56,6 @@ public interface IPaySelectionUpdater
 
 	/**
 	 * Sets {@link I_C_PaySelection} in scope (mandatory).
-	 *
-	 * @param paySelection
 	 */
 	IPaySelectionUpdater setC_PaySelection(final I_C_PaySelection paySelection);
 
@@ -84,8 +82,6 @@ public interface IPaySelectionUpdater
 	 *
 	 * NOTE: given {@link I_C_PaySelectionLine} will be used in another instance, so after running this update, if you want to use these {@link I_C_PaySelectionLine}s please make sure you are
 	 * refreshing them.
-	 *
-	 * @param paySelectionLines
 	 */
 	IPaySelectionUpdater addPaySelectionLinesToUpdate(Iterable<? extends org.compiere.model.I_C_PaySelectionLine> paySelectionLines);
 }

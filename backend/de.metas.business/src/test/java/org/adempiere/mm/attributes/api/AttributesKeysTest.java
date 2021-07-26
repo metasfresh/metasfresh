@@ -225,5 +225,20 @@ public class AttributesKeysTest
 
 			assertThat(attributesKey).isNull();
 		}
+
+
+		@Test
+		public void zeroAttributeValues()
+		{
+			final I_M_Attribute numberAttribute = attributesTestHelper.createM_Attribute("numberAttribute", X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+
+			final ImmutableAttributeSet attributeSet = ImmutableAttributeSet.builder()
+					.attributeValue(numberAttribute, 0)
+					.build();
+
+			final AttributesKey attributesKey = AttributesKeys.createAttributesKeyFromAttributeSet(attributeSet).orElse(null);
+
+			assertThat(attributesKey).isNull();
+		}
 	}
 }

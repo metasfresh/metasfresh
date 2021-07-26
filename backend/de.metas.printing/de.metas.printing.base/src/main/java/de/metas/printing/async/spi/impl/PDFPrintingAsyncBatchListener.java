@@ -63,9 +63,11 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 	public void createNotice(final I_C_Async_Batch asyncBatch)
 	{
 		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
-		final String asyncBathTypeName = asyncBatch.getC_Async_Batch_Type().getInternalName();
+		final String asyncBatchTypeName = asyncBatch.getC_Async_Batch_Type_ID() > 0 
+				? asyncBatch.getC_Async_Batch_Type().getInternalName()
+				: null;
 
-		if (Printing_Constants.C_Async_Batch_InternalName_PDFPrinting.equals(asyncBathTypeName))
+		if (Printing_Constants.C_Async_Batch_InternalName_PDFPrinting.equals(asyncBatchTypeName))
 		{
 
 			final I_C_Queue_WorkPackage wp = asyncBatch.getLastProcessed_WorkPackage();

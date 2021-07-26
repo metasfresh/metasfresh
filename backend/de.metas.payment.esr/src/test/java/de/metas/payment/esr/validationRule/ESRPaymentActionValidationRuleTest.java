@@ -28,6 +28,7 @@ import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Kee
 import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner;
 import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income;
 import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Write_Off_Amount;
+import static de.metas.payment.esr.model.X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
@@ -302,5 +303,24 @@ public class ESRPaymentActionValidationRuleTest
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice, plainValidationCtx);
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner, plainValidationCtx);
 		ESRValidationRuleTools.assertRejected(ESR_PAYMENT_ACTION_Unable_To_Assign_Income, plainValidationCtx);
+	}
+	
+	@Test
+	public void ESRPaymentActionValidationRule_DuplicatePayment_test()
+	{
+		final I_C_Payment payment = db.newInstance(I_C_Payment.class);
+		payment.setPayAmt(new BigDecimal(110));
+		db.save(payment);
+
+		final Integer paymentID = payment.getC_Payment_ID();
+		final String paymentIDStr = paymentID.toString();
+
+		plainValidationCtx.setValue(openAmtStr, "-20.00");
+		plainValidationCtx.setValue(paymentIdStr, paymentIDStr);
+		plainValidationCtx.setValue(invoiceIdStr, "1000001");
+
+		boolean accepted = ESRValidationRuleTools.evaluatePaymentAction(ESR_PAYMENT_ACTION_Duplicate_Payment, plainValidationCtx);
+		assertThat(accepted).as("accepted").isTrue();
+
 	}
 }
