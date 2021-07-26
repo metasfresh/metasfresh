@@ -2,8 +2,8 @@ package de.metas.ui.web.shipment_candidates_editor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache.CCacheStats;
-import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
@@ -14,7 +14,10 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Evaluatee;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -27,12 +30,12 @@ import java.util.Optional;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -56,7 +59,22 @@ public class MockedLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public LookupValue findById(final Object idObj)
+	public IntegerLookupValue findById(@Nullable final Object idObj)
+	{
+		return createIntegerLookupValue(idObj);
+	}
+
+	@Override
+	public @NonNull LookupValuesList findByIdsOrdered(final @NonNull Collection<?> ids)
+	{
+		return ids.stream()
+				.map(this::createIntegerLookupValue)
+				.filter(Objects::nonNull)
+				.collect(LookupValuesList.collect());
+	}
+
+	@Nullable
+	private IntegerLookupValue createIntegerLookupValue(@Nullable final Object idObj)
 	{
 		if (idObj == null)
 		{
@@ -86,13 +104,13 @@ public class MockedLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public LookupValuesPage findEntities(Evaluatee ctx, String filter, int firstRow, int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public LookupValuesPage findEntities(Evaluatee ctx, int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final int pageLength)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -104,7 +122,7 @@ public class MockedLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public DocumentZoomIntoInfo getDocumentZoomInto(int id)
+	public DocumentZoomIntoInfo getDocumentZoomInto(final int id)
 	{
 		throw new UnsupportedOperationException();
 	}

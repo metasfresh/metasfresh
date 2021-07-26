@@ -11,9 +11,10 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.SimpleLookupDescriptorTemplate;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
-import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.format.TextStyle;
 import java.util.Optional;
@@ -96,15 +97,12 @@ public final class TimeZoneLookupDescriptor extends SimpleLookupDescriptorTempla
 	}
 
 	@Override
+	@Nullable
 	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		final String zoneIdStr = evalCtx.getIdToFilterAsString();
-		if (zoneIdStr == null || Check.isEmpty(zoneIdStr, true))
-		{
-			return null;
-		}
-
-		return getAll().getById(zoneIdStr.trim());
+		return StringUtils.trimBlankToOptional(evalCtx.getIdToFilterAsString())
+				.map(zoneId -> getAll().getById(zoneId))
+				.orElse(null);
 	}
 
 	@Override

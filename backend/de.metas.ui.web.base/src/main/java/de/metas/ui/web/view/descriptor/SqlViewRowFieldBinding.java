@@ -45,6 +45,7 @@ public class SqlViewRowFieldBinding implements SqlEntityFieldBinding
 	@FunctionalInterface
 	public interface SqlViewRowFieldLoader
 	{
+		@Nullable
 		Object retrieveValue(ResultSet rs, String adLanguage) throws SQLException;
 	}
 

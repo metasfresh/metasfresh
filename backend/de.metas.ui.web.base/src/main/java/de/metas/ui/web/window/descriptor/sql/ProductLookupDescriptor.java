@@ -38,6 +38,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.productLookup.AFSProductLookupEnricher;
 import de.metas.ui.web.window.descriptor.sql.productLookup.ATPProductLookupEnricher;
+import de.metas.ui.web.window.model.lookup.IdsToFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import de.metas.util.Check;
@@ -215,18 +216,14 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	@Override
 	public LookupDataSourceContext.Builder newContextForFetchingById(final Object id)
 	{
-		return LookupDataSourceContext.builder(CONTEXT_LookupTableName).requiresAD_Language().putFilterById(id);
+		return LookupDataSourceContext.builder(CONTEXT_LookupTableName)
+				.requiresAD_Language()
+				.putFilterById(IdsToFilter.ofSingleValue(id));
 	}
 
 	@Override
 	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		final int id = evalCtx.getIdToFilterAsInt(-1);
-		if (id <= 0)
-		{
-			throw new IllegalStateException("No ID provided in " + evalCtx);
-		}
-
 		throw new UnsupportedOperationException();
 	}
 
@@ -413,7 +410,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		final Integer idToFilter = evalCtx.getIdToFilterAsInt(-1);
 		if (idToFilter != null && idToFilter > 0)
 		{
-			sqlWhereClause.append("\n AND p.").append(I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID).append(sqlWhereClauseParams.placeholder(idToFilter));
+			sqlWhereClause.append("\n AND p.").append(I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID).append("=").append(sqlWhereClauseParams.placeholder(idToFilter));
 		}
 	}
 
