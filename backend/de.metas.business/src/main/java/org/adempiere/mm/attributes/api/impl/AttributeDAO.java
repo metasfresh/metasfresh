@@ -8,6 +8,7 @@ import com.google.common.collect.Maps;
 import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.Check;
@@ -265,11 +266,12 @@ public class AttributeDAO implements IAttributeDAO
 
 	private static Attribute toAttribute(final I_M_Attribute record)
 	{
-		final ITranslatableString displayName = InterfaceWrapperHelper.getModelTranslationMap(record)
+		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(record);
+		final ITranslatableString displayName = modelTranslationMap
 				.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, record.getName());
 
-		final ITranslatableString description = InterfaceWrapperHelper.getModelTranslationMap(record)
-				.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, record.getName());
+		final ITranslatableString description = modelTranslationMap
+				.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, record.getDescription());
 
 		return Attribute.builder()
 				.attributeId(AttributeId.ofRepoId(record.getM_Attribute_ID()))
