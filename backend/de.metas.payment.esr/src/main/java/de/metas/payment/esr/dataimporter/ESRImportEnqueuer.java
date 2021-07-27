@@ -28,7 +28,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
-import org.apache.commons.io.FileUtils;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.springframework.core.io.AbstractResource;
@@ -241,11 +240,11 @@ public class ESRImportEnqueuer
 				final InputStream inputStream = unzippedFile.getInputStream();
 				final byte[] unzippedData = ByteStreams.toByteArray(inputStream);
 
-				final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
-				checkUpdateDataType(esrImportFile, unzippedFile.getFilename());
+				final String hash = computeESRHashAndCheckForDuplicates(OrgId.ofRepoId(esrImport.getAD_Org_ID()), unzippedData);
 
-				final String hash = computeESRHashAndCheckForDuplicates(esrImportFile, unzippedData);
+				final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
 				esrImportFile.setHash(hash);
+				checkUpdateDataType(esrImportFile, unzippedFile.getFilename());
 
 				final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
 						esrImportFile,
@@ -265,7 +264,7 @@ public class ESRImportEnqueuer
 		catch (final Exception ex)
 		{
 			// provide more info about why the file could not be unzipped
-			throw new AdempiereException("Cannot unzip " + filename + ": " + ex.getMessage(), ex);
+			throw new AdempiereException(ex);
 		}
 	}
 
@@ -369,11 +368,8 @@ public class ESRImportEnqueuer
 		return destFile;
 	}
 
-	private String computeESRHashAndCheckForDuplicates(@NonNull final I_ESR_ImportFile esrImportFile, final byte[] fileContent)
+	private String computeESRHashAndCheckForDuplicates(@NonNull final OrgId orgId, final byte[] fileContent)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(esrImportFile);
-		final int orgRecordId = esrImportFile.getAD_Org_ID();
-
 		final String esrHash = esrImportBL.computeMD5Checksum(fileContent);
 
 		//
@@ -385,7 +381,7 @@ public class ESRImportEnqueuer
 		}
 		else
 		{
-			final Iterator<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveActiveESRImportFiles(OrgId.ofRepoId(orgRecordId));
+			final Iterator<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveActiveESRImportFiles(orgId);
 
 			// will turn true if another identical hash was seen in the list of esr imports
 			boolean seen = false;
