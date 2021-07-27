@@ -1566,3 +1566,333 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=650472
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,650472,0,540442,540790,587176,'F',TO_TIMESTAMP('2021-07-26 17:38:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Archive File',5,0,0,TO_TIMESTAMP('2021-07-26 17:38:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+-- 2021-07-26T16:03:44.469Z
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,575182,2295,0,10,540410,'FileName',TO_TIMESTAMP('2021-07-26 19:03:43','YYYY-MM-DD HH24:MI:SS'),100,'N','Name of the local file or URL','de.metas.payment.esr',0,1000,'Name of a file in the local directory space - or URL (file://.., http://.., ftp://..)','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'File Name',0,0,TO_TIMESTAMP('2021-07-26 19:03:43','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-07-26T16:03:44.505Z
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=575182 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-07-26T16:03:44.575Z
+-- URL zum Konzept
+/* DDL */  select update_Column_Translation_From_AD_Element(2295) 
+;
+
+-- 2021-07-26T16:05:55.061Z
+-- URL zum Konzept
+UPDATE AD_Column SET ColumnSQL='(select filename from ESR_ImportFile f where f.ESR_ImportFile_ID = Esr_ImportLine.Esr_ImportFile_ID)', IsUpdateable='N',Updated=TO_TIMESTAMP('2021-07-26 19:05:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=575182
+;
+
+-- 2021-07-26T16:07:13.918Z
+-- URL zum Konzept
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,575182,0,540046,540410,TO_TIMESTAMP('2021-07-26 19:07:13','YYYY-MM-DD HH24:MI:SS'),100,'L','Y',575148,575155,541753,TO_TIMESTAMP('2021-07-26 19:07:13','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:08:12.740Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,548225,650473,0,540443,TO_TIMESTAMP('2021-07-26 19:08:12','YYYY-MM-DD HH24:MI:SS'),100,20,'de.metas.payment.esr','Y','N','N','N','N','N','N','N','Reference No',TO_TIMESTAMP('2021-07-26 19:08:12','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:08:12.783Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=650473 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-07-26T16:08:12.819Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(541820) 
+;
+
+-- 2021-07-26T16:08:12.864Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=650473
+;
+
+-- 2021-07-26T16:08:12.897Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(650473)
+;
+
+-- 2021-07-26T16:08:13.397Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,552605,650474,0,540443,TO_TIMESTAMP('2021-07-26 19:08:12','YYYY-MM-DD HH24:MI:SS'),100,'Position auf einem Bankauszug zu dieser Bank',10,'de.metas.payment.esr','Die "Auszugs-Position" bezeichnet eine eindeutige Transaktion (Einzahlung, Auszahlung, Auslage/Gebühr) für den definierten Zeitraum bei dieser Bank.','Y','N','N','N','N','N','N','N','Auszugsposition',TO_TIMESTAMP('2021-07-26 19:08:12','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:08:13.435Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=650474 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-07-26T16:08:13.470Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1382) 
+;
+
+-- 2021-07-26T16:08:13.513Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=650474
+;
+
+-- 2021-07-26T16:08:13.545Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(650474)
+;
+
+-- 2021-07-26T16:08:14.030Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,552606,650475,0,540443,TO_TIMESTAMP('2021-07-26 19:08:13','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.payment.esr','Y','N','N','N','N','N','N','N','Bankauszugszeile Referenz',TO_TIMESTAMP('2021-07-26 19:08:13','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:08:14.072Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=650475 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-07-26T16:08:14.107Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(53355) 
+;
+
+-- 2021-07-26T16:08:14.147Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=650475
+;
+
+-- 2021-07-26T16:08:14.178Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(650475)
+;
+
+-- 2021-07-26T16:08:14.661Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,556867,650476,0,540443,TO_TIMESTAMP('2021-07-26 19:08:14','YYYY-MM-DD HH24:MI:SS'),100,'Referenznummer inkl. bankinterner Teilnehmernummer',30,'de.metas.payment.esr','Y','N','N','N','N','N','N','N','ESR Referenznummer (komplett)',TO_TIMESTAMP('2021-07-26 19:08:14','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:08:14.712Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=650476 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-07-26T16:08:14.746Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(543356) 
+;
+
+-- 2021-07-26T16:08:14.786Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=650476
+;
+
+-- 2021-07-26T16:08:14.819Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(650476)
+;
+
+-- 2021-07-26T16:08:15.348Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570114,650477,0,540443,TO_TIMESTAMP('2021-07-26 19:08:14','YYYY-MM-DD HH24:MI:SS'),100,'Bank Statement of account',10,'de.metas.payment.esr','The Bank Statement identifies a unique Bank Statement for a defined time period.  The statement defines all transactions that occurred','Y','N','N','N','N','N','N','N','Bankauszug',TO_TIMESTAMP('2021-07-26 19:08:14','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:08:15.382Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=650477 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-07-26T16:08:15.414Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1381) 
+;
+
+-- 2021-07-26T16:08:15.457Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=650477
+;
+
+-- 2021-07-26T16:08:15.489Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(650477)
+;
+
+-- 2021-07-26T16:08:15.988Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,573238,650478,0,540443,TO_TIMESTAMP('2021-07-26 19:08:15','YYYY-MM-DD HH24:MI:SS'),100,'',30,'de.metas.payment.esr','','Y','N','N','N','N','N','N','N','Art',TO_TIMESTAMP('2021-07-26 19:08:15','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:08:16.022Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=650478 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-07-26T16:08:16.060Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(600) 
+;
+
+-- 2021-07-26T16:08:16.136Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=650478
+;
+
+-- 2021-07-26T16:08:16.170Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(650478)
+;
+
+-- 2021-07-26T16:08:16.639Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575160,650479,0,540443,TO_TIMESTAMP('2021-07-26 19:08:16','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.payment.esr','Y','N','N','N','N','N','N','N','ESR Import File',TO_TIMESTAMP('2021-07-26 19:08:16','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:08:16.671Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=650479 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-07-26T16:08:16.706Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579509) 
+;
+
+-- 2021-07-26T16:08:16.738Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=650479
+;
+
+-- 2021-07-26T16:08:16.771Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(650479)
+;
+
+-- 2021-07-26T16:08:17.256Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575182,650480,0,540443,TO_TIMESTAMP('2021-07-26 19:08:16','YYYY-MM-DD HH24:MI:SS'),100,'Name of the local file or URL',1000,'de.metas.payment.esr','Name of a file in the local directory space - or URL (file://.., http://.., ftp://..)','Y','N','N','N','N','N','N','N','File Name',TO_TIMESTAMP('2021-07-26 19:08:16','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:08:17.290Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=650480 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-07-26T16:08:17.325Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2295) 
+;
+
+-- 2021-07-26T16:08:17.362Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=650480
+;
+
+-- 2021-07-26T16:08:17.393Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(650480)
+;
+
+-- 2021-07-26T16:12:23.054Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,650480,0,540443,540787,587177,'F',TO_TIMESTAMP('2021-07-26 19:12:22','YYYY-MM-DD HH24:MI:SS'),100,'Name of the local file or URL','Name of a file in the local directory space - or URL (file://.., http://.., ftp://..)','Y','N','N','Y','N','N','N',0,'File Name',135,0,0,TO_TIMESTAMP('2021-07-26 19:12:22','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-07-26T16:15:16.823Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2021-07-26 19:15:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=587177
+;
+
+-- 2021-07-26T16:15:16.958Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2021-07-26 19:15:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546269
+;
+
+-- 2021-07-26T16:15:17.104Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2021-07-26 19:15:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546271
+;
+
+-- 2021-07-26T16:15:17.239Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2021-07-26 19:15:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546257
+;
+
+-- 2021-07-26T16:15:17.370Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2021-07-26 19:15:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546258
+;
+
+-- 2021-07-26T16:15:17.505Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2021-07-26 19:15:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546259
+;
+
+-- 2021-07-26T16:15:17.639Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2021-07-26 19:15:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546260
+;
+
+-- 2021-07-26T16:15:17.780Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2021-07-26 19:15:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546262
+;
+
+-- 2021-07-26T16:15:17.912Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2021-07-26 19:15:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546275
+;
+
+-- 2021-07-26T16:15:18.049Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2021-07-26 19:15:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546276
+;
+
+-- 2021-07-26T16:15:18.189Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2021-07-26 19:15:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546332
+;
+
+-- 2021-07-27T14:01:04.567Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2021-07-27 17:01:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546329
+;
+
+-- 2021-07-27T14:01:04.796Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2021-07-27 17:01:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546331
+;
+
+-- 2021-07-27T14:01:04.927Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2021-07-27 17:01:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546330
+;
+
+-- 2021-07-27T14:01:05.063Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2021-07-27 17:01:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546322
+;
+
+-- 2021-07-27T14:01:05.218Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2021-07-27 17:01:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=587176
+;
+
+-- 2021-07-27T14:01:05.343Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2021-07-27 17:01:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546328
+;
+
+-- 2021-07-27T14:01:05.474Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2021-07-27 17:01:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546323
+;
+
+-- 2021-07-27T14:01:05.612Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2021-07-27 17:01:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546324
+;
+
+-- 2021-07-27T14:01:05.752Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2021-07-27 17:01:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546326
+;
+
