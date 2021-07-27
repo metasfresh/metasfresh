@@ -1,6 +1,5 @@
 package de.metas.payment.esr.dataimporter;
 
-import com.google.common.io.ByteStreams;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
@@ -31,7 +30,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.springframework.core.io.AbstractResource;
-import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
@@ -235,10 +233,9 @@ public class ESRImportEnqueuer
 					zipEntry = zipStream.getNextEntry();
 					continue;
 				}
-				final Resource unzippedFile = extractResource(zipStream, zipEntry);
+				final ZipFileResource unzippedFile = extractResource(zipStream, zipEntry);
 
-				final InputStream inputStream = unzippedFile.getInputStream();
-				final byte[] unzippedData = ByteStreams.toByteArray(inputStream);
+				final byte[] unzippedData = unzippedFile.getData();
 
 				final String hash = computeESRHashAndCheckForDuplicates(OrgId.ofRepoId(esrImport.getAD_Org_ID()), unzippedData);
 
@@ -297,9 +294,9 @@ public class ESRImportEnqueuer
 		}
 	}
 
-	public Resource extractResource(
+	public ZipFileResource extractResource(
 			@NonNull final ZipInputStream zipInputStream,
-			@NonNull ZipEntry zipEntry)
+			@NonNull final ZipEntry zipEntry)
 	{
 		try
 		{
@@ -350,22 +347,11 @@ public class ESRImportEnqueuer
 		{
 			return new ByteArrayInputStream(data);
 		}
-	}
 
-	public static File newFile(@NonNull final File destinationDir, @NonNull final ZipEntry zipEntry)
-			throws IOException
-	{
-		final File destFile = new File(destinationDir, zipEntry.getName());
-
-		final String destDirPath = destinationDir.getCanonicalPath();
-		final String destFilePath = destFile.getCanonicalPath();
-
-		if (!destFilePath.startsWith(destDirPath + File.separator))
+		public byte[] getData()
 		{
-			throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+			return data;
 		}
-
-		return destFile;
 	}
 
 	private String computeESRHashAndCheckForDuplicates(@NonNull final OrgId orgId, final byte[] fileContent)
