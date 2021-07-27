@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 class TableCellLabel extends PureComponent {
   render() {
     const { tableCellData, rowId } = this.props;
-    console.log(tableCellData);
     return (
       <React.Fragment>
         {tableCellData &&
