@@ -264,7 +264,8 @@ public class ESRImportEnqueuer
 		}
 		catch (final Exception ex)
 		{
-			throw new RuntimeException("Cannot unzip " + filename, ex);
+			// provide more info about why the file could not be unzipped
+			throw new AdempiereException("Cannot unzip " + filename + ": " + ex.getMessage(), ex);
 		}
 	}
 
