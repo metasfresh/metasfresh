@@ -44,16 +44,16 @@ Cypress.on('window:alert', (text) => {
 before(function () {
   cy.clearLocalStorageSnapshot();
 
-  cy.loginViaAPI().then(() => {
-    cy.log('logged in successfully');
-  }, { timeout: 20000 });
+  // cy.loginViaAPI().then(() => {
+  //   cy.log('logged in successfully');
+  // }, { timeout: 20000 });
 
-  // const autoLogin = function () {
-  //   return cy.loginViaForm();
-  // };
-  // autoLogin().then((msg) => {
-  //   cy.log(msg);
-  // });
+  const autoLogin = function () {
+    return cy.loginViaForm();
+  };
+  autoLogin().then((msg) => {
+    cy.log(msg);
+  });
 
   Cypress.Cookies.defaults({
     preserve: ['SESSION', 'isLogged'],
