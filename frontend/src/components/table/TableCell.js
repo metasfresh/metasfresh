@@ -323,6 +323,7 @@ TableCell.propTypes = {
   updateHeight: PropTypes.func, // adjusts the table container with a given height from a child component when child exceeds visible area
   hasComments: PropTypes.bool,
   handleFocusAction: PropTypes.func,
+  tableCellData: PropTypes.object,
   tableId: PropTypes.string.isRequired,
 };
 
