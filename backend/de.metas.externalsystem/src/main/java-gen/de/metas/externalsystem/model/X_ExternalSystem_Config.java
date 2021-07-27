@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_ExternalSystem_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -996785268L;
+	private static final long serialVersionUID = -1599257210L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config (final Properties ctx, final int ExternalSystem_Config_ID, @Nullable final String trxName)
@@ -86,6 +86,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Other = "Other";
 	/** Ebay = Ebay */
 	public static final String TYPE_Ebay = "Ebay";
+	/** WooCommerce = WOO */
+	public static final String TYPE_WooCommerce = "WOO";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

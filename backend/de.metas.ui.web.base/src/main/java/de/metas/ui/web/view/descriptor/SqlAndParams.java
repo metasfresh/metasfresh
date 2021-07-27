@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -144,7 +145,7 @@ public class SqlAndParams
 	private SqlAndParams(@NonNull final CharSequence sql, @Nullable final Object[] sqlParamsArray)
 	{
 		this.sql = sql.toString();
-		this.sqlParams = sqlParamsArray != null && sqlParamsArray.length > 0 ? Arrays.asList(sqlParamsArray) : ImmutableList.of();
+		this.sqlParams = sqlParamsArray != null && sqlParamsArray.length > 0 ? Collections.unmodifiableList(Arrays.asList(sqlParamsArray)) : ImmutableList.of();
 	}
 
 	public Builder toBuilder()
@@ -191,6 +192,7 @@ public class SqlAndParams
 		/**
 		 * @deprecated I think you wanted to call {@link #build()}
 		 */
+		@Override
 		@Deprecated
 		public String toString()
 		{

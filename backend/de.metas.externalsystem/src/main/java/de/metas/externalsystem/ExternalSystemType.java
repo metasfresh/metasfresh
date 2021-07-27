@@ -6,7 +6,9 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.process.InvokeAlbertaAction;
 import de.metas.externalsystem.process.InvokeEbayAction;
+import de.metas.externalsystem.process.InvokeOtherAction;
 import de.metas.externalsystem.process.InvokeShopware6Action;
+import de.metas.externalsystem.process.InvokeWooCommerceAction;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
@@ -43,6 +45,8 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	Shopware6(X_ExternalSystem_Config.TYPE_Shopware6, "Shopware6", InvokeShopware6Action.class.getName()),
 	Other(X_ExternalSystem_Config.TYPE_Other, "Other", null),
 	Ebay(X_ExternalSystem_Config.TYPE_Ebay, "Ebay", InvokeEbayAction.class.getName())
+	Other(X_ExternalSystem_Config.TYPE_Other, "Other", InvokeOtherAction.class.getName()),
+	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName())
 	;
 
 	@Getter

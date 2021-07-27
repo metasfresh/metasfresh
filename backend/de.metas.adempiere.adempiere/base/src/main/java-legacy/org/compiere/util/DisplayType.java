@@ -1,21 +1,13 @@
-/******************************************************************************
- * Product: Compiere ERP & CRM Smart Business Solution                        *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
 package org.compiere.util;
 
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -25,16 +17,6 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.slf4j.Logger;
-
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.StringUtils;
-
-import javax.annotation.Nullable;
 
 /**
  *	System Display Types.
@@ -114,23 +96,6 @@ public final class DisplayType
 	/** Display Type 42	PrinterName	*/
 	public static final int PrinterName  = 42;
 	//	Candidates: 
-	
-	/**
-	 *	- New Display Type
-		INSERT INTO AD_REFERENCE
-		(AD_REFERENCE_ID, AD_CLIENT_ID,AD_ORG_ID,ISACTIVE,CREATED,CREATEDBY,UPDATED,UPDATEDBY,
-		NAME,DESCRIPTION,HELP, VALIDATIONTYPE,VFORMAT,ENTITYTYPE)
-		VALUES (35, 0,0,'Y',now(),0,now(),0,
-		'PAttribute','Product Attribute',null,'D',null,'D');
-	 *
-	 *  - org.compiere.model.MModel (??)
-	 *	- org.compiere.grid.ed.VEditor/Dialog
-	 *	- org.compiere.grid.ed.VEditorFactory
-	 *	- RColumn, WWindow
-	 *  add/check 0_cleanupAD.sql
-	 */
-
-	//  See DBA_DisplayType.sql ----------------------------------------------
 
 	/** Maximum number of digits    */
 	private static final int    MAX_DIGITS = 28;        //  Oracle Standard Limitation 38 digits
@@ -142,7 +107,7 @@ public final class DisplayType
 	private static final int    AMOUNT_FRACTION = 2;
 
 	/**	Logger	*/
-	private static Logger s_log = LogManager.getLogger(DisplayType.class);
+	private static final Logger s_log = LogManager.getLogger(DisplayType.class);
 	
 	/**
 	 *	Returns true if (numeric) ID (Table, Search, Account, ..).
@@ -150,7 +115,7 @@ public final class DisplayType
 	 *  @param displayType Display Type
 	 *  @return true if ID
 	 */
-	public static boolean isID (int displayType)
+	public static boolean isID (final int displayType)
 	{
 		if (displayType == ID || displayType == Table || displayType == TableDir
 			|| displayType == Search || displayType == Location || displayType == Locator
@@ -166,7 +131,7 @@ public final class DisplayType
 	 *  @param displayType Display Type
 	 *  @return true if numeric
 	 */
-	public static boolean isNumeric(int displayType)
+	public static boolean isNumeric(final int displayType)
 	{
 		if (displayType == Amount || displayType == Number || displayType == CostPrice 
 			|| displayType == Integer || displayType == Quantity)
@@ -180,7 +145,7 @@ public final class DisplayType
 	 *	@param displayType display type
 	 *	@return scale (decimal precision)
 	 */
-	public static int getDefaultPrecision(int displayType)
+	public static int getDefaultPrecision(final int displayType)
 	{
 		if (displayType == Amount)
 			return 2;
@@ -198,7 +163,7 @@ public final class DisplayType
 	 *  @param displayType Display Type
 	 *  @return true if text
 	 */
-	public static boolean isText(int displayType)
+	public static boolean isText(final int displayType)
 	{
 		if (displayType == String || displayType == Text 
 			|| displayType == TextLong || displayType == Memo
@@ -208,7 +173,7 @@ public final class DisplayType
 		return false;
 	}	//	isText
 	
-	public static final boolean isPassword(final String columnName, final int displayType)
+	public static boolean isPassword(final String columnName, final int displayType)
 	{
 		// TODO: introduce DisplayType.Password so we would not have to guess ;)
 		
@@ -226,14 +191,14 @@ public final class DisplayType
 	 * @param displayType Display Type
 	 * @return true if date, time or date+time
 	 */
-	public static boolean isDate (int displayType)
+	public static boolean isDate (final int displayType)
 	{
 		if (displayType == Date || displayType == DateTime || displayType == Time)
 			return true;
 		return false;
 	}	//	isDate
 
-	public static boolean isYesNo (int displayType)
+	public static boolean isYesNo (final int displayType)
 	{
 		if (displayType == YesNo)
 			return true;
@@ -246,7 +211,7 @@ public final class DisplayType
 	 *  @param displayType Display Type
 	 *  @return true if Lookup
 	 */
-	public static boolean isLookup(int displayType)
+	public static boolean isLookup(final int displayType)
 	{
 		if (displayType == List || displayType == Table
 			|| displayType == TableDir || displayType == Search)
@@ -262,7 +227,7 @@ public final class DisplayType
 	 * @param displayType Display Type
 	 * @return true if is any Lookup
 	 */
-	public static boolean isAnyLookup(int displayType)
+	public static boolean isAnyLookup(final int displayType)
 	{
 		if (isLookup(displayType))
 		{
@@ -280,7 +245,7 @@ public final class DisplayType
 	 *	@param displayType Display Type
 	 *	@return true if LOB
 	 */
-	public static boolean isLOB (int displayType)
+	public static boolean isLOB (final int displayType)
 	{
 		// metas: 02617: begin: In PostgreSQL TextLong shall not be considered a LOB
 		if (displayType == TextLong && DB.isPostgreSQL())
@@ -302,7 +267,7 @@ public final class DisplayType
 	 *  @param pattern Java Number Format pattern e.g. "#,##0.00"
 	 *  @return number format
 	 */
-	public static DecimalFormat getNumberFormat(int displayType, Language language, String pattern)
+	public static DecimalFormat getNumberFormat(final int displayType, final Language language, final String pattern)
 	{
 		Language myLanguage = language;
 		if (myLanguage == null)
@@ -310,7 +275,7 @@ public final class DisplayType
 		// metas: Fallback to base language
 		if (myLanguage == null)
 			myLanguage = Language.getBaseLanguage();
-		Locale locale = myLanguage.getLocale();
+		final Locale locale = myLanguage.getLocale();
 		DecimalFormat format = null;
 		if (locale != null)
 			format = (DecimalFormat)NumberFormat.getNumberInstance(locale);
@@ -323,7 +288,7 @@ public final class DisplayType
 			format.applyPattern(pattern);
 			return format;
 			}
-			catch (IllegalArgumentException e) {
+			catch (final IllegalArgumentException e) {
 				s_log.warn("Invalid number format: " + pattern);
 			}
 		}
@@ -374,7 +339,7 @@ public final class DisplayType
 	 *  @param language Language
 	 *  @return number format
 	 */
-	public static DecimalFormat getNumberFormat(int displayType, Language language)
+	public static DecimalFormat getNumberFormat(final int displayType, final Language language)
 	{
 		return getNumberFormat(displayType, language, null);
 	}
@@ -384,7 +349,7 @@ public final class DisplayType
 	 *  @param displayType Display Type
 	 *  @return number format
 	 */
-	public static DecimalFormat getNumberFormat(int displayType)
+	public static DecimalFormat getNumberFormat(final int displayType)
 	{
 		return getNumberFormat (displayType, null);
 	}   //  getNumberFormat
@@ -404,7 +369,7 @@ public final class DisplayType
 	 *  @param language Language
 	 *  @return date format
 	 */
-	public static SimpleDateFormat getDateFormat (Language language)
+	public static SimpleDateFormat getDateFormat (final Language language)
 	{
 		return getDateFormat (DisplayType.Date, language);
 	}	//	getDateFormat
@@ -414,7 +379,7 @@ public final class DisplayType
 	 *  @param displayType Display Type
 	 *  @return date format
 	 */
-	public static SimpleDateFormat getDateFormat (int displayType)
+	public static SimpleDateFormat getDateFormat (final int displayType)
 	{
 		return getDateFormat (displayType, null);
 	}   //  getDateFormat
@@ -425,7 +390,7 @@ public final class DisplayType
 	 *  @param language Language
 	 *  @return date format
 	 */
-	public static SimpleDateFormat getDateFormat (int displayType, Language language)
+	public static SimpleDateFormat getDateFormat (final int displayType, final Language language)
 	{
 		return getDateFormat(displayType, language, null);
 	}
@@ -436,7 +401,7 @@ public final class DisplayType
 	 *  @param pattern Java Simple Date Format pattern e.g. "dd/MM/yy"
 	 *  @return date format
 	 */
-	public static SimpleDateFormat getDateFormat (int displayType, Language language, String pattern)
+	public static SimpleDateFormat getDateFormat (final int displayType, final Language language, final String pattern)
 	{
 		Language myLanguage = language;
 		if (myLanguage == null)
@@ -450,12 +415,12 @@ public final class DisplayType
 		//
 		if ( pattern != null && pattern.length() > 0)
 		{
-			SimpleDateFormat format = (SimpleDateFormat)DateFormat.getInstance();
+			final SimpleDateFormat format = (SimpleDateFormat)DateFormat.getInstance();
 			try {
 			format.applyPattern(pattern);
 			return format;
 			}
-			catch (IllegalArgumentException e) {
+			catch (final IllegalArgumentException e) {
 				s_log.warn("Invalid date pattern: " + pattern);
 			}
 		}
@@ -493,7 +458,7 @@ public final class DisplayType
 	 *  @param yesNoAsBoolean - yes or no as boolean
 	 *  @return class Integer - BigDecimal - Timestamp - String - Boolean
 	 */
-	public static Class<?> getClass (int displayType, boolean yesNoAsBoolean)
+	public static Class<?> getClass (final int displayType, final boolean yesNoAsBoolean)
 	{
 		if (isText(displayType) || displayType == List)
 			return String.class;
@@ -518,7 +483,7 @@ public final class DisplayType
 	 *	@param displayType display Type
 	 *	@return display type description
 	 */
-	public static String getDescription (int displayType)
+	public static String getDescription (final int displayType)
 	{
 		if (displayType == String)
 			return "String";
@@ -601,12 +566,12 @@ public final class DisplayType
 		mapTableNamesByDisplayType.put(Assignment, "S_ResourceAssignment");
 		mapTableNamesByDisplayType.put(PAttribute, "M_AttributeSetInstance");
 	}
-	public static String getTableName(int displayType)
+	public static String getTableName(final int displayType)
 	{
 		return mapTableNamesByDisplayType.get(displayType);
 	}
 	
-	public static String getKeyColumnName(int displayType)
+	public static String getKeyColumnName(final int displayType)
 	{
 		final String tableName = getTableName(displayType);
 		if(tableName == null)
@@ -628,7 +593,7 @@ public final class DisplayType
 	 * @return true if Lookup
 	 */
 	// metas 01999
-	public static boolean isLookup(int displayType, boolean includeHardcodedLookups)
+	public static boolean isLookup(final int displayType, final boolean includeHardcodedLookups)
 	{
 		if (isLookup(displayType))
 			return true;
@@ -688,12 +653,12 @@ public final class DisplayType
 					try
 					// defaults -1 => null
 					{
-						int ii = java.lang.Integer.parseInt(value);
+						final int ii = java.lang.Integer.parseInt(value);
 						if (ii < 0)
 							return null;
 						return ii;
 					}
-					catch (Exception e)
+					catch (final Exception e)
 					{
 						s_log.warn("Cannot parse: " + value + " - ColumnName=" + columnName + ", DisplayType=" + displayType + ". Returning ZERO.", e);
 					}
@@ -721,7 +686,7 @@ public final class DisplayType
 				{
 					date = DisplayType.getTimestampFormat_Default().parse(value);
 				}
-				catch (java.text.ParseException e)
+				catch (final java.text.ParseException e)
 				{
 					date = DisplayType.getDateFormat_JDBC().parse(value);
 				}
@@ -737,7 +702,7 @@ public final class DisplayType
 			// Default
 			return value;
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			s_log.error("Error while converting value '"+value+"', ColumnName="+columnName+", DisplayType="+displayType, e);
 		}
@@ -756,7 +721,7 @@ public final class DisplayType
 	/**
 	 * Delegates to {@link StringUtils#toBoolean(Object, Boolean)}.
 	 */
-	public static final boolean toBoolean(final Object value)
+	public static boolean toBoolean(@Nullable final Object value)
 	{
 		return StringUtils.toBoolean(value);
 	}
@@ -764,7 +729,8 @@ public final class DisplayType
 	/**
 	 * Delegates to {@link StringUtils#ofBoolean(Boolean)}.
 	 */
-	public static final String toBooleanString(final Boolean value)
+	@Nullable
+	public static String toBooleanString(@Nullable final Boolean value)
 	{
 		return StringUtils.ofBoolean(value);
 	}

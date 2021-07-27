@@ -3,9 +3,12 @@ package de.metas.ui.web.window.datatypes;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -13,8 +16,10 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -217,13 +222,36 @@ public final class LookupValuesList implements Iterable<LookupValue>
 	/**
 	 * @return first lookup value found for <code>id</code> or null
 	 */
+	@Nullable
 	public LookupValue getById(final Object id)
 	{
 		final ImmutableList<LookupValue> values = valuesById.get(normalizeId(id));
 		return values.isEmpty() ? null : values.get(0);
 	}
 
-	private static Object normalizeId(final Object id)
+	public LookupValuesList getByIdsInOrder(@NonNull final Collection<?> ids)
+	{
+		final ImmutableList<Object> idsNormalized = normalizeIds(ids);
+		if (idsNormalized.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		final ArrayList<LookupValue> lookupValuesFound = new ArrayList<>();
+		for (final Object idNormalized : idsNormalized)
+		{
+			final ImmutableList<LookupValue> values = valuesById.get(idNormalized);
+			// NOTE: in future we can think about to have some callback to be called
+			// in case no values were found
+
+			lookupValuesFound.addAll(values);
+		}
+
+		return LookupValuesList.fromCollection(lookupValuesFound);
+	}
+
+	@Nullable
+	private static Object normalizeId(@Nullable final Object id)
 	{
 		if (id == null)
 		{
@@ -233,10 +261,28 @@ public final class LookupValuesList implements Iterable<LookupValue>
 		{
 			return ((RepoIdAware)id).getRepoId();
 		}
+		if (id instanceof ReferenceListAwareEnum)
+		{
+			return ((ReferenceListAwareEnum)id).getCode();
+		}
 		else
 		{
 			return id;
 		}
+	}
+
+	private ImmutableList<Object> normalizeIds(final @NonNull Collection<?> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return ids.stream()
+				.map(LookupValuesList::normalizeId)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	public <T> T transform(final Function<LookupValuesList, T> transformation)
@@ -398,8 +444,14 @@ public final class LookupValuesList implements Iterable<LookupValue>
 				.totalRows(OptionalInt.of(size))
 				.firstRow(pageFirstIndex)
 				.values(LookupValuesList.fromCollection(pageValues)
-								.ordered(isOrdered()))
+						.ordered(isOrdered()))
 				.hasMoreResults(OptionalBoolean.ofBoolean(hasMoreValues))
 				.build();
+	}
+
+	public ImmutableMap<Object, LookupValue> toMap()
+	{
+		// NOTE: might throw exception in case there are multiple lookup values with same ID
+		return Maps.uniqueIndex(valuesById.values(), LookupValue::getId);
 	}
 }

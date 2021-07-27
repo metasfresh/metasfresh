@@ -42,7 +42,6 @@ import org.compiere.model.I_AD_Rule;
 import org.compiere.model.X_AD_Rule;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.Ini;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
@@ -216,7 +215,7 @@ public final class ProcessExecutor
 					final DocumentReportService documentReportService = SpringContextHolder.instance.getBean(DocumentReportService.class);
 					final DocumentReportResult reportResult = documentReportService.createReport(toDocumentReportRequest(pi));
 					pi.getResult().setSummary("Report");
-					pi.getResult().setReportData(reportResult.getData());
+					pi.getResult().setReportData(reportResult.getReportResultData());
 				}
 			}
 

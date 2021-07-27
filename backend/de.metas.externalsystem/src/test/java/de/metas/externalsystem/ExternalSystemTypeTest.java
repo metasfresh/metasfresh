@@ -36,6 +36,7 @@ class ExternalSystemTypeTest
 		assertThat(ExternalSystemType.ofCodeOrNameOrNull("A")).isEqualTo(ExternalSystemType.Alberta);
 		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Alberta")).isEqualTo(ExternalSystemType.Alberta);
 		assertThat(ExternalSystemType.ofCodeOrNameOrNull("Ebay")).isEqualTo(ExternalSystemType.Ebay);
+		assertThat(ExternalSystemType.ofCodeOrNameOrNull("WOO")).isEqualTo(ExternalSystemType.WOO);
 		assertThat(ExternalSystemType.ofCodeOrNameOrNull("blah")).isNull();
 	}
 }

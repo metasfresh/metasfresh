@@ -403,6 +403,8 @@ public class X_ESR_ImportLine extends org.compiere.model.PO implements I_ESR_Imp
 	public static final String ESR_PAYMENT_ACTION_Reverse_Booking = "R";
 	/** Discount = T */
 	public static final String ESR_PAYMENT_ACTION_Discount = "T";
+	/** Duplicate_Payment = P */
+	public static final String ESR_PAYMENT_ACTION_Duplicate_Payment = "P";
 	@Override
 	public void setESR_Payment_Action (final java.lang.String ESR_Payment_Action)
 	{

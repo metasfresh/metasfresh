@@ -31,7 +31,6 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyConversionResult.CurrencyConversionResultBuilder;
-import de.metas.currency.CurrencyConversionType;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
@@ -81,7 +80,7 @@ public class CurrencyBL implements ICurrencyBL
 			@NonNull final OrgId adOrgId)
 	{
 		final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-		final AcctSchema as = acctSchemaDAO.getByCliendAndOrg(adClientId, adOrgId);
+		final AcctSchema as = acctSchemaDAO.getByClientAndOrg(adClientId, adOrgId);
 		Check.assumeNotNull(as, "Missing C_AcctSchema for AD_Client_ID={} and AD_Org_ID={}", adClientId, adOrgId);
 
 		return as.getCurrencyId();

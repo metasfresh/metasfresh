@@ -39,6 +39,7 @@ public class ExternalSystems
 		registerExternalSystem(Shopware6ExternalSystem.SHOPWARE6);
 		registerExternalSystem(OtherExternalSystem.OTHER);
 		registerExternalSystem(EbayExternalSystem.EBAY);
+		registerExternalSystem(WoocommerceExternalSystem.WOOCOMMERCE);
 	}
 
 	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();

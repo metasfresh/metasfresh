@@ -22,11 +22,15 @@
 
 package de.metas.servicerepair.project.service.commands.createQuotationFromProjectCommand;
 
+import de.metas.currency.CurrencyPrecision;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderLineDetailCreateRequest;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.quantity.Quantity;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,6 +53,34 @@ class ProjectQuotationPriceCalculator
 	public CurrencyId getCurrencyId()
 	{
 		return pricingInfo.getCurrencyId();
+	}
+
+	public OrderLineDetailCreateRequest computeOrderLineDetailCreateRequest(final ServiceRepairProjectCostCollector costCollector)
+	{
+		final Quantity qty = costCollector.getQtyReservedOrConsumed();
+
+		//
+		// Price & Amount precision
+		final Money price;
+		final CurrencyPrecision amountPrecision;
+		if (costCollector.getType().isZeroPrice())
+		{
+			price = Money.zero(getCurrencyId());
+			amountPrecision = CurrencyPrecision.TWO;
+		}
+		else
+		{
+			final IPricingResult pricingResult = calculatePrice(costCollector);
+			price = pricingResult.getPriceStdAsMoney();
+			amountPrecision = pricingResult.getPrecision();
+		}
+
+		return OrderLineDetailCreateRequest.builder()
+				.productId(costCollector.getProductId())
+				.qty(qty)
+				.price(price)
+				.amount(price.multiply(qty.toBigDecimal()).round(amountPrecision))
+				.build();
 	}
 
 	public IPricingResult calculatePrice(@NonNull final ServiceRepairProjectCostCollector costCollector)

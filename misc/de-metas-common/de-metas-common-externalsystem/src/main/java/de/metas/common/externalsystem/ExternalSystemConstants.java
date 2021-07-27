@@ -54,6 +54,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_ALBERTA_ID = "Alberta_Id";
 	public static final String PARAM_ALBERTA_ROLE = "Alberta_Role";
 
+	public static final String PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY = "CamelHttpResourceAuthKey";
+
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
 	public static final String PARAM_APP_ID = "AppId";
