@@ -1,44 +1,7 @@
 package de.metas.payment.esr.api;
 
-import java.util.Collection;
-
-/*
- * #%L
- * de.metas.payment.esr
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-import de.metas.payment.esr.model.I_ESR_ImportFile;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
@@ -46,9 +9,20 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.esr.ESRImportId;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IESRImportDAO extends ISingletonService
 {
@@ -92,11 +66,11 @@ public interface IESRImportDAO extends ISingletonService
 	 */
 	Iterator<I_ESR_Import> retrieveESRImports(Properties ctx, int orgID);
 
-	Iterator<I_ESR_ImportFile> retrieveActiveESRImportFiles(Properties ctx, int orgID);
-
 	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineIds(Collection<BankStatementLineId> bankStatementLineIds);
 
 	List<I_ESR_ImportLine> retrieveAllLinesByBankStatementLineRefId(BankStatementAndLineAndRefId bankStatementLineRefId);
+
+	Iterator<I_ESR_ImportFile> retrieveActiveESRImportFiles(@NonNull OrgId orgId);
 
 	I_ESR_Import retrieveESRImportForPayment(final I_C_Payment payment);
 

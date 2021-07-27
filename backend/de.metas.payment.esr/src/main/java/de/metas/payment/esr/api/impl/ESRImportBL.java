@@ -484,7 +484,10 @@ public class ESRImportBL implements IESRImportBL
 		{
 			final int numberOfLinesFromFile = processLinesFromFile(file);
 
-			esrImport.setDescription(esrImport.getDescription() + file.getDescription());
+			if (file.getDescription() != null)
+			{
+				esrImport.setDescription(esrImport.getDescription() + file.getDescription());
+			}
 			esrImportDAO.saveOutOfTrx(esrImport); // out of transaction: we want to not be rollback
 
 			totalNumberOfLines = totalNumberOfLines + numberOfLinesFromFile;
@@ -1221,7 +1224,6 @@ public class ESRImportBL implements IESRImportBL
 			Can't use the DAO from above because of mocked tests
 		 */
 		final IAllocationDAO allocationDAOLocal = Services.get(IAllocationDAO.class);
-
 
 		// We start by collecting the C_Payment_IDs from our lines
 		final Set<Integer> linesOwnPaymentIDs = new HashSet<>();

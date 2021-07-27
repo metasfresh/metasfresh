@@ -308,9 +308,9 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public Iterator<I_ESR_ImportFile> retrieveActiveESRImportFiles(final Properties ctx, final int orgId)
+	public Iterator<I_ESR_ImportFile> retrieveActiveESRImportFiles(final @NonNull OrgId orgId)
 	{
-		return queryBL.createQueryBuilder(I_ESR_ImportFile.class, ctx, ITrx.TRXNAME_None)
+		return queryBL.createQueryBuilderOutOfTrx(I_ESR_ImportFile.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ESR_ImportFile.COLUMNNAME_AD_Org_ID, orgId)
 				.create()

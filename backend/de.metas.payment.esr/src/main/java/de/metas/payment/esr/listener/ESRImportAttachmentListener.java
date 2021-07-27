@@ -57,9 +57,9 @@ public class ESRImportAttachmentListener implements AttachmentListener
 	{
 		final I_ESR_Import esrImport = InterfaceWrapperHelper.load(tableRecordReference.getRecord_ID(), I_ESR_Import.class);
 
-		final boolean isAttachment = attachmentEntry.getFilename().endsWith(".zip");
+		final boolean isZipAttachment = attachmentEntry.getFilename().endsWith(".zip");
 
-		esrImport.setIsArchiveFile(isAttachment);
+		esrImport.setIsArchiveFile(isZipAttachment);
 		final RunESRImportRequest runESRImportRequest = RunESRImportRequest.builder()
 				.esrImport(esrImport)
 				.attachmentEntryId(attachmentEntry.getId())

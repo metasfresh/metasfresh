@@ -1,5 +1,6 @@
 package de.metas.payment.esr.dataimporter;
 
+import com.google.common.io.ByteStreams;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
@@ -9,6 +10,7 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.organization.OrgId;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
@@ -17,9 +19,11 @@ import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.processor.impl.LoadESRImportFileWorkpackageProcessor;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.FileUtil;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -27,13 +31,15 @@ import org.adempiere.service.ISysConfigBL;
 import org.apache.commons.io.FileUtils;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
+import org.springframework.core.io.AbstractResource;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
@@ -222,30 +228,33 @@ public class ESRImportEnqueuer
 
 		try
 		{
-			final File unzipDir = Files.createTempDirectory("ZipFile" + "-")
-					.toFile();
-			unzipDir.deleteOnExit();
-			final byte[] buffer = new byte[1024];
-
 			ZipEntry zipEntry = zipStream.getNextEntry();
 			while (zipEntry != null)
 			{
-				final File unzippedFile = getUnzippedFile(zipStream, unzipDir, buffer, zipEntry);
+				if (zipEntry.isDirectory())
+				{
+					zipEntry = zipStream.getNextEntry();
+					continue;
+				}
+				final Resource unzippedFile = extractResource(zipStream, zipEntry);
 
-				final byte[] unzippedData = FileUtils.readFileToByteArray(unzippedFile);
+				final InputStream inputStream = unzippedFile.getInputStream();
+				final byte[] unzippedData = ByteStreams.toByteArray(inputStream);
 
 				final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
-				checkUpdateDataType(esrImportFile, unzippedFile.getName());
-				computeESRHashAndCheckForDuplicates(esrImportFile, unzippedData);
+				checkUpdateDataType(esrImportFile, unzippedFile.getFilename());
+
+				final String hash = computeESRHashAndCheckForDuplicates(esrImportFile, unzippedData);
+				esrImportFile.setHash(hash);
 
 				final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
 						esrImportFile,
-						unzippedFile.getName(),
+						unzippedFile.getFilename(),
 						unzippedData);
 				final AttachmentEntryId attachmentEntryId = attachmentEntry.getId();
 
 				esrImportFile.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());
-				esrImportFile.setFileName(unzippedFile.getName());
+				esrImportFile.setFileName(unzippedFile.getFilename());
 				InterfaceWrapperHelper.save(esrImportFile);
 
 				zipEntry = zipStream.getNextEntry();
@@ -288,41 +297,59 @@ public class ESRImportEnqueuer
 		}
 	}
 
-	@NonNull
-	private File getUnzippedFile(final ZipInputStream zipStream,
-			final File unzipDir,
-			final byte[] buffer,
-			final ZipEntry zipEntry) throws IOException
+	public Resource extractResource(
+			@NonNull final ZipInputStream zipInputStream,
+			@NonNull ZipEntry zipEntry)
 	{
-		final File file = newFile(unzipDir, zipEntry);
-
-		if (zipEntry.isDirectory())
+		try
 		{
-			if (!file.isDirectory() && !file.mkdirs())
-			{
-				throw new IOException("Failed to create directory " + file);
-			}
+			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			FileUtil.copy(zipInputStream, baos);
+
+			return ZipFileResource.builder()
+					.filename(new File(zipEntry.getName()).getName())
+					.data(baos.toByteArray())
+					.build();
+
 		}
-		else
+		catch (final IOException ex)
 		{
-
-			final File parent = file.getParentFile();
-			if (!parent.isDirectory() && !parent.mkdirs())
-			{
-				throw new IOException("Failed to create directory " + parent);
-			}
-
-			// write file content
-			final FileOutputStream fos = new FileOutputStream(file);
-			int len;
-			while ((len = zipStream.read(buffer)) > 0)
-			{
-				fos.write(buffer, 0, len);
-			}
-			fos.close();
+			throw AdempiereException.wrapIfNeeded(ex);
 		}
 
-		return file;
+	}
+
+	private static class ZipFileResource extends AbstractResource
+	{
+		private final byte[] data;
+		private final String filename;
+
+		@Builder
+		private ZipFileResource(
+				@NonNull final byte[] data,
+				@NonNull final String filename)
+		{
+			this.data = data;
+			this.filename = filename;
+		}
+
+		@Override
+		public String getFilename()
+		{
+			return filename;
+		}
+
+		@Override
+		public String getDescription()
+		{
+			return null;
+		}
+
+		@Override
+		public InputStream getInputStream()
+		{
+			return new ByteArrayInputStream(data);
+		}
 	}
 
 	public static File newFile(@NonNull final File destinationDir, @NonNull final ZipEntry zipEntry)
@@ -357,7 +384,7 @@ public class ESRImportEnqueuer
 		}
 		else
 		{
-			final Iterator<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveActiveESRImportFiles(ctx, orgRecordId);
+			final Iterator<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveActiveESRImportFiles(OrgId.ofRepoId(orgRecordId));
 
 			// will turn true if another identical hash was seen in the list of esr imports
 			boolean seen = false;
