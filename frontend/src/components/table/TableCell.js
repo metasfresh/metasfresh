@@ -8,7 +8,7 @@ import {
   getTdTitle,
   checkIfDateField,
 } from '../../utils/tableHelpers';
-
+import TableCellWidget from './TableCellWidget';
 import WidgetWrapper from '../../containers/WidgetWrapper';
 import WidgetTooltip from '../widget/WidgetTooltip';
 
@@ -175,12 +175,13 @@ class TableCell extends PureComponent {
       tooltipWidget,
       tdValue,
       description,
+      tableCellData,
       colIndex,
       updateRow,
     } = this.props;
     const docId = `${this.props.docId}`;
     const { tooltipToggled } = this.state;
-
+    const { widgetType } = item;
     const tdTitle = getTdTitle({ item, description });
     const isOpenDatePicker = isEdited && item.widgetType === 'Date';
     const isDateField = checkIfDateField({ item });
@@ -259,7 +260,9 @@ class TableCell extends PureComponent {
               style={style}
               title={tdTitle}
             >
-              {tdValue}
+              <TableCellWidget
+                {...{ tdValue, widgetType, tableCellData, rowId }}
+              />
             </div>
             {tooltipWidget && !isEdited && (
               <WidgetTooltip
