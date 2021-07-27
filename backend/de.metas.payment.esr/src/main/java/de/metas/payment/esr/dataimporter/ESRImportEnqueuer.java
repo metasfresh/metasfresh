@@ -202,10 +202,10 @@ public class ESRImportEnqueuer
 			final byte[] data,
 			@NonNull final String filename)
 	{
+		final String hash = computeESRHashAndCheckForDuplicates(OrgId.ofRepoId(esrImport.getAD_Org_ID()), data);
+
 		final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
 		checkUpdateDataType(esrImportFile, filename);
-
-		final String hash = computeESRHashAndCheckForDuplicates(esrImportFile, data);
 		esrImportFile.setHash(hash);
 
 		final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
