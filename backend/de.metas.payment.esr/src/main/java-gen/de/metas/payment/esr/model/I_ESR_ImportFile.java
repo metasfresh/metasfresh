@@ -4,23 +4,23 @@ import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for ESR_Import
+/** Generated Interface for ESR_ImportFile
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ESR_Import 
+public interface I_ESR_ImportFile 
 {
 
-	String Table_Name = "ESR_Import";
+	String Table_Name = "ESR_ImportFile";
 
-//	/** AD_Table_ID=540409 */
+//	/** AD_Table_ID=541753 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
 	 * Set Attachment.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -29,13 +29,17 @@ public interface I_ESR_Import
 	/**
 	 * Get Attachment.
 	 *
-	 * <br>Type: Integer
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getAD_AttachmentEntry_ID();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_AD_AttachmentEntry_ID = new ModelColumn<>(I_ESR_Import.class, "AD_AttachmentEntry_ID", null);
+	@Nullable org.compiere.model.I_AD_AttachmentEntry getAD_AttachmentEntry();
+
+	void setAD_AttachmentEntry(@Nullable org.compiere.model.I_AD_AttachmentEntry AD_AttachmentEntry);
+
+	ModelColumn<I_ESR_ImportFile, org.compiere.model.I_AD_AttachmentEntry> COLUMN_AD_AttachmentEntry_ID = new ModelColumn<>(I_ESR_ImportFile.class, "AD_AttachmentEntry_ID", org.compiere.model.I_AD_AttachmentEntry.class);
 	String COLUMNNAME_AD_AttachmentEntry_ID = "AD_AttachmentEntry_ID";
 
 	/**
@@ -76,8 +80,8 @@ public interface I_ESR_Import
 	 * Set Partner Bank Account.
 	 * Bank Account of the Business Partner
 	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
@@ -86,8 +90,8 @@ public interface I_ESR_Import
 	 * Get Partner Bank Account.
 	 * Bank Account of the Business Partner
 	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_BP_BankAccount_ID();
@@ -104,7 +108,7 @@ public interface I_ESR_Import
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_Created = new ModelColumn<>(I_ESR_Import.class, "Created", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_Created = new ModelColumn<>(I_ESR_ImportFile.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -139,34 +143,13 @@ public interface I_ESR_Import
 	 */
 	@Nullable java.lang.String getDataType();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_DataType = new ModelColumn<>(I_ESR_Import.class, "DataType", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_DataType = new ModelColumn<>(I_ESR_ImportFile.class, "DataType", null);
 	String COLUMNNAME_DataType = "DataType";
-
-	/**
-	 * Set Document Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setDateDoc (java.sql.Timestamp DateDoc);
-
-	/**
-	 * Get Document Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getDateDoc();
-
-	ModelColumn<I_ESR_Import, Object> COLUMN_DateDoc = new ModelColumn<>(I_ESR_Import.class, "DateDoc", null);
-	String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
 	 * Set Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -175,34 +158,34 @@ public interface I_ESR_Import
 	/**
 	 * Get Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getDescription();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_Description = new ModelColumn<>(I_ESR_Import.class, "Description", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_Description = new ModelColumn<>(I_ESR_ImportFile.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Sum Control Amount.
 	 *
 	 * <br>Type: Number
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setESR_Control_Amount (@Nullable BigDecimal ESR_Control_Amount);
+	void setESR_Control_Amount (BigDecimal ESR_Control_Amount);
 
 	/**
 	 * Get Sum Control Amount.
 	 *
 	 * <br>Type: Number
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getESR_Control_Amount();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Control_Amount = new ModelColumn<>(I_ESR_Import.class, "ESR_Control_Amount", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_ESR_Control_Amount = new ModelColumn<>(I_ESR_ImportFile.class, "ESR_Control_Amount", null);
 	String COLUMNNAME_ESR_Control_Amount = "ESR_Control_Amount";
 
 	/**
@@ -225,14 +208,35 @@ public interface I_ESR_Import
 	 */
 	BigDecimal getESR_Control_Trx_Qty();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Control_Trx_Qty = new ModelColumn<>(I_ESR_Import.class, "ESR_Control_Trx_Qty", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_ESR_Control_Trx_Qty = new ModelColumn<>(I_ESR_ImportFile.class, "ESR_Control_Trx_Qty", null);
 	String COLUMNNAME_ESR_Control_Trx_Qty = "ESR_Control_Trx_Qty";
+
+	/**
+	 * Set ESR Import File.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setESR_ImportFile_ID (int ESR_ImportFile_ID);
+
+	/**
+	 * Get ESR Import File.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getESR_ImportFile_ID();
+
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_ESR_ImportFile_ID = new ModelColumn<>(I_ESR_ImportFile.class, "ESR_ImportFile_ID", null);
+	String COLUMNNAME_ESR_ImportFile_ID = "ESR_ImportFile_ID";
 
 	/**
 	 * Set ESR Payment Import.
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setESR_Import_ID (int ESR_Import_ID);
@@ -240,41 +244,41 @@ public interface I_ESR_Import
 	/**
 	 * Get ESR Payment Import.
 	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getESR_Import_ID();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Import_ID = new ModelColumn<>(I_ESR_Import.class, "ESR_Import_ID", null);
+	@Nullable de.metas.payment.esr.model.I_ESR_Import getESR_Import();
+
+	void setESR_Import(@Nullable de.metas.payment.esr.model.I_ESR_Import ESR_Import);
+
+	ModelColumn<I_ESR_ImportFile, de.metas.payment.esr.model.I_ESR_Import> COLUMN_ESR_Import_ID = new ModelColumn<>(I_ESR_ImportFile.class, "ESR_Import_ID", de.metas.payment.esr.model.I_ESR_Import.class);
 	String COLUMNNAME_ESR_Import_ID = "ESR_Import_ID";
 
 	/**
-	 * Set Anzahl Transaktionen.
-	 * Anzahl der importierten Zeilen
+	 * Set File Name.
+	 * Name of the local file or URL
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	void setESR_Trx_Qty (@Nullable BigDecimal ESR_Trx_Qty);
+	void setFileName (@Nullable java.lang.String FileName);
 
 	/**
-	 * Get Anzahl Transaktionen.
-	 * Anzahl der importierten Zeilen
+	 * Get File Name.
+	 * Name of the local file or URL
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	BigDecimal getESR_Trx_Qty();
+	@Nullable java.lang.String getFileName();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Trx_Qty = new ModelColumn<>(I_ESR_Import.class, "ESR_Trx_Qty", null);
-	String COLUMNNAME_ESR_Trx_Qty = "ESR_Trx_Qty";
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_FileName = new ModelColumn<>(I_ESR_ImportFile.class, "FileName", null);
+	String COLUMNNAME_FileName = "FileName";
 
 	/**
 	 * Set Hash.
@@ -294,7 +298,7 @@ public interface I_ESR_Import
 	 */
 	@Nullable java.lang.String getHash();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_Hash = new ModelColumn<>(I_ESR_Import.class, "Hash", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_Hash = new ModelColumn<>(I_ESR_ImportFile.class, "Hash", null);
 	String COLUMNNAME_Hash = "Hash";
 
 	/**
@@ -317,29 +321,8 @@ public interface I_ESR_Import
 	 */
 	boolean isActive();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_IsActive = new ModelColumn<>(I_ESR_Import.class, "IsActive", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_IsActive = new ModelColumn<>(I_ESR_ImportFile.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Archive File.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsArchiveFile (boolean IsArchiveFile);
-
-	/**
-	 * Get Archive File.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isArchiveFile();
-
-	ModelColumn<I_ESR_Import, Object> COLUMN_IsArchiveFile = new ModelColumn<>(I_ESR_Import.class, "IsArchiveFile", null);
-	String COLUMNNAME_IsArchiveFile = "IsArchiveFile";
 
 	/**
 	 * Set Receipt.
@@ -361,31 +344,8 @@ public interface I_ESR_Import
 	 */
 	boolean isReceipt();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_IsReceipt = new ModelColumn<>(I_ESR_Import.class, "IsReceipt", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_IsReceipt = new ModelColumn<>(I_ESR_ImportFile.class, "IsReceipt", null);
 	String COLUMNNAME_IsReceipt = "IsReceipt";
-
-	/**
-	 * Set Reconciled.
-	 * Payment is reconciled with bank statement
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsReconciled (boolean IsReconciled);
-
-	/**
-	 * Get Reconciled.
-	 * Payment is reconciled with bank statement
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isReconciled();
-
-	ModelColumn<I_ESR_Import, Object> COLUMN_IsReconciled = new ModelColumn<>(I_ESR_Import.class, "IsReconciled", null);
-	String COLUMNNAME_IsReconciled = "IsReconciled";
 
 	/**
 	 * Set Is Valid.
@@ -407,7 +367,7 @@ public interface I_ESR_Import
 	 */
 	boolean isValid();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_IsValid = new ModelColumn<>(I_ESR_Import.class, "IsValid", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_IsValid = new ModelColumn<>(I_ESR_ImportFile.class, "IsValid", null);
 	String COLUMNNAME_IsValid = "IsValid";
 
 	/**
@@ -428,31 +388,8 @@ public interface I_ESR_Import
 	 */
 	boolean isProcessed();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_Processed = new ModelColumn<>(I_ESR_Import.class, "Processed", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_Processed = new ModelColumn<>(I_ESR_ImportFile.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
-
-	/**
-	 * Set Process Now.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setProcessing (boolean Processing);
-
-	/**
-	 * Get Process Now.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	boolean isProcessing();
-
-	ModelColumn<I_ESR_Import, Object> COLUMN_Processing = new ModelColumn<>(I_ESR_Import.class, "Processing", null);
-	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Get Updated.
@@ -464,7 +401,7 @@ public interface I_ESR_Import
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_ESR_Import, Object> COLUMN_Updated = new ModelColumn<>(I_ESR_Import.class, "Updated", null);
+	ModelColumn<I_ESR_ImportFile, Object> COLUMN_Updated = new ModelColumn<>(I_ESR_ImportFile.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
