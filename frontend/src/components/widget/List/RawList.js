@@ -4,7 +4,6 @@ import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { isEqual } from 'lodash';
-
 import SelectionDropdown from '../SelectionDropdown';
 import MultiSelect from '../MultiSelect';
 
@@ -365,97 +364,85 @@ export class RawList extends PureComponent {
             pin: ['bottom'],
           },
         ]}
-        renderTarget={(ref) => {
-          return (
-            <div ref={ref}>
-              <div
-                ref={(ref) => (this.dropdown = ref)}
-                className={classnames('input-dropdown-container', {
-                  'input-disabled': readonly,
-                  'input-dropdown-container-static': rowId,
-                  'input-table': rowId && !isModal,
-                  'input-empty': !value,
-                  'lookup-dropdown': lookupList,
-                  'select-dropdown': !lookupList,
-                  focused: isFocused,
-                  opened: isToggled,
-                  'input-mandatory': !lookupList && mandatory && !selected,
-                })}
-                tabIndex={tabIndex}
-                onFocus={readonly ? null : this.focusDropdown}
-                onClick={readonly ? null : this.handleClick}
-                onKeyDown={this.handleKeyDown}
-                onKeyUp={this.handleKeyUp}
-              >
-                <div
-                  className={classnames('input-dropdown input-block', {
-                    'input-secondary': rank,
-                    pulse: updated,
-                    'input-mandatory': mandatory && !selected,
-                    'input-error':
-                      validStatus &&
-                      !validStatus.valid &&
-                      !validStatus.initialValue &&
-                      !isToggled,
-                  })}
-                  ref={(c) => (this.inputContainer = c)}
-                >
-                  <div
-                    className={classnames(
-                      'input-editable input-dropdown-focused',
-                      {
-                        [`text-${align}`]: align,
-                      }
-                    )}
-                  >
-                    <input
-                      type="text"
-                      className={classnames(
-                        'input-field js-input-field',
-                        'font-weight-semibold',
-                        {
-                          'input-disabled': disabled,
-                        }
-                      )}
-                      readOnly
-                      tabIndex={-1}
-                      placeholder={placeholder}
-                      value={value}
-                      disabled={readonly || disabled}
-                    />
-                  </div>
-                  {clearable && selected && !readonly && (
-                    <div className="input-icon" onClick={this.handleClear}>
-                      <i className="meta-icon-close-alt" />
-                    </div>
-                  )}
-                  {!selected && (
-                    <div className="input-icon input-readonly">
-                      <i className="meta-icon-down-1" />
-                    </div>
-                  )}
-                </div>
-              </div>
+      >
+        <div
+          ref={(ref) => (this.dropdown = ref)}
+          className={classnames('input-dropdown-container', {
+            'input-disabled': readonly,
+            'input-dropdown-container-static': rowId,
+            'input-table': rowId && !isModal,
+            'input-empty': !value,
+            'lookup-dropdown': lookupList,
+            'select-dropdown': !lookupList,
+            focused: isFocused,
+            opened: isToggled,
+            'input-mandatory': !lookupList && mandatory && !selected,
+          })}
+          tabIndex={tabIndex}
+          onFocus={readonly ? null : this.focusDropdown}
+          onClick={readonly ? null : this.handleClick}
+          onKeyDown={this.handleKeyDown}
+          onKeyUp={this.handleKeyUp}
+        >
+          <div
+            className={classnames('input-dropdown input-block', {
+              'input-secondary': rank,
+              pulse: updated,
+              'input-mandatory': mandatory && !selected,
+              'input-error':
+                validStatus &&
+                !validStatus.valid &&
+                !validStatus.initialValue &&
+                !isToggled,
+            })}
+            ref={(c) => (this.inputContainer = c)}
+          >
+            <div
+              className={classnames('input-editable input-dropdown-focused', {
+                [`text-${align}`]: align,
+              })}
+            >
+              <input
+                type="text"
+                className={classnames(
+                  'input-field js-input-field',
+                  'font-weight-semibold',
+                  {
+                    'input-disabled': disabled,
+                  }
+                )}
+                readOnly
+                tabIndex={-1}
+                placeholder={placeholder}
+                value={value}
+                disabled={readonly || disabled}
+              />
             </div>
-          );
-        }}
-        renderElement={(ref) =>
-          isFocused &&
-          isToggled && (
-            <SelectionDropdown
-              ref={ref}
-              loading={loading}
-              options={this.state.dropdownList}
-              empty="There is no choice available"
-              selected={this.state.selected}
-              width={this.dropdown.offsetWidth}
-              onChange={this.handleTemporarySelection}
-              onSelect={this.handleSelect}
-              onCancel={this.handleCancel}
-            />
-          )
-        }
-      />
+            {clearable && selected && !readonly && (
+              <div className="input-icon" onClick={this.handleClear}>
+                <i className="meta-icon-close-alt" />
+              </div>
+            )}
+            {!selected && (
+              <div className="input-icon input-readonly">
+                <i className="meta-icon-down-1" />
+              </div>
+            )}
+          </div>
+        </div>
+        {isFocused && isToggled && (
+          <SelectionDropdown
+            loading={loading}
+            options={this.state.dropdownList}
+            empty="There is no choice available"
+            selected={this.state.selected}
+            width={this.dropdown.offsetWidth}
+            onChange={this.handleTemporarySelection}
+            onSelect={this.handleSelect}
+            onCancel={this.handleCancel}
+          />
+        )}
+      </TetherComponent>
     );
 
     const multiSelectDropdown = (

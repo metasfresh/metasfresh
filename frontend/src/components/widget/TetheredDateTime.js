@@ -67,7 +67,8 @@ class TetheredDateTime extends DateTime {
     const classNames = classnames('rdt', className, {
       rdtStatic: !input,
     });
-    let renderedInput = null;
+
+    const children = [];
 
     if (input) {
       const props = {
@@ -79,7 +80,9 @@ class TetheredDateTime extends DateTime {
         value: inputValue,
         ...inputProps,
       };
-      renderedInput = renderInput(props, this.openCalendar);
+      const input = renderInput(props, this.openCalendar);
+
+      children.push(<div key="i">{input}</div>);
     }
 
     return (
@@ -96,33 +99,23 @@ class TetheredDateTime extends DateTime {
               pin: ['bottom'],
             },
           ]}
-          renderTarget={(ref) =>
-            renderedInput && (
-              <div ref={ref} key="i">
-                {renderedInput}
-              </div>
-            )
-          }
-          renderElement={(ref) =>
-            open && (
-              <div
-                ref={ref}
-                className="ignore-react-onclickoutside rdtPicker"
-                onClick={
-                  (currentView === 'time' &&
-                    !selectedDate &&
-                    this.handleClick) ||
-                  null
-                }
-              >
-                <CalendarContainer
-                  view={currentView}
-                  viewProps={this.getComponentProps()}
-                />
-              </div>
-            )
-          }
-        />
+        >
+          {children}
+          {open && (
+            <div
+              className="ignore-react-onclickoutside rdtPicker"
+              onClick={
+                (currentView === 'time' && !selectedDate && this.handleClick) ||
+                null
+              }
+            >
+              <CalendarContainer
+                view={currentView}
+                viewProps={this.getComponentProps()}
+              />
+            </div>
+          )}
+        </TetherComponent>
       </div>
     );
   }
