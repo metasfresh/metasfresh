@@ -601,33 +601,28 @@ class FiltersItem extends PureComponent {
                     pin: ['bottom'],
                   },
                 ]}
-                renderTarget={(ref) =>
-                  filter.isActive && !filter.parameters ? (
-                    <span ref={ref} />
-                  ) : (
-                    <button
-                      ref={ref}
-                      className="applyBtn btn btn-sm btn-success"
-                      onClick={this.handleApply}
-                      onMouseEnter={this.showTooltip}
-                      onMouseLeave={this.hideTooltip}
-                    >
-                      {counterpart.translate('window.apply.caption')}
-                    </button>
-                  )
-                }
-                renderElement={(ref) =>
-                  isTooltipShow && (
-                    <Tooltips
-                      ref={ref}
-                      className="filter-tooltip"
-                      name={keymap.DONE}
-                      action={counterpart.translate('window.apply.caption')}
-                      type={''}
-                    />
-                  )
-                }
-              />
+              >
+                {filter.isActive && !filter.parameters ? (
+                  <span />
+                ) : (
+                  <button
+                    className="applyBtn btn btn-sm btn-success"
+                    onClick={this.handleApply}
+                    onMouseEnter={this.showTooltip}
+                    onMouseLeave={this.hideTooltip}
+                  >
+                    {counterpart.translate('window.apply.caption')}
+                  </button>
+                )}
+                {isTooltipShow && (
+                  <Tooltips
+                    className="filter-tooltip"
+                    name={keymap.DONE}
+                    action={counterpart.translate('window.apply.caption')}
+                    type={''}
+                  />
+                )}
+              </TetherComponent>
             </div>
           </div>
         )}

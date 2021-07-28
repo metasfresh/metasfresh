@@ -509,11 +509,16 @@ export class RawLookup extends Component {
       selected,
       forceEmpty,
       isFocused,
+      parentElement,
       query,
       hasMoreResults,
     } = this.state;
     const tetherProps = {};
     let showDropdown = false;
+
+    if (parentElement) {
+      tetherProps.target = parentElement;
+    }
 
     if (query.length >= this.minQueryLength) {
       showDropdown = true;
@@ -541,87 +546,83 @@ export class RawLookup extends Component {
             pin: ['bottom'],
           },
         ]}
-        renderTarget={(ref) => (
-          <div id={idValue || ''} ref={ref} className="raw-lookup-wrapper">
-            <div
-              className={classnames(
-                'lookup-widget-wrapper lookup-widget-wrapper-bcg',
-                {
-                  'raw-lookup-disabled': disabled,
-                  'input-disabled': readonly,
-                  focused: isFocused,
-                }
-              )}
-              ref={(ref) => (this.wrapper = ref)}
-            >
-              <div className={'input-dropdown input-block'}>
-                <div
-                  className={'input-editable' + (align ? ' text-' + align : '')}
-                >
-                  <input
-                    ref={(c) => (this.inputSearch = c)}
-                    type="text"
-                    className="input-field js-input-field font-weight-semibold"
-                    autoComplete="new-password"
-                    readOnly={readonly}
-                    disabled={readonly && !disabled}
-                    tabIndex={tabIndex}
-                    placeholder={this.props.item.emptyText}
-                    onChange={this.handleChange}
-                    onClick={this.handleFocus}
-                  />
-                </div>
+      >
+        <div id={idValue || ''} className="raw-lookup-wrapper">
+          <div
+            className={classnames(
+              'lookup-widget-wrapper lookup-widget-wrapper-bcg',
+              {
+                'raw-lookup-disabled': disabled,
+                'input-disabled': readonly,
+                focused: isFocused,
+              }
+            )}
+            ref={(ref) => (this.wrapper = ref)}
+          >
+            <div className={'input-dropdown input-block'}>
+              <div
+                className={'input-editable' + (align ? ' text-' + align : '')}
+              >
+                <input
+                  ref={(c) => (this.inputSearch = c)}
+                  type="text"
+                  className="input-field js-input-field font-weight-semibold"
+                  autoComplete="new-password"
+                  readOnly={readonly}
+                  disabled={readonly && !disabled}
+                  tabIndex={tabIndex}
+                  placeholder={this.props.item.emptyText}
+                  onChange={this.handleChange}
+                  onClick={this.handleFocus}
+                />
               </div>
             </div>
-            {showDropdown && isOpen && !isInputEmpty && (
-              <div>
-                <SelectionDropdown
-                  loading={loading}
-                  options={list}
-                  empty="No results found"
-                  forceEmpty={forceEmpty}
-                  selected={selected}
-                  width={
-                    this.props.forcedWidth
-                      ? this.props.forcedWidth
-                      : this.wrapper && this.wrapper.offsetWidth
-                  }
-                  height={
-                    this.props.forceHeight
-                      ? this.props.forceHeight - this.wrapper.offsetHeight
-                      : undefined
-                  }
-                  onChange={this.handleTemporarySelection}
-                  onSelect={this.handleSelect}
-                  onCancel={this.handleBlur}
-                />
-                {hasMoreResults && (
-                  <div
-                    className="input-dropdown-hasmore"
-                    style={{
-                      width: adaptiveWidth,
-                      left:
-                        parseInt(adaptiveWidth) > LOOKUP_SHOW_MORE_PIXEL_NO &&
-                        !(
-                          parseInt(adaptiveWidth) > 900 &&
-                          this.inputSearch.value
-                        ) &&
-                        (this.inputSearch || !this.inputSearch.value)
-                          ? '-2px'
-                          : '0px',
-                      top: parseInt(adaptiveHeight) + 28 + 'px',
-                    }}
-                  >
-                    {` ${counterpart.translate(
-                      'widget.lookup.hasMoreResults'
-                    )}`}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
-        )}
-      />
+          {showDropdown && isOpen && !isInputEmpty && (
+            <div>
+              <SelectionDropdown
+                loading={loading}
+                options={list}
+                empty="No results found"
+                forceEmpty={forceEmpty}
+                selected={selected}
+                width={
+                  this.props.forcedWidth
+                    ? this.props.forcedWidth
+                    : this.wrapper && this.wrapper.offsetWidth
+                }
+                height={
+                  this.props.forceHeight
+                    ? this.props.forceHeight - this.wrapper.offsetHeight
+                    : undefined
+                }
+                onChange={this.handleTemporarySelection}
+                onSelect={this.handleSelect}
+                onCancel={this.handleBlur}
+              />
+              {hasMoreResults && (
+                <div
+                  className="input-dropdown-hasmore"
+                  style={{
+                    width: adaptiveWidth,
+                    left:
+                      parseInt(adaptiveWidth) > LOOKUP_SHOW_MORE_PIXEL_NO &&
+                      !(
+                        parseInt(adaptiveWidth) > 900 && this.inputSearch.value
+                      ) &&
+                      (this.inputSearch || !this.inputSearch.value)
+                        ? '-2px'
+                        : '0px',
+                    top: parseInt(adaptiveHeight) + 28 + 'px',
+                  }}
+                >
+                  {` ${counterpart.translate('widget.lookup.hasMoreResults')}`}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </TetherComponent>
     );
   }
 }

@@ -17,7 +17,7 @@ const jsdom = new JSDOM('<!doctype html><html><body></body></html>', {
 const { window } = jsdom;
 
 global.console = {
-  log: console.log,
+  log: jest.fn(),
   warn: jest.fn(),
 
   // Keep native behaviour for other methods, use those to print out things in your own tests, not `console.log`

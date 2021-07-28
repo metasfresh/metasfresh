@@ -3,7 +3,7 @@ import { List } from 'immutable';
 import { mount, shallow } from 'enzyme';
 import { v4 as uuidv4 } from 'uuid';
 
-import { RawList as RawListBare } from '../../../../components/widget/List/RawList';
+import RawList, { RawList as RawListBare } from '../../../../components/widget/List/RawList';
 import SelectionDropdown from '../../../../components/widget/SelectionDropdown';
 import fixtures from '../../../../../test_setup/fixtures/raw_list.json';
 
@@ -31,7 +31,7 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const wrapper = mount(<RawListBare {...props} />);
+      const wrapper = shallow(<RawListBare {...props} />);
 
       expect(wrapper.html()).toContain('focused');
       expect(wrapper.find('input').length).toBe(1);
@@ -108,7 +108,7 @@ describe('RawList component', () => {
         stopPropagation: jest.fn(),
       };
 
-      const wrapper = mount(<RawListBare {...props} />);
+      const wrapper = shallow(<RawListBare {...props} />);
 
       wrapper.find('.input-dropdown-container').simulate(
         'keyDown',
