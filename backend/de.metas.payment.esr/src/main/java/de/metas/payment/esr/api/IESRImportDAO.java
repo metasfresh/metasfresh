@@ -102,4 +102,6 @@ public interface IESRImportDAO extends ISingletonService
 	ImmutableList<I_ESR_ImportLine> retrieveActiveESRImportLinesFromFile(@NonNull I_ESR_ImportFile esrImportFile);
 
 	I_ESR_ImportFile getImportFileById(int esr_importFile_id);
+
+	void validateEsrImport(I_ESR_Import esrImport);
 }
