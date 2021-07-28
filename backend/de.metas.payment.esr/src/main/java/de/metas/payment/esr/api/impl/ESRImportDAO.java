@@ -90,7 +90,6 @@ public class ESRImportDAO implements IESRImportDAO
 		InterfaceWrapperHelper.save(esrImportFile, ITrx.TRXNAME_None);
 	}
 
-
 	@Override
 	public void save(@NonNull final I_ESR_ImportLine esrImportLine)
 	{
@@ -380,7 +379,6 @@ public class ESRImportDAO implements IESRImportDAO
 				.firstOnly(I_ESR_ImportLine.class);
 	}
 
-
 	@Override
 	public List<I_ESR_ImportLine> fetchESRLinesForESRLineText(final String esrImportLineText)
 	{
@@ -490,6 +488,17 @@ public class ESRImportDAO implements IESRImportDAO
 	public I_ESR_ImportFile getImportFileById(final int esrImportFileId)
 	{
 		return load(esrImportFileId, I_ESR_ImportFile.class);
+	}
+
+	@Override
+	public void validateEsrImport(final I_ESR_Import esrImport)
+	{
+		final ImmutableList<I_ESR_ImportFile> esrImportFiles = retrieveActiveESRImportFiles(esrImport);
+
+		boolean isValid = esrImportFiles.stream()
+				.allMatch(I_ESR_ImportFile::isValid);
+		esrImport.setIsValid(isValid);
+		save(esrImport);
 	}
 
 }

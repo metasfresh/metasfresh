@@ -198,6 +198,9 @@ public class ESRImportBL implements IESRImportBL
 
 			loadAndEvaluateESRImportStream(esrImportFile, in);
 		}
+
+		esrImportDAO.validateEsrImport(esrImport);
+
 	}
 
 	@VisibleForTesting
