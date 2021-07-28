@@ -16,6 +16,16 @@ const jsdom = new JSDOM('<!doctype html><html><body></body></html>', {
 });
 const { window } = jsdom;
 
+global.console = {
+  log: jest.fn(),
+  warn: jest.fn(),
+
+  // Keep native behaviour for other methods, use those to print out things in your own tests, not `console.log`
+  error: console.error,
+  info: console.info,
+  debug: console.debug,
+};
+
 /* can be overriden per element if needed
   function createMockDiv (width, height) {
     const div = document.createElement("div");
