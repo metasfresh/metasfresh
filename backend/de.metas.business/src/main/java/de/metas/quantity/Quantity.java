@@ -55,34 +55,39 @@ import lombok.NonNull;
 
 /**
  * Immutable Quantity.
- *
+ * <p>
  * Besides quantity value ({@link #getQty()}) and it's uom ({@link #getUOM()} this object contains also source quantity/uom.
- *
+ * <p>
  * The actual meaning of source quantity/uom depends on who constructs the {@link Quantity} object but the general meaning is: the quantity/uom in some source or internal UOM.
- *
+ * <p>
  * e.g. when you ask a storage to allocate a quantity/uom that method could return a quantity object containing how much was allocated (in requested UOM), but the source quantity/uom is the quantity
  * in storage's UOM.
  *
  * @author tsa
- *
  */
 @JsonDeserialize(using = Quantitys.QuantityDeserializer.class)
 @JsonSerialize(using = Quantitys.QuantitySerializer.class)
 public final class Quantity implements Comparable<Quantity>
 {
-	/** To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}. */
+	/**
+	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
+	 */
 	public static Quantity of(@NonNull final String qty, @NonNull final I_C_UOM uomRecord)
 	{
 		return of(new BigDecimal(qty), uomRecord);
 	}
 
-	/** To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}. */
+	/**
+	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
+	 */
 	public static Quantity of(@NonNull final BigDecimal qty, @NonNull final I_C_UOM uomRecord)
 	{
 		return new Quantity(qty, uomRecord);
 	}
 
-	/** To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}. */
+	/**
+	 * To create an instance an {@link UomId} instead of {@link I_C_UOM}, use {@link Quantitys#create(BigDecimal, UomId)}.
+	 */
 	public static Quantity of(final int qty, @NonNull final I_C_UOM uomRecord)
 	{
 		return of(BigDecimal.valueOf(qty), uomRecord);
@@ -255,7 +260,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	/**
 	 * Checks if this quantity and given quantity are equal when comparing the current values (i.e. {@link #getQty()}, {@link #getUOM()}).
-	 *
+	 * <p>
 	 * NOTE: quantities will be compared by using {@link BigDecimal#compareTo(BigDecimal)} instead of {@link BigDecimal#equals(Object)}.
 	 *
 	 * @param quantity
@@ -303,7 +308,6 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 *
 	 * @return true if quantity value is infinite
 	 */
 	public boolean isInfinite()
@@ -312,7 +316,6 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 *
 	 * @return quantity's UOM; never return null
 	 */
 	public I_C_UOM getUOM()
@@ -338,7 +341,7 @@ public final class Quantity implements Comparable<Quantity>
 	{
 		return uom.getUOMSymbol();
 	}
-	
+
 	public X12DE355 getX12DE355()
 	{
 		return X12DE355.ofCode(uom.getX12DE355());
@@ -353,7 +356,6 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 *
 	 * @return source quatity's UOM
 	 */
 	public I_C_UOM getSourceUOM()
@@ -386,7 +388,6 @@ public final class Quantity implements Comparable<Quantity>
 	}
 
 	/**
-	 *
 	 * @return ZERO quantity (but preserve UOMs)
 	 */
 	public Quantity toZero()
@@ -458,7 +459,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	/**
 	 * Calculates the Weighted Average between this Quantity and a previous given average.
-	 *
+	 * <p>
 	 * i.e. Current Weighted Avg = (<code>previousAverage</code> * <code>previousAverageWeight</code> + this quantity) / (<code>previousAverageWeight</code> + 1)
 	 *
 	 * @return weighted average
@@ -482,7 +483,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	/**
 	 * Interchange current Qty/UOM with source Qty/UOM.
-	 *
+	 * <p>
 	 * e.g. If your quantity is "5kg (source: 5000g)" then this method will return "5000g (source: 5kg)"
 	 *
 	 * @return a new instance with current Qty/UOM and source Qty/UOM interchanged.
@@ -495,7 +496,7 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * Interchange the Qty/UOM with source Qty/UOM if the source is more precise.
 	 * Source is considered more precise if it's numeric value is bigger.
-	 *
+	 * <p>
 	 * This method is usually used before persisting to database where we want to persist the most precise amount,
 	 * because else, when we will load it back we won't get the same figures.
 	 */
@@ -536,7 +537,7 @@ public final class Quantity implements Comparable<Quantity>
 
 	/**
 	 * Checks if current quantity zero.
-	 *
+	 * <p>
 	 * This is just a convenient method for checking if the {@link #signum()} is zero.
 	 *
 	 * @return true if {@link #signum()} is zero.
@@ -554,11 +555,11 @@ public final class Quantity implements Comparable<Quantity>
 	/**
 	 * Adds given quantity and returns the result.
 	 * Assumes that the UOMs are equal.
-	 *
+	 * <p>
 	 * Note: {@link Quantitys#add(de.metas.uom.UOMConversionContext, Quantity, Quantity)} adds by converting quantities between UOMs
 	 *
 	 * @throws QuantitiesUOMNotMatchingExpection if this quantity and qtyToAdd are not UOM compatible
-	 *             To add instances with different UOMs, use {@link Quantitys#add(de.metas.uom.UOMConversionContext, Quantity, Quantity)}.
+	 *                                           To add instances with different UOMs, use {@link Quantitys#add(de.metas.uom.UOMConversionContext, Quantity, Quantity)}.
 	 */
 	public Quantity add(@NonNull final Quantity qtyToAdd)
 	{
@@ -748,8 +749,22 @@ public final class Quantity implements Comparable<Quantity>
 	public Quantity multiply(@NonNull final Percent percent)
 	{
 		final UOMPrecision precision = getUOMPrecision();
-		final BigDecimal newQty = percent.computePercentageOf(this.qty, precision.toInt(), precision.getRoundingMode());
+		return multiply(percent, precision.toInt(), precision.getRoundingMode());
+	}
 
+	public Quantity multiply(@NonNull final Percent percent, @NonNull final RoundingMode roundingMode)
+	{
+		final UOMPrecision precision = getUOMPrecision();
+		return multiply(percent, precision.toInt(), roundingMode);
+	}
+
+	private Quantity multiply(
+			@NonNull final Percent percent,
+			@NonNull final int precision,
+			@NonNull RoundingMode roundingMode)
+	{
+		final BigDecimal newQty = percent.computePercentageOf(this.qty, precision, roundingMode);
+		
 		return this.qty.compareTo(newQty) != 0
 				? new Quantity(newQty, uom)
 				: this;

@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.util.lang.RepoIdAware;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
@@ -55,7 +56,9 @@ import lombok.NonNull;
  * #L%
  */
 
-/* package */class DocumentField implements IDocumentField
+/* package */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+class DocumentField implements IDocumentField
 {
 	private static final Logger logger = LogManager.getLogger(DocumentField.class);
 
@@ -236,8 +239,7 @@ import lombok.NonNull;
 			final ITranslatableString displayNameTrl = lookupValue.getDisplayNameTrl();
 			if (!displayNameTrl.isTranslatedTo(jsonOpts.getAdLanguage()))
 			{
-				final LookupValue lookupValueNew = lookupDataSource.findById(lookupValue.getId());
-				value = lookupValueNew;
+				value = lookupDataSource.findById(lookupValue.getId());
 			}
 		}
 
@@ -255,16 +257,14 @@ import lombok.NonNull;
 	public boolean getValueAsBoolean()
 	{
 		final Boolean valueBoolean = convertToValueClass(_value, DocumentFieldWidgetType.YesNo, Boolean.class);
-		return valueBoolean != null && valueBoolean.booleanValue();
+		return valueBoolean != null && valueBoolean;
 	}
 
 	@Override
 	public <T> T getValueAs(@NonNull final Class<T> returnType)
 	{
 		Preconditions.checkNotNull(returnType, "returnType shall not be null");
-		final DocumentFieldWidgetType widgetType = null; // N/A
-		final T value = convertToValueClass(_value, widgetType, returnType);
-		return value;
+		return convertToValueClass(_value, null, returnType);
 	}
 
 	@Override
@@ -292,7 +292,6 @@ import lombok.NonNull;
 	/**
 	 * Converts given value to field's type and after that applies various corrections like precision in case of numbers with precision.
 	 *
-	 * @param value
 	 * @return value converted and corrected
 	 */
 	private Object convertToValueClassAndCorrect(final Object value)
@@ -309,13 +308,11 @@ import lombok.NonNull;
 			final Integer precision = getWidgetType().getStandardNumberPrecision();
 			if (precision != null)
 			{
-				final BigDecimal valueBDCorrected = NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
-				return valueBDCorrected;
+				return NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
 			}
 			else
 			{
-				final BigDecimal valueBDCorrected = NumberUtils.stripTrailingDecimalZeros((BigDecimal)valueConv);
-				return valueBDCorrected;
+				return NumberUtils.stripTrailingDecimalZeros((BigDecimal)valueConv);
 			}
 		}
 		else if (valueConv instanceof String)
@@ -329,7 +326,7 @@ import lombok.NonNull;
 		return valueConv;
 	}
 
-	private final <T> T convertToValueClass(
+	private <T> T convertToValueClass(
 			@Nullable final Object value,
 			@Nullable final DocumentFieldWidgetType widgetType,
 			final Class<T> targetType)
@@ -412,19 +409,19 @@ import lombok.NonNull;
 	{
 		final LookupDataSource lookupDataSource = getLookupDataSource();
 		final Evaluatee ctx = getDocument().asEvaluatee();
-		final LookupValuesList values = lookupDataSource.findEntities(ctx);
+		final LookupValuesList values = lookupDataSource.findEntities(ctx).getValues();
 		lookupValuesStaled = false;
-		return values == null ? LookupValuesList.EMPTY : values;
+		return values;
 	}
 
 	@Override
-	public LookupValuesList getLookupValuesForQuery(final String query)
+	public LookupValuesPage getLookupValuesForQuery(final String query)
 	{
 		final LookupDataSource lookupDataSource = getLookupDataSource();
 		final Evaluatee ctx = getDocument().asEvaluatee();
-		final LookupValuesList values = lookupDataSource.findEntities(ctx, query);
+		final LookupValuesPage page = lookupDataSource.findEntities(ctx, query);
 		lookupValuesStaled = false;
-		return values;
+		return page;
 	}
 
 	@Override

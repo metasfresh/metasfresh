@@ -15,7 +15,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 1452323778L;
+	private static final long serialVersionUID = -219979776L;
 
 	/** Standard Constructor */
 	public X_C_OLCand(final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -1389,5 +1389,17 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setImportWarningMessage (final @Nullable java.lang.String ImportWarningMessage)
+	{
+		set_Value (COLUMNNAME_ImportWarningMessage, ImportWarningMessage);
+	}
+
+	@Override
+	public java.lang.String getImportWarningMessage()
+	{
+		return get_ValueAsString(COLUMNNAME_ImportWarningMessage);
 	}
 }

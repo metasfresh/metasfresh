@@ -10,7 +10,7 @@ import de.metas.common.bpartner.v1.request.JsonRequestContact;
 import de.metas.common.bpartner.v1.request.JsonRequestLocation;
 import de.metas.common.ordercandidates.v1.request.JsonOrganization;
 import de.metas.common.ordercandidates.v1.request.JsonRequestBPartnerLocationAndContact;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.common.rest_api.v1.SyncAdvise.IfExists;
 import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
@@ -109,7 +109,8 @@ public class MasterdataProviderTest
 	{
 		AdempiereTestHelper.get().init();
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
+		//Services.registerService(IBPartnerBL.class, partnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		UserId loggedUserId = UserId.ofRepoId(1234567);
@@ -127,7 +128,7 @@ public class MasterdataProviderTest
 		saveRecord(groupRecord);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(new MockLogEntriesRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),

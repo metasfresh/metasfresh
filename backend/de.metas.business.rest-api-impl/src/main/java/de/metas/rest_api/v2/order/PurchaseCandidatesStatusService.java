@@ -25,11 +25,13 @@ package de.metas.rest_api.v2.order;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
@@ -42,6 +44,7 @@ import de.metas.common.rest_api.v2.JsonPurchaseCandidatesRequest;
 import de.metas.common.rest_api.v2.JsonPurchaseOrder;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.lang.ExternalId;
 import de.metas.util.web.exception.InvalidEntityException;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveBL;
@@ -50,6 +53,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -62,6 +66,7 @@ public class PurchaseCandidatesStatusService
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	public PurchaseCandidatesStatusService(@NonNull final PurchaseCandidateRepository purchaseCandidateRepo)
 	{
@@ -149,16 +154,18 @@ public class PurchaseCandidatesStatusService
 				.externalHeaderId(JsonExternalId.of(candidate.getExternalHeaderId().getValue()))
 				.externalLineId(JsonExternalId.of(candidate.getExternalLineId().getValue()))
 				.metasfreshId(JsonMetasfreshId.of(candidate.getId().getRepoId()))
+				.externalPurchaseOrderUrl(candidate.getExternalPurchaseOrderUrl())
 				.processed(candidate.isProcessed());
 	}
 
 	private JsonPurchaseOrder toJsonOrder(final I_C_Order order)
 	{
 		final boolean hasArchive = hasArchive(order);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		return JsonPurchaseOrder.builder()
-				.dateOrdered(TimeUtil.asZonedDateTime(order.getDateOrdered()))
-				.datePromised(TimeUtil.asZonedDateTime(order.getDatePromised()))
+				.dateOrdered(TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone))
+				.datePromised(TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone))
 				.docStatus(order.getDocStatus())
 				.documentNo(order.getDocumentNo())
 				.metasfreshId(JsonMetasfreshId.of(order.getC_Order_ID()))

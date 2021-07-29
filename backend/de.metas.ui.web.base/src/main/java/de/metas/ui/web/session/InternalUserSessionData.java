@@ -1,11 +1,11 @@
 package de.metas.ui.web.session;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Properties;
-
+import com.google.common.base.MoreObjects;
+import de.metas.i18n.Language;
+import de.metas.organization.OrgId;
+import de.metas.security.RoleId;
+import de.metas.ui.web.session.json.WebuiSessionId;
+import de.metas.user.UserId;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,12 +17,11 @@ import org.springframework.web.context.annotation.SessionScope;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.i18n.Language;
-import de.metas.organization.OrgId;
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.Properties;
 
 /*
  * #%L
@@ -68,9 +67,9 @@ import de.metas.user.UserId;
 	//
 	// Actual session data
 	private volatile boolean initialized = false;
-	private String sessionId = null;
-	private UserPreference userPreference = null;
-	private boolean loggedIn = false;
+	private WebuiSessionId sessionId;
+	private UserPreference userPreference;
+	private boolean loggedIn;
 	private Locale locale = null;
 	private Properties ctx;
 
@@ -103,7 +102,7 @@ import de.metas.user.UserId;
 	public InternalUserSessionData()
 	{
 		final RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-		sessionId = requestAttributes.getSessionId();
+		sessionId = WebuiSessionId.ofNullableString(requestAttributes.getSessionId());
 
 		userPreference = new UserPreference();
 		loggedIn = false;
@@ -153,7 +152,7 @@ import de.metas.user.UserId;
 		}
 	}
 
-	private static final Language findInitialLanguage()
+	private static Language findInitialLanguage()
 	{
 		final Locale locale = LocaleContextHolder.getLocale();
 		if (locale != null)
@@ -246,7 +245,6 @@ import de.metas.user.UserId;
 	}
 
 	/**
-	 * @param lang
 	 * @return previous language
 	 */
 	String verifyLanguageAndSet(final Language lang)

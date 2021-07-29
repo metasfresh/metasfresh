@@ -6,7 +6,6 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
@@ -19,6 +18,7 @@ import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
@@ -45,6 +45,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.Tax;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -62,14 +63,11 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.compiere.util.TrxRunnable2;
@@ -296,6 +294,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final List<I_AD_Note> notice = createNoticesAndMarkICs(allCandidates, throwable);
 				notifications.addAll(notice);
 			}
+			//
+			// If no error, clear previous errors if any.
+			// We had a successful invoicing of those candidates.
+			else
+			{
+				allCandidates.forEach(invoiceCandBL::clearInvoicingErrorAndSave);
+			}
 
 			//
 			// Make sure all candidates were saved
@@ -459,7 +464,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	private void setC_DocType(final I_C_Invoice invoice, @NonNull final IInvoiceHeader invoiceHeader)
 	{
-		final String invoiceHeaderDocBaseType = invoiceHeader.getDocBaseType();
+		final InvoiceDocBaseType invoiceHeaderDocBaseType = invoiceHeader.getDocBaseType();
 
 		if (invoice.getC_DocTypeTarget_ID() <= 0)
 		{
@@ -483,11 +488,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		// and the invoice document type is fetched from order's document type
 		// and that document type is not a credit memo.
 		{
-			final boolean invoiceHeader_IsCreditMemo = invoiceBL.isCreditMemo(invoiceHeaderDocBaseType);
+			final boolean invoiceHeader_IsCreditMemo = invoiceHeaderDocBaseType != null && invoiceHeaderDocBaseType.isCreditMemo();
 			final I_C_DocType invoiceDocType = docTypeDAO.getById(invoice.getC_DocTypeTarget_ID());
 			Check.assumeNotNull(invoiceDocType, "invoiceDocType not null"); // shall not happen
-			final String invoiceDocBaseType = invoiceDocType.getDocBaseType();
-			final boolean invoice_IsCreditMemo = invoiceBL.isCreditMemo(invoiceDocBaseType);
+			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
+			final boolean invoice_IsCreditMemo = invoiceDocBaseType.isCreditMemo();
 			if (invoiceHeader_IsCreditMemo && !invoice_IsCreditMemo)
 			{
 				invoiceBL.setDocTypeTargetId(invoice, invoiceHeaderDocBaseType);
@@ -648,11 +653,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				// set activity, tax and tax category from the invoice candidate (07442)
 				invoiceLine.setC_Activity_ID(ilVO.getC_Activity_ID());
 
-				final I_C_Tax tax = ilVO.getC_Tax();
+				final Tax tax = ilVO.getC_Tax();
 				if (tax != null)  // guard against old ICs which might not have a tax..leave it to the MInvoiceLine BL in that case
 				{
-					invoiceLine.setC_Tax_ID(tax.getC_Tax_ID());
-					invoiceLine.setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+					invoiceLine.setC_Tax_ID(tax.getTaxId().getRepoId());
+					invoiceLine.setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 				}
 
 				// Set Line Net Amount and Tax Amount
@@ -1050,8 +1055,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				{
 					final String candErrorMsg = error.getLocalizedMessage();
 
-					invoiceCandBL.setError(currentAffectedCand, candErrorMsg, note);
-					invoiceCandDAO.save(currentAffectedCand);
+					invoiceCandBL.setInvoicingErrorAndSave(currentAffectedCand, candErrorMsg, note);
 				}
 
 				if (note != null)

@@ -12,6 +12,7 @@
   "fieldName": "",
   "caption": "",
   "description": "",
+  "isDocumentValid": true,
   "widgetType": "InlineTab",
   "inlineTab": {
     "windowId": "123",

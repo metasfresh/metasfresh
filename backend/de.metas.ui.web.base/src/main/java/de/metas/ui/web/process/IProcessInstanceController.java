@@ -5,6 +5,7 @@ import java.util.List;
 
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 
@@ -60,7 +61,7 @@ public interface IProcessInstanceController
 	//@formatter:off
 	Collection<IProcessInstanceParameter> getParameters();
 	LookupValuesList getParameterLookupValues(String parameterName);
-	LookupValuesList getParameterLookupValuesForQuery(String parameterName, String query);
+	LookupValuesPage getParameterLookupValuesForQuery(String parameterName, String query);
 	void processParameterValueChanges(List<JSONDocumentChangedEvent> events, ReasonSupplier reason);
 	//@formatter:on
 

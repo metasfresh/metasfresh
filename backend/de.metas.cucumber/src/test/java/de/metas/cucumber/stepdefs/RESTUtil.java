@@ -22,6 +22,9 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
@@ -38,9 +41,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -50,15 +56,17 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 
+import static de.metas.util.web.MetasfreshRestAPIConstants.ENDPOINT_API_V2;
 import static org.assertj.core.api.Assertions.*;
 
 @UtilityClass
 public class RESTUtil
 {
 
-	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName) throws IOException
+	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
 		final IUserDAO userDAO = Services.get(IUserDAO.class);
 		final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
@@ -97,25 +105,19 @@ public class RESTUtil
 
 		final String appServerPort = System.getProperty("server.port");
 		final String url = "http://localhost:" + appServerPort + "/" + endpointPath;
-
-		final HttpEntityEnclosingRequestBase request;
+		final HttpRequestBase request;
 		switch (verb)
 		{
 			case "POST":
-				request = new HttpPost(url);
-				break;
 			case "PUT":
-				request = new HttpPut(url);
+				request = handleRequestWithEntity(verb, payload, authToken, url);
+				break;
+			case "GET":
+			case "DELETE":
+				request = handleRequestWithoutEntity(verb, authToken, url);
 				break;
 			default:
-				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'POST' and 'PUT'");
-		}
-
-		setHeaders(request, authToken);
-		if (payload != null)
-		{
-			final StringEntity entity = new StringEntity(payload);
-			request.setEntity(entity);
+				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'POST', 'PUT', 'GET', 'DELETE'");
 		}
 
 		final HttpResponse response = httpClient.execute(request);
@@ -130,14 +132,29 @@ public class RESTUtil
 
 		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
 		response.getEntity().writeTo(stream);
-		final String content = stream.toString(StandardCharsets.UTF_8.name());
+		final String content;
+
+		if (endpointPath != null && endpointPath.contains(ENDPOINT_API_V2.substring(1)))
+		{
+			final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+
+			final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
+
+			content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
+
+			apiResponseBuilder.requestId(jsonApiResponse.getRequestId());
+		}
+		else
+		{
+			content = stream.toString(StandardCharsets.UTF_8.name());
+		}
 
 		return apiResponseBuilder
 				.content(content)
 				.build();
 	}
 
-	private void setHeaders(@NonNull final HttpEntityEnclosingRequestBase request, @NonNull final String userAuthToken)
+	private void setHeaders(@NonNull final HttpRequestBase request, @NonNull final String userAuthToken)
 	{
 		request.addHeader("content-type", "application/json");
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
@@ -183,5 +200,57 @@ public class RESTUtil
 			default:
 				throw new AdempiereException("Invalid SyncAdvise: " + syncAdvise);
 		}
+	}
+
+	private HttpRequestBase handleRequestWithEntity(
+			final String verb,
+			final String payload,
+			final String authToken,
+			final String url) throws UnsupportedEncodingException
+	{
+		final HttpEntityEnclosingRequestBase request;
+		switch (verb)
+		{
+			case "POST":
+				request = new HttpPost(url);
+				break;
+			case "PUT":
+				request = new HttpPut(url);
+				break;
+			default:
+				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'POST' and 'PUT'");
+		}
+
+		setHeaders(request, authToken);
+		if (payload != null)
+		{
+			final StringEntity entity = new StringEntity(payload);
+			request.setEntity(entity);
+		}
+
+		return request;
+	}
+
+	private HttpRequestBase handleRequestWithoutEntity(
+			final String verb,
+			final String authToken,
+			final String url)
+	{
+		final HttpRequestBase request;
+		switch (verb)
+		{
+			case "GET":
+				request = new HttpGet(url);
+				break;
+			case "DELETE":
+				request = new HttpDelete(url);
+				break;
+			default:
+				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'GET' and 'DELETE'");
+		}
+
+		setHeaders(request, authToken);
+
+		return request;
 	}
 }

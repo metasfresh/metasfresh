@@ -7,10 +7,10 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProducer;
-import de.metas.handlingunits.inventory.impl.SyncInventoryQtyToHUsCommand;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
@@ -32,7 +32,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Inventory;
-import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -95,16 +95,14 @@ public class InventoryService
 
 	public boolean isMaterialDisposal(final I_M_Inventory inventory)
 	{
-		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
-				.docSubType(X_C_DocType.DOCSUBTYPE_InternalUseInventory)
-				.adClientId(inventory.getAD_Client_ID())
-				.adOrgId(inventory.getAD_Org_ID())
-				.build();
+		final DocTypeId inventoryDocTypeId = DocTypeId.ofRepoIdOrNull(inventory.getC_DocType_ID());
+		if(inventoryDocTypeId == null)
+		{
+			return false;
+		}
 
-		final DocTypeId disposalDocTypeId = docTypeDAO.getDocTypeIdOrNull(query);
-
-		return disposalDocTypeId != null && disposalDocTypeId.getRepoId() == inventory.getC_DocType_ID();
+		final DocBaseAndSubType inventoryDocBaseAndSubType = docTypeDAO.getDocBaseAndSubTypeById(inventoryDocTypeId);
+		return InventoryDocSubType.InternalUseInventory.toDocBaseAndSubType().equals(inventoryDocBaseAndSubType);
 	}
 
 	public static HUAggregationType computeHUAggregationType(@NonNull final DocBaseAndSubType baseAndSubType)
@@ -122,6 +120,21 @@ public class InventoryService
 		}
 
 		inventoryRepository.saveInventoryLines(inventory);
+	}
+
+	@NonNull
+	public DocTypeId getDocTypeIdByAggregationType(
+			@Nullable final HUAggregationType huAggregationType,
+			@NonNull final OrgId orgId)
+	{
+		final DocBaseAndSubType docBaseAndSubType = getDocBaseAndSubType(huAggregationType);
+
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+											   .docBaseType(docBaseAndSubType.getDocBaseType())
+											   .docSubType(docBaseAndSubType.getDocSubType())
+											   .adClientId(Env.getAD_Client_ID())
+											   .adOrgId(orgId.getRepoId())
+											   .build());
 	}
 
 	private static HUAggregationType computeHUAggregationType(
@@ -226,7 +239,7 @@ public class InventoryService
 		return inventoryRepository.createInventoryHeader(request);
 	}
 
-	private void createInventoryLine(@NonNull final InventoryLineCreateRequest request)
+	public void createInventoryLine(@NonNull final InventoryLineCreateRequest request)
 	{
 		inventoryRepository.createInventoryLine(request);
 	}
@@ -273,5 +286,18 @@ public class InventoryService
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())
 				.build());
+	}
+
+	private static DocBaseAndSubType getDocBaseAndSubType(@Nullable final HUAggregationType huAggregationType)
+	{
+		if (huAggregationType == null)
+		{
+			// #10656 There is no inventory doctype without a subtype. Consider the AggregatedHUInventory as a default
+			return AggregationType.MULTIPLE_HUS.getDocBaseAndSubType();
+		}
+		else
+		{
+			return AggregationType.getByHUAggregationType(huAggregationType).getDocBaseAndSubType();
+		}
 	}
 }

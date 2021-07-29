@@ -1,17 +1,17 @@
 package de.metas.location.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
+import de.metas.location.CountryId;
+import de.metas.location.GeographicalCoordinatesWithLocationId;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationCreateRequest;
+import de.metas.location.LocationId;
+import de.metas.location.PostalId;
+import de.metas.location.geocoding.GeographicalCoordinates;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,19 +20,19 @@ import org.compiere.model.I_C_Postal;
 import org.compiere.model.X_C_Location;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Stream;
 
-import de.metas.location.CountryId;
-import de.metas.location.GeographicalCoordinatesWithLocationId;
-import de.metas.location.ILocationDAO;
-import de.metas.location.LocationCreateRequest;
-import de.metas.location.LocationId;
-import de.metas.location.geocoding.GeographicalCoordinates;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 /*
  * #%L
@@ -71,9 +71,24 @@ public class LocationDAO implements ILocationDAO
 	}
 
 	@Override
+	public I_C_Postal getPostalById(@NonNull final PostalId postalId)
+	{
+		return loadOutOfTrx(postalId, I_C_Postal.class);
+	}
+
+	@Override
+	public List<I_C_Postal> getPostalByIds(@NonNull final Set<PostalId> postalIds)
+	{
+		return loadByRepoIdAwaresOutOfTrx(postalIds, I_C_Postal.class);
+	}
+
+	@Override
 	public List<I_C_Location> getByIds(@NonNull final Set<LocationId> ids)
 	{
-		return loadByRepoIdAwaresOutOfTrx(ids, I_C_Location.class);
+		// Don't load records out-of-trx unless you really know what's going on and also know the possible contexts in which a method might be called.
+		// * this method is (also) called as part of a full bpartner-creation workflow and we need to be able to roll it back, without leaving back this dangling C_Location.
+		// * since the c_location is created in-trx, we also need to (re-)load it in-trx later when we try to create its product-price
+		return loadByRepoIdAwares(ids, I_C_Location.class);
 	}
 
 	@Override
@@ -102,34 +117,38 @@ public class LocationDAO implements ILocationDAO
 		locationRecord.setAddress3(request.getAddress3());
 		locationRecord.setAddress4(request.getAddress4());
 
-		final String postalValue = request.getPostal();
-		locationRecord.setPostal(postalValue);
-
+		final PostalId postalId = getPostalId(request);
+		locationRecord.setC_Postal_ID(PostalId.toRepoId(postalId));
+		locationRecord.setPostal(request.getPostal());
 		locationRecord.setPostal_Add(request.getPostalAdd());
+
 		locationRecord.setCity(request.getCity());
 		locationRecord.setC_Region_ID(request.getRegionId());
+		locationRecord.setRegionName(request.getRegionName());
 		locationRecord.setC_Country_ID(request.getCountryId().getRepoId());
 		locationRecord.setPOBox(request.getPoBox());
 
-		int postalId = getPostalId(request);
-
-		locationRecord.setC_Postal_ID(postalId);
 
 		save(locationRecord);
 
 		return LocationId.ofRepoId(locationRecord.getC_Location_ID());
 	}
 
-	private int getPostalId(final LocationCreateRequest request)
+	@Nullable
+	private PostalId getPostalId(final LocationCreateRequest request)
 	{
-		final String postalValue = request.getPostal();
-
-		if (Check.isEmpty(postalValue))
+		if(request.getPostalId() != null)
 		{
-			return -1;
+			return request.getPostalId();
 		}
 
-		final IQueryBuilder<I_C_Postal> postalQuery = Services.get(IQueryBL.class)
+		final String postalValue = request.getPostal();
+		if (Check.isEmpty(postalValue))
+		{
+			return null;
+		}
+
+		final IQueryBuilder<I_C_Postal> postalQuery = queryBL
 				.createQueryBuilder(I_C_Postal.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Postal.COLUMNNAME_C_Country_ID, request.getCountryId());
@@ -144,11 +163,11 @@ public class LocationDAO implements ILocationDAO
 			postalQuery.addEqualsFilter(I_C_Postal.COLUMNNAME_City, request.getCity());
 		}
 
-		final int postalId = postalQuery.filter(PostalQueryFilter.of(postalValue))
+		final int postalRepoId = postalQuery.filter(PostalQueryFilter.of(postalValue))
 				.create()
 				.firstIdOnly();
 
-		return postalId;
+		return PostalId.ofRepoIdOrNull(postalRepoId);
 	}
 
 	@Override
@@ -165,7 +184,7 @@ public class LocationDAO implements ILocationDAO
 				.create()
 				.listColumns(I_C_Location.COLUMNNAME_C_Location_ID, I_C_Location.COLUMNNAME_Latitude, I_C_Location.COLUMNNAME_Longitude)
 				.stream()
-				.map(row -> toGeographicalCoordinatesWithLocationIdOrNull(row))
+				.map(LocationDAO::toGeographicalCoordinatesWithLocationIdOrNull)
 				.filter(Objects::nonNull);
 	}
 

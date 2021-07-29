@@ -1,13 +1,13 @@
 package de.metas.handlingunits;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -54,12 +54,13 @@ public class HuPackingInstructionsId implements RepoIdAware
 		}
 	}
 
+	@Nullable
 	public static HuPackingInstructionsId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static int toRepoId(final HuPackingInstructionsId HuPackingInstructionsId)
+	public static int toRepoId(@Nullable final HuPackingInstructionsId HuPackingInstructionsId)
 	{
 		return HuPackingInstructionsId != null ? HuPackingInstructionsId.getRepoId() : -1;
 	}

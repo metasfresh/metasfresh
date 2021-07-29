@@ -1,22 +1,11 @@
 package de.metas.material.dispo.commons.interceptor;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.stream.Stream;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_Order;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
+import de.metas.material.commons.attributes.clasifiers.BPartnerClassifier;
 import de.metas.material.dispo.commons.model.I_C_OrderLine;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseMultiQuery.AvailableToPromiseMultiQueryBuilder;
@@ -24,7 +13,6 @@ import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResult;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseResultGroup;
-import de.metas.material.dispo.commons.repository.atp.BPartnerClassifier;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -32,6 +20,16 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_Order;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -149,7 +147,7 @@ final class OrderAvailableToPromiseTool
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery
 				.builder()
 				.productId(orderLineKey.getProductId())
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(orderLineKey.getAttributesKey()))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(orderLineKey.getAttributesKey()))
 				.bpartner(orderLineKey.getBpartner())
 				.date(preparationDate)
 				.build();
@@ -178,7 +176,7 @@ final class OrderAvailableToPromiseTool
 		private static OrderLineKey forResultGroup(@NonNull final AvailableToPromiseResultGroup resultGroup)
 		{
 			return new OrderLineKey(
-					resultGroup.getProductId(),
+					resultGroup.getProductId().getRepoId(),
 					resultGroup.getStorageAttributesKey(),
 					resultGroup.getBpartner());
 		}

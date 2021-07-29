@@ -75,7 +75,7 @@ export function connectWS(topic, onMessageCallback) {
     this.sockClient.onConnect = subscribe;
 
     /*eslint-disable no-console */
-    this.sockClient.onStompError = function(frame) {
+    this.sockClient.onStompError = function (frame) {
       // Will be invoked in case of error encountered at Broker
       // Bad login/passcode typically will cause an error
       // Complaint brokers will set `message` header with a brief message. Body may contain details.

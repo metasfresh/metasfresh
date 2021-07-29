@@ -2,18 +2,25 @@ package de.metas.acct.process;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
+import de.metas.acct.gljournal.GLCategoryId;
+import de.metas.common.util.time.SystemTime;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.process.IProcessDefaultParameter;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.Param;
 import org.adempiere.ad.dao.IQueryAggregateBuilder;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.I_GL_JournalBatch;
+import org.compiere.model.I_GL_Journal;
 import org.compiere.model.X_C_ElementValue;
 import org.compiere.model.X_GL_JournalBatch;
 import org.compiere.util.TimeUtil;
@@ -27,8 +34,9 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal.GL_JournalLine_Builder;
 import de.metas.acct.gljournal.GL_Journal_Builder;
 import de.metas.process.JavaProcess;
-import de.metas.util.Check;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -56,42 +64,41 @@ import de.metas.util.Services;
  * Process used to create year ending bookings.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-public class GL_Journal_GenerateYearEnding extends JavaProcess
+public class GL_Journal_GenerateYearEnding extends JavaProcess implements IProcessDefaultParametersProvider
 {
 	// services
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 
-	//
-	// Parameters
-	private I_GL_JournalBatch p_GL_JournalBatch;
-	private Date p_DateFrom;
-	private Date p_DateTo;
+	private static final String PARAM_C_AcctSchema_ID = I_GL_Journal.COLUMNNAME_C_AcctSchema_ID;
+	private static final String PARAM_AD_ORG_ID = I_GL_Journal.COLUMNNAME_AD_Org_ID;
+	private static final String PARAM_DateAcct = I_GL_Journal.COLUMNNAME_DateAcct;
+	private static final String PARAM_GL_Category_ID = I_GL_Journal.COLUMNNAME_GL_Category_ID;
 
-	private static final String PARAM_C_AcctSchema_ID = "C_AcctSchema_ID";
+	@Param(parameterName = PARAM_C_AcctSchema_ID, mandatory = true)
+	private AcctSchemaId p_acctSchemaId;
 	private AcctSchema acctSchema;
-	private AccountId p_Account_IncomeSummaryId;
-	private AccountId p_Account_RetainedEarningId;
+
+	@Param(parameterName = PARAM_AD_ORG_ID, mandatory = true)
+	private OrgId p_orgId;
+
+	@Param(parameterName = PARAM_DateAcct, mandatory = true)
+	private Instant p_dateAcct;
+
+	@Param(parameterName = PARAM_GL_Category_ID, mandatory = false)
+	private GLCategoryId p_glCategoryId;
 
 	private static final ModelDynAttributeAccessor<I_C_ElementValue, BigDecimal> DYNATTR_AmtAcctDr = new ModelDynAttributeAccessor<>("AmtAcctDr", BigDecimal.class);
 	private static final ModelDynAttributeAccessor<I_C_ElementValue, BigDecimal> DYNATTR_AmtAcctCr = new ModelDynAttributeAccessor<>("AmtAcctCr", BigDecimal.class);
 
+	private AccountId p_Account_IncomeSummaryId;
+	private AccountId p_Account_RetainedEarningId;
+
 	@Override
 	protected void prepare()
 	{
-		final IRangeAwareParams params = getParameterAsIParams();
-
-		p_GL_JournalBatch = getRecord(I_GL_JournalBatch.class);
-		Check.assumeNotNull(p_GL_JournalBatch, "p_GL_JournalBatch not null");
-
-		final Timestamp dateAcct = p_GL_JournalBatch.getDateAcct();
-		p_DateFrom = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_YEAR);
-		p_DateTo = TimeUtil.trunc(dateAcct, TimeUtil.TRUNC_DAY);
-
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(params.getParameterAsInt(PARAM_C_AcctSchema_ID, -1));
-		acctSchema = acctSchemasRepo.getById(acctSchemaId);
+		acctSchema = acctSchemasRepo.getById(p_acctSchemaId);
 		final AcctSchemaGeneralLedger acctSchemaGL = acctSchema.getGeneralLedger();
 		p_Account_IncomeSummaryId = acctSchemaGL.getIncomeSummaryAcctId();
 		p_Account_RetainedEarningId = acctSchemaGL.getRetainedEarningAcctId();
@@ -106,16 +113,19 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess
 			return MSG_OK;
 		}
 
-		p_GL_JournalBatch.setPostingType(X_GL_JournalBatch.POSTINGTYPE_Statistical);
-		InterfaceWrapperHelper.save(p_GL_JournalBatch);
+		final GLJournalRequest request = GLJournalRequest.builder()
+				.clientId(getProcessInfo().getClientId())
+				.orgId(p_orgId)
+				.dateAcct(p_dateAcct)
+				.dateDoc(p_dateAcct)
+				.postingType(X_GL_JournalBatch.POSTINGTYPE_Statistical)
+				.glCategoryId(p_glCategoryId)
+				.acctSchemaId(p_acctSchemaId)
+				.currencyId(acctSchema.getCurrencyId())
+				.description(getName())
+				.build();
 
-		final GL_Journal_Builder glJournalBuilder = GL_Journal_Builder.newBuilder(p_GL_JournalBatch)
-				.setDateAcct(p_DateTo)
-				.setDateDoc(p_DateTo)
-				.setC_AcctSchema_ID(acctSchema.getId().getRepoId())
-				.setC_Currency_ID(acctSchema.getCurrencyId().getRepoId())
-				.setC_ConversionType_Default()
-				.setDescription(getName());
+		final GL_Journal_Builder glJournalBuilder = GL_Journal_Builder.newBuilder(request);
 
 		BigDecimal accountBalanceSum = BigDecimal.ZERO;
 		for (final I_C_ElementValue account : accounts)
@@ -199,13 +209,17 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess
 				.addInArrayOrAllFilter(I_C_ElementValue.COLUMN_AccountType, X_C_ElementValue.ACCOUNTTYPE_Expense, X_C_ElementValue.ACCOUNTTYPE_Revenue)
 				.create();
 
+		final Timestamp day = TimeUtil.asTimestamp(p_dateAcct);
+		final Date dateFrom = TimeUtil.getYearFirstDay(day);
+		final Date dateTo = day;
+
 		final IQueryAggregateBuilder<I_Fact_Acct, I_C_ElementValue> aggregateOnAccountBuilder = queryBL.createQueryBuilder(I_Fact_Acct.class, this)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Client_ID, getAD_Client_ID())
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Org_ID, p_GL_JournalBatch.getAD_Org_ID())
-				.addBetweenFilter(I_Fact_Acct.COLUMN_DateAcct, p_DateFrom, p_DateTo)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_PostingType, PostingType.Actual.getCode())
-				.addEqualsFilter(I_Fact_Acct.COLUMN_C_AcctSchema_ID, acctSchema.getId())
-				.addInSubQueryFilter(I_Fact_Acct.COLUMN_Account_ID, I_C_ElementValue.COLUMN_C_ElementValue_ID, expenseAndRevenueAccountsQuery)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Client_ID, getClientId())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Org_ID, p_orgId.getRepoId())
+				.addBetweenFilter(I_Fact_Acct.COLUMNNAME_DateAcct, dateFrom, dateTo)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_PostingType, PostingType.Actual.getCode())
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_C_AcctSchema_ID, p_acctSchemaId)
+				.addInSubQueryFilter(I_Fact_Acct.COLUMNNAME_Account_ID, I_C_ElementValue.COLUMNNAME_C_ElementValue_ID, expenseAndRevenueAccountsQuery)
 				//
 				.aggregateOnColumn(I_Fact_Acct.COLUMN_Account_ID);
 
@@ -214,6 +228,18 @@ public class GL_Journal_GenerateYearEnding extends JavaProcess
 
 		final List<I_C_ElementValue> accounts = aggregateOnAccountBuilder.aggregate();
 		return accounts;
+	}
+
+	@Nullable
+	@Override
+	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
+	{
+		if (PARAM_DateAcct.equals(parameter.getColumnName()))
+		{
+			return TimeUtil.getYearLastDay(SystemTime.asDate());
+		}
+
+		return IProcessDefaultParametersProvider.DEFAULT_VALUE_NOTAVAILABLE;
 	}
 
 }

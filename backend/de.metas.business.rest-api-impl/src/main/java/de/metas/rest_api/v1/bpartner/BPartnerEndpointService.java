@@ -38,7 +38,7 @@ import de.metas.common.bpartner.v1.response.JsonResponseCompositeList;
 import de.metas.common.bpartner.v1.response.JsonResponseContact;
 import de.metas.common.bpartner.v1.response.JsonResponseContactList;
 import de.metas.common.bpartner.v1.response.JsonResponseLocation;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonPagingDescriptor;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.JsonConverters;

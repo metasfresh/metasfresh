@@ -176,7 +176,7 @@ public class DocumentLocationBL implements IDocumentLocationBL
 			throw new AdempiereException("@NotFound@ @C_BPartner_Location_ID@ (@M_Warehouse_ID@:" + warehouse.getName() + ")");
 		}
 
-		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(bpartnerDAO.getBPartnerLocationById(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(),warehouse.getC_BPartner_Location_ID())), I_C_BPartner_Location.class);
+		final I_C_BPartner_Location bpLocation = InterfaceWrapperHelper.create(bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoIdOrNull(warehouse.getC_BPartner_ID(),warehouse.getC_BPartner_Location_ID())), I_C_BPartner_Location.class);
 		final I_C_BPartner bpartner = bpartnerDAO.getById(bpLocation.getC_BPartner_ID());
 
 		// There is no contact available for warehouse

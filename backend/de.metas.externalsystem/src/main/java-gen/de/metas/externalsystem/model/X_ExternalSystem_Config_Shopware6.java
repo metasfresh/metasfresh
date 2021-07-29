@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Shopware6
  *  @author metasfresh (generated)
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -96827426L;
+	private static final long serialVersionUID = -1671049174L;
 
 	/** Standard Constructor */
 	public X_ExternalSystem_Config_Shopware6 (final Properties ctx, final int ExternalSystem_Config_Shopware6_ID, @Nullable final String trxName)
@@ -113,7 +113,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setExternalSystemValue (final java.lang.String ExternalSystemValue)
+	public void setExternalSystemValue (final @Nullable java.lang.String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}
@@ -122,6 +122,30 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	public java.lang.String getExternalSystemValue()
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
+	}
+
+	@Override
+	public void setFreightCost_NormalVAT_Rates (final @Nullable java.lang.String FreightCost_NormalVAT_Rates)
+	{
+		set_Value (COLUMNNAME_FreightCost_NormalVAT_Rates, FreightCost_NormalVAT_Rates);
+	}
+
+	@Override
+	public java.lang.String getFreightCost_NormalVAT_Rates()
+	{
+		return get_ValueAsString(COLUMNNAME_FreightCost_NormalVAT_Rates);
+	}
+
+	@Override
+	public void setFreightCost_Reduced_VAT_Rates (final @Nullable java.lang.String FreightCost_Reduced_VAT_Rates)
+	{
+		set_Value (COLUMNNAME_FreightCost_Reduced_VAT_Rates, FreightCost_Reduced_VAT_Rates);
+	}
+
+	@Override
+	public java.lang.String getFreightCost_Reduced_VAT_Rates()
+	{
+		return get_ValueAsString(COLUMNNAME_FreightCost_Reduced_VAT_Rates);
 	}
 
 	@Override
@@ -146,5 +170,47 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	public java.lang.String getJSONPathConstantBPartnerLocationID()
 	{
 		return get_ValueAsString(COLUMNNAME_JSONPathConstantBPartnerLocationID);
+	}
+
+	@Override
+	public void setJSONPathSalesRepID (final @Nullable java.lang.String JSONPathSalesRepID)
+	{
+		set_Value (COLUMNNAME_JSONPathSalesRepID, JSONPathSalesRepID);
+	}
+
+	@Override
+	public java.lang.String getJSONPathSalesRepID()
+	{
+		return get_ValueAsString(COLUMNNAME_JSONPathSalesRepID);
+	}
+
+	@Override
+	public void setM_FreightCost_NormalVAT_Product_ID (final int M_FreightCost_NormalVAT_Product_ID)
+	{
+		if (M_FreightCost_NormalVAT_Product_ID < 1)
+			set_Value (COLUMNNAME_M_FreightCost_NormalVAT_Product_ID, null);
+		else
+			set_Value (COLUMNNAME_M_FreightCost_NormalVAT_Product_ID, M_FreightCost_NormalVAT_Product_ID);
+	}
+
+	@Override
+	public int getM_FreightCost_NormalVAT_Product_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_FreightCost_NormalVAT_Product_ID);
+	}
+
+	@Override
+	public void setM_FreightCost_ReducedVAT_Product_ID (final int M_FreightCost_ReducedVAT_Product_ID)
+	{
+		if (M_FreightCost_ReducedVAT_Product_ID < 1)
+			set_Value (COLUMNNAME_M_FreightCost_ReducedVAT_Product_ID, null);
+		else
+			set_Value (COLUMNNAME_M_FreightCost_ReducedVAT_Product_ID, M_FreightCost_ReducedVAT_Product_ID);
+	}
+
+	@Override
+	public int getM_FreightCost_ReducedVAT_Product_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_FreightCost_ReducedVAT_Product_ID);
 	}
 }

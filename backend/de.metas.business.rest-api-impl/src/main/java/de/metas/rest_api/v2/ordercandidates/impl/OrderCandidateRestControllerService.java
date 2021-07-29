@@ -23,18 +23,26 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
+import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.impex.InputDataSourceId;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandId;
+import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandValidationResult;
+import de.metas.ordercandidate.api.OLCandValidatorService;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.OrgId;
+import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Check;
 import de.metas.util.web.exception.MissingResourceException;
 import de.metas.vertical.healthcare.alberta.order.AlbertaOrderCompositeInfo;
@@ -43,7 +51,9 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
@@ -56,17 +66,20 @@ public class OrderCandidateRestControllerService
 	private final OLCandRepository olCandRepo;
 	private final PerformanceMonitoringService perfMonService;
 	private final AlbertaOrderService albertaOrderService;
+	private final OLCandValidatorService olCandValidatorService;
 
 	public OrderCandidateRestControllerService(
 			@NonNull final JsonConverters jsonConverters,
 			@NonNull final OLCandRepository olCandRepo,
 			@NonNull final PerformanceMonitoringService perfMonService,
-			@NonNull final AlbertaOrderService albertaOrderService)
+			@NonNull final AlbertaOrderService albertaOrderService,
+			@NonNull final OLCandValidatorService olCandValidatorService)
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
 		this.perfMonService = perfMonService;
 		this.albertaOrderService = albertaOrderService;
+		this.olCandValidatorService = olCandValidatorService;
 	}
 
 	public JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
@@ -87,13 +100,38 @@ public class OrderCandidateRestControllerService
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		final HashMap<OLCandQuery, List<OLCand>> query2OLCandList = new HashMap<>();
+
 		final List<OLCand> olCandidates = bulkRequest
 				.getRequests()
 				.stream()
+				.filter(request -> !wasOLCandAlreadyCreated(request, query2OLCandList))
 				.map(request -> createOrderLineCandidate(request, masterdataProvider))
 				.collect(ImmutableList.toImmutableList());
 
 		return jsonConverters.toJson(olCandidates, masterdataProvider);
+	}
+
+	private boolean wasOLCandAlreadyCreated(
+			@NonNull final JsonOLCandCreateRequest olCandRequest,
+			@NonNull final HashMap<OLCandQuery, List<OLCand>> queryToOLCandList)
+	{
+		if (Check.isBlank(olCandRequest.getExternalHeaderId())
+				|| Check.isBlank(olCandRequest.getExternalLineId()))
+		{
+			return false;
+		}
+
+		final IdentifierString inputDataSourceIdentifier = IdentifierString.of(olCandRequest.getDataSource());
+
+		final OLCandQuery olCandQuery = OLCandQuery.builder()
+				.externalHeaderId(olCandRequest.getExternalHeaderId())
+				.inputDataSourceName(inputDataSourceIdentifier.asInternalName())
+				.build();
+
+		return queryToOLCandList.computeIfAbsent(olCandQuery, olCandRepo::getByQuery)
+				.stream()
+				.anyMatch(existingOLCand -> olCandRequest.getExternalLineId().equals(existingOLCand.getExternalLineId()));
 	}
 
 	private OLCandCreateRequest fromJson(
@@ -174,6 +212,34 @@ public class OrderCandidateRestControllerService
 				.build();
 
 		albertaOrderService.saveAlbertaOrderCompositeInfo(albertaOrderCompositeInfo);
+	}
+
+	@NonNull
+	public JsonOLCandClearingResponse clearOLCandidates(@NonNull final JsonOLCandClearRequest clearRequest)
+	{
+		final IdentifierString inputDataSourceIdentifier = IdentifierString.of(clearRequest.getInputDataSourceName());
+
+		final OLCandQuery olCandQuery = OLCandQuery.builder()
+				.externalHeaderId(clearRequest.getExternalHeaderId())
+				.inputDataSourceName(inputDataSourceIdentifier.asInternalName())
+				.build();
+
+		final List<I_C_OLCand> olCands = olCandRepo.getByQuery(olCandQuery)
+				.stream()
+				.map(OLCand::unbox)
+				.collect(ImmutableList.toImmutableList());
+
+		final List<OLCandValidationResult> olCandValidationResults = olCandValidatorService.clearOLCandidates(olCands);
+
+		final boolean finishedWithErrors = olCandValidationResults.stream().anyMatch(result -> !result.isOk());
+
+		final Map<Integer, Boolean> olCandId2ValidationStatus = olCandValidationResults.stream()
+				.collect(ImmutableMap.toImmutableMap(result -> result.getOlCandId().getRepoId(), OLCandValidationResult::isOk));
+
+		return JsonOLCandClearingResponse.builder()
+				.olCandIdToValidationStatus(olCandId2ValidationStatus)
+				.successfullyCleared(!finishedWithErrors)
+				.build();
 	}
 
 	@Nullable

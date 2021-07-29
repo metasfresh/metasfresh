@@ -1,13 +1,6 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
@@ -16,6 +9,11 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Check;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /*
  * #%L
@@ -147,6 +145,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	}
 
 	/** @return SQL to be used in SELECT ... 'this field's sql' ... FROM ... */
+	@Override
 	public SqlSelectValue getSqlSelectValue()
 	{
 		return sqlSelectValue;

@@ -36,7 +36,7 @@ public interface IUserBL extends ISingletonService
 
 	void changePasswordAndSave(I_AD_User user, String newPassword);
 
-	String buildContactName(final String firstName, final String lastName);
+	String buildContactName(@Nullable final String firstName, @Nullable final String lastName);
 
 	/**
 	 * Is the email valid

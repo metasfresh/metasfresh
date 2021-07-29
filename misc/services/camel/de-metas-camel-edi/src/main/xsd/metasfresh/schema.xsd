@@ -773,6 +773,7 @@
             <xsd:element minOccurs="0" name="EanCom_Invoice_UOM" type="xsd:string"/>
             <xsd:element name="InvoicableQtyBasedOn" type="InvoicableQtyBasedOnEnum"/>
             <xsd:element minOccurs="0" name="OrderPOReference" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="QtyItemCapacity" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="QtyDeliveredInInvoiceUOM" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="QtyDeliveredInUOM" type="xsd:decimal"/>
             <xsd:element minOccurs="0" name="OrderLine" type="xsd:integer"/>

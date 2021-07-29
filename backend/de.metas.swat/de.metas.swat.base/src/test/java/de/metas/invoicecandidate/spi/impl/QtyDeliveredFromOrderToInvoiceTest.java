@@ -32,11 +32,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.interceptor.C_DocType;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.interfaces.I_C_DocType;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.lang.SOTrx;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -104,6 +109,10 @@ public class QtyDeliveredFromOrderToInvoiceTest
 
 	private UomId stockUomId;
 
+	private I_C_DocType docType;
+
+	private final DocTypeId docTypeId = DocTypeId.ofRepoId(1000016);
+
 	@BeforeEach
 	public void beforeEach()
 	{
@@ -144,6 +153,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 			initM_InOutLine();
 		}
 
+		initC_DocType();
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		mockTaxAndProductAcctServices();
@@ -155,12 +165,16 @@ public class QtyDeliveredFromOrderToInvoiceTest
 	private void mockTaxAndProductAcctServices()
 	{
 		final IProductAcctDAO productAcctDAO = Mockito.mock(IProductAcctDAO.class);
+		final IDocTypeBL docTypeBL = Mockito.mock(IDocTypeBL.class);
 		final ITaxBL taxBL = Mockito.mock(ITaxBL.class);
 
 		Services.registerService(IProductAcctDAO.class, productAcctDAO);
+		Services.registerService(IDocTypeBL.class, docTypeBL);
 		Services.registerService(ITaxBL.class, taxBL);
 
 		Mockito.doReturn(activityId).when(productAcctDAO).retrieveActivityForAcct(clientId, orgId, productId);
+		Mockito.doReturn(docType).when(docTypeBL).getById(docTypeId);
+
 
 		final Properties ctx = Env.getCtx();
 		Mockito
@@ -173,7 +187,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 						OrgId.ofRepoId(order.getAD_Org_ID()),
 						WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
 						order.getC_BPartner_Location_ID(),
-						order.isSOTrx()))
+						SOTrx.ofBoolean(order.isSOTrx())))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 
@@ -202,6 +216,14 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		olHandler.setHandlerRecord(handler);
 	}
 
+	private void initC_DocType()
+	{
+		docType = InterfaceWrapperHelper.create(ctx, I_C_DocType.class, trxName);
+		docType.setAD_Org_ID(orgId.getRepoId());
+		docType.setC_DocType_ID(1000016);
+		InterfaceWrapperHelper.save(docType);
+	}
+
 	private void initC_Order()
 	{
 		order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, trxName);
@@ -209,6 +231,7 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		order.setBill_BPartner_ID(bPartner.getC_BPartner_ID());
 		order.setDocStatus(DocStatus.Completed.getCode());
 		order.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
+		order.setC_DocTypeTarget_ID(1000016);
 		InterfaceWrapperHelper.save(order);
 	}
 

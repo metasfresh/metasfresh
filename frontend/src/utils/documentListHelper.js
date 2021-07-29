@@ -162,7 +162,7 @@ if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
  * @todo TODO: rewrite this to not modify `initialMap`. This will also require
  * changes in TableActions
  */
-const doesSelectionExist = function({
+const doesSelectionExist = function ({
   data,
   selected,
   keyProperty = 'id',

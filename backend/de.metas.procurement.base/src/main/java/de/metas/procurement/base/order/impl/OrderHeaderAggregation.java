@@ -1,21 +1,20 @@
 package de.metas.procurement.base.order.impl;
 
-import java.sql.Timestamp;
-import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.IOrderBL;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /*
  * #%L
@@ -111,7 +110,7 @@ public class OrderHeaderAggregation
 		// Doc type
 		order.setAD_Org_ID(adOrgId);
 		order.setIsSOTrx(false);
-		orderBL.setDocTypeTargetId(order);
+		orderBL.setDefaultDocTypeTargetId(order);
 
 		//
 		// Warehouse

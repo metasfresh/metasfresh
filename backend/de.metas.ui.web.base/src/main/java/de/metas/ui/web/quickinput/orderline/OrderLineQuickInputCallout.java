@@ -1,17 +1,12 @@
 package de.metas.ui.web.quickinput.orderline;
 
-import java.util.Optional;
-
-import de.metas.ui.web.quickinput.field.DefaultPackingItemCriteria;
-import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.compiere.SpringContextHolder;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.quickinput.QuickInput;
 import de.metas.ui.web.quickinput.field.DefaultPackingItemCriteria;
@@ -19,11 +14,13 @@ import de.metas.ui.web.quickinput.field.PackingItemProductFieldHelper;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndAttributes;
+import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutField;
-import org.compiere.SpringContextHolder;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /*
@@ -50,13 +47,17 @@ import java.util.Optional;
 
 final class OrderLineQuickInputCallout
 {
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IBPartnerBL bpartnersService;
-	private final PackingItemProductFieldHelper packingItemProductFieldHelper = SpringContextHolder.instance.getBean(PackingItemProductFieldHelper.class);
+	private final PackingItemProductFieldHelper packingItemProductFieldHelper;
 
 	@Builder
-	private OrderLineQuickInputCallout(@NonNull final IBPartnerBL bpartnersService)
+	private OrderLineQuickInputCallout(
+			@NonNull final IBPartnerBL bpartnersService,
+			@NonNull final PackingItemProductFieldHelper packingItemProductFieldHelper)
 	{
 		this.bpartnersService = bpartnersService;
+		this.packingItemProductFieldHelper = packingItemProductFieldHelper;
 	}
 
 	public void onProductChanged(final ICalloutField calloutField)
@@ -69,6 +70,7 @@ final class OrderLineQuickInputCallout
 
 		updateM_HU_PI_Item_Product(quickInput);
 		updateBestBeforePolicy(quickInput);
+		updateCompensationGroup(quickInput);
 	}
 
 	private void updateM_HU_PI_Item_Product(@NonNull final QuickInput quickInput)
@@ -79,19 +81,15 @@ final class OrderLineQuickInputCallout
 		}
 
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-		final LookupValue productLookupValue = quickInputModel.getM_Product_ID();
-		if (productLookupValue == null)
+		final ProductAndAttributes productAndAttributes = getProductAndAttributes(quickInputModel);
+		if (productAndAttributes == null)
 		{
 			return;
 		}
-
-		final ProductAndAttributes productAndAttributes = ProductLookupDescriptor.toProductAndAttributes(productLookupValue);
 		final ProductId quickInputProductId = productAndAttributes.getProductId();
 
 		final I_C_Order order = quickInput.getRootDocumentAs(I_C_Order.class);
-
 		final Optional<DefaultPackingItemCriteria> defaultPackingItemCriteria = DefaultPackingItemCriteria.of(order, quickInputProductId);
-
 		final I_M_HU_PI_Item_Product huPIItemProduct = defaultPackingItemCriteria.flatMap(packingItemProductFieldHelper::getDefaultPackingMaterial).orElse(null);
 
 		quickInputModel.setM_HU_PI_Item_Product(huPIItemProduct);
@@ -115,4 +113,42 @@ final class OrderLineQuickInputCallout
 		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 		quickInputModel.setShipmentAllocation_BestBefore_Policy(bestBeforePolicy.getCode());
 	}
-			}
+
+	private void updateCompensationGroup(@NonNull final QuickInput quickInput)
+	{
+		if (!quickInput.hasField(IOrderLineQuickInput.COLUMNNAME_C_CompensationGroup_Schema_ID))
+		{
+			return;
+		}
+
+		final IOrderLineQuickInput quickInputModel = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+
+		final ProductAndAttributes productAndAttributes = getProductAndAttributes(quickInputModel);
+		final GroupTemplateId groupTemplateId = getGroupTemplateId(productAndAttributes).orElse(null);
+
+		quickInputModel.setC_CompensationGroup_Schema_ID(GroupTemplateId.toRepoId(groupTemplateId));
+		if (groupTemplateId != null)
+		{
+			quickInputModel.setQty(BigDecimal.ONE);
+		}
+		else
+		{
+			quickInputModel.setC_Flatrate_Conditions_ID(-1);
+		}
+	}
+
+	@Nullable
+	private static ProductAndAttributes getProductAndAttributes(@NonNull final IOrderLineQuickInput quickInputModel)
+	{
+		return quickInputModel.getM_Product_ID() != null
+				? ProductLookupDescriptor.toProductAndAttributes(quickInputModel.getM_Product_ID())
+				: null;
+	}
+
+	private Optional<GroupTemplateId> getGroupTemplateId(@Nullable final ProductAndAttributes productAndAttributes)
+	{
+		return productAndAttributes != null
+				? productDAO.getGroupTemplateIdByProductId(productAndAttributes.getProductId())
+				: Optional.empty();
+	}
+}

@@ -23,12 +23,15 @@
 package de.metas.document.references.zoom_into;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
@@ -36,7 +39,7 @@ import java.util.List;
 public class GenericZoomIntoTableInfo
 {
 	@NonNull String tableName;
-	@NonNull String keyColumnName;
+	@NonNull ImmutableSet<String> keyColumnNames;
 	boolean hasIsSOTrxColumn;
 
 	@Nullable GenericZoomIntoTableWindow defaultWindow;
@@ -50,14 +53,14 @@ public class GenericZoomIntoTableInfo
 	@Builder
 	private GenericZoomIntoTableInfo(
 			@NonNull final String tableName,
-			@NonNull final String keyColumnName,
+			@NonNull final Collection<String> keyColumnNames,
 			final boolean hasIsSOTrxColumn,
 			@NonNull final List<GenericZoomIntoTableWindow> windows,
 			@Nullable final String parentTableName,
 			@Nullable final String parentLinkColumnName)
 	{
 		this.tableName = tableName;
-		this.keyColumnName = keyColumnName;
+		this.keyColumnNames = ImmutableSet.copyOf(keyColumnNames);
 		this.hasIsSOTrxColumn = hasIsSOTrxColumn;
 
 		GenericZoomIntoTableWindow defaultSOWindow = null;
@@ -131,7 +134,7 @@ public class GenericZoomIntoTableInfo
 			@NonNull final CustomizedWindowInfoMap customizedWindowInfoMap)
 	{
 		this.tableName = from.tableName;
-		this.keyColumnName = from.keyColumnName;
+		this.keyColumnNames = from.keyColumnNames;
 		this.hasIsSOTrxColumn = from.hasIsSOTrxColumn;
 
 		this.defaultWindow = withCustomizedWindow(from.defaultWindow, customizedWindowInfoMap);
@@ -167,5 +170,14 @@ public class GenericZoomIntoTableInfo
 	public GenericZoomIntoTableInfo withCustomizedWindowIds(@NonNull final CustomizedWindowInfoMap customizedWindowInfoMap)
 	{
 		return new GenericZoomIntoTableInfo(this, customizedWindowInfoMap);
+	}
+
+	public String getSingleKeyColumnName()
+	{
+		if (keyColumnNames.size() != 1)
+		{
+			throw new AdempiereException("Table does not have a single key column: " + this);
+		}
+		return keyColumnNames.iterator().next();
 	}
 }

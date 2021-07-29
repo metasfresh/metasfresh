@@ -1,6 +1,6 @@
 import nock from 'nock';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import { Map, List } from 'immutable';
 
 import masterWindowData from '../../../test_setup/fixtures/master_window/data.json';
@@ -23,8 +23,7 @@ import reducer, {
 } from '../../reducers/windowHandler';
 
 const createState = function(state = {}) {
-  return merge.recursive(
-    true,
+  return merge(
     {
       windowHandler: {
         ...initialState,

@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import TetherComponent from 'react-tether';
-import { connect } from 'react-redux';
 
 import {
   autocompleteRequest,
@@ -15,7 +14,7 @@ import SelectionDropdown from '../SelectionDropdown';
  * @module Labels
  * @extends Component
  */
-class Labels extends Component {
+export default class Labels extends PureComponent {
   state = {
     cursor: this.props.selected.length,
     focused: false,
@@ -33,8 +32,7 @@ class Labels extends Component {
    */
   handleClick = async () => {
     const {
-      windowType, // windowId
-      docId,
+      windowId, // windowId
       name,
       entity,
       subentity,
@@ -43,6 +41,7 @@ class Labels extends Component {
       rowId,
       viewId,
       readonly,
+      dataId,
     } = this.props;
 
     if (readonly) return false;
@@ -51,8 +50,8 @@ class Labels extends Component {
     this.setState({ focused: true });
 
     const response = await dropdownRequest({
-      docType: windowType,
-      docId,
+      docType: windowId,
+      docId: dataId,
       entity,
       subentity,
       subentityId,
@@ -105,8 +104,7 @@ class Labels extends Component {
 
     if (typeAhead !== this.lastTypeAhead) {
       const {
-        windowType, // windowId
-        docId,
+        windowId,
         name,
         entity,
         subentity,
@@ -114,11 +112,12 @@ class Labels extends Component {
         tabId,
         rowId,
         viewId,
+        dataId,
       } = this.props;
 
       const response = await autocompleteRequest({
-        docType: windowType, // windowId
-        docId,
+        docType: windowId,
+        docId: dataId,
         entity,
         subentity,
         subentityId,
@@ -319,9 +318,10 @@ class Labels extends Component {
     const { className, selected, tabIndex, readonly } = this.props;
 
     const suggestions = this.state.suggestions.filter(this.unusedSuggestions());
-
     const labels = selected
-      .sort((a, b) => a.caption.localeCompare(b.caption))
+      .sort((a, b) => {
+        return a.caption.localeCompare(b.caption);
+      })
       .map((item) => (
         <Label
           key={item.key}
@@ -396,7 +396,7 @@ class Labels extends Component {
  * @prop {string} [className]
  * @prop {func} onChange
  * @prop {string|number} [tabIndex]
- * @prop {*} windowType
+ * @prop {*} windowId
  * @prop {*} docId
  * @prop {*} name
  * @prop {*} entity
@@ -411,7 +411,7 @@ Labels.propTypes = {
   className: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   tabIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  windowType: PropTypes.any,
+  windowId: PropTypes.any,
   docId: PropTypes.any,
   entity: PropTypes.any,
   subentity: PropTypes.any,
@@ -420,15 +420,9 @@ Labels.propTypes = {
   rowId: PropTypes.string,
   viewId: PropTypes.any,
   readonly: PropTypes.bool,
+  dataId: PropTypes.string,
 };
 
 Labels.defaultProps = {
   entity: 'window',
-  selected: [],
-  onChange: () => {},
 };
-
-export default connect(({ windowHandler }) => ({
-  docId: windowHandler.master.docId,
-  windowId: windowHandler.master.layout.windowId,
-}))(Labels);

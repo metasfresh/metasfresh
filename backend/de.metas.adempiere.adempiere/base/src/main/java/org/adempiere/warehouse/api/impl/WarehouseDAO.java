@@ -403,7 +403,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		return getByIds(warehouseIds);
 	}
 
-	private Set<WarehouseId> getAllWarehouseIds()
+	public Set<WarehouseId> getAllWarehouseIds()
 	{
 		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)

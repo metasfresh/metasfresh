@@ -9,6 +9,153 @@ Additional notes:
 
 Here come the actual release notes:
 
+
+
+# metasfresh 5.169
+## Features
+* metasfresh
+  * [#11024](https://github.com/metasfresh/metasfresh/issues/11024) Add EDI fields to Bpartner window
+  * [#11069](https://github.com/metasfresh/metasfresh/issues/11069) Budget Window adjustmenst (invoiceable effort)
+  * [#11079](https://github.com/metasfresh/metasfresh/issues/11079) Shopware: BPartner sync advice
+  * [#11084](https://github.com/metasfresh/metasfresh/issues/11084) BPartner Rest V2: support external reference version
+  * [#11088](https://github.com/metasfresh/metasfresh/issues/11088) Garantiezeit 60 Monate hinzufügen
+  * [#11094](https://github.com/metasfresh/metasfresh/issues/11094) Funktion für Erfassung Initial-CostPrice
+  * [#11098](https://github.com/metasfresh/metasfresh/issues/11098) Product Rest V2: support external reference version
+  * [#11067](https://github.com/metasfresh/metasfresh/issues/11067) Shopware: shipper & shipping costs
+  * [#11107](https://github.com/metasfresh/metasfresh/issues/11107) Geschäftspartner: Dropdown Menü für Incoterms
+  * [#11112](https://github.com/metasfresh/metasfresh/issues/11112) Update the packages flagged as highly vulnerable
+  * [#11119](https://github.com/metasfresh/metasfresh/issues/11119) Create Sales/Purchase Price List action
+  * [#11126](https://github.com/metasfresh/metasfresh/issues/11126) When creating a counter document, the original document needs to also reference it
+  * [#11164](https://github.com/metasfresh/metasfresh/issues/11164) Add Customer Retention Initial Threshold
+  * [#11169](https://github.com/metasfresh/metasfresh/issues/11169) Frontend should follow IncludedTabsInfo allowCreateNew and allowDelete props
+  * [#11101](https://github.com/metasfresh/metasfresh/issues/11101) Use EAN128/GS1-128 barcode in sscc label
+  * [#11134](https://github.com/metasfresh/metasfresh/issues/11134) Extend Alberta Masterdata Sync
+  * [#11077](https://github.com/metasfresh/metasfresh/pull/11077) working on a cucumber sales order and commission test
+  * [#11090](https://github.com/metasfresh/metasfresh/pull/11090) BankStatementDocumentHandler.completeIt: consider already assigned payments first
+  * [#11093](https://github.com/metasfresh/metasfresh/pull/11093) add field to display the child-issues's invoicable effort
+  * [#11103](https://github.com/metasfresh/metasfresh/pull/11103) inherit related processes from base window
+  * [#11113](https://github.com/metasfresh/metasfresh/pull/11113) AD_Column.isexcludefromzoomtargets initialize
+  * [#11114](https://github.com/metasfresh/metasfresh/pull/11114) modernize C_OrderMFGWarehouse MIs
+  * [#11122](https://github.com/metasfresh/metasfresh/pull/11122) WebuiDocumentPrintService: consider document's doc outbound recipient when determining the flavor
+
+## Fixes
+* metasfresh
+  * [#11070](https://github.com/metasfresh/metasfresh/issues/11070) Investigate build issue introduced by prettier
+  * [#11082](https://github.com/metasfresh/metasfresh/issues/11082) Umsatzreport Geschäftspartner Woche
+  * [#11091](https://github.com/metasfresh/metasfresh/issues/11091) Leergut-Rücknahme ergibt Fehlermeldung
+  * [#11096](https://github.com/metasfresh/metasfresh/issues/11096) Organisation window is not working properly
+  * [#11118](https://github.com/metasfresh/metasfresh/issues/11118) "Qty shall be greather than zero" error when creating orderline with batch entry
+  * [#11171](https://github.com/metasfresh/metasfresh/issues/11171) sync M_warehouse.c_bpartner_location_id to c_bpartner_location.c_bpartner_location_id
+  * [#11032](https://github.com/metasfresh/metasfresh/pull/11032) Fix two inventory related problems
+  * [#11092](https://github.com/metasfresh/metasfresh/pull/11092) related documents fixes
+  * [#11111](https://github.com/metasfresh/metasfresh/pull/11111) Shipment-REST-API - avoid QtyToDeliver_Override race condition
+  * [#11157](https://github.com/metasfresh/metasfresh/pull/11157) Fix sitemap alignment
+  * [#11144](https://github.com/metasfresh/metasfresh/issues/11144) Debug & fix manual discount not working in sales order line
+
+# metasfresh 5.168
+## Features
+* metasfresh
+  * [#10860](https://github.com/metasfresh/metasfresh/issues/10860) Refactor the rest of the direct usages of RawWidget
+  * [#11016](https://github.com/metasfresh/metasfresh/issues/11016) `Alberta_PrescriptionRequest` Tables and Window
+  * [#11026](https://github.com/metasfresh/metasfresh/issues/11026) Provisionsübersicht Window Update
+  * [#11028](https://github.com/metasfresh/metasfresh/issues/11028) Create default `invoiceRule` Configuration
+  * [#11036](https://github.com/metasfresh/metasfresh/issues/11036) Do not allow to create duplicate sales partner code
+  * [#11039](https://github.com/metasfresh/metasfresh/pull/11039) `DocOutbound` shall consider `IsInvoiceEmailEnabled` flag
+  * [#11041](https://github.com/metasfresh/metasfresh/issues/11041) External system "Other" setup
+  * [#11043](https://github.com/metasfresh/metasfresh/pull/11043) Build improvements
+  * [#11045](https://github.com/metasfresh/metasfresh/pull/11045) Replace `FactAcctLogWorkpackageProcessor` with `FactAcctLogDBTableWatcher`
+  * [#11048](https://github.com/metasfresh/metasfresh/issues/11048) `C_Tax` window Changes
+  * [#11054](https://github.com/metasfresh/metasfresh/issues/11054) Create `C_Fiscal_Representation` table, tab and model
+  * [#11062](https://github.com/metasfresh/metasfresh/issues/11062) Add "Available For Sales" stock info to `productLookup` and make it the default look-up method
+  * [#11064](https://github.com/metasfresh/metasfresh/issues/11064) Add organization in charge to postal
+
+## Fixes
+* metasfresh
+  * [#10655](https://github.com/metasfresh/metasfresh/issues/10655) Pricesystem of contract term not considered correctly
+  * [#10931](https://github.com/metasfresh/metasfresh/issues/10931) Filter default values are ignored
+  * [#11014](https://github.com/metasfresh/metasfresh/issues/11014) Check automated e2e tests mid April
+  * [#11031](https://github.com/metasfresh/metasfresh/pull/11031) Prevent creating OL candidates with stocked products that are flagged as main product in compensation group
+  * [#11044](https://github.com/metasfresh/metasfresh/pull/11044) Invoice-Line: Update `PriceActual` as user edits `PriceEntered` and Discount
+  * [#11049](https://github.com/metasfresh/metasfresh/issues/11049) Beginning of May e2e checks
+  * [#11050](https://github.com/metasfresh/metasfresh/issues/11050) "Not Found" error when using "Create purchase orders" action for sales orderline
+
+# metasfresh 5.167
+## Features
+* metasfresh
+  * [#10955](https://github.com/metasfresh/metasfresh/issues/10955) Update Elasticsearch in our stack
+  * [#10990](https://github.com/metasfresh/metasfresh/issues/10990) Support for a process triggered by model interceptor
+  * [#10999](https://github.com/metasfresh/metasfresh/issues/10999) Support for a process triggered by model interceptor - frontend
+  * [#11000](https://github.com/metasfresh/metasfresh/issues/11000) Support zoom for labels
+  * [#11001](https://github.com/metasfresh/metasfresh/pull/11001) Elasticsearch docker integration
+  * [#11008](https://github.com/metasfresh/metasfresh/issues/11008) Add TRL for the Repair Workflows
+  * [#11011](https://github.com/metasfresh/metasfresh/pull/11011) Allow webAPI to schedule a workpackage and wait for it to be done
+
+## Fixes
+* metasfresh
+  * [#10899](https://github.com/metasfresh/metasfresh/pull/10899) Elasticsearch / dashboard fix
+  * [#11007](https://github.com/metasfresh/metasfresh/issues/11007) Uncaught error in promise when setting Business Partner
+
+# metasfresh 5.166
+## Features
+* metasfresh
+  * [#10912](https://github.com/metasfresh/metasfresh/issues/10912) Pimp the menu structure & UI
+  * [#10947](https://github.com/metasfresh/metasfresh/issues/10947) Display `ApprovalForInvoicing` in invoice candidates (single view)
+  * [#10958](https://github.com/metasfresh/metasfresh/issues/10958) "Add New" not present in the Warehouse NEW
+  * [#10964](https://github.com/metasfresh/metasfresh/issues/10964) End of Year GL Journal
+  * [#10975](https://github.com/metasfresh/metasfresh/pull/10975) `PPOrderLineRow.lineStatusColor`
+  * [#10979](https://github.com/metasfresh/metasfresh/issues/10979) Option for keeping price 0 when copying price lists
+  * [#10980](https://github.com/metasfresh/metasfresh/pull/10980) Bump up guava version and remove obsolete log4j dependency
+  * [#10985](https://github.com/metasfresh/metasfresh/issues/10985) Email in orders' doc outbound documents
+  * [#10987](https://github.com/metasfresh/metasfresh/pull/10987) Alberta orders: always sync delivery address before importing
+  * [#10993](https://github.com/metasfresh/metasfresh/pull/10993) Price Comparation report performance improvements
+  * [#10997](https://github.com/metasfresh/metasfresh/issues/10997) Import Shopware `OL_Cands`
+
+## Fixes
+* metasfresh
+  * [#10931](https://github.com/metasfresh/metasfresh/issues/10931) Filter default values are ignored
+  * [#10953](https://github.com/metasfresh/metasfresh/issues/10953) Fix dependency in the frontend packages
+  * [#10974](https://github.com/metasfresh/metasfresh/pull/10974) Bidirectional sync between `AD_User` and procurement user
+  * [#10976](https://github.com/metasfresh/metasfresh/pull/10976) `ProductBOMDAO.getDefaultBOM`, consider `MakeToOrder` too when checking for default BOM
+  * [#10981](https://github.com/metasfresh/metasfresh/issues/10981) procurement-webui-frontend cannot be started on localhost
+  * [#10986](https://github.com/metasfresh/metasfresh/pull/10986) Don't check the last HU Trx for internal use inventory
+  * [#10994](https://github.com/metasfresh/metasfresh/pull/10994) Fix procurement WebUI RfQ import
+
+# metasfresh 5.165
+## Features
+* metasfresh
+  * [#10700](https://github.com/metasfresh/metasfresh/issues/10700) Forced Org Switch process
+  * [#10841](https://github.com/metasfresh/metasfresh/issues/10841) Add `PurchaseOrderCandidate` REST controller
+  * [#10866](https://github.com/metasfresh/metasfresh/issues/10866) Allow deleting `C_BPartners` that have locations, etc.
+  * [#10890](https://github.com/metasfresh/metasfresh/issues/10890) Adapt FE formatting of the highlighted string with the order provided by the BE
+  * [#10896](https://github.com/metasfresh/metasfresh/pull/10896) Improve `POInfo` loading
+  * [#10897](https://github.com/metasfresh/metasfresh/issues/10897) Prevent setting Sales rep with the same value as bpartner
+  * [#10898](https://github.com/metasfresh/metasfresh/pull/10898) Fail if the `AD_Column`'s or `AD_Field`'s lookup is not correctly defined
+  * [#10902](https://github.com/metasfresh/metasfresh/issues/10902) Rabatte Export
+  * [#10903](https://github.com/metasfresh/metasfresh/issues/10903) Check automated e2e tests end of March
+  * [#10904](https://github.com/metasfresh/metasfresh/issues/10904) Retrieve sales orders from Alberta
+  * [#10919](https://github.com/metasfresh/metasfresh/pull/10919) `WindowRestController.getDocumentFieldZoomInto`: Use override window if any
+  * [#10921](https://github.com/metasfresh/metasfresh/issues/10921) Provide `Setup_Place_No` in INVOIC-XML
+  * [#10924](https://github.com/metasfresh/metasfresh/issues/10924) Implement dynamic product label
+  * [#10928](https://github.com/metasfresh/metasfresh/issues/10928) Allow specifying compensation groups from orderline candidates
+  * [#10933](https://github.com/metasfresh/metasfresh/issues/10933) Extend process `de.metas.ui.web.pricing.process.M_DiscountSchemaBreak_CopyToSelectedSchema_Product`
+  * [#10934](https://github.com/metasfresh/metasfresh/pull/10934) WebUI Dashboard: Websocket notifications + fixes
+  * [#10935](https://github.com/metasfresh/metasfresh/pull/10935) Introduce `JsonRequestIssueToManufacturingOrder.process` flag
+  * [#10945](https://github.com/metasfresh/metasfresh/issues/10945) Upgrade Cypress & fix legacy dependencies
+  * [#10946](https://github.com/metasfresh/metasfresh/pull/10946) Masterdata bpartner cucumber
+  * [#10952](https://github.com/metasfresh/metasfresh/pull/10952) New material withdrawal process (Materialentnahme)
+  * [#10962](https://github.com/metasfresh/metasfresh/issues/10962) Add specification column to `pp_wf_node_product` & `pp_order_node_product`
+
+## Fixes
+* metasfresh
+  * [#10402](https://github.com/metasfresh/metasfresh/pull/10402) Create Sales Order from Quotation error
+  * [#10831](https://github.com/metasfresh/metasfresh/issues/10831) Update frontend vulnerable packages
+  * [#10881](https://github.com/metasfresh/metasfresh/issues/10881) When sitemap is opened the menu entries (quick and sitemap entries) don't start processes/actions anymore
+  * [#10916](https://github.com/metasfresh/metasfresh/pull/10916) Fix and optimize payment allocation for huge number of invoices
+  * [#10925](https://github.com/metasfresh/metasfresh/issues/10925) If URL contains a `viewId`, refreshing after login in another tab causes white screen (after timeout logout)
+  * [#10931](https://github.com/metasfresh/metasfresh/issues/10931) Filter default values are ignored
+  * [#10939](https://github.com/metasfresh/metasfresh/issues/10939) Minor printing-related improvements
+  * [#10944](https://github.com/metasfresh/metasfresh/issues/10944) When looking up BPartners from the REST-API to update, also check for Org=`*`
+
 # metasfresh 5.164
 ## Features
 * metasfresh

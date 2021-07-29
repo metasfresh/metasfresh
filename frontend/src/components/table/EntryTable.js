@@ -229,14 +229,11 @@ const mapStateToProps = (state, props) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    openModal,
-    patch,
-    updatePropertyValue,
-    allowShortcut,
-    disableShortcut,
-    updateTableRowProperty,
-  }
-)(EntryTable);
+export default connect(mapStateToProps, {
+  openModal,
+  patch,
+  updatePropertyValue,
+  allowShortcut,
+  disableShortcut,
+  updateTableRowProperty,
+})(EntryTable);

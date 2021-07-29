@@ -38,6 +38,9 @@ public class InfrastructureSupport
 	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	@Getter
+	private final boolean runAgainstDockerizedDatabase = true;
+
+	@Getter
 	private String dbHost;
 
 	@Getter
@@ -70,8 +73,6 @@ public class InfrastructureSupport
 		rabbitUser = rabbitMQContainer.getAdminUsername();
 		rabbitPassword = rabbitMQContainer.getAdminPassword();
 
-		final boolean runAgainstDockerizedDatabase = true;
-		//final boolean runAgainstDockerizedDatabase = false;
 		if (runAgainstDockerizedDatabase)
 		{
 			final String fullImageName = "metasfresh/metasfresh-db:latest";

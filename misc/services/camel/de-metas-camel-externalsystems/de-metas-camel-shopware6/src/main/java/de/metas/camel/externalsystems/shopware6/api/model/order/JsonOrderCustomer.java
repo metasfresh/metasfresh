@@ -36,18 +36,9 @@ import lombok.Value;
 public class JsonOrderCustomer
 {
 	@NonNull
-	@JsonProperty("id")
-	String id;
-
-	@NonNull
-	@JsonProperty("versionId")
-	String versionId;
-
-	@NonNull
 	@JsonProperty("orderId")
 	String orderId;
 
-	@NonNull
 	@JsonProperty("customerId")
 	String customerId;
 

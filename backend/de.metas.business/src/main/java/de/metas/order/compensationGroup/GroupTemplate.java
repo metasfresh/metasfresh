@@ -60,12 +60,12 @@ public class GroupTemplate
 			@Nullable final ProductCategoryId productCategoryId,
 			@NonNull @Singular final List<GroupTemplateLine> lines)
 	{
-
 		this.id = id;
 		this.name = name;
 		this.isNamePrinted = OptionalBoolean.ofNullableBoolean(isNamePrinted).orElseTrue();
 		this.activityId = activityId;
 		this.productCategoryId = productCategoryId;
-		this.lines = ImmutableList.copyOf(lines);
+		this.regularLinesToAdd = ImmutableList.copyOf(regularLinesToAdd);
+		this.compensationLines = ImmutableList.copyOf(compensationLines);
 	}
 }

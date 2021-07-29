@@ -18,6 +18,7 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesResult;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesResult.Quantities;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -105,11 +106,7 @@ public class AvailableForSalesUtil
 		{
 			return false;
 		}
-		if (!orderRecord.isSOTrx())
-		{
-			return false;
-		}
-		return true;
+		return orderRecord.isSOTrx();
 	}
 
 	public boolean isOrderLineEligibleForFeature(@NonNull final I_C_OrderLine orderLineRecord)
@@ -126,12 +123,7 @@ public class AvailableForSalesUtil
 		}
 
 		final I_M_Product productRecord = Services.get(IProductDAO.class).getById(productId);
-		if (!productRecord.isStocked())
-		{
-			return false;
-		}
-
-		return true;
+		return productRecord.isStocked();
 	}
 
 	public List<CheckAvailableForSalesRequest> createRequests(@NonNull final I_C_Order orderRecord)
@@ -272,13 +264,13 @@ public class AvailableForSalesUtil
 		{
 			future.get(config.getAsyncTimeoutMillis(), TimeUnit.MILLISECONDS);
 		}
-		catch (InterruptedException | ExecutionException | TimeoutException ex)
+		catch (final InterruptedException | ExecutionException | TimeoutException ex)
 		{
 			handleAsyncException(errorNotificationRecipient, ex);
 		}
 	}
 
-	private void handleAsyncException(@NonNull final UserId errorNotificationRecipient, @NonNull Exception e1)
+	private void handleAsyncException(@NonNull final UserId errorNotificationRecipient, @NonNull final Exception e1)
 	{
 		final Throwable cause = AdempiereException.extractCause(e1);
 		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(cause);
@@ -334,7 +326,7 @@ public class AvailableForSalesUtil
 		for (final CheckAvailableForSalesRequest request : requests)
 		{
 			final Instant dateOfInterest = TimeUtil.asInstant(request.getPreparationDate());
-			final int productId = request.getProductId().getRepoId();
+			final ProductId productId = request.getProductId();
 			final AttributesKey storageAttributesKey = AttributesKeys
 					.createAttributesKeyFromASIStorageAttributes(request.getAttributeSetInstanceId())
 					.orElse(AttributesKey.NONE);
@@ -343,7 +335,7 @@ public class AvailableForSalesUtil
 					.builder()
 					.dateOfInterest(dateOfInterest)
 					.productId(productId)
-					.storageAttributesKey(storageAttributesKey)
+					.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(storageAttributesKey))
 					.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
 					.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
 					.build();

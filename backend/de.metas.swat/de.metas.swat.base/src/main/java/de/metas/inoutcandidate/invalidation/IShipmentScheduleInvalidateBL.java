@@ -32,7 +32,6 @@ public interface IShipmentScheduleInvalidateBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT:</b> won't invalidate any processed schedules.
 	 *
-	 * @param storageSegments
 	 * @param addToSelectionId if not null will add the invalidated records to given selection
 	 */
 	void flagSegmentsForRecompute(Collection<IShipmentScheduleSegment> storageSegments, PInstanceId addToSelectionId);

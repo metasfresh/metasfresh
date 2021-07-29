@@ -25,6 +25,21 @@ package de.metas.camel.externalsystems.shopware6;
 public interface ShopwareTestConstants
 {
 	String MOCK_ORG_CODE = "orgCode";
+
 	String MOCK_BPARTNER_LOCATION_ID_JSON_PATH = "/customFields/originalAddressId";
 	String MOCK_BPARTNER_ID_JSON_PATH = "/customFields/originalAddressId";
+
+	String MOCK_EUR_CODE = "EUR";
+	String MOCK_CURRENCY_ID = "currencyId";
+
+	int MOCK_NORMAL_VAT_PRODUCT_ID = 1001;
+	int MOCK_REDUCED_VAT_PRODUCT_ID = 1002;
+
+	String MOCK_NORMAL_VAT_RATES = "7.7,19";
+	String MOCK_REDUCED_VAT_RATES = "5.5,12";
+
+	String SYNC_ADVISE_IFEXISTS_UPDATE_MERGE = "UPDATE_MERGE";
+	String SYNC_ADVISE_IFEXISTS_DONT_UPDATE = "DONT_UPDATE";
+	String SYNC_ADVISE_IFNOTEXISTS_CREATE = "CREATE";
+	String SYNC_ADVISE_IFNOTEXISTS_FAIL = "FAIL";
 }

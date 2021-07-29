@@ -1,18 +1,18 @@
 package de.metas.impexp.excel.process;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.impexp.excel.JdbcExcelExporter;
+import de.metas.impexp.excel.service.ExcelExporterService;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfo;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 
-import de.metas.impexp.excel.JdbcExcelExporter;
-import de.metas.impexp.excel.service.ExcelExporterService;
-import de.metas.process.JavaProcess;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -46,10 +46,13 @@ public class ExportToExcelProcess extends JavaProcess
 		final String sql = getSql();
 		final Evaluatee evalCtx = getEvalContext();
 
+		final ProcessInfo.ExcelExportOptions excelOptions = getProcessInfo().getExcelExportOptions();
 		final JdbcExcelExporter jdbcExcelExporter = JdbcExcelExporter.builder()
 				.ctx(getCtx())
-				.translateHeaders(getProcessInfo().isTranslateExcelHeaders())
+				.translateHeaders(excelOptions.isTranslateExcelHeaders())
+				.applyFormatting(excelOptions.isApplyFormatting())
 				.build();
+
 		excelExporterService.processDataFromSQL(sql, evalCtx, jdbcExcelExporter);
 
 		final File tempFile = jdbcExcelExporter.getResultFile();

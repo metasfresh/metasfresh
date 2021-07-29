@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -86,7 +87,7 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 		this.esIndexName = esIndexName;
 		esKeyColumnName = InterfaceWrapperHelper.getKeyColumnName(modelTableName);
 
-		this.esSearchFieldNames = esSearchFieldNames.toArray(new String[esSearchFieldNames.size()]);
+		this.esSearchFieldNames = esSearchFieldNames.toArray(new String[0]);
 
 		this.sqlLookupDescriptor = sqlLookupDescriptor;
 		this.databaseLookup = databaseLookup;
@@ -105,7 +106,7 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		return databaseLookup.findById(evalCtx.getIdToFilter());
 	}
@@ -117,7 +118,7 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		logger.trace("Retrieving entries for: {}", evalCtx);
 
@@ -141,7 +142,7 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 		logger.trace("ES response: {}", searchResponse);
 
 		final List<Integer> recordIds = Stream.of(searchResponse.getHits().getHits())
-				.map(hit -> extractId(hit))
+				.map(this::extractId)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 		logger.trace("Record IDs: {}", recordIds);
@@ -149,7 +150,7 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 		final LookupValuesList lookupValues = databaseLookup.findByIdsOrdered(recordIds);
 		logger.trace("Lookup values: {}", lookupValues);
 
-		return lookupValues;
+		return lookupValues.pageByOffsetAndLimit(0, Integer.MAX_VALUE);
 	}
 
 	private int extractId(@NonNull final SearchHit hit)

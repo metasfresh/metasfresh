@@ -67,9 +67,8 @@ class Container extends PureComponent {
 
       if (modalPluginName) {
         // get the plugin holding the required component
-        const parentPlugin = window.META_HOST_APP.getRegistry().getEntry(
-          modalPluginName
-        );
+        const parentPlugin =
+          window.META_HOST_APP.getRegistry().getEntry(modalPluginName);
 
         PluginModalComponent = parentPlugin.components.filter(
           (component) => component.id === pluginModal.id
@@ -137,7 +136,8 @@ class Container extends PureComponent {
               isDocumentNotSaved={
                 modal.saveStatus &&
                 !modal.saveStatus.saved &&
-                (modal.validStatus && !modal.validStatus.initialValue)
+                modal.validStatus &&
+                !modal.validStatus.initialValue
               }
             />
           )}
@@ -313,7 +313,7 @@ const mapStateToProps = (state, { windowId }) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  { setRawModalTitle, setRawModalDescription }
-)(Container);
+export default connect(mapStateToProps, {
+  setRawModalTitle,
+  setRawModalDescription,
+})(Container);

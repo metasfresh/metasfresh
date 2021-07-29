@@ -22,18 +22,16 @@
 
 package de.metas.banking;
 
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
-import de.metas.bpartner.BPartnerContactId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Our own (organization) bank account
@@ -41,7 +39,7 @@ import lombok.Value;
 @Value
 public class BankAccountId implements RepoIdAware
 {
-	final int repoId;
+	int repoId;
 
 	private BankAccountId(final int repoId)
 	{
@@ -66,6 +64,11 @@ public class BankAccountId implements RepoIdAware
 	public static BankAccountId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new BankAccountId(repoId) : null;
+	}
+
+	public static Optional<BankAccountId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static boolean equals(@Nullable final BankAccountId id1, @Nullable final BankAccountId id2)

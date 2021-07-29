@@ -1,33 +1,21 @@
 package de.metas.ui.web.view.descriptor;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterDecorator;
 import de.metas.ui.web.view.DefaultViewInvalidationAdvisor;
 import de.metas.ui.web.view.IViewInvalidationAdvisor;
 import de.metas.ui.web.view.SqlViewCustomizer;
 import de.metas.ui.web.view.ViewProfileId;
-import de.metas.ui.web.view.ViewRowCustomizer;
 import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding.SqlViewRowFieldLoader;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.DocumentFieldValueLoader;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
@@ -36,6 +24,15 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -64,7 +61,8 @@ public class SqlViewBindingFactory
 	private static final Logger logger = LogManager.getLogger(SqlViewBindingFactory.class);
 
 	private final DocumentDescriptorFactory documentDescriptorFactory;
-	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> windowId2SqlDocumentFilterConverterDecorator;
+	private final ImmutableList<SqlDocumentFilterConverter> filterConverters;
+	private final ImmutableMap<WindowId, SqlDocumentFilterConverterDecorator> filterConvertorDecorators;
 	private final ImmutableMap<WindowId, IViewInvalidationAdvisor> viewInvalidationAdvisorsByWindowId;
 	private final SqlViewCustomizerMap viewCustomizers;
 
@@ -74,13 +72,17 @@ public class SqlViewBindingFactory
 	private SqlViewBindingFactory(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final SqlViewCustomizerMap viewCustomizers,
-			@NonNull final List<SqlDocumentFilterConverterDecorator> converterDecorators,
+			@NonNull final List<SqlDocumentFilterConverter> filterConverters,
+			@NonNull final List<SqlDocumentFilterConverterDecorator> filterConverterDecorators,
 			@NonNull final List<IViewInvalidationAdvisor> viewInvalidationAdvisors)
 	{
 		this.documentDescriptorFactory = documentDescriptorFactory;
 
-		this.windowId2SqlDocumentFilterConverterDecorator = makeDecoratorsMapAndHandleDuplicates(converterDecorators);
-		logger.info("Filter converter decorators: {}", windowId2SqlDocumentFilterConverterDecorator);
+		this.filterConverters = ImmutableList.copyOf(filterConverters);
+		logger.info("Filter converters: {}", filterConverters);
+
+		this.filterConvertorDecorators = makeDecoratorsMapAndHandleDuplicates(filterConverterDecorators);
+		logger.info("Filter converter decorators: {}", filterConvertorDecorators);
 
 		this.viewInvalidationAdvisorsByWindowId = makeViewInvalidationAdvisorsMap(viewInvalidationAdvisors);
 		logger.info("view invalidation advisors: {}", this.viewInvalidationAdvisorsByWindowId);
@@ -95,7 +97,7 @@ public class SqlViewBindingFactory
 		{
 			return Maps.uniqueIndex(providers, SqlDocumentFilterConverterDecorator::getWindowId);
 		}
-		catch (IllegalArgumentException e)
+		catch (final IllegalArgumentException e)
 		{
 			final String message = "The given collection of SqlDocumentFilterConverterDecoratorProvider implementors contains more than one element with the same window-id";
 			throw new AdempiereException(message, e)
@@ -114,7 +116,7 @@ public class SqlViewBindingFactory
 				return windowId;
 			});
 		}
-		catch (IllegalArgumentException e)
+		catch (final IllegalArgumentException e)
 		{
 			final String message = "The given collection of " + IViewInvalidationAdvisor.class + " implementors contains more than one element with the same window-id";
 			throw new AdempiereException(message, e)
@@ -145,16 +147,17 @@ public class SqlViewBindingFactory
 				.refreshViewOnChangeEvents(entityDescriptor.isRefreshViewOnChangeEvents())
 				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId));
 
-		if (windowId2SqlDocumentFilterConverterDecorator.containsKey(windowId))
+		builder.filterConverters(filterConverters);
+
+		if (filterConvertorDecorators.containsKey(windowId))
 		{
-			builder.filterConverterDecorator(windowId2SqlDocumentFilterConverterDecorator.get(windowId));
+			builder.filterConverterDecorator(filterConvertorDecorators.get(windowId));
 		}
 
 		final SqlViewCustomizer sqlViewCustomizer = viewCustomizers.getOrNull(windowId, key.getProfileId());
 		if (sqlViewCustomizer != null)
 		{
-			final ViewRowCustomizer rowCustomizer = sqlViewCustomizer;
-			builder.rowCustomizer(rowCustomizer);
+			builder.rowCustomizer(sqlViewCustomizer);
 
 			sqlViewCustomizer.customizeSqlViewBinding(builder);
 		}
@@ -185,7 +188,7 @@ public class SqlViewBindingFactory
 				.defaultOrderBys(entityBinding.getDefaultOrderBys());
 	}
 
-	public static final SqlViewRowFieldBinding createViewFieldBinding(
+	public static SqlViewRowFieldBinding createViewFieldBinding(
 			@NonNull final SqlDocumentFieldDataBindingDescriptor documentField,
 			@NonNull final Collection<String> availableDisplayColumnNames)
 	{
@@ -198,6 +201,7 @@ public class SqlViewBindingFactory
 				.keyColumn(documentField.isKeyColumn())
 				.widgetType(documentField.getWidgetType())
 				.virtualColumn(documentField.isVirtualColumn())
+				.mandatory(documentField.isMandatory())
 				//
 				.sqlValueClass(documentField.getSqlValueClass())
 				.sqlSelectValue(documentField.getSqlSelectValue())
@@ -216,10 +220,10 @@ public class SqlViewBindingFactory
 	}
 
 	@Value
-	private static final class DocumentFieldValueLoaderAsSqlViewRowFieldLoader implements SqlViewRowFieldLoader
+	private static class DocumentFieldValueLoaderAsSqlViewRowFieldLoader implements SqlViewRowFieldLoader
 	{
-		private final @NonNull DocumentFieldValueLoader fieldValueLoader;
-		private final boolean isDisplayColumnAvailable;
+		@NonNull DocumentFieldValueLoader fieldValueLoader;
+		boolean isDisplayColumnAvailable;
 
 		@Override
 		public Object retrieveValue(@NonNull final ResultSet rs, final String adLanguage) throws SQLException
@@ -228,19 +232,16 @@ public class SqlViewBindingFactory
 					rs,
 					isDisplayColumnAvailable,
 					adLanguage,
-					(LookupDescriptor)null);
+					null);
 		}
 	}
 
 	@Value
-	private static final class SqlViewBindingKey
+	private static class SqlViewBindingKey
 	{
-		@NonNull
-		private final WindowId windowId;
-		@Nullable
-		private final Characteristic requiredFieldCharacteristic;
-		@Nullable
-		private final ViewProfileId profileId;
+		@NonNull WindowId windowId;
+		@Nullable Characteristic requiredFieldCharacteristic;
+		@Nullable ViewProfileId profileId;
 	}
 
 }

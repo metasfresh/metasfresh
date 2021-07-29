@@ -22,28 +22,44 @@
 
 package de.metas.externalsystem;
 
-import de.metas.common.util.CoalesceUtil;
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.StringUtils;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
+import de.metas.externalsystem.other.ExternalSystemOtherConfig;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
+import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
 import de.metas.pricing.PriceListId;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
 public class ExternalSystemConfigRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
+
+	public ExternalSystemConfigRepo(final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
+	{
+		this.externalSystemOtherConfigRepository = externalSystemOtherConfigRepository;
+	}
 
 	@NonNull
 	public ExternalSystemParentConfig getById(final @NonNull IExternalSystemChildConfigId id)
@@ -54,6 +70,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemAlbertaConfigId.cast(id));
 			case Shopware6:
 				return getById(ExternalSystemShopware6ConfigId.cast(id));
+			case Other:
+				return getById(ExternalSystemOtherConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -84,6 +102,33 @@ public class ExternalSystemConfigRepo
 				return getAlbertaConfigByParentId(id);
 			case Shopware6:
 				return getShopware6ConfigByParentId(id);
+			case Other:
+				final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
+				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
+			default:
+				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+		}
+	}
+
+	@NonNull
+	public String getParentTypeById(final @NonNull ExternalSystemParentConfigId id)
+	{
+		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
+
+		return externalSystemConfigRecord.getType();
+	}
+
+	@NonNull
+	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType) {
+		switch (externalSystemType)
+		{
+			case Alberta:
+				return getAllByTypeAlberta();
+			case Shopware6:
+			case Other:
+				throw new AdempiereException("Method not supported")
+						.appendParametersToMessage()
+						.setParameter("externalSystemType", externalSystemType);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -161,6 +206,7 @@ public class ExternalSystemConfigRepo
 				.value(config.getExternalSystemValue())
 				.tenant(config.getTenant())
 				.pharmacyPriceListId(PriceListId.ofRepoIdOrNull(config.getPharmacy_PriceList_ID()))
+				.rootBPartnerIdForUsers(BPartnerId.ofRepoIdOrNull(config.getC_Root_BPartner_ID()))
 				.build();
 	}
 
@@ -186,14 +232,76 @@ public class ExternalSystemConfigRepo
 	private ExternalSystemShopware6Config buildExternalSystemShopware6Config(final @NonNull I_ExternalSystem_Config_Shopware6 config,
 			@NonNull final ExternalSystemParentConfigId parentConfigId)
 	{
-		return ExternalSystemShopware6Config.builder()
-				.id(ExternalSystemShopware6ConfigId.ofRepoId(config.getExternalSystem_Config_Shopware6_ID()))
+		final ExternalSystemShopware6ConfigId externalSystemShopware6ConfigId =
+				ExternalSystemShopware6ConfigId.ofRepoId(config.getExternalSystem_Config_Shopware6_ID());
+
+		final ExternalSystemShopware6Config.ExternalSystemShopware6ConfigBuilder configBuilder = ExternalSystemShopware6Config.builder();
+
+		if (Check.isNotBlank(config.getFreightCost_NormalVAT_Rates()) && config.getM_FreightCost_NormalVAT_Product_ID() > 0)
+		{
+			final ExternalSystemShopware6Config.FreightCostConfig normalVatFreightCostConfig = ExternalSystemShopware6Config.FreightCostConfig.builder()
+					.productId(ProductId.ofRepoId(config.getM_FreightCost_NormalVAT_Product_ID()))
+					.vatRates(config.getFreightCost_NormalVAT_Rates())
+					.build();
+
+			configBuilder.freightCostNormalVatConfig(normalVatFreightCostConfig);
+		}
+
+		if (Check.isNotBlank(config.getFreightCost_Reduced_VAT_Rates()) && config.getM_FreightCost_ReducedVAT_Product_ID() > 0)
+		{
+			final ExternalSystemShopware6Config.FreightCostConfig reducedVatFreightCost = ExternalSystemShopware6Config.FreightCostConfig.builder()
+					.productId(ProductId.ofRepoId(config.getM_FreightCost_ReducedVAT_Product_ID()))
+					.vatRates(config.getFreightCost_Reduced_VAT_Rates())
+					.build();
+
+			configBuilder.freightCostReducedVatConfig(reducedVatFreightCost);
+		}
+
+		return configBuilder
+				.id(externalSystemShopware6ConfigId)
 				.parentId(parentConfigId)
 				.baseUrl(config.getBaseURL())
 				.clientSecret(config.getClient_Secret())
+				.externalSystemShopware6ConfigMappingList(getExternalSystemShopware6ConfigMappingList(externalSystemShopware6ConfigId))
 				.clientId(config.getClient_Id())
 				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
+				.salesRepJSONPath(config.getJSONPathSalesRepID())
+				.build();
+	}
+
+	@NonNull
+	private List<ExternalSystemShopware6ConfigMapping> getExternalSystemShopware6ConfigMappingList(
+			@NonNull final ExternalSystemShopware6ConfigId externalSystemShopware6ConfigId)
+	{
+
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Shopware6Mapping.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Shopware6Mapping.COLUMN_ExternalSystem_Config_Shopware6_ID, externalSystemShopware6ConfigId.getRepoId())
+				.create()
+				.list()
+				.stream()
+				.map(this::toExternalSystemShopware6ConfigMapping)
+				.collect(ImmutableList.toImmutableList());
+
+	}
+
+	@NonNull
+	private ExternalSystemShopware6ConfigMapping toExternalSystemShopware6ConfigMapping(@NonNull final I_ExternalSystem_Config_Shopware6Mapping record)
+	{
+		return ExternalSystemShopware6ConfigMapping.builder()
+				.docTypeOrderId(record.getC_DocTypeOrder_ID())
+				.paymentRule(record.getPaymentRule())
+				.paymentTermId(record.getC_PaymentTerm_ID())
+				.sw6CustomerGroup(record.getSW6_Customer_Group())
+				.sw6PaymentMethod(record.getSW6_Payment_Method())
+				.description(record.getDescription())
+				.seqNo(record.getSeqNo())
+				.isInvoiceEmailEnabled(StringUtils.toBoolean(record.getIsInvoiceEmailEnabled(), null))
+				.bpartnerIfExists(record.getBPartner_IfExists())
+				.bpartnerIfNotExists(record.getBPartner_IfNotExists())
+				.bpartnerLocationIfExists(record.getBPartnerLocation_IfExists())
+				.bpartnerLocationIfNotExists(record.getBPartnerLocation_IfNotExists())
 				.build();
 	}
 
@@ -204,14 +312,26 @@ public class ExternalSystemConfigRepo
 		return ExternalSystemParentConfig.builder()
 				.type(ExternalSystemType.ofCode(externalSystemConfigRecord.getType()))
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
-				.camelUrl(CoalesceUtil.coalesce(externalSystemConfigRecord.getCamelURL(), "NOT-SET")) // TODO: remove when this branch is updated
 				.name(externalSystemConfigRecord.getName());
 	}
 
-	public String getParentTypeById(final @NonNull ExternalSystemParentConfigId id)
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemOtherConfigId id)
 	{
-		final I_ExternalSystem_Config externalSystemConfigRecord = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config.class);
+		final ExternalSystemOtherConfig childConfig = externalSystemOtherConfigRepository.getById(id);
 
-		return externalSystemConfigRecord.getType();
+		return getById(id.getParentConfigId())
+				.childConfig(childConfig)
+				.build();
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeAlberta()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

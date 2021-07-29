@@ -24,7 +24,9 @@ package de.metas.common.rest_api.v2;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -32,6 +34,7 @@ import lombok.Value;
 import java.util.List;
 
 @Value
+@JsonDeserialize(builder = JsonPurchaseCandidatesRequest.JsonPurchaseCandidatesRequestBuilder.class)
 public class JsonPurchaseCandidatesRequest
 {
 	@ApiModelProperty(position = 10, required = true, //
@@ -40,6 +43,7 @@ public class JsonPurchaseCandidatesRequest
 	List<JsonPurchaseCandidateReference> purchaseCandidates;
 
 	@JsonCreator
+	@Builder
 	private JsonPurchaseCandidatesRequest(
 			@JsonProperty("purchaseCandidates") @NonNull @Singular final List<JsonPurchaseCandidateReference> purchaseCandidates)
 	{

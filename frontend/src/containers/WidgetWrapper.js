@@ -5,6 +5,7 @@ import { isEmpty } from 'lodash';
 
 import {
   openModal,
+  closeModal,
   patch,
   updatePropertyValue,
   allowShortcut,
@@ -38,17 +39,24 @@ import InlineTabWrapper from '../components/widget/InlineTabWrapper';
  * wrap them in `WidgetWrapper` and if needed add another data selector.
  */
 class WidgetWrapper extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    // this will be referenced by the top level components
+    this.childRef = React.createRef();
+  }
+
   render() {
     const { renderMaster, widgetType } = this.props;
 
     if (widgetType === 'InlineTab') {
-      return <InlineTabWrapper {...this.props} />;
+      return <InlineTabWrapper ref={this.childRef} {...this.props} />;
     }
 
     if (renderMaster) {
-      return <MasterWidget {...this.props} />;
+      return <MasterWidget ref={this.childRef} {...this.props} />;
     } else {
-      return <RawWidget {...this.props} />;
+      return <RawWidget ref={this.childRef} {...this.props} />;
     }
   }
 }
@@ -66,15 +74,21 @@ const mapStateToProps = (state, props) => {
     fields,
     isModal,
   } = props;
-
   const data = getData(state, isModal);
-
   let widgetData = null;
   let fieldsCopy = null;
 
   switch (dataSource) {
     case 'doc-status':
       widgetData = getMasterDocStatus(state);
+
+      break;
+    case 'filter-item':
+    case 'overlay-field':
+    case 'attributes-dropdown':
+    case 'quick-input':
+    case 'selection-attributes':
+      widgetData = props.widgetData;
 
       break;
     case 'modal':
@@ -162,6 +176,7 @@ WidgetWrapper.propTypes = {
   allowShortcut: PropTypes.func.isRequired,
   disableShortcut: PropTypes.func.isRequired,
   openModal: PropTypes.func.isRequired,
+  closeModal: PropTypes.func,
   patch: PropTypes.func.isRequired,
   updatePropertyValue: PropTypes.func.isRequired,
   widgetType: PropTypes.string,
@@ -174,6 +189,7 @@ export default connect(
     allowShortcut,
     disableShortcut,
     openModal,
+    closeModal,
     patch,
     updatePropertyValue,
   },

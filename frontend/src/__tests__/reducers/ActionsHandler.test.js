@@ -1,4 +1,4 @@
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import reducer, {
@@ -11,8 +11,7 @@ import gridDataFixtures from '../../../test_setup/fixtures/grid/data.json';
 import quickActionsFixtures from '../../../test_setup/fixtures/grid/quick_actions.json';
 
 const createState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       ...initialState,
     },

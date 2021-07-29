@@ -1,0 +1,11 @@
+{
+  "_id": "nursingHomeId",
+  "name": "nursingHomeName",
+  "address": "nursingHomeAddr",
+  "postalCode": "1",
+  "city": "nursingHomeCity",
+  "email": "test@test.com",
+  "fax": "2",
+  "phone": "3",
+  "timestamp": "2019-06-13T12:04:19.000Z"
+}

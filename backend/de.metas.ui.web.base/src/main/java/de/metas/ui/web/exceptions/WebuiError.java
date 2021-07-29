@@ -54,4 +54,12 @@ public class WebuiError
 				.adIssueId(IssueReportableExceptions.getAdIssueIdOrNull(exception))
 				.build();
 	}
+
+	public static WebuiError of(@NonNull final ITranslatableString errorMessage)
+	{
+		return builder()
+				.errorMessage(errorMessage)
+				.build();
+	}
+
 }

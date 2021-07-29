@@ -1,0 +1,10 @@
+{
+  "runtimeParameters": [
+    {
+      "externalSystemParentConfigId": 100,
+      "request": "getDocuments",
+      "name": "UpdatedAfterDocument",
+      "value": "2015-08-20T15:49:04.456Z"
+    }
+  ]
+}

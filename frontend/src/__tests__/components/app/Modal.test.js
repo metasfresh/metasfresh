@@ -2,7 +2,7 @@ import React from 'react';
 import { mount, render } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import nock from 'nock';
 
 import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
@@ -23,8 +23,7 @@ import thunk from 'redux-thunk';
 const mockStore = configureStore([thunk]);
 
 const getInitialState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: { ...appHandlerState },
       windowHandler: {

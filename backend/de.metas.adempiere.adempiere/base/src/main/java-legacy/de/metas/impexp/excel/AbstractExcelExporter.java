@@ -132,6 +132,7 @@ public abstract class AbstractExcelExporter
 
 	//
 	private final ExcelFormat excelFormat;
+	private boolean applyFormatting = true;
 
 	@Getter(value = AccessLevel.PROTECTED) // allow subclases to use our config
 	private final ExcelExportConstants constants;
@@ -164,6 +165,16 @@ public abstract class AbstractExcelExporter
 		workbook = this.excelFormat.createWorkbook(this.constants.isUseStreamingWorkbookImplementation());
 		dataFormat = workbook.createDataFormat();
 
+	}
+
+	protected final void setApplyFormatting(final boolean applyFormatting)
+	{
+		this.applyFormatting = applyFormatting;
+	}
+
+	protected final boolean isApplyFormatting()
+	{
+		return applyFormatting;
 	}
 
 	@VisibleForTesting
@@ -366,10 +377,13 @@ public abstract class AbstractExcelExporter
 
 		//
 		// Border
-		style.setBorderLeft((short)1);
-		style.setBorderTop((short)1);
-		style.setBorderRight((short)1);
-		style.setBorderBottom((short)1);
+		if(isApplyFormatting())
+		{
+			style.setBorderLeft((short)1);
+			style.setBorderTop((short)1);
+			style.setBorderRight((short)1);
+			style.setBorderBottom((short)1);
+		}
 
 		//
 		// Data Format
@@ -402,10 +416,13 @@ public abstract class AbstractExcelExporter
 
 		final CellStyle style = getWorkbook().createCellStyle();
 		style.setFont(font);
-		style.setBorderLeft((short)2);
-		style.setBorderTop((short)2);
-		style.setBorderRight((short)2);
-		style.setBorderBottom((short)2);
+		if(isApplyFormatting())
+		{
+			style.setBorderLeft((short)2);
+			style.setBorderTop((short)2);
+			style.setBorderRight((short)2);
+			style.setBorderBottom((short)2);
+		}
 		style.setDataFormat((short)BuiltinFormats.getBuiltinFormat("text"));
 		style.setWrapText(true);
 
@@ -489,8 +506,11 @@ public abstract class AbstractExcelExporter
 				final Cell cell = row.createCell(printedCol);
 
 				// header style!
-				final CellStyle style = getHeaderStyle(col);
-				cell.setCellStyle(style);
+				if(isApplyFormatting())
+				{
+					final CellStyle style = getHeaderStyle(col);
+					cell.setCellStyle(style);
+				}
 
 				final CellValue cellValue = headerNames.get(col);
 				setCellToValue(cell, cellValue);
