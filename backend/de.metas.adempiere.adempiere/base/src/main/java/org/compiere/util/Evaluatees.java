@@ -1,5 +1,17 @@
 package org.compiere.util;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.util.Check;
+import groovy.transform.ToString;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.api.IRangeAwareParams;
+import org.adempiere.util.lang.ITableRecordReference;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -8,25 +20,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.api.IRangeAwareParams;
-import org.adempiere.util.lang.ITableRecordReference;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import java.util.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.util.Check;
-import groovy.transform.ToString;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -614,7 +612,7 @@ public final class Evaluatees
 		}
 
 		@Override
-		public Optional<Object> get_ValueIfExists(final String variableName, final Class<?> targetType)
+		public Optional<Object> get_ValueIfExists(final @NonNull String variableName, final @NonNull Class<?> targetType)
 		{
 			if (excludeVariableName.equals(variableName))
 			{
