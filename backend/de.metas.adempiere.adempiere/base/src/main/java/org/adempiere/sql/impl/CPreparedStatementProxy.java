@@ -45,12 +45,14 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 
 import javax.sql.RowSet;
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetFactory;
+import javax.sql.rowset.RowSetProvider;
 
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
 import org.compiere.db.AdempiereDatabase;
-import org.compiere.util.CCachedRowSet;
 import org.compiere.util.CPreparedStatement;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.DB;
@@ -97,15 +99,18 @@ import de.metas.util.Check;
 	@Override
 	public final RowSet getRowSet()
 	{
-		RowSet rowSet = null;
 		ResultSet rs = null;
 		PreparedStatement pstmt = getStatementImpl();
 		try
 		{
+			final RowSetFactory aFactory = RowSetProvider.newFactory(); // thx to https://stackoverflow.com/a/55215738/1012103
 			rs = pstmt.executeQuery();
-			rowSet = CCachedRowSet.getRowSet(rs);
+			
+			final CachedRowSet rowSet = aFactory.createCachedRowSet();
+			rowSet.populate(rs);
+			return rowSet;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			final String sql = getSql();
 			throw new DBException(ex, sql);
@@ -114,7 +119,6 @@ import de.metas.util.Check;
 		{
 			DB.close(rs);
 		}
-		return rowSet;
 
 	}
 

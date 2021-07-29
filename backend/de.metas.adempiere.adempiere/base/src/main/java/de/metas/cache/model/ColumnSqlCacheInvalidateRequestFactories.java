@@ -74,14 +74,14 @@ final class ColumnSqlCacheInvalidateRequestFactories
 
 	@ToString
 	@EqualsAndHashCode
-	private class FetchFromSQL implements ModelCacheInvalidateRequestFactory
+	private static class FetchFromSQL implements ModelCacheInvalidateRequestFactory
 	{
 		private final String targetTableName;
 		private final IStringExpression sqlToGetTargetRecordIdBySourceRecordId;
 
 		private static final String EVAL_CTXNAME_Record_ID = "Record_ID";
 
-		@Builder
+		@lombok.Builder
 		private FetchFromSQL(
 				@NonNull final String targetTableName,
 				@Nullable final String sqlToGetTargetRecordIdBySourceRecordId)

@@ -241,12 +241,9 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 	/**
 	 * Constructor for AutoCompletion disabling
 	 * 
-	 * @param comboBox
-	 * @param disable
 	 */
 	private ComboBoxAutoCompletion(final CComboBox<E> comboBox)
 	{
-		super();
 		Check.assumeNotNull(comboBox, "comboBox not null");
 
 		//
@@ -610,7 +607,7 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 	}
 
 	/** @return combobox's inner JList (if available) */
-	private final JList<E> getJList()
+	private JList<E> getJList()
 	{
 		final ComboPopup comboPopup = AdempiereComboBoxUI.getComboPopup(comboBox);
 		if (comboPopup == null)
@@ -619,7 +616,7 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 		}
 
 		@SuppressWarnings("unchecked")
-		final JList<E> list = comboPopup.getList();
+		final JList<E> list = (JList<E>)comboPopup.getList();
 		return list;
 	}
 
@@ -634,7 +631,7 @@ public class ComboBoxAutoCompletion<E> extends PlainDocument
 		private boolean doHighlightText = false;
 		private int highlightTextStartPosition = 0;
 
-		public void setItemToSelect(E itemToSelect)
+		public void setItemToSelect(final E itemToSelect)
 		{
 			this.itemToSelect = itemToSelect;
 			this.doSelectItem = true;

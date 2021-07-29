@@ -58,7 +58,7 @@ import lombok.experimental.UtilityClass;
 			.thenComparing(Address::getPobox)
 			.thenComparingInt(Address::getCounrytId);
 
-	final @Nullable public I_C_BPartner_Location importRecord(
+	@Nullable public I_C_BPartner_Location importRecord(
 			@NonNull final I_I_Pharma_BPartner importRecord,
 			@NonNull final List<I_I_Pharma_BPartner> previousImportRecordsForSameBPartner)
 	{
@@ -171,20 +171,20 @@ import lombok.experimental.UtilityClass;
 	}
 
 	@Value
-	public class Address
+	public static class Address
 	{
-		final int counrytId;
+		int counrytId;
 		@Nullable
-		final String city;
+		String city;
 		@Nullable
-		final String address1;
+		String address1;
 		@Nullable
-		final String address2;
+		String address2;
 		@Nullable
-		final String postal;
+		String postal;
 		@Nullable
-		final String pobox;;
-		final int bpLocationId;
+		String pobox;;
+		int bpLocationId;
 
 		@Builder(builderMethodName = "builder")
 		public Address(int counrytId, String city, String address1, String address2, String postal, String pobox, int bpLocationId)

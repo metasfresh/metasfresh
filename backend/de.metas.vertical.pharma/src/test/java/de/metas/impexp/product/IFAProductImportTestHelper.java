@@ -108,12 +108,12 @@ import lombok.experimental.UtilityClass;
 
 	@Builder
 	@Value
-	public class IFAFlags
+	public static class IFAFlags
 	{
-		final boolean isColdChain;
-		final boolean isPrescription;
-		final boolean isNarcotic;
-		final boolean isTFG;
+		boolean isColdChain;
+		boolean isPrescription;
+		boolean isNarcotic;
+		boolean isTFG;
 	}
 
 	public void assertIFAProductFlags(@NonNull final I_I_Pharma_Product ifaProduct, final @NonNull IFAFlags flags)
@@ -127,7 +127,7 @@ import lombok.experimental.UtilityClass;
 	}
 
 
-	public void assertPrices(@NonNull final I_I_Pharma_Product ifaProduct, @NonNull final PriceListId priceListId, @NonNull BigDecimal price)
+	public void assertPrices(@NonNull final I_I_Pharma_Product ifaProduct, @NonNull final PriceListId priceListId, @NonNull final BigDecimal price)
 	{
 		final I_M_Product product = InterfaceWrapperHelper.create(ifaProduct.getM_Product(), I_M_Product.class);
 		assertThat(product).isNotNull();

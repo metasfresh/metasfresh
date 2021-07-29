@@ -65,6 +65,6 @@ public class TranslatableStringsTest
 
 		assertThat(amountTrl.translate("en_US")).isEqualTo("12,345.67 EUR");
 		assertThat(amountTrl.translate("de_DE")).isEqualTo("12.345,67 EUR");
-		assertThat(amountTrl.translate("de_CH")).isEqualTo("12'345.67 EUR");
+		assertThat(amountTrl.translate("de_CH")).isEqualTo("12’345.67 EUR");
 	}
 }

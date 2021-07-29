@@ -35,6 +35,14 @@
 						</configuration>
 					</execution>
 				</executions>
+				<dependencies>
+					<!-- without this dependency, XJC fails with a very obscure error! Thx to https://stackoverflow.com/a/58800280/1012103-->
+					<dependency>
+						<groupId>javax.xml.bind</groupId>
+						<artifactId>jaxb-api</artifactId>
+						<version>${jaxb.api.version}</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

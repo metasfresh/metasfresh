@@ -1,50 +1,50 @@
 <project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-	<modelVersion>4.0.0</modelVersion>
+        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+        xmlns="http://maven.apache.org/POM/4.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
 
-	<parent>
-		<groupId>de.metas.vertical.healthcare_ch</groupId>
-		<artifactId>vertical-healthcare_ch</artifactId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
+    <parent>
+        <groupId>de.metas.vertical.healthcare_ch</groupId>
+        <artifactId>vertical-healthcare_ch</artifactId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
 
-	<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.request</artifactId>
-	<version>10.0.0</version>
-	<packaging>jar</packaging>
+    <artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_440.request</artifactId>
+    <version>10.0.0</version>
+    <packaging>jar</packaging>
 
-	<dependencies>
+    <dependencies>
 
-		<dependency>
-			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.vertical.healthcare_ch</groupId>
+            <artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.vertical.healthcare_ch</groupId>
-			<artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_xversion</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.vertical.healthcare_ch</groupId>
+            <artifactId>vertical-healthcare_ch.forum_datenaustausch_ch.invoice_xversion</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.util</groupId>
-			<artifactId>de.metas.util</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.adempiere.adempiere</groupId>
@@ -54,51 +54,59 @@
             <scope>test</scope>
         </dependency>
 
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.xmlunit</groupId>
-			<artifactId>xmlunit-core</artifactId>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-core</artifactId>
+            <scope>test</scope>
+        </dependency>
 
-		<dependency>
-			<groupId>org.xmlunit</groupId>
-			<artifactId>xmlunit-assertj</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-assertj</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<!-- source for the response xsd: http://www.forum-datenaustausch.ch/fileadmin/fda_documents/4.5/Rechnungen/XML/XML_Schema_generalInvoiceRequest_450.zip -->
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>generate-forum-datenaustausch_ch.invoice_440.request</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<args>
-								<!-- needed to avoid java class name collisions, since the 3 xsds have some equal names -->
-								<arg>-XautoNameResolution</arg>
-								
-								<!-- needed because we don't want jaxb to create a package-info.java; we have our own custom one -->
-								<arg>-npa</arg>
-							</args>
-							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/request</schemaDirectory>
-							<generatePackage>de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request</generatePackage>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <build>
+        <plugins>
+            <plugin>
+                <!-- source for the response xsd: http://www.forum-datenaustausch.ch/fileadmin/fda_documents/4.5/Rechnungen/XML/XML_Schema_generalInvoiceRequest_450.zip -->
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-forum-datenaustausch_ch.invoice_440.request</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <args>
+                                <!-- needed to avoid java class name collisions, since the 3 xsds have some equal names -->
+                                <arg>-XautoNameResolution</arg>
+
+                                <!-- needed because we don't want jaxb to create a package-info.java; we have our own custom one -->
+                                <arg>-npa</arg>
+                            </args>
+                            <schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/request</schemaDirectory>
+                            <generatePackage>de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request</generatePackage>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <!-- without this dependency, XJC fails with a very obscure error! Thx to https://stackoverflow.com/a/58800280/1012103-->
+                    <dependency>
+                        <groupId>javax.xml.bind</groupId>
+                        <artifactId>jaxb-api</artifactId>
+                        <version>${jaxb.api.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
 </project>

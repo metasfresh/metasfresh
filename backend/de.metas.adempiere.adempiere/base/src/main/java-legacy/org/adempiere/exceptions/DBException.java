@@ -109,7 +109,7 @@ public class DBException extends AdempiereException
 		}
 	}
 
-	public DBException(final Exception e, final CharSequence sql)
+	public DBException(final Exception e,  @Nullable final CharSequence sql)
 	{
 		this(e, sql, (Object[])null);
 	}

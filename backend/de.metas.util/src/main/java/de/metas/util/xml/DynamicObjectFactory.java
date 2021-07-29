@@ -27,10 +27,9 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.metas.util.Check;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-
-import de.metas.util.Check;
 
 /**
  * Used to dynamically create elements based on given generated <code>objectFactory</code>.

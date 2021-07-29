@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.ecs.xhtml.code;
 import org.compiere.util.DB;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -84,10 +83,7 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 	private List<Object> sqlParams = null; // lazy
 
 	/**
-	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
-	 *
-	 * @param columnName
-	 * @param values
+	 * Creates filter that accepts a model if the given {@code columnName} has one of the given {@code values}.
 	 */
 	public InArrayQueryFilter(@NonNull final String columnName, final Object... values)
 	{
@@ -95,9 +91,8 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 	}
 
 	/**
-	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
+	 * Creates filter that accepts a model if the given {@code columnName} has one of the given {@code values}.
 	 *
-	 * @param columnName
 	 * @param values may also be {@link RepoIdAware}s
 	 */
 	public InArrayQueryFilter(@NonNull final String columnName, final Collection<? extends Object> values)

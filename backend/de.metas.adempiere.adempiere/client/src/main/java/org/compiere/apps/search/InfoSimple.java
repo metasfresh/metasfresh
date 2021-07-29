@@ -44,6 +44,7 @@ import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.table.TableModel;
+import javax.swing.tree.TreeNode;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -772,10 +773,11 @@ public class InfoSimple extends Info
 		result.add(category.getNode_ID());
 
 		@SuppressWarnings("unchecked")
-		final Enumeration<MTreeNode> enChildren = category.children();
+		final Enumeration<TreeNode> enChildren = category.children();
 		while (enChildren.hasMoreElements())
 		{
-			result.add(enChildren.nextElement().getNode_ID());
+			final MTreeNode treeNode = (MTreeNode)enChildren.nextElement();
+			result.add(treeNode.getNode_ID());
 		}
 		return result;
 	}

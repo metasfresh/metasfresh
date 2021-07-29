@@ -164,6 +164,7 @@ class MacAddressGeneratorTest
 
 			return ComponentGeneratorContext.builder()
 					.qty(qty)
+					.bomLineAttributes(ImmutableAttributeSet.EMPTY)
 					.existingAttributes(existingAttributes.build())
 					.parameters(ComponentGeneratorParams.builder()
 							.sequenceId(DocSequenceId.ofRepoId(123456))

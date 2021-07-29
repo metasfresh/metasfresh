@@ -72,9 +72,6 @@ public class VCreateFromFactory
 	{
 		// Register defaults:
 		s_registeredClasses = new HashMap<>();
-
-		s_registeredClasses.put(getTableId(I_M_InOut.class), VCreateFromShipmentUI.class);
-		s_registeredClasses.put(I_M_RMA.Table_ID, VCreateFromRMAUI.class);
 	}
 
 	/**

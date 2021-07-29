@@ -352,8 +352,8 @@
                 <dependencies>
                     <!-- without this dependency, XJC fails with a very obscur error! Thx to https://stackoverflow.com/a/58800280/1012103-->
 <!--                    <dependency>-->
-<!--                        <groupId>jakarta.xml.bind</groupId>-->
-<!--                        <artifactId>jakarta.xml.bind-api</artifactId>-->
+<!--                        <groupId>javax.xml.bind</groupId>-->
+<!--                        <artifactId>javax.xml.bind-api</artifactId>-->
 <!--                        <version>2.3.2</version>-->
 <!--                    </dependency>-->
                     <dependency>

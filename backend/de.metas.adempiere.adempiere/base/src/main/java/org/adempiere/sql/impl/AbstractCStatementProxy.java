@@ -28,14 +28,17 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 
+import javax.annotation.Nullable;
 import javax.sql.RowSet;
+import javax.sql.rowset.CachedRowSet;
+import javax.sql.rowset.RowSetFactory;
+import javax.sql.rowset.RowSetProvider;
 
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.exceptions.DBNoConnectionException;
-import org.compiere.util.CCachedRowSet;
 import org.compiere.util.CStatement;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.DB;
@@ -50,7 +53,7 @@ import de.metas.util.Services;
 	private boolean closed = false;
 
 	/** Used if local */
-	private transient ST p_stmt = null;
+	private transient ST p_stmt;
 	/** Value Object, never null */
 	private final CStatementVO p_vo;
 
@@ -64,7 +67,7 @@ import de.metas.util.Services;
 
 		try
 		{
-			Connection conn = null;
+			Connection conn;
 			final Trx trx = getTrx(p_vo);
 			if (trx != null)
 			{
@@ -88,10 +91,10 @@ import de.metas.util.Services;
 			}
 			p_stmt = createStatement(conn, vo);
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			// log.error("CStatement", e);
-			final String sql = vo == null ? null : vo.getSql();
+			final String sql = vo.getSql();
 			throw new DBException(e, sql);
 		}
 	}
@@ -157,7 +160,7 @@ import de.metas.util.Services;
 				{
 					m_conn.close();
 				}
-				catch (Exception e)
+				catch (Exception ignored)
 				{
 				}
 			}
@@ -447,14 +450,17 @@ import de.metas.util.Services;
 
 		final String sql = p_vo.getSql();
 
-		RowSet rowSet = null;
 		ResultSet rs = null;
 		try
 		{
 			rs = p_stmt.executeQuery(sql);
-			rowSet = CCachedRowSet.getRowSet(rs);
+			// thx to https://stackoverflow.com/a/55215738/1012103
+			final RowSetFactory rowSetFactory = RowSetProvider.newFactory();
+			final CachedRowSet cachedRowSet = rowSetFactory.createCachedRowSet();
+			cachedRowSet.populate(rs);
+			return cachedRowSet;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new DBException(ex, sql);
 		}
@@ -462,7 +468,6 @@ import de.metas.util.Services;
 		{
 			DB.close(rs);
 		}
-		return rowSet;
 	}
 
 	@Override
@@ -474,7 +479,8 @@ import de.metas.util.Services;
 		}
 	}
 
-	private static final Trx getTrx(final CStatementVO vo)
+	@Nullable
+	private static Trx getTrx(final CStatementVO vo)
 	{
 		if (vo == null)
 		{
