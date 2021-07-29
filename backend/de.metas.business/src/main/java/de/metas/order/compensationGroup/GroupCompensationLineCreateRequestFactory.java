@@ -1,12 +1,5 @@
 package de.metas.order.compensationGroup;
 
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_OrderLine;
-import org.springframework.stereotype.Service;
-
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.Discount;
@@ -15,6 +8,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;

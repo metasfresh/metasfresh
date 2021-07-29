@@ -49,7 +49,9 @@ public class GroupTemplate
 	boolean isNamePrinted;
 	@Nullable ActivityId activityId;
 	@Nullable ProductCategoryId productCategoryId;
-	@NonNull ImmutableList<GroupTemplateLine> lines;
+
+	@NonNull ImmutableList<GroupTemplateRegularLine> regularLinesToAdd;
+	@NonNull ImmutableList<GroupTemplateCompensationLine> compensationLines;
 
 	@Builder
 	private GroupTemplate(
@@ -58,7 +60,8 @@ public class GroupTemplate
 			@Nullable final Boolean isNamePrinted,
 			@Nullable final ActivityId activityId,
 			@Nullable final ProductCategoryId productCategoryId,
-			@NonNull @Singular final List<GroupTemplateLine> lines)
+			@NonNull final List<GroupTemplateRegularLine> regularLinesToAdd,
+			@NonNull final @Singular List<GroupTemplateCompensationLine> compensationLines)
 	{
 		this.id = id;
 		this.name = name;

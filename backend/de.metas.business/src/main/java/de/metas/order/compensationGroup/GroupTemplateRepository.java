@@ -19,7 +19,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -146,11 +145,11 @@ public class GroupTemplateRepository
 			@NonNull final I_C_CompensationGroup_SchemaLine compensationLineRecord,
 			@NonNull final List<I_C_CompensationGroup_SchemaLine> allCompensationLineRecords)
 	{
-		return GroupTemplateLine.builder()
-				.id(GroupTemplateLineId.ofRepoIdOrNull(schemaLinePO.getC_CompensationGroup_SchemaLine_ID()))
-				.groupMatcher(createGroupMatcher(schemaLinePO, allSchemaLinePOs))
-				.productId(ProductId.ofRepoId(schemaLinePO.getM_Product_ID()))
-				.percentage(extractPercentage(schemaLinePO))
+		return GroupTemplateCompensationLine.builder()
+				.id(GroupTemplateLineId.ofRepoIdOrNull(compensationLineRecord.getC_CompensationGroup_SchemaLine_ID()))
+				.groupMatcher(createGroupMatcher(compensationLineRecord, allCompensationLineRecords))
+				.productId(ProductId.ofRepoId(compensationLineRecord.getM_Product_ID()))
+				.percentage(extractPercentage(compensationLineRecord))
 				.build();
 	}
 

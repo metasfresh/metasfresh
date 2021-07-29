@@ -27,6 +27,7 @@ import de.metas.document.DocTypeId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
+import de.metas.product.ResourceId;
 import de.metas.uom.UomId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
