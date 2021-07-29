@@ -69,4 +69,6 @@ public interface IHUAttributesBL extends ISingletonService
 	boolean isAutomaticallySetLotNumber();
 
 	boolean isAutomaticallySetBestBeforeDate();
+
+	void adjustStorageFromNetWeight(IAttributeSet attributeSet);
 }

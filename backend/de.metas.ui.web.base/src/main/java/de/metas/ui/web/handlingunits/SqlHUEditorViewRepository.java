@@ -45,9 +45,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UOMType;
-import de.metas.uom.UomId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -121,7 +118,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 	private final WindowId windowId;
 
 	private final HUEditorRowAttributesProvider attributesProvider;
@@ -291,26 +288,10 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final IHUProductStorage singleProductStorage = getSingleProductStorage(hu);
 		if (singleProductStorage != null)
 		{
-			final I_C_UOM uom = singleProductStorage.getC_UOM();
-			final UomId uomId = UomId.ofRepoIdOrNull(uom == null ? -1 : uom.getC_UOM_ID());
-			final UOMType uomType = uomId != null ?
-					uomDAO.getUOMTypeById(uomId) : UOMType.Other;
-
-			final BigDecimal weightGross = extractWeightGross(attributesProvider, rowId);
-			final BigDecimal qty;
-			if (uomType.isWeight() && weightGross.signum() > 0)
-			{
-				qty = weightGross;
-			}
-			else
-			{
-				qty = singleProductStorage.getQty().toBigDecimal();
-			}
-
 			huEditorRow
 					.setProduct(createProductLookupValue(singleProductStorage.getProductId()))
-					.setUOM(createUOMLookupValue(uom))
-					.setQtyCU(qty);
+					.setUOM(createUOMLookupValue(singleProductStorage.getC_UOM()))
+					.setQtyCU(singleProductStorage.getQty().toBigDecimal());
 		}
 
 		//
