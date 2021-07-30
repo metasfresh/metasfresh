@@ -28,13 +28,16 @@ const Checkbox = (props) => {
     updateItems && !isFilterActive && !isChanged ? defaultValue : value;
   initialValue = typeof initialValue === 'undefined' ? null : initialValue;
   const [checkedState, setCheckedState] = useState(initialValue);
+  const [checkedValue, setCheckedValue] = useState(!!initialValue);
 
   useEffect(() => {
     defaultValue &&
       !isFilterActive &&
       !isChanged &&
       handlePatch(widgetField, defaultValue, id);
-  }, []);
+
+    setCheckedValue(isChanged && value === '' ? false : !!checkedState);
+  }, [checkedState]);
 
   /**
    * @method handleClear
@@ -42,8 +45,9 @@ const Checkbox = (props) => {
    */
   const handleClear = () => {
     const { handlePatch, widgetField, id } = props;
-    setCheckedState(null);
+
     setChanged(true);
+    setCheckedState(null);
     handlePatch(widgetField, '', id);
     // here we should call a method that would clear the filter item for the case when there is no active filter
     !isFilterActive && updateItems && updateItems({ widgetField, value: '' });
@@ -55,24 +59,23 @@ const Checkbox = (props) => {
    *          the widgetField with the current checked value of the element
    * @param {object} e
    */
-  const updateCheckedState = (e) => {
-    setCheckedState(!checkedState);
+  const updateCheckedState = () => {
+    const newCheckedState = !checkedState;
+
+    setChanged(true);
+    setCheckedState(newCheckedState);
     !isFilterActive &&
       updateItems &&
       updateItems({ widgetField, value: !checkedState });
-    setChanged(true);
-    handlePatch(widgetField, e.target.checked, id);
+    handlePatch(widgetField, newCheckedState, id);
   };
-
-  initialValue = updateItems ? checkedState : initialValue;
 
   return (
     <div>
       <label
-        className={
-          'input-checkbox ' +
-          (widgetData[0].readonly || disabled ? 'input-disabled ' : '')
-        }
+        className={classnames('input-checkbox', {
+          'input-disabled': widgetData[0].readonly || disabled,
+        })}
         tabIndex={fullScreen ? -1 : tabIndex}
         onKeyDown={(e) => {
           if (e.key === ' ') {
@@ -84,8 +87,8 @@ const Checkbox = (props) => {
         <input
           ref={rawWidget}
           type="checkbox"
-          className={initialValue ? 'is-checked' : ''}
-          checked={isChanged && value === '' ? false : initialValue}
+          className={classnames({ 'is-checked': initialValue })}
+          checked={checkedValue}
           disabled={widgetData[0].readonly || disabled}
           onChange={updateCheckedState}
           tabIndex="-1"

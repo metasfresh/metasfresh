@@ -37,7 +37,7 @@
     "@cypress/webpack-preprocessor": "5.9.1",
     "babel-eslint": "10.1.0",
     "babel-loader": "8.2.2",
-    "cypress": "8.0.0",
+    "cypress": "8.1.0",
     "eslint": "7.29.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-chai-friendly": "0.7.1",
@@ -61,15 +61,15 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "cypress-localstorage-commands": "^1.4.5",
     "cypress-skip-and-only-ui": "^1.2.11",
     "immutable": "^4.0.0-rc.12",
     "js-base64": "3.6.1",
     "luxon": "1.27.0",
     "moment": "2.29.1",
     "numeral": "^2.0.6",
-    "react": "16.5.0",
-    "react-dom": "16.5.0",
-    "react-router-redux": "^4.0.8",
+    "react": "16.14.0",
+    "react-dom": "16.14.0",
     "sockjs-client": "^1.3.0",
     "stompjs": "^2.3.3"
   }
