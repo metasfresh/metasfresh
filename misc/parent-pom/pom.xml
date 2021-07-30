@@ -338,7 +338,42 @@
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>
-            
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.0.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.3</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-reactor-plugin</artifactId>
+                <version>1.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.6</version>
+            </plugin>
+           
         </plugins>
 
         <pluginManagement>
@@ -493,13 +528,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <!-- 3.0.0-M2 gives me "Some plugins are missing valid versions"
-                         when building downstream projects (i.e. metasfresh),
-                         although I set the version here in build/pluginManagenemt management.<id>enforcer-profile</id>
-                        Example:
-                        org.apache.maven.plugins:maven-clean-plugin.    The version currently in use is 3.0.0
+                        when building downstream projects (i.e. metasfresh),
+                        ...although I set the version in both pluginManagement and build/plugins
+                        Example: org.apache.maven.plugins:maven-clean-plugin.    The version currently in use is 3.0.0
 
                         Note that "3.0.0" is the version that I specified in pluginManagenemt -->
-                    <version>3.0.0-M2</version>
+                    <version>3.0.0-M1</version>
                     <!--<dependencies>
                         &lt;!&ndash; needed for banDuplicateClasses &ndash;&gt;
                         <dependency>
@@ -743,7 +777,6 @@ Failure to find de.metas:de.metas.parent:pom:(1.0.0,3) in (URL ...) was cached i
                                 <goals>
                                     <goal>enforce</goal>
                                 </goals>
-
                             </execution>
                         </executions>
                     </plugin>
