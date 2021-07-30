@@ -10,7 +10,7 @@
     "cypress:open-ct": "cypress open-ct"
   },
   "devDependencies": {
-    "react": "16.12.0",
+    "react": "16.14.0",
     "style-loader": "1.1.3",
     "css-loader": "1.0.1",
     "postcss": "8.2.14",
