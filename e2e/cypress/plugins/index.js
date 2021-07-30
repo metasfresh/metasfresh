@@ -54,12 +54,8 @@ module.exports = (on, config) => {
     config.baseUrl = ourConfig.FRONTEND_URL;
   }
 
-  on('dev-server:start', (options) =>
-    startDevServer({
-      options,
-      config,
-    })
-  );
+  // start the dev server with our custom webpack config
+  on('dev-server:start', async (options) => startDevServer({ options, webpackConfig: require('../../webpack.config') }));
 
   return config;
 };

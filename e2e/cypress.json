@@ -29,8 +29,6 @@
 
   "userAgent": "Cypress",
 
-  "runMode": 2,
-
   "ignoreTestFiles": [
     "**/__snapshots__/*",
     "**/__image_snapshots__/*"
