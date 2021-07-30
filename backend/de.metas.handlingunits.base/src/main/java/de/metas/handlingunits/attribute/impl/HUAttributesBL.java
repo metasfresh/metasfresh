@@ -3,7 +3,6 @@ package de.metas.handlingunits.attribute.impl;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -15,9 +14,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.receiptschedule.impl.HUReceiptScheduleWeightNetAdjuster;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -25,7 +21,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
@@ -35,12 +30,10 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.util.Env;
-import org.elasticsearch.common.collect.Set;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.List;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -52,7 +45,6 @@ public class HUAttributesBL implements IHUAttributesBL
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
 	@Override
 	@Nullable
@@ -177,33 +169,6 @@ public class HUAttributesBL implements IHUAttributesBL
 	public boolean isAutomaticallySetBestBeforeDate()
 	{
 		return sysConfigBL.getBooleanValue("de.metas.handlingunits.attributes.AutomaticallySetBestBeforeDate", false);
-	}
-
-	@Override
-	public void adjustStorageFromNetWeight(final IAttributeSet attributeSet)
-	{
-		final I_M_HU hu = getM_HU_OrNull(attributeSet);
-
-		if (hu == null)
-		{
-			return;
-		}
-
-		if (!X_M_HU.HUSTATUS_Planning.equals(hu.getHUStatus()))
-		{
-			return;
-		}
-
-		final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(Env.getCtx(), ITrx.TRXNAME_ThreadInherited);
-		huWeightNetAdjuster.setInScopeHU_IDs(Set.of(HuId.ofRepoId(hu.getM_HU_ID())));
-
-		final List<I_M_ReceiptSchedule> receiptSchedules = huAssignmentDAO.retrieveModelsForHU(hu, I_M_ReceiptSchedule.class);
-
-		for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
-		{
-			// Adjust HU's product storages to their Weight Net Attribute
-			huWeightNetAdjuster.addReceiptSchedule(receiptSchedule);
-		}
 	}
 
 }
