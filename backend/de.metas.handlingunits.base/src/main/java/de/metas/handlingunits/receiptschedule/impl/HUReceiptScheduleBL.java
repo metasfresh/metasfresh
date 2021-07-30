@@ -668,7 +668,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	@Override
-	public void adjustStorageFromNetWeight(final IAttributeSet attributeSet)
+	public void adjustPlanningHUStorageFromNetWeight(final IAttributeSet attributeSet)
 	{
 		final I_M_HU hu = huAttributesBL.getM_HU_OrNull(attributeSet);
 

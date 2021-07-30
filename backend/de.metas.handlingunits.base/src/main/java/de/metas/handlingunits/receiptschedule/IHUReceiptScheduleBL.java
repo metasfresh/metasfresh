@@ -160,5 +160,5 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 
 	void generateHUsIfNeeded(I_M_ReceiptSchedule receiptSchedule, Properties context);
 
-	void adjustStorageFromNetWeight(IAttributeSet attributeSet);
+	void adjustPlanningHUStorageFromNetWeight(IAttributeSet attributeSet);
 }

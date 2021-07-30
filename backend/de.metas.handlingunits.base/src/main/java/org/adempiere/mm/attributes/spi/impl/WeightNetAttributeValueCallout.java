@@ -54,7 +54,7 @@ public class WeightNetAttributeValueCallout extends AbstractWeightAttributeValue
 			final Object valueNew)
 	{
 		recalculateWeightGross(attributeSet);
-		huReceiptScheduleBL.adjustStorageFromNetWeight(attributeSet);
+		huReceiptScheduleBL.adjustPlanningHUStorageFromNetWeight(attributeSet);
 	}
 
 	/**
