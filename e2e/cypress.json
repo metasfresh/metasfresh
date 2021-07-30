@@ -38,7 +38,7 @@
     "openMode": 1
   },
   "component": {
-    "componentFolder": "cypress/integration/components",
+    "componentFolder": "cypress-ct",
     "testFiles": "**/*spec.{js,jsx,ts,tsx}"
   },
   "env": {
