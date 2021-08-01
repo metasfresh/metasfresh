@@ -8,7 +8,7 @@ ARG CACHEBUST=1
 
 RUN apt update \
     && apt -y full-upgrade \
-    && apt -y install openjdk-8-jdk-headless \
+    && apt -y install openjdk-14-jdk-headless \
     && apt -y install unzip \
     && apt -y autoremove \
     && apt -y clean

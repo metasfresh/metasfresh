@@ -13,7 +13,7 @@ RUN apt -y update \
     && apt -y install curl \
 # install openjdk so that we can run mg migrate from within the provisioning script
     && apt -y install libcups2 \
-    && apt -y install openjdk-8-jre-headless \
+    && apt -y install openjdk-14-jre-headless \
     && apt -y install dos2unix \
     && apt -y autoremove \
     && apt -y clean

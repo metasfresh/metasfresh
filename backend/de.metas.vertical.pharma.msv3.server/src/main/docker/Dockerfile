@@ -10,7 +10,7 @@ ARG CACHEBUST=1
 # and the installs might fail, because e.g. openjdk might not yet be in the cache, however URLs might have been changed
 RUN apt update \
     && apt -y full-upgrade \
-    && apt -y install openjdk-8-jdk-headless \
+    && apt -y install openjdk-14-jdk-headless \
     && apt -y install netcat \
     && apt -y install dos2unix \
     && apt -y install unzip \

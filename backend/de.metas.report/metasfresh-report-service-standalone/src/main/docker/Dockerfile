@@ -19,7 +19,7 @@ RUN apt update \
     && apt -y install netcat \
     && apt -y install postgresql-client-9.5 \
     && apt -y install curl \
-    && apt -y install openjdk-8-jdk-headless \
+    && apt -y install openjdk-14-jdk-headless \
     && apt -y install dos2unix \
     && apt -y install unzip \
     && apt -y autoremove \
