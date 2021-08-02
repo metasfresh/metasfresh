@@ -66,7 +66,7 @@ public class FullTextSearchDocumentFilterDescriptorsProviderFactory implements D
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@Nullable final AdTabId adTabId_NOTUSED,
 			@Nullable final String tableName,
-			@Nullable final Collection<DocumentFieldDescriptor> fields_NOTUSED)
+			final @NonNull Collection<DocumentFieldDescriptor> fields_NOTUSED)
 	{
 		if (tableName == null)
 		{
