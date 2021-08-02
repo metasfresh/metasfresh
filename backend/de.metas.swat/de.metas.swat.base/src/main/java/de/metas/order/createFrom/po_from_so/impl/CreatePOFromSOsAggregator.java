@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -229,15 +230,15 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 
 			if (salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
 			{
-				purchaseOrder.setDropShip_BPartner_ID(salesOrder.getDropShip_BPartner_ID());
-				purchaseOrder.setDropShip_Location_ID(salesOrder.getDropShip_Location_ID());
-				purchaseOrder.setDropShip_User_ID(salesOrder.getDropShip_User_ID());
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(purchaseOrder)
+						.setFromDeliveryLocation(salesOrder);
 			}
 			else
 			{
-				purchaseOrder.setDropShip_BPartner_ID(salesOrder.getC_BPartner_ID());
-				purchaseOrder.setDropShip_Location_ID(salesOrder.getC_BPartner_Location_ID());
-				purchaseOrder.setDropShip_User_ID(salesOrder.getAD_User_ID());
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(purchaseOrder)
+						.setFromShipLocation(salesOrder);
 			}
 
 			// get default drop ship warehouse

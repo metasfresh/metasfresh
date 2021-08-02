@@ -34,7 +34,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -784,7 +786,7 @@ public class SubscriptionBL implements ISubscriptionBL
 				deliveries.get(0).getC_Flatrate_Term().getC_OrderLine_Term(),
 				I_C_OrderLine.class);
 
-		final BPartnerLocationId bpLocationId = BPartnerLocationId.ofRepoId(ol.getC_BPartner_ID(), ol.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId bpLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(ol).getBPartnerLocationAndCaptureId();
 
 		final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(

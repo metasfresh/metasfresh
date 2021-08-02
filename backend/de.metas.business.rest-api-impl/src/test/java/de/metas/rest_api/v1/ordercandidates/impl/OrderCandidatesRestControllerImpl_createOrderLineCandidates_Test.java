@@ -31,6 +31,7 @@ import de.metas.common.rest_api.v1.SyncAdvise.IfNotExists;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
@@ -44,6 +45,7 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.location.OLCandLocationsUpdaterService;
 import de.metas.ordercandidate.spi.IOLCandWithUOMForTUsCapacityProvider;
 import de.metas.ordercandidate.spi.impl.DefaultOLCandValidator;
 import de.metas.organization.OrgId;
@@ -186,10 +188,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		SystemTime.setFixedTimeSource(FIXED_TIME);
 
-		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
-		olCandBL = new OLCandBL(new BPartnerOrderParamsRepository());
+		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
 
 		final I_AD_Org defaultOrgRecord;
@@ -278,9 +281,11 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				Optional.empty(),
 				Optional.of(ImmutableList.of(defaultOLCandValidator)));
 		final OLCandValidatorService olCandValidatorService = new OLCandValidatorService(olCandRegistry);
+		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
+		final OLCandLocationsUpdaterService olCandLocationsUpdaterService = new OLCandLocationsUpdaterService(new DocumentLocationBL(bpartnerBL));
 
 		final IModelInterceptorRegistry registry = Services.get(IModelInterceptorRegistry.class);
-		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(new BPartnerBL(new UserRepository()), olCandValidatorService));
+		registry.addModelInterceptor(new de.metas.ordercandidate.modelvalidator.C_OLCand(new BPartnerBL(new UserRepository()), olCandValidatorService, olCandLocationsUpdaterService));
 	}
 
 	private static class DummyOLCandWithUOMForTUsCapacityProvider implements IOLCandWithUOMForTUsCapacityProvider
@@ -436,6 +441,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 			assertThat(bpartner.getVatId()).isEqualTo("newVatId");
 		}
 
+		@SuppressWarnings({ "SameParameterValue", "OptionalUsedAsFieldOrParameterType" })
 		private JsonOLCand importOLCandWithVatId(
 				final String currentVatId,
 				@Nullable final Optional<String> newVatId)
