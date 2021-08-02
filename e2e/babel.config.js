@@ -9,4 +9,5 @@ module.exports = {
     '@babel/plugin-transform-modules-commonjs',
     'react-hot-loader/babel',
   ],
+  ignore: ['**/*.json'],
 };
