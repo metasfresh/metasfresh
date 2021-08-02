@@ -1,9 +1,5 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Optional;
-
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -11,6 +7,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -52,7 +51,7 @@ public interface IDocumentFieldView
 	default DocumentFieldWidgetType getWidgetType() { return getDescriptor().getWidgetType(); }
 	default boolean isKey() { return getDescriptor().isKey(); }
 	default boolean isCalculated() { return getDescriptor().isCalculated(); }
-	default boolean isVirtualField() { return getDescriptor().isVirtualField(); }
+	default boolean isReadonlyVirtualField() { return getDescriptor().isReadonlyVirtualField(); }
 	default boolean isParentLink() { return getDescriptor().isParentLink(); }
 	/** Checks if this field was changed until it was saved. i.e. compares {@link #getValue()} with {@link #getInitialValue()}. */
 	boolean hasChangesToSave();

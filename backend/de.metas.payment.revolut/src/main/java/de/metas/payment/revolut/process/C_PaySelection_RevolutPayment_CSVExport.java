@@ -24,6 +24,8 @@ package de.metas.payment.revolut.process;
 
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionDAO;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.payment.revolut.PaySelectionService;
 import de.metas.payment.revolut.RevolutExportService;
@@ -60,7 +62,7 @@ public class C_PaySelection_RevolutPayment_CSVExport extends JavaProcess impleme
 		}
 		else if (context.isMoreThanOneSelected())
 		{
-			return ProcessPreconditionsResolution.reject();
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 		else
 		{
@@ -68,7 +70,10 @@ public class C_PaySelection_RevolutPayment_CSVExport extends JavaProcess impleme
 					.orElseThrow(() -> new AdempiereException("No paySelection found for selected record")
 							.appendParametersToMessage()
 							.setParameter("recordId", context.getSingleSelectedRecordId()));
-
+			if(!DocStatus.ofNullableCodeOrUnknown(paySelection.getDocStatus()).isCompletedOrClosed())
+			{
+				return ProcessPreconditionsResolution.rejectWithInternalReason("C_PaySelection_ID=" + paySelection.getC_PaySelection_ID() + " needs to be completed or closed");
+			}
 			if (!paySelection.getPaySelectionTrxType().equals(X_C_PaySelection.PAYSELECTIONTRXTYPE_CreditTransfer))
 			{
 				return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(REVOLUT_AVAILABLE_ONLY_FOR_CREDIT_TRANSFER_ERROR));
@@ -93,7 +98,8 @@ public class C_PaySelection_RevolutPayment_CSVExport extends JavaProcess impleme
 
 		final List<RevolutPaymentExport> savedRevolutPaymentExportList = revolutExportService.saveAll(revolutPaymentExportList);
 
-		final ReportResultData reportResultData = revolutExportService.exportToCsv(PaySelectionId.ofRepoId(paySelection.getC_PaySelection_ID()), savedRevolutPaymentExportList);
+		final PaySelectionId paySelectionId = PaySelectionId.ofRepoId(paySelection.getC_PaySelection_ID());
+		final ReportResultData reportResultData = revolutExportService.exportToCsv(paySelectionId, savedRevolutPaymentExportList);
 
 		paySelection.setLastRevolutExport(Timestamp.from(Instant.now()));
 		paySelection.setLastRevolutExportBy_ID(getAD_User_ID());

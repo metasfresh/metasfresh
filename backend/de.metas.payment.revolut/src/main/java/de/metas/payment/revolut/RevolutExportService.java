@@ -38,7 +38,7 @@ import java.util.List;
 @Service
 public class RevolutExportService
 {
-	private static final String EXPORT_FILE_NAME_TEMPLATE = "Revolut<:C_PaySelection_ID:>_:timestamp.csv";
+	private static final String EXPORT_FILE_NAME_TEMPLATE = "Revolut_Export_:C_PaySelection_ID:_:timestamp.csv";
 	private static final String EXPORT_ID_PLACEHOLDER = ":C_PaySelection_ID:";
 	private static final String TIMESTAMP_PLACEHOLDER = ":timestamp";
 	private static final String CSV_FORMAT = "text/csv";

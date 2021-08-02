@@ -426,6 +426,13 @@
               "description": "1000003_TestVendor"
             },
             "valueTo": null
+          },
+          {
+            "parameterName": "Processed",
+            "value": true,
+            "valueTo": "",
+            "defaultValue": null,
+            "defaultValueTo": null
           }
         ]
       }

@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 
@@ -46,4 +45,4 @@ PaypalReservationConfirmForm.propTypes = {
   message: PropTypes.string,
 };
 
-export default connect()(PaypalReservationConfirmForm);
+export default PaypalReservationConfirmForm;
