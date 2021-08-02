@@ -1,67 +1,300 @@
-/*
- * #%L
- * de.metas.elasticsearch
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.elasticsearch.model;
 
-// TODO impl
-public interface I_ES_FTS_Index_Queue
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+
+/** Generated Interface for ES_FTS_Index_Queue
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public interface I_ES_FTS_Index_Queue 
 {
+
 	String Table_Name = "ES_FTS_Index_Queue";
+
+//	/** AD_Table_ID=541757 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+
+
+	/**
+	 * Get Client.
+	 * Client/Tenant for this installation.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
-	int getAD_Client_ID();
+	/**
+	 * Set Issues.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Issue_ID (int AD_Issue_ID);
 
-	//
-
-	String COLUMNNAME_EventType = "EventType";
-
-	String getEventType();
-
-	String EVENTTYPE_Update = "U";
-	String EVENTTYPE_Delete = "D";
-	//
-
-	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
-
-	int getAD_Table_ID();
-
-	String COLUMNNAME_Record_ID = "Record_ID";
-
-	int getRecord_ID();
-
-	String COLUMNNAME_ProcessingTag = "ProcessingTag";
-
-	String getProcessingTag();
-
-	String COLUMNNAME_Processed = "Processed";
-
-	boolean isProcessed();
-
-	String COLUMNNAME_IsError = "IsError";
-
-	boolean isError();
+	/**
+	 * Get Issues.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Issue_ID();
 
 	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
-	int getAD_Issue_ID();
+	/**
+	 * Set Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_ID (int AD_Org_ID);
+
+	/**
+	 * Get Organisation.
+	 * Organisational entity within client
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_ID();
+
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Table.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get Table.
+	 * Database Table information
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Table_ID();
+
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_ES_FTS_Index_Queue, Object> COLUMN_Created = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set FTS Models To Index Queue.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setES_FTS_Index_Queue_ID (int ES_FTS_Index_Queue_ID);
+
+	/**
+	 * Get FTS Models To Index Queue.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getES_FTS_Index_Queue_ID();
+
+	ModelColumn<I_ES_FTS_Index_Queue, Object> COLUMN_ES_FTS_Index_Queue_ID = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "ES_FTS_Index_Queue_ID", null);
+	String COLUMNNAME_ES_FTS_Index_Queue_ID = "ES_FTS_Index_Queue_ID";
+
+	/**
+	 * Set Event Type.
+	 * Type of Event
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setEventType (java.lang.String EventType);
+
+	/**
+	 * Get Event Type.
+	 * Type of Event
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getEventType();
+
+	ModelColumn<I_ES_FTS_Index_Queue, Object> COLUMN_EventType = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "EventType", null);
+	String COLUMNNAME_EventType = "EventType";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
+
+	ModelColumn<I_ES_FTS_Index_Queue, Object> COLUMN_IsActive = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Error.
+	 * An Error occurred in the execution
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsError (boolean IsError);
+
+	/**
+	 * Get Error.
+	 * An Error occurred in the execution
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isError();
+
+	ModelColumn<I_ES_FTS_Index_Queue, Object> COLUMN_IsError = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "IsError", null);
+	String COLUMNNAME_IsError = "IsError";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_ES_FTS_Index_Queue, Object> COLUMN_Processed = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Processing Tag.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessingTag (@Nullable java.lang.String ProcessingTag);
+
+	/**
+	 * Get Processing Tag.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProcessingTag();
+
+	ModelColumn<I_ES_FTS_Index_Queue, Object> COLUMN_ProcessingTag = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "ProcessingTag", null);
+	String COLUMNNAME_ProcessingTag = "ProcessingTag";
+
+	/**
+	 * Set Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getRecord_ID();
+
+	ModelColumn<I_ES_FTS_Index_Queue, Object> COLUMN_Record_ID = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_ES_FTS_Index_Queue, Object> COLUMN_Updated = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

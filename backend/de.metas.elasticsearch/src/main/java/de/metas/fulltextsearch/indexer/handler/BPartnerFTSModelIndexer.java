@@ -32,6 +32,8 @@ import de.metas.fulltextsearch.config.ESDocumentToIndexTemplate;
 import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndex;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndexEventType;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -40,6 +42,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
 import org.compiere.util.Evaluatee;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +57,7 @@ import java.util.Set;
 public class BPartnerFTSModelIndexer implements FTSModelIndexer
 {
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 
 	@Override
 	public Set<String> getHandledSourceTableNames()
@@ -150,31 +154,40 @@ public class BPartnerFTSModelIndexer implements FTSModelIndexer
 				.applyTypeStrictly(false)
 				.build());
 
+		final I_C_Location locationRecord = bpLocationRecord != null
+				? locationDAO.getById(LocationId.ofRepoId(bpLocationRecord.getC_Location_ID()))
+				: null;
+
 		final I_AD_User bpContactRecord = partnerDAO.retrieveDefaultContactOrNull(bpartnerRecord, I_AD_User.class);
 
-		return new BPartnerEvaluationContext(bpartnerRecord, bpLocationRecord, bpContactRecord);
+		return new BPartnerEvaluationContext(bpartnerRecord, bpLocationRecord, locationRecord, bpContactRecord);
 	}
 
 	private static class BPartnerEvaluationContext implements Evaluatee
 	{
 		private static final String PREFIX_BPARTNER = "C_BPartner.";
-		private static final String PREFIX_LOCATION = "C_BPartner_Location.";
-		private static final String PREFIX_CONTACT = "AD_User.";
+		private static final String PREFIX_BPARTNER_LOCATION = "C_BPartner_Location.";
+		private static final String PREFIX_LOCATION = "C_Location.";
+		private static final String PREFIX_BPARTNER_CONTACT = "AD_User.";
 
 		@NonNull
 		private final I_C_BPartner bpartner;
 		@Nullable
 		private final I_C_BPartner_Location bpartnerLocation;
 		@Nullable
+		private final I_C_Location location;
+		@Nullable
 		private final I_AD_User bpartnerContact;
 
 		public BPartnerEvaluationContext(
 				@NonNull final I_C_BPartner bpartner,
 				@Nullable final I_C_BPartner_Location bpartnerLocation,
+				@Nullable final I_C_Location location,
 				@Nullable final I_AD_User bpartnerContact)
 		{
 			this.bpartner = bpartner;
 			this.bpartnerLocation = bpartnerLocation;
+			this.location = location;
 			this.bpartnerContact = bpartnerContact;
 		}
 
@@ -186,6 +199,7 @@ public class BPartnerFTSModelIndexer implements FTSModelIndexer
 		}
 
 		@Override
+		@SuppressWarnings("unchecked")
 		public <T> T get_ValueAsObject(final String variableName)
 		{
 			if (variableName.startsWith(PREFIX_BPARTNER))
@@ -193,14 +207,19 @@ public class BPartnerFTSModelIndexer implements FTSModelIndexer
 				final String variableNameNorm = variableName.substring(PREFIX_BPARTNER.length());
 				return (T)getBPartnerVariable(variableNameNorm).orElse(null);
 			}
+			else if (variableName.startsWith(PREFIX_BPARTNER_LOCATION))
+			{
+				final String variableNameNorm = variableName.substring(PREFIX_BPARTNER_LOCATION.length());
+				return (T)getBPartnerLocationVariable(variableNameNorm).orElse(null);
+			}
 			else if (variableName.startsWith(PREFIX_LOCATION))
 			{
 				final String variableNameNorm = variableName.substring(PREFIX_LOCATION.length());
-				return (T)getBPartnerLocationVariable(variableNameNorm).orElse(null);
+				return (T)getLocationVariable(variableNameNorm).orElse(null);
 			}
-			else if (variableName.startsWith(PREFIX_CONTACT))
+			else if (variableName.startsWith(PREFIX_BPARTNER_CONTACT))
 			{
-				final String variableNameNorm = variableName.substring(PREFIX_CONTACT.length());
+				final String variableNameNorm = variableName.substring(PREFIX_BPARTNER_CONTACT.length());
 				return (T)getBPartnerContactVariable(variableNameNorm).orElse(null);
 			}
 			else
@@ -208,6 +227,7 @@ public class BPartnerFTSModelIndexer implements FTSModelIndexer
 				return (T)Optionals.firstPresentOfSuppliers(
 						() -> getBPartnerVariable(variableName),
 						() -> getBPartnerLocationVariable(variableName),
+						() -> getLocationVariable(variableName),
 						() -> getBPartnerContactVariable(variableName));
 			}
 		}
@@ -221,6 +241,13 @@ public class BPartnerFTSModelIndexer implements FTSModelIndexer
 		{
 			return bpartnerLocation != null
 					? InterfaceWrapperHelper.getValueOptional(bpartnerLocation, variableName)
+					: Optional.empty();
+		}
+
+		private Optional<Object> getLocationVariable(final String variableName)
+		{
+			return location != null
+					? InterfaceWrapperHelper.getValueOptional(location, variableName)
 					: Optional.empty();
 		}
 

@@ -35,25 +35,36 @@ import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
+import org.elasticsearch.common.util.set.Sets;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.util.Objects;
+import java.util.Set;
 
 @Component
 public class EnqueueSourceModelInterceptor extends AbstractModelInterceptor
 {
 	private static final Logger logger = LogManager.getLogger(EnqueueSourceModelInterceptor.class);
 	private final ModelsToIndexQueueService queueService;
-	private final FTSConfigService configRepository;
+	private final FTSConfigService configService;
 
 	private IModelValidationEngine engine;
-	private ImmutableSet<String> _sourceTableNamesRegistered = null;
+	@NonNull private ImmutableSet<String> _sourceTableNamesRegistered = ImmutableSet.of();
 
 	public EnqueueSourceModelInterceptor(
 			@NonNull final ModelsToIndexQueueService queueService,
-			@NonNull final FTSConfigService configRepository)
+			@NonNull final FTSConfigService configService)
 	{
 		this.queueService = queueService;
-		this.configRepository = configRepository;
+		this.configService = configService;
+	}
+
+	@PostConstruct
+	public void postConstruct()
+	{
+		configService.addListener(this::registerInterceptors);
 	}
 
 	@Override
@@ -68,19 +79,34 @@ public class EnqueueSourceModelInterceptor extends AbstractModelInterceptor
 		final IModelValidationEngine engine = this.engine;
 		if (engine == null)
 		{
-			throw new AdempiereException("engine is null");
+			logger.warn("Skip registering interceptors because engine is not yet available");
+			return;
 		}
 
-		final ImmutableSet<String> sourceTableNamesToUnregister = _sourceTableNamesRegistered;
-		if (sourceTableNamesToUnregister != null && !sourceTableNamesToUnregister.isEmpty())
+		final ImmutableSet<String> sourceTableNamesAlreadyRegistered = _sourceTableNamesRegistered;
+		final ImmutableSet<String> sourceTableNamesToRegisterTarget = configService.getSourceTableNames();
+		if (Objects.equals(sourceTableNamesAlreadyRegistered, sourceTableNamesToRegisterTarget))
+		{
+			logger.debug("No config changes");
+			return;
+		}
+
+		final Set<String> sourceTableNamesToUnregister = Sets.difference(sourceTableNamesAlreadyRegistered, sourceTableNamesToRegisterTarget);
+		final Set<String> sourceTableNamesToRegister = Sets.difference(sourceTableNamesToRegisterTarget, sourceTableNamesAlreadyRegistered);
+
+		if (!sourceTableNamesToUnregister.isEmpty())
 		{
 			sourceTableNamesToUnregister.forEach(sourceTableName -> engine.removeModelChange(sourceTableName, this));
 			logger.info("Unregistered from {}", sourceTableNamesToUnregister);
 		}
 
-		_sourceTableNamesRegistered = configRepository.getSourceTableNames();
-		_sourceTableNamesRegistered.forEach(sourceTableName -> engine.addModelChange(sourceTableName, this));
-		logger.info("Registered for {}", _sourceTableNamesRegistered);
+		if (!sourceTableNamesToRegister.isEmpty())
+		{
+			sourceTableNamesToRegister.forEach(sourceTableName -> engine.addModelChange(sourceTableName, this));
+			logger.info("Registered for {}", sourceTableNamesToRegister);
+		}
+
+		this._sourceTableNamesRegistered = ImmutableSet.copyOf(sourceTableNamesToRegisterTarget);
 	}
 
 	@Override

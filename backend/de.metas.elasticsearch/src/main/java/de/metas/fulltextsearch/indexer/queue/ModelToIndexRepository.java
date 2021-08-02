@@ -20,14 +20,12 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.indexer.queue.model_interceptor;
+package de.metas.fulltextsearch.indexer.queue;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.elasticsearch.model.I_ES_FTS_Index_Queue;
 import de.metas.error.AdIssueId;
-import de.metas.fulltextsearch.indexer.queue.ModelToIndex;
-import de.metas.fulltextsearch.indexer.queue.ModelToIndexEnqueueRequest;
-import de.metas.fulltextsearch.indexer.queue.ModelToIndexEventType;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -58,7 +56,7 @@ public class ModelToIndexRepository
 					+ ", " + I_ES_FTS_Index_Queue.COLUMNNAME_AD_Table_ID
 					+ ", " + I_ES_FTS_Index_Queue.COLUMNNAME_Record_ID
 					+ ")"
-					+ " VALUES (?, ?)";
+					+ " VALUES (?, ?, ?)";
 
 	public void addToQueue(@NonNull final List<ModelToIndexEnqueueRequest> requests)
 	{
@@ -115,7 +113,16 @@ public class ModelToIndexRepository
 			@NonNull final String processingTag,
 			final int maxSize)
 	{
-		updateProcessingTag(null, processingTag, QueryLimit.ofInt(maxSize));
+		queryForTag(null)
+				.addEqualsFilter(I_ES_FTS_Index_Queue.COLUMNNAME_Processed, false)
+				.setLimit(QueryLimit.ofInt(maxSize))
+				//
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_ProcessingTag, processingTag)
+				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_Updated, SystemTime.asInstant())
+				.execute();
+
 		return queryForTag(processingTag)
 				.create()
 				.stream()
@@ -131,21 +138,6 @@ public class ModelToIndexRepository
 				.build();
 	}
 
-	private int updateProcessingTag(
-			@Nullable final String processingTagOld,
-			@Nullable final String processingTagNew,
-			@NonNull final QueryLimit limit)
-	{
-		return queryForTag(processingTagOld)
-				.addEqualsFilter(I_ES_FTS_Index_Queue.COLUMNNAME_Processed, false)
-				.setLimit(limit)
-				//
-				.create()
-				.updateDirectly()
-				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_ProcessingTag, processingTagNew)
-				.execute();
-	}
-
 	private IQueryBuilder<I_ES_FTS_Index_Queue> queryForTag(@Nullable final String processingTag)
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_ES_FTS_Index_Queue.class)
@@ -158,6 +150,7 @@ public class ModelToIndexRepository
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_Processed, true)
+				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_Updated, SystemTime.asInstant())
 				.execute();
 	}
 
@@ -169,7 +162,20 @@ public class ModelToIndexRepository
 				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_Processed, true)
 				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_IsError, true)
 				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_AD_Issue_ID, adIssueId)
+				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_Updated, SystemTime.asInstant())
 				.execute();
 	}
 
+	public void untag(final String processingTag)
+	{
+		queryForTag(processingTag)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_ProcessingTag, null)
+				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_Processed, false)
+				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_IsError, false)
+				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_AD_Issue_ID, null)
+				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_Updated, SystemTime.asInstant())
+				.execute();
+	}
 }

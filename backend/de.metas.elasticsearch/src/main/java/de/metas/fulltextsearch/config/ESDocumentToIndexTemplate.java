@@ -47,9 +47,10 @@ public class ESDocumentToIndexTemplate
 			@NonNull final Evaluatee evalCtx,
 			@NonNull final RepoIdAware documentId)
 	{
+		final ToJsonEvaluatee evalCtxEffective = new ToJsonEvaluatee(evalCtx);
 		return ESDocumentToIndex.builder()
 				.documentId(String.valueOf(documentId.getRepoId()))
-				.json(jsonExpression.evaluate(evalCtx, IExpressionEvaluator.OnVariableNotFound.Fail))
+				.json(jsonExpression.evaluate(evalCtxEffective, IExpressionEvaluator.OnVariableNotFound.Fail))
 				.build();
 	}
 }

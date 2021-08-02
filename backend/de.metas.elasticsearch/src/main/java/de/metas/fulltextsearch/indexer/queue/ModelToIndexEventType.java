@@ -22,7 +22,7 @@
 
 package de.metas.fulltextsearch.indexer.queue;
 
-import de.metas.elasticsearch.model.I_ES_FTS_Index_Queue;
+import de.metas.elasticsearch.model.X_ES_FTS_Index_Queue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -34,8 +34,8 @@ import javax.annotation.Nullable;
 @AllArgsConstructor
 public enum ModelToIndexEventType implements ReferenceListAwareEnum
 {
-	CREATED_OR_UPDATED(I_ES_FTS_Index_Queue.EVENTTYPE_Update),
-	REMOVED(I_ES_FTS_Index_Queue.EVENTTYPE_Delete);
+	CREATED_OR_UPDATED(X_ES_FTS_Index_Queue.EVENTTYPE_Update),
+	REMOVED(X_ES_FTS_Index_Queue.EVENTTYPE_Delete);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ModelToIndexEventType> index = ReferenceListAwareEnums.index(values());
 

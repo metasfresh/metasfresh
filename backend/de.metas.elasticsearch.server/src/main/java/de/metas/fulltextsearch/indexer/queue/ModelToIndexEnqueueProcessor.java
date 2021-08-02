@@ -34,7 +34,7 @@ import de.metas.fulltextsearch.config.FTSConfigId;
 import de.metas.fulltextsearch.config.FTSConfigService;
 import de.metas.fulltextsearch.indexer.handler.FTSModelIndexer;
 import de.metas.fulltextsearch.indexer.handler.FTSModelIndexerRegistry;
-import de.metas.fulltextsearch.indexer.queue.model_interceptor.ModelToIndexRepository;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -90,6 +90,13 @@ public class ModelToIndexEnqueueProcessor
 	@PostConstruct
 	public void postConstruct()
 	{
+		final BooleanWithReason enabled = elasticsearchSystem.getEnabled();
+		if (enabled.isFalse())
+		{
+			logger.warn("Elasticsearch is disabled because: {}", enabled.getReasonAsString());
+			return;
+		}
+		
 		final Thread thread = new Thread(this::processInfinitely);
 		thread.setDaemon(true);
 		thread.setName("FTS-index-queue-processor");
@@ -178,6 +185,10 @@ public class ModelToIndexEnqueueProcessor
 				{
 					queueRepository.markAsError(processingTag, adIssueId);
 				}
+			}
+			else
+			{
+				queueRepository.untag(processingTag);
 			}
 		}
 

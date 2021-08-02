@@ -22,41 +22,45 @@
 
 package de.metas.fulltextsearch.config;
 
-import de.metas.util.StringUtils;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 @EqualsAndHashCode(doNotUseGetters = true)
-public class FTSConfigId
+public class FTSConfigId implements RepoIdAware
 {
-	public static FTSConfigId ofInt(final int id)
+	@JsonCreator
+	public static FTSConfigId ofRepoId(final int repoId)
 	{
-		return new FTSConfigId(String.valueOf(id));
+		return new FTSConfigId(repoId);
 	}
 
-	@NonNull String string;
-
-	private FTSConfigId(final String string)
+	@Nullable
+	public static FTSConfigId ofRepoIdOrNull(final int repoId)
 	{
-		final String stringNorm = StringUtils.trimBlankToNull(string);
-		if (stringNorm == null)
-		{
-			throw new AdempiereException("Invalid id: " + string);
-		}
-
-		this.string = stringNorm;
+		return repoId > 0 ? new FTSConfigId(repoId) : null;
 	}
 
+	int repoId;
+
+	private FTSConfigId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@JsonValue
 	@Override
-	@Deprecated
-	public String toString()
+	public int getRepoId()
 	{
-		return getAsString();
+		return repoId;
 	}
 
-	public String getAsString()
+	public static int toRepoId(@Nullable final FTSConfigId id)
 	{
-		return string;
+		return id != null ? id.getRepoId() : -1;
 	}
 }

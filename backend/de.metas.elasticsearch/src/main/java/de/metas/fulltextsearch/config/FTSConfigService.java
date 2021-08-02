@@ -49,34 +49,49 @@ public class FTSConfigService
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	private final CCache<Integer, FTSConfigsIndex> cache = CCache.<Integer, FTSConfigsIndex>builder()
+	private final CompositeFTSConfigChangedListener listeners = new CompositeFTSConfigChangedListener();
+
+	private final CCache<Integer, FTSConfigsMap> cache = CCache.<Integer, FTSConfigsMap>builder()
 			.tableName(I_ES_FTS_Config.Table_Name)
+			.additionalTableNameToResetFor(I_ES_FTS_Config_SourceModel.Table_Name)
+			.additionListener((key, map) -> onFTSConfigMapLoaded())
+			.removalListener((key, map) -> onFTSConfigMapLoaded())
 			.build();
+
+	public void addListener(@NonNull final FTSConfigChangedListener listener)
+	{
+		listeners.addListener(listener);
+	}
+
+	private void onFTSConfigMapLoaded()
+	{
+		listeners.onConfigChanged();
+	}
 
 	public ImmutableSet<String> getSourceTableNames()
 	{
-		return getFTSConfigsIndex().getSourceTableNames();
+		return getFTSConfigsMap().getSourceTableNames();
 	}
 
 	public ImmutableList<FTSConfig> getBySourceTableName(@NonNull final String sourceTableName)
 	{
-		return getFTSConfigsIndex().getBySourceTableName(sourceTableName);
+		return getFTSConfigsMap().getBySourceTableName(sourceTableName);
 	}
 
-	private FTSConfigsIndex getFTSConfigsIndex()
+	private FTSConfigsMap getFTSConfigsMap()
 	{
-		return cache.getOrLoad(0, this::retrieveFTSConfigsIndex);
+		return cache.getOrLoad(0, this::retrieveFTSConfigsMap);
 	}
 
-	private FTSConfigsIndex retrieveFTSConfigsIndex()
+	private FTSConfigsMap retrieveFTSConfigsMap()
 	{
-		final ImmutableListMultimap<Integer, I_ES_FTS_Config_SourceModel> sourceModelRecords = queryBL
+		final ImmutableListMultimap<FTSConfigId, I_ES_FTS_Config_SourceModel> sourceModelRecords = queryBL
 				.createQueryBuilder(I_ES_FTS_Config_SourceModel.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						I_ES_FTS_Config_SourceModel::getES_FTS_Config_ID,
+						record -> FTSConfigId.ofRepoId(record.getES_FTS_Config_ID()),
 						record -> record));
 
 		final ImmutableList<FTSConfig> configs = queryBL
@@ -84,11 +99,13 @@ public class FTSConfigService
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
-				.map(configRecord -> toFTSConfig(configRecord, sourceModelRecords.get(configRecord.getES_FTS_Config_ID())))
+				.map(configRecord -> toFTSConfig(
+						configRecord,
+						sourceModelRecords.get(FTSConfigId.ofRepoId(configRecord.getES_FTS_Config_ID()))))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
-		return new FTSConfigsIndex(configs);
+		return new FTSConfigsMap(configs);
 	}
 
 	@Nullable
@@ -110,8 +127,9 @@ public class FTSConfigService
 					.collect(ImmutableSet.toImmutableSet());
 
 			return FTSConfig.builder()
-					.id(FTSConfigId.ofInt(configRecord.getES_FTS_Config_ID()))
+					.id(FTSConfigId.ofRepoId(configRecord.getES_FTS_Config_ID()))
 					.sourceTableNames(sourceTableNames)
+					.esIndexName(configRecord.getES_Index())
 					.createIndexCommand(ESCommand.ofString(configRecord.getES_CreateIndexCommand()))
 					.documentToIndexTemplate(ESDocumentToIndexTemplate.ofJsonString(configRecord.getES_DocumentToIndexTemplate()))
 					.queryCommand(ESCommand.ofString(configRecord.getES_QueryCommand()))
@@ -124,11 +142,17 @@ public class FTSConfigService
 		}
 	}
 
-	private static class FTSConfigsIndex
+	//
+	//
+	// ----------------------------------
+	//
+	//
+
+	private static class FTSConfigsMap
 	{
 		private final ImmutableListMultimap<String, FTSConfig> configsBySourceTableName;
 
-		private FTSConfigsIndex(@NonNull final List<FTSConfig> configs)
+		private FTSConfigsMap(@NonNull final List<FTSConfig> configs)
 		{
 			configsBySourceTableName = configs
 					.stream()

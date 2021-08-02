@@ -22,7 +22,6 @@
 
 package de.metas.fulltextsearch.indexer.queue;
 
-import de.metas.fulltextsearch.indexer.queue.model_interceptor.ModelToIndexRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
