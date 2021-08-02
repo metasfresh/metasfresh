@@ -361,30 +361,36 @@ export default class Labels extends PureComponent {
             pin: ['bottom'],
           },
         ]}
-      >
-        <span
-          ref={(ref) => {
-            this.wrapper = ref;
-          }}
-          className={`${className} labels`}
-          onClick={this.handleClick}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        >
-          <span className="labels-wrap">{labels}</span>
-        </span>
-        {focused && (
-          <SelectionDropdown
-            options={suggestions}
-            empty="There are no labels available"
-            selected={suggestion}
-            width={this.wrapper.offsetWidth}
-            onChange={this.handleTemporarySelection}
-            onSelect={this.handleSuggestionAdd}
-            onCancel={this.handleCancel}
-          />
+        renderTarget={(ref) => (
+          <span ref={ref}>
+            <span
+              ref={(ref) => {
+                this.wrapper = ref;
+              }}
+              className={`${className} labels`}
+              onClick={this.handleClick}
+              onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
+            >
+              <span className="labels-wrap">{labels}</span>
+            </span>
+          </span>
         )}
-      </TetherComponent>
+        renderElement={(ref) =>
+          focused && (
+            <SelectionDropdown
+              ref={ref}
+              options={suggestions}
+              empty="There are no labels available"
+              selected={suggestion}
+              width={this.wrapper.offsetWidth}
+              onChange={this.handleTemporarySelection}
+              onSelect={this.handleSuggestionAdd}
+              onCancel={this.handleCancel}
+            />
+          )
+        }
+      />
     );
   }
 }
