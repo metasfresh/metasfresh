@@ -29,8 +29,6 @@
 
   "userAgent": "Cypress",
 
-  "runMode": 2,
-
   "ignoreTestFiles": [
     "**/__snapshots__/*",
     "**/__image_snapshots__/*"
@@ -38,6 +36,10 @@
   "retries": {
     "runMode": 2,
     "openMode": 1
+  },
+  "component": {
+    "componentFolder": "cypress-ct",
+    "testFiles": "**/*spec.{js,jsx,ts,tsx}"
   },
   "env": {
     "cypress-plugin-snapshots": {
