@@ -494,7 +494,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
               includedTabsInfo: {},
               scope: 'master',
               saveStatus: { saved: true },
-              standardActions: Set(),
+              standardActions: [],
               validStatus: {},
             })
           );

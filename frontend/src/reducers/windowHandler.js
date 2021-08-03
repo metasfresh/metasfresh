@@ -1,5 +1,4 @@
 import update from 'immutability-helper';
-import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
 import { createCachedSelector } from 're-reselect';
 import { merge } from 'merge-anything';
@@ -454,7 +453,7 @@ export default function windowHandler(state = initialState, action) {
           docId: action.docId,
           layout: {},
           saveStatus: action.saveStatus,
-          standardActions: iSet(action.standardActions),
+          standardActions: action.standardActions,
           validStatus: action.validStatus,
           includedTabsInfo: action.includedTabsInfo,
           websocket: action.websocket,
@@ -547,8 +546,9 @@ export default function windowHandler(state = initialState, action) {
       if (typeof value === 'string') {
         newValue = value;
       } else if (property === 'standardActions') {
+        console.log('UPDATE_DATA_PROPERTY: ', value)
         // TODO: Use normal array
-        newValue = iSet(value);
+        newValue = value;
       } else if (
         ['saveStatus', 'validStatus', 'hasComments'].includes(property)
       ) {

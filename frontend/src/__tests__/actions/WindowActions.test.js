@@ -155,7 +155,7 @@ describe('WindowActions thunks', () => {
         includedTabsInfo: {},
         scope: 'master',
         saveStatus: { saved: true },
-        standardActions: Set(),
+        standardActions: [],
         validStatus: {},
       };
 
