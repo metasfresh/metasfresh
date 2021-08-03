@@ -1,9 +1,9 @@
 package de.metas.ui.web.document.filter.sql;
 
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -74,7 +74,7 @@ public interface SqlDocumentFilterConverter
 		for (final DocumentFilter filter : filters.toList())
 		{
 			final String sqlFilter = getSql(sqlParamsOut, filter, sqlOpts, context);
-			if (Check.isEmpty(sqlFilter, true))
+			if (Check.isBlank(sqlFilter))
 			{
 				continue;
 			}
