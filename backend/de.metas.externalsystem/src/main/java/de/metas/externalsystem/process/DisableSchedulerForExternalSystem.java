@@ -48,7 +48,6 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final static AdMessageKey MSG_ERR_NO_EXTERNAL_SELECTION = AdMessageKey.of("NoExternalSelection");
-	private final static AdMessageKey MSG_ERR_EXTERNAL_SYSTEM_CONFIG_DISABLED = AdMessageKey.of("ExternalSystemConfigDisabled");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -76,11 +75,6 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 			if (!config.isPresent())
 			{
 				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, type.getName()));
-			}
-
-			if (!config.get().getIsActive())
-			{
-				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_EXTERNAL_SYSTEM_CONFIG_DISABLED));
 			}
 		}
 		return ProcessPreconditionsResolution.accept();
