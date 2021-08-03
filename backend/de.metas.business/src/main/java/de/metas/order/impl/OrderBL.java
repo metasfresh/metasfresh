@@ -684,6 +684,7 @@ public class OrderBL implements IOrderBL
 			{
 				setBPartnerLocation(order, shipLocations.get(0));
 			}
+			//No longer setting any location when no shipping location exists for the bpartner
 		}
 
 		if (!foundLoc)
