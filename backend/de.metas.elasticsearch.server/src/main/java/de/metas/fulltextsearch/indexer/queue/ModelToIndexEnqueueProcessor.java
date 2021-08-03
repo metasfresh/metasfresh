@@ -207,7 +207,7 @@ public class ModelToIndexEnqueueProcessor
 		{
 			final String sourceTableName = event.getSourceModelRef().getTableName();
 
-			for (final FTSConfig config : configService.getBySourceTableName(sourceTableName))
+			for (final FTSConfig config : configService.getConfigBySourceTableName(sourceTableName))
 			{
 				final ConfigAndEvents configAndEvents = configAndEventsMap.computeIfAbsent(
 						config.getId(),

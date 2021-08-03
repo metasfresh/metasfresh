@@ -22,21 +22,34 @@
 
 package de.metas.fulltextsearch.config;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 @Value
 @Builder
-public class FTSConfig
+public class FTSFilterDescriptor
 {
-	@NonNull FTSConfigId id;
+	@NonNull String targetTableName;
+	@NonNull FTSConfigId ftsConfigId;
+	@NonNull @Singular ImmutableList<JoinColumn> joinColumns;
 
-	@NonNull ImmutableSet<String> sourceTableNames;
+	public ImmutableList<String> getESFieldNames()
+	{
+		return joinColumns.stream()
+				.map(JoinColumn::getEsFieldName)
+				.collect(ImmutableList.toImmutableList());
+	}
 
-	@NonNull String esIndexName;
-	@NonNull ESCommand createIndexCommand;
-	@NonNull ESDocumentToIndexTemplate documentToIndexTemplate;
-	@NonNull ESQueryTemplate queryCommand;
+	@Value
+	@Builder
+	public static class JoinColumn
+	{
+		@NonNull String targetTableColumnName;
+		@NonNull String selectionTableColumnName;
+		@NonNull String esFieldName;
+		boolean nullable;
+	}
 }

@@ -20,23 +20,23 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.config;
+package de.metas.fulltextsearch.query;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 @Value
 @Builder
-public class FTSConfig
+public class FTSSearchResult
 {
-	@NonNull FTSConfigId id;
+	@NonNull String searchId;
+	@Singular ImmutableList<FTSSearchResultItem> items;
 
-	@NonNull ImmutableSet<String> sourceTableNames;
-
-	@NonNull String esIndexName;
-	@NonNull ESCommand createIndexCommand;
-	@NonNull ESDocumentToIndexTemplate documentToIndexTemplate;
-	@NonNull ESQueryTemplate queryCommand;
+	public boolean isEmpty()
+	{
+		return items.isEmpty();
+	}
 }

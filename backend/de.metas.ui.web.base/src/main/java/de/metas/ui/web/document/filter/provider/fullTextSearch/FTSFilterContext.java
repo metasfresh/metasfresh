@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.elasticsearch
+ * de.metas.ui.web.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,23 +20,18 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.config;
+package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import com.google.common.collect.ImmutableSet;
+import de.metas.fulltextsearch.config.FTSFilterDescriptor;
+import de.metas.fulltextsearch.query.FTSSearchService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class FTSConfig
+public class FTSFilterContext
 {
-	@NonNull FTSConfigId id;
-
-	@NonNull ImmutableSet<String> sourceTableNames;
-
-	@NonNull String esIndexName;
-	@NonNull ESCommand createIndexCommand;
-	@NonNull ESDocumentToIndexTemplate documentToIndexTemplate;
-	@NonNull ESQueryTemplate queryCommand;
+	@NonNull FTSFilterDescriptor filterDescriptor;
+	@NonNull FTSSearchService searchService;
 }

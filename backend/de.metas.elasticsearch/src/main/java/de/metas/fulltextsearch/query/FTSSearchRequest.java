@@ -20,23 +20,20 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.config;
+package de.metas.fulltextsearch.query;
 
-import com.google.common.collect.ImmutableSet;
+import de.metas.fulltextsearch.config.FTSFilterDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class FTSConfig
+public class FTSSearchRequest
 {
-	@NonNull FTSConfigId id;
-
-	@NonNull ImmutableSet<String> sourceTableNames;
-
+	@NonNull String searchId;
+	@NonNull String searchText;
 	@NonNull String esIndexName;
-	@NonNull ESCommand createIndexCommand;
-	@NonNull ESDocumentToIndexTemplate documentToIndexTemplate;
-	@NonNull ESQueryTemplate queryCommand;
+
+	@NonNull FTSFilterDescriptor filterDescriptor;
 }

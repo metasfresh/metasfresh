@@ -20,23 +20,17 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.config;
+package de.metas.elasticsearch.model;
 
-import com.google.common.collect.ImmutableSet;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-@Value
-@Builder
-public class FTSConfig
+public interface I_T_ES_FTS_Search_Result
 {
-	@NonNull FTSConfigId id;
+	String Table_Name = "T_ES_FTS_Search_Result";
 
-	@NonNull ImmutableSet<String> sourceTableNames;
-
-	@NonNull String esIndexName;
-	@NonNull ESCommand createIndexCommand;
-	@NonNull ESDocumentToIndexTemplate documentToIndexTemplate;
-	@NonNull ESQueryTemplate queryCommand;
+	String COLUMNNAME_Search_UUID = "Search_UUID";
+	String COLUMNNAME_Line = "Line";
+	String COLUMNNAME_Created = "Created";
+	String COLUMNNAME_IntKey1 = "IntKey1";
+	String COLUMNNAME_IntKey2 = "IntKey2";
+	String COLUMNNAME_IntKey3 = "IntKey3";
+	String COLUMNNAME_JSON = "JSON";
 }

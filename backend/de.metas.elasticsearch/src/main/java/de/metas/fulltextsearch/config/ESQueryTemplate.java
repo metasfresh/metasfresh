@@ -22,7 +22,6 @@
 
 package de.metas.fulltextsearch.config;
 
-import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
@@ -30,28 +29,23 @@ import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.Evaluatee;
 
 @Value
-public class ESDocumentToIndexTemplate
+public class ESQueryTemplate
 {
-	@NonNull IStringExpression jsonExpression;
+	@NonNull IStringExpression expression;
 
-	public static ESDocumentToIndexTemplate ofJsonString(final String json)
+	public static ESQueryTemplate ofJsonString(final String json)
 	{
-		return new ESDocumentToIndexTemplate(IStringExpression.compile(json));
+		return new ESQueryTemplate(IStringExpression.compile(json));
 	}
 
-	private ESDocumentToIndexTemplate(@NonNull final IStringExpression jsonExpression)
+	private ESQueryTemplate(@NonNull final IStringExpression expression)
 	{
-		this.jsonExpression = jsonExpression;
+		this.expression = expression;
 	}
 
-	public ESDocumentToIndex resolve(
-			@NonNull final Evaluatee evalCtx,
-			@NonNull final RepoIdAware documentId)
+	public String resolve(@NonNull final Evaluatee evalCtx)
 	{
 		final ToJsonEvaluatee evalCtxEffective = new ToJsonEvaluatee(evalCtx);
-		return ESDocumentToIndex.builder()
-				.documentId(String.valueOf(documentId.getRepoId()))
-				.json(jsonExpression.evaluate(evalCtxEffective, IExpressionEvaluator.OnVariableNotFound.Fail))
-				.build();
+		return expression.evaluate(evalCtxEffective, IExpressionEvaluator.OnVariableNotFound.Fail);
 	}
 }
