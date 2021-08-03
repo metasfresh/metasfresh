@@ -59,7 +59,8 @@ const PrivateRoute = (props) => {
       }
     }
 
-    if (location.pathname === '/') {
+    // clear breadcrumbs on all main paths
+    if (location.pathname.indexOf('window') === -1) {
       // make sure we clear the breadcrumbs once we are on the dashboard
       dispatch(setBreadcrumb([]));
     }
