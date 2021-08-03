@@ -5,11 +5,7 @@ import DebounceInput from 'react-debounce-input';
 import { connect } from 'react-redux';
 
 import history from '../services/History';
-import {
-  nodePathsRequest,
-  queryPathsRequest,
-  rootRequest,
-} from '../actions/MenuActions';
+import { nodePathsRequest, queryPathsRequest, rootRequest } from '../api';
 import { openModal } from '../actions/WindowActions';
 import Container from '../components/Container';
 import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
