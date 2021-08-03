@@ -1,7 +1,6 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
 import currentDevice from 'current-device';
-import { Set } from 'immutable';
 
 import history from '../services/History';
 import { openInNewTab } from '../utils/index';
