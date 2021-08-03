@@ -195,6 +195,7 @@ class TableContextMenu extends Component {
       handleDelete,
       handleFieldEdit,
       handleZoomInto,
+      supportOpenRecord,
     } = this.props;
 
     const { contextMenu } = this.state;
@@ -217,6 +218,14 @@ class TableContextMenu extends Component {
         style={{
           left: contextMenu.x,
           top: contextMenu.y,
+          display:
+            supportOpenRecord === false &&
+            (!contextMenu.supportZoomInto ||
+              !showFieldEdit ||
+              !isSelectedOne ||
+              !handleDelete)
+              ? 'none'
+              : 'block',
         }}
         className={
           'context-menu context-menu-open panel-bordered panel-primary'
@@ -324,6 +333,7 @@ TableContextMenu.propTypes = {
   handleFieldEdit: PropTypes.func,
   handleZoomInto: PropTypes.func,
   updateTableHeight: PropTypes.func,
+  supportOpenRecord: PropTypes.bool,
 };
 
 export default connect()(TableContextMenu);

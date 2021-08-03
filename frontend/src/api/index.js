@@ -52,12 +52,19 @@ import {
   getAvailableLang,
 } from './login';
 import {
+  breadcrumbRequest,
   getNotificationsRequest,
   getNotificationsEndpointRequest,
+  pathRequest,
+  nodePathsRequest,
+  elementPathRequest,
+  queryPathsRequest,
+  rootRequest,
 } from './app';
 
 export {
   advSearchRequest,
+  breadcrumbRequest,
   browseViewRequest,
   completeRequest,
   createViewRequest,
@@ -65,6 +72,7 @@ export {
   deleteStaticFilter,
   deleteViewRequest,
   discardNewRequest,
+  elementPathRequest,
   filterViewRequest,
   formatParentUrl,
   getAttributesInstance,
@@ -90,7 +98,6 @@ export {
   getZoomIntoWindow,
   headerPropertiesRequest,
   initQuickInput,
-  setUserLang,
   localLoginRequest,
   locationConfigRequest,
   locationSearchRequest,
@@ -98,12 +105,17 @@ export {
   loginRequest,
   loginWithToken,
   logoutRequest,
+  nodePathsRequest,
   patchRequest,
+  pathRequest,
   patchViewAttributesRequest,
+  queryPathsRequest,
   quickActionsRequest,
+  rootRequest,
   resetPasswordComplete,
   resetPasswordGetAvatar,
   resetPasswordRequest,
+  setUserLang,
   startProcess,
   topActionsRequest,
 };
