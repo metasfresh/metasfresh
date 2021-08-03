@@ -52,6 +52,7 @@ import {
   getAvailableLang,
 } from './login';
 import {
+  breadcrumbRequest,
   getNotificationsRequest,
   getNotificationsEndpointRequest,
   pathRequest,
@@ -63,6 +64,7 @@ import {
 
 export {
   advSearchRequest,
+  breadcrumbRequest,
   browseViewRequest,
   completeRequest,
   createViewRequest,
