@@ -46,7 +46,6 @@ const createInitialProps = function(
 
   return {
     ...basicFixtures,
-    resetInitialValues: jest.fn(),
     updateDocList: jest.fn(),
     ...additionalProps,
     filterData,

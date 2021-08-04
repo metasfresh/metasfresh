@@ -1,7 +1,6 @@
 import thunk from 'redux-thunk';
 import nock from 'nock';
 import configureStore from 'redux-mock-store';
-import { Set } from 'immutable';
 import { merge } from 'merge-anything';
 
 import { initialState as appInitialState } from '../../reducers/appHandler';
@@ -21,7 +20,6 @@ import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
 import layoutFixtures from '../../../test_setup/fixtures/master_window/layout.json';
 import actionsFixtures from '../../../test_setup/fixtures/process/actions.json';
 import processResponseFixtures from '../../../test_setup/fixtures/process/responses.json';
-import processRequestFixtures from '../../../test_setup/fixtures/process/requests.json';
 import processParameterFixtures from '../../../test_setup/fixtures/process/parameters.json';
 import processStateFixtures from '../../../test_setup/fixtures/process/store.json';
 import printingOptions from '../../../test_setup/fixtures/window/printingOptions.json';
@@ -32,7 +30,7 @@ import {
   togglePrintingOption,
 } from '../../actions/WindowActions';
 
-const createState = function(state = {}) {
+const createState = function (state = {}) {
   const res = merge(
     {
       viewHandler: initialState,
@@ -310,13 +308,11 @@ describe('WindowActions thunks', () => {
         { type: ACTION_TYPES.CLOSE_PROCESS_MODAL },
       ];
 
-      return store
-        .dispatch(createProcess(processParameters))
-        .then(() => {
-          expect(store.getActions()).toEqual(
-            expect.arrayContaining(expectedActions)
-          );
-        });  
+      return store.dispatch(createProcess(processParameters)).then(() => {
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
+      });
     });
 
     it('create a process opening an included view in a raw modal with included view', () => {
@@ -353,13 +349,11 @@ describe('WindowActions thunks', () => {
         { type: ACTION_TYPES.CLOSE_PROCESS_MODAL },
       ];
 
-      return store
-        .dispatch(createProcess(processParameters))
-        .then(() => {
-          expect(store.getActions()).toEqual(
-            expect.arrayContaining(expectedActions)
-          );
-        });  
+      return store.dispatch(createProcess(processParameters)).then(() => {
+        expect(store.getActions()).toEqual(
+          expect.arrayContaining(expectedActions)
+        );
+      });
     });
 
     it('opens view in the modal from a process', () => {
@@ -377,7 +371,9 @@ describe('WindowActions thunks', () => {
       ];
 
       return store
-        .dispatch(handleProcessResponse({ data: { action } }, processType, pid, parentId ))
+        .dispatch(
+          handleProcessResponse({ data: { action } }, processType, pid, parentId )
+        )
         .then(() => {
           expect(store.getActions()).toEqual(
             expect.arrayContaining(expectedActions)
@@ -406,7 +402,9 @@ describe('WindowActions thunks', () => {
       ];
 
       return store
-        .dispatch(handleProcessResponse({ data: { action } }, processType, pid, parentId ))
+        .dispatch(
+          handleProcessResponse({ data: { action } }, processType, pid, parentId )
+        )
         .then(() => {
           expect(store.getActions()).toEqual(
             expect.arrayContaining(expectedActions)
