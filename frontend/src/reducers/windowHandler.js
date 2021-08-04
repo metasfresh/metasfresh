@@ -545,12 +545,13 @@ export default function windowHandler(state = initialState, action) {
 
       if (typeof value === 'string') {
         newValue = value;
-      } else if (property === 'standardActions') {
-        console.log('UPDATE_DATA_PROPERTY: ', value)
-        // TODO: Use normal array
-        newValue = value;
       } else if (
-        ['saveStatus', 'validStatus', 'hasComments'].includes(property)
+        [
+          'saveStatus',
+          'validStatus',
+          'hasComments',
+          'standardActions',
+        ].includes(property)
       ) {
         newValue = value;
       } else {
