@@ -10,8 +10,6 @@ import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.I_M_Picking_Candidate_IssueToOrder;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.inoutcandidate.ShipmentScheduleId;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotQuery;
@@ -30,6 +28,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -81,7 +81,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * Dedicated DAO'ish class centered around {@link I_M_Picking_Candidate}s
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class PickingCandidateRepository
@@ -275,6 +274,11 @@ public class PickingCandidateRepository
 
 	public void deletePickingCandidates(@NonNull final Collection<PickingCandidate> candidates)
 	{
+		if (candidates.isEmpty())
+		{
+			return;
+		}
+		
 		final Set<PickingCandidateId> pickingCandidateIds = candidates.stream()
 				.map(PickingCandidate::getId)
 				.filter(Objects::nonNull)
@@ -291,7 +295,7 @@ public class PickingCandidateRepository
 	}
 
 	public List<PickingCandidate> getByShipmentScheduleIdAndStatus(
-			@NonNull ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final PickingCandidateStatus status)
 	{
 		return getByShipmentScheduleIdsAndStatus(ImmutableSet.of(shipmentScheduleId), status);
@@ -353,7 +357,7 @@ public class PickingCandidateRepository
 				});
 	}
 
-	private void markAsInactiveNoSave(I_M_Picking_Candidate record)
+	private void markAsInactiveNoSave(final I_M_Picking_Candidate record)
 	{
 		record.setIsActive(false);
 		record.setStatus(PickingCandidateStatus.Closed.getCode());
@@ -452,13 +456,12 @@ public class PickingCandidateRepository
 	 */
 	public boolean isHuIdPicked(@NonNull final HuId huId)
 	{
-		final boolean isAlreadyPicked = queryBL
+		return queryBL
 				.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Candidate.COLUMNNAME_M_HU_ID, huId)
 				.create()
 				.anyMatch();
-		return isAlreadyPicked;
 	}
 
 	private Collector<I_M_Picking_Candidate, ?, ImmutableList<PickingCandidate>> toPickingCandidatesList()
@@ -547,7 +550,7 @@ public class PickingCandidateRepository
 
 	private void saveIssuesToBOMLine(
 			@NonNull final PickingCandidateId pickingCandidateId,
-			@NonNull ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+			@NonNull final ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
 	{
 		final HashMap<PickingCandidateIssueToBOMLineKey, I_M_Picking_Candidate_IssueToOrder> existingRecordsByKey = streamIssuesToBOMLineRecords(pickingCandidateId)
 				.collect(GuavaCollectors.toHashMapByKey(PickingCandidateIssueToBOMLineKey::of));

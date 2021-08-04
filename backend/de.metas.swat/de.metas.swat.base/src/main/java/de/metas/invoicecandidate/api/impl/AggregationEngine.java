@@ -369,6 +369,7 @@ public final class AggregationEngine
 			final BPartnerLocationId billBPLocationId = getBillLocationId(icRecord);
 			final BPartnerContactId billContactId = getBillContactId(icRecord, billBPLocationId);
 
+			invoiceHeader.setC_Async_Batch_ID(icRecord.getC_Async_Batch_ID());
 			invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
 			invoiceHeader.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
 			invoiceHeader.setBill_Location_ID(billBPLocationId.getRepoId());

@@ -41,9 +41,14 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.slf4j.Logger;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -187,7 +192,7 @@ public class ADProcessPostProcessService
 	}
 
 	@Nullable
-	private static File saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)
+	private static Resource saveReportToDiskIfAny(final ProcessExecutionResult processExecutionResult)
 	{
 		//
 		// If we are not dealing with a report, stop here
@@ -198,7 +203,8 @@ public class ADProcessPostProcessService
 		}
 
 		final String reportFilePrefix = "report_" + processExecutionResult.getPinstanceId().getRepoId() + "_";
-		return reportData.writeToTemporaryFile(reportFilePrefix);
+		final File file = reportData.writeToTemporaryFile(reportFilePrefix);
+		return new FileSystemResource(file);
 	}
 
 	private static DocumentPath extractSingleDocumentPath(final RecordsToOpen recordsToOpen)
@@ -305,7 +311,7 @@ public class ADProcessPostProcessService
 	@Nullable
 	private ResultAction createResultAction(final ProcessInfo processInfo, final ProcessExecutionResult processExecutionResult)
 	{
-		final File reportTempFile = saveReportToDiskIfAny(processExecutionResult);
+		final Resource reportTempFile = saveReportToDiskIfAny(processExecutionResult);
 		final RecordsToOpen recordsToOpen = processExecutionResult.getRecordsToOpen();
 
 		//
@@ -316,7 +322,7 @@ public class ADProcessPostProcessService
 			return OpenReportAction.builder()
 					.filename(processExecutionResult.getReportFilename())
 					.contentType(processExecutionResult.getReportContentType())
-					.tempFile(reportTempFile)
+					.reportData(reportTempFile)
 					.build();
 		}
 		//

@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import TetherComponent from 'react-tether';
-import { connect } from 'react-redux';
 
 import {
   autocompleteRequest,
@@ -15,7 +14,7 @@ import SelectionDropdown from '../SelectionDropdown';
  * @module Labels
  * @extends Component
  */
-class Labels extends Component {
+export default class Labels extends PureComponent {
   state = {
     cursor: this.props.selected.length,
     focused: false,
@@ -33,7 +32,7 @@ class Labels extends Component {
    */
   handleClick = async () => {
     const {
-      windowType, // windowId
+      windowId, // windowId
       name,
       entity,
       subentity,
@@ -51,7 +50,7 @@ class Labels extends Component {
     this.setState({ focused: true });
 
     const response = await dropdownRequest({
-      docType: windowType,
+      docType: windowId,
       docId: dataId,
       entity,
       subentity,
@@ -105,7 +104,7 @@ class Labels extends Component {
 
     if (typeAhead !== this.lastTypeAhead) {
       const {
-        windowType, // windowId
+        windowId,
         name,
         entity,
         subentity,
@@ -117,7 +116,7 @@ class Labels extends Component {
       } = this.props;
 
       const response = await autocompleteRequest({
-        docType: windowType, // windowId
+        docType: windowId,
         docId: dataId,
         entity,
         subentity,
@@ -319,9 +318,10 @@ class Labels extends Component {
     const { className, selected, tabIndex, readonly } = this.props;
 
     const suggestions = this.state.suggestions.filter(this.unusedSuggestions());
-
     const labels = selected
-      .sort((a, b) => a.caption.localeCompare(b.caption))
+      .sort((a, b) => {
+        return a.caption.localeCompare(b.caption);
+      })
       .map((item) => (
         <Label
           key={item.key}
@@ -361,30 +361,36 @@ class Labels extends Component {
             pin: ['bottom'],
           },
         ]}
-      >
-        <span
-          ref={(ref) => {
-            this.wrapper = ref;
-          }}
-          className={`${className} labels`}
-          onClick={this.handleClick}
-          onFocus={this.handleFocus}
-          onBlur={this.handleBlur}
-        >
-          <span className="labels-wrap">{labels}</span>
-        </span>
-        {focused && (
-          <SelectionDropdown
-            options={suggestions}
-            empty="There are no labels available"
-            selected={suggestion}
-            width={this.wrapper.offsetWidth}
-            onChange={this.handleTemporarySelection}
-            onSelect={this.handleSuggestionAdd}
-            onCancel={this.handleCancel}
-          />
+        renderTarget={(ref) => (
+          <span ref={ref}>
+            <span
+              ref={(ref) => {
+                this.wrapper = ref;
+              }}
+              className={`${className} labels`}
+              onClick={this.handleClick}
+              onFocus={this.handleFocus}
+              onBlur={this.handleBlur}
+            >
+              <span className="labels-wrap">{labels}</span>
+            </span>
+          </span>
         )}
-      </TetherComponent>
+        renderElement={(ref) =>
+          focused && (
+            <SelectionDropdown
+              ref={ref}
+              options={suggestions}
+              empty="There are no labels available"
+              selected={suggestion}
+              width={this.wrapper.offsetWidth}
+              onChange={this.handleTemporarySelection}
+              onSelect={this.handleSuggestionAdd}
+              onCancel={this.handleCancel}
+            />
+          )
+        }
+      />
     );
   }
 }
@@ -396,7 +402,7 @@ class Labels extends Component {
  * @prop {string} [className]
  * @prop {func} onChange
  * @prop {string|number} [tabIndex]
- * @prop {*} windowType
+ * @prop {*} windowId
  * @prop {*} docId
  * @prop {*} name
  * @prop {*} entity
@@ -411,7 +417,7 @@ Labels.propTypes = {
   className: PropTypes.string,
   onChange: PropTypes.func.isRequired,
   tabIndex: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  windowType: PropTypes.any,
+  windowId: PropTypes.any,
   docId: PropTypes.any,
   entity: PropTypes.any,
   subentity: PropTypes.any,
@@ -425,11 +431,4 @@ Labels.propTypes = {
 
 Labels.defaultProps = {
   entity: 'window',
-  selected: [],
-  onChange: () => {},
 };
-
-export default connect(({ windowHandler }) => ({
-  docId: windowHandler.master.docId,
-  windowId: windowHandler.master.layout.windowId,
-}))(Labels);

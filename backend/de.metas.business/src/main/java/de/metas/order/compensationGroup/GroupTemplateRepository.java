@@ -13,14 +13,15 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -149,8 +150,17 @@ public class GroupTemplateRepository
 				.id(GroupTemplateLineId.ofRepoIdOrNull(compensationLineRecord.getC_CompensationGroup_SchemaLine_ID()))
 				.groupMatcher(createGroupMatcher(compensationLineRecord, allCompensationLineRecords))
 				.productId(ProductId.ofRepoId(compensationLineRecord.getM_Product_ID()))
-				.percentage(percentage != null && percentage.signum() != 0 ? percentage : null)
+				.percentage(extractPercentage(compensationLineRecord))
 				.build();
+	}
+
+	@Nullable
+	private static Percent extractPercentage(final I_C_CompensationGroup_SchemaLine schemaLinePO)
+	{
+		final BigDecimal percentageBD = schemaLinePO.getCompleteOrderDiscount();
+		return percentageBD != null && percentageBD.signum() != 0
+				? Percent.of(percentageBD)
+				: null;
 	}
 
 	private GroupMatcher createGroupMatcher(

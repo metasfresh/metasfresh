@@ -60,6 +60,7 @@ public class ReceiptScheduleAuditRepository implements APIExportAuditRepository<
 				.transactionId(transactionId);
 		for (final I_M_ReceiptSchedule_ExportAudit record : stagingData.getRecords())
 		{
+			result.exportStatus(APIExportStatus.ofCode(record.getExportStatus())); // note that we expect just one item see ShipmentScheduleAuditRepository
 			final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(record.getM_ReceiptSchedule_ID());
 			result.item(receiptScheduleId,
 					ReceiptScheduleExportAuditItem.builder()

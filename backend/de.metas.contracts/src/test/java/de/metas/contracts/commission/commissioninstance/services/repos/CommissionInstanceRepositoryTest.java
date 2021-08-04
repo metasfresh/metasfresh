@@ -1,33 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_FORECASTED;
-import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICEABLE;
-import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED;
-import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_SETTLED;
-import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_TO_SETTLE;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-
-import lombok.NonNull;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.commission.Beneficiary;
@@ -46,13 +18,14 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
+import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContract;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionFact;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionShare;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContract;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
@@ -63,6 +36,32 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
 import io.github.jsonSnapshot.SnapshotMatcher;
+import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_FORECASTED;
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICEABLE;
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED;
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_SETTLED;
+import static de.metas.contracts.commission.model.X_C_Commission_Fact.COMMISSION_FACT_STATE_TO_SETTLE;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -115,7 +114,7 @@ class CommissionInstanceRepositoryTest
 		commissionProductId = ProductId.ofRepoId(commissionProductRecord.getM_Product_ID());
 
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService);
+		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
 		final CommissionRecordStagingService commissionInstanceRecordStagingService = new CommissionRecordStagingService();
 		commissionInstanceRepository = new CommissionInstanceRepository(commissionConfigFactory, commissionInstanceRecordStagingService);
 	}

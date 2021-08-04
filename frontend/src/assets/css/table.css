@@ -798,3 +798,11 @@ $indent-collapsible-offset-lg: 24px;
     height: 6px;
     border-left: 1px solid #afbfca;
 }
+
+.table-cell-label-wrapper {
+    float: left;
+}
+.table-cell-label-show-more {
+    float: left;
+    width: 10%;
+}

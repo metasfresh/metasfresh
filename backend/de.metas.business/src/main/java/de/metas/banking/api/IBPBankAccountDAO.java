@@ -11,6 +11,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_BP_BankAccount;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -45,6 +46,7 @@ public interface IBPBankAccountDAO extends ISingletonService
 
 	ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> getAllByBPartnerIds(@NonNull Collection<BPartnerId> bpartnerIds);
 
+	@Nullable
 	BankId getBankId(@NonNull BankAccountId bankAccountId);
 
 	Optional<BankAccount> getDefaultBankAccount(BPartnerId bPartnerId);

@@ -180,7 +180,7 @@ public class FactAcctReset extends JavaProcess
 
 		final Timestamp today = TimeUtil.trunc(new Timestamp (System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
 
-		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(getCtx());
+		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getByClientAndOrg(getCtx());
 		final AcctSchemaPeriodControl periodControl = acctSchema.getPeriodControl();
 
 		if (periodControl.isAutomaticPeriodControl())
