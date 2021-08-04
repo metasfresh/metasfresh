@@ -7,7 +7,7 @@ const MomentTimezoneDataPlugin = require('moment-timezone-data-webpack-plugin');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
 
 // check if we have already a config.js file. If we do not we need to create it otherwise webpack will complain that is missing
-if (!fs.existsSync(path.join(__dirname, 'config.js'))) {
+if (!fs.existsSync('config.js')) {
   fs.copyFileSync('config.js.dist', 'config.js');
 }
 
