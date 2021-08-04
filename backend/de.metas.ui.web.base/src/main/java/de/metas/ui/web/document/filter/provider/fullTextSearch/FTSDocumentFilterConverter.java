@@ -56,7 +56,7 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 			@NonNull final SqlOptions sqlOpts,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
-		final String searchText = filter.getParameterValueAsString(FTSDocumentFilterDescriptorsProviderFactory.PARAM_SearchText);
+		final String searchText = filter.getParameterValueAsString(FTSDocumentFilterDescriptorsProviderFactory.PARAM_SearchText, null);
 		if (searchText == null || Check.isBlank(searchText))
 		{
 			return FilterSql.ALLOW_ALL;
