@@ -114,10 +114,6 @@ module.exports = {
         ],
       },
       {
-        test: /\.html$/,
-        loader: 'html-loader',
-      },
-      {
         type: 'javascript/auto',
         test: /\.(json)/,
         exclude: /(node_modules)/,
