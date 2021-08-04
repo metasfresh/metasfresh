@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import queryString from 'query-string';
 import _ from 'lodash';
 import { useDispatch } from 'react-redux';
-
+import PropTypes from 'prop-types';
 import { createWindow } from '../actions/WindowActions';
 
 import Board from '../containers/Board.js';
@@ -38,6 +38,12 @@ const RawDocListRoute = ({ location, match }) => {
 
   return <DocList query={query} windowId={params.windowId} />;
 };
+
+RawDocListRoute.propTypes = {
+  location: PropTypes.string,
+  match: PropTypes.object,
+};
+
 const DocListRoute = React.memo(RawDocListRoute, propsAreEqual);
 
 /**
@@ -52,6 +58,11 @@ function BoardRoute({ location, match }) {
 
   return <Board query={query} boardId={params.boardId} />;
 }
+
+BoardRoute.propTypes = {
+  location: PropTypes.string,
+  match: PropTypes.object,
+};
 
 /**
  * @file Functional component.
@@ -72,6 +83,12 @@ const RawMasterWindowRoute = (props) => {
 
   return <MasterWindow {...props} params={match.params} />;
 };
+
+RawMasterWindowRoute.propTypes = {
+  location: PropTypes.string,
+  match: PropTypes.object,
+};
+
 const MasterWindowRoute = React.memo(RawMasterWindowRoute, propsAreEqual);
 
 export { DocListRoute, BoardRoute, MasterWindowRoute };
