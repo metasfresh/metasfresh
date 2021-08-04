@@ -24,7 +24,7 @@ package de.metas.fulltextsearch.query;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.fulltextsearch.config.FTSFilterDescriptor;
+import de.metas.fulltextsearch.config.FTSJoinColumn;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -52,7 +52,7 @@ public class FTSSearchResultItem
 		@Nullable Integer value;
 
 		public static KeyValue ofJoinColumnAndValue(
-				@NonNull final FTSFilterDescriptor.JoinColumn joinColumn,
+				@NonNull final FTSJoinColumn joinColumn,
 				@Nullable final Integer value)
 		{
 			return builder()

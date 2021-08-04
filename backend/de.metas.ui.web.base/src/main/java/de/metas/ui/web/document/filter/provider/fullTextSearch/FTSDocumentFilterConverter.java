@@ -22,22 +22,22 @@
 
 package de.metas.ui.web.document.filter.provider.fullTextSearch;
 
-import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.config.FTSFilterDescriptor;
 import de.metas.fulltextsearch.query.FTSSearchRequest;
 import de.metas.fulltextsearch.query.FTSSearchResult;
 import de.metas.fulltextsearch.query.FTSSearchService;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
-import de.metas.ui.web.view.descriptor.SqlAndParams;
+import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.UUID;
 
 public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 {
@@ -51,16 +51,15 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 
 	@Nullable
 	@Override
-	public String getSql(
-			final SqlParamsCollector sqlParamsOut,
-			final DocumentFilter filter,
-			final SqlOptions sqlOpts,
-			final SqlDocumentFilterConverterContext context_NOTUSED)
+	public FilterSql getSql(
+			@NonNull final DocumentFilter filter,
+			@NonNull final SqlOptions sqlOpts,
+			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final String searchText = filter.getParameterValueAsString(FTSDocumentFilterDescriptorsProviderFactory.PARAM_SearchText);
 		if (searchText == null || Check.isBlank(searchText))
 		{
-			return null;
+			return FilterSql.ALLOW_ALL;
 		}
 
 		final FTSFilterContext ftsContext = filter.getParameterValueAs(FTSDocumentFilterDescriptorsProviderFactory.PARAM_Context);
@@ -71,7 +70,7 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 		final FTSConfig ftsConfig = searchService.getConfigById(ftsFilterDescriptor.getFtsConfigId());
 
 		final FTSSearchResult ftsResult = searchService.search(FTSSearchRequest.builder()
-				.searchId(UUID.randomUUID().toString())
+				.searchId(extractSearchId(context))
 				.searchText(searchText)
 				.esIndexName(ftsConfig.getEsIndexName())
 				.filterDescriptor(ftsFilterDescriptor)
@@ -79,43 +78,33 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 
 		if (ftsResult.isEmpty())
 		{
-			return "1=0";
+			return FilterSql.allowNoneWithComment("no FTS result");
 		}
 
-		final SqlAndParams.Builder innerWhereClause = SqlAndParams.builder();
-		for (final FTSFilterDescriptor.JoinColumn joinColumn : ftsFilterDescriptor.getJoinColumns())
-		{
-			if (joinColumn.isNullable())
-			{
-				innerWhereClause
-						.append(" AND (")
-						.append(joinColumn.getSelectionTableColumnName()).append(" IS NULL")
-						.append(" OR ")
-						.append(sqlOpts.getTableNameOrAlias()).append(".").append(joinColumn.getTargetTableColumnName())
-						.append(" IS NOT DISTINCT FROM ")
-						.append(joinColumn.getSelectionTableColumnName())
-						.append(")");
-			}
-			else
-			{
-				innerWhereClause
-						.append(" AND ")
-						.append(sqlOpts.getTableNameOrAlias()).append(".").append(joinColumn.getTargetTableColumnName())
-						.append("=")
-						.append(joinColumn.getSelectionTableColumnName());
-			}
-		}
+		// final SqlAndParams whereClause = SqlAndParams.builder()
+		// 		.append("EXISTS (")
+		// 		.append(" SELECT 1 FROM ").append(I_T_ES_FTS_Search_Result.Table_Name)
+		// 		.append(" WHERE ")
+		// 		.append(" ").append(I_T_ES_FTS_Search_Result.COLUMNNAME_Search_UUID).append("=?", ftsResult.getSearchId())
+		// 		.append(" AND ").append(ftsFilterDescriptor.getJoinColumns().buildJoinCondition(sqlOpts.getTableNameOrAlias(), ""))
+		// 		.append(")")
+		// 		.build();
 
-		final SqlAndParams sql = SqlAndParams.builder()
-				.append("EXISTS (")
-				.append(" SELECT 1 FROM ").append(I_T_ES_FTS_Search_Result.Table_Name)
-				.append(" WHERE ")
-				.append(" ").append(I_T_ES_FTS_Search_Result.COLUMNNAME_Search_UUID).append("=?", ftsResult.getSearchId())
-				.append(" ").append(innerWhereClause.build())
-				.append(")")
+		return FilterSql.builder()
+				.filterByFTS(FilterSql.FullTextSearchResult.builder()
+						.searchId(ftsResult.getSearchId())
+						.joinColumns(ftsFilterDescriptor.getJoinColumns())
+						.build())
 				.build();
+	}
 
-		sqlParamsOut.collectAll(sql.getSqlParams());
-		return sql.getSql();
+	private static String extractSearchId(@NonNull final SqlDocumentFilterConverterContext context)
+	{
+		final ViewId viewId = context.getViewId();
+		if (viewId == null)
+		{
+			throw new AdempiereException("viewId shall be provided in " + context);
+		}
+		return viewId.toJson();
 	}
 }

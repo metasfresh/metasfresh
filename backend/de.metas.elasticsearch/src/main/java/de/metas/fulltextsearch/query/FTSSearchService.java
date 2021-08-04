@@ -28,6 +28,8 @@ import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.config.FTSConfigId;
 import de.metas.fulltextsearch.config.FTSConfigService;
 import de.metas.fulltextsearch.config.FTSFilterDescriptor;
+import de.metas.fulltextsearch.config.FTSJoinColumn;
+import de.metas.fulltextsearch.config.FTSJoinColumnList;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -136,10 +138,10 @@ public class FTSSearchService
 			@NonNull final SearchHit hit,
 			@NonNull final FTSFilterDescriptor filterDescriptor)
 	{
-		final ImmutableList<FTSFilterDescriptor.JoinColumn> joinColumns = filterDescriptor.getJoinColumns();
+		final FTSJoinColumnList joinColumns = filterDescriptor.getJoinColumns();
 
 		final ArrayList<FTSSearchResultItem.KeyValue> keyValues = new ArrayList<>(joinColumns.size());
-		for (final FTSFilterDescriptor.JoinColumn joinColumn : joinColumns)
+		for (final FTSJoinColumn joinColumn : joinColumns)
 		{
 			final Integer intKeyValue = extractInteger(hit, joinColumn.getEsFieldName());
 			keyValues.add(FTSSearchResultItem.KeyValue.ofJoinColumnAndValue(joinColumn, intKeyValue));

@@ -27,6 +27,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermPricing;
@@ -79,7 +80,6 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -860,7 +860,7 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
-		final POInfo poInfo = POInfo.getPOInfo(ctx, I_C_Flatrate_Term.Table_Name);
+		final POInfo poInfo = POInfo.getPOInfo(I_C_Flatrate_Term.Table_Name);
 		final Lookup columnLookup = poInfo.getColumnLookup(ctx, poInfo.getColumnIndex(I_C_Flatrate_Term.COLUMNNAME_UOMType));
 
 		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,

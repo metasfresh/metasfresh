@@ -11,6 +11,7 @@ import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserId;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -238,7 +239,7 @@ public class RecordAccessService
 	@Nullable
 	public String buildUserGroupRecordAccessSqlWhereClause(
 			final String tableName,
-			final int adTableId,
+			@NonNull final AdTableId adTableId,
 			@NonNull final String keyColumnNameFQ,
 			@NonNull final UserId userId,
 			@NonNull final Set<UserGroupId> userGroupIds,
@@ -250,7 +251,7 @@ public class RecordAccessService
 		}
 
 		final StringBuilder sql = new StringBuilder();
-		sql.append(" EXISTS (SELECT 1 FROM " + I_AD_User_Record_Access.Table_Name + " z " + " WHERE " + " z.AD_Table_ID = ").append(adTableId).append(" AND z.Record_ID=").append(keyColumnNameFQ).append(" AND z.IsActive='Y'");
+		sql.append(" EXISTS (SELECT 1 FROM " + I_AD_User_Record_Access.Table_Name + " z " + " WHERE " + " z.AD_Table_ID = ").append(adTableId.getRepoId()).append(" AND z.Record_ID=").append(keyColumnNameFQ).append(" AND z.IsActive='Y'");
 
 		//
 		// User or User Group

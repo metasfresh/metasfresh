@@ -1565,6 +1565,12 @@ public final class Env
 		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
 	}
 
+	public static String getADLanguageOrBaseLanguage(@NonNull final Properties ctx)
+	{
+		final String adLanguage = getAD_Language(ctx);
+		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
+	}
+
 	/**
 	 * Get System Language.
 	 *

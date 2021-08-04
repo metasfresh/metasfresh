@@ -28,9 +28,10 @@ import lombok.Value;
 
 @Value
 @Builder
-public class FTSFilterDescriptor
+public class FTSJoinColumn
 {
-	@NonNull String targetTableName;
-	@NonNull FTSConfigId ftsConfigId;
-	@NonNull FTSJoinColumnList joinColumns;
+	@NonNull String targetTableColumnName;
+	@NonNull String selectionTableColumnName;
+	@NonNull String esFieldName;
+	boolean nullable;
 }

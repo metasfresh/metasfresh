@@ -105,10 +105,10 @@ public class FTSFilterDescriptorRepository
 			return FTSFilterDescriptor.builder()
 					.targetTableName(adTableDAO.retrieveTableName(record.getAD_Table_ID()))
 					.ftsConfigId(FTSConfigId.ofRepoId(record.getES_FTS_Config_ID()))
-					.joinColumns(joinColumnRecordsByFilterId.get(record.getES_FTS_Filter_ID())
+					.joinColumns(FTSJoinColumnList.ofList(joinColumnRecordsByFilterId.get(record.getES_FTS_Filter_ID())
 							.stream()
 							.map(joinColumnRecord -> toJoinColumn(joinColumnRecord, availableSelectionColumnNames))
-							.collect(ImmutableList.toImmutableList()))
+							.collect(ImmutableList.toImmutableList())))
 					.build();
 		}
 		catch (final Exception ex)
@@ -118,7 +118,7 @@ public class FTSFilterDescriptorRepository
 		}
 	}
 
-	private FTSFilterDescriptor.JoinColumn toJoinColumn(
+	private FTSJoinColumn toJoinColumn(
 			@NonNull final I_ES_FTS_Filter_JoinColumn record,
 			@NonNull final ArrayList<String> availableSelectionColumnNames)
 	{
@@ -127,7 +127,7 @@ public class FTSFilterDescriptorRepository
 			throw new AdempiereException("No more available selection column names to map");
 		}
 
-		return FTSFilterDescriptor.JoinColumn.builder()
+		return FTSJoinColumn.builder()
 				.targetTableColumnName(adTableDAO.retrieveColumnName(record.getAD_Column_ID()))
 				.selectionTableColumnName(availableSelectionColumnNames.remove(0))
 				.esFieldName(record.getES_FieldName())
