@@ -40,7 +40,7 @@ const RawDocListRoute = ({ location, match }) => {
 };
 
 RawDocListRoute.propTypes = {
-  location: PropTypes.string,
+  location: PropTypes.object,
   match: PropTypes.object,
 };
 
@@ -60,7 +60,7 @@ function BoardRoute({ location, match }) {
 }
 
 BoardRoute.propTypes = {
-  location: PropTypes.string,
+  location: PropTypes.object,
   match: PropTypes.object,
 };
 
@@ -85,7 +85,7 @@ const RawMasterWindowRoute = (props) => {
 };
 
 RawMasterWindowRoute.propTypes = {
-  location: PropTypes.string,
+  location: PropTypes.object,
   match: PropTypes.object,
 };
 
