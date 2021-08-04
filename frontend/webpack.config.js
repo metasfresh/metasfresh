@@ -21,6 +21,11 @@ function computeCommitHash() {
 
 const plugins = [
   new webpack.DefinePlugin({
+    process: {
+      env: {
+        NODE_ENV: JSON.stringify('development'),
+      },
+    },
     COMMIT_HASH: JSON.stringify(commitHash),
   }),
   new webpack.HotModuleReplacementPlugin(),
@@ -68,7 +73,7 @@ module.exports = {
   entry: entries,
   output: {
     path: '/',
-    filename: 'bundle-[git-revision-hash]-git-[chunkhash].js',
+    filename: '[name].bundle-[git-revision-hash]-git-[chunkhash].js',
     publicPath: '/',
   },
   plugins,

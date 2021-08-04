@@ -10,8 +10,10 @@ var commitHash = require('child_process')
 
 const plugins = [
   new webpack.DefinePlugin({
-    'process.env': {
-      NODE_ENV: JSON.stringify('production'),
+    process: {
+      env: {
+        NODE_ENV: JSON.stringify('production'),
+      },
     },
     COMMIT_HASH: JSON.stringify(commitHash),
   }),
