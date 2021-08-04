@@ -3,7 +3,7 @@ var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var fs = require('fs');
-var WebpackGitHash = require('webpack-git-hash');
+const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
 var commitHash = require('child_process')
   .execSync('git rev-parse --short HEAD')
   .toString();
@@ -18,7 +18,7 @@ const plugins = [
   new HtmlWebpackPlugin({
     template: './index.html',
   }),
-  new WebpackGitHash(),
+  new GitRevisionPlugin(),
   new CopyWebpackPlugin({
     patterns: [
       {
@@ -50,7 +50,7 @@ module.exports = {
   entry: ['@babel/polyfill', './src/index.jsx', './favicon.png'],
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle-[hash]-git-[githash].js',
+    filename: 'bundle-[git-revision-hash]-git-[chunkhash].js',
     publicPath: '/',
   },
   plugins,

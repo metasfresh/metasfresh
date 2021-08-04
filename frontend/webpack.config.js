@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const WebpackGitHash = require('webpack-git-hash');
+const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
 const fs = require('fs');
 const MomentTimezoneDataPlugin = require('moment-timezone-data-webpack-plugin');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
@@ -39,7 +39,7 @@ const plugins = [
 
 // WebpackGitHash attempts to run the git binary as well
 if (commitHash !== 'GIT_REV_NOT_AVAILABLE') {
-  plugins.push(new WebpackGitHash());
+  plugins.push(new GitRevisionPlugin());
 }
 
 const entries = {
@@ -68,7 +68,7 @@ module.exports = {
   entry: entries,
   output: {
     path: '/',
-    filename: '[name].bundle-[hash]-git-[githash].js',
+    filename: 'bundle-[git-revision-hash]-git-[chunkhash].js',
     publicPath: '/',
   },
   plugins,
