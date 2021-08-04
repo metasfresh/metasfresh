@@ -31,25 +31,25 @@ import lombok.Value;
 import javax.annotation.Nullable;
 
 @Value
-public class FTSConfigId implements RepoIdAware
+public class FTSFilterDescriptorId implements RepoIdAware
 {
 	@JsonCreator
-	public static FTSConfigId ofRepoId(final int repoId)
+	public static FTSFilterDescriptorId ofRepoId(final int repoId)
 	{
-		return new FTSConfigId(repoId);
+		return new FTSFilterDescriptorId(repoId);
 	}
 
 	@Nullable
-	public static FTSConfigId ofRepoIdOrNull(final int repoId)
+	public static FTSFilterDescriptorId ofRepoIdOrNull(final int repoId)
 	{
-		return repoId > 0 ? new FTSConfigId(repoId) : null;
+		return repoId > 0 ? new FTSFilterDescriptorId(repoId) : null;
 	}
 
 	int repoId;
 
-	private FTSConfigId(final int repoId)
+	private FTSFilterDescriptorId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "ES_FTS_Config_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "ES_FTS_Filter_ID");
 	}
 
 	@JsonValue
@@ -59,7 +59,7 @@ public class FTSConfigId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(@Nullable final FTSConfigId id)
+	public static int toRepoId(@Nullable final FTSFilterDescriptorId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

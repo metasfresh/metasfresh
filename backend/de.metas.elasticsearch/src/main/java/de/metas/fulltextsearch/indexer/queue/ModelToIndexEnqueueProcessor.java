@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.elasticsearch.server
+ * de.metas.elasticsearch
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -96,7 +96,7 @@ public class ModelToIndexEnqueueProcessor
 			logger.warn("Elasticsearch is disabled because: {}", enabled.getReasonAsString());
 			return;
 		}
-		
+
 		final Thread thread = new Thread(this::processInfinitely);
 		thread.setDaemon(true);
 		thread.setName("FTS-index-queue-processor");
@@ -265,12 +265,11 @@ public class ModelToIndexEnqueueProcessor
 
 	private void createESIndex(final FTSConfig config) throws IOException
 	{
-		final CreateIndexRequest esCreateRequest = new CreateIndexRequest(config.getEsIndexName())
-				.source(config.getCreateIndexCommand().getAsString(), XContentType.JSON);
-
 		elasticsearchSystem.elasticsearchClient()
 				.indices()
-				.create(esCreateRequest, RequestOptions.DEFAULT);
+				.create(new CreateIndexRequest(config.getEsIndexName())
+								.source(config.getCreateIndexCommand().getAsString(), XContentType.JSON),
+						RequestOptions.DEFAULT);
 	}
 
 	private void addDocumentsToIndex(

@@ -63,6 +63,11 @@ public class FTSFilterDescriptorRepository
 		return getAll().getByTargetTableName(targetTableName);
 	}
 
+	public FTSFilterDescriptor getById(@NonNull final FTSFilterDescriptorId id)
+	{
+		return getAll().getById(id);
+	}
+
 	private FTSFilterDescriptorsMap getAll()
 	{
 		return cache.getOrLoad(0, this::retrieveAll);
@@ -103,6 +108,7 @@ public class FTSFilterDescriptorRepository
 		try
 		{
 			return FTSFilterDescriptor.builder()
+					.id(FTSFilterDescriptorId.ofRepoId(record.getES_FTS_Filter_ID()))
 					.targetTableName(adTableDAO.retrieveTableName(record.getAD_Table_ID()))
 					.ftsConfigId(FTSConfigId.ofRepoId(record.getES_FTS_Config_ID()))
 					.joinColumns(FTSJoinColumnList.ofList(joinColumnRecordsByFilterId.get(record.getES_FTS_Filter_ID())
@@ -139,15 +145,27 @@ public class FTSFilterDescriptorRepository
 	private static class FTSFilterDescriptorsMap
 	{
 		private final ImmutableMap<String, FTSFilterDescriptor> descriptorsByTargetTableName;
+		private final ImmutableMap<FTSFilterDescriptorId, FTSFilterDescriptor> descriptorsById;
 
 		private FTSFilterDescriptorsMap(@NonNull final List<FTSFilterDescriptor> descriptors)
 		{
 			descriptorsByTargetTableName = Maps.uniqueIndex(descriptors, FTSFilterDescriptor::getTargetTableName);
+			descriptorsById = Maps.uniqueIndex(descriptors, FTSFilterDescriptor::getId);
 		}
 
 		public Optional<FTSFilterDescriptor> getByTargetTableName(@NonNull final String targetTableName)
 		{
 			return Optional.ofNullable(descriptorsByTargetTableName.get(targetTableName));
+		}
+
+		public FTSFilterDescriptor getById(final FTSFilterDescriptorId id)
+		{
+			final FTSFilterDescriptor filter = descriptorsById.get(id);
+			if (filter == null)
+			{
+				throw new AdempiereException("No filter found for " + id);
+			}
+			return filter;
 		}
 	}
 }

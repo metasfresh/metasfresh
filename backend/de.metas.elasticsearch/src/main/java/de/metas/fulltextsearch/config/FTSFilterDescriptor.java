@@ -30,6 +30,7 @@ import lombok.Value;
 @Builder
 public class FTSFilterDescriptor
 {
+	@NonNull FTSFilterDescriptorId id;
 	@NonNull String targetTableName;
 	@NonNull FTSConfigId ftsConfigId;
 	@NonNull FTSJoinColumnList joinColumns;

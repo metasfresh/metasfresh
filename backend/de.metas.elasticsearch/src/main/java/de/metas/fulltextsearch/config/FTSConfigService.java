@@ -60,4 +60,10 @@ public class FTSConfigService
 	{
 		return ftsFilterDescriptorRepository.getByTargetTableName(targetTableName);
 	}
+
+	public FTSFilterDescriptor getFilterById(@NonNull final FTSFilterDescriptorId id)
+	{
+		return ftsFilterDescriptorRepository.getById(id);
+	}
+
 }

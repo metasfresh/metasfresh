@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.elasticsearch.server
+ * de.metas.elasticsearch
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%

@@ -65,7 +65,7 @@ public class ModelsToIndexQueueService
 		enqueueNow(requests);
 	}
 
-	private void enqueueNow(@NonNull final List<ModelToIndexEnqueueRequest> requests)
+	public void enqueueNow(@NonNull final List<ModelToIndexEnqueueRequest> requests)
 	{
 		repository.addToQueue(requests);
 	}

@@ -30,6 +30,7 @@ import de.metas.fulltextsearch.config.FTSConfigService;
 import de.metas.fulltextsearch.config.FTSFilterDescriptor;
 import de.metas.fulltextsearch.config.FTSJoinColumn;
 import de.metas.fulltextsearch.config.FTSJoinColumnList;
+import de.metas.logging.LogManager;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -51,6 +52,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchModule;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -62,6 +64,7 @@ import java.util.Collections;
 @Service
 public class FTSSearchService
 {
+	private static final Logger logger = LogManager.getLogger(FTSSearchService.class);
 	private final FTSConfigService ftsConfigService;
 	private final FTSSearchResultRepository ftsSearchResultRepository;
 	private final IESSystem elasticsearchSystem = Services.get(IESSystem.class);
@@ -80,12 +83,16 @@ public class FTSSearchService
 
 	public FTSSearchResult search(@NonNull final FTSSearchRequest request)
 	{
+		logger.debug("search: request: {}", request);
+
 		final FTSConfig ftsConfig = ftsConfigService.getConfigByESIndexName(request.getEsIndexName());
+		logger.debug("search: ftsConfig: {}", ftsConfig);
 
 		final String jsonQuery = ftsConfig.getQueryCommand()
 				.resolve(Evaluatees.mapBuilder()
 						.put(CTXNAME_query, request.getSearchText())
 						.build());
+		logger.debug("search: elasticsearch query: {}", jsonQuery);
 
 		try
 		{
@@ -116,6 +123,7 @@ public class FTSSearchService
 
 			ftsSearchResultRepository.saveNew(ftsResult);
 
+			logger.debug("search: result: {}", ftsResult);
 			return ftsResult;
 		}
 		catch (final IOException ex)
