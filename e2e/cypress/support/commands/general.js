@@ -255,8 +255,7 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
 
 function visitTableWindow(windowId) {
   const quickActionsAlias = 'quickActions_' + humanReadableNow();
-  cy.server();
-  cy.route('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
+  cy.intercept('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
 
   cy.visit(`/window/${windowId}`);
 
@@ -276,9 +275,8 @@ Cypress.Commands.add('performDocumentViewAction', (windowId, documentViewAction)
 });
 
 function performDocumentViewAction(windowId, documentViewAction) {
-  cy.server();
   const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
-  cy.route('GET', new RegExp(`/rest/api/window/${windowId}/layout`)).as(layoutAliasName);
+  cy.intercept('GET', new RegExp(`/rest/api/window/${windowId}/layout`)).as(layoutAliasName);
 
   // - removed below lines because is redundant code.. that GET call is actually done by documentViewAction ..
   // const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
