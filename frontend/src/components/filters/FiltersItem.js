@@ -145,10 +145,8 @@ class FiltersItem extends PureComponent {
    * @param {*} value
    * @param {*} id
    * @param {*} valueTo
-   * @param {*} filterId
-   * @param {*} defaultValue
    */
-  setValue = (parameter, value, id, valueTo = '', filterId, defaultValue) => {
+  setValue = (parameter, value, id, valueTo = '') => {
     if (!Array.isArray(parameter)) {
       parameter = [parameter];
     }
