@@ -35,7 +35,7 @@ describe('Sales order window widgets test', function () {
       cy.wait('@postAddress').then((xhr) => {
         const requestId = xhr.response.body.id;
 
-        cy.route('PATCH', `/rest/api/window/143/1000489/187/quickInput/${requestId}`).as('patchAddress');
+        cy.intercept('PATCH', `/rest/api/window/143/1000489/187/quickInput/${requestId}`).as('patchAddress');
         cy.writeIntoLookupListField('M_Product_ID', 'co', 'Convenience Salat 250g_P002737');
         cy.wait('@patchAddress');
         cy.get('#lookup_M_HU_PI_Item_Product_ID input').should('have.value', 'IFCO 6410 x 10 Stk');

@@ -280,7 +280,7 @@ function performDocumentViewAction(windowId, documentViewAction) {
 
   // - removed below lines because is redundant code.. that GET call is actually done by documentViewAction ..
   // const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
-  // cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
+  // cy.intercept('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
 
   documentViewAction();
 

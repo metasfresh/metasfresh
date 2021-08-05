@@ -947,7 +947,7 @@ describe.skip('Kitchen Sink', function () {
         })
     })
 
-    it('cy.route() - route responses to matching requests', function () {
+    it('cy.intercept() - route responses to matching requests', function () {
       let message = 'whoa, this comment doesn\'t exist'
 
       // **** GET comments route ****
@@ -970,7 +970,7 @@ describe.skip('Kitchen Sink', function () {
       // **** POST comment route ****
 
       // Specify the route to listen to method 'POST'
-      cy.route('POST', '/comments').as('postComment')
+      cy.intercept('POST', '/comments').as('postComment')
 
       // we have code that posts a comment when
       // the button is clicked in scripts.js
@@ -985,7 +985,7 @@ describe.skip('Kitchen Sink', function () {
       })
 
       // **** Stubbed PUT comment route ****
-      cy.route({
+      cy.intercept({
         method: 'PUT',
         url: /comments\/\d+/,
         status: 404,
@@ -1027,7 +1027,7 @@ describe.skip('Kitchen Sink', function () {
         .and('include', 'Using fixtures to represent data')
 
       // you can also just write the fixture in the route
-      cy.route(/comments/, 'fixture:example.json').as('getComment')
+      cy.intercept(/comments/, 'fixture:example.json').as('getComment')
 
       // we have code that gets a comment when
       // the button is clicked in scripts.js
@@ -1039,7 +1039,7 @@ describe.skip('Kitchen Sink', function () {
 
       // or write fx to represent fixture
       // by default it assumes it's .json
-      cy.route(/comments/, 'fx:example').as('getComment')
+      cy.intercept(/comments/, 'fx:example').as('getComment')
 
       // we have code that gets a comment when
       // the button is clicked in scripts.js

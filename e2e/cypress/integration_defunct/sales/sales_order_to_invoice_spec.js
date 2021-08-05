@@ -134,7 +134,7 @@ describe('New sales order test', function () {
 
       // zoom to the invoice candidate's invoice, but also make sure to wait until the data is available
       const getDataAlias = `data-${timestamp}`;
-      cy.route('GET', `/rest/api/documentView/${salesInvoices.windowId}/*?firstRow=0&pageLength=*`).as(getDataAlias);
+      cy.intercept('GET', `/rest/api/documentView/${salesInvoices.windowId}/*?firstRow=0&pageLength=*`).as(getDataAlias);
       cy.selectReference('C_Invoice_Candidate_Sales_C_Invoice').click();
       cy.wait(`@${getDataAlias}`);
     });
