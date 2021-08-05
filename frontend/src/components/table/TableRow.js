@@ -464,6 +464,7 @@ class TableRow extends PureComponent {
       listenOnKeys,
       changeListenOnTrue,
       changeListenOnFalse,
+      fieldsByName,
     } = this.props;
     const {
       edited,
@@ -486,6 +487,9 @@ class TableRow extends PureComponent {
             const supportFieldEdit =
               mainTable && isEditableOnDemand(item, cells);
             const property = item.fields[0].field;
+            const tableCellData = fieldsByName[property]
+              ? fieldsByName[property]
+              : undefined;
             const isEditable = isCellEditable(item, cells);
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
@@ -540,6 +544,7 @@ class TableRow extends PureComponent {
                   tooltipData,
                   tooltipWidget,
                   tdValue,
+                  tableCellData,
                   description,
                   updateHeight,
                 }}
