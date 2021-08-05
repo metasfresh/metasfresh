@@ -2653,4 +2653,6 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_OrderLine.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	default void setIsHideWhenPrinting(final boolean hideWhenPrinting) {} // TODO add actual column
 }

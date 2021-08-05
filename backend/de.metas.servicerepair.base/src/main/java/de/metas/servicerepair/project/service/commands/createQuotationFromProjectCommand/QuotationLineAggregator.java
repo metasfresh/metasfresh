@@ -31,6 +31,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
+import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
@@ -122,6 +123,7 @@ class QuotationLineAggregator
 				.qty(qty)
 				.manualPrice(isZeroPrice() ? Money.zero(priceCalculator.getCurrencyId()) : null)
 				.description(description)
+				.hideWhenPrinting(isHideWhenPrinting())
 				.details(details);
 	}
 
@@ -134,6 +136,11 @@ class QuotationLineAggregator
 	private boolean isZeroPrice()
 	{
 		return zeroPrice != null ? zeroPrice : key.isZeroPrice();
+	}
+
+	private boolean isHideWhenPrinting()
+	{
+		return key.getType() == ServiceRepairProjectCostCollectorType.RepairedProductToReturn;
 	}
 
 	public Stream<Map.Entry<ServiceRepairProjectCostCollectorId, OrderAndLineId>> streamQuotationLineIdsIndexedByCostCollectorId()
