@@ -89,21 +89,6 @@ class QuotationLineAggregator
 		return this;
 	}
 
-	public QuotationLineAggregator addNegated(@NonNull final ServiceRepairProjectCostCollector costCollector)
-	{
-		Check.assumeEquals(extractKey(costCollector), key, "key does not match for {}. Expected: {}", costCollector, key);
-
-		qty = qty.add(costCollector.getQtyReservedOrConsumed().negate());
-		costCollectorIds.add(costCollector.getId());
-
-		return this;
-	}
-
-	public void addAsDetails(@NonNull final List<ServiceRepairProjectCostCollector> costCollectors)
-	{
-		costCollectors.forEach(this::addAsDetail);
-	}
-
 	private void addAsDetail(@NonNull final ServiceRepairProjectCostCollector costCollector)
 	{
 		final OrderLineDetailCreateRequest detail = priceCalculator.computeOrderLineDetailCreateRequest(costCollector);
@@ -125,12 +110,6 @@ class QuotationLineAggregator
 				.description(description)
 				.hideWhenPrinting(isHideWhenPrinting())
 				.details(details);
-	}
-
-	public QuotationLineAggregator zeroPrice(@Nullable final Boolean zeroPrice)
-	{
-		this.zeroPrice = zeroPrice;
-		return this;
 	}
 
 	private boolean isZeroPrice()
