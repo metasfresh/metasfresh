@@ -410,7 +410,7 @@ Cypress.Commands.add('openInboxNotificationWithText', (text) => {
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
 Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue, expectEmptyRequest = false) => {
   cy.wait(alias).then(function (xhr) {
-    const responseBody = xhr.responseBody;
+    const responseBody = xhr.response.body;
 
     if (!responseBody.documents) {
       responseBody.documents = responseBody;
