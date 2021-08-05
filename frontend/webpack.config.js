@@ -1,10 +1,15 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const WebpackGitHash = require('webpack-git-hash');
+const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
 const fs = require('fs');
 const MomentTimezoneDataPlugin = require('moment-timezone-data-webpack-plugin');
 const MomentLocalesPlugin = require('moment-locales-webpack-plugin');
+
+// check if we have already a config.js file. If we do not we need to create it otherwise webpack will complain that is missing
+if (!fs.existsSync('config.js')) {
+  fs.copyFileSync('config.js.dist', 'config.js');
+}
 
 // allow webpack.config.js to be evaluated if there is no git binary or if we are outside of the git repo;
 // useful for cypress scenarios
@@ -21,6 +26,11 @@ function computeCommitHash() {
 
 const plugins = [
   new webpack.DefinePlugin({
+    process: {
+      env: {
+        NODE_ENV: JSON.stringify('development'),
+      },
+    },
     COMMIT_HASH: JSON.stringify(commitHash),
   }),
   new webpack.HotModuleReplacementPlugin(),
@@ -39,7 +49,7 @@ const plugins = [
 
 // WebpackGitHash attempts to run the git binary as well
 if (commitHash !== 'GIT_REV_NOT_AVAILABLE') {
-  plugins.push(new WebpackGitHash());
+  plugins.push(new GitRevisionPlugin());
 }
 
 const entries = {
@@ -68,7 +78,7 @@ module.exports = {
   entry: entries,
   output: {
     path: '/',
-    filename: '[name].bundle-[hash]-git-[githash].js',
+    filename: '[name].bundle-[git-revision-hash]-git-[chunkhash].js',
     publicPath: '/',
   },
   plugins,
@@ -112,10 +122,6 @@ module.exports = {
             },
           },
         ],
-      },
-      {
-        test: /\.html$/,
-        loader: 'html-loader',
       },
       {
         type: 'javascript/auto',
