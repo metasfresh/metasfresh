@@ -29,7 +29,7 @@ describe('TableCellLabel', () => {
     expect(html).toContain(
       `table-cell-label-wrapper`
     );
-    expect(html).toContain(`Bildungsinstitut`);
+    expect(html).toContain(`Bildungsin`);
     expect(html).not.toContain(`...`);
   });
 

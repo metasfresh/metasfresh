@@ -181,3 +181,10 @@ export const FILTERS_TYPE_NOT_INCLUDED = 'NotIncluded';
  * @type {integer} Used to indicate the number of px until we apply left offset
  */
 export const LOOKUP_SHOW_MORE_PIXEL_NO = 250;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the max number of character for a label before chopping it
+ *                 Note: it has to be in sync with `.table-cell-label-container` size
+ */
+export const TBL_CELL_LABEL_MAX = 10;

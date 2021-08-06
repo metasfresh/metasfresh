@@ -1,6 +1,6 @@
 import React, { useState, useContext, createContext } from 'react';
 import { useDispatch } from 'react-redux';
-
+import PropTypes from 'prop-types';
 import { loginWithToken, localLoginRequest, logoutRequest } from '../api';
 import Auth from '../services/Auth';
 import { loginSuccess as loginAction } from '../actions/AppActions';
@@ -15,6 +15,12 @@ export function ProvideAuth({ children }) {
   return <authContext.Provider value={auth}>{children}</authContext.Provider>;
 }
 
+ProvideAuth.propTypes = {
+  children: PropTypes.oneOfType([
+    PropTypes.arrayOf(PropTypes.node),
+    PropTypes.node,
+  ]).isRequired,
+};
 /**
  * @file React hook, that provides components with the authentication abject and
  * re-renders them when authentication changes

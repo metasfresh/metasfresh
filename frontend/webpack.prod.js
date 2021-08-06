@@ -3,22 +3,30 @@ var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var fs = require('fs');
-var WebpackGitHash = require('webpack-git-hash');
+const { GitRevisionPlugin } = require('git-revision-webpack-plugin');
+
+// check if we have already a config.js file. If we do not we need to create it otherwise webpack will complain that is missing
+if (!fs.existsSync('config.js')) {
+  fs.copyFileSync('config.js.dist', 'config.js');
+}
+
 var commitHash = require('child_process')
   .execSync('git rev-parse --short HEAD')
   .toString();
 
 const plugins = [
   new webpack.DefinePlugin({
-    'process.env': {
-      NODE_ENV: JSON.stringify('production'),
+    process: {
+      env: {
+        NODE_ENV: JSON.stringify('production'),
+      },
     },
     COMMIT_HASH: JSON.stringify(commitHash),
   }),
   new HtmlWebpackPlugin({
     template: './index.html',
   }),
-  new WebpackGitHash(),
+  new GitRevisionPlugin(),
   new CopyWebpackPlugin({
     patterns: [
       {
@@ -50,7 +58,7 @@ module.exports = {
   entry: ['@babel/polyfill', './src/index.jsx', './favicon.png'],
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle-[hash]-git-[githash].js',
+    filename: 'bundle-[git-revision-hash]-git-[chunkhash].js',
     publicPath: '/',
   },
   plugins,
@@ -104,10 +112,6 @@ module.exports = {
             },
           },
         ],
-      },
-      {
-        test: /\.html$/,
-        loader: 'html-loader',
       },
       {
         type: 'javascript/auto',
