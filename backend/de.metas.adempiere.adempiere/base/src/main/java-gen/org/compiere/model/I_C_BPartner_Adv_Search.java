@@ -4,16 +4,16 @@ import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
 
-/** Generated Interface for C_BPartner_Adv_Search_v
+/** Generated Interface for C_BPartner_Adv_Search
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner_Adv_Search_v 
+public interface I_C_BPartner_Adv_Search 
 {
 
-	String Table_Name = "C_BPartner_Adv_Search_v";
+	String Table_Name = "C_BPartner_Adv_Search";
 
-//	/** AD_Table_ID=541588 */
+//	/** AD_Table_ID=541761 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -22,7 +22,7 @@ public interface I_C_BPartner_Adv_Search_v
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Client_ID();
@@ -34,7 +34,7 @@ public interface I_C_BPartner_Adv_Search_v
 	 * Organisational entity within client
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Org_ID (int AD_Org_ID);
@@ -44,7 +44,7 @@ public interface I_C_BPartner_Adv_Search_v
 	 * Organisational entity within client
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Org_ID();
@@ -52,10 +52,33 @@ public interface I_C_BPartner_Adv_Search_v
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Street.
+	 * Address line 1 for this location
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAddress1 (@Nullable java.lang.String Address1);
+
+	/**
+	 * Get Street.
+	 * Address line 1 for this location
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAddress1();
+
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_Address1 = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "Address1", null);
+	String COLUMNNAME_Address1 = "Address1";
+
+	/**
 	 * Set Contact.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_BP_Contact_ID (int C_BP_Contact_ID);
@@ -64,7 +87,7 @@ public interface I_C_BPartner_Adv_Search_v
 	 * Get Contact.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_BP_Contact_ID();
@@ -75,7 +98,7 @@ public interface I_C_BPartner_Adv_Search_v
 	 * Set Business Partner.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_ID (int C_BPartner_ID);
@@ -84,7 +107,7 @@ public interface I_C_BPartner_Adv_Search_v
 	 * Get Business Partner.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_ID();
@@ -129,8 +152,54 @@ public interface I_C_BPartner_Adv_Search_v
 	 */
 	@Nullable java.lang.String getCity();
 
-	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_City = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "City", null);
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_City = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "City", null);
 	String COLUMNNAME_City = "City";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_Created = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Elasticsearch Document ID.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setES_DocumentId (java.lang.String ES_DocumentId);
+
+	/**
+	 * Get Elasticsearch Document ID.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getES_DocumentId();
+
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_ES_DocumentId = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "ES_DocumentId", null);
+	String COLUMNNAME_ES_DocumentId = "ES_DocumentId";
 
 	/**
 	 * Set Firstname.
@@ -152,14 +221,37 @@ public interface I_C_BPartner_Adv_Search_v
 	 */
 	@Nullable java.lang.String getFirstname();
 
-	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_Firstname = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "Firstname", null);
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_Firstname = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "Firstname", null);
 	String COLUMNNAME_Firstname = "Firstname";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsActive (boolean IsActive);
+
+	/**
+	 * Get Active.
+	 * The record is active in the system
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isActive();
+
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_IsActive = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Company.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setIsCompany (boolean IsCompany);
@@ -168,12 +260,12 @@ public interface I_C_BPartner_Adv_Search_v
 	 * Get Company.
 	 *
 	 * <br>Type: YesNo
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	boolean isCompany();
 
-	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_IsCompany = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "IsCompany", null);
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_IsCompany = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "IsCompany", null);
 	String COLUMNNAME_IsCompany = "IsCompany";
 
 	/**
@@ -196,7 +288,7 @@ public interface I_C_BPartner_Adv_Search_v
 	 */
 	@Nullable java.lang.String getLastname();
 
-	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_Lastname = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "Lastname", null);
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_Lastname = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "Lastname", null);
 	String COLUMNNAME_Lastname = "Lastname";
 
 	/**
@@ -217,8 +309,33 @@ public interface I_C_BPartner_Adv_Search_v
 	 */
 	@Nullable java.lang.String getName();
 
-	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_Name = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "Name", null);
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_Name = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Get Updated.
+	 * Date this record was updated
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getUpdated();
+
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_Updated = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
+
+	/**
+	 * Get Updated By.
+	 * User who updated this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getUpdatedBy();
+
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Search Key.
@@ -240,6 +357,6 @@ public interface I_C_BPartner_Adv_Search_v
 	 */
 	@Nullable java.lang.String getValue();
 
-	ModelColumn<I_C_BPartner_Adv_Search_v, Object> COLUMN_Value = new ModelColumn<>(I_C_BPartner_Adv_Search_v.class, "Value", null);
+	ModelColumn<I_C_BPartner_Adv_Search, Object> COLUMN_Value = new ModelColumn<>(I_C_BPartner_Adv_Search.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
 }

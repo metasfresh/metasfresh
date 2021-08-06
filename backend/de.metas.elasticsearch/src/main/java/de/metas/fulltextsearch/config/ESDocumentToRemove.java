@@ -20,18 +20,17 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.indexer.handler;
+package de.metas.fulltextsearch.config;
 
-import de.metas.fulltextsearch.config.ESDocumentToIndexChunk;
-import de.metas.fulltextsearch.config.FTSConfig;
-import de.metas.fulltextsearch.indexer.queue.ModelToIndex;
+import lombok.Builder;
+import lombok.Value;
 
-import java.util.List;
-import java.util.Set;
+import javax.annotation.Nullable;
 
-public interface FTSModelIndexer
+@Value
+@Builder
+public class ESDocumentToRemove
 {
-	Set<String> getHandledSourceTableNames();
-
-	List<ESDocumentToIndexChunk> createDocumentsToIndex(List<ModelToIndex> requests, final FTSConfig config);
+	@Nullable String deleteById;
+	@Nullable String deleteByQueryJson;
 }

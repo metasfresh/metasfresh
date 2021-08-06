@@ -22,7 +22,6 @@
 
 package de.metas.fulltextsearch.config;
 
-import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
@@ -46,11 +45,11 @@ public class ESDocumentToIndexTemplate
 
 	public ESDocumentToIndex resolve(
 			@NonNull final Evaluatee evalCtx,
-			@NonNull final RepoIdAware documentId)
+			@NonNull final String documentId)
 	{
 		final ToJsonEvaluatee evalCtxEffective = new ToJsonEvaluatee(evalCtx);
 		return ESDocumentToIndex.builder()
-				.documentId(String.valueOf(documentId.getRepoId()))
+				.documentId(documentId)
 				.json(jsonExpression.evaluate(evalCtxEffective, IExpressionEvaluator.OnVariableNotFound.Fail))
 				.build();
 	}

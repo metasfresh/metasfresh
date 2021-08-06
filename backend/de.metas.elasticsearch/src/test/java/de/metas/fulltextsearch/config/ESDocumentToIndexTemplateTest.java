@@ -22,7 +22,6 @@
 
 package de.metas.fulltextsearch.config;
 
-import de.metas.bpartner.BPartnerId;
 import org.assertj.core.api.Assertions;
 import org.compiere.util.Evaluatees;
 import org.junit.jupiter.api.Nested;
@@ -41,7 +40,7 @@ class ESDocumentToIndexTemplateTest
 		void nullValue()
 		{
 			Assertions.assertThat(
-					template.resolve(Evaluatees.ofSingleton("PropertyValue", null), BPartnerId.ofRepoId(123)))
+					template.resolve(Evaluatees.ofSingleton("PropertyValue", null), "123"))
 					.usingRecursiveComparison()
 					.isEqualTo(ESDocumentToIndex.builder().documentId("123").json("{ \"property\": null }").build());
 		}
@@ -50,7 +49,7 @@ class ESDocumentToIndexTemplateTest
 		void missingValue()
 		{
 			Assertions.assertThat(
-					template.resolve(Evaluatees.empty(), BPartnerId.ofRepoId(123)))
+					template.resolve(Evaluatees.empty(), "123"))
 					.usingRecursiveComparison()
 					.isEqualTo(ESDocumentToIndex.builder().documentId("123").json("{ \"property\": null }").build());
 		}
@@ -59,7 +58,7 @@ class ESDocumentToIndexTemplateTest
 		void stringValue()
 		{
 			Assertions.assertThat(
-					template.resolve(Evaluatees.ofSingleton("PropertyValue", "string \"quoted\" value"), BPartnerId.ofRepoId(123)))
+					template.resolve(Evaluatees.ofSingleton("PropertyValue", "string \"quoted\" value"), "123"))
 					.usingRecursiveComparison()
 					.isEqualTo(ESDocumentToIndex.builder().documentId("123").json("{ \"property\": \"string \\\"quoted\\\" value\" }").build());
 		}
@@ -68,7 +67,7 @@ class ESDocumentToIndexTemplateTest
 		void intValue()
 		{
 			Assertions.assertThat(
-					template.resolve(Evaluatees.ofSingleton("PropertyValue", 345), BPartnerId.ofRepoId(123)))
+					template.resolve(Evaluatees.ofSingleton("PropertyValue", 345), "123"))
 					.usingRecursiveComparison()
 					.isEqualTo(ESDocumentToIndex.builder().documentId("123").json("{ \"property\": 345 }").build());
 		}
@@ -77,7 +76,7 @@ class ESDocumentToIndexTemplateTest
 		void longValue()
 		{
 			Assertions.assertThat(
-					template.resolve(Evaluatees.ofSingleton("PropertyValue", 345L), BPartnerId.ofRepoId(123)))
+					template.resolve(Evaluatees.ofSingleton("PropertyValue", 345L), "123"))
 					.usingRecursiveComparison()
 					.isEqualTo(ESDocumentToIndex.builder().documentId("123").json("{ \"property\": 345 }").build());
 		}
@@ -86,7 +85,7 @@ class ESDocumentToIndexTemplateTest
 		void bigDecimalValue()
 		{
 			Assertions.assertThat(
-					template.resolve(Evaluatees.ofSingleton("PropertyValue", new BigDecimal("567.89")), BPartnerId.ofRepoId(123)))
+					template.resolve(Evaluatees.ofSingleton("PropertyValue", new BigDecimal("567.89")), "123"))
 					.usingRecursiveComparison()
 					.isEqualTo(ESDocumentToIndex.builder().documentId("123").json("{ \"property\": 567.89 }").build());
 		}
@@ -95,7 +94,7 @@ class ESDocumentToIndexTemplateTest
 		void booleanValue()
 		{
 			Assertions.assertThat(
-					template.resolve(Evaluatees.ofSingleton("PropertyValue", true), BPartnerId.ofRepoId(123)))
+					template.resolve(Evaluatees.ofSingleton("PropertyValue", true), "123"))
 					.usingRecursiveComparison()
 					.isEqualTo(ESDocumentToIndex.builder().documentId("123").json("{ \"property\": true }").build());
 		}

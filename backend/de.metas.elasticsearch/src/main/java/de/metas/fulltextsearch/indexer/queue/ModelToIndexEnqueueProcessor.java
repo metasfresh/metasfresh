@@ -29,6 +29,7 @@ import de.metas.elasticsearch.IESSystem;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.fulltextsearch.config.ESDocumentToIndex;
+import de.metas.fulltextsearch.config.ESDocumentToIndexChunk;
 import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.config.FTSConfigId;
 import de.metas.fulltextsearch.config.FTSConfigService;
@@ -45,6 +46,7 @@ import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.client.indices.CreateIndexRequest;
 import org.elasticsearch.client.indices.GetIndexRequest;
 import org.elasticsearch.common.xcontent.XContentType;
@@ -238,11 +240,11 @@ public class ModelToIndexEnqueueProcessor
 			return;
 		}
 
-		final ImmutableList<ESDocumentToIndex> esDocumentsToIndex = indexers.stream()
+		final ImmutableList<ESDocumentToIndexChunk> chunks = indexers.stream()
 				.flatMap(indexer -> indexer.createDocumentsToIndex(events, config).stream())
 				.collect(ImmutableList.toImmutableList());
 
-		if (esDocumentsToIndex.isEmpty())
+		if (chunks.isEmpty())
 		{
 			logger.debug("No documents to index for {}. Discard {} events.", config, events.size());
 			return;
@@ -253,7 +255,7 @@ public class ModelToIndexEnqueueProcessor
 			createESIndex(config);
 		}
 
-		addDocumentsToIndex(config, esDocumentsToIndex);
+		addDocumentsToIndex(config, chunks);
 	}
 
 	private boolean isESIndexExists(final FTSConfig config) throws IOException
@@ -274,29 +276,40 @@ public class ModelToIndexEnqueueProcessor
 
 	private void addDocumentsToIndex(
 			@NonNull final FTSConfig config,
-			@NonNull final List<ESDocumentToIndex> documentsToIndex) throws IOException
+			@NonNull final List<ESDocumentToIndexChunk> chunks) throws IOException
 	{
-		final BulkRequest bulkRequest = new BulkRequest();
+		for (final ESDocumentToIndexChunk chunk : chunks)
+		{
+			addDocumentsToIndex(config, chunk);
+		}
+	}
+
+	private void addDocumentsToIndex(
+			@NonNull final FTSConfig config,
+			@NonNull final ESDocumentToIndexChunk chunk) throws IOException
+	{
+		final RestHighLevelClient elasticsearchClient = elasticsearchSystem.elasticsearchClient();
 		final String esIndexName = config.getEsIndexName();
 
-		//
-		// Documents to add
-		documentsToIndex.stream()
-				.filter(ESDocumentToIndex::isAddOrUpdate)
-				.map(documentToIndex -> new IndexRequest(esIndexName)
-						.id(documentToIndex.getDocumentId())
-						.source(documentToIndex.getJson(), XContentType.JSON))
-				.forEach(bulkRequest::add);
+		final BulkRequest bulkRequest = new BulkRequest();
 
-		//
-		// Documents to remove
-		documentsToIndex.stream()
-				.filter(ESDocumentToIndex::isRemove)
-				.map(documentToIndex -> new DeleteRequest(esIndexName)
-						.id(documentToIndex.getDocumentId()))
-				.forEach(bulkRequest::add);
+		for (final String documentIdToDelete : chunk.getDocumentIdsToDelete())
+		{
+			bulkRequest.add(new DeleteRequest(esIndexName)
+					.id(documentIdToDelete));
+		}
 
-		elasticsearchSystem.elasticsearchClient().bulk(bulkRequest, RequestOptions.DEFAULT);
+		for (final ESDocumentToIndex documentToIndex : chunk.getDocumentsToIndex())
+		{
+			bulkRequest.add(new IndexRequest(esIndexName)
+					.id(documentToIndex.getDocumentId())
+					.source(documentToIndex.getJson(), XContentType.JSON));
+		}
+
+		if (bulkRequest.numberOfActions() > 0)
+		{
+			elasticsearchClient.bulk(bulkRequest, RequestOptions.DEFAULT);
+		}
 	}
 
 	@Value

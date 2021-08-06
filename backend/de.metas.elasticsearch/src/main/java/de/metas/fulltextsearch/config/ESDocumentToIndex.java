@@ -22,43 +22,22 @@
 
 package de.metas.fulltextsearch.config;
 
-import de.metas.util.StringUtils;
-import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 @Value
 public class ESDocumentToIndex
 {
 	@NonNull String documentId;
-	@Nullable String json;
+	@NonNull String json;
 
 	@Builder
 	private ESDocumentToIndex(
 			@NonNull final String documentId,
-			@Nullable final String json)
+			@NonNull final String json)
 	{
 		this.documentId = documentId;
-		this.json = StringUtils.trimBlankToNull(json);
-	}
-
-	public static ESDocumentToIndex remove(@NonNull final RepoIdAware documentId)
-	{
-		return builder()
-				.documentId(String.valueOf(documentId.getRepoId()))
-				.build();
-	}
-
-	public boolean isAddOrUpdate()
-	{
-		return json != null;
-	}
-
-	public boolean isRemove()
-	{
-		return json == null;
+		this.json = json;
 	}
 }

@@ -5,23 +5,23 @@ import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-/** Generated Model for C_BPartner_Adv_Search_v
+/** Generated Model for C_BPartner_Adv_Search
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_BPartner_Adv_Search_v extends org.compiere.model.PO implements I_C_BPartner_Adv_Search_v, org.compiere.model.I_Persistent 
+public class X_C_BPartner_Adv_Search extends org.compiere.model.PO implements I_C_BPartner_Adv_Search, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1353110591L;
+	private static final long serialVersionUID = -1576793867L;
 
     /** Standard Constructor */
-    public X_C_BPartner_Adv_Search_v (final Properties ctx, final int C_BPartner_Adv_Search_v_ID, @Nullable final String trxName)
+    public X_C_BPartner_Adv_Search (final Properties ctx, final int C_BPartner_Adv_Search_ID, @Nullable final String trxName)
     {
-      super (ctx, C_BPartner_Adv_Search_v_ID, trxName);
+      super (ctx, C_BPartner_Adv_Search_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_BPartner_Adv_Search_v (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_C_BPartner_Adv_Search (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -32,6 +32,18 @@ public class X_C_BPartner_Adv_Search_v extends org.compiere.model.PO implements 
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAddress1 (final @Nullable java.lang.String Address1)
+	{
+		set_ValueNoCheck (COLUMNNAME_Address1, Address1);
+	}
+
+	@Override
+	public java.lang.String getAddress1() 
+	{
+		return get_ValueAsString(COLUMNNAME_Address1);
 	}
 
 	@Override
@@ -53,9 +65,9 @@ public class X_C_BPartner_Adv_Search_v extends org.compiere.model.PO implements 
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
@@ -89,6 +101,18 @@ public class X_C_BPartner_Adv_Search_v extends org.compiere.model.PO implements 
 	public java.lang.String getCity() 
 	{
 		return get_ValueAsString(COLUMNNAME_City);
+	}
+
+	@Override
+	public void setES_DocumentId (final java.lang.String ES_DocumentId)
+	{
+		set_ValueNoCheck (COLUMNNAME_ES_DocumentId, ES_DocumentId);
+	}
+
+	@Override
+	public java.lang.String getES_DocumentId() 
+	{
+		return get_ValueAsString(COLUMNNAME_ES_DocumentId);
 	}
 
 	@Override

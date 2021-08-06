@@ -20,18 +20,24 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.indexer.handler;
+package de.metas.fulltextsearch.config;
 
-import de.metas.fulltextsearch.config.ESDocumentToIndexChunk;
-import de.metas.fulltextsearch.config.FTSConfig;
-import de.metas.fulltextsearch.indexer.queue.ModelToIndex;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
 
-import java.util.List;
-import java.util.Set;
-
-public interface FTSModelIndexer
+@Value
+@Builder
+public class ESDocumentToIndexChunk
 {
-	Set<String> getHandledSourceTableNames();
+	@NonNull
+	@Singular("documentIdToDelete")
+	ImmutableSet<String> documentIdsToDelete;
 
-	List<ESDocumentToIndexChunk> createDocumentsToIndex(List<ModelToIndex> requests, final FTSConfig config);
+	@NonNull
+	@Singular("documentToIndex")
+	ImmutableList<ESDocumentToIndex> documentsToIndex;
 }
