@@ -1087,6 +1087,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_IsGroupingError = "IsGroupingError";
 
 	/**
+	 * Set Group compensation discount percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupCompensationDiscountPercentage (@Nullable BigDecimal GroupCompensationDiscountPercentage);
+
+	/**
+	 * Get Group compensation discount percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGroupCompensationDiscountPercentage();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_GroupCompensationDiscountPercentage = new ModelColumn<>(I_C_OLCand.class, "GroupCompensationDiscountPercentage", null);
+	String COLUMNNAME_GroupCompensationDiscountPercentage = "GroupCompensationDiscountPercentage";
+
+	/**
 	 * Get Tax Category.
 	 * Tax Category
 	 *
