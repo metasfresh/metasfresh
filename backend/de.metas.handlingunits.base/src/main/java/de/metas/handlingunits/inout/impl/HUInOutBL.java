@@ -35,6 +35,8 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
 import de.metas.handlingunits.inout.IHUInOutBL;
@@ -42,10 +44,13 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnLUTUConfigurationHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_InOutLine;
 import de.metas.handlingunits.model.I_M_Warehouse;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
@@ -57,6 +62,9 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -68,6 +76,8 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class HUInOutBL implements IHUInOutBL
@@ -79,6 +89,10 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -373,7 +387,38 @@ public class HUInOutBL implements IHUInOutBL
 				.stream()
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
 						entry -> entry.getKey().getIdAssumingTableName(I_M_InOutLine.Table_Name, InOutLineId::ofRepoId),
-						entry -> entry.getValue()));
+						Map.Entry::getValue));
+	}
+
+	@Override
+	public boolean isValidHuForReturn(final InOutId inOutId, final HuId huId)
+	{
+		final Optional<AttributeId> serialNoAttributeIdOptional = serialNoBL.getSerialNoAttributeId();
+		if (!serialNoAttributeIdOptional.isPresent())
+		{
+			return false;
+		}
+		final AttributeId serialNoAttributeId = serialNoAttributeIdOptional.get();
+
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final I_M_HU_Attribute serialNoAttr = huAttributesDAO.retrieveAttribute(hu, serialNoAttributeId);
+		if (serialNoAttr == null)
+		{
+			//no S/N defined. Should not be a valid scenario
+			return false;
+		}
+		return !queryBL.createQueryBuilder(I_M_HU_Assignment.class).addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, inOutDAO.getInOutTableId())
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, inOutId)
+				.addOnlyActiveRecordsFilter()
+				.andCollect(I_M_HU_Assignment.COLUMNNAME_M_HU_ID , I_M_HU.class)
+				.addEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Planning)
+				.addOnlyActiveRecordsFilter()
+				.andCollectChildren(I_M_HU_Attribute.COLUMN_M_HU_ID)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, serialNoAttributeId)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, serialNoAttr.getValue())
+				.create()
+				.anyMatch();
 	}
 
 }

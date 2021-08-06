@@ -24,6 +24,8 @@ import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
@@ -72,6 +74,7 @@ public class InOutDAO implements IInOutDAO
 {
 	private static final Logger logger = LogManager.getLogger(InOutDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -420,5 +423,11 @@ public class InOutDAO implements IInOutDAO
 	public void save(@NonNull final I_M_InOutLine inoutLine)
 	{
 		InterfaceWrapperHelper.saveRecord(inoutLine);
+	}
+
+	@Override
+	public AdTableId getInOutTableId()
+	{
+		return tableDAO.retrieveAdTableId(I_M_InOut.Table_Name);
 	}
 }

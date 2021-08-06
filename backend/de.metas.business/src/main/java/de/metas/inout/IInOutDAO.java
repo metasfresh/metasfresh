@@ -11,6 +11,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.table.api.AdTableId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -123,4 +124,6 @@ public interface IInOutDAO extends ISingletonService
 	void save(@NonNull I_M_InOut inout);
 
 	void save(@NonNull I_M_InOutLine inoutLine);
+
+	AdTableId getInOutTableId();
 }
