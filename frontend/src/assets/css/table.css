@@ -799,6 +799,10 @@ $indent-collapsible-offset-lg: 24px;
     border-left: 1px solid #afbfca;
 }
 
+.table-cell-label-container {
+    width: 120px;
+}
+
 .table-cell-label-wrapper {
     float: left;
 }
