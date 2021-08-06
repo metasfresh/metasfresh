@@ -31,7 +31,8 @@ const setSelectedValue = function (dropdownList, selected, defaultValue) {
 
     if (idx === -1) {
       if (defaultValue) {
-        idx = dropdownList.findIndex(
+        idx = findIndex(
+          dropdownList,
           (item) => item.caption === defaultValue.caption
         );
       }
@@ -39,7 +40,9 @@ const setSelectedValue = function (dropdownList, selected, defaultValue) {
   }
 
   if (idx !== 0) {
+    idx = idx === -1 ? 0 : idx;
     const item = dropdownList[idx];
+
     pullAt(dropdownList, [idx]);
     dropdownList.unshift(item);
 
@@ -90,7 +93,7 @@ export class RawList extends PureComponent {
     if (listHash && !prevProps.listHash) {
       dropdownList = [...list];
       if (!mandatory && emptyText) {
-        dropdownList = dropdownList.push({
+        dropdownList.push({
           caption: this.props.properties.clearValueText,
           key: null,
         });
