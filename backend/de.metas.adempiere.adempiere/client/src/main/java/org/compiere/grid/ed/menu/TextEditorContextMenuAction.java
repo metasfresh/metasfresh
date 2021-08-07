@@ -31,6 +31,7 @@ import org.adempiere.ui.AbstractContextMenuAction;
 import org.compiere.grid.ed.Editor;
 import org.compiere.grid.ed.HTMLEditor;
 import org.compiere.grid.ed.VEditor;
+import org.compiere.grid.ed.VString;
 import org.compiere.model.GridField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -138,7 +139,14 @@ public class TextEditorContextMenuAction extends AbstractContextMenuAction
 		final String textNew = startEditor(gridField, text, editable);
 		if (editable)
 		{
-			gridField.getGridTab().setValue(gridField, textNew);
+			if (editor instanceof VString)
+			{
+				((VString) editor).setText(textNew);
+			}
+			else
+			{
+				gridField.getGridTab().setValue(gridField, textNew);
+			}
 		}
 		// TODO: i think is handled above
 		// Data Binding
