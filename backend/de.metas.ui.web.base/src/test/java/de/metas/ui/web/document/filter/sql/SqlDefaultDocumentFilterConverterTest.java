@@ -81,21 +81,21 @@ public class SqlDefaultDocumentFilterConverterTest
 		public void any()
 		{
 			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.ANY))
-					.isEqualTo("");
+					.isEqualTo(SqlAndParams.EMPTY);
 		}
 
 		@Test
 		public void isNull()
 		{
 			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NULL))
-					.isEqualTo("MyColumn IS NULL");
+					.isEqualTo(SqlAndParams.of("MyColumn IS NULL"));
 		}
 
 		@Test
 		public void isNotNull()
 		{
 			assertThat(SqlDefaultDocumentFilterConverter.buildSqlWhereClause_IsNull("MyColumn", NullOperator.IS_NOT_NULL))
-					.isEqualTo("MyColumn IS NOT NULL");
+					.isEqualTo(SqlAndParams.of("MyColumn IS NOT NULL"));
 		}
 	}
 
