@@ -92,14 +92,14 @@ public abstract class SwingUIApplicationTemplate
 		final Splash splash = Splash.getSplash();
 		final Properties ctx = Env.getCtx();
 		final ALogin login = new ALogin(splash, ctx);
-		if (login.initLogin())
-		{
-			return; // automatic login, nothing more to do
-		}
 
 		// Center the window
 		try (final IAutoCloseable c = ModelValidationEngine.postponeInit())
 		{
+			if (login.initLogin())
+			{
+				return; // automatic login, nothing more to do
+			}
 			AEnv.showCenterScreen(login);	// HTML load errors
 		}
 		catch (final Exception ex)

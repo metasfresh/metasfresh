@@ -440,9 +440,9 @@ public final class ALogin extends CDialog
 		DB.setDBTarget(m_cc);
 
 		// direct
-		final boolean connectOK = DB.connect();
+		m_connectionOK = DB.connect();
 
-		if (connectOK)
+		if (m_connectionOK)
 		{
 			MLanguage.setBaseLanguage();
 			loadLanguagesFromDatabase(null); // no preselect suggestion
