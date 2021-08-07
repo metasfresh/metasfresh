@@ -29,7 +29,6 @@ import de.metas.fulltextsearch.config.FTSConfigService;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndexEnqueueRequest;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndexEventType;
 import de.metas.fulltextsearch.indexer.queue.ModelsToIndexQueueService;
-import de.metas.logging.LogManager;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.GuavaCollectors;
@@ -42,20 +41,18 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.RequestOptions;
-import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.stream.Stream;
 
 public class ES_FTS_Config_Sync extends JavaProcess
 {
-	private final Logger logger = LogManager.getLogger(ES_FTS_Config_Sync.class);
 	private final FTSConfigService ftsConfigService = SpringContextHolder.instance.getBean(FTSConfigService.class);
 	private final ModelsToIndexQueueService modelsToIndexQueueService = SpringContextHolder.instance.getBean(ModelsToIndexQueueService.class);
 	private final IESSystem elasticsearchSystem = Services.get(IESSystem.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	@Param(parameterName = "ES_DropIndex")
+	@Param(parameterName = "ES_DeleteIndex")
 	private boolean p_esDropIndex;
 
 	@Override
