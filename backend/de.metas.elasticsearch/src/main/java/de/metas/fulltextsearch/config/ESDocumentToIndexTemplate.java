@@ -28,6 +28,8 @@ import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.compiere.util.Evaluatee;
 
+import java.util.Set;
+
 @Value
 public class ESDocumentToIndexTemplate
 {
@@ -52,5 +54,11 @@ public class ESDocumentToIndexTemplate
 				.documentId(documentId)
 				.json(jsonExpression.evaluate(evalCtxEffective, IExpressionEvaluator.OnVariableNotFound.Fail))
 				.build();
+	}
+
+	public Set<ESFieldName> getESFieldNames()
+	{
+		return resolve(variableName -> "dummy", "documentId").getESFieldNames();
+
 	}
 }

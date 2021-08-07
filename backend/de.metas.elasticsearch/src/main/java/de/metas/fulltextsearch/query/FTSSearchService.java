@@ -24,6 +24,7 @@ package de.metas.fulltextsearch.query;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.elasticsearch.IESSystem;
+import de.metas.fulltextsearch.config.ESFieldName;
 import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.config.FTSConfigId;
 import de.metas.fulltextsearch.config.FTSConfigService;
@@ -117,7 +118,7 @@ public class FTSSearchService
 			final FTSSearchResult ftsResult = FTSSearchResult.builder()
 					.searchId(request.getSearchId())
 					.items(Arrays.stream(elasticsearchResponse.getHits().getHits())
-							.map(hit -> extractFTSSearchResultItem(hit, request))
+							.map(hit -> extractFTSSearchResultItem(hit, request, ftsConfig))
 							.collect(ImmutableList.toImmutableList()))
 					.build();
 
@@ -134,38 +135,70 @@ public class FTSSearchService
 
 	private static FTSSearchResultItem extractFTSSearchResultItem(
 			@NonNull final SearchHit hit,
-			@NonNull final FTSSearchRequest request)
+			@NonNull final FTSSearchRequest request,
+			@NonNull final FTSConfig ftsConfig)
 	{
 		return FTSSearchResultItem.builder()
-				.key(extractKey(hit, request.getFilterDescriptor()))
+				.key(extractKey(hit, request.getFilterDescriptor(), ftsConfig))
 				.json(toJson(hit))
 				.build();
 	}
 
 	private static FTSSearchResultItem.KeyValueMap extractKey(
 			@NonNull final SearchHit hit,
-			@NonNull final FTSFilterDescriptor filterDescriptor)
+			@NonNull final FTSFilterDescriptor filterDescriptor,
+			@NonNull final FTSConfig ftsConfig)
 	{
 		final FTSJoinColumnList joinColumns = filterDescriptor.getJoinColumns();
 
 		final ArrayList<FTSSearchResultItem.KeyValue> keyValues = new ArrayList<>(joinColumns.size());
 		for (final FTSJoinColumn joinColumn : joinColumns)
 		{
-			final Integer intKeyValue = extractInteger(hit, joinColumn.getEsFieldName());
-			keyValues.add(FTSSearchResultItem.KeyValue.ofJoinColumnAndValue(joinColumn, intKeyValue));
+			final ESFieldName esFieldName = ftsConfig.getEsFieldNameById(joinColumn.getEsFieldId());
+			final Object value = extractValue(hit, esFieldName, joinColumn.getValueType());
+			keyValues.add(FTSSearchResultItem.KeyValue.ofJoinColumnAndValue(joinColumn, value));
 		}
 
 		return new FTSSearchResultItem.KeyValueMap(keyValues);
 	}
 
 	@Nullable
-	private static Integer extractInteger(
+	private static Object extractValue(
 			@NonNull final SearchHit hit,
-			@Nullable final String esFieldName)
+			@NonNull final ESFieldName esFieldName,
+			@NonNull final FTSJoinColumn.ValueType valueType)
 	{
-		return esFieldName != null
-				? NumberUtils.asInteger(hit.getSourceAsMap().get(esFieldName), null)
-				: null;
+		if (ESFieldName.ID.equals(esFieldName))
+		{
+			final String esDocumentId = hit.getId();
+			return convertValueToType(esDocumentId, valueType);
+		}
+		else
+		{
+			final Object value = hit.getSourceAsMap().get(esFieldName.getAsString());
+			return convertValueToType(value, valueType);
+		}
+	}
+
+	@Nullable
+	private static Object convertValueToType(@Nullable final Object valueObj, @NonNull final FTSJoinColumn.ValueType valueType)
+	{
+		if (valueObj == null)
+		{
+			return null;
+		}
+		if (valueType == FTSJoinColumn.ValueType.INTEGER)
+		{
+			return NumberUtils.asIntegerOrNull(valueObj);
+		}
+		else if (valueType == FTSJoinColumn.ValueType.STRING)
+		{
+			return valueObj.toString();
+		}
+		else
+		{
+			throw new AdempiereException("Cannot convert `" + valueObj + "` (" + valueObj.getClass() + ") to " + valueType);
+		}
 	}
 
 	private static String toJson(@NonNull final SearchHit hit)

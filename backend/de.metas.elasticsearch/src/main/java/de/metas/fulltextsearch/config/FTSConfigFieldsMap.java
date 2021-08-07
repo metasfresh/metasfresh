@@ -22,31 +22,39 @@
 
 package de.metas.fulltextsearch.config;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import lombok.AccessLevel;
-import lombok.Builder;
+import com.google.common.collect.Maps;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
-@Value
-@Builder
-public class FTSConfig
+import java.util.List;
+
+@EqualsAndHashCode
+@ToString
+public class FTSConfigFieldsMap
 {
-	@NonNull FTSConfigId id;
+	@Getter
+	private final ImmutableSet<ESFieldName> esFieldNames;
 
-	@Getter(AccessLevel.NONE)
-	@NonNull FTSConfigFieldsMap fields;
+	private final ImmutableMap<FTSConfigFieldId, FTSConfigField> fieldsById;
 
-	@NonNull ImmutableSet<String> sourceTableNames;
-
-	@NonNull String esIndexName;
-	@NonNull ESCommand createIndexCommand;
-	@NonNull ESDocumentToIndexTemplate documentToIndexTemplate;
-	@NonNull ESQueryTemplate queryCommand;
+	public FTSConfigFieldsMap(@NonNull final List<FTSConfigField> fields)
+	{
+		fieldsById = Maps.uniqueIndex(fields, FTSConfigField::getId);
+		esFieldNames = fields.stream().map(FTSConfigField::getEsFieldName).collect(ImmutableSet.toImmutableSet());
+	}
 
 	public ESFieldName getEsFieldNameById(@NonNull final FTSConfigFieldId id)
 	{
-		return fields.getEsFieldNameById(id);
+		final FTSConfigField field = fieldsById.get(id);
+		if (field == null)
+		{
+			throw new AdempiereException("No field found for " + id + " in " + this);
+		}
+		return field.getEsFieldName();
 	}
 }

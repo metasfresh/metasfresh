@@ -22,31 +22,14 @@
 
 package de.metas.fulltextsearch.config;
 
-import com.google.common.collect.ImmutableSet;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class FTSConfig
+public class FTSConfigField
 {
-	@NonNull FTSConfigId id;
-
-	@Getter(AccessLevel.NONE)
-	@NonNull FTSConfigFieldsMap fields;
-
-	@NonNull ImmutableSet<String> sourceTableNames;
-
-	@NonNull String esIndexName;
-	@NonNull ESCommand createIndexCommand;
-	@NonNull ESDocumentToIndexTemplate documentToIndexTemplate;
-	@NonNull ESQueryTemplate queryCommand;
-
-	public ESFieldName getEsFieldNameById(@NonNull final FTSConfigFieldId id)
-	{
-		return fields.getEsFieldNameById(id);
-	}
+	@NonNull FTSConfigFieldId id;
+	@NonNull ESFieldName esFieldName;
 }

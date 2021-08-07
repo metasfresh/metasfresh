@@ -30,8 +30,15 @@ import lombok.Value;
 @Builder
 public class FTSJoinColumn
 {
+	public enum ValueType
+	{
+		STRING,
+		INTEGER,
+	}
+
+	@NonNull ValueType valueType;
 	@NonNull String targetTableColumnName;
 	@NonNull String selectionTableColumnName;
-	@NonNull String esFieldName;
+	@NonNull FTSConfigFieldId esFieldId;
 	boolean nullable;
 }

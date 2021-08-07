@@ -22,9 +22,16 @@
 
 package de.metas.fulltextsearch.config;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.JsonObjectMapperHolder;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Value
 public class ESDocumentToIndex
@@ -39,5 +46,23 @@ public class ESDocumentToIndex
 	{
 		this.documentId = documentId;
 		this.json = json;
+	}
+
+	public Set<ESFieldName> getESFieldNames()
+	{
+		try
+		{
+			final Map<String, Object> map = JsonObjectMapperHolder.sharedJsonObjectMapper().readValue(json, Map.class);
+
+			final HashSet<ESFieldName> fieldNames = new HashSet<>();
+			fieldNames.add(ESFieldName.ID);
+			map.keySet().stream().map(ESFieldName::ofString).forEach(fieldNames::add);
+			return fieldNames;
+		}
+		catch (final JsonProcessingException ex)
+		{
+			throw new AdempiereException("Invalid JSON: " + json, ex);
+		}
+
 	}
 }

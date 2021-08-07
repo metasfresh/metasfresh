@@ -22,6 +22,8 @@
 
 package de.metas.elasticsearch.model;
 
+import com.google.common.collect.ImmutableList;
+
 public interface I_T_ES_FTS_Search_Result
 {
 	String Table_Name = "T_ES_FTS_Search_Result";
@@ -29,8 +31,20 @@ public interface I_T_ES_FTS_Search_Result
 	String COLUMNNAME_Search_UUID = "Search_UUID";
 	String COLUMNNAME_Line = "Line";
 	String COLUMNNAME_Created = "Created";
+
 	String COLUMNNAME_IntKey1 = "IntKey1";
 	String COLUMNNAME_IntKey2 = "IntKey2";
 	String COLUMNNAME_IntKey3 = "IntKey3";
+	ImmutableList<String> COLUMNNAME_IntKeys = ImmutableList.of(COLUMNNAME_IntKey1, COLUMNNAME_IntKey2, COLUMNNAME_IntKey3);
+
+	String COLUMNNAME_StringKey1 = "StringKey1";
+	String COLUMNNAME_StringKey2 = "StringKey2";
+	ImmutableList<String> COLUMNNAME_StringKeys = ImmutableList.of(COLUMNNAME_StringKey1, COLUMNNAME_StringKey2);
+
+	ImmutableList<String> COLUMNNAME_ALL_Keys = ImmutableList.<String>builder()
+			.addAll(COLUMNNAME_IntKeys)
+			.addAll(COLUMNNAME_StringKeys)
+			.build();
+
 	String COLUMNNAME_JSON = "JSON";
 }

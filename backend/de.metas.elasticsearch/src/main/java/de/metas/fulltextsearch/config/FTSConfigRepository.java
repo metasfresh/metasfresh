@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.elasticsearch.model.I_ES_FTS_Config;
+import de.metas.elasticsearch.model.I_ES_FTS_Config_Field;
 import de.metas.elasticsearch.model.I_ES_FTS_Config_SourceModel;
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
@@ -38,13 +39,16 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class FTSConfigRepository
@@ -57,6 +61,7 @@ public class FTSConfigRepository
 
 	private final CCache<Integer, FTSConfigsMap> cache = CCache.<Integer, FTSConfigsMap>builder()
 			.tableName(I_ES_FTS_Config.Table_Name)
+			.additionalTableNameToResetFor(I_ES_FTS_Config_Field.Table_Name)
 			.additionalTableNameToResetFor(I_ES_FTS_Config_SourceModel.Table_Name)
 			.additionListener((key, map) -> onFTSConfigMapLoaded())
 			.removalListener((key, map) -> onFTSConfigMapLoaded())
@@ -109,6 +114,15 @@ public class FTSConfigRepository
 						record -> FTSConfigId.ofRepoId(record.getES_FTS_Config_ID()),
 						record -> record));
 
+		final ImmutableListMultimap<FTSConfigId, FTSConfigField> fields = queryBL
+				.createQueryBuilder(I_ES_FTS_Config_Field.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						record -> FTSConfigId.ofRepoId(record.getES_FTS_Config_ID()),
+						FTSConfigRepository::toFTSConfigField));
+
 		final ImmutableList<FTSConfig> configs = queryBL
 				.createQueryBuilder(I_ES_FTS_Config.class)
 				.addOnlyActiveRecordsFilter()
@@ -116,16 +130,24 @@ public class FTSConfigRepository
 				.stream()
 				.map(configRecord -> toFTSConfig(
 						configRecord,
-						sourceModelRecords.get(FTSConfigId.ofRepoId(configRecord.getES_FTS_Config_ID()))))
+						fields.get(extractConfigId(configRecord)),
+						sourceModelRecords.get(extractConfigId(configRecord))))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		return new FTSConfigsMap(configs);
 	}
 
+	@NonNull
+	private static FTSConfigId extractConfigId(@NonNull final I_ES_FTS_Config configRecord)
+	{
+		return FTSConfigId.ofRepoId(configRecord.getES_FTS_Config_ID());
+	}
+
 	@Nullable
 	private FTSConfig toFTSConfig(
 			@NonNull final I_ES_FTS_Config configRecord,
+			@NonNull final List<FTSConfigField> fields,
 			@NonNull final List<I_ES_FTS_Config_SourceModel> sourceModelRecords)
 	{
 		if (sourceModelRecords.isEmpty())
@@ -142,7 +164,8 @@ public class FTSConfigRepository
 					.collect(ImmutableSet.toImmutableSet());
 
 			return FTSConfig.builder()
-					.id(FTSConfigId.ofRepoId(configRecord.getES_FTS_Config_ID()))
+					.id(extractConfigId(configRecord))
+					.fields(new FTSConfigFieldsMap(fields))
 					.sourceTableNames(sourceTableNames)
 					.esIndexName(configRecord.getES_Index())
 					.createIndexCommand(ESCommand.ofString(configRecord.getES_CreateIndexCommand()))
@@ -155,6 +178,41 @@ public class FTSConfigRepository
 			logger.warn("Failed retrieving config from {} and {}. Skipped", configRecord, sourceModelRecords);
 			return null;
 		}
+	}
+
+	private static FTSConfigField toFTSConfigField(final I_ES_FTS_Config_Field record)
+	{
+		return FTSConfigField.builder()
+				.id(FTSConfigFieldId.ofRepoId(record.getES_FTS_Config_Field_ID()))
+				.esFieldName(ESFieldName.ofString(record.getES_FieldName()))
+				.build();
+	}
+
+	public void setConfigFields(
+			@NonNull final FTSConfigId configId,
+			@NonNull final Set<ESFieldName> esFieldNames)
+	{
+		final HashMap<ESFieldName, I_ES_FTS_Config_Field> records = queryBL.createQueryBuilder(I_ES_FTS_Config_Field.class)
+				.addEqualsFilter(I_ES_FTS_Config_Field.COLUMNNAME_ES_FTS_Config_ID, configId)
+				.create()
+				.stream()
+				.collect(GuavaCollectors.toHashMapByKey(record -> ESFieldName.ofString(record.getES_FieldName())));
+
+		for (final ESFieldName esFieldName : esFieldNames)
+		{
+			I_ES_FTS_Config_Field record = records.remove(esFieldName);
+			if (record == null)
+			{
+				record = InterfaceWrapperHelper.newInstance(I_ES_FTS_Config_Field.class);
+				record.setES_FTS_Config_ID(configId.getRepoId());
+				record.setES_FieldName(esFieldName.getAsString());
+			}
+
+			record.setIsActive(true);
+			InterfaceWrapperHelper.saveRecord(record);
+		}
+
+		InterfaceWrapperHelper.deleteAll(records.values());
 	}
 
 	//

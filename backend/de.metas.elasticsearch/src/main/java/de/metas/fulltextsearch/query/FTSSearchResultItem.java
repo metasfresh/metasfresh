@@ -48,17 +48,17 @@ public class FTSSearchResultItem
 	{
 		@NonNull String targetTableColumnName;
 		@NonNull String selectionTableColumnName;
-		@NonNull String esFieldName;
-		@Nullable Integer value;
+		@NonNull FTSJoinColumn.ValueType valueType;
+		@Nullable Object value;
 
 		public static KeyValue ofJoinColumnAndValue(
 				@NonNull final FTSJoinColumn joinColumn,
-				@Nullable final Integer value)
+				@Nullable final Object value)
 		{
 			return builder()
 					.targetTableColumnName(joinColumn.getTargetTableColumnName())
 					.selectionTableColumnName(joinColumn.getSelectionTableColumnName())
-					.esFieldName(joinColumn.getEsFieldName())
+					.valueType(joinColumn.getValueType())
 					.value(value)
 					.build();
 		}
@@ -81,7 +81,7 @@ public class FTSSearchResultItem
 		}
 
 		@Nullable
-		public Integer getValueBySelectionTableColumnName(final String selectionTableColumName)
+		public Object getValueBySelectionTableColumnName(final String selectionTableColumName)
 		{
 			final KeyValue keyValue = keysBySelectionTableColumnName.get(selectionTableColumName);
 			return keyValue != null ? keyValue.getValue() : null;

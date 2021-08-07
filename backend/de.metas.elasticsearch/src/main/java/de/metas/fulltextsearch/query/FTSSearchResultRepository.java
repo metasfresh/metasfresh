@@ -37,11 +37,6 @@ import java.util.ArrayList;
 @Repository
 public class FTSSearchResultRepository
 {
-	public static final ImmutableList<String> SELECTION_TABLE_IntKeyNames = ImmutableList.of(
-			I_T_ES_FTS_Search_Result.COLUMNNAME_IntKey1,
-			I_T_ES_FTS_Search_Result.COLUMNNAME_IntKey2,
-			I_T_ES_FTS_Search_Result.COLUMNNAME_IntKey3);
-
 	private static final String SQL_INSERT = buildSqlInsert();
 
 	private static String buildSqlInsert()
@@ -54,9 +49,9 @@ public class FTSSearchResultRepository
 
 		final StringBuilder sqlValues = new StringBuilder("?, ?, ?");
 
-		for (final String intKeyColumnName : SELECTION_TABLE_IntKeyNames)
+		for (final String keyColumnName : I_T_ES_FTS_Search_Result.COLUMNNAME_ALL_Keys)
 		{
-			sqlColumns.append(", ").append(intKeyColumnName);
+			sqlColumns.append(", ").append(keyColumnName);
 			sqlValues.append(", ?");
 		}
 
@@ -86,10 +81,10 @@ public class FTSSearchResultRepository
 				sqlParams.add(lineNo);
 				sqlParams.add(item.getJson());
 
-				for (final String intKeyColumnName : SELECTION_TABLE_IntKeyNames)
+				for (final String keyColumnName : I_T_ES_FTS_Search_Result.COLUMNNAME_ALL_Keys)
 				{
-					final Integer intKeyValue = item.getKey().getValueBySelectionTableColumnName(intKeyColumnName);
-					sqlParams.add(intKeyValue);
+					final Object value = item.getKey().getValueBySelectionTableColumnName(keyColumnName);
+					sqlParams.add(value);
 				}
 
 				DB.setParameters(pstmt, sqlParams);

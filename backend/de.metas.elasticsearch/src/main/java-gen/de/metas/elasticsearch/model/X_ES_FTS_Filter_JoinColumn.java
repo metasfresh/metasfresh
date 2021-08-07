@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ES_FTS_Filter_JoinColumn extends org.compiere.model.PO implements I_ES_FTS_Filter_JoinColumn, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1510474882L;
+	private static final long serialVersionUID = 1814285969L;
 
     /** Standard Constructor */
     public X_ES_FTS_Filter_JoinColumn (final Properties ctx, final int ES_FTS_Filter_JoinColumn_ID, @Nullable final String trxName)
@@ -62,15 +62,30 @@ public class X_ES_FTS_Filter_JoinColumn extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public void setES_FieldName (final java.lang.String ES_FieldName)
+	public de.metas.elasticsearch.model.I_ES_FTS_Config_Field getES_FTS_Config_Field()
 	{
-		set_Value (COLUMNNAME_ES_FieldName, ES_FieldName);
+		return get_ValueAsPO(COLUMNNAME_ES_FTS_Config_Field_ID, de.metas.elasticsearch.model.I_ES_FTS_Config_Field.class);
 	}
 
 	@Override
-	public java.lang.String getES_FieldName() 
+	public void setES_FTS_Config_Field(final de.metas.elasticsearch.model.I_ES_FTS_Config_Field ES_FTS_Config_Field)
 	{
-		return get_ValueAsString(COLUMNNAME_ES_FieldName);
+		set_ValueFromPO(COLUMNNAME_ES_FTS_Config_Field_ID, de.metas.elasticsearch.model.I_ES_FTS_Config_Field.class, ES_FTS_Config_Field);
+	}
+
+	@Override
+	public void setES_FTS_Config_Field_ID (final int ES_FTS_Config_Field_ID)
+	{
+		if (ES_FTS_Config_Field_ID < 1) 
+			set_Value (COLUMNNAME_ES_FTS_Config_Field_ID, null);
+		else 
+			set_Value (COLUMNNAME_ES_FTS_Config_Field_ID, ES_FTS_Config_Field_ID);
+	}
+
+	@Override
+	public int getES_FTS_Config_Field_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ES_FTS_Config_Field_ID);
 	}
 
 	@Override

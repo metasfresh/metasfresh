@@ -24,17 +24,16 @@ package de.metas.fulltextsearch.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.logging.LogManager;
+import de.metas.elasticsearch.model.I_ES_FTS_Config;
 import lombok.NonNull;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class FTSConfigService
 {
-	private static final Logger logger = LogManager.getLogger(FTSConfigService.class);
 	private final FTSConfigRepository ftsConfigRepository;
 	private final FTSFilterDescriptorRepository ftsFilterDescriptorRepository;
 
@@ -66,4 +65,10 @@ public class FTSConfigService
 		return ftsFilterDescriptorRepository.getById(id);
 	}
 
+	public void updateConfigFields(@NonNull final I_ES_FTS_Config record)
+	{
+		final FTSConfigId configId = FTSConfigId.ofRepoId(record.getES_FTS_Config_ID());
+		final Set<ESFieldName> esFieldNames = ESDocumentToIndexTemplate.ofJsonString(record.getES_DocumentToIndexTemplate()).getESFieldNames();
+		ftsConfigRepository.setConfigFields(configId, esFieldNames);
+	}
 }

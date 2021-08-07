@@ -35,8 +35,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.POInfo;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
@@ -51,7 +51,6 @@ public class FTSFilterDescriptorRepository
 {
 	private static final Logger logger = LogManager.getLogger(FTSFilterDescriptorRepository.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	private final CCache<Integer, FTSFilterDescriptorsMap> cache = CCache.<Integer, FTSFilterDescriptorsMap>builder()
 			.tableName(I_ES_FTS_Filter.Table_Name)
@@ -100,20 +99,24 @@ public class FTSFilterDescriptorRepository
 			@NonNull final I_ES_FTS_Filter record,
 			@NonNull final ImmutableListMultimap<Integer, I_ES_FTS_Filter_JoinColumn> joinColumnRecordsByFilterId)
 	{
-		final ArrayList<String> availableSelectionColumnNames = new ArrayList<>();
-		availableSelectionColumnNames.add(I_T_ES_FTS_Search_Result.COLUMNNAME_IntKey1);
-		availableSelectionColumnNames.add(I_T_ES_FTS_Search_Result.COLUMNNAME_IntKey2);
-		availableSelectionColumnNames.add(I_T_ES_FTS_Search_Result.COLUMNNAME_IntKey3);
+		final AvailableSelectionKeyColumnNames availableSelectionColumnNames = new AvailableSelectionKeyColumnNames();
+
+		final POInfo targetTable = POInfo.getPOInfo(record.getAD_Table_ID());
+		if (targetTable == null)
+		{
+			// shall not happen
+			throw new AdempiereException("No table found for AD_Table_ID=" + record.getAD_Table_ID());
+		}
 
 		try
 		{
 			return FTSFilterDescriptor.builder()
 					.id(FTSFilterDescriptorId.ofRepoId(record.getES_FTS_Filter_ID()))
-					.targetTableName(adTableDAO.retrieveTableName(record.getAD_Table_ID()))
+					.targetTableName(targetTable.getTableName())
 					.ftsConfigId(FTSConfigId.ofRepoId(record.getES_FTS_Config_ID()))
 					.joinColumns(FTSJoinColumnList.ofList(joinColumnRecordsByFilterId.get(record.getES_FTS_Filter_ID())
 							.stream()
-							.map(joinColumnRecord -> toJoinColumn(joinColumnRecord, availableSelectionColumnNames))
+							.map(joinColumnRecord -> toJoinColumn(joinColumnRecord, targetTable, availableSelectionColumnNames))
 							.collect(ImmutableList.toImmutableList())))
 					.build();
 		}
@@ -126,19 +129,43 @@ public class FTSFilterDescriptorRepository
 
 	private FTSJoinColumn toJoinColumn(
 			@NonNull final I_ES_FTS_Filter_JoinColumn record,
-			@NonNull final ArrayList<String> availableSelectionColumnNames)
+			@NonNull final POInfo targetTable,
+			@NonNull final AvailableSelectionKeyColumnNames availableSelectionColumnNames)
 	{
-		if (availableSelectionColumnNames.isEmpty())
+		final int targetColumnIndex = targetTable.getColumnIndex(record.getAD_Column_ID());
+		if (targetColumnIndex < 0)
 		{
-			throw new AdempiereException("No more available selection column names to map");
+			throw new AdempiereException("No column found for AD_Column_ID=" + record.getAD_Column_ID() + " in " + targetTable);
 		}
 
+		final Class<?> targetColumnClass = targetTable.getColumnClass(targetColumnIndex);
+		final FTSJoinColumn.ValueType valueType = getValueTypeByClass(targetColumnClass);
+
 		return FTSJoinColumn.builder()
-				.targetTableColumnName(adTableDAO.retrieveColumnName(record.getAD_Column_ID()))
-				.selectionTableColumnName(availableSelectionColumnNames.remove(0))
-				.esFieldName(record.getES_FieldName())
+				.valueType(valueType)
+				.targetTableColumnName(targetTable.getColumnName(targetColumnIndex))
+				.selectionTableColumnName(availableSelectionColumnNames.reserveNext(valueType))
+				.esFieldId(FTSConfigFieldId.ofRepoId(record.getES_FTS_Config_Field_ID()))
 				.nullable(record.isNullable())
 				.build();
+	}
+
+	private static FTSJoinColumn.ValueType getValueTypeByClass(@NonNull final Class<?> valueClass)
+	{
+		if (int.class.equals(valueClass)
+				|| Integer.class.equals(valueClass))
+		{
+			return FTSJoinColumn.ValueType.INTEGER;
+		}
+		else if (String.class.equals(valueClass))
+		{
+			return FTSJoinColumn.ValueType.STRING;
+		}
+		else
+		{
+			throw new AdempiereException("Cannot determine " + FTSJoinColumn.ValueType.class + " for `" + valueClass + "`");
+		}
+
 	}
 
 	@ToString
@@ -166,6 +193,37 @@ public class FTSFilterDescriptorRepository
 				throw new AdempiereException("No filter found for " + id);
 			}
 			return filter;
+		}
+	}
+
+	@ToString
+	private static class AvailableSelectionKeyColumnNames
+	{
+		private final ArrayList<String> availableIntKeys = new ArrayList<>(I_T_ES_FTS_Search_Result.COLUMNNAME_IntKeys);
+		private final ArrayList<String> availableStringKeys = new ArrayList<>(I_T_ES_FTS_Search_Result.COLUMNNAME_StringKeys);
+
+		public String reserveNext(@NonNull final FTSJoinColumn.ValueType valueType)
+		{
+			final ArrayList<String> availableKeys;
+			if (valueType == FTSJoinColumn.ValueType.INTEGER)
+			{
+				availableKeys = availableIntKeys;
+			}
+			else if (valueType == FTSJoinColumn.ValueType.STRING)
+			{
+				availableKeys = availableStringKeys;
+			}
+			else
+			{
+				availableKeys = new ArrayList<>();
+			}
+
+			if (availableKeys.isEmpty())
+			{
+				throw new AdempiereException("No more available key columns left for valueType=" + valueType + " in " + this);
+			}
+
+			return availableKeys.remove(0);
 		}
 	}
 }

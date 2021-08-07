@@ -102,25 +102,29 @@ public interface I_ES_FTS_Filter_JoinColumn
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Elasticsearch Field Name.
+	 * Set Elasticsearch Field.
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setES_FieldName (java.lang.String ES_FieldName);
+	void setES_FTS_Config_Field_ID (int ES_FTS_Config_Field_ID);
 
 	/**
-	 * Get Elasticsearch Field Name.
+	 * Get Elasticsearch Field.
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getES_FieldName();
+	int getES_FTS_Config_Field_ID();
 
-	ModelColumn<I_ES_FTS_Filter_JoinColumn, Object> COLUMN_ES_FieldName = new ModelColumn<>(I_ES_FTS_Filter_JoinColumn.class, "ES_FieldName", null);
-	String COLUMNNAME_ES_FieldName = "ES_FieldName";
+	de.metas.elasticsearch.model.I_ES_FTS_Config_Field getES_FTS_Config_Field();
+
+	void setES_FTS_Config_Field(de.metas.elasticsearch.model.I_ES_FTS_Config_Field ES_FTS_Config_Field);
+
+	ModelColumn<I_ES_FTS_Filter_JoinColumn, de.metas.elasticsearch.model.I_ES_FTS_Config_Field> COLUMN_ES_FTS_Config_Field_ID = new ModelColumn<>(I_ES_FTS_Filter_JoinColumn.class, "ES_FTS_Config_Field_ID", de.metas.elasticsearch.model.I_ES_FTS_Config_Field.class);
+	String COLUMNNAME_ES_FTS_Config_Field_ID = "ES_FTS_Config_Field_ID";
 
 	/**
 	 * Set Full Text Search Filter.
