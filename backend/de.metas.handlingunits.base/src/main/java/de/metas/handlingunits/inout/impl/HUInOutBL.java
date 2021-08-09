@@ -22,6 +22,7 @@ package de.metas.handlingunits.inout.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.document.DocTypeQuery;
@@ -31,6 +32,7 @@ import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUWarehouseDAO;
@@ -44,7 +46,6 @@ import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.inout.returns.customer.CustomerReturnLUTUConfigurationHandler;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -54,6 +55,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.spi.impl.HUPackingMaterialDocumentLineCandidate;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
@@ -62,8 +64,8 @@ import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
@@ -75,10 +77,13 @@ import org.compiere.model.X_C_DocType;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class HUInOutBL implements IHUInOutBL
 {
@@ -86,12 +91,13 @@ public class HUInOutBL implements IHUInOutBL
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
+	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUWarehouseDAO huWarehouseDAO = Services.get(IHUWarehouseDAO.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
 
 	@Override
@@ -390,9 +396,24 @@ public class HUInOutBL implements IHUInOutBL
 						Map.Entry::getValue));
 	}
 
+	public ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutIds(@NonNull final Set<InOutId> inoutIds)
+	{
+		if (inoutIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+		final Set<InOutLineId> inoutLineIds = inoutIds.stream()
+				.map(inOutDAO::retrieveLinesForInOutId)
+				.flatMap(Collection::stream)
+				.map(InOutAndLineId::getInOutLineId)
+				.collect(Collectors.toSet());
+		return getHUIdsByInOutLineIds(inoutLineIds);
+	}
+
 	@Override
 	public boolean isValidHuForReturn(final InOutId inOutId, final HuId huId)
 	{
+
 		final Optional<AttributeId> serialNoAttributeIdOptional = serialNoBL.getSerialNoAttributeId();
 		if (!serialNoAttributeIdOptional.isPresent())
 		{
@@ -407,16 +428,17 @@ public class HUInOutBL implements IHUInOutBL
 			//no S/N defined. Should not be a valid scenario
 			return false;
 		}
-		return !queryBL.createQueryBuilder(I_M_HU_Assignment.class).addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, inOutDAO.getInOutTableId())
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, inOutId)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_M_HU_Assignment.COLUMNNAME_M_HU_ID , I_M_HU.class)
-				.addEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Planning)
-				.addOnlyActiveRecordsFilter()
-				.andCollectChildren(I_M_HU_Attribute.COLUMN_M_HU_ID)
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, serialNoAttributeId)
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, serialNoAttr.getValue())
+
+		final ImmutableCollection<HuId> huIds = getHUIdsByInOutIds(Collections.singleton(inOutId)).values();
+		if (huIds.isEmpty())
+		{
+			return true;
+		}
+		final ImmutableSet<HuId> topLevelHUs = handlingUnitsBL.getTopLevelHUs(huIds);
+		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(HuId.toRepoIds(topLevelHUs))
+				.addHUStatusToInclude(X_M_HU.HUSTATUS_Planning)
+				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNoAttr.getValue())
+				.createQueryBuilder()
 				.create()
 				.anyMatch();
 	}
