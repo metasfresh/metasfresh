@@ -141,7 +141,7 @@
     "detect-browser": "5.2.0",
     "file-loader": "6.2.0",
     "google-map-react": "1.1.5",
-    "history": "5.0.0",
+    "history": "4.10.1",
     "immer": "9.0.5",
     "immutability-helper": "2.1.2",
     "intro.js": "2.9.3",
