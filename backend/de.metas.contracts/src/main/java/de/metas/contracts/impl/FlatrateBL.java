@@ -25,8 +25,11 @@ package de.metas.contracts.impl;
 import ch.qos.logback.classic.Level;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermPricing;
@@ -79,7 +82,6 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -1688,6 +1690,10 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		InterfaceWrapperHelper.save(newTerm);
+
+		final CacheInvalidateMultiRequest cacheInvalidateMultiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_C_Flatrate_Term.Table_Name);
+
+		CacheMgt.get().reset(cacheInvalidateMultiRequest);
 
 		return newTerm;
 	}
