@@ -30,7 +30,7 @@ describe('TableCellLabel', () => {
       `table-cell-label-wrapper`
     );
     expect(html).toContain(`Bildungsin`);
-    expect(html).not.toContain(`...`);
+    expect(html).toContain(`...`);
   });
 
   it('renders without errors and shows the dots for more than one record', () => {

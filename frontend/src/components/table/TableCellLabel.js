@@ -47,7 +47,7 @@ class TableCellLabel extends PureComponent {
         {tableCellData &&
           tableCellValues[0] &&
           tableCellData.value.values.length === 1 &&
-          tableCellData.value.values[0].caption > TBL_CELL_LABEL_MAX && (
+          tableCellData.value.values[0].caption.length > TBL_CELL_LABEL_MAX && (
             <div
               data-toggle="tooltip"
               data-placement="bottom"
