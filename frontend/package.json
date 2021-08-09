@@ -182,7 +182,7 @@
     "react-tether": "2.0.8",
     "react-transition-group": "4.4.1",
     "react-translate-component": "0.15.1",
-    "redux": "4.1.0",
+    "redux": "4.1.1",
     "redux-actions": "2.6.5",
     "redux-promise": "0.6.0",
     "redux-thunk": "2.3.0",
