@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Set as iSet } from 'immutable';
 import currentDevice from 'current-device';
 import { get, debounce } from 'lodash';
 
@@ -74,7 +73,6 @@ class DocumentListContainer extends Component {
     this.state = {
       pageColumnInfosByFieldName: null,
       panelsState: GEO_PANEL_STATES[0],
-      initialValuesNulled: new Map(),
     };
 
     this.fetchLayoutAndData();
@@ -182,7 +180,6 @@ class DocumentListContainer extends Component {
 
         this.setState(
           {
-            initialValuesNulled: new Map(),
             panelsState: GEO_PANEL_STATES[0],
           },
           () => {
@@ -642,34 +639,6 @@ class DocumentListContainer extends Component {
   };
 
   /**
-   * @method resetInitialFilters
-   * @summary resets the initial filters
-   * @param {string} filterId
-   * @param {string} parameterName
-   */
-  resetInitialFilters = (filterId, parameterName) => {
-    let { initialValuesNulled } = this.state;
-
-    let filterParams = initialValuesNulled.get(filterId);
-
-    if (!filterParams && parameterName) {
-      filterParams = iSet([parameterName]);
-    } else if (filterParams && parameterName) {
-      filterParams = filterParams.add(parameterName);
-    }
-
-    if (!parameterName) {
-      initialValuesNulled.delete(filterId);
-    } else {
-      initialValuesNulled.set(filterId, filterParams);
-    }
-
-    this.setState({
-      initialValuesNulled,
-    });
-  };
-
-  /**
    * @method toggleState
    *
    * @param {string} state - name of the panels layout to use
@@ -783,7 +752,6 @@ class DocumentListContainer extends Component {
         onFilterChange={this.handleFilterChange}
         onRedirectToDocument={this.redirectToDocument}
         onRedirectToNewDocument={this.onRedirectToNewDocument}
-        onResetInitialFilters={this.resetInitialFilters}
       />
     );
   }
