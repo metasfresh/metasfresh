@@ -78,7 +78,7 @@ describe('Modal test', () => {
   // As far as I remember failures that caused this to be skipped were because of some actionCreator not
   // being read from the props. Modal was and still is connected to the store, but it's using dispatch instead
   // of mapDispatchToProps/object shorthand binding
-  it(`calls startProcess when initializing a modal of 'process' type`, async (done) => {
+  it(`calls startProcess when initializing a modal of 'process' type`, async () => {
     const initialState = getInitialState();
     const store = mockStore(initialState);
     // setProcessPending() is called only by createProcess and we can use that as an indicator to know if it was called
@@ -111,6 +111,5 @@ describe('Modal test', () => {
     { attachTo: document.getElementById('container') });
 
     expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
-    done();
   });
 });
