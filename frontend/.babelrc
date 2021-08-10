@@ -1,11 +1,10 @@
 {
   "presets": [
-    ["@babel/preset-env", { "useBuiltIns": "usage", "corejs": 3.16 }], 
+    ["@babel/preset-env", { "useBuiltIns": "usage", "corejs": 3.16, "modules": "commonjs" }], 
     ["@babel/preset-react"]],
   "plugins": [
       "@babel/plugin-syntax-dynamic-import",
       "dynamic-import-node",
-      "@babel/plugin-transform-modules-commonjs",
       "react-hot-loader/babel"
   ]
 }
