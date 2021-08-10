@@ -113,7 +113,7 @@ public class ModelToIndexRepository
 			@NonNull final String processingTag,
 			final int maxSize)
 	{
-		queryForTag(null)
+		final int updateCount = queryForTag(null)
 				.addEqualsFilter(I_ES_FTS_Index_Queue.COLUMNNAME_Processed, false)
 				.setLimit(QueryLimit.ofInt(maxSize))
 				//
@@ -122,6 +122,10 @@ public class ModelToIndexRepository
 				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_ProcessingTag, processingTag)
 				.addSetColumnValue(I_ES_FTS_Index_Queue.COLUMNNAME_Updated, SystemTime.asInstant())
 				.execute();
+		if (updateCount <= 0)
+		{
+			return ImmutableList.of();
+		}
 
 		return queryForTag(processingTag)
 				.create()

@@ -22,6 +22,7 @@
 
 package de.metas.fulltextsearch.indexer.queue;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
@@ -65,7 +66,7 @@ import java.util.List;
 @Profile(Profiles.PROFILE_App)
 public class ModelToIndexEnqueueProcessor
 {
-	private static final Logger logger = LogManager.getLogger(ModelToIndexEnqueueProcessor.class);
+	private final Logger logger = LogManager.getLogger(getClass());
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final FTSModelIndexerRegistry indexersRegistry;
@@ -75,7 +76,8 @@ public class ModelToIndexEnqueueProcessor
 	private static final String SYSCONFIG_PollIntervalInSeconds = "fulltextsearch.indexer.queue.pollIntervalInSeconds";
 	private static final Duration DEFAULT_PollInterval = Duration.ofSeconds(10);
 
-	private static final int RETRIEVE_BATCH_SIZE = 500;
+	private static final String SYSCONFIG_RetrieveBatchSize = "de.metas.fulltextsearch.indexer.queue.ModelToIndexEnqueueProcessor.retrieveBatchSize";
+	private static final int DEFAULT_RetrieveBatchSize = 1000;
 
 	public ModelToIndexEnqueueProcessor(
 			@NonNull final FTSModelIndexerRegistry indexersRegistry,
@@ -112,44 +114,63 @@ public class ModelToIndexEnqueueProcessor
 				: DEFAULT_PollInterval;
 	}
 
+	private int getRetrieveBatchSize()
+	{
+		final int batchSize = sysConfigBL.getIntValue(SYSCONFIG_RetrieveBatchSize, DEFAULT_RetrieveBatchSize);
+		return batchSize > 0 ? batchSize : DEFAULT_RetrieveBatchSize;
+	}
+
 	private void processInfinitely()
 	{
-		Duration pollIntervalOverride = null;
+		Duration pollInterval = getPollInterval();
 		while (true)
 		{
-			final Duration pollInterval = pollIntervalOverride != null ? pollIntervalOverride : getPollInterval();
-			logger.debug("Sleeping {}", pollInterval);
-			try
+			if (pollInterval.toMillis() > 0)
 			{
-				Thread.sleep(getPollInterval().toMillis());
-			}
-			catch (final InterruptedException ex)
-			{
-				logger.info("Got interrupt request. Exiting.");
-				return;
+				logger.debug("Sleeping {}", pollInterval);
+				try
+				{
+					Thread.sleep(getPollInterval().toMillis());
+				}
+				catch (final InterruptedException ex)
+				{
+					logger.info("Got interrupt request. Exiting.");
+					return;
+				}
 			}
 
-			pollIntervalOverride = null;
 			try
 			{
-				processNow();
+				final boolean mightHaveMore = processNow();
+				pollInterval = mightHaveMore ? Duration.ZERO : getPollInterval();
 			}
 			catch (final IOException ex)
 			{
 				logger.warn("Elasticsearch communication error", ex);
-				pollIntervalOverride = Duration.ofMinutes(1);
+				pollInterval = Duration.ofMinutes(1);
 			}
 			catch (final Exception ex)
 			{
 				logger.warn("Failed to process. Ignored.", ex);
+				pollInterval = getPollInterval();
 			}
 		}
 	}
 
-	private void processNow() throws Exception
+	/**
+	 * @return true if there was at last one record successfully processed
+	 */
+	private boolean processNow() throws Exception
 	{
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+
 		final String processingTag = queueRepository.newProcessingTag();
-		final ImmutableList<ModelToIndex> events = queueRepository.tagAndRetrieve(processingTag, RETRIEVE_BATCH_SIZE);
+		final int batchSize = getRetrieveBatchSize();
+		final ImmutableList<ModelToIndex> events = queueRepository.tagAndRetrieve(processingTag, batchSize);
+		if (events.isEmpty())
+		{
+			return false;
+		}
 
 		boolean markRecords = false;
 		AdIssueId adIssueId = null;
@@ -161,6 +182,8 @@ public class ModelToIndexEnqueueProcessor
 			}
 
 			markRecords = true;
+
+			return true;
 		}
 		catch (final IOException ex)
 		{
@@ -175,21 +198,27 @@ public class ModelToIndexEnqueueProcessor
 		}
 		finally
 		{
+			final String processedResolution;
 			if (markRecords)
 			{
 				if (adIssueId == null)
 				{
 					queueRepository.markAsProcessed(processingTag);
+					processedResolution = "SUCCESS";
 				}
 				else
 				{
 					queueRepository.markAsError(processingTag, adIssueId);
+					processedResolution = "ERROR";
 				}
 			}
 			else
 			{
 				queueRepository.untag(processingTag);
+				processedResolution = "TEMPORARY ERROR";
 			}
+
+			logger.info("{} - Processed {} events in {} (processing tag: {})", processedResolution, events.size(), stopwatch.stop(), processingTag);
 		}
 
 	}
