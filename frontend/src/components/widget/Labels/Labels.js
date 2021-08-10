@@ -41,6 +41,7 @@ export default class Labels extends PureComponent {
       rowId,
       viewId,
       readonly,
+      dataId,
     } = this.props;
 
     if (readonly) return false;

@@ -580,6 +580,7 @@ class WidgetRenderer extends PureComponent {
             subentity={subentity}
             subentityId={subentityId}
             tabId={tabId}
+            dataId={dataId}
             rowId={rowId}
             windowId={windowType}
             viewId={viewId}
