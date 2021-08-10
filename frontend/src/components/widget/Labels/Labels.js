@@ -112,6 +112,7 @@ export default class Labels extends PureComponent {
         tabId,
         rowId,
         viewId,
+        dataId,
       } = this.props;
 
       const response = await autocompleteRequest({
@@ -419,6 +420,7 @@ Labels.propTypes = {
   rowId: PropTypes.string,
   viewId: PropTypes.any,
   readonly: PropTypes.bool,
+  dataId: PropTypes.string,
 };
 
 Labels.defaultProps = {
