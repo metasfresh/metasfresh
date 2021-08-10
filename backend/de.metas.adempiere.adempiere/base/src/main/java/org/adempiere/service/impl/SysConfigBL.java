@@ -86,7 +86,7 @@ public class SysConfigBL implements ISysConfigBL
 	public boolean getBooleanValue(final String name, final boolean defaultValue, final int AD_Client_ID)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientId(AD_Client_ID))
-				.map(valueStr -> StringUtils.toBoolean(name, defaultValue))
+				.map(valueStr -> StringUtils.toBoolean(valueStr, defaultValue))
 				.orElse(defaultValue);
 	}
 
@@ -125,7 +125,7 @@ public class SysConfigBL implements ISysConfigBL
 	public boolean getBooleanValue(final String name, final boolean defaultValue, final int AD_Client_ID, final int AD_Org_ID)
 	{
 		return sysConfigDAO.getValue(name, ClientAndOrgId.ofClientAndOrg(AD_Client_ID, AD_Org_ID))
-				.map(valueStr -> StringUtils.toBoolean(name, defaultValue))
+				.map(valueStr -> StringUtils.toBoolean(valueStr, defaultValue))
 				.orElse(defaultValue);
 	}
 
