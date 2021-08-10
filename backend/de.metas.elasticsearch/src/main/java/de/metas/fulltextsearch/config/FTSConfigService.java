@@ -24,8 +24,12 @@ package de.metas.fulltextsearch.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.model.I_ES_FTS_Config;
+import de.metas.i18n.BooleanWithReason;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -34,6 +38,7 @@ import java.util.Set;
 @Service
 public class FTSConfigService
 {
+	private final IESSystem esSystem = Services.get(IESSystem.class);
 	private final FTSConfigRepository ftsConfigRepository;
 	private final FTSFilterDescriptorRepository ftsFilterDescriptorRepository;
 
@@ -43,6 +48,16 @@ public class FTSConfigService
 	{
 		this.ftsConfigRepository = ftsConfigRepository;
 		this.ftsFilterDescriptorRepository = ftsFilterDescriptorRepository;
+	}
+
+	public BooleanWithReason getEnabled()
+	{
+		return esSystem.getEnabled();
+	}
+
+	public RestHighLevelClient elasticsearchClient()
+	{
+		return esSystem.elasticsearchClient();
 	}
 
 	public void addListener(@NonNull final FTSConfigChangedListener listener) { ftsConfigRepository.addListener(listener); }

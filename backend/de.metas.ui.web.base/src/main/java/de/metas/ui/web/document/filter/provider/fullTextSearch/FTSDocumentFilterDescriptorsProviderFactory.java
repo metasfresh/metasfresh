@@ -26,8 +26,10 @@ import de.metas.fulltextsearch.config.FTSConfigService;
 import de.metas.fulltextsearch.config.FTSFilterDescriptor;
 import de.metas.fulltextsearch.query.FTSSearchService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -41,6 +43,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -50,6 +53,7 @@ import java.util.Collection;
 public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
 {
 	// services
+	private static final Logger logger = LogManager.getLogger(FTSDocumentFilterDescriptorsProviderFactory.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final FTSConfigService ftsConfigService;
 	private final FTSSearchService ftsSearchService;
@@ -83,6 +87,13 @@ public class FTSDocumentFilterDescriptorsProviderFactory implements DocumentFilt
 	private DocumentFilterDescriptorsProvider createFiltersProvider(
 			@NonNull final String tableName)
 	{
+		final BooleanWithReason elasticsearchEnabled = ftsConfigService.getEnabled();
+		if (elasticsearchEnabled.isFalse())
+		{
+			logger.debug("Skip creating FTS filters because Elasticsearch is not enabled because: {}", elasticsearchEnabled.getReasonAsString());
+			return null;
+		}
+
 		final FTSFilterDescriptor ftsFilterDescriptor = ftsConfigService
 				.getFilterByTargetTableName(tableName)
 				.orElse(null);

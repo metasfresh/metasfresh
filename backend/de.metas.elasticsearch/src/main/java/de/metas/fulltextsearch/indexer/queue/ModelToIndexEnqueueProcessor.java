@@ -25,7 +25,6 @@ package de.metas.fulltextsearch.indexer.queue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
-import de.metas.elasticsearch.IESSystem;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.fulltextsearch.config.ESDocumentToIndex;
@@ -69,7 +68,6 @@ public class ModelToIndexEnqueueProcessor
 	private static final Logger logger = LogManager.getLogger(ModelToIndexEnqueueProcessor.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final IESSystem elasticsearchSystem = Services.get(IESSystem.class);
 	private final FTSModelIndexerRegistry indexersRegistry;
 	private final FTSConfigService configService;
 	private final ModelToIndexRepository queueRepository;
@@ -92,7 +90,7 @@ public class ModelToIndexEnqueueProcessor
 	@PostConstruct
 	public void postConstruct()
 	{
-		final BooleanWithReason enabled = elasticsearchSystem.getEnabled();
+		final BooleanWithReason enabled = configService.getEnabled();
 		if (enabled.isFalse())
 		{
 			logger.warn("Elasticsearch is disabled because: {}", enabled.getReasonAsString());
@@ -260,14 +258,14 @@ public class ModelToIndexEnqueueProcessor
 
 	private boolean isESIndexExists(final FTSConfig config) throws IOException
 	{
-		return elasticsearchSystem.elasticsearchClient()
+		return configService.elasticsearchClient()
 				.indices()
 				.exists(new GetIndexRequest(config.getEsIndexName()), RequestOptions.DEFAULT);
 	}
 
 	private void createESIndex(final FTSConfig config) throws IOException
 	{
-		elasticsearchSystem.elasticsearchClient()
+		configService.elasticsearchClient()
 				.indices()
 				.create(new CreateIndexRequest(config.getEsIndexName())
 								.source(config.getCreateIndexCommand().getAsString(), XContentType.JSON),
@@ -288,7 +286,7 @@ public class ModelToIndexEnqueueProcessor
 			@NonNull final FTSConfig config,
 			@NonNull final ESDocumentToIndexChunk chunk) throws IOException
 	{
-		final RestHighLevelClient elasticsearchClient = elasticsearchSystem.elasticsearchClient();
+		final RestHighLevelClient elasticsearchClient = configService.elasticsearchClient();
 		final String esIndexName = config.getEsIndexName();
 
 		final BulkRequest bulkRequest = new BulkRequest();

@@ -35,7 +35,5 @@ public interface IESSystem extends ISingletonService
 {
 	BooleanWithReason getEnabled();
 
-	void assertEnabled();
-
 	RestHighLevelClient elasticsearchClient();
 }

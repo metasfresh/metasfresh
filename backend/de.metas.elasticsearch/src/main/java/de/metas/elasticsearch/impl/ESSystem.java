@@ -61,8 +61,7 @@ public class ESSystem implements IESSystem
 		return BooleanWithReason.TRUE;
 	}
 
-	@Override
-	public void assertEnabled()
+	private void assertEnabled()
 	{
 		final BooleanWithReason enabled = getEnabled();
 		if (enabled.isFalse())
