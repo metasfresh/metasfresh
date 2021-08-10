@@ -6,7 +6,6 @@
       "@babel/plugin-syntax-dynamic-import",
       "dynamic-import-node",
       "@babel/plugin-transform-modules-commonjs",
-      "@babel/plugin-proposal-object-rest-spread",
       "react-hot-loader/babel"
   ]
 }
