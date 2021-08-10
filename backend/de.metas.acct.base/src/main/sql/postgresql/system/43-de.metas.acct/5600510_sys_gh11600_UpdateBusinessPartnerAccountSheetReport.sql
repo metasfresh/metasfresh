@@ -91,7 +91,7 @@ BEGIN
                    AND p.isreceipt = p_isSoTrx
                    AND p.docstatus IN ('CO', 'CL')
                    AND (COALESCE(p_ad_org_id, 0) <= 0 OR p.ad_org_id = p_ad_org_id)
-				UNION ALL
+                 UNION ALL
                  SELECT --
                         0                          beginningBalance,
                         al.paymentwriteoffamt      amount,
@@ -105,7 +105,7 @@ BEGIN
                         hal.ad_org_id               ad_org_id
                  FROM c_payment p
                           join C_AllocationLine al on al.c_payment_id = p.c_payment_id and al.paymentwriteoffamt > 0
-						  join c_allocationhdr hal on al.c_allocationhdr_id= hal.c_allocationhdr_id
+                          join c_allocationhdr hal on al.c_allocationhdr_id= hal.c_allocationhdr_id
                  WHERE TRUE
                    AND p.c_bpartner_id = p_c_bpartner_id
                    AND hal.dateacct >= p_dateFrom
@@ -113,7 +113,7 @@ BEGIN
                    AND p.isreceipt = p_isSoTrx
                    AND p.docstatus IN ('CO', 'CL')
                    AND (COALESCE(p_ad_org_id, 0) <= 0 OR hal.ad_org_id = p_ad_org_id)
-		 )
+             )
     INSERT
     INTO temp_BusinessPartnerAccountSheetReport(beginningBalance,
                                                 amount,
@@ -128,41 +128,41 @@ BEGIN
                                                 ad_org_id,
                                                 targetCurrencyCode,
                                                 doctype)
-	SELECT--
-		  i.beginningBalance,
-		  i.amount,
-		  i.endingBalance,
-		  i.dateacct,
-		  i.description,
-		  i.c_doctype_id,
-		  i.documentno,
-		  i.created,
-		  i.c_currency_id,
-		  row_number() OVER (),
-		  i.ad_org_id,
-		  (SELECT iso_code
-		   FROM c_currency c
-					INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
-					INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
-		   LIMIT 1)      targetCurrencyCode,
-		  (CASE
-			   when i.c_doctype_id < 0 THEN
-				   (select coalesce(rt.name, r.name) as doctype
-					from ad_ref_list r
-							 join ad_ref_list_trl rt
-								  on r.ad_ref_list_id = rt.ad_ref_list_id and rt.ad_language = p_ad_language
-					where ad_reference_id = 183
-					  and value = 'CMA'
-				   )
-			   ELSE
-				   (SELECT dtt.name
-					FROM c_doctype dt
-							 INNER JOIN c_doctype_trl dtt ON dt.c_doctype_id = dtt.c_doctype_id
-					WHERE dtt.ad_language = p_ad_language
-					  AND i.c_doctype_id = dt.c_doctype_id)
-			  END
-			  )::text AS docType
-	FROM invoicesAndPaymentsInPeriod i;
+    SELECT--
+          i.beginningBalance,
+          i.amount,
+          i.endingBalance,
+          i.dateacct,
+          i.description,
+          i.c_doctype_id,
+          i.documentno,
+          i.created,
+          i.c_currency_id,
+          row_number() OVER (),
+          i.ad_org_id,
+          (SELECT iso_code
+           FROM c_currency c
+                    INNER JOIN c_acctschema accts ON c.c_currency_id = accts.c_currency_id
+                    INNER JOIN ad_clientinfo ac ON accts.c_acctschema_id = ac.c_acctschema1_id
+           LIMIT 1)      targetCurrencyCode,
+          (CASE
+               when i.c_doctype_id < 0 THEN
+                   (select coalesce(rt.name, r.name) as doctype
+                    from ad_ref_list r
+                             join ad_ref_list_trl rt
+                                  on r.ad_ref_list_id = rt.ad_ref_list_id and rt.ad_language = p_ad_language
+                    where ad_reference_id = 183
+                      and value = 'CMA'
+                   )
+                                       ELSE
+                   (SELECT dtt.name
+                    FROM c_doctype dt
+                             INNER JOIN c_doctype_trl dtt ON dt.c_doctype_id = dtt.c_doctype_id
+                    WHERE dtt.ad_language = p_ad_language
+                      AND i.c_doctype_id = dt.c_doctype_id)
+           END
+              )::text AS docType
+    FROM invoicesAndPaymentsInPeriod i;
 
     GET DIAGNOSTICS v_temp = ROW_COUNT;
     v_time := logDebug('inserted invoices and payments: ' || v_temp || ' records', v_time);
@@ -184,11 +184,11 @@ BEGIN
                  SELECT --
                         t.rowid,
                         (CASE
-							WHEN dt.docbasetype IN ('ARC', 'APC') THEN -1 * t.amount
+                             WHEN dt.docbasetype IN ('ARC', 'APC') THEN -1 * t.amount
                                                                    ELSE t.amount
-                            END) amount
+                         END) amount
                  FROM temp_BusinessPartnerAccountSheetReport t
-                 LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
+                          LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
              )
     UPDATE temp_BusinessPartnerAccountSheetReport t
     SET amount = c.amount
@@ -226,34 +226,34 @@ BEGIN
     -- Compute rolling sum
     WITH endingBalanceSum AS
              (
-				SELECT --
-					   t.rowid,
-					   t.endingBalance
-						   + sum(case
-									 WHEN dt.docbasetype = 'ARR' and p_isSoTrx = 'Y' THEN -1 * t.amount
-									 WHEN dt.docbasetype = 'APP' and p_isSoTrx = 'N' THEN -1 * t.amount
-									 ELSE t.amount
-						   end)
-							 OVER ( ORDER BY t.dateacct, t.created, t.documentno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) endingBalance,
-					   t.amount                                                                                                     currentAmount,
-					   dt.docbasetype
-				FROM temp_BusinessPartnerAccountSheetReport t
-				LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
+                 SELECT --
+                        t.rowid,
+                        t.endingBalance
+                            + sum(case
+                                      WHEN dt.docbasetype = 'ARR' and p_isSoTrx = 'Y' THEN -1 * t.amount
+                                      WHEN dt.docbasetype = 'APP' and p_isSoTrx = 'N' THEN -1 * t.amount
+                                                                                      ELSE t.amount
+                                  end)
+                              OVER ( ORDER BY t.dateacct, t.created, t.documentno ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW ) endingBalance,
+                        t.amount                                                                                                     currentAmount,
+                        dt.docbasetype
+                 FROM temp_BusinessPartnerAccountSheetReport t
+                          LEFT JOIN c_doctype dt ON t.c_doctype_id = dt.c_doctype_id
              ),
 
          finalData AS
              (
-				SELECT --
-					   ebs.rowid,
-					   ebs.endingBalance,
-					   (ebs.endingBalance -
-						(case
-							 WHEN ebs.docbasetype = 'ARR' and p_isSoTrx = 'Y' THEN -1 * ebs.currentAmount
-							 WHEN ebs.docbasetype = 'APP' and p_isSoTrx = 'N' THEN -1 * ebs.currentAmount
-							 ELSE ebs.currentAmount
-							end)
-						   ) as beginningBalance
-				FROM endingBalanceSum ebs
+                 SELECT --
+                        ebs.rowid,
+                        ebs.endingBalance,
+                        (ebs.endingBalance -
+                         (case
+                              WHEN ebs.docbasetype = 'ARR' and p_isSoTrx = 'Y' THEN -1 * ebs.currentAmount
+                              WHEN ebs.docbasetype = 'APP' and p_isSoTrx = 'N' THEN -1 * ebs.currentAmount
+                                                                               ELSE ebs.currentAmount
+                          end)
+                            ) as beginningBalance
+                 FROM endingBalanceSum ebs
              )
     UPDATE temp_BusinessPartnerAccountSheetReport t
     SET endingBalance    = d.endingBalance,
@@ -284,15 +284,15 @@ $BODY$
     VOLATILE;
 
 COMMENT ON FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text) IS
-'How to run:
+    'How to run:
 
-SELECT*
-FROM BusinessPartnerAccountSheetReport(2000252,
-                                       ''1111-1-1''::date,
-                                       ''3333-1-1''::date,
-                                       1000000)
-;
-';
+    SELECT*
+    FROM BusinessPartnerAccountSheetReport(2000252,
+                                           ''1111-1-1''::date,
+                                           ''3333-1-1''::date,
+                                           1000000)
+    ;
+    ';
 
 /*
 How to run:
