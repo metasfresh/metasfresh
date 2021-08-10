@@ -1,18 +1,5 @@
 package de.metas.adempiere.modelvalidator;
 
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.Adempiere;
-import org.compiere.model.MClient;
-import org.compiere.model.MOrder;
-import org.compiere.model.MOrderLine;
-import org.compiere.model.MSysConfig;
-import org.compiere.model.ModelValidationEngine;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.PO;
-import org.compiere.model.X_C_OrderLine;
-import org.compiere.util.Env;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -24,6 +11,18 @@ import de.metas.order.OrderFreightCostsService;
 import de.metas.order.impl.OrderBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.model.MClient;
+import org.compiere.model.MOrder;
+import org.compiere.model.MOrderLine;
+import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
+import org.compiere.model.X_C_OrderLine;
+import org.compiere.util.Env;
 
 /**
  * This model validator checks for each new invoice line if there needs to be an additional invoice line for freight cost.
@@ -86,7 +85,7 @@ public class Order implements ModelValidator
 				//
 				final int client_id = Env.getAD_Client_ID(Env.getCtx());
 				final int org_id = Env.getAD_Org_ID(Env.getCtx());
-				final boolean recreate = MSysConfig.getBooleanValue("RECREATE_SEARCHKEY", true, client_id);
+				final boolean recreate = Services.get(ISysConfigBL.class).getBooleanValue("RECREATE_SEARCHKEY", true, client_id);
 				if (recreate)
 				{
 					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
