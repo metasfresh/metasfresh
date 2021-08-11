@@ -55,7 +55,7 @@ module.exports = {
     errorDetails: true,
   },
   devtool: 'cheap-module-source-map',
-  entry: ['@babel/polyfill', './src/index.jsx', './favicon.png'],
+  entry: ['./src/index.jsx', './favicon.png'],
   output: {
     path: path.join(__dirname, 'dist'),
     filename: 'bundle-[git-revision-hash]-git-[chunkhash].js',
