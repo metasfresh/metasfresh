@@ -43,6 +43,22 @@ class TableCellLabel extends PureComponent {
           </div>
         )}
 
+        {/* Case when there is one single label */}
+        {tableCellData &&
+          tableCellValues[0] &&
+          tableCellData.value.values.length === 1 &&
+          tableCellData.value.values[0].caption.length > TBL_CELL_LABEL_MAX && (
+            <div
+              data-toggle="tooltip"
+              data-placement="bottom"
+              title={tableCellData.value.values[0].caption}
+              className="table-cell-label-show-more"
+            >
+              ...
+            </div>
+          )}
+
+        {/* Case when have multiple labels, we render them separated by comma */}
         {tableCellData && tableCellValues.length > 1 && (
           <div
             data-toggle="tooltip"
