@@ -326,7 +326,7 @@ class SubHeader extends Component {
       },
     ]
       .filter((docLink) =>
-        standardActions.find(({ action }) => action === docLink.action)
+        standardActions.find((action) => action === docLink.action)
       )
       .map((docLink) => {
         return this.renderDocLink(docLink);
