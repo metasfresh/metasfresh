@@ -26,9 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
@@ -182,7 +180,7 @@ public class PriceListDAO implements IPriceListDAO
 
 		if (productIdsToExclude != null && !productIdsToExclude.isEmpty())
 		{
-			queryBuilder.addNotInArrayFilter(I_M_ProductPrice.COLUMN_M_Product_ID, productIdsToExclude);
+			queryBuilder.addNotInArrayFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productIdsToExclude);
 		}
 
 		return queryBuilder
@@ -794,7 +792,7 @@ public class PriceListDAO implements IPriceListDAO
 	{
 		Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_ProductPrice.class, Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, newPLVId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, newPLVId)
 				.addEqualsFilter(I_M_ProductPrice.COLUMN_IsAttributeDependant, true)
 				.create()
 				.iterateAndStream()
@@ -946,8 +944,8 @@ public class PriceListDAO implements IPriceListDAO
 
 		return queryBL.createQueryBuilder(I_M_Product.class)
 				.filter(productFilter)
-				.andCollectChildren(I_M_ProductPrice.COLUMN_M_Product_ID)
-				.addInSubQueryFilter(I_M_ProductPrice.COLUMN_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMN_M_PriceList_Version_ID, priceListVersionQuery)
+				.andCollectChildren(I_M_ProductPrice.COLUMNNAME_M_Product_ID, I_M_ProductPrice.class)
+				.addInSubQueryFilter(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_PriceList_Version.COLUMNNAME_M_PriceList_Version_ID, priceListVersionQuery)
 				.create();
 
 	}
