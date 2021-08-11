@@ -145,7 +145,7 @@
     "intro.js-react": "0.3.0",
     "lodash": "4.17.21",
     "luxon": "1.22.0",
-    "moment": "2.29.0",
+    "moment": "2.29.1",
     "moment-timezone": "0.5.33",
     "numeral": "2.0.6",
     "object-hash": "2.2.0",
