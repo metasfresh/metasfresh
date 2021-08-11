@@ -148,7 +148,8 @@ describe('RawList component', () => {
     });
 
     it('list hides dropdown after selecting an option', () => {
-      jest.useFakeTimers();
+      jest.useFakeTimers('legacy'); // used 'legacy' because the latest Jest 27 has breaking changes for fakeTimers. 
+                                    // It seems Jest contributors didn't updated the documentation on time
 
       const onCloseDropdownSpy = jest.fn();
       const onSelectSpy = jest.fn();
