@@ -2,6 +2,8 @@ package de.metas.elasticsearch.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for ES_FTS_Config_SourceModel
  *  @author metasfresh (generated) 
  */
@@ -164,6 +166,33 @@ public interface I_ES_FTS_Config_SourceModel
 
 	ModelColumn<I_ES_FTS_Config_SourceModel, Object> COLUMN_IsActive = new ModelColumn<>(I_ES_FTS_Config_SourceModel.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Parent Column.
+	 * The link column on the parent tab.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setParent_Column_ID (int Parent_Column_ID);
+
+	/**
+	 * Get Parent Column.
+	 * The link column on the parent tab.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getParent_Column_ID();
+
+	@Nullable org.compiere.model.I_AD_Column getParent_Column();
+
+	void setParent_Column(@Nullable org.compiere.model.I_AD_Column Parent_Column);
+
+	ModelColumn<I_ES_FTS_Config_SourceModel, org.compiere.model.I_AD_Column> COLUMN_Parent_Column_ID = new ModelColumn<>(I_ES_FTS_Config_SourceModel.class, "Parent_Column_ID", org.compiere.model.I_AD_Column.class);
+	String COLUMNNAME_Parent_Column_ID = "Parent_Column_ID";
 
 	/**
 	 * Get Updated.

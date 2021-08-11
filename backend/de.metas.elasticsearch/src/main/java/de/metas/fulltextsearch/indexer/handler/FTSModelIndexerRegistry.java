@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.TableName;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +41,7 @@ public class FTSModelIndexerRegistry
 {
 	private static final Logger logger = LogManager.getLogger(FTSModelIndexerRegistry.class);
 
-	private final ImmutableMap<String, FTSModelIndexer> indexersBySourceTableName;
+	private final ImmutableMap<TableName, FTSModelIndexer> indexersBySourceTableName;
 
 	public FTSModelIndexerRegistry(@NonNull final Optional<List<FTSModelIndexer>> indexers)
 	{
@@ -54,12 +55,12 @@ public class FTSModelIndexerRegistry
 		logger.info("Indexers: {}", this.indexersBySourceTableName);
 	}
 
-	public Optional<FTSModelIndexer> getBySourceTableName(@NonNull final String sourceTableName)
+	public Optional<FTSModelIndexer> getBySourceTableName(@NonNull final TableName sourceTableName)
 	{
 		return Optional.ofNullable(indexersBySourceTableName.get(sourceTableName));
 	}
 
-	public List<FTSModelIndexer> getBySourceTableNames(@NonNull final Collection<String> sourceTableNames)
+	public List<FTSModelIndexer> getBySourceTableNames(@NonNull final Collection<TableName> sourceTableNames)
 	{
 		return sourceTableNames.stream()
 				.distinct()

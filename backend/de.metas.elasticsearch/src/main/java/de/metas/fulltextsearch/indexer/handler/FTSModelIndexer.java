@@ -25,13 +25,14 @@ package de.metas.fulltextsearch.indexer.handler;
 import de.metas.fulltextsearch.config.ESDocumentToIndexChunk;
 import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndex;
+import org.adempiere.ad.table.api.TableName;
 
 import java.util.List;
 import java.util.Set;
 
 public interface FTSModelIndexer
 {
-	Set<String> getHandledSourceTableNames();
+	Set<TableName> getHandledSourceTableNames();
 
 	List<ESDocumentToIndexChunk> createDocumentsToIndex(List<ModelToIndex> requests, final FTSConfig config);
 }

@@ -31,6 +31,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Component
@@ -45,9 +46,12 @@ public class ModelsToIndexQueueService
 		this.repository = repository;
 	}
 
-	public void enqueue(@NonNull final ModelToIndexEnqueueRequest request)
+	public void enqueue(@NonNull final Collection<ModelToIndexEnqueueRequest> requests)
 	{
-		getRequestsCollector().addRequest(request);
+		if (!requests.isEmpty())
+		{
+			getRequestsCollector().addRequests(requests);
+		}
 	}
 
 	private RequestsCollector getRequestsCollector()
@@ -76,10 +80,10 @@ public class ModelsToIndexQueueService
 		private boolean processed = false;
 		private final ArrayList<ModelToIndexEnqueueRequest> requests = new ArrayList<>();
 
-		public synchronized void addRequest(@NonNull final ModelToIndexEnqueueRequest request)
+		public synchronized void addRequests(@NonNull final Collection<ModelToIndexEnqueueRequest> requests)
 		{
 			assertNotProcessed();
-			requests.add(request);
+			this.requests.addAll(requests);
 		}
 
 		private void assertNotProcessed()

@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ES_FTS_Index_Queue extends org.compiere.model.PO implements I_ES_FTS_Index_Queue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -478606784L;
+	private static final long serialVersionUID = -996417090L;
 
     /** Standard Constructor */
     public X_ES_FTS_Index_Queue (final Properties ctx, final int ES_FTS_Index_Queue_ID, @Nullable final String trxName)
@@ -62,6 +62,33 @@ public class X_ES_FTS_Index_Queue extends org.compiere.model.PO implements I_ES_
 	public int getAD_Table_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
+	}
+
+	@Override
+	public de.metas.elasticsearch.model.I_ES_FTS_Config getES_FTS_Config()
+	{
+		return get_ValueAsPO(COLUMNNAME_ES_FTS_Config_ID, de.metas.elasticsearch.model.I_ES_FTS_Config.class);
+	}
+
+	@Override
+	public void setES_FTS_Config(final de.metas.elasticsearch.model.I_ES_FTS_Config ES_FTS_Config)
+	{
+		set_ValueFromPO(COLUMNNAME_ES_FTS_Config_ID, de.metas.elasticsearch.model.I_ES_FTS_Config.class, ES_FTS_Config);
+	}
+
+	@Override
+	public void setES_FTS_Config_ID (final int ES_FTS_Config_ID)
+	{
+		if (ES_FTS_Config_ID < 1) 
+			set_Value (COLUMNNAME_ES_FTS_Config_ID, null);
+		else 
+			set_Value (COLUMNNAME_ES_FTS_Config_ID, ES_FTS_Config_ID);
+	}
+
+	@Override
+	public int getES_FTS_Config_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ES_FTS_Config_ID);
 	}
 
 	@Override

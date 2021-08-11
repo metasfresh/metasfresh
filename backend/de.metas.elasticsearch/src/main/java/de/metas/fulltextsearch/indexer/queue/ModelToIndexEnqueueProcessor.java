@@ -33,13 +33,16 @@ import de.metas.fulltextsearch.config.ESDocumentToIndexChunk;
 import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.config.FTSConfigId;
 import de.metas.fulltextsearch.config.FTSConfigService;
+import de.metas.fulltextsearch.config.FTSConfigSourceTable;
 import de.metas.fulltextsearch.indexer.handler.FTSModelIndexer;
 import de.metas.fulltextsearch.indexer.handler.FTSModelIndexerRegistry;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
+import lombok.ToString;
+import org.adempiere.ad.table.api.TableName;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.elasticsearch.action.bulk.BulkRequest;
@@ -234,24 +237,28 @@ public class ModelToIndexEnqueueProcessor
 
 		for (final ModelToIndex event : events)
 		{
-			final String sourceTableName = event.getSourceModelRef().getTableName();
-
-			for (final FTSConfig config : configService.getConfigBySourceTableName(sourceTableName))
-			{
-				final ConfigAndEvents configAndEvents = configAndEventsMap.computeIfAbsent(
-						config.getId(),
-						configId -> new ConfigAndEvents(config));
-
-				configAndEvents.addEvent(event);
-			}
+			configAndEventsMap.computeIfAbsent(event.getFtsConfigId(), this::newConfigAndEvents)
+					.addEvent(event);
 		}
 
 		return configAndEventsMap.values();
 	}
 
+	private ConfigAndEvents newConfigAndEvents(@NonNull final FTSConfigId ftsConfigId)
+	{
+		final FTSConfig config = configService.getConfigById(ftsConfigId);
+
+		final ImmutableSet<TableName> sourceTableNames = configService.getSourceTables().getByConfigId(ftsConfigId)
+				.stream()
+				.map(FTSConfigSourceTable::getTableName)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return new ConfigAndEvents(config, sourceTableNames);
+	}
+
 	private void processNow_ConfigAndEvents(final ConfigAndEvents configAndEvents) throws IOException
 	{
-		final ImmutableList<ModelToIndex> events = ImmutableList.copyOf(configAndEvents.getEvents());
+		final ImmutableList<ModelToIndex> events = configAndEvents.getEvents();
 		if (events.isEmpty())
 		{
 			return;
@@ -259,11 +266,10 @@ public class ModelToIndexEnqueueProcessor
 
 		final FTSConfig config = configAndEvents.getConfig();
 
-		final ImmutableSet<String> sourceTableNames = config.getSourceTableNames();
-		final List<FTSModelIndexer> indexers = indexersRegistry.getBySourceTableNames(sourceTableNames);
+		final List<FTSModelIndexer> indexers = getModelIndexers(configAndEvents);
 		if (indexers.isEmpty())
 		{
-			logger.warn("No indexers found found for {}. Discard {} events", sourceTableNames, events.size());
+			logger.warn("No indexers found found for {}. Discard {} events", config, events.size());
 			return;
 		}
 
@@ -283,6 +289,11 @@ public class ModelToIndexEnqueueProcessor
 		}
 
 		addDocumentsToIndex(config, chunks);
+	}
+
+	private List<FTSModelIndexer> getModelIndexers(final ConfigAndEvents configAndEvents)
+	{
+		return indexersRegistry.getBySourceTableNames(configAndEvents.getSourceTableNames());
 	}
 
 	private boolean isESIndexExists(final FTSConfig config) throws IOException
@@ -339,15 +350,23 @@ public class ModelToIndexEnqueueProcessor
 		}
 	}
 
-	@Value
+	@ToString
 	private static class ConfigAndEvents
 	{
-		FTSConfig config;
-		ArrayList<ModelToIndex> events = new ArrayList<>();
+		@Getter
+		private final FTSConfig config;
 
-		private ConfigAndEvents(@NonNull final FTSConfig config)
+		@Getter
+		private final ImmutableSet<TableName> sourceTableNames;
+
+		private final ArrayList<ModelToIndex> events = new ArrayList<>();
+
+		private ConfigAndEvents(
+				@NonNull final FTSConfig config,
+				@NonNull final ImmutableSet<TableName> sourceTableNames)
 		{
 			this.config = config;
+			this.sourceTableNames = sourceTableNames;
 		}
 
 		public void addEvent(final ModelToIndex event)
@@ -356,6 +375,11 @@ public class ModelToIndexEnqueueProcessor
 			{
 				events.add(event);
 			}
+		}
+
+		public ImmutableList<ModelToIndex> getEvents()
+		{
+			return ImmutableList.copyOf(events);
 		}
 	}
 }

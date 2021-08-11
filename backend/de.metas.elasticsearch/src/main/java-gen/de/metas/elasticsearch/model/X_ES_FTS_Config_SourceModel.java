@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ES_FTS_Config_SourceModel extends org.compiere.model.PO implements I_ES_FTS_Config_SourceModel, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1076967209L;
+	private static final long serialVersionUID = -1026587977L;
 
     /** Standard Constructor */
     public X_ES_FTS_Config_SourceModel (final Properties ctx, final int ES_FTS_Config_SourceModel_ID, @Nullable final String trxName)
@@ -89,5 +89,32 @@ public class X_ES_FTS_Config_SourceModel extends org.compiere.model.PO implement
 	public int getES_FTS_Config_SourceModel_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ES_FTS_Config_SourceModel_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Column getParent_Column()
+	{
+		return get_ValueAsPO(COLUMNNAME_Parent_Column_ID, org.compiere.model.I_AD_Column.class);
+	}
+
+	@Override
+	public void setParent_Column(final org.compiere.model.I_AD_Column Parent_Column)
+	{
+		set_ValueFromPO(COLUMNNAME_Parent_Column_ID, org.compiere.model.I_AD_Column.class, Parent_Column);
+	}
+
+	@Override
+	public void setParent_Column_ID (final int Parent_Column_ID)
+	{
+		if (Parent_Column_ID < 1) 
+			set_Value (COLUMNNAME_Parent_Column_ID, null);
+		else 
+			set_Value (COLUMNNAME_Parent_Column_ID, Parent_Column_ID);
+	}
+
+	@Override
+	public int getParent_Column_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Parent_Column_ID);
 	}
 }

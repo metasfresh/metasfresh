@@ -22,6 +22,7 @@
 
 package de.metas.fulltextsearch.indexer.queue;
 
+import de.metas.fulltextsearch.config.FTSConfigId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -31,6 +32,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 @Builder
 public class ModelToIndex
 {
-	@NonNull TableRecordReference sourceModelRef;
+	@NonNull FTSConfigId ftsConfigId;
 	@NonNull ModelToIndexEventType eventType;
+	@NonNull TableRecordReference sourceModelRef;
 }

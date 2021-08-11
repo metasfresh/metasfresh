@@ -26,23 +26,25 @@ import de.metas.elasticsearch.IESSystem;
 import de.metas.fulltextsearch.config.FTSConfig;
 import de.metas.fulltextsearch.config.FTSConfigId;
 import de.metas.fulltextsearch.config.FTSConfigService;
+import de.metas.fulltextsearch.config.FTSConfigSourceTablesMap;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndexEnqueueRequest;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndexEventType;
 import de.metas.fulltextsearch.indexer.queue.ModelsToIndexQueueService;
+import de.metas.fulltextsearch.indexer.queue.model_interceptor.EnqueueSourceModelInterceptor;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.ad.table.api.TableName;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;
 import org.elasticsearch.client.RequestOptions;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.stream.Stream;
 
 public class ES_FTS_Config_Sync extends JavaProcess
@@ -83,30 +85,38 @@ public class ES_FTS_Config_Sync extends JavaProcess
 
 	private void enqueueModels(final FTSConfig ftsConfig)
 	{
-		for (final String sourceTableName : ftsConfig.getSourceTableNames())
+		final FTSConfigSourceTablesMap sourceTables = FTSConfigSourceTablesMap.ofList(ftsConfigService.getSourceTables().getByConfigId(ftsConfig.getId()));
+		for (final TableName sourceTableName : sourceTables.getTableNames())
 		{
-			enqueueModels(sourceTableName);
+			enqueueModels(sourceTableName, sourceTables);
 		}
 	}
 
-	private void enqueueModels(@NonNull final String sourceTableName)
+	private void enqueueModels(
+			@NonNull final TableName sourceTableName,
+			@NonNull final FTSConfigSourceTablesMap sourceTablesMap)
 	{
-		final Stream<ModelToIndexEnqueueRequest> requestsStream = queryBL.createQueryBuilder(sourceTableName)
+		final Stream<ModelToIndexEnqueueRequest> requestsStream = queryBL.createQueryBuilder(sourceTableName.getAsString())
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.setOption(IQuery.OPTION_GuaranteedIteratorRequired, true)
 				.iterateAndStream()
-				.map(InterfaceWrapperHelper::getId)
-				.map(recordId -> TableRecordReference.of(sourceTableName, recordId))
-				.map(recordRef -> ModelToIndexEnqueueRequest.builder()
-						.eventType(ModelToIndexEventType.CREATED_OR_UPDATED)
-						.sourceModelRef(recordRef)
-						.build());
+				.flatMap(model -> extractRequests(model, sourceTablesMap).stream());
 
 		GuavaCollectors.batchAndStream(requestsStream, 500)
 				.forEach(requests -> {
 					modelsToIndexQueueService.enqueueNow(requests);
 					addLog("Enqueued {} records from {} table", requests.size(), sourceTableName);
 				});
+	}
+
+	private List<ModelToIndexEnqueueRequest> extractRequests(
+			@NonNull final Object model,
+			@NonNull final FTSConfigSourceTablesMap sourceTables)
+	{
+		return EnqueueSourceModelInterceptor.extractRequests(
+				model,
+				ModelToIndexEventType.CREATED_OR_UPDATED,
+				sourceTables);
 	}
 }

@@ -22,24 +22,32 @@
 
 package de.metas.fulltextsearch.indexer.queue.model_interceptor;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.fulltextsearch.config.FTSConfigService;
+import de.metas.fulltextsearch.config.FTSConfigSourceTable;
+import de.metas.fulltextsearch.config.FTSConfigSourceTablesMap;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndexEnqueueRequest;
 import de.metas.fulltextsearch.indexer.queue.ModelToIndexEventType;
 import de.metas.fulltextsearch.indexer.queue.ModelsToIndexQueueService;
 import de.metas.logging.LogManager;
+import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.table.api.TableAndColumnName;
+import org.adempiere.ad.table.api.TableName;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Client;
 import org.elasticsearch.common.util.set.Sets;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
@@ -51,7 +59,7 @@ public class EnqueueSourceModelInterceptor extends AbstractModelInterceptor
 	private final FTSConfigService configService;
 
 	private IModelValidationEngine engine;
-	@NonNull private ImmutableSet<String> _sourceTableNamesRegistered = ImmutableSet.of();
+	@NonNull private FTSConfigSourceTablesMap _sourceTablesRegistered = FTSConfigSourceTablesMap.EMPTY;
 
 	public EnqueueSourceModelInterceptor(
 			@NonNull final ModelsToIndexQueueService queueService,
@@ -83,58 +91,118 @@ public class EnqueueSourceModelInterceptor extends AbstractModelInterceptor
 			return;
 		}
 
-		final ImmutableSet<String> sourceTableNamesAlreadyRegistered = _sourceTableNamesRegistered;
-		final ImmutableSet<String> sourceTableNamesToRegisterTarget = configService.getSourceTableNames();
-		if (Objects.equals(sourceTableNamesAlreadyRegistered, sourceTableNamesToRegisterTarget))
+		final FTSConfigSourceTablesMap sourceTablesAlreadyRegistered = _sourceTablesRegistered;
+		final FTSConfigSourceTablesMap sourceTablesToRegisterTarget = configService.getSourceTables();
+
+		if (!Objects.equals(sourceTablesAlreadyRegistered.getTableNames(), sourceTablesToRegisterTarget.getTableNames()))
 		{
-			logger.debug("No config changes");
-			return;
+			final Set<TableName> sourceTableNamesToUnregister = Sets.difference(sourceTablesAlreadyRegistered.getTableNames(), sourceTablesToRegisterTarget.getTableNames());
+			final Set<TableName> sourceTableNamesToRegister = Sets.difference(sourceTablesToRegisterTarget.getTableNames(), sourceTablesAlreadyRegistered.getTableNames());
+
+			if (!sourceTableNamesToUnregister.isEmpty())
+			{
+				sourceTableNamesToUnregister.forEach(sourceTableName -> engine.removeModelChange(sourceTableName.getAsString(), this));
+				logger.info("Unregistered from {}", sourceTableNamesToUnregister);
+			}
+
+			if (!sourceTableNamesToRegister.isEmpty())
+			{
+				sourceTableNamesToRegister.forEach(sourceTableName -> engine.addModelChange(sourceTableName.getAsString(), this));
+				logger.info("Registered for {}", sourceTableNamesToRegister);
+			}
 		}
 
-		final Set<String> sourceTableNamesToUnregister = Sets.difference(sourceTableNamesAlreadyRegistered, sourceTableNamesToRegisterTarget);
-		final Set<String> sourceTableNamesToRegister = Sets.difference(sourceTableNamesToRegisterTarget, sourceTableNamesAlreadyRegistered);
+		this._sourceTablesRegistered = sourceTablesToRegisterTarget;
+	}
 
-		if (!sourceTableNamesToUnregister.isEmpty())
-		{
-			sourceTableNamesToUnregister.forEach(sourceTableName -> engine.removeModelChange(sourceTableName, this));
-			logger.info("Unregistered from {}", sourceTableNamesToUnregister);
-		}
-
-		if (!sourceTableNamesToRegister.isEmpty())
-		{
-			sourceTableNamesToRegister.forEach(sourceTableName -> engine.addModelChange(sourceTableName, this));
-			logger.info("Registered for {}", sourceTableNamesToRegister);
-		}
-
-		this._sourceTableNamesRegistered = ImmutableSet.copyOf(sourceTableNamesToRegisterTarget);
+	private synchronized FTSConfigSourceTablesMap getSourceTables()
+	{
+		return _sourceTablesRegistered;
 	}
 
 	@Override
 	public void onModelChange(final Object model, final ModelChangeType changeType)
 	{
-		if (changeType.isAfter())
-		{
-			queueService.enqueue(ModelToIndexEnqueueRequest.builder()
-					.sourceModelRef(TableRecordReference.of(model))
-					.eventType(toModelToIndexEventType(changeType))
-					.build());
-		}
-	}
-
-	private static ModelToIndexEventType toModelToIndexEventType(final ModelChangeType changeType)
-	{
 		if (changeType.isNewOrChange())
 		{
-			return ModelToIndexEventType.CREATED_OR_UPDATED;
+			if (changeType.isAfter())
+			{
+				queueService.enqueue(extractRequests(model, ModelToIndexEventType.CREATED_OR_UPDATED, getSourceTables()));
+			}
 		}
 		else if (changeType.isDelete())
 		{
-			return ModelToIndexEventType.REMOVED;
-		}
-		else
-		{
-			throw new AdempiereException("Cannot convert " + changeType + " to " + ModelToIndexEventType.class);
+			if (changeType.isBefore())
+			{
+				queueService.enqueue(extractRequests(model, ModelToIndexEventType.REMOVED, getSourceTables()));
+			}
 		}
 	}
 
+	public static List<ModelToIndexEnqueueRequest> extractRequests(
+			@NonNull final Object model,
+			@NonNull final ModelToIndexEventType eventType,
+			@NonNull final FTSConfigSourceTablesMap sourceTablesMap)
+	{
+		final TableName tableName = TableName.ofString(InterfaceWrapperHelper.getModelTableName(model));
+		final int recordId = InterfaceWrapperHelper.getId(model);
+		final TableRecordReference recordRef = TableRecordReference.of(tableName.getAsString(), recordId);
+		final boolean recordIsActive = InterfaceWrapperHelper.isActive(model);
+
+		final ImmutableList<FTSConfigSourceTable> sourceTables = sourceTablesMap.getByTableName(tableName);
+		final ArrayList<ModelToIndexEnqueueRequest> result = new ArrayList<>(sourceTables.size());
+
+		for (final FTSConfigSourceTable sourceTable : sourceTables)
+		{
+			final TableRecordReference recordRefEffective;
+			final ModelToIndexEventType eventTypeEffective;
+
+			final TableRecordReference parentRecordRef = extractParentRecordRef(model, sourceTable);
+			if (parentRecordRef != null)
+			{
+				recordRefEffective = parentRecordRef;
+				eventTypeEffective = ModelToIndexEventType.CREATED_OR_UPDATED;
+			}
+			else
+			{
+				recordRefEffective = recordRef;
+				if (recordIsActive)
+				{
+					eventTypeEffective = eventType;
+				}
+				else
+				{
+					eventTypeEffective = ModelToIndexEventType.REMOVED;
+				}
+			}
+
+			result.add(ModelToIndexEnqueueRequest.builder()
+					.ftsConfigId(sourceTable.getFtsConfigId())
+					.eventType(eventTypeEffective)
+					.sourceModelRef(recordRefEffective)
+					.build());
+		}
+
+		return result;
+	}
+
+	@Nullable
+	private static TableRecordReference extractParentRecordRef(@NonNull final Object model, @NonNull final FTSConfigSourceTable sourceTable)
+	{
+		final TableAndColumnName parentColumnName = sourceTable.getParentColumnName();
+		if (parentColumnName == null)
+		{
+			return null;
+		}
+
+		final int parentId = InterfaceWrapperHelper.getValue(model, parentColumnName.getColumnNameAsString())
+				.map(NumberUtils::asIntegerOrNull)
+				.orElse(-1);
+		if (parentId <= 0)
+		{
+			return null;
+		}
+
+		return TableRecordReference.of(parentColumnName.getTableNameAsString(), parentId);
+	}
 }

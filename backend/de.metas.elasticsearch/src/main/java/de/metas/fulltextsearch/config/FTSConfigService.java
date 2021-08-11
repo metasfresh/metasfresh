@@ -22,8 +22,6 @@
 
 package de.metas.fulltextsearch.config;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.elasticsearch.model.I_ES_FTS_Config;
 import de.metas.i18n.BooleanWithReason;
@@ -62,13 +60,14 @@ public class FTSConfigService
 
 	public void addListener(@NonNull final FTSConfigChangedListener listener) { ftsConfigRepository.addListener(listener); }
 
-	public ImmutableSet<String> getSourceTableNames() { return ftsConfigRepository.getSourceTableNames(); }
-
-	public ImmutableList<FTSConfig> getConfigBySourceTableName(@NonNull final String sourceTableName) { return ftsConfigRepository.getBySourceTableName(sourceTableName); }
-
 	public FTSConfig getConfigByESIndexName(@NonNull final String esIndexName) { return ftsConfigRepository.getByESIndexName(esIndexName); }
 
 	public FTSConfig getConfigById(@NonNull final FTSConfigId ftsConfigId) { return ftsConfigRepository.getConfigById(ftsConfigId); }
+
+	public FTSConfigSourceTablesMap getSourceTables()
+	{
+		return ftsConfigRepository.getSourceTables();
+	}
 
 	public Optional<FTSFilterDescriptor> getFilterByTargetTableName(@NonNull final String targetTableName)
 	{

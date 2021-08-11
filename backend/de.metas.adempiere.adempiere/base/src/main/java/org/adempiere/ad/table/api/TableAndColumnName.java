@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.elasticsearch
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,30 +20,41 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.config;
+package org.adempiere.ad.table.api;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
-@Value
-@Builder
-public class FTSConfig
+@Value(staticConstructor = "ofTableAndColumn")
+public class TableAndColumnName
 {
-	@NonNull FTSConfigId id;
+	@NonNull TableName tableName;
+	@NonNull ColumnName columnName;
 
-	@Getter(AccessLevel.NONE)
-	@NonNull FTSConfigFieldsMap fields;
-
-	@NonNull String esIndexName;
-	@NonNull ESCommand createIndexCommand;
-	@NonNull ESDocumentToIndexTemplate documentToIndexTemplate;
-	@NonNull ESQueryTemplate queryCommand;
-
-	public ESFieldName getEsFieldNameById(@NonNull final FTSConfigFieldId id)
+	public static TableAndColumnName ofTableAndColumnStrings(@NonNull final String tableName, @NonNull final String columnName)
 	{
-		return fields.getEsFieldNameById(id);
+		return ofTableAndColumn(TableName.ofString(tableName), ColumnName.ofString(columnName));
+	}
+
+	@Override
+	@Deprecated
+	public String toString()
+	{
+		return getAsString();
+	}
+
+	public String getAsString()
+	{
+		return tableName.getAsString() + "." + columnName.getAsString();
+	}
+
+	public String getTableNameAsString()
+	{
+		return tableName.getAsString();
+	}
+
+	public String getColumnNameAsString()
+	{
+		return columnName.getAsString();
 	}
 }

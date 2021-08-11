@@ -20,19 +20,21 @@
  * #L%
  */
 
-package de.metas.fulltextsearch.indexer.queue;
+package de.metas.fulltextsearch.config;
 
-import de.metas.fulltextsearch.config.FTSConfigId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.ad.table.api.TableAndColumnName;
+import org.adempiere.ad.table.api.TableName;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class ModelToIndexEnqueueRequest
+public class FTSConfigSourceTable
 {
 	@NonNull FTSConfigId ftsConfigId;
-	@NonNull ModelToIndexEventType eventType;
-	@NonNull TableRecordReference sourceModelRef;
+	@NonNull TableName tableName;
+	@Nullable TableAndColumnName parentColumnName;
 }

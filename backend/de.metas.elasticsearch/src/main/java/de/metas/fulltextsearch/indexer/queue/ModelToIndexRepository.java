@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.elasticsearch.model.I_ES_FTS_Index_Queue;
 import de.metas.error.AdIssueId;
+import de.metas.fulltextsearch.config.FTSConfigId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -52,11 +53,12 @@ public class ModelToIndexRepository
 	private static final String INSERT_SQL =
 			"INSERT INTO " + I_ES_FTS_Index_Queue.Table_Name
 					+ "("
-					+ I_ES_FTS_Index_Queue.COLUMNNAME_EventType
+					+ I_ES_FTS_Index_Queue.COLUMNNAME_ES_FTS_Config_ID
+					+ ", " + I_ES_FTS_Index_Queue.COLUMNNAME_EventType
 					+ ", " + I_ES_FTS_Index_Queue.COLUMNNAME_AD_Table_ID
 					+ ", " + I_ES_FTS_Index_Queue.COLUMNNAME_Record_ID
 					+ ")"
-					+ " VALUES (?, ?, ?)";
+					+ " VALUES (?, ?, ?, ?)";
 
 	public void addToQueue(@NonNull final List<ModelToIndexEnqueueRequest> requests)
 	{
@@ -77,6 +79,7 @@ public class ModelToIndexRepository
 				}
 
 				DB.setParameters(pstmt,
+						request.getFtsConfigId().getRepoId(),
 						request.getEventType().getCode(),
 						request.getSourceModelRef().getAdTableId(),
 						request.getSourceModelRef().getRecord_ID());
@@ -137,6 +140,7 @@ public class ModelToIndexRepository
 	private static ModelToIndex toModelToIndex(final I_ES_FTS_Index_Queue record)
 	{
 		return ModelToIndex.builder()
+				.ftsConfigId(FTSConfigId.ofRepoId(record.getES_FTS_Config_ID()))
 				.eventType(ModelToIndexEventType.ofCode(record.getEventType()))
 				.sourceModelRef(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.build();

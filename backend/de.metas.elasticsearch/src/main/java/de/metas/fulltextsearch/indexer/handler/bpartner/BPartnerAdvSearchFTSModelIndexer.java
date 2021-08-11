@@ -40,6 +40,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.TableName;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
@@ -61,12 +62,16 @@ import java.util.stream.Collectors;
 @Component
 public class BPartnerAdvSearchFTSModelIndexer implements FTSModelIndexer
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
-	public Set<String> getHandledSourceTableNames()
+	public Set<TableName> getHandledSourceTableNames()
 	{
-		return ImmutableSet.of(I_C_BPartner.Table_Name, I_C_BPartner_Location.Table_Name, I_AD_User.Table_Name);
+		return ImmutableSet.of(
+				TableName.ofString(I_C_BPartner.Table_Name),
+				TableName.ofString(I_C_BPartner_Location.Table_Name),
+				TableName.ofString(I_AD_User.Table_Name));
 	}
 
 	@Override
@@ -85,7 +90,7 @@ public class BPartnerAdvSearchFTSModelIndexer implements FTSModelIndexer
 		{
 			final ESDocumentToIndexTemplate documentToIndexTemplate = config.getDocumentToIndexTemplate();
 
-			final List<I_C_BPartner_Adv_Search> records = Services.get(IQueryBL.class)
+			final List<I_C_BPartner_Adv_Search> records = queryBL
 					.createQueryBuilder(I_C_BPartner_Adv_Search.class)
 					.addOnlyActiveRecordsFilter()
 					.addInArrayFilter(I_C_BPartner_Adv_Search.COLUMN_ES_DocumentId, changedDocumentIds.getChangedDocumentIds())

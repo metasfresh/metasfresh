@@ -119,6 +119,31 @@ public interface I_ES_FTS_Index_Queue
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Full Text Search Configuration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setES_FTS_Config_ID (int ES_FTS_Config_ID);
+
+	/**
+	 * Get Full Text Search Configuration.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getES_FTS_Config_ID();
+
+	de.metas.elasticsearch.model.I_ES_FTS_Config getES_FTS_Config();
+
+	void setES_FTS_Config(de.metas.elasticsearch.model.I_ES_FTS_Config ES_FTS_Config);
+
+	ModelColumn<I_ES_FTS_Index_Queue, de.metas.elasticsearch.model.I_ES_FTS_Config> COLUMN_ES_FTS_Config_ID = new ModelColumn<>(I_ES_FTS_Index_Queue.class, "ES_FTS_Config_ID", de.metas.elasticsearch.model.I_ES_FTS_Config.class);
+	String COLUMNNAME_ES_FTS_Config_ID = "ES_FTS_Config_ID";
+
+	/**
 	 * Set FTS Models To Index Queue.
 	 *
 	 * <br>Type: ID
