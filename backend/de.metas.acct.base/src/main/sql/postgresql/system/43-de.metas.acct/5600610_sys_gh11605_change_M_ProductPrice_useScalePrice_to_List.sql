@@ -139,27 +139,12 @@ UPDATE AD_Ref_List_Trl SET Description='', IsTranslated='Y',Updated=TO_TIMESTAMP
 
 -- 2021-08-11T08:01:14.660Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545051,0,TO_TIMESTAMP('2021-08-11 11:01:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','No Scale Price defined for quantity: {0}','E',TO_TIMESTAMP('2021-08-11 11:01:14','YYYY-MM-DD HH24:MI:SS'),100,'NoScalePrice')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545051,0,TO_TIMESTAMP('2021-08-11 11:01:14','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Es wurde kein Staffelpreis für die Menge {0} definiert.','E',TO_TIMESTAMP('2021-08-11 11:01:14','YYYY-MM-DD HH24:MI:SS'),100,'NoScalePrice')
 ;
 
 -- 2021-08-11T08:01:14.665Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Message_ID, t.MsgText,t.MsgTip, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Message t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Message_ID=545051 AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Message_ID=t.AD_Message_ID)
-;
-
--- 2021-08-11T08:05:43.233Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Es wurde kein Staffelpreis für die Menge {0} definiert.',Updated=TO_TIMESTAMP('2021-08-11 11:05:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545051
-;
-
--- 2021-08-11T08:05:45.155Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Es wurde kein Staffelpreis für die Menge {0} definiert.',Updated=TO_TIMESTAMP('2021-08-11 11:05:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545051
-;
-
--- 2021-08-11T08:05:46.933Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Es wurde kein Staffelpreis für die Menge {0} definiert.',Updated=TO_TIMESTAMP('2021-08-11 11:05:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545051
 ;
 
 -- 2021-08-11T08:05:52.118Z
