@@ -105,19 +105,21 @@ module.exports = {
           {
             loader: 'postcss-loader',
             options: {
-              ident: 'postcss',
-              plugins: () => [
-                require('postcss-import')({
-                  addDependencyTo: webpack,
-                  path: ['node_modules', 'src/assets'],
-                }),
-                require('postcss-color-function'),
-                require('postcss-url')(),
-                require('precss')(),
-                require('autoprefixer')({
-                  overrideBrowserslist: ['last 2 versions'],
-                }),
-              ],
+              postcssOptions: {
+                plugins: {
+                  'postcss-import': {
+                    addDependencyTo: webpack,
+                    path: ['node_modules', 'src/assets'],
+                  },
+                  'postcss-color-function': {},
+                  'postcss-url': {},
+                  precss: {},
+                  autoprefixer: {
+                    overrideBrowserslist: ['last 2 versions'],
+                  },
+                },
+                ident: 'postcss',
+              },
             },
           },
         ],
