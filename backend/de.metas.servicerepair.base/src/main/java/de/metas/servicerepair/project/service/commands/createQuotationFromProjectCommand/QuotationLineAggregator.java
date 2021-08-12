@@ -119,7 +119,7 @@ class QuotationLineAggregator
 
 	private boolean isHideWhenPrinting()
 	{
-		return key.getType() == ServiceRepairProjectCostCollectorType.RepairedProductToReturn;
+		return key.getType() == ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer;
 	}
 
 	public Stream<Map.Entry<ServiceRepairProjectCostCollectorId, OrderAndLineId>> streamQuotationLineIdsIndexedByCostCollectorId()
