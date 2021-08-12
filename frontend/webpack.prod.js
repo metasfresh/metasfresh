@@ -72,20 +72,16 @@ module.exports = {
       {
         test: /\.(jpg|png|svg|eot|woff|woff2|ttf|gif)$/,
         exclude: /\w*(logo)\w*\.(jpg|png)$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[path][name].[hash].[ext]',
-          },
+        type: 'asset/resource',
+        generator: {
+          filename: '[path][name].[hash].[ext]',
         },
       },
       {
         test: /\w*(logo)\w*\.(jpg|png)$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[path][name].[ext]',
-          },
+        type: 'asset/resource',
+        generator: {
+          filename: '[path][name].[ext]',
         },
       },
       {
@@ -119,12 +115,9 @@ module.exports = {
         type: 'javascript/auto',
         test: /\.(json)/,
         exclude: /(node_modules)/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: { name: '[name].[ext]' },
-          },
-        ],
+        generator: {
+          filename: '[name].[ext]',
+        },
       },
     ],
   },

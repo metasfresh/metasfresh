@@ -90,11 +90,9 @@ module.exports = {
       },
       {
         test: /\.(jpg|png|svg|eot|woff|woff2|ttf|gif)$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[path][name].[ext]',
-          },
+        type: 'asset/resource',
+        generator: {
+          filename: '[path][name].[ext]',
         },
       },
       {
@@ -128,12 +126,9 @@ module.exports = {
         type: 'javascript/auto',
         test: /\.(json)/,
         exclude: /(node_modules)/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: { name: '[name].[ext]' },
-          },
-        ],
+        generator: {
+          filename: '[name].[ext]',
+        },
       },
     ],
   },
