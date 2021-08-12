@@ -1,7 +1,10 @@
 import React, { useState, useContext, createContext } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
+
 import { loginWithToken, localLoginRequest, logoutRequest } from '../api';
+
+import history from '../services/History';
 import Auth from '../services/Auth';
 import { loginSuccess as loginAction } from '../actions/AppActions';
 import useSynchronousState from './useSynchronousState';
@@ -33,8 +36,10 @@ export const useAuth = () => {
 function useProvideAuth() {
   const auth = new Auth();
   const dispatch = useDispatch();
+
   // controls if user is authenticated and stores in the local storage as well as local value
   const [isLoggedIn, setLoggedIn] = useState(localStorage.isLogged);
+
   // flag indicating if there's an ongoing authentication request
   const [authRequestPending, setAuthRequestPending] =
     useSynchronousState(false);
@@ -47,24 +52,40 @@ function useProvideAuth() {
   const checkAuthentication = () => {
     setAuthRequestPending(true);
 
-    return localLoginRequest().then((resp) => {
-      setAuthRequestPending(false);
+    return localLoginRequest()
+      .then((resp) => {
+        setAuthRequestPending(false);
 
-      if (resp.data) {
-        _loginSuccess();
-      } else {
-        _logoutSuccess();
-      }
+        if (resp.data) {
+          _loginSuccess();
+        } else {
+          _logoutSuccess();
+        }
 
-      return Promise.resolve(resp.data);
-    });
+        return Promise.resolve(resp.data);
+      })
+      .catch((error) => {
+        if (error.response.status !== 500) {
+          Promise.reject(error);
+        }
+      });
   };
 
   const tokenLogin = (token) => {
     if (!authRequestPending()) {
       setAuthRequestPending(true);
 
-      return loginWithToken(token).then(async () => await login());
+      return loginWithToken(token)
+        .then(async () => await login())
+        .catch((error) => {
+          // user already logged in error
+          if (error.response.data.message.includes('User already logged in')) {
+            history.push('/');
+          } else {
+            clearRedirectRoute();
+            history.push('/login');
+          }
+        });
     }
 
     return Promise.resolve(false);

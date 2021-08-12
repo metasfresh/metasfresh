@@ -16,13 +16,11 @@ const TokenRoute = ({ match }) => {
   const { tokenId } = match.params;
   const auth = useAuth();
 
-  auth
-    .tokenLogin(tokenId)
-    .then(() => history.push('/'))
-    .catch(() => {
-      auth.clearRedirectRoute();
-      history.push('/login');
+  if (!auth.authRequestPending()) {
+    auth.tokenLogin(tokenId).then(() => {
+      history.push('/');
     });
+  }
 
   return null;
 };
