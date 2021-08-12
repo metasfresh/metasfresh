@@ -39,6 +39,7 @@ import lombok.Value;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.StringExpressionCompiler;
+import org.adempiere.ad.persistence.TableModelLoader;
 import org.adempiere.archive.api.ArchiveEmailSentStatus;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveEventManager;
@@ -46,12 +47,14 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.I_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -235,7 +238,7 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 	private EmailParams extractEmailParams(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
 	{
 		final Language language = extractLanguage(docOutboundLogRecord);
-		final Evaluatee evalCtx = InterfaceWrapperHelper.getEvaluatee(docOutboundLogRecord);
+		final Evaluatee evalCtx = createEvaluationContext(docOutboundLogRecord);
 
 		if (docOutboundLogRecord.getC_DocType_ID() > 0)
 		{
@@ -308,6 +311,17 @@ public class MailWorkpackageProcessor implements IWorkpackageProcessor
 		final Language language = Language.getLanguage(Env.getADLanguageOrBaseLanguage());
 		Loggables.addLog("extractLanguage - Using the language={} returned by Env.getADLanguageOrBaseLanguage()", language);
 		return language;
+	}
+
+	private Evaluatee createEvaluationContext(@NonNull final I_C_Doc_Outbound_Log docOutboundLogRecord)
+	{
+		final TableRecordReference modelRef = TableRecordReference.ofOrNull(docOutboundLogRecord.getAD_Table_ID(), docOutboundLogRecord.getRecord_ID());
+		final Evaluatee modelCtx = modelRef != null
+				? TableModelLoader.instance.getPO(modelRef)
+				: Evaluatees.empty();
+
+		return modelCtx
+				.andComposeWith(InterfaceWrapperHelper.getEvaluatee(docOutboundLogRecord));
 	}
 
 	@Value
