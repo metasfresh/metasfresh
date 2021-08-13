@@ -65,7 +65,7 @@ public class QuotationAggregator
 	private final ProjectQuotationPriceCalculator priceCalculator;
 
 	private final ArrayList<ServiceRepairProjectCostCollector> costCollectorsToAggregate = new ArrayList<>();
-	private AtomicInteger nextRepairingGroupIndex = new AtomicInteger(1);
+	private final AtomicInteger nextRepairingGroupIndex = new AtomicInteger(1);
 	private QuotationLineIdsByCostCollectorIdIndex generatedQuotationLineIdsIndexedByCostCollectorId;
 
 	@Builder
