@@ -132,7 +132,7 @@
     "copy-webpack-plugin": "9.0.1",
     "counterpart": "0.18.6",
     "current-device": "0.10.2",
-    "d3": "7.0.0",
+    "d3": "4.3.1",
     "deep-unfreeze": "0.1.1",
     "deepmerge": "^4.2.2",
     "detect-browser": "5.2.0",
