@@ -89,6 +89,8 @@ public class OrderLineBuilder
 
 	private boolean hideWhenPrinting;
 
+	private boolean hideWhenPrinting;
+
 	private final ArrayList<OrderLineDetailCreateRequest> detailCreateRequests = new ArrayList<>();
 
 	private I_C_OrderLine createdOrderLine;
@@ -151,8 +153,11 @@ public class OrderLineBuilder
 		}
 
 		orderLine.setIsHideWhenPrinting(hideWhenPrinting);
+<<<<<<< HEAD
 		orderLine.setProductDescription(productDescription);
 		orderLine.setC_Activity_ID(ActivityId.toRepoId(activityId));
+=======
+>>>>>>> 1d31a25e1ca (Order Printing Improvements (#11583))
 
 		saveRecord(orderLine);
 

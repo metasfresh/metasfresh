@@ -355,6 +355,36 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_Schema_TemplateLine_ID (int C_CompensationGroup_Schema_TemplateLine_ID);
+
+	/**
+	 * Get Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_Schema_TemplateLine_ID();
+
+	@Nullable de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine getC_CompensationGroup_Schema_TemplateLine();
+
+	void setC_CompensationGroup_Schema_TemplateLine(@Nullable de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine C_CompensationGroup_Schema_TemplateLine);
+
+	ModelColumn<I_C_OrderLine, de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine> COLUMN_C_CompensationGroup_Schema_TemplateLine_ID = new ModelColumn<>(I_C_OrderLine.class, "C_CompensationGroup_Schema_TemplateLine_ID", de.metas.order.model.I_C_CompensationGroup_Schema_TemplateLine.class);
+	String COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID = "C_CompensationGroup_Schema_TemplateLine_ID";
+
+	/**
+>>>>>>> 1d31a25e1ca (Order Printing Improvements (#11583))
 	 * Set Compensations.
 	 * Compensation lines are lines which are added at the bottom of the group (when created or updated) in order to apply discounts or surcharges.
 	 *
@@ -452,6 +482,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Flatrate Term.
 	 *
 	 * <br>Type: TableDir
@@ -473,6 +504,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
+=======
+>>>>>>> 1d31a25e1ca (Order Printing Improvements (#11583))
 	 * Set Order Compensation Group.
 	 *
 	 * <br>Type: Search
@@ -1248,7 +1281,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Description Only.
-	 * if true, the line is just description and no transaction
+	 * Nur Beschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1258,7 +1291,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Description Only.
-	 * if true, the line is just description and no transaction
+	 * Nur Beschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1619,7 +1652,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Discount Schema Break.
-	 * Trade Discount Break
+	 * Rabattschema Stufe
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1629,7 +1662,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Discount Schema Break.
-	 * Trade Discount Break
+	 * Rabattschema Stufe
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false

@@ -13,7 +13,11 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = -186763908L;
+=======
+	private static final long serialVersionUID = -1248532788L;
+>>>>>>> 1d31a25e1ca (Order Printing Improvements (#11583))
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)

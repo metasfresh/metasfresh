@@ -88,6 +88,15 @@ class QuotationLineAggregator
 		return this;
 	}
 
+<<<<<<< HEAD
+=======
+	private void addAsDetail(@NonNull final ServiceRepairProjectCostCollector costCollector)
+	{
+		final OrderLineDetailCreateRequest detail = priceCalculator.computeOrderLineDetailCreateRequest(costCollector);
+		details.add(detail);
+	}
+
+>>>>>>> 1d31a25e1ca (Order Printing Improvements (#11583))
 	public void createOrderLines(@NonNull final OrderFactory orderFactory)
 	{
 		if (this.orderLineBuilderUsed != null)
