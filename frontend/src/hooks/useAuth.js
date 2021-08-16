@@ -2,7 +2,7 @@ import React, { useState, useContext, createContext } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import { loginWithToken, localLoginRequest, logoutRequest } from '../api';
+import { loginWithToken, checkLoginRequest, logoutRequest } from '../api';
 
 import history from '../services/History';
 import Auth from '../services/Auth';
@@ -52,7 +52,7 @@ function useProvideAuth() {
   const checkAuthentication = () => {
     setAuthRequestPending(true);
 
-    return localLoginRequest()
+    return checkLoginRequest()
       .then((resp) => {
         setAuthRequestPending(false);
 
