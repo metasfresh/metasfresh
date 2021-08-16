@@ -133,7 +133,7 @@ public class ViewRowEditRestController
 		final IEditableView view = getEditableView(viewId);
 		final RowEditingContext editingCtx = createRowEditingContext(rowId);
 		return view.getFieldTypeahead(editingCtx, fieldName, query)
-				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language(),false));
 	}
 
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)

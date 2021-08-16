@@ -477,6 +477,13 @@ public class UserSession
 		};
 	}
 
+	//private static final String SYSCONFIG_isAlwaysShowNewBPartner = true; TODO
+	public boolean isAlwaysShowNewBPartner()
+	{
+		//Services.get(ISysConfigBL.class).getBooleanValue(SYS)
+		return true;
+	}
+
 	@NonNull
 	public ZoneId getTimeZone()
 	{

@@ -237,7 +237,7 @@ public class ASIRestController
 
 		final DocumentId asiDocId = DocumentId.of(asiDocIdStr);
 		return forASIDocumentReadonly(asiDocId, asiDoc -> asiDoc.getFieldLookupValuesForQuery(attributeName, query))
-				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language(),false));
 	}
 
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)

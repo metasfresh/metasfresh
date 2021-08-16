@@ -268,7 +268,7 @@ public final class QuickInput
 	{
 		return getQuickInputDocument()
 				.getFieldLookupValuesForQuery(fieldName, query)
-				.transform(page -> JSONLookupValuesPage.of(page, adLanguage));
+				.transform(page -> JSONLookupValuesPage.of(page, adLanguage,false));
 	}
 
 	public boolean hasField(final String fieldName)

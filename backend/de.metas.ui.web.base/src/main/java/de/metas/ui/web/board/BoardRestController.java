@@ -340,7 +340,7 @@ public class BoardRestController
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterTypeahead(filterId, parameterName, query, userSession.toEvaluatee())
-				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language(),false));
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")

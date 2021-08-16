@@ -374,7 +374,7 @@ public class ProcessRestController
 			final IProcessInstancesRepository instancesRepository = getRepository(processId);
 
 			return instancesRepository.forProcessInstanceReadonly(pinstanceId, processInstance -> processInstance.getParameterLookupValuesForQuery(parameterName, query))
-					.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
+					.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language(), false));
 		}
 	}
 
