@@ -525,7 +525,7 @@ class Lookup extends Component {
                     enableAutofocus={this.enableAutofocus}
                     onFocus={this.handleListFocus}
                     onBlur={this.handleListBlur}
-                    widgetData={widgetData}
+                    compositeWidgetData={widgetData}
                     {...{
                       dataId,
                       entity,
