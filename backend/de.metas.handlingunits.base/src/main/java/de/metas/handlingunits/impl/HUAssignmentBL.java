@@ -338,14 +338,14 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	@Override
-	public void unassignHUs(final Object model, final Collection<I_M_HU> husToUnassign, final String trxName)
+	public void unassignHUs(final Object model, final Collection<HuId> husToUnassign, final String trxName)
 	{
 		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 		huAssignmentDAO.deleteHUAssignments(model, husToUnassign, trxName);
 	}
 
 	@Override
-	public void unassignHUs(final Object model, final Collection<I_M_HU> husToUnassign)
+	public void unassignHUs(final Object model, final Collection<HuId> husToUnassign)
 	{
 		Check.assumeNotNull(model, "model not null");
 		final String trxName = InterfaceWrapperHelper.getTrxName(model);
