@@ -2,7 +2,6 @@ import React, { createRef, PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
-import { List as ImmutableList } from 'immutable';
 
 import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
@@ -265,13 +264,13 @@ export class RawWidget extends PureComponent {
     this.updateTypedCharacters(e.target.value);
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
-    const NumberWidgets = ImmutableList([
+    const NumberWidgets = [
       'Integer',
       'Amount',
       'Quantity',
       'Number',
       'CostPrice',
-    ]);
+    ];
     if (
       (key === 'ArrowUp' || key === 'ArrowDown') &&
       NumberWidgets.includes(widgetType)

@@ -3,7 +3,7 @@ import onClickOutside from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { isEqual } from 'lodash';
+import { isEqual, findIndex, pullAt } from 'lodash';
 
 import SelectionDropdown from '../SelectionDropdown';
 import MultiSelect from '../MultiSelect';
@@ -24,13 +24,15 @@ const setSelectedValue = function (dropdownList, selected, defaultValue) {
       selectedOption = { caption: selected, key: null };
     }
 
-    idx = dropdownList.findIndex(
+    idx = findIndex(
+      dropdownList,
       (item) => item.caption === selectedOption.caption
     );
 
     if (idx === -1) {
       if (defaultValue) {
-        idx = dropdownList.findIndex(
+        idx = findIndex(
+          dropdownList,
           (item) => item.caption === defaultValue.caption
         );
       }
@@ -38,14 +40,17 @@ const setSelectedValue = function (dropdownList, selected, defaultValue) {
   }
 
   if (idx !== 0) {
-    const item = dropdownList.get(idx);
-    dropdownList = dropdownList.delete(idx);
-    dropdownList = dropdownList.insert(0, item);
+    idx = idx === -1 ? 0 : idx;
+    const item = dropdownList[idx];
+
+    pullAt(dropdownList, [idx]);
+    dropdownList.unshift(item);
+
     changedValues.dropdownList = dropdownList;
     idx = 0;
   }
 
-  changedValues.selected = dropdownList.get(idx);
+  changedValues.selected = dropdownList[idx];
   changedValues.dropdownList = dropdownList;
 
   return changedValues;
@@ -62,7 +67,7 @@ export class RawList extends PureComponent {
 
     this.state = {
       selected: props.selected || null,
-      dropdownList: props.list,
+      dropdownList: [...props.list],
     };
 
     this.focusDropdown = this.focusDropdown.bind(this);
@@ -86,9 +91,9 @@ export class RawList extends PureComponent {
     // If data in the list changed, we either opened or closed the selection dropdown.
     // If we're closing it (bluring), then we don't care about the whole thing.
     if (listHash && !prevProps.listHash) {
-      dropdownList = list;
+      dropdownList = [...list];
       if (!mandatory && emptyText) {
-        dropdownList = dropdownList.push({
+        dropdownList.push({
           caption: this.props.properties.clearValueText,
           key: null,
         });
@@ -96,7 +101,7 @@ export class RawList extends PureComponent {
 
       changedValues.dropdownList = dropdownList;
 
-      if (dropdownList.size > 0) {
+      if (dropdownList.length > 0) {
         let selectedOption = null;
 
         if (selected || defaultValue) {
@@ -110,7 +115,7 @@ export class RawList extends PureComponent {
         changedValues.selected = null;
       }
 
-      if (!changedValues.selected && dropdownList.size > 0) {
+      if (!changedValues.selected && dropdownList.length > 0) {
         let newSelected = null;
 
         if (!isEqual(prevProps.selected, selected)) {
@@ -261,7 +266,7 @@ export class RawList extends PureComponent {
       this.props;
 
     if (e.key === 'Tab') {
-      if (list.size === 0 && !readonly && !loading) {
+      if (list.length === 0 && !readonly && !loading) {
         onSelect(null);
       }
     } else if (e.key === 'ArrowDown') {
@@ -310,7 +315,6 @@ export class RawList extends PureComponent {
     this.props.onFocus();
   }
 
-  // TODO: Use functions for refs
   render() {
     const {
       rank,
@@ -331,6 +335,7 @@ export class RawList extends PureComponent {
       isFocused,
       clearable,
       isMultiselect,
+      listHash,
     } = this.props;
 
     let value = '';
@@ -444,6 +449,7 @@ export class RawList extends PureComponent {
           isToggled && (
             <SelectionDropdown
               ref={ref}
+              listHash={listHash}
               loading={loading}
               options={this.state.dropdownList}
               empty="There is no choice available"
@@ -460,6 +466,7 @@ export class RawList extends PureComponent {
 
     const multiSelectDropdown = (
       <MultiSelect
+        listHash={listHash}
         options={this.state.dropdownList}
         onOpenDropdown={this.props.onOpenDropdown}
         onCloseDropdown={this.props.onCloseDropdown}
@@ -517,8 +524,7 @@ RawList.propTypes = {
   filter: PropTypes.object,
   readonly: PropTypes.bool,
   clearable: PropTypes.bool,
-  // Immutable List
-  list: PropTypes.object,
+  list: PropTypes.array,
   listHash: PropTypes.string,
   rank: PropTypes.any,
   defaultValue: PropTypes.any,
