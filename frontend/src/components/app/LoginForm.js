@@ -7,7 +7,7 @@ import classnames from 'classnames';
 
 import {
   getUserLang,
-  localLoginRequest,
+  checkLoginRequest,
   loginCompletionRequest,
   loginRequest,
 } from '../../api';
@@ -100,7 +100,7 @@ class LoginForm extends Component {
    * @param {*} err
    */
   checkIfAlreadyLogged(err) {
-    return localLoginRequest().then((response) => {
+    return checkLoginRequest().then((response) => {
       if (response.data) {
         return history.push('/');
       }
