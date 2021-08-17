@@ -164,7 +164,7 @@ public class FlatrateDAO implements IFlatrateDAO
 		return retrieveTerms(ctx, orgId, ImmutableList.of(bill_BPartner_ID), dateOrdered, m_Product_Category_ID, m_Product_ID, c_Charge_ID, trxName);
 	}
 
-	@Cached
+	@Cached(cacheName = I_C_Flatrate_Term.Table_Name + "#by#criteria")
 	public List<I_C_Flatrate_Term> retrieveTerms(
 			final @CacheCtx Properties ctx,
 			@NonNull final OrgId orgId,

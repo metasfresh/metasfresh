@@ -27,6 +27,8 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.calendar.ICalendarBL;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -1696,6 +1698,10 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		InterfaceWrapperHelper.save(newTerm);
+
+		final CacheInvalidateMultiRequest cacheInvalidateMultiRequest = CacheInvalidateMultiRequest.allRecordsForTable(I_C_Flatrate_Term.Table_Name);
+
+		CacheMgt.get().reset(cacheInvalidateMultiRequest);
 
 		return newTerm;
 	}
