@@ -79,9 +79,6 @@ class DocumentField implements IDocumentField
 	private static final LogicExpressionResult DISPLAYED_InitialValue = LogicExpressionResult.namedConstant("displayed-initial", false);
 	private LogicExpressionResult _displayed = DISPLAYED_InitialValue;
 
-
-	private boolean isAlwaysDisplayNewPartner = true;
-
 	private DocumentValidStatus _validStatus;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
