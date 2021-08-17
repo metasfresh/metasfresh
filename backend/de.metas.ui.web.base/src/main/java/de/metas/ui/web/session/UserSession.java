@@ -477,11 +477,10 @@ public class UserSession
 		};
 	}
 
-	//private static final String SYSCONFIG_isAlwaysShowNewBPartner = true; TODO
+	private static final String SYSCONFIG_isAlwaysShowNewBPartner = "de.metas.ui.web.session.UserSession.IsAlwaysDisplayNewBPartner";
 	public boolean isAlwaysShowNewBPartner()
 	{
-		//Services.get(ISysConfigBL.class).getBooleanValue(SYS)
-		return true;
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_isAlwaysShowNewBPartner, false, getClientId().getRepoId(), getOrgId().getRepoId());
 	}
 
 	@NonNull
