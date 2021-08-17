@@ -73,6 +73,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
@@ -668,7 +669,12 @@ public class InOutProducerFromReceiptScheduleHU extends de.metas.inoutcandidate.
 		// Un-assign collected HUs from Receipt Schedule
 		{
 			final String trxName = InterfaceWrapperHelper.getTrxName(receiptLine);
-			huAssignmentBL.unassignHUs(rs, husToUnassign.values(), trxName);
+			final Set<HuId> huIds = husToUnassign.values()
+					.stream()
+					.map(I_M_HU::getM_HU_ID)
+					.map(HuId::ofRepoId)
+					.collect(Collectors.toSet());
+			huAssignmentBL.unassignHUs(rs, huIds, trxName);
 		}
 
 		//
