@@ -163,7 +163,6 @@ public class CreatePurchaseCandidate_StepDef
 
 		assertThat(candidate.isProcessed()).isTrue();
 		assertThat(candidate.getPurchaseOrders()).hasSize(1);
-		assertThat(candidate.getWorkPackages()).hasSizeGreaterThan(0);
 	}
 
 	private JsonPrice mapPrice(final Map<String, String> map)

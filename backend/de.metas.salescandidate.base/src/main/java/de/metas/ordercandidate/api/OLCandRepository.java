@@ -19,6 +19,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -242,6 +244,10 @@ public class OLCandRepository
 		{
 			olCandPO.setCompensationGroupKey(orderLineGroup.getGroupKey());
 			olCandPO.setIsGroupCompensationLine(orderLineGroup.isGroupMainItem());
+
+			Optional.ofNullable(orderLineGroup.getDiscount())
+					.map(Percent::toBigDecimal)
+					.ifPresent(olCandPO::setGroupCompensationDiscountPercentage);
 		}
 
 		olCandPO.setDescription(request.getDescription());
