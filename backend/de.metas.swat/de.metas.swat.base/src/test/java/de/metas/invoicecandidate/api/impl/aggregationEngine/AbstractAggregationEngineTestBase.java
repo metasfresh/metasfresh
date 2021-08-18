@@ -22,34 +22,11 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_M_PriceList;
-import org.compiere.util.Env;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
-
 import ch.qos.logback.classic.Level;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.greeting.GreetingRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.AbstractICTestSupport;
@@ -70,6 +47,28 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.util.Env;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestWatcher;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.lessThan;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSupport
 {
@@ -97,6 +96,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 		LogManager.setLevel(Level.DEBUG);
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
 	protected final List<IInvoiceLineRW> getInvoiceLines(final IInvoiceHeader invoice)
@@ -243,8 +243,7 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 
 	protected final List<IInvoiceHeader> invokeAggregationEngine(@NonNull final AggregationEngine engine)
 	{
-		final List<IInvoiceHeader> invoices = engine.aggregate();
-		return invoices;
+		return engine.aggregate();
 	}
 
 	public final void validateInvoiceHeader(final String message, final IInvoiceHeader invoice, final I_C_Invoice_Candidate fromIC)
@@ -269,8 +268,8 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 			assertEquals(messagePrefix + " - Invalid M_PriceList_ID(", priceList.getM_PriceList_ID(), invoice.getM_PriceList_ID());
 		}
 
-		assertEquals(messagePrefix + " - Invalid Bill_BPartner_ID", fromIC.getBill_BPartner_ID(), BPartnerId.toRepoId(invoice.getBillBPartnerId()));
-		assertEquals(messagePrefix + " - Invalid Bill_Location_ID", fromIC.getBill_Location_ID(), invoice.getBill_Location_ID());
+		assertEquals(messagePrefix + " - Invalid Bill_BPartner_ID", fromIC.getBill_BPartner_ID(), invoice.getBillTo().getBpartnerId().getRepoId());
+		assertEquals(messagePrefix + " - Invalid Bill_Location_ID", fromIC.getBill_Location_ID(), invoice.getBillTo().getBpartnerLocationId().getRepoId());
 
 		// task 08241: we want to aggregate candidates with different Bill_User_IDs into one invoice
 		// this commented-out check is synchronized with ICHeaderAggregationKeyValueHandler

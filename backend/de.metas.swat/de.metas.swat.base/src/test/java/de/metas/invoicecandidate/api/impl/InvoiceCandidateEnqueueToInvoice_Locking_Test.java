@@ -25,6 +25,7 @@ package de.metas.invoicecandidate.api.impl;
 import java.util.List;
 
 import de.metas.costing.impl.ChargeRepository;
+import de.metas.greeting.GreetingRepository;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -58,6 +59,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 		SpringContextHolder.registerJUnitBean(new MailService(new MailboxRepository(), new MailTemplateRepository()));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
 		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		NOPWorkpackageLogsRepository.registerToSpringContext();
 	}
 

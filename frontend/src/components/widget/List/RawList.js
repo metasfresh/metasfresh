@@ -335,11 +335,26 @@ export class RawList extends PureComponent {
       isFocused,
       clearable,
       isMultiselect,
-      listHash,
+      compositeWidgetData, // for composite lookups - all the widgets data
+      field,
     } = this.props;
 
     let value = '';
     let placeholder = '';
+    const widgetData =
+      compositeWidgetData &&
+      compositeWidgetData.filter((itemWidgetData) => {
+        return itemWidgetData.field == field;
+      })[0];
+    const widgetDataValidStatus =
+      widgetData && widgetData.validStatus
+        ? widgetData.validStatus.valid
+        : false;
+    const emptyCompositeLookup =
+      compositeWidgetData &&
+      compositeWidgetData.every(
+        (widgetDataItem) => widgetDataItem.value === ''
+      );
 
     if (typeof defaultValue === 'string') {
       placeholder = defaultValue;
@@ -384,7 +399,12 @@ export class RawList extends PureComponent {
                   'select-dropdown': !lookupList,
                   focused: isFocused,
                   opened: isToggled,
-                  'input-mandatory': !lookupList && mandatory && !selected,
+            'input-mandatory':
+              (!lookupList && mandatory && !selected) ||
+              (!widgetDataValidStatus &&
+                mandatory &&
+                lookupList &&
+                !emptyCompositeLookup),
                 })}
                 tabIndex={tabIndex}
                 onFocus={readonly ? null : this.focusDropdown}
@@ -554,6 +574,8 @@ RawList.propTypes = {
   onOpenDropdown: PropTypes.func.isRequired,
   onCloseDropdown: PropTypes.func.isRequired,
   isMultiselect: PropTypes.bool,
+  compositeWidgetData: PropTypes.array,
+  field: PropTypes.string,
 };
 
 RawList.defaultProps = {

@@ -17,6 +17,8 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
@@ -306,14 +308,18 @@ public class RefundInvoiceCandidateFactory
 
 		final I_C_UOM productUom = productBL.getStockUOM(ProductId.ofRepoId(refundRecord.getM_Product_ID()));
 
+		final BPartnerLocationAndCaptureId billLocationId = InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(refundRecord)
+				.getBPartnerLocationAndCaptureId();
+
 		final RefundInvoiceCandidate invoiceCandidate = RefundInvoiceCandidate
 				.builder()
 				.id(invoiceCandidateId)
 				.refundContract(refundContract)
 				.refundConfigs(refundConfigs)
 				.assignedQuantity(Quantity.of(assignedQuantity, productUom))
-				.bpartnerId(BPartnerId.ofRepoId(refundRecord.getBill_BPartner_ID()))
-				.bpartnerLocationId(BPartnerLocationId.ofRepoId(refundRecord.getBill_BPartner_ID(), refundRecord.getBill_Location_ID()))
+				.bpartnerId(billLocationId.getBpartnerId())
+				.bpartnerLocationId(billLocationId.getBpartnerLocationId())
 				.invoiceableFrom(TimeUtil.asLocalDate(invoicableFromDate))
 				.money(money)
 				.build();

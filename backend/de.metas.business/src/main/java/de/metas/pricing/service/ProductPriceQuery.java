@@ -1,12 +1,16 @@
 package de.metas.pricing.service;
 
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.logging.LogManager;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryBuilderOrderByClause;
@@ -18,20 +22,14 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.X_M_ProductPrice;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-
-import de.metas.logging.LogManager;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -142,7 +140,7 @@ public class ProductPriceQuery
 		{ // we might have product prices with IsAttributeDependant both 'Y' and 'N'; prefer those with 'Y'.
 			orderBy.addColumnDescending(I_M_ProductPrice.COLUMNNAME_IsAttributeDependant);
 		}
-		orderBy.addColumn(I_M_ProductPrice.COLUMN_M_Product_ID, Direction.Ascending, Nulls.Last)
+		orderBy.addColumn(I_M_ProductPrice.COLUMNNAME_M_Product_ID, Direction.Ascending, Nulls.Last)
 				.addColumn(I_M_ProductPrice.COLUMN_MatchSeqNo, Direction.Ascending, Nulls.Last)
 				.addColumn(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, Direction.Ascending, Nulls.Last); // just to have a predictable order
 
@@ -270,7 +268,7 @@ public class ProductPriceQuery
 		final Boolean scalePrice = getScalePrice();
 		if (scalePrice != null)
 		{
-			queryBuilder.addEqualsFilter(I_M_ProductPrice.COLUMN_UseScalePrice, scalePrice);
+			queryBuilder.addInArrayFilter(I_M_ProductPrice.COLUMN_UseScalePrice, X_M_ProductPrice.USESCALEPRICE_UseScalePriceStrict, X_M_ProductPrice.USESCALEPRICE_UseScalePriceFallbackToProductPrice);
 		}
 
 		//

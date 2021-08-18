@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
@@ -402,6 +403,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@NonNull
 	public BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId)
 	{
 		Check.assumeGreaterThanZero(repoId, "C_BPartner_Location_ID");
@@ -438,6 +440,17 @@ public class BPartnerDAO implements IBPartnerDAO
 				.filter(bpLocation -> bpLocation.getC_BPartner_Location_ID() == bpartnerLocationId.getRepoId())
 				.findFirst()
 				.orElse(null);
+	}
+
+	@Override
+	public BPartnerLocationAndCaptureId getBPartnerLocationAndCaptureIdInTrx(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdInTrx(bpartnerLocationId);
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpartnerLocationId);
+		}
+		return BPartnerLocationAndCaptureId.ofRecord(bpLocation);
 	}
 
 	@Override
@@ -547,42 +560,49 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public CountryId retrieveBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpLocationId);
+		}
 
+		return getCountryId(bpLocation);
+	}
+
+	private CountryId getCountryId(@NonNull final I_C_BPartner_Location bpLocation)
+	{
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
 
-		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
-		return locationRepos.getCountryIdByLocationId(locationId);
+		final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+		return locationDAO.getCountryIdByLocationId(locationId);
 	}
 
 	@Override
-	public CountryId retrieveBPartnerLocationCountryIdInTrx(@NonNull final BPartnerLocationId bpLocationId)
+	public CountryId getCountryIdInTrx(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdInTrx(bpLocationId);
-		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
+		if (bpLocation == null)
+		{
+			throw new AdempiereException("No location found for " + bpLocationId);
+		}
 
-		final ILocationDAO locationRepos = Services.get(ILocationDAO.class);
-		return locationRepos.getCountryIdByLocationId(locationId);
+		return getCountryId(bpLocation);
 	}
 
 	@Override
 	public CountryId getDefaultShipToLocationCountryIdOrNull(final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner_Location bpl = getDefaultShipToLocation(bpartnerId);
-		return bpl != null
-				? CountryId.ofRepoId(bpl.getC_Location().getC_Country_ID())
-				: null;
+		return bpl != null ? getCountryId(bpl) : null;
 	}
 
 	@Override
-	public CountryId getBPartnerLocationCountryId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	public LocationId getLocationId(@NonNull final BPartnerLocationId bpLocationId)
 	{
-		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
-
-		return CountryId.ofRepoId(bpLocation.getC_Location().getC_Country_ID());
-
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
+		return LocationId.ofRepoId(bpLocation.getC_Location_ID());
 	}
 
 	@Override
@@ -1241,7 +1261,7 @@ public class BPartnerDAO implements IBPartnerDAO
 												   I_C_Location.COLUMN_C_Location_ID, locationIQueryBuilder.create());
 	}
 
-	private BPartnerLocationId createLocationIdOrNull(
+	private static BPartnerLocationId createLocationIdOrNull(
 			@NonNull final BPartnerId bpartnerId,
 			@Nullable final I_C_BPartner_Location bpLocationRecord)
 	{
@@ -1697,16 +1717,14 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public BPartnerLocationId retrieveCurrentBillLocationOrNull(final BPartnerId partnerId)
+	public I_C_BPartner_Location retrieveCurrentBillLocationOrNull(final BPartnerId partnerId)
 	{
 		final BPartnerLocationQuery query = BPartnerLocationQuery
 				.builder()
 				.type(Type.BILL_TO)
 				.bpartnerId(partnerId)
 				.build();
-		final I_C_BPartner_Location billToLocation = retrieveBPartnerLocation(query);
-
-		return createLocationIdOrNull(partnerId, billToLocation);
+		return retrieveBPartnerLocation(query);
 	}
 
 	@Override
