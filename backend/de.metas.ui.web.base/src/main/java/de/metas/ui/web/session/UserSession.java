@@ -477,10 +477,14 @@ public class UserSession
 		};
 	}
 
-	private static final String SYSCONFIG_isAlwaysShowNewBPartner = "de.metas.ui.web.session.UserSession.IsAlwaysDisplayNewBPartner";
+	/*
+	This configuration is used for a webui option.
+	 */
+	private static final String SYSCONFIG_isAlwaysDisplayNewBPartner = "de.metas.ui.web.session.UserSession.IsAlwaysDisplayNewBPartner";
+
 	public boolean isAlwaysShowNewBPartner()
 	{
-		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_isAlwaysShowNewBPartner, false, getClientId().getRepoId(), getOrgId().getRepoId());
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_isAlwaysDisplayNewBPartner, false, getClientId().getRepoId(), getOrgId().getRepoId());
 	}
 
 	@NonNull
