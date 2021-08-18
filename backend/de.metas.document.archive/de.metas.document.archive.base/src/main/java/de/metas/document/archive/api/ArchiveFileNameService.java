@@ -22,6 +22,7 @@
 
 package de.metas.document.archive.api;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import org.compiere.model.I_AD_Archive;
@@ -62,7 +63,7 @@ public class ArchiveFileNameService
 				.recordReference(TableRecordReference.ofReferenced(docOutboundLogRecord))
 				.build();
 
-		return computePdfFileName(request);
+		return computeFileName(request);
 	}
 
 	public String computePdfFileName(@NonNull final I_AD_Archive archiveRecord)
@@ -88,10 +89,10 @@ public class ArchiveFileNameService
 		request.orgId(OrgId.ofRepoIdOrNull(archiveRecord.getAD_Org_ID()))
 				.recordReference(recordReference);
 
-		return computePdfFileName(request.build());
+		return computeFileName(request.build());
 	}
 
-	public String computePdfFileName(@NonNull final ComputeFileNameRequest computeFileNameRequest)
+	public String computeFileName(@NonNull final ComputeFileNameRequest computeFileNameRequest)
 	{
 		final StringJoiner fileNameParts = new StringJoiner("-");
 
@@ -123,14 +124,15 @@ public class ArchiveFileNameService
 			fileNameParts.add(Integer.toString(computeFileNameRequest.getRecordReference().getRecord_ID()));
 		}
 
-		final String pdfFileName = fileNameParts.toString();
-		return pdfFileName + ".pdf";
+		final String fileName = fileNameParts.toString();
+		return fileName + computeFileNameRequest.fileExtension;
 	}
 
 	@Value
-	@Builder
 	public static class ComputeFileNameRequest
 	{
+		private static final String DEFAULT_PDF_EXTENSION = ".pdf";
+
 		@Nullable
 		OrgId orgId;
 
@@ -141,6 +143,24 @@ public class ArchiveFileNameService
 
 		@Nullable
 		String documentNo;
+
+		@NonNull
+		String fileExtension;
+
+		@Builder
+		public ComputeFileNameRequest(
+				@Nullable final OrgId orgId,
+				@Nullable final DocTypeId docTypeId,
+				@NonNull final TableRecordReference recordReference,
+				@Nullable final String documentNo,
+				@Nullable final String fileExtension)
+		{
+			this.orgId = orgId;
+			this.docTypeId = docTypeId;
+			this.recordReference = recordReference;
+			this.documentNo = documentNo;
+			this.fileExtension = CoalesceUtil.coalesceNotNull(fileExtension, DEFAULT_PDF_EXTENSION);
+		}
 	}
 }
 
