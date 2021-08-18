@@ -159,7 +159,7 @@ public class ExternalSystemConfigRepo
 				return;
 			case Alberta:
 			case Other:
-				throw new AdempiereException("Method not supported")
+				throw new AdempiereException("Method not supported for externalSystemType="+config.getType())
 						.appendParametersToMessage()
 						.setParameter("externalSystemType", config.getType());
 			default:
