@@ -21,6 +21,7 @@ import {
 class TableContextMenu extends Component {
   constructor(props) {
     super(props);
+    const { docId } = props;
     this.state = {
       contextMenu: {
         x: props.x,
@@ -28,6 +29,7 @@ class TableContextMenu extends Component {
       },
       loadingReferences: false,
       references: [],
+      display: docId ? 'none' : 'block',
     };
   }
 
@@ -136,6 +138,7 @@ class TableContextMenu extends Component {
           this.setState((prevState) => {
             const { y: lastY } = prevState.contextMenu;
             return {
+              display: 'block',
               contextMenu: {
                 ...prevState.contextMenu,
                 y: lastY - offset,
@@ -149,6 +152,7 @@ class TableContextMenu extends Component {
           let offset = initialY - mainPanel.scrollTop;
           this.setState((prevState) => {
             return {
+              display: 'block',
               contextMenu: {
                 ...prevState.contextMenu,
                 y: offset + beforeAssign,
@@ -198,7 +202,7 @@ class TableContextMenu extends Component {
       supportOpenRecord,
     } = this.props;
 
-    const { contextMenu } = this.state;
+    const { contextMenu, display } = this.state;
 
     const isSelectedOne = selected.length === 1;
     const showFieldEdit =
