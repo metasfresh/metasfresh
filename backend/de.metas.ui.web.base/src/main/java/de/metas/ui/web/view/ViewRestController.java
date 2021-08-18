@@ -377,7 +377,7 @@ public class ViewRestController
 
 		return view
 				.getFilterParameterTypeahead(filterId, parameterName, query, ctx)
-				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language(),false));
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	@GetMapping("/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")

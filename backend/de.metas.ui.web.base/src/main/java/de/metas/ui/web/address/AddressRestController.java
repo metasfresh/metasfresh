@@ -128,7 +128,7 @@ public class AddressRestController
 
 		return addressRepo.getAddressDocumentForReading(docId)
 				.getFieldLookupValuesForQuery(attributeName, query)
-				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language(),false));
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	@RequestMapping(value = "/{docId}/field/{attributeName}/dropdown", method = RequestMethod.GET)

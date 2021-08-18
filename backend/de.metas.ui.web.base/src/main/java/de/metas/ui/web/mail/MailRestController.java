@@ -406,7 +406,7 @@ public class MailRestController
 
 	private JSONLookupValuesPage toJson(final LookupValuesPage page)
 	{
-		return JSONLookupValuesPage.of(page, userSession.getAD_Language(),false);
+		return JSONLookupValuesPage.of(page, userSession.getAD_Language());
 	}
 
 	@PostMapping("/{emailId}/field/attachments")
