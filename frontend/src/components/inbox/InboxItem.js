@@ -106,14 +106,9 @@ class InboxItem extends Component {
               {Moment(item.timestamp).fromNow()}
             </div>
             <div>
-              <a
-                href="javascript:void(0)"
-                className="inbox-item-delete"
-                onClick={onDelete}
-              >
+              <button className="inbox-item-delete" onClick={onDelete}>
                 {counterpart.translate('window.Delete.caption')}
-              </a>
-
+              </button>
               <span>Notification</span>
             </div>
           </div>

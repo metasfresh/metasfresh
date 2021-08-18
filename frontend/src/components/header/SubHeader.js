@@ -4,10 +4,8 @@ import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
 
-import {
-  elementPathRequest,
-  updateBreadcrumb,
-} from '../../actions/MenuActions';
+import { elementPathRequest } from '../../api';
+import { updateBreadcrumb } from '../../actions/MenuActions';
 import { getTableId, getSelection } from '../../reducers/tables';
 import keymap from '../../shortcuts/keymap';
 
@@ -327,7 +325,9 @@ class SubHeader extends Component {
         hotkey: keymap.OPEN_COMMENTS,
       },
     ]
-      .filter((docLink) => standardActions.has(docLink.action))
+      .filter((docLink) =>
+        standardActions.find((action) => action === docLink.action)
+      )
       .map((docLink) => {
         return this.renderDocLink(docLink);
       });

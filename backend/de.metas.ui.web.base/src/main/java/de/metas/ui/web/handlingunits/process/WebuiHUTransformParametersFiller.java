@@ -29,6 +29,7 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.model.lookup.IdsToFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -93,10 +94,10 @@ public class WebuiHUTransformParametersFiller
 
 	@Builder
 	private WebuiHUTransformParametersFiller(@NonNull final HUEditorView view,
-			@NonNull final HUEditorRow selectedRow,
-			@Nullable final ActionType actionType,
-			final boolean checkExistingHUsInsideView,
-			final boolean isMoveToDifferentWarehouseEnabled)
+											 @NonNull final HUEditorRow selectedRow,
+											 @Nullable final ActionType actionType,
+											 final boolean checkExistingHUsInsideView,
+											 final boolean isMoveToDifferentWarehouseEnabled)
 	{
 		this._view = view;
 		this._selectedRow = selectedRow;
@@ -208,10 +209,10 @@ public class WebuiHUTransformParametersFiller
 		if (isCheckExistingHUsInsideView())
 		{
 			existsTUs = getView().matchesAnyRowRecursive(HUEditorRowFilter.builder()
-																 .select(Select.TU)
-																 .excludeHUId(getParentHUIdOfSelectedRow())
-																 .excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
-																 .build());
+					.select(Select.TU)
+					.excludeHUId(getParentHUIdOfSelectedRow())
+					.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+					.build());
 		}
 		else
 		{
@@ -238,10 +239,10 @@ public class WebuiHUTransformParametersFiller
 		if (isCheckExistingHUsInsideView())
 		{
 			existsLUs = getView().matchesAnyRowRecursive(HUEditorRowFilter.builder()
-																 .select(Select.LU)
-																 .excludeHUId(getParentHUIdOfSelectedRow())
-																 .excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
-																 .build());
+					.select(Select.LU)
+					.excludeHUId(getParentHUIdOfSelectedRow())
+					.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+					.build());
 		}
 		else
 		{
@@ -323,11 +324,11 @@ public class WebuiHUTransformParametersFiller
 		{
 			final LookupValuesList list = getView()
 					.streamAllRecursive(HUEditorRowFilter.builder()
-												.select(Select.TU) // ..needs to be a TU
-												.userInputFilter(context.getFilterOrIfAny(null))
-												.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one TU that 'cu' is already attached to
-												.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
-												.build())
+							.select(Select.TU) // ..needs to be a TU
+							.userInputFilter(context.getFilterOrIfAny(null))
+							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one TU that 'cu' is already attached to
+							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+							.build())
 					.sorted(Comparator.comparing(row -> row.getHuId().getRepoId()))
 					.map(HUEditorRow::toLookupValue)
 					.collect(LookupValuesList.collect());
@@ -380,11 +381,11 @@ public class WebuiHUTransformParametersFiller
 		{
 			final LookupValuesList list = getView()
 					.streamAllRecursive(HUEditorRowFilter.builder()
-												.select(Select.LU) // ..needs to be a LU
-												.userInputFilter(context.getFilterOrIfAny(null))
-												.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one LU that 'tu' is already attached to
-												.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
-												.build())
+							.select(Select.LU) // ..needs to be a LU
+							.userInputFilter(context.getFilterOrIfAny(null))
+							.excludeHUId(getParentHUIdOfSelectedRow()) // ..may not be the one LU that 'tu' is already attached to
+							.excludeHUStatus(X_M_HU.HUSTATUS_Destroyed)
+							.build())
 					.sorted(Comparator.comparing(row -> row.getHuId().getRepoId()))
 					.map(HUEditorRow::toLookupValue)
 					.collect(LookupValuesList.collect());
@@ -421,12 +422,17 @@ public class WebuiHUTransformParametersFiller
 			final LookupDescriptor lookupDescriptor,
 			final LookupDataSourceContext context)
 	{
-		LookupDataSource dataSource = LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
-
-		if (context.getIdToFilter() != null)
+		final LookupDataSource dataSource = LookupDataSourceFactory.instance.getLookupDataSource(lookupDescriptor);
+		final IdsToFilter idsToFilter = context.getIdsToFilter();
+		if (idsToFilter.isSingleValue())
 		{
-			final LookupValue result = dataSource.findById(context.getIdToFilter());
+			final LookupValue result = dataSource.findById(idsToFilter.getSingleValueAsObject());
 			return LookupValuesPage.ofNullable(result);
+		}
+		else if(idsToFilter.isMultipleValues())
+		{
+			final LookupValuesList result = dataSource.findByIdsOrdered(idsToFilter.getMultipleValues());
+			return LookupValuesPage.allValues(result);
 		}
 		else
 		{

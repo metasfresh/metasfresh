@@ -51,7 +51,7 @@ public class SqlDefaultDocumentFilterConverterTest
 			final SqlOptions sqlOpts = SqlOptions.usingTableAlias("master");
 
 			assertThat(converter.replaceTableNameWithTableAliasIfNeeded(columnSql, sqlOpts).toSqlString())
-					.isEqualTo("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=master.bla");
+					.isEqualTo("(SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=master.bla)");
 		}
 
 		@Test
@@ -69,7 +69,7 @@ public class SqlDefaultDocumentFilterConverterTest
 			final SqlOptions sqlOpts = SqlOptions.usingTableName("should_be_MasterTableName_but_DoesNotMatter");
 
 			assertThat(converter.replaceTableNameWithTableAliasIfNeeded(columnSql, sqlOpts).toSqlString())
-					.isEqualTo("SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla");
+					.isEqualTo("(SELECT compute(SomeColumn) FROM ChildTableName WHERE bla=MasterTableName.bla)");
 		}
 	}
 

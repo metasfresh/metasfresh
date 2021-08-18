@@ -128,7 +128,9 @@ export function populateFiltersCaptions(filters) {
                 break;
               case 'Labels':
                 captionName = value.values.reduce((caption, item) => {
-                  return `${caption}, ${item.caption}`;
+                  return caption
+                    ? `${caption}, ${item.caption}`
+                    : `${item.caption}`;
                 }, '');
                 break;
               case 'YesNo':

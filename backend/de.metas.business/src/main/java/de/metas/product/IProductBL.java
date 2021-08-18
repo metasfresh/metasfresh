@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -197,4 +198,6 @@ public interface IProductBL extends ISingletonService
 	boolean isHaddexProduct(ProductId productId);
 
 	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+
+	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 }

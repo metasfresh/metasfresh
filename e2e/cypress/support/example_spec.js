@@ -899,9 +899,9 @@ describe.skip('Kitchen Sink', function () {
 
     // Manage AJAX / XHR requests in your app
 
-    it('cy.server() - control behavior of network requests and responses', function () {
-      // https://on.cypress.io/server
-      cy.server().should(function (server) {
+    it('cy.intercept() - control behavior of network requests and responses', function () {
+      // https://on.cypress.io/intercept
+      cy.intercept().should(function (server) {
         // the default options on server
         // you can override any of these options
         expect(server.delay).to.eq(0)
@@ -947,14 +947,13 @@ describe.skip('Kitchen Sink', function () {
         })
     })
 
-    it('cy.route() - route responses to matching requests', function () {
+    it('cy.intercept() - route responses to matching requests', function () {
       let message = 'whoa, this comment doesn\'t exist'
-      cy.server()
 
       // **** GET comments route ****
 
       // https://on.cypress.io/route
-      cy.route(/comments\/1/).as('getComment')
+      cy.intercept(/comments\/1/).as('getComment')
 
       // we have code that fetches a comment when
       // the button is clicked in scripts.js
@@ -971,7 +970,7 @@ describe.skip('Kitchen Sink', function () {
       // **** POST comment route ****
 
       // Specify the route to listen to method 'POST'
-      cy.route('POST', '/comments').as('postComment')
+      cy.intercept('POST', '/comments').as('postComment')
 
       // we have code that posts a comment when
       // the button is clicked in scripts.js
@@ -986,7 +985,7 @@ describe.skip('Kitchen Sink', function () {
       })
 
       // **** Stubbed PUT comment route ****
-      cy.route({
+      cy.intercept({
         method: 'PUT',
         url: /comments\/\d+/,
         status: 404,
@@ -1014,12 +1013,10 @@ describe.skip('Kitchen Sink', function () {
       // connect a response with a fixture file
       // located in fixtures folder.
 
-      cy.server()
-
       // https://on.cypress.io/fixture
       cy.fixture('example.json').as('comment')
 
-      cy.route(/comments/, '@comment').as('getComment')
+      cy.intercept(/comments/, '@comment').as('getComment')
 
       // we have code that gets a comment when
       // the button is clicked in scripts.js
@@ -1030,7 +1027,7 @@ describe.skip('Kitchen Sink', function () {
         .and('include', 'Using fixtures to represent data')
 
       // you can also just write the fixture in the route
-      cy.route(/comments/, 'fixture:example.json').as('getComment')
+      cy.intercept(/comments/, 'fixture:example.json').as('getComment')
 
       // we have code that gets a comment when
       // the button is clicked in scripts.js
@@ -1042,7 +1039,7 @@ describe.skip('Kitchen Sink', function () {
 
       // or write fx to represent fixture
       // by default it assumes it's .json
-      cy.route(/comments/, 'fx:example').as('getComment')
+      cy.intercept(/comments/, 'fx:example').as('getComment')
 
       // we have code that gets a comment when
       // the button is clicked in scripts.js
@@ -1480,9 +1477,6 @@ describe.skip('Kitchen Sink', function () {
     beforeEach(function () {
       cy.visit('https://example.cypress.io/cypress-api/server')
     })
-
-    // Permanently override server options for
-    // all instances of cy.server()
 
     // https://on.cypress.io/cypress-server
     it('Cypress.Server.defaults() - change default config of server', function () {

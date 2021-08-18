@@ -1,7 +1,8 @@
 import axios from 'axios';
+import numeral from 'numeral';
 import Moment from 'moment';
 import { Settings } from 'luxon';
-import numeral from 'numeral';
+
 import config from '../../cypress/config';
 
 const LOCAL_LANG = 'metasfreshLanguage';
@@ -10,20 +11,30 @@ function getUserSession() {
   return axios.get(`${config.API_URL}/userSession`);
 }
 
-function getNotifications() {
+function getNotificationsRequest() {
   return axios.get(`${config.API_URL}/notifications/all?limit=20`);
 }
 
-function getNotificationsEndpoint() {
+function getNotificationsEndpointRequest() {
   return axios.get(`${config.API_URL}/notifications/websocketEndpoint`);
 }
 
-function languageSuccess(lang) {
-  localStorage.setItem(LOCAL_LANG, lang);
-  Moment.locale(lang);
-  Settings.defaultLocale = lang.replace('_', '-');
+export function requestNotifications() {
+  return {
+    type: 'GET_NOTIFICATIONS_REQUEST',
+  };
+}
 
-  axios.defaults.headers.common['Accept-Language'] = lang;
+export function clearNotifications() {
+  return (dispatch, getState) => {
+    const { appHandler } = getState();
+
+    if (appHandler.inbox.notifications.length === 0 || appHandler.inbox.pending) {
+      return;
+    }
+
+    dispatch({ type: 'CLEAR_NOTIFICATIONS' });
+  };
 }
 
 function readNotification(notificationId, unreadCount) {
@@ -120,54 +131,95 @@ function initNumeralLocales(lang, locale) {
   }
 }
 
-export function loginSuccess(auth) {
-  return dispatch => {
-    localStorage.setItem('isLogged', true);
+function languageSuccess(lang) {
+  localStorage.setItem(LOCAL_LANG, lang);
+  Moment.locale(lang);
+  Settings.defaultLocale = lang.replace('_', '-');
 
-    getUserSession().then(({ data }) => {
-      dispatch(userSessionInit(data));
-      languageSuccess(data.language['key']);
-      initNumeralLocales(data.language['key'], data.locale);
-      Settings.defaultLocale = data.language['key'].replace('_', '-');
-      Settings.defaultZoneName = `utc${data.timeZone.replace(/[0,:]/gi, '')}`;
+  axios.defaults.headers.common['Accept-Language'] = lang;
+}
 
-      auth.initSessionClient(data.websocketEndpoint, msg => {
-        const me = JSON.parse(msg.body);
-        dispatch(userSessionUpdate(me));
-        me.language && languageSuccess(me.language['key']);
-        me.locale && initNumeralLocales(me.language['key'], me.locale);
+export function getNotificationsEndpoint(auth) {
+  return (dispatch) => {
+    return getNotificationsEndpointRequest()
+      .then((topic) => {
+        auth.initNotificationClient(topic, (msg) => {
+          const notification = JSON.parse(msg.body);
 
-        getNotifications().then(response => {
-          dispatch(getNotificationsSuccess(response.data.notifications, response.data.unreadCount));
+          if (notification.eventType === 'Read') {
+            dispatch(readNotification(notification.notificationId, notification.unreadCount));
+          } else if (notification.eventType === 'ReadAll') {
+            dispatch(readAllNotifications());
+          } else if (notification.eventType === 'Delete') {
+            dispatch(removeNotification(notification.notificationId, notification.unreadCount));
+          } else if (notification.eventType === 'DeleteAll') {
+            dispatch(deleteAllNotifications());
+          } else if (notification.eventType === 'New') {
+            dispatch(newNotification(notification.notification, notification.unreadCount));
+            const notif = notification.notification;
+            if (notif.important) {
+              dispatch(addNotification('Important notification', notif.message, 5000, 'primary'));
+            }
+          }
         });
-      });
-    });
-
-    getNotificationsEndpoint().then(topic => {
-      auth.initNotificationClient(topic, msg => {
-        const notification = JSON.parse(msg.body);
-
-        if (notification.eventType === 'Read') {
-          dispatch(readNotification(notification.notificationId, notification.unreadCount));
-        } else if (notification.eventType === 'ReadAll') {
-          dispatch(readAllNotifications());
-        } else if (notification.eventType === 'Delete') {
-          dispatch(removeNotification(notification.notificationId, notification.unreadCount));
-        } else if (notification.eventType === 'DeleteAll') {
-          dispatch(deleteAllNotifications());
-        } else if (notification.eventType === 'New') {
-          dispatch(newNotification(notification.notification, notification.unreadCount));
-          const notif = notification.notification;
-
-          if (notif.important) {
-            dispatch(addNotification('Important notification', notif.message, 5000, 'primary'));
+      })
+      .catch((e) => {
+        if (e.response) {
+          let { status } = e.response;
+          if (status === 401) {
+            history.push('/');
           }
         }
       });
-    });
+  };
+}
 
-    getNotifications().then(response => {
-      dispatch(getNotificationsSuccess(response.data.notifications, response.data.unreadCount));
-    });
+export function getNotifications() {
+  return (dispatch, getState) => {
+    const state = getState();
+
+    if (state.appHandler.inbox.pending) {
+      return Promise.resolve(true);
+    }
+
+    dispatch(requestNotifications());
+
+    return getNotificationsRequest()
+      .then((response) => dispatch(getNotificationsSuccess(response.data.notifications, response.data.unreadCount)))
+      .catch((e) => e);
+  };
+}
+
+export function loginSuccess(auth) {
+  return async (dispatch) => {
+    const requests = [];
+
+    requests.push(
+      getUserSession()
+        .then(({ data }) => {
+          dispatch(userSessionInit(data));
+
+          languageSuccess(data.language['key']);
+          initNumeralLocales(data.language['key'], data.locale);
+          Settings.defaultLocale = data.language['key'].replace('_', '-');
+          Settings.defaultZoneName = `utc${data.timeZone.replace(/[0,:]/gi, '')}`;
+
+          auth.initSessionClient(data.websocketEndpoint, (msg) => {
+            const me = JSON.parse(msg.body);
+            dispatch(userSessionUpdate(me));
+
+            me.language && languageSuccess(me.language['key']);
+            me.locale && initNumeralLocales(me.language['key'], me.locale);
+
+            dispatch(getNotifications());
+          });
+        })
+        .catch((e) => e)
+    );
+
+    requests.push(dispatch(getNotificationsEndpoint(auth)));
+    requests.push(dispatch(getNotifications()));
+
+    return await Promise.all(requests);
   };
 }

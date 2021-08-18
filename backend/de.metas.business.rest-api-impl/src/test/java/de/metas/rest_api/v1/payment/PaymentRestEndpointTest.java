@@ -23,6 +23,8 @@
 package de.metas.rest_api.v1.payment;
 
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerSupplierApprovalRepository;
+import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
@@ -35,6 +37,7 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -125,7 +128,7 @@ class PaymentRestEndpointTest
 		Services.get(ISysConfigBL.class).setValue(C_Order.AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG, true, ClientId.SYSTEM, OrgId.ANY);
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		// run the "before_complete" interceptor
-		new C_Order(new OrderLineDetailRepository()).linkWithPaymentByExternalOrderId(salesOrder);
+		new C_Order(new OrderLineDetailRepository(), new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository())).linkWithPaymentByExternalOrderId(salesOrder);
 
 		// test that SO is linked with the payment
 		assertEquals(payment.getC_Payment_ID(), salesOrder.getC_Payment_ID());

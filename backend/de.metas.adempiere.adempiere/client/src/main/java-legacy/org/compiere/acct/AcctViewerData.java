@@ -107,7 +107,7 @@ class AcctViewerData
 		//
 		final List<AcctSchema> acctSchemasList = acctSchemaDAO.getAllByClient(AD_Client_ID);
 		this.acctSchemas = Maps.uniqueIndex(acctSchemasList, AcctSchema::getId);
-		this.acctSchema = acctSchemaDAO.getByCliendAndOrg(AD_Client_ID, OrgId.ofRepoIdOrNull(ad_Org_ID));
+		this.acctSchema = acctSchemaDAO.getByClientAndOrg(AD_Client_ID, OrgId.ofRepoIdOrAny(ad_Org_ID));
 	}   // AcctViewerData
 
 	/** Window */

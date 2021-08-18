@@ -1,13 +1,22 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.sql.ISqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
+import de.metas.ui.web.window.model.lookup.IdsToFilter;
+import de.metas.ui.web.window.model.lookup.LookupDataSource;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.util.NumberUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -16,22 +25,11 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.ui.web.window.descriptor.sql.ISqlLookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
-import de.metas.ui.web.window.model.lookup.LookupDataSource;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
-import de.metas.util.NumberUtils;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -102,13 +100,14 @@ public class FullTextSearchLookupDescriptor implements ISqlLookupDescriptor, Loo
 	@Override
 	public LookupDataSourceContext.Builder newContextForFetchingById(final Object id)
 	{
-		return LookupDataSourceContext.builder(modelTableName).putFilterById(id);
+		return LookupDataSourceContext.builder(modelTableName)
+				.putFilterById(IdsToFilter.ofSingleValue(id));
 	}
 
 	@Override
 	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		return databaseLookup.findById(evalCtx.getIdToFilter());
+		return databaseLookup.findById(evalCtx.getSingleIdToFilterAsObject());
 	}
 
 	@Override

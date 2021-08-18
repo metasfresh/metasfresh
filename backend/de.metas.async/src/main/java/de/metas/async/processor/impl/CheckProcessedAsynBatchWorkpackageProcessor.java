@@ -27,6 +27,7 @@ package de.metas.async.processor.impl;
 
 import java.util.List;
 
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 
@@ -99,14 +100,16 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 		return Result.SUCCESS;
 	}
 
-	private final int getWorkpackageSkipTimeoutMillis(final I_C_Async_Batch asyncBatch)
+	private final int getWorkpackageSkipTimeoutMillis(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final int skipTimeoutMillis = asyncBatch.getC_Async_Batch_Type().getSkipTimeoutMillis();
-		if (skipTimeoutMillis > 0)
+		if (asyncBatch.getC_Async_Batch_Type_ID() > 0)
 		{
-			return skipTimeoutMillis;
+			final int skipTimeoutMillis = asyncBatch.getC_Async_Batch_Type().getSkipTimeoutMillis();
+			if (skipTimeoutMillis > 0)
+			{
+				return skipTimeoutMillis;
+			}
 		}
-
 		return sysConfigBL.getIntValue(SYSCONFIG_WorkpackageSkipTimeoutMillis, DEFAULT_WorkpackageSkipTimeoutMillis);
 	}
 }
