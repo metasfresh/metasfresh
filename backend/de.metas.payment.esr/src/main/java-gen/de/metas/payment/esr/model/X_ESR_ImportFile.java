@@ -6,23 +6,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for ESR_Import
+/** Generated Model for ESR_ImportFile
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import, org.compiere.model.I_Persistent 
+public class X_ESR_ImportFile extends org.compiere.model.PO implements I_ESR_ImportFile, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 256216166L;
+	private static final long serialVersionUID = 1840449226L;
 
     /** Standard Constructor */
-    public X_ESR_Import (final Properties ctx, final int ESR_Import_ID, @Nullable final String trxName)
+    public X_ESR_ImportFile (final Properties ctx, final int ESR_ImportFile_ID, @Nullable final String trxName)
     {
-      super (ctx, ESR_Import_ID, trxName);
+      super (ctx, ESR_ImportFile_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_ESR_Import (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_ESR_ImportFile (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -33,6 +33,18 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_AttachmentEntry getAD_AttachmentEntry()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_AttachmentEntry_ID, org.compiere.model.I_AD_AttachmentEntry.class);
+	}
+
+	@Override
+	public void setAD_AttachmentEntry(final org.compiere.model.I_AD_AttachmentEntry AD_AttachmentEntry)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_AttachmentEntry_ID, org.compiere.model.I_AD_AttachmentEntry.class, AD_AttachmentEntry);
 	}
 
 	@Override
@@ -54,9 +66,9 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
 	{
 		if (C_BP_BankAccount_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, null);
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
+			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
 	}
 
 	@Override
@@ -87,18 +99,6 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setDateDoc (final java.sql.Timestamp DateDoc)
-	{
-		set_Value (COLUMNNAME_DateDoc, DateDoc);
-	}
-
-	@Override
-	public java.sql.Timestamp getDateDoc() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_DateDoc);
-	}
-
-	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -111,7 +111,7 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setESR_Control_Amount (final @Nullable BigDecimal ESR_Control_Amount)
+	public void setESR_Control_Amount (final BigDecimal ESR_Control_Amount)
 	{
 		set_Value (COLUMNNAME_ESR_Control_Amount, ESR_Control_Amount);
 	}
@@ -137,12 +137,39 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
+	public void setESR_ImportFile_ID (final int ESR_ImportFile_ID)
+	{
+		if (ESR_ImportFile_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_ESR_ImportFile_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_ESR_ImportFile_ID, ESR_ImportFile_ID);
+	}
+
+	@Override
+	public int getESR_ImportFile_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ESR_ImportFile_ID);
+	}
+
+	@Override
+	public de.metas.payment.esr.model.I_ESR_Import getESR_Import()
+	{
+		return get_ValueAsPO(COLUMNNAME_ESR_Import_ID, de.metas.payment.esr.model.I_ESR_Import.class);
+	}
+
+	@Override
+	public void setESR_Import(final de.metas.payment.esr.model.I_ESR_Import ESR_Import)
+	{
+		set_ValueFromPO(COLUMNNAME_ESR_Import_ID, de.metas.payment.esr.model.I_ESR_Import.class, ESR_Import);
+	}
+
+	@Override
 	public void setESR_Import_ID (final int ESR_Import_ID)
 	{
 		if (ESR_Import_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_ESR_Import_ID, null);
+			set_Value (COLUMNNAME_ESR_Import_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_ESR_Import_ID, ESR_Import_ID);
+			set_Value (COLUMNNAME_ESR_Import_ID, ESR_Import_ID);
 	}
 
 	@Override
@@ -152,15 +179,15 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setESR_Trx_Qty (final @Nullable BigDecimal ESR_Trx_Qty)
+	public void setFileName (final @Nullable java.lang.String FileName)
 	{
-		throw new IllegalArgumentException ("ESR_Trx_Qty is virtual column");	}
+		set_Value (COLUMNNAME_FileName, FileName);
+	}
 
 	@Override
-	public BigDecimal getESR_Trx_Qty() 
+	public java.lang.String getFileName() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ESR_Trx_Qty);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsString(COLUMNNAME_FileName);
 	}
 
 	@Override
@@ -176,18 +203,6 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	}
 
 	@Override
-	public void setIsArchiveFile (final boolean IsArchiveFile)
-	{
-		set_Value (COLUMNNAME_IsArchiveFile, IsArchiveFile);
-	}
-
-	@Override
-	public boolean isArchiveFile() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsArchiveFile);
-	}
-
-	@Override
 	public void setIsReceipt (final boolean IsReceipt)
 	{
 		set_Value (COLUMNNAME_IsReceipt, IsReceipt);
@@ -197,18 +212,6 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	public boolean isReceipt() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReceipt);
-	}
-
-	@Override
-	public void setIsReconciled (final boolean IsReconciled)
-	{
-		set_Value (COLUMNNAME_IsReconciled, IsReconciled);
-	}
-
-	@Override
-	public boolean isReconciled() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsReconciled);
 	}
 
 	@Override
@@ -233,16 +236,5 @@ public class X_ESR_Import extends org.compiere.model.PO implements I_ESR_Import,
 	public boolean isProcessed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
-	}
-
-	@Override
-	public void setProcessing (final boolean Processing)
-	{
-		throw new IllegalArgumentException ("Processing is virtual column");	}
-
-	@Override
-	public boolean isProcessing() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 }

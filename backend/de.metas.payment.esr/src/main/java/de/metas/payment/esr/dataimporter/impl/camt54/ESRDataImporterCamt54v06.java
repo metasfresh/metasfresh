@@ -1,24 +1,6 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
@@ -38,11 +20,26 @@ import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
-import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
-import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.dataimporter.ESRType;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXB;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -70,7 +67,7 @@ import lombok.NonNull;
  * Creates an {@link ESRStatement} from camt.54-XML data.
  * This implementation assumes the incoming XML to comply with the version <b><code>camt.054.001.06</code></b>.
  * However, XML which have versions <code>camt.054.001.04</code> and <code>camt.054.001.05</code> will also work (gh #1093).
- * 
+ *
  * <p>
  * Lots of methods are duplicated from <code>ESRDataImporterCamt54v02</code>
  * Important logical differences are in methods:
@@ -78,9 +75,9 @@ import lombok.NonNull;
  * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v06.loadXML()/code>
  * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v06.verifyTransactionCurrency(EntryTransaction8, ESRTransactionBuilder)/code>
  * <li><code>de.metas.payment.esr.dataimporter.impl.camt54.ESRDataImporterCamt54v06.extractAmountAndType(ReportEntry8, EntryTransaction8, ESRTransactionBuilder)</code>
- * </ul>	
+ * </ul>
  * For the rest, the difference is the object generated from xsd
- * 
+ *
  * <p>
  * The XSD file for the xml which this implementation imports is available at <a href="https://www.iso20022.org/documents/messages/camt/schemas/camt.054.001.06.zip">BankToCustomerDebitCreditNotificationV04</a>.<br>
  * Note that
@@ -92,16 +89,15 @@ import lombok.NonNull;
  * Also see <a href="https://www.six-interbank-clearing.com/dam/downloads/en/standardization/iso/swiss-recommendations/implementation-guidelines-camt.pdf">Swiss Implementation Guidelines for Cash Management</a>.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
-public class ESRDataImporterCamt54v06 
+public class ESRDataImporterCamt54v06
 {
 	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
 
-	private final I_ESR_Import header;
+	private final I_ESR_ImportFile header;
 	private final MultiVersionStreamReaderDelegate xsr;
 
-	public ESRDataImporterCamt54v06(@NonNull final I_ESR_Import header, @NonNull final MultiVersionStreamReaderDelegate xsr)
+	public ESRDataImporterCamt54v06(@NonNull final I_ESR_ImportFile header, @NonNull final MultiVersionStreamReaderDelegate xsr)
 	{
 		this.header = header;
 		this.xsr = xsr;
@@ -117,9 +113,9 @@ public class ESRDataImporterCamt54v06
 		this.header = null;
 	}
 
-	
 	/**
 	 * create ESRStatement using <code>BankToCustomerDebitCreditNotificationV06</code>
+	 *
 	 * @param bkToCstmrDbtCdtNtfctn
 	 * @return
 	 */
@@ -152,10 +148,10 @@ public class ESRDataImporterCamt54v06
 				.ctrlQty(ctrlQtyForStatement)
 				.build();
 	}
-	
-	
+
 	/**
 	 * iterateEntryDetails for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 *
 	 * @param stmtBuilder builder to which the individual {@link ESRTransaction}s are added.
 	 * @param ctrlQty
 	 * @param ntry
@@ -200,6 +196,7 @@ public class ESRDataImporterCamt54v06
 
 	/**
 	 * iterateTransactionDetails for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 *
 	 * @param ntry
 	 * @param ntryDtl
 	 * @return
@@ -211,13 +208,13 @@ public class ESRDataImporterCamt54v06
 		final List<ESRTransaction> transactions = new ArrayList<>();
 
 		int countQRR = 0;
-		
+
 		for (final EntryTransaction8 txDtl : ntryDtl.getTxDtls())
 		{
 			final ESRTransactionBuilder trxBuilder = ESRTransaction.builder();
 
 			new ReferenceStringHelper().extractAndSetEsrReference(txDtl, trxBuilder);
-			
+
 			new ReferenceStringHelper().extractAndSetType(txDtl, trxBuilder);
 
 			verifyTransactionCurrency(txDtl, trxBuilder);
@@ -231,24 +228,23 @@ public class ESRDataImporterCamt54v06
 					.transactionKey(mkTrxKey(txDtl))
 					.build();
 			transactions.add(esrTransaction);
-			
 
 			if (ESRType.TYPE_QRR.equals(esrTransaction.getType()))
 			{
 				countQRR++;
 			}
 		}
-		
+
 		if (countQRR != 0 && countQRR != transactions.size())
 		{
-				throw new AdempiereException(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES);
+			throw new AdempiereException(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES);
 		}
 		return transactions;
 	}
-	
-	
+
 	/**
 	 * extractAmountAndType for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
+	 *
 	 * @param ntry
 	 * @param txDtls
 	 * @param trxBuilder
@@ -289,7 +285,7 @@ public class ESRDataImporterCamt54v06
 
 	/**
 	 * getCrdDbtMultiplier for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 * 
+	 *
 	 * @param creditDebitCode
 	 * @return
 	 */
@@ -302,10 +298,9 @@ public class ESRDataImporterCamt54v06
 		return BigDecimal.ONE.negate();
 	}
 
-	
 	/**
 	 * getRvslMultiplier for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 * 
+	 *
 	 * @param ntry
 	 * @return
 	 */
@@ -320,7 +315,7 @@ public class ESRDataImporterCamt54v06
 
 	/**
 	 * isReversal for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 * 
+	 *
 	 * @param ntry
 	 * @return
 	 */
@@ -332,7 +327,7 @@ public class ESRDataImporterCamt54v06
 	/**
 	 * Verifies that the currency is consistent.
 	 * iterateTransactionDetails for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *  
+	 *
 	 * @param txDtls
 	 * @param trxBuilder
 	 */
@@ -358,10 +353,10 @@ public class ESRDataImporterCamt54v06
 		{
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
 			trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), ESRDataImporterCamt54.MSG_BANK_ACCOUNT_MISMATCH_2P,
-					new Object[] { headerCurrencyISO, transactionDetailAmt.getCcy() }));
+											 new Object[] { headerCurrencyISO, transactionDetailAmt.getCcy() }));
 		}
 	}
-	
+
 	public BankToCustomerDebitCreditNotificationV06 loadXML()
 	{
 		final Document document;
@@ -375,24 +370,21 @@ public class ESRDataImporterCamt54v06
 			@SuppressWarnings("unchecked")
 			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(xsr);
 			document = e.getValue();
-			
+
 		}
-		catch (final JAXBException  e)
+		catch (final JAXBException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}
-		
-		
 
 		final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = document.getBkToCstmrDbtCdtNtfctn();
 		return bkToCstmrDbtCdtNtfctn;
 	}
 
-
 	/**
 	 * Marshals the given {@code} into an XML string and return that as the "key".
 	 * mkTrxKey for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 * 
+	 *
 	 * @param txDtl
 	 * @return
 	 */
@@ -411,10 +403,9 @@ public class ESRDataImporterCamt54v06
 		}
 	}
 
-	
 	/**
 	 * asTimestamp for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 * 
+	 *
 	 * @param valDt
 	 * @return
 	 */
