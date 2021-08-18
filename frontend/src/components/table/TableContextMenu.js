@@ -208,8 +208,6 @@ class TableContextMenu extends Component {
     } = this.props;
 
     const { contextMenu, display } = this.state;
-    console.log('docId:', this.props.docId);
-    console.log('display:', display);
 
     const isSelectedOne = selected.length === 1;
     const showFieldEdit =
