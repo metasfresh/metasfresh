@@ -67,6 +67,13 @@ public class JSONLookupValuesPage
 
 	public static JSONLookupValuesPage of(
 			@Nullable final LookupValuesPage page,
+			@NonNull final String adLanguage)
+	{
+		return of(page, adLanguage, false);
+	}
+
+	public static JSONLookupValuesPage of(
+			@Nullable final LookupValuesPage page,
 			@NonNull final String adLanguage,
 			@Nullable final Boolean isAlwaysDisplayNewBPartner)
 	{
