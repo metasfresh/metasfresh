@@ -20,7 +20,7 @@ class TableCellWidget extends PureComponent {
 }
 
 TableCellWidget.propTypes = {
-  tdValue: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+  tdValue: PropTypes.any,
   widgetType: PropTypes.string,
 };
 

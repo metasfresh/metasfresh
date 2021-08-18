@@ -337,6 +337,7 @@ export class RawList extends PureComponent {
       isMultiselect,
       compositeWidgetData, // for composite lookups - all the widgets data
       field,
+      listHash,
     } = this.props;
 
     let value = '';
@@ -399,12 +400,12 @@ export class RawList extends PureComponent {
                   'select-dropdown': !lookupList,
                   focused: isFocused,
                   opened: isToggled,
-            'input-mandatory':
-              (!lookupList && mandatory && !selected) ||
-              (!widgetDataValidStatus &&
-                mandatory &&
-                lookupList &&
-                !emptyCompositeLookup),
+                  'input-mandatory':
+                    (!lookupList && mandatory && !selected) ||
+                    (!widgetDataValidStatus &&
+                      mandatory &&
+                      lookupList &&
+                      !emptyCompositeLookup),
                 })}
                 tabIndex={tabIndex}
                 onFocus={readonly ? null : this.focusDropdown}
