@@ -161,7 +161,7 @@ class TableContextMenu extends Component {
           });
         }
 
-        this.setState({ loadingReferences: false });
+        this.setState({ display: 'block', loadingReferences: false });
       },
     });
   };
