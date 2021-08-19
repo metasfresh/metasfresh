@@ -4,7 +4,7 @@ import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { isEqual, findIndex, pullAt } from 'lodash';
-
+import counterpart from 'counterpart';
 import SelectionDropdown from '../SelectionDropdown';
 import MultiSelect from '../MultiSelect';
 
@@ -452,7 +452,7 @@ export class RawList extends PureComponent {
               listHash={listHash}
               loading={loading}
               options={this.state.dropdownList}
-              empty="There is no choice available"
+              empty={`${counterpart.translate('widget.list.hasNoResults')}`}
               selected={this.state.selected}
               width={this.dropdown.offsetWidth}
               onChange={this.handleTemporarySelection}
