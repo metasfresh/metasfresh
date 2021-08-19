@@ -32,6 +32,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.util.Check;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
@@ -88,6 +89,7 @@ class QuotationLineAggregator
 		return this;
 	}
 
+	// TODO check if used
 	public QuotationLineAggregator addNegated(@NonNull final ServiceRepairProjectCostCollector costCollector)
 	{
 		Check.assumeEquals(extractKey(costCollector), key, "key does not match for {}. Expected: {}", costCollector, key);
@@ -98,11 +100,13 @@ class QuotationLineAggregator
 		return this;
 	}
 
+	// TODO check if used
 	public void addAsDetails(@NonNull final List<ServiceRepairProjectCostCollector> costCollectors)
 	{
 		costCollectors.forEach(this::addAsDetail);
 	}
 
+	// TODO check if used
 	private void addAsDetail(@NonNull final ServiceRepairProjectCostCollector costCollector)
 	{
 		final OrderLineDetailCreateRequest detail = priceCalculator.computeOrderLineDetailCreateRequest(costCollector);
@@ -122,9 +126,11 @@ class QuotationLineAggregator
 				.qty(qty)
 				.manualPrice(isZeroPrice() ? Money.zero(priceCalculator.getCurrencyId()) : null)
 				.description(description)
+				.hideWhenPrinting(isHideWhenPrinting())
 				.details(details);
 	}
 
+	// TODO check if used
 	public QuotationLineAggregator zeroPrice(@Nullable final Boolean zeroPrice)
 	{
 		this.zeroPrice = zeroPrice;
@@ -134,6 +140,11 @@ class QuotationLineAggregator
 	private boolean isZeroPrice()
 	{
 		return zeroPrice != null ? zeroPrice : key.isZeroPrice();
+	}
+
+	private boolean isHideWhenPrinting()
+	{
+		return key.getType() == ServiceRepairProjectCostCollectorType.SparePartsOwnedByCustomer;
 	}
 
 	public Stream<Map.Entry<ServiceRepairProjectCostCollectorId, OrderAndLineId>> streamQuotationLineIdsIndexedByCostCollectorId()

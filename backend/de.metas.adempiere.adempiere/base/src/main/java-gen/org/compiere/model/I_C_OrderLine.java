@@ -271,7 +271,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Compensation Group Template Line.
+	 * Set Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -280,7 +281,8 @@ public interface I_C_OrderLine
 	void setC_CompensationGroup_Schema_TemplateLine_ID (int C_CompensationGroup_Schema_TemplateLine_ID);
 
 	/**
-	 * Get Compensation Group Template Line.
+	 * Get Template Lines.
+	 * Template lines are added automatically when using order batch entry with a product which is defined to trigger a compensation group creation
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -296,7 +298,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_CompensationGroup_Schema_TemplateLine_ID = "C_CompensationGroup_Schema_TemplateLine_ID";
 
 	/**
-	 * Set Compensation Group Schema Line.
+	 * Set Compensations.
+	 * Compensation lines are lines which are added at the bottom of the group (when created or updated) in order to apply discounts or surcharges.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -305,7 +308,8 @@ public interface I_C_OrderLine
 	void setC_CompensationGroup_SchemaLine_ID (int C_CompensationGroup_SchemaLine_ID);
 
 	/**
-	 * Get Compensation Group Schema Line.
+	 * Get Compensations.
+	 * Compensation lines are lines which are added at the bottom of the group (when created or updated) in order to apply discounts or surcharges.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -364,7 +368,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Flatrate_Conditions_ID = "C_Flatrate_Conditions_ID";
 
 	/**
-	 * Set Discount Group.
+	 * Set Order Compensation Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -373,7 +377,7 @@ public interface I_C_OrderLine
 	void setC_Order_CompensationGroup_ID (int C_Order_CompensationGroup_ID);
 
 	/**
-	 * Get Discount Group.
+	 * Get Order Compensation Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1010,7 +1014,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Description Only.
-	 * if true, the line is just description and no transaction
+	 * Nur Beschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1020,7 +1024,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Description Only.
-	 * if true, the line is just description and no transaction
+	 * Nur Beschreibung
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1074,6 +1078,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_IsGroupCompensationLine = new ModelColumn<>(I_C_OrderLine.class, "IsGroupCompensationLine", null);
 	String COLUMNNAME_IsGroupCompensationLine = "IsGroupCompensationLine";
+
+	/**
+	 * Set Hide when printing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHideWhenPrinting (boolean IsHideWhenPrinting);
+
+	/**
+	 * Get Hide when printing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHideWhenPrinting();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsHideWhenPrinting = new ModelColumn<>(I_C_OrderLine.class, "IsHideWhenPrinting", null);
+	String COLUMNNAME_IsHideWhenPrinting = "IsHideWhenPrinting";
 
 	/**
 	 * Set Prod.-Beschr. ändern.
@@ -1393,7 +1418,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Set Discount Schema Break.
-	 * Trade Discount Break
+	 * Rabattschema Stufe
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1403,7 +1428,7 @@ public interface I_C_OrderLine
 
 	/**
 	 * Get Discount Schema Break.
-	 * Trade Discount Break
+	 * Rabattschema Stufe
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
