@@ -583,7 +583,9 @@ export class RawLookup extends Component {
                 <SelectionDropdown
                   loading={loading}
                   options={list}
-                  empty="No results found"
+                  empty={`${counterpart.translate(
+                    'widget.lookup.hasNoResults'
+                  )}`}
                   forceEmpty={forceEmpty}
                   selected={selected}
                   width={
