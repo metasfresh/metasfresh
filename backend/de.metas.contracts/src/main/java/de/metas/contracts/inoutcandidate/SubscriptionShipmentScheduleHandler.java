@@ -191,7 +191,7 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 		final I_C_SubscriptionProgress subscriptionLine = getSubscriptionProgress(sched);
 		if (subscriptionLine == null)
 		{
-			logger.warn("M_ShipmentSchedule_ID={} references C_SubscriptionProgress_ID={}, which is missing. Please clean up! -> returning zero-deliver request",
+			logger.warn("M_ShipmentSchedule_ID={} references C_SubscriptionProgress_ID={}, which is missing. Please clean up! -> returning Zero-IDeliverRequest",
 						sched.getM_ShipmentSchedule_ID(), sched.getRecord_ID());
 			return () -> ZERO;
 		}
