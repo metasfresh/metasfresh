@@ -21,6 +21,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.X_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -45,7 +46,9 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.List;
@@ -60,6 +63,8 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 {
 	@VisibleForTesting
 	static final String SYSCONFIG_CREATE_SHIPMENT_SCHEDULES_IN_ADVANCE_DAYS = "C_SubscriptionProgress.Create_ShipmentSchedulesInAdvanceDays";
+
+	private final static transient Logger logger = LogManager.getLogger(SubscriptionShipmentScheduleHandler.class);
 
 	@Override
 	public List<I_M_ShipmentSchedule> createCandidatesFor(@NonNull final Object model)
@@ -180,13 +185,21 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	@Override
-	public IDeliverRequest createDeliverRequest(final I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine)
+	@NonNull
+	public IDeliverRequest createDeliverRequest(@NonNull final I_M_ShipmentSchedule sched, final I_C_OrderLine salesOrderLine)
 	{
 		final I_C_SubscriptionProgress subscriptionLine = getSubscriptionProgress(sched);
+		if (subscriptionLine == null)
+		{
+			logger.warn("M_ShipmentSchedule_ID={} references C_SubscriptionProgress_ID={}, which is missing. Please clean up! -> returning zero-deliver request",
+						sched.getM_ShipmentSchedule_ID(), sched.getRecord_ID());
+			return () -> ZERO;
+		}
 		return subscriptionLine::getQty;
 	}
 
-	private I_C_SubscriptionProgress getSubscriptionProgress(final I_M_ShipmentSchedule sched)
+	@Nullable
+	private I_C_SubscriptionProgress getSubscriptionProgress(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		final IContextAware contextAware = InterfaceWrapperHelper.getContextAware(sched);
 		final TableRecordReference ref = TableRecordReference.of(sched.getAD_Table_ID(), sched.getRecord_ID());
