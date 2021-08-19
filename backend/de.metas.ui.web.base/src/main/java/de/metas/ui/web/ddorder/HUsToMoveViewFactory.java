@@ -27,7 +27,7 @@ import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.descriptor.annotation.ClassViewColumnOverrides;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.MediaType;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -49,14 +49,14 @@ public class HUsToMoveViewFactory extends HUEditorViewFactoryTemplate
 		viewLayoutBuilder
 				.clearElements()
 				.addElementsFromViewRowClassAndFieldNames(HUEditorRow.class,
-						viewDataType,
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
-						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
-						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
+														  viewDataType,
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUCode).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Product),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_Locator),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_QtyCU),
+														  ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HU_UnitType).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_PackingInfo).restrictToMediaType(MediaType.SCREEN).build(),
+														  ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
 	}
 }
