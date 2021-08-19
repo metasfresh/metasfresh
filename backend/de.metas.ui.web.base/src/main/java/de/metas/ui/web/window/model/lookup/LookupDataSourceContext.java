@@ -320,9 +320,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	@NonNull
 	public IdsToFilter getIdsToFilter() { return idsToFilter; }
 
-@NonNull
-	public IdsToFilter getIdsToFilter() { return idsToFilter; }
-
 	@Nullable
 	public Object getSingleIdToFilterAsObject()
 	{

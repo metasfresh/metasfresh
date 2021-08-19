@@ -876,12 +876,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setGroupingErrorMessage(final @Nullable java.lang.String GroupingErrorMessage)
-	{
-		set_Value(COLUMNNAME_GroupingErrorMessage, GroupingErrorMessage);
-	}
-
-	@Override
 	public void setGroupCompensationDiscountPercentage (final @Nullable BigDecimal GroupCompensationDiscountPercentage)
 	{
 		set_Value (COLUMNNAME_GroupCompensationDiscountPercentage, GroupCompensationDiscountPercentage);

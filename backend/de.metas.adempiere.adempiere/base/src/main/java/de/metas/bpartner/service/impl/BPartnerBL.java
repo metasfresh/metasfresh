@@ -426,27 +426,6 @@ public class BPartnerBL implements IBPartnerBL
 				: Optional.empty();
 	}
 
-	private void save(final I_C_BPartner_QuickInput template)
-	{
-		InterfaceWrapperHelper.saveRecord(template);
-	}
-
-	private String extractName(final I_C_BPartner_QuickInput template)
-	{
-		if (template.isCompany())
-		{
-			return template.getCompanyname();
-		}
-		else
-		{
-			final String firstname = Strings.emptyToNull(template.getFirstname());
-			final String lastname = Strings.emptyToNull(template.getLastname());
-			return Joiner.on(" ")
-					.skipNulls()
-					.join(firstname, lastname);
-		}
-	}
-
 	@Override
 	public int getDiscountSchemaId(@NonNull final BPartnerId bpartnerId, final SOTrx soTrx)
 	{
