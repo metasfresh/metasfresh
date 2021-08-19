@@ -23,7 +23,7 @@ import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsServ
 import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
+import de.metas.ui.web.view.descriptor.annotation.ClassViewColumnOverrides;
 import de.metas.ui.web.window.datatypes.DocumentIdIntSequence;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;

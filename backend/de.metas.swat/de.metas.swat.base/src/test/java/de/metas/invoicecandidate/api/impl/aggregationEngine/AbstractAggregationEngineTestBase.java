@@ -26,6 +26,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.greeting.GreetingRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
@@ -51,6 +52,8 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.util.Env;
 import org.junit.Assert;
@@ -135,7 +138,9 @@ public abstract class AbstractAggregationEngineTestBase extends AbstractICTestSu
 			final boolean isSOTrx,
 			final BigDecimal priceEntered_Override)
 	{
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		return createInvoiceCandidate()
 				.setInstanceName("ic")

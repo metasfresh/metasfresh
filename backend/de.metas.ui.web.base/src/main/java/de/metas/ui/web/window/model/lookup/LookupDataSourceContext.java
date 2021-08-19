@@ -320,9 +320,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	@NonNull
 	public IdsToFilter getIdsToFilter() { return idsToFilter; }
 
-@NonNull
-	public IdsToFilter getIdsToFilter() { return idsToFilter; }
-
 	@Nullable
 	public Object getSingleIdToFilterAsObject()
 	{
@@ -374,20 +371,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return new LookupDataSourceContext(
 				lookupTableName,
 				ImmutableMap.copyOf(newParameterValues),
-				idsToFilter,
-				postQueryPredicate);
-	}
-
-	public LookupDataSourceContext withIdToFilter(@NonNull final IdsToFilter idsToFilter)
-	{
-		if (IdsToFilter.equals(this.idsToFilter, idsToFilter))
-		{
-			return this;
-		}
-
-		return new LookupDataSourceContext(
-				lookupTableName,
-				parameterValues,
 				idsToFilter,
 				postQueryPredicate);
 	}

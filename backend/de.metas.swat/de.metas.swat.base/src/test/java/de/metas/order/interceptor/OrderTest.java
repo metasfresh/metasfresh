@@ -62,7 +62,7 @@ public class OrderTest
 		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, partnerSupplierApprovalService, documentLocationBL));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService));
 	}
 
 	@Test

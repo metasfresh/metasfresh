@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -484,8 +485,6 @@ public class AddressBuilder
 			return "";
 		}
 
-		final String bpartnerNameFromBPLocation = bpLocation.getBPartnerName();
-
 		final LocationId effectiveLocationId = locationId != null ? locationId : LocationId.ofRepoIdOrNull(bpLocation.getC_Location_ID());
 		if (effectiveLocationId == null)
 		{
@@ -498,20 +497,20 @@ public class AddressBuilder
 			return "";
 		}
 
-		final boolean isLocal = isLocalCountry(location);
-		final String displaySequence = getDisplaySequence(isLocal, trxName);
+		final boolean isLocal = isLocalCountry(bpLocation);
+		final String displaySequence = getDisplaySequence(location.getC_Country(), isLocal);
 		assertValidDisplaySequence(displaySequence);
 
-		final String bPartnerBlock = buildBPartnerBlock(bPartner, user, location, displaySequence);
+		final String bPartnerBlock = buildBPartnerBlock(bpartner, bpContact, bpLocation, displaySequence);
 		
 
 		// User Anschriftenblock
-		final String userBlock = buildUserBlock(bPartner, isLocal, user, bPartnerBlock, trxName);
+		final String userBlock = buildUserBlock(bpartner, displaySequence, bpContact);
 
 		// Addressblock
 		return locationBL.mkAddress(
 						location,
-						create(bPartner, I_C_BPartner.class),
+						create(bpartner, I_C_BPartner.class),
 						bPartnerBlock,
 						userBlock);
 	}
@@ -552,12 +551,12 @@ public class AddressBuilder
 	}
 	
 	private String buildBPartnerBlock(
-			@NonNull final org.compiere.model.I_C_BPartner bPartner, 
+			@NonNull final org.compiere.model.I_C_BPartner bpartner, 
 			@Nullable final I_AD_User user, 
 			@NonNull final I_C_BPartner_Location bplocation,
 			@NonNull final String displaySequence)
 		{
-			final BPartnerInfo bpInfos = extractBPartnerInfos(bPartner, user, bplocation, displaySequence);
+			final BPartnerInfo bpInfos = extractBPartnerInfos(bpartner, user, bplocation, displaySequence);
 			final StringBuilder sbBPartner = new StringBuilder();
 
 			final String bpGreeting = bpInfos.getBpGreeting();
@@ -587,8 +586,11 @@ public class AddressBuilder
 			return sbBPartner.toString();
 	}
 
-	private BPartnerInfo extractBPartnerInfos(@NonNull final org.compiere.model.I_C_BPartner bPartner, @Nullable final I_AD_User user,
-			@NonNull final I_C_BPartner_Location bplocation, @NonNull final String displaySequence)
+	private BPartnerInfo extractBPartnerInfos(
+			@NonNull final org.compiere.model.I_C_BPartner bPartner, 
+			@Nullable final I_AD_User bpContact,
+			@NonNull final I_C_BPartner_Location bplocation,
+			@NonNull final String displaySequence)
 	{
 		// Name, Name2, bp greeting
 		String bpName = "";
@@ -602,7 +604,7 @@ public class AddressBuilder
 		{
 			if (existsBPName)
 			{
-				bpName = StringUtils.trimBlankToNull(bPartner.getName());
+				bpName = bPartner.getName();
 			}
 
 			if (existsBPGReeting)
@@ -620,21 +622,22 @@ public class AddressBuilder
 		else
 		{
 			if (bPartner.isCompany()
-					|| user == null
-					|| user.getAD_User_ID() == 0
+					|| bpContact == null
+					|| bpContact.getAD_User_ID() == 0
 					|| Check.isBlank(bpContact.getLastname()))
 			{
 				// task https://github.com/metasfresh/metasfresh/issues/5804
 				// prefer BPartner name from location if is set
+				final String bpartnerNameFromBPLocation = bplocation.getBPartnerName();
 				if (Check.isNotBlank(bpartnerNameFromBPLocation))
 				{
-					bpName = bplocation.getBPartnerName();
+					bpName = bpartnerNameFromBPLocation;
 					bpName2 = null;
 				}
 				else
 				{
-					bpName = StringUtils.trimBlankToNull(bpartner.getName());
-					bpName2 = StringUtils.trimBlankToNull(bpartner.getName2());
+					bpName = bPartner.getName();
+					bpName2 = StringUtils.trimBlankToNull(bPartner.getName2());
 				}
 			}
 		}
@@ -783,8 +786,6 @@ public class AddressBuilder
 
 	/**
 	 * build User block
-	 *
-	 * @param isLocal       true if local country
 	 */
 	private String buildUserBlock(
 			@NonNull final org.compiere.model.I_C_BPartner bPartner,
@@ -798,8 +799,7 @@ public class AddressBuilder
 		if (existsBPName || existsBPGreeting)
 		{
 			return "";
-		}
-		
+		}		
 		
 		final boolean isPartnerCompany = bPartner.isCompany();
 		final Language language = Language.optionalOfNullable(bPartner.getAD_Language())

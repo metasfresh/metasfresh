@@ -2,12 +2,16 @@ package de.metas.location.impl;
 
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.greeting.CreateGreetingRequest;
+import de.metas.greeting.Greeting;
+import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.LocationId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -18,21 +22,25 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Country_Sequence;
+import org.compiere.model.I_C_Greeting;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AddressBuilderTest
 {
 	private IBPartnerBL bpartnerBL;
 	OrgId orgId;
-	private IBPartnerBL bpartnerBL;
 	private GreetingRepository greetingRepository;
 
 	@BeforeAll
@@ -587,7 +595,7 @@ public class AddressBuilderTest
 					.isCompany(false)
 					.AD_Language("de_DE")
 					.build();
-		final GreetingId greeting = prepareGreeting("Herr");
+			final GreetingId greeting = prepareGreeting("Herr");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
@@ -607,7 +615,7 @@ public class AddressBuilderTest
 					.isCompany(false)
 					.AD_Language("de_DE")
 					.build();
-		final GreetingId greeting = prepareGreeting("Herr");
+			final GreetingId greeting = prepareGreeting("Herr");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "", "", greeting);
 
 			assertEquals(
@@ -627,7 +635,7 @@ public class AddressBuilderTest
 					.isCompany(false)
 					.AD_Language("de_DE")
 					.build();
-		final GreetingId greeting = prepareGreeting("Herr");
+			final GreetingId greeting = prepareGreeting("Herr");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
@@ -651,7 +659,7 @@ public class AddressBuilderTest
 					.isCompany(false)
 					.AD_Language("de_DE")
 					.build();
-		final GreetingId greeting = prepareGreeting("");
+			final GreetingId greeting = prepareGreeting("");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
@@ -676,7 +684,7 @@ public class AddressBuilderTest
 					.isCompany(false)
 					.AD_Language("de_DE")
 					.build();
-		final GreetingId greeting = prepareGreeting("Frau");
+			final GreetingId greeting = prepareGreeting("Frau");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
@@ -701,7 +709,7 @@ public class AddressBuilderTest
 					.isCompany(false)
 					.AD_Language("de_DE")
 					.build();
-		final GreetingId greeting = prepareGreeting("Frau");
+			final GreetingId greeting = prepareGreeting("Frau");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
@@ -726,7 +734,7 @@ public class AddressBuilderTest
 					.isCompany(true)
 					.AD_Language("de_DE")
 					.build();
-		final GreetingId greeting = prepareGreeting("Frau");
+			final GreetingId greeting = prepareGreeting("Frau");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
@@ -750,7 +758,7 @@ public class AddressBuilderTest
 					.name2("")
 					.isCompany(true)
 					.build();
-		final GreetingId greeting = prepareGreeting("Frau");
+			final GreetingId greeting = prepareGreeting("Frau");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
@@ -774,7 +782,7 @@ public class AddressBuilderTest
 					.name2("Name2")
 					.isCompany(false)
 					.build();
-		final GreetingId greeting = prepareGreeting("Frau");
+			final GreetingId greeting = prepareGreeting("Frau");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
@@ -798,7 +806,7 @@ public class AddressBuilderTest
 					.name2("Name2")
 					.isCompany(false)
 					.build();
-		final GreetingId greeting = prepareGreeting("Frau");
+			final GreetingId greeting = prepareGreeting("Frau");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
@@ -822,13 +830,13 @@ public class AddressBuilderTest
 					.name2("Name2")
 					.isCompany(false)
 					.build();
-		final GreetingId greeting = prepareGreeting("Frau");
+			final GreetingId greeting = prepareGreeting("Frau");
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
 
 			assertEquals(
 					"LOCAL:  \nFrau\nUserFN UserLN\naddr2\naddr1\n121212 City1\nGermany",
-				bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
-	}
+					bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user));
+		}
 
 		@Test
 		public void case_0120_OverrideLocationId()
@@ -845,8 +853,8 @@ public class AddressBuilderTest
 					.isCompany(false)
 					.AD_Language("de_DE")
 					.build();
-			final I_C_Greeting greeting = prepareGreeting("Herr");
-			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
+			final GreetingId greetingId = prepareGreeting("Herr");
+			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greetingId);
 
 			assertEquals(
 					"LOCAL:  \nHerr\nUserFN UserLN\na2_override\na1_override\n121212 City1\nGermany",
@@ -877,7 +885,7 @@ public class AddressBuilderTest
 
 			assertEquals(
 					"LOCAL:  \nFrau\nName1\naddr2\naddr1\n121212 City1\nGermany",
-					bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
+					bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user));
 		}
 
 		/**
@@ -902,113 +910,110 @@ public class AddressBuilderTest
 
 			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greetingId);
 
-			assertThrows(AdempiereException.class,  () ->  bpartnerBL.mkFullAddress(bPartner, bpLocation, user, null));
+			assertThrows(AdempiereException.class, () -> bpartnerBL.mkFullAddress(bPartner, bpLocation, null, user));
 		}
-		
-	// prepraring methods
-	private I_C_Country prepareCountry(final String countryName, final String displaySequence)
-	{
-		final I_C_Country country = newInstance(I_C_Country.class);
-		country.setName(countryName);
-		country.setDisplaySequence(displaySequence);
-		country.setDisplaySequenceLocal("LOCAL: " + displaySequence);
-		saveRecord(country);
 
-		return country;
-	}
+		// prepraring methods
+		private I_C_Country prepareCountry(final String countryName, final String displaySequence)
+		{
+			final I_C_Country country = newInstance(I_C_Country.class);
+			country.setName(countryName);
+			country.setDisplaySequence(displaySequence);
+			country.setDisplaySequenceLocal("LOCAL: " + displaySequence);
+			saveRecord(country);
 
-	private void prepareCountrySequence(final I_C_Country country, final String displaySequence, final String language)
-	{
-		final I_C_Country_Sequence countrySeq = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_Country_Sequence.class);
+			return country;
+		}
 
-		countrySeq.setDisplaySequence(displaySequence);
-		countrySeq.setDisplaySequenceLocal("LOCAL: " + displaySequence);
-		countrySeq.setAD_Language(language);
-		countrySeq.setAD_Org_ID(orgId.getRepoId());
-		countrySeq.setC_Country(country);
-		saveRecord(countrySeq);
-	}
+		private void prepareCountrySequence(final I_C_Country country, final String displaySequence, final String language)
+		{
+			final I_C_Country_Sequence countrySeq = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_Country_Sequence.class);
 
-	private OrgId prepareOrgId()
-	{
-		final I_AD_Org org = newInstance(I_AD_Org.class);
-		org.setName("Org1");
-		org.setValue("1");
-		saveRecord(org);
+			countrySeq.setDisplaySequence(displaySequence);
+			countrySeq.setDisplaySequenceLocal("LOCAL: " + displaySequence);
+			countrySeq.setAD_Language(language);
+			countrySeq.setAD_Org_ID(orgId.getRepoId());
+			countrySeq.setC_Country(country);
+			saveRecord(countrySeq);
+		}
 
-		return OrgId.ofRepoId(org.getAD_Org_ID());
+		private OrgId prepareOrgId()
+		{
+			final I_AD_Org org = newInstance(I_AD_Org.class);
+			org.setName("Org1");
+			org.setValue("1");
+			saveRecord(org);
+
+			return OrgId.ofRepoId(org.getAD_Org_ID());
 		}
 
 		@SuppressWarnings("SameParameterValue")
 		private I_C_Location prepareLocation(
-				@Nullable final String a1,
-				@Nullable final String a2,
-				@Nullable final String a3,
-				@Nullable final String a4,
+				final String a1,
+				final String a2,
+				final String a3,
+				final String a4,
 				final String city,
-				@Nullable final String regionName,
+				final String regionName,
 				final String postal,
 				final String POBox,
 				final I_C_Country country)
 		{
-			final I_C_Country country = prepareCountry("Germany", "@BP@ @CON@ @A2@ @A1@ @P@ @C@ @CO@");
-			final I_C_Location location = prepareLocation("a1", "a2", null, null, "City1", "Region1", "121212", "", country);
-			final I_C_Location locationOverride = prepareLocation("a1_override", "a2_override", null, null, "City1", "Region1", "121212", "", country);
-			final LocationId locationOverrideId = LocationId.ofRepoId(locationOverride.getC_Location_ID());
+			final I_C_Location location = newInstance(I_C_Location.class);
+			location.setAddress1(a1);
+			location.setAddress2(a2);
+			location.setAddress3(a3);
+			location.setAddress4(a4);
+			location.setCity(city);
+			location.setRegionName(regionName);
+			location.setPostal(postal);
+			// location.setIsPOBoxNum(isPOBoxNum);
+			location.setPOBox(POBox);
+			location.setC_Country_ID(country.getC_Country_ID());
+			saveRecord(location);
 
-			final I_C_BPartner_Location bpLocation = prepareBPLocation(location);
-			final I_C_BPartner bPartner = BPartnerBuilder()
-					.name("Name1")
-					.name2("Name2")
-					.isCompany(false)
-					.AD_Language("de_DE")
-					.build();
-			final I_C_Greeting greeting = prepareGreeting("Herr");
-			final org.compiere.model.I_AD_User user = prepareUser("UserFN", "UserLN", "", greeting);
-
-			assertEquals(
-					"LOCAL:  \nHerr\nUserFN UserLN\na2_override\na1_override\n121212 City1\nGermany",
-					bpartnerBL.mkFullAddress(bPartner, bpLocation, locationOverrideId, user));
+			return location;
 		}
 
-	@Builder(builderMethodName = "BPartnerBuilder")
-	private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language, final GreetingId greetingId)
-	{
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
-		bpartner.setName(name);
-		bpartner.setName2(name2);
-		bpartner.setAD_Org_ID(orgId.getRepoId());
-		bpartner.setIsCompany(isCompany);
-		bpartner.setAD_Language(AD_Language);
-		bpartner.setC_Greeting_ID(greetingId != null ? greetingId.getRepoId() :-1);
-		InterfaceWrapperHelper.save(bpartner);
+		@Builder(builderMethodName = "BPartnerBuilder")
+		private I_C_BPartner prepareBPartner(final String name, final String name2, final boolean isCompany, final String AD_Language, final GreetingId greetingId)
+		{
+			final I_C_BPartner bpartner = InterfaceWrapperHelper.create(Env.getCtx(), I_C_BPartner.class, ITrx.TRXNAME_None);
+			bpartner.setName(name);
+			bpartner.setName2(name2);
+			bpartner.setAD_Org_ID(orgId.getRepoId());
+			bpartner.setIsCompany(isCompany);
+			bpartner.setAD_Language(AD_Language);
+			bpartner.setC_Greeting_ID(greetingId != null ? greetingId.getRepoId() : -1);
+			InterfaceWrapperHelper.save(bpartner);
 
-		return bpartner;
-	}
+			return bpartner;
+		}
 
-	private GreetingId prepareGreeting(@NonNull final String name)
-	{
-		final Greeting greeting = greetingRepository.createGreeting(
-				CreateGreetingRequest.builder()
-						.name(name)
-						.greeting(name)
-						.orgId(orgId)
-						.build());
+		private GreetingId prepareGreeting(@NonNull final String name)
+		{
+			final Greeting greeting = greetingRepository.createGreeting(
+					CreateGreetingRequest.builder()
+							.name(name)
+							.greeting(name)
+							.orgId(orgId)
+							.build());
 
-		return greeting.getId();
-	}
+			return greeting.getId();
+		}
 
-	@SuppressWarnings("SameParameterValue")
-	private org.compiere.model.I_AD_User prepareUser(final String firstName, final String lastName, final String title, final GreetingId greetingId)
-	{
-		final org.compiere.model.I_AD_User user = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_User.class, ITrx.TRXNAME_None);
-		user.setFirstname(firstName);
-		user.setLastname(lastName);
-		user.setTitle(title);
-		user.setAD_Org_ID(orgId.getRepoId());
-		user.setC_Greeting_ID(GreetingId.toRepoId(greetingId));
-		InterfaceWrapperHelper.save(user);
+		@SuppressWarnings("SameParameterValue")
+		private org.compiere.model.I_AD_User prepareUser(final String firstName, final String lastName, final String title, final GreetingId greetingId)
+		{
+			final org.compiere.model.I_AD_User user = InterfaceWrapperHelper.create(Env.getCtx(), I_AD_User.class, ITrx.TRXNAME_None);
+			user.setFirstname(firstName);
+			user.setLastname(lastName);
+			user.setTitle(title);
+			user.setAD_Org_ID(orgId.getRepoId());
+			user.setC_Greeting_ID(GreetingId.toRepoId(greetingId));
+			InterfaceWrapperHelper.save(user);
 
-		return user;
+			return user;
+		}
 	}
 }

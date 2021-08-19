@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.greeting.GreetingRepository;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -39,6 +40,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -197,8 +199,10 @@ public class InvoiceCandBLCreateInvoicesTest
 	public void test_submitAlreadyProcessedCandidate()
 	{
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
-
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate ic1 = icTestSupport.createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)

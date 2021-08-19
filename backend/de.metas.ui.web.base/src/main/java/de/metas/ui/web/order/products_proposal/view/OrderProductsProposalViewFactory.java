@@ -24,7 +24,7 @@ import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
-import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
+import de.metas.ui.web.view.descriptor.annotation.ClassViewColumnOverrides;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;

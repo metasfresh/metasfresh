@@ -21,6 +21,7 @@ import {
 class TableContextMenu extends Component {
   constructor(props) {
     super(props);
+    const { docId } = props;
     this.state = {
       contextMenu: {
         x: props.x,
@@ -28,6 +29,7 @@ class TableContextMenu extends Component {
       },
       loadingReferences: false,
       references: [],
+      display: docId ? 'none' : 'block',
     };
   }
 
@@ -136,6 +138,7 @@ class TableContextMenu extends Component {
           this.setState((prevState) => {
             const { y: lastY } = prevState.contextMenu;
             return {
+              display: 'block',
               contextMenu: {
                 ...prevState.contextMenu,
                 y: lastY - offset,
@@ -149,6 +152,7 @@ class TableContextMenu extends Component {
           let offset = initialY - mainPanel.scrollTop;
           this.setState((prevState) => {
             return {
+              display: 'block',
               contextMenu: {
                 ...prevState.contextMenu,
                 y: offset + beforeAssign,
@@ -157,7 +161,7 @@ class TableContextMenu extends Component {
           });
         }
 
-        this.setState({ loadingReferences: false });
+        this.setState({ display: 'block', loadingReferences: false });
       },
     });
   };
@@ -196,6 +200,7 @@ class TableContextMenu extends Component {
       handleFieldEdit,
       handleZoomInto,
       supportOpenRecord,
+      docId,
     } = this.props;
 
     const { contextMenu } = this.state;
@@ -219,11 +224,12 @@ class TableContextMenu extends Component {
           left: contextMenu.x,
           top: contextMenu.y,
           display:
-            supportOpenRecord === false &&
-            (!contextMenu.supportZoomInto ||
-              !showFieldEdit ||
-              !isSelectedOne ||
-              !handleDelete)
+            (supportOpenRecord === false &&
+              (!contextMenu.supportZoomInto ||
+                !showFieldEdit ||
+                !isSelectedOne ||
+                !handleDelete)) ||
+            docId
               ? 'none'
               : 'block',
         }}

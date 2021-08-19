@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
 import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -15,6 +16,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Before;
 import org.junit.Test;
@@ -62,7 +64,9 @@ public class TestUpdatedLocationAndUser extends AbstractAggregationEngineTestBas
 
 	private C_Invoice_Candidate_Builder prepareInvoiceCandidate()
 	{
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		return createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)

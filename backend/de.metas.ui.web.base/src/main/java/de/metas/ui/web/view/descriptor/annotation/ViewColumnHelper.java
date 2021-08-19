@@ -131,27 +131,6 @@ public final class ViewColumnHelper
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Value
-	@Builder
-	public static class ClassViewColumnOverrides
-	{
-		public static ClassViewColumnOverrides ofFieldName(final String fieldName)
-		{
-			return builder(fieldName).build();
-		}
-
-		public static ClassViewColumnOverridesBuilder builder(final String fieldName)
-		{
-			return new ClassViewColumnOverridesBuilder().fieldName(fieldName);
-		}
-
-		@NonNull String fieldName;
-		WidgetSize widgetSize;
-		@Singular
-		ImmutableSet<MediaType> restrictToMediaTypes;
-		boolean hideIfConfiguredSysConfig;
-	}
-
 	public static List<DocumentLayoutElementDescriptor.Builder> createLayoutElementsForClassAndFieldNames(
 			@NonNull final Class<?> dataType,
 			@NonNull final JSONViewDataType viewDataType,

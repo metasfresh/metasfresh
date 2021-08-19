@@ -5,6 +5,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
