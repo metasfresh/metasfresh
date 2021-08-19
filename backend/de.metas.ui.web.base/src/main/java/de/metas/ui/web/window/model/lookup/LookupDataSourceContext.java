@@ -389,20 +389,6 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				postQueryPredicate);
 	}
 
-	public LookupDataSourceContext withIdToFilter(@NonNull final IdsToFilter idsToFilter)
-	{
-		if (IdsToFilter.equals(this.idsToFilter, idsToFilter))
-		{
-			return this;
-		}
-
-		return new LookupDataSourceContext(
-				lookupTableName,
-				parameterValues,
-				idsToFilter,
-				postQueryPredicate);
-	}
-
 	public Stream<LookupDataSourceContext> streamSingleIdContexts()
 	{
 		return idsToFilter.streamSingleValues().map(this::withIdToFilter);
