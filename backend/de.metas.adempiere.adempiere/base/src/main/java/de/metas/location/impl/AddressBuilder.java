@@ -485,8 +485,6 @@ public class AddressBuilder
 			return "";
 		}
 
-		final String bpartnerNameFromBPLocation = bpLocation.getBPartnerName();
-
 		final LocationId effectiveLocationId = locationId != null ? locationId : LocationId.ofRepoIdOrNull(bpLocation.getC_Location_ID());
 		if (effectiveLocationId == null)
 		{
@@ -553,12 +551,12 @@ public class AddressBuilder
 	}
 	
 	private String buildBPartnerBlock(
-			@NonNull final org.compiere.model.I_C_BPartner bPartner, 
+			@NonNull final org.compiere.model.I_C_BPartner bpartner, 
 			@Nullable final I_AD_User user, 
 			@NonNull final I_C_BPartner_Location bplocation,
 			@NonNull final String displaySequence)
 		{
-			final BPartnerInfo bpInfos = extractBPartnerInfos(bPartner, user, bplocation, displaySequence);
+			final BPartnerInfo bpInfos = extractBPartnerInfos(bpartner, user, bplocation, displaySequence);
 			final StringBuilder sbBPartner = new StringBuilder();
 
 			final String bpGreeting = bpInfos.getBpGreeting();
