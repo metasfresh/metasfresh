@@ -20,30 +20,49 @@
  * #L%
  */
 
-package de.metas.externalsystem.rabbitmq.request;
+package de.metas.externalsystem.eventbus;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.process.AdProcessId;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
 
 @Value
 @JsonDeserialize(builder = ManageSchedulerRequest.ManageSchedulerRequestBuilder.class)
 public class ManageSchedulerRequest
 {
 	@NonNull AdProcessId adProcessId;
-	@NonNull Boolean enable;
+	@NonNull Advice schedulerAdvice;
+	@NonNull ClientId clientId;
+	@Nullable Advice supervisorAdvice;
 
 	@JsonCreator
 	@Builder
-	private ManageSchedulerRequest(
+	public ManageSchedulerRequest(
 			@JsonProperty("adProcessId") @NonNull final AdProcessId adProcessId,
-			@JsonProperty("enable") @NonNull final Boolean enable)
+			@JsonProperty("schedulerAdvice") @NonNull final Advice schedulerAdvice,
+			@JsonProperty("clientId") @NonNull final ClientId clientId,
+			@JsonProperty("supervisorAdvice") @Nullable final Advice supervisorAdvice)
 	{
 		this.adProcessId = adProcessId;
-		this.enable = enable;
+		this.schedulerAdvice = schedulerAdvice;
+		this.clientId = clientId;
+		this.supervisorAdvice = supervisorAdvice;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	public enum Advice
+	{
+		ENABLE,
+		DISABLE
 	}
 }

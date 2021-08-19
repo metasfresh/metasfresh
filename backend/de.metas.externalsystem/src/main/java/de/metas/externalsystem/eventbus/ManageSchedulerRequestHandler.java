@@ -1,8 +1,10 @@
+package de.metas.externalsystem.eventbus;
+
 /*
  * #%L
- * de.metas.externalsystem
+ * de.metas.acct.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +22,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.rabbitmq;
-
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
-
-@Configuration
-@EnableRabbit
-public class ExternalSystemQueueConfig
+public interface ManageSchedulerRequestHandler
 {
-	@Bean(name = QUEUE_NAME_MF_TO_ES)
-	public Queue metasfreshToProcurementWebQueue()
-	{
-		return new Queue(QUEUE_NAME_MF_TO_ES);
-	}
+	void handleRequest(final ManageSchedulerRequest request);
 }

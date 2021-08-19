@@ -27,8 +27,8 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
-import de.metas.externalsystem.rabbitmq.request.ManageSchedulerRequest;
+import de.metas.externalsystem.eventbus.ManageSchedulerRequest;
+import de.metas.externalsystem.eventbus.SchedulerEventBusService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -36,15 +36,18 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 
 import java.util.Optional;
 
+import static de.metas.externalsystem.process.InvokeExternalSystemProcess.MSG_ERR_NO_EXTERNAL_SELECTION;
+
 public abstract class InvokeActivateExternalConfig extends JavaProcess implements IProcessPrecondition
 {
-	private final static AdMessageKey MSG_ERR_NO_EXTERNAL_SELECTION = AdMessageKey.of("NoExternalSelection");
 	private final static AdMessageKey MSG_ERR_MULTIPLE_EXTERNAL_SELECTION = AdMessageKey.of("MultipleExternalSelection");
 	private final static AdMessageKey MSG_ERR_EXTERNAL_SYSTEM_CONFIG_ACTIVE = AdMessageKey.of("MSG_ERR_ExternalSystemConfigActive");
 
@@ -54,16 +57,20 @@ public abstract class InvokeActivateExternalConfig extends JavaProcess implement
 	@Override
 	protected String doIt()
 	{
-		final ExternalSystemMessageSender externalSystemMessageSender = SpringContextHolder.instance.getBean(ExternalSystemMessageSender.class);
+		final SchedulerEventBusService schedulerEventBusService = SpringContextHolder.instance.getBean(SchedulerEventBusService.class);
 
 		activateRecord();
 
 		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(getExternalSystemType().getExternalSystemProcessClassName());
 
-		externalSystemMessageSender.sendSchedulerRequest(ManageSchedulerRequest.builder()
-																 .adProcessId(targetProcessId)
-																 .enable(true)
-																 .build());
+		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + getExternalSystemType().getExternalSystemProcessClassName());
+
+		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
+													 .adProcessId(targetProcessId)
+													 .clientId(Env.getClientId())
+													 .schedulerAdvice(ManageSchedulerRequest.Advice.ENABLE)
+													 .supervisorAdvice(ManageSchedulerRequest.Advice.ENABLE)
+													 .build());
 		return MSG_OK;
 	}
 

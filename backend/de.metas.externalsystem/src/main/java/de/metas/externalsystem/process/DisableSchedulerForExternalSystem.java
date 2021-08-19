@@ -27,27 +27,28 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
-import de.metas.externalsystem.rabbitmq.request.ManageSchedulerRequest;
-import de.metas.i18n.AdMessageKey;
+import de.metas.externalsystem.eventbus.ManageSchedulerRequest;
+import de.metas.externalsystem.eventbus.SchedulerEventBusService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.Env;
 
 import java.util.Optional;
+
+import static de.metas.externalsystem.process.InvokeExternalSystemProcess.MSG_ERR_NO_EXTERNAL_SELECTION;
 
 public class DisableSchedulerForExternalSystem extends JavaProcess implements IProcessPrecondition
 {
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-
-	private final static AdMessageKey MSG_ERR_NO_EXTERNAL_SELECTION = AdMessageKey.of("NoExternalSelection");
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -83,7 +84,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ExternalSystemMessageSender externalSystemMessageSender = SpringContextHolder.instance.getBean(ExternalSystemMessageSender.class);
+		final SchedulerEventBusService schedulerEventBusService = SpringContextHolder.instance.getBean(SchedulerEventBusService.class);
 
 		final String externalSystemType = externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()));
 
@@ -91,10 +92,14 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 
 		final AdProcessId targetProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(type.getExternalSystemProcessClassName());
 
-		externalSystemMessageSender.sendSchedulerRequest(ManageSchedulerRequest.builder()
-																 .adProcessId(targetProcessId)
-																 .enable(false)
-																 .build());
+		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + type.getExternalSystemProcessClassName());
+
+		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
+													 .adProcessId(targetProcessId)
+													 .clientId(Env.getClientId())
+													 .schedulerAdvice(ManageSchedulerRequest.Advice.DISABLE)
+													 .supervisorAdvice(ManageSchedulerRequest.Advice.DISABLE)
+													 .build());
 		return MSG_OK;
 	}
 }

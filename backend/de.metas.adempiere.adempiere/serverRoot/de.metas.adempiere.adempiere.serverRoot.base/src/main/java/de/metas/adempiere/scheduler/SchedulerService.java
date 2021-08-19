@@ -23,13 +23,15 @@
 package de.metas.adempiere.scheduler;
 
 import ch.qos.logback.classic.Level;
+import de.metas.externalsystem.eventbus.ManageSchedulerRequest;
+import de.metas.externalsystem.eventbus.ManageSchedulerRequestHandler;
 import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.scheduler.SchedulerDao;
 import org.compiere.model.I_AD_Scheduler;
 import org.compiere.model.I_AD_User;
@@ -44,50 +46,55 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
-public class SchedulerServiceImpl
+public class SchedulerService implements ManageSchedulerRequestHandler
 {
-	private static final Logger logger = LogManager.getLogger(SchedulerServiceImpl.class);
+	private static final Logger logger = LogManager.getLogger(SchedulerService.class);
 
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 
 	private final SchedulerDao schedulerDao;
 
-	public SchedulerServiceImpl(@NonNull final SchedulerDao schedulerDao)
+	public SchedulerService(@NonNull final SchedulerDao schedulerDao)
 	{
 		this.schedulerDao = schedulerDao;
 	}
 
-	public void enableScheduler(@NonNull final I_AD_Scheduler scheduler)
+	@Override
+	public void handleRequest(final ManageSchedulerRequest request)
 	{
-		activateScheduler(scheduler);
+		final I_AD_Scheduler scheduler = schedulerDao.getSchedulerByProcessIdIfUnique(request.getAdProcessId())
+				.orElseThrow(() -> new AdempiereException("No scheduler found for process")
+						.appendParametersToMessage()
+						.setParameter("adProcessId", request.getAdProcessId()));
 
-		final UserId supervisorId = UserId.ofRepoIdOrNull(scheduler.getSupervisor_ID());
+		Optional.ofNullable(request.getSupervisorAdvice())
+				.ifPresent(supervisorAdvice -> handleSupervisor(scheduler, supervisorAdvice));
 
-		if (supervisorId != null)
+		if (ManageSchedulerRequest.Advice.ENABLE.equals(request.getSchedulerAdvice()))
 		{
-			activateSupervisor(supervisorId);
+			activateScheduler(scheduler);
+			startScheduler(scheduler);
 		}
-
-		startScheduler(scheduler);
+		else
+		{
+			deactivateScheduler(scheduler);
+			stopScheduler(scheduler);
+		}
 	}
 
-	public void disableScheduler(@NonNull final I_AD_Scheduler scheduler)
+	private void handleSupervisor(@NonNull final I_AD_Scheduler scheduler, @NonNull final ManageSchedulerRequest.Advice supervisorAdvice)
 	{
-		deactivateScheduler(scheduler);
-
 		final UserId supervisorId = UserId.ofRepoIdOrNull(scheduler.getSupervisor_ID());
 
-		if (supervisorId != null)
+		if (supervisorId == null)
 		{
-			deactivateSupervisor(supervisorId);
+			return;
 		}
 
-		stopScheduler(scheduler);
-	}
+		final I_AD_User user = userDAO.getById(supervisorId);
+		user.setIsActive(ManageSchedulerRequest.Advice.ENABLE.equals(supervisorAdvice));
 
-	public Optional<I_AD_Scheduler> getSchedulerByProcessIdIfUnique(@NonNull final AdProcessId processId)
-	{
-		return schedulerDao.getSchedulerByProcessIdIfUnique(processId);
+		userDAO.save(user);
 	}
 
 	private void activateScheduler(@NonNull final I_AD_Scheduler scheduler)
@@ -100,20 +107,6 @@ public class SchedulerServiceImpl
 	{
 		scheduler.setIsActive(false);
 		schedulerDao.save(scheduler);
-	}
-
-	private void activateSupervisor(@NonNull final UserId userId)
-	{
-		final I_AD_User user = userDAO.getById(userId);
-		user.setIsActive(true);
-		userDAO.save(user);
-	}
-
-	private void deactivateSupervisor(@NonNull final UserId userId)
-	{
-		final I_AD_User user = userDAO.getById(userId);
-		user.setIsActive(false);
-		userDAO.save(user);
 	}
 
 	private void startScheduler(@NonNull final I_AD_Scheduler adScheduler)

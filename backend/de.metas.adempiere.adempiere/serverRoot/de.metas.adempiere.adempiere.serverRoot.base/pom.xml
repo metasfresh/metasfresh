@@ -144,6 +144,12 @@
 			<artifactId>janino</artifactId>
 		</dependency>
 
+		<dependency>
+            <groupId>de.metas.externalsystem</groupId>
+            <artifactId>de.metas.externalsystem</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
     </dependencies>
 
 </project>
