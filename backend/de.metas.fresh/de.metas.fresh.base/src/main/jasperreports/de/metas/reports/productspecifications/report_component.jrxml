@@ -29,7 +29,7 @@
   v.componentIngredients    as Ingredients,
   v.qtybatch                as QtyBatch,
 m_product_ID
-FROM "de.metas.fresh".product_specifications_v v
+FROM "de.metas.fresh".product_ingredients_v v
 WHERE m_product_ID = $P{RECORD_ID}
 ORDER BY QtyBatch DESC;]]>
 	</queryString>

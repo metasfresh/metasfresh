@@ -17,9 +17,13 @@ select
     nf.Name                                                 as nutritionName,
     pn.SeqNo                                                as NutritionSeqNo,
     pn.nutritionqty,
-    pi.qty                              as qtybatch,
-    i.name as componentName,
-    (select name from m_product where m_product_id = i.m_product_id) as componentIngredients,
+    coalesce(NULLIF(TRIM(bomProduct.CustomerLabelName),''), bomProduct.Name) as componentName,
+    round(bomLine.qtybatch, 2)                              as qtybatch,
+    bomLine.componenttype,
+    bom_pc.ispackagingmaterial,
+    bomProduct.ingredients                                  as componentIngredients,
+    bp.companyname,
+    bpl.address,
     p.M_product_ID
 from m_product p
          left outer join ad_orginfo oi on p.ad_org_id = oi.ad_org_id
@@ -32,5 +36,7 @@ from m_product p
          left outer join M_Nutrition_Fact nf on 1 = 1
          left outer join M_Product_Nutrition pn
                          on pn.M_product_ID = p.M_product_ID and nf.M_Nutrition_Fact_ID = pn.M_Nutrition_Fact_ID
-         left outer join m_product_ingredients pi on pi.m_product_id = p.m_product_id
-         left outer JOIN m_ingredients i on pi.m_ingredients_id = i.m_ingredients_id;
+         left outer join PP_Product_BOM bom on bom.M_Product_ID = p.m_product_id
+         left outer join PP_Product_BOMLine bomLine on bomLine.pp_product_bom_id = bom.pp_product_bom_id and bomLine.isActive='Y'
+         left outer join m_product bomProduct on bomLine.m_product_id = bomProduct.m_product_id
+         left outer join m_product_category bom_pc on bomProduct.m_product_category_id = bom_pc.m_product_category_id;
