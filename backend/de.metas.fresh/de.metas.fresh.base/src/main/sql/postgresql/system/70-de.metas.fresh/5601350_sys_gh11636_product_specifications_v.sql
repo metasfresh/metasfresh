@@ -1,6 +1,6 @@
-DROP VIEW "de.metas.fresh".product_specifications_v;
+DROP VIEW "de.metas.fresh".product_ingredients_v;
 
-CREATE OR REPLACE VIEW "de.metas.fresh".product_specifications_v AS
+CREATE OR REPLACE VIEW "de.metas.fresh".product_ingredients_v AS
   select
     p.Name                                                  as productName,
     p.CustomerLabelName,
