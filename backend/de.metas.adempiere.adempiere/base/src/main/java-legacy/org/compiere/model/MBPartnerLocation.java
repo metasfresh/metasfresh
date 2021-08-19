@@ -138,7 +138,7 @@ public class MBPartnerLocation extends X_C_BPartner_Location
 		@Builder
 		private MakeUniqueNameCommand(
 				@Nullable final String name,
-				@NonNull final String companyName,
+				@Nullable final String companyName,
 				@NonNull final I_C_Location address,
 				@Nullable final List<String> existingNames,
 				final int maxLength)
