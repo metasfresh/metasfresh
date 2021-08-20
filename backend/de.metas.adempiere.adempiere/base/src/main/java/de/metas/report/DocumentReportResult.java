@@ -22,11 +22,6 @@
 
 package de.metas.report;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.archive.api.ArchiveResult;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
@@ -35,8 +30,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.archive.api.ArchiveResult;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.core.io.Resource;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value

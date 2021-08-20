@@ -27,7 +27,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;

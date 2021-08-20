@@ -20,22 +20,20 @@
  * #L%
  */
 
-package de.metas.externalsystem.rabbitmq;
+package de.metas.externalsystem;
 
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
+import javax.annotation.Nullable;
 
-@Configuration
-@EnableRabbit
-public class ExternalSystemQueueConfig
+@Value
+@Builder
+public class ExternalSystemConfigQuery
 {
-	@Bean(name = QUEUE_NAME_MF_TO_ES)
-	public Queue metasfreshToProcurementWebQueue()
-	{
-		return new Queue(QUEUE_NAME_MF_TO_ES);
-	}
+	@NonNull
+	ExternalSystemParentConfigId parentConfigId;
+	@Nullable
+	Boolean isActive;
 }
