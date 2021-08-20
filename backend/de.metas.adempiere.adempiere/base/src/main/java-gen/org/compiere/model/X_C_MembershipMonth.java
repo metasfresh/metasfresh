@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_MembershipMonth extends org.compiere.model.PO implements I_C_MembershipMonth, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1407735693L;
+	private static final long serialVersionUID = -1145810915L;
 
     /** Standard Constructor */
     public X_C_MembershipMonth (final Properties ctx, final int C_MembershipMonth_ID, @Nullable final String trxName)
@@ -47,6 +47,33 @@ public class X_C_MembershipMonth extends org.compiere.model.PO implements I_C_Me
 	public int getC_MembershipMonth_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_MembershipMonth_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Year getC_Year()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Year_ID, org.compiere.model.I_C_Year.class);
+	}
+
+	@Override
+	public void setC_Year(final org.compiere.model.I_C_Year C_Year)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Year_ID, org.compiere.model.I_C_Year.class, C_Year);
+	}
+
+	@Override
+	public void setC_Year_ID (final int C_Year_ID)
+	{
+		if (C_Year_ID < 1) 
+			set_Value (COLUMNNAME_C_Year_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Year_ID, C_Year_ID);
+	}
+
+	@Override
+	public int getC_Year_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Year_ID);
 	}
 
 	@Override

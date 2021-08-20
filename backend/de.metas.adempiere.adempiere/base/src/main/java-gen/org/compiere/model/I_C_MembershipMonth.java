@@ -72,6 +72,33 @@ public interface I_C_MembershipMonth
 	String COLUMNNAME_C_MembershipMonth_ID = "C_MembershipMonth_ID";
 
 	/**
+	 * Set Year.
+	 * Calendar Year
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Year_ID (int C_Year_ID);
+
+	/**
+	 * Get Year.
+	 * Calendar Year
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Year_ID();
+
+	org.compiere.model.I_C_Year getC_Year();
+
+	void setC_Year(org.compiere.model.I_C_Year C_Year);
+
+	ModelColumn<I_C_MembershipMonth, org.compiere.model.I_C_Year> COLUMN_C_Year_ID = new ModelColumn<>(I_C_MembershipMonth.class, "C_Year_ID", org.compiere.model.I_C_Year.class);
+	String COLUMNNAME_C_Year_ID = "C_Year_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

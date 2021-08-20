@@ -889,3 +889,71 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000013, SeqNo=11, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000013, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541170 AND AD_Tree_ID=10
 ;
 
+-----------
+
+
+-- 2021-08-20T15:32:14.380Z
+-- URL zum Konzept
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,575350,223,0,19,541763,'C_Year_ID',TO_TIMESTAMP('2021-08-20 17:32:14','YYYY-MM-DD HH24:MI:SS'),100,'N','Kalenderjahr','D',0,10,'"Jahr" bezeichnet ein eindeutiges Jahr eines Kalenders.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Jahr',0,0,TO_TIMESTAMP('2021-08-20 17:32:14','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2021-08-20T15:32:14.511Z
+-- URL zum Konzept
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=575350 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2021-08-20T15:32:14.553Z
+-- URL zum Konzept
+/* DDL */  select update_Column_Translation_From_AD_Element(223) 
+;
+
+-- 2021-08-20T15:32:19.213Z
+-- URL zum Konzept
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-08-20 17:32:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=575350
+;
+
+-- 2021-08-20T15:32:22.058Z
+-- URL zum Konzept
+/* DDL */ SELECT public.db_alter_table('C_MembershipMonth','ALTER TABLE public.C_MembershipMonth ADD COLUMN C_Year_ID NUMERIC(10) NOT NULL')
+;
+
+-- 2021-08-20T15:32:22.089Z
+-- URL zum Konzept
+ALTER TABLE C_MembershipMonth ADD CONSTRAINT CYear_CMembershipMonth FOREIGN KEY (C_Year_ID) REFERENCES public.C_Year DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2021-08-20T15:32:37.691Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575350,652554,0,544241,TO_TIMESTAMP('2021-08-20 17:32:37','YYYY-MM-DD HH24:MI:SS'),100,'Kalenderjahr',10,'D','"Jahr" bezeichnet ein eindeutiges Jahr eines Kalenders.','Y','N','N','N','N','N','N','N','Jahr',TO_TIMESTAMP('2021-08-20 17:32:37','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-20T15:32:37.722Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=652554 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-08-20T15:32:37.729Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(223) 
+;
+
+-- 2021-08-20T15:32:37.795Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652554
+;
+
+-- 2021-08-20T15:32:37.800Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(652554)
+;
+
+-- 2021-08-20T15:32:57.805Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,652554,0,544241,546312,588060,'F',TO_TIMESTAMP('2021-08-20 17:32:57','YYYY-MM-DD HH24:MI:SS'),100,'Kalenderjahr','"Jahr" bezeichnet ein eindeutiges Jahr eines Kalenders.','Y','N','N','Y','N','N','N',0,'Jahr',60,0,0,TO_TIMESTAMP('2021-08-20 17:32:57','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-20T15:33:15.098Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET SeqNo=5,Updated=TO_TIMESTAMP('2021-08-20 17:33:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=588060
+;
+
