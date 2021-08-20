@@ -55,8 +55,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-19T13:52:47.937Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN C_BPartner_Location_Value_ID NUMERIC(10)')
-;
+ALTER TABLE public.C_Order ADD COLUMN C_BPartner_Location_Value_ID NUMERIC(10);
 
 -- 2021-04-19T13:52:49.251Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -80,7 +79,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-19T13:53:13.131Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN Bill_Location_Value_ID NUMERIC(10)')
+ALTER TABLE public.C_Order ADD COLUMN Bill_Location_Value_ID NUMERIC(10);
 ;
 
 -- 2021-04-19T13:53:14.167Z
@@ -105,7 +104,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-19T13:53:31.434Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN DropShip_Location_Value_ID NUMERIC(10)')
+ALTER TABLE public.C_Order ADD COLUMN DropShip_Location_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-19T13:53:32.511Z
@@ -130,7 +129,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-19T13:53:56.751Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Order','ALTER TABLE public.C_Order ADD COLUMN HandOver_Location_Value_ID NUMERIC(10)')
+ALTER TABLE public.C_Order ADD COLUMN HandOver_Location_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-19T13:53:57.827Z
@@ -150,8 +149,8 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2021-04-19 17:20:54',
 
 -- 2021-04-19T14:20:55.200Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('c_order','IsUseDeliveryToAddress','CHAR(1)',null,'N')
-;
+--INSERT INTO t_alter_column values('c_order','IsUseDeliveryToAddress','CHAR(1)',null,'N')
+--;
 
 -- 2021-04-19T14:20:56.335Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -160,8 +159,8 @@ UPDATE C_Order SET IsUseDeliveryToAddress='N' WHERE IsUseDeliveryToAddress IS NU
 
 -- 2021-04-19T14:20:56.344Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO t_alter_column values('c_order','IsUseDeliveryToAddress',null,'NOT NULL',null)
-;
+--INSERT INTO t_alter_column values('c_order','IsUseDeliveryToAddress',null,'NOT NULL',null)
+--;
 
 -- 2021-04-19T14:21:02.384Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -225,7 +224,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-19T19:29:30.574Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('M_InOut','ALTER TABLE public.M_InOut ADD COLUMN C_BPartner_Location_Value_ID NUMERIC(10)')
+ALTER TABLE public.M_InOut ADD COLUMN C_BPartner_Location_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-19T19:29:31.173Z
@@ -250,7 +249,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-19T19:36:15.192Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE public.C_Invoice ADD COLUMN C_BPartner_Location_Value_ID NUMERIC(10)')
+ALTER TABLE public.C_Invoice ADD COLUMN C_BPartner_Location_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-19T19:36:16.261Z
@@ -275,7 +274,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-19T20:10:40.851Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('M_InOut','ALTER TABLE public.M_InOut ADD COLUMN DropShip_Location_Value_ID NUMERIC(10)')
+ALTER TABLE public.M_InOut ADD COLUMN DropShip_Location_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-19T20:10:41.483Z

@@ -15,7 +15,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-21T12:18:02.966Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule','ALTER TABLE public.M_ShipmentSchedule ADD COLUMN C_BPartner_Location_Value_ID NUMERIC(10)')
+ALTER TABLE public.M_ShipmentSchedule ADD COLUMN C_BPartner_Location_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-21T12:18:03.265Z
@@ -40,7 +40,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-21T12:18:43.906Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule','ALTER TABLE public.M_ShipmentSchedule ADD COLUMN C_BP_Location_Override_Value_ID NUMERIC(10)')
+ALTER TABLE public.M_ShipmentSchedule ADD COLUMN C_BP_Location_Override_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-21T12:18:44.065Z
@@ -65,7 +65,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-21T12:19:21.620Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('M_ShipmentSchedule','ALTER TABLE public.M_ShipmentSchedule ADD COLUMN Bill_Location_Value_ID NUMERIC(10)')
+ALTER TABLE public.M_ShipmentSchedule ADD COLUMN Bill_Location_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-21T12:19:21.817Z
@@ -95,7 +95,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-21T19:32:22.494Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN Bill_Location_Value_ID NUMERIC(10)')
+ALTER TABLE public.C_Invoice_Candidate ADD COLUMN Bill_Location_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-21T19:32:22.923Z
@@ -130,7 +130,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- 2021-04-21T19:58:50.324Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN Bill_Location_Override_Value_ID NUMERIC(10)')
+ALTER TABLE public.C_Invoice_Candidate ADD COLUMN Bill_Location_Override_Value_ID NUMERIC(10)
 ;
 
 -- 2021-04-21T19:58:50.698Z
