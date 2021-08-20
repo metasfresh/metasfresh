@@ -23,9 +23,9 @@
 package de.metas.adempiere.scheduler;
 
 import ch.qos.logback.classic.Level;
-import de.metas.externalsystem.eventbus.ManageSchedulerRequest;
-import de.metas.externalsystem.eventbus.ManageSchedulerRequestHandler;
 import de.metas.logging.LogManager;
+import de.metas.scheduler.eventbus.ManageSchedulerRequest;
+import de.metas.scheduler.eventbus.ManageSchedulerRequestHandler;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Loggables;

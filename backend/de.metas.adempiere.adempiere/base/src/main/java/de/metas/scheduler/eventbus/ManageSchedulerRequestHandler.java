@@ -1,4 +1,4 @@
-package de.metas.externalsystem.eventbus;
+package de.metas.scheduler.eventbus;
 
 /*
  * #%L

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.externalsystem.eventbus;
+package de.metas.scheduler.eventbus;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;

@@ -209,8 +209,8 @@ public class RabbitMQEventBusConfiguration
 	public static class ManageSchedulerQueueConfiguration
 	{
 		public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.externalsystem.rabbitmq.request.ManageSchedulerRequest");
-		private static final String QUEUE_BEAN_NAME = "ManageSchedulerQueue";
-		private static final String EXCHANGE_NAME = "ManageSchedulerEvents";
+		private static final String QUEUE_BEAN_NAME = "metasfreshManageSchedulerQueue";
+		private static final String EXCHANGE_NAME = "metasfresh-scheduler-events";
 
 		@Value(APPLICATION_NAME_SPEL)
 		private String appName;
