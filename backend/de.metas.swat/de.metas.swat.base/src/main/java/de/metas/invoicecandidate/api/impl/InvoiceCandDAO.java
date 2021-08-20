@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
@@ -21,7 +22,6 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
-import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerRequest;
 import de.metas.invoicecandidate.api.IInvoiceCandUpdateSchedulerService;
 import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
 import de.metas.invoicecandidate.api.InvoiceCandidateMultiQuery;
@@ -139,6 +139,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			= new ModelDynAttributeAccessor<>(IInvoiceCandDAO.class.getName() + "Avoid_Recreate", Boolean.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IInvoiceCandUpdateSchedulerService invoiceCandScheduler = Services.get(IInvoiceCandUpdateSchedulerService.class);
 
 	@Override
 	public I_C_Invoice_Candidate getById(@NonNull final InvoiceCandidateId invoiceCandidateId)
@@ -743,8 +744,15 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Schedule an update for invalidated invoice candidates
 		if (count > 0)
 		{
-			final IInvoiceCandUpdateSchedulerRequest request = InvoiceCandUpdateSchedulerRequest.of(icQuery.getCtx(), icQuery.getTrxName());
-			Services.get(IInvoiceCandUpdateSchedulerService.class).scheduleForUpdate(request);
+			icQuery.list()
+					.stream()
+					.map(I_C_Invoice_Candidate::getC_Async_Batch_ID)
+					.map(AsyncBatchId::ofRepoIdOrNone)
+					.filter(Objects::nonNull)
+					.collect(ImmutableSet.toImmutableSet())
+					.stream()
+					.map(asyncBatchId -> InvoiceCandUpdateSchedulerRequest.of(icQuery.getCtx(), icQuery.getTrxName(), AsyncBatchId.toAsyncBatchIdOrNull(asyncBatchId)))
+					.forEach(invoiceCandScheduler::scheduleForUpdate);
 		}
 	}
 
@@ -1709,6 +1717,35 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		return convertToIQuery(multiQuery)
 				.createSelection(pInstanceId);
+	}
+
+	@NonNull
+	@Override
+	public Set<InvoiceCandidateId> retrieveUnprocessedICIdByOrderId(@NonNull final Set<OrderId> ids)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, ids)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
+				.create()
+				.stream()
+				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.map(InvoiceCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	@Override
+	public Set<OrderId> retrieveOrderIdsForInvoiceCandIds(@NonNull final Set<InvoiceCandidateId> ids)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, ids)
+				.create()
+				.stream()
+				.map(I_C_Invoice_Candidate::getC_Order_ID)
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private IQuery<I_C_Invoice_Candidate> convertToIQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)

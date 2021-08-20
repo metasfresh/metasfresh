@@ -258,6 +258,11 @@ public class OLCandRepository
 			olCandPO.setLine(request.getLine());
 		}
 
+		if (request.getAsyncBatchId() != null)
+		{
+			olCandPO.setC_Async_Batch_ID(request.getAsyncBatchId().getRepoId());
+		}
+
 		final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssuesInterface = InterfaceWrapperHelper.create(olCandPO, org.adempiere.process.rpl.model.I_C_OLCand.class);
 		if (request.getIsImportedWithIssues() != null)
 		{

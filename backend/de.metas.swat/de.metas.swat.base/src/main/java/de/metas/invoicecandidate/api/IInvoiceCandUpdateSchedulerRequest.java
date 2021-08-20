@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api;
 
+import de.metas.async.AsyncBatchId;
+
 import java.util.Properties;
 
 /*
@@ -35,4 +37,6 @@ public interface IInvoiceCandUpdateSchedulerRequest
 	Properties getCtx();
 
 	String getTrxName();
+
+	AsyncBatchId getAsyncBatchId();
 }

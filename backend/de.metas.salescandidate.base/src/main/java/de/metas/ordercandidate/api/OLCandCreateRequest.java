@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -118,6 +119,8 @@ public class OLCandCreateRequest
 
 	String importWarningMessage;
 
+	AsyncBatchId asyncBatchId;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -160,7 +163,8 @@ public class OLCandCreateRequest
 			@Nullable final Boolean isImportedWithIssues,
 			@Nullable final String deliveryViaRule,
 			@Nullable final String deliveryRule,
-			@Nullable final String importWarningMessage)
+			@Nullable final String importWarningMessage,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -216,5 +220,6 @@ public class OLCandCreateRequest
 		this.deliveryViaRule = deliveryViaRule;
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;
+		this.asyncBatchId = asyncBatchId;
 	}
 }

@@ -24,15 +24,27 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.request.alberta.JsonAlbertaOrderInfo;
+import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
+import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.impex.InputDataSourceId;
+import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandId;
@@ -43,43 +55,62 @@ import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.invoice.impl.InvoiceService;
+import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
+import de.metas.rest_api.v2.shipping.ShipmentService;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.web.exception.MissingResourceException;
 import de.metas.vertical.healthcare.alberta.order.AlbertaOrderCompositeInfo;
 import de.metas.vertical.healthcare.alberta.order.service.AlbertaOrderService;
 import lombok.NonNull;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.compiere.util.Env.getCtx;
 
 @Service
 public class OrderCandidateRestControllerService
 {
-	public static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestControllerImpl.class.getName();
+	private static final String DATA_SOURCE_INTERNAL_NAME = "SOURCE." + OrderCandidatesRestController.class.getName();
+
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
 	private final PerformanceMonitoringService perfMonService;
 	private final AlbertaOrderService albertaOrderService;
 	private final OLCandValidatorService olCandValidatorService;
+	private final ShipmentService shipmentService;
+	private final InvoiceService invoiceService;
+	private final OrderService orderService;
 
 	public OrderCandidateRestControllerService(
 			@NonNull final JsonConverters jsonConverters,
 			@NonNull final OLCandRepository olCandRepo,
 			@NonNull final PerformanceMonitoringService perfMonService,
 			@NonNull final AlbertaOrderService albertaOrderService,
-			@NonNull final OLCandValidatorService olCandValidatorService)
+			@NonNull final OLCandValidatorService olCandValidatorService,
+			@NonNull final ShipmentService shipmentService,
+			@NonNull final InvoiceService invoiceService,
+			@NonNull final OrderService orderService)
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
 		this.perfMonService = perfMonService;
 		this.albertaOrderService = albertaOrderService;
 		this.olCandValidatorService = olCandValidatorService;
+		this.shipmentService = shipmentService;
+		this.invoiceService = invoiceService;
+		this.orderService = orderService;
 	}
 
 	public JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
@@ -217,29 +248,63 @@ public class OrderCandidateRestControllerService
 	@NonNull
 	public JsonOLCandClearingResponse clearOLCandidates(@NonNull final JsonOLCandClearRequest clearRequest)
 	{
-		final IdentifierString inputDataSourceIdentifier = IdentifierString.of(clearRequest.getInputDataSourceName());
+		return clearOLCandidates(clearRequest.getInputDataSourceName(), clearRequest.getExternalHeaderId(), null);
+	}
 
-		final OLCandQuery olCandQuery = OLCandQuery.builder()
-				.externalHeaderId(clearRequest.getExternalHeaderId())
-				.inputDataSourceName(inputDataSourceIdentifier.asInternalName())
+	@NonNull
+	public JsonOLProcessCompositeResponse processOLCands(@NonNull final JsonOLCandProcessRequest request)
+	{
+		final I_C_Async_Batch asyncBatch = newProcessAsyncBatch();
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+
+		final JsonOLCandClearingResponse clearingResponse =
+				clearOLCandidates(request.getInputDataSourceName(), request.getExternalHeaderId(), asyncBatchId);
+
+		final JsonOLCandProcessResponse.JsonOLCandProcessResponseBuilder jsonOLCandProcessResponseBuilder = JsonOLCandProcessResponse.builder()
+				.jsonOLCandClearingResponse(clearingResponse);
+
+		final JsonOLProcessCompositeResponse.JsonOLProcessCompositeResponseBuilder responseBuilder = JsonOLProcessCompositeResponse.builder();
+
+		if (!clearingResponse.isSuccessfullyCleared())
+		{
+			return responseBuilder
+					.olCandProcessResponse(jsonOLCandProcessResponseBuilder.build())
+					.build();
+		}
+
+		final Set<OLCandId> validOlCandIds = clearingResponse.getOlCandIdToValidationStatus().keySet().stream()
+				.map(OLCandId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatch, validOlCandIds);
+
+		jsonOLCandProcessResponseBuilder
+				.jsonGenerateOrdersResponse(buildGenerateOrdersResponse(orderIds))
 				.build();
 
-		final List<I_C_OLCand> olCands = olCandRepo.getByQuery(olCandQuery)
-				.stream()
-				.map(OLCand::unbox)
-				.collect(ImmutableList.toImmutableList());
+		responseBuilder.olCandProcessResponse(jsonOLCandProcessResponseBuilder.build());
 
-		final List<OLCandValidationResult> olCandValidationResults = olCandValidatorService.clearOLCandidates(olCands);
+		if (request.getShip())
+		{
+			final Set<InOutId> createdShipmentIds = shipmentService.generateShipmentsSync(orderIds, asyncBatchId);
 
-		final boolean finishedWithErrors = olCandValidationResults.stream().anyMatch(result -> !result.isOk());
+			responseBuilder.shipmentResponse(buildCreateShipmentResponse(createdShipmentIds));
+		}
 
-		final Map<Integer, Boolean> olCandId2ValidationStatus = olCandValidationResults.stream()
-				.collect(ImmutableMap.toImmutableMap(result -> result.getOlCandId().getRepoId(), OLCandValidationResult::isOk));
+		if (request.getInvoice())
+		{
+			final Set<InvoiceId> invoiceIds = invoiceService.generateInvoiceSync(orderIds, asyncBatch);
 
-		return JsonOLCandClearingResponse.builder()
-				.olCandIdToValidationStatus(olCandId2ValidationStatus)
-				.successfullyCleared(!finishedWithErrors)
-				.build();
+			final List<JSONInvoiceInfoResponse> invoiceInfoResponses = invoiceIds.stream()
+					.map(invoiceId -> invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
+					.collect(ImmutableList.toImmutableList());
+
+			responseBuilder.invoiceInfoResponse(invoiceInfoResponses);
+		}
+
+		asyncBatchBL.updateProcessedFromMilestones(asyncBatchId);
+
+		return responseBuilder.build();
 	}
 
 	@Nullable
@@ -265,5 +330,62 @@ public class OrderCandidateRestControllerService
 	{
 		final OrgId orgId = masterdataProvider.getOrgId(request.getOrgCode());
 		masterdataProvider.assertCanCreateNewOLCand(orgId);
+	}
+
+	@NonNull
+	private I_C_Async_Batch newProcessAsyncBatch()
+	{
+		return asyncBatchBL.newAsyncBatch()
+				.setContext(getCtx())
+				.setC_Async_Batch_Type(C_Async_Batch_InternalName_OLCand_Processing)
+				.setName(C_Async_Batch_InternalName_OLCand_Processing)
+				.build();
+	}
+
+	@NonNull
+	private JsonOLCandClearingResponse clearOLCandidates(
+			@NonNull final String inputDataSource,
+			@NonNull final String externalHeaderId,
+			@Nullable final AsyncBatchId asyncBatchId)
+	{
+		final IdentifierString inputDataSourceIdentifier = IdentifierString.of(inputDataSource);
+
+		final List<I_C_OLCand> olCands = orderService.getOLCands(inputDataSourceIdentifier, externalHeaderId);
+
+		final List<OLCandValidationResult> olCandValidationResults = olCandValidatorService.clearOLCandidates(olCands, asyncBatchId);
+
+		final boolean successfullyCleared = olCandValidationResults.stream().allMatch(OLCandValidationResult::isOk);
+
+		final Map<Integer, Boolean> olCandId2ValidationStatus = olCandValidationResults.stream()
+			.collect(ImmutableMap.toImmutableMap(result -> result.getOlCandId().getRepoId(), OLCandValidationResult::isOk));
+
+		return JsonOLCandClearingResponse.builder()
+				.olCandIdToValidationStatus(olCandId2ValidationStatus)
+				.successfullyCleared(successfullyCleared)
+				.build();
+	}
+
+	@NonNull
+	private JsonGenerateOrdersResponse buildGenerateOrdersResponse(@NonNull final Set<OrderId> orderIds)
+	{
+		final List<JsonMetasfreshId> orderMetasfreshIds = orderIds.stream()
+				.map(OrderId::getRepoId)
+				.map(JsonMetasfreshId::of)
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonGenerateOrdersResponse.builder()
+				.orderIds(orderMetasfreshIds)
+				.build();
+	}
+
+	@NonNull
+	private JsonCreateShipmentResponse buildCreateShipmentResponse(@NonNull final Set<InOutId> shipmentIds)
+	{
+		return JsonCreateShipmentResponse.builder()
+			.createdShipmentIds(shipmentIds.stream()
+										.map(InOutId::getRepoId)
+										.map(JsonMetasfreshId::of)
+										.collect(ImmutableList.toImmutableList()))
+			.build();
 	}
 }

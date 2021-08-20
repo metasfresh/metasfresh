@@ -1,12 +1,22 @@
 package de.metas.rest_api.v2.invoice.impl;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
+import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
+import de.metas.async.asyncbatchmilestone.MilestoneName;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.invoice.JsonInvoicePaymentCreateRequest;
 import de.metas.common.rest_api.v2.invoice.JsonPaymentAllocationLine;
 import de.metas.common.util.CoalesceUtil;
@@ -20,11 +30,17 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.IInvoicingParams;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
+import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
@@ -50,6 +66,8 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -57,6 +75,9 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
+import static org.compiere.util.Env.getCtx;
 
 /*
  * #%L
@@ -92,19 +113,26 @@ public class InvoiceService
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	private final CurrencyService currencyService;
 	private final PaymentService paymentService;
 	private final JsonRetrieverService jsonRetrieverService;
+	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
+	private final AsyncBathMilestoneService asyncBathMilestoneService;
 
 	public InvoiceService(
-			final CurrencyService currencyService,
-			final PaymentService paymentService,
-			final JsonServiceFactory jsonServiceFactory)
+			@NonNull final CurrencyService currencyService,
+			@NonNull final PaymentService paymentService,
+			@NonNull final JsonServiceFactory jsonServiceFactory,
+			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
+			@NonNull final AsyncBathMilestoneService asyncBathMilestoneService)
 	{
 		this.currencyService = currencyService;
 		this.paymentService = paymentService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
+		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
+		this.asyncBathMilestoneService = asyncBathMilestoneService;
 	}
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
@@ -142,6 +170,9 @@ public class InvoiceService
 									.currency(currency)
 									.build());
 		}
+
+		result.invoiceId(JsonMetasfreshId.of(invoiceId.getRepoId()));
+
 		return result.build();
 	}
 
@@ -221,6 +252,47 @@ public class InvoiceService
 
 			createAllocationsForPayment(payment, lines);
 		});
+	}
+
+	@NonNull
+	public Set<InvoiceId> generateInvoiceSync(
+			@NonNull final Set<OrderId> orderIds,
+			@NonNull final I_C_Async_Batch asyncBatch)
+	{
+		final Set<InvoiceCandidateId> invoiceCandIds = invoiceCandDAO.retrieveUnprocessedICIdByOrderId(orderIds);
+
+		if (invoiceCandIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
+				.asyncBatchId(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()))
+				.orgId(Env.getOrgId())
+				.milestoneName(MilestoneName.INVOICE_CREATION)
+				.build();
+
+		final AsyncBatchMilestoneId milestoneId = asyncBathMilestoneService.save(asyncBatchMilestone).getIdNotNull();
+
+		asyncBatchMilestoneObserver.observeOn(milestoneId);
+
+		trxManager.runInNewTrx(() -> {
+			final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(invoiceCandIds, null);
+
+			invoiceCandBL.enqueueForInvoicing()
+					.setContext(getCtx())
+					.setC_Async_Batch(asyncBatch)
+					.setInvoicingParams(getDefaultIInvoicingParams())
+					.setFailIfNothingEnqueued(true)
+					.enqueueSelection(invoiceCandidatesSelectionId);
+		});
+
+		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
+
+		return invoiceDAO.getInvoiceIdsForOrderIds(ImmutableList.copyOf(orderIds))
+				.values()
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private JsonInvoiceCandidatesResponseItem buildJSONItem(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
@@ -314,5 +386,16 @@ public class InvoiceService
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
 	{
 		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
+	}
+
+	@NonNull
+	private IInvoicingParams getDefaultIInvoicingParams()
+	{
+		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
+		invoicingParams.setIgnoreInvoiceSchedule(true);
+		invoicingParams.setSupplementMissingPaymentTermIds(true);
+		invoicingParams.setDateInvoiced(LocalDate.now());
+
+		return invoicingParams;
 	}
 }

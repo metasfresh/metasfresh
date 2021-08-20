@@ -59,4 +59,9 @@ public final class Async_Constants
 			.name("de.metas.async.WorkpackageLifeCycle")
 			.type(Type.REMOTE)
 			.build();
+
+	public static final int C_OlCandProcessor_ID_Default = 1000003;
+
+	public static final String C_Async_Batch_InternalName_OLCand_Processing = "OLCand_Processing";
+	public static final String SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION = "SKIP_WP_PROCESSOR_FOR_AUTOMATION";
 }

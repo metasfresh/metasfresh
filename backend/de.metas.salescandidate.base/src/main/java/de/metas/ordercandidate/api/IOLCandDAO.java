@@ -24,6 +24,7 @@ package de.metas.ordercandidate.api;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.OrderId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
 import de.metas.util.ISingletonService;
@@ -70,4 +71,6 @@ public interface IOLCandDAO extends ISingletonService
 	List<I_C_Order_Line_Alloc> retrieveAllOlas(I_C_OLCand olCand);
 
 	ImmutableMap<PoReferenceLookupKey, Integer> getNumberOfRecordsWithTheSamePOReference(Set<PoReferenceLookupKey> targetKeySet, LocalDateInterval searchingTimeWindow);
+
+	Set<OrderId> getOrderIdsToOLCandIds(Set<OLCandId> olCandIds);
 }

@@ -1,9 +1,26 @@
 package de.metas.order;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
+import de.metas.bpartner.BPartnerId;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.user.UserId;
+import de.metas.util.ISingletonService;
+import de.metas.util.lang.ExternalId;
+import lombok.NonNull;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.X_C_Order;
 
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadByIds;
 
 /*
  * #%L
@@ -26,26 +43,6 @@ import java.util.Collection;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import de.metas.util.lang.ExternalId;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.X_C_Order;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.user.UserId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 public interface IOrderDAO extends ISingletonService
 {
@@ -145,4 +142,6 @@ public interface IOrderDAO extends ISingletonService
 	void save(org.compiere.model.I_C_OrderLine orderLine);
 
 	Optional<I_C_Order> retrieveByOrderCriteria(OrderQuery query);
+
+	Set<OrderId> retrieveIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 }

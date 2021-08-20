@@ -117,4 +117,6 @@ public interface IShipmentSchedulePA extends ISingletonService
 	ImmutableList<I_M_ShipmentSchedule> getByReferences(ImmutableList<TableRecordReference> recordRefs);
 
 	ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(OrderId orderId);
+
+	Set<ShipmentScheduleId> retrieveUnprocessedSchedulesOrderId(@NonNull final OrderId orderId);
 }

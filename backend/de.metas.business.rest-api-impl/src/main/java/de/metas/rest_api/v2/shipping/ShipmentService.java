@@ -26,6 +26,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
+import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
+import de.metas.async.asyncbatchmilestone.MilestoneName;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerQuery;
@@ -45,6 +50,7 @@ import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.location.CountryId;
@@ -52,6 +58,7 @@ import de.metas.location.ICountryCodeFactory;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
@@ -67,10 +74,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.CreateAttributeInstanceReq;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -84,9 +94,12 @@ import java.time.ZoneId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import static org.compiere.util.Env.getCtx;
 
 @Service
 public class ShipmentService
@@ -105,11 +118,21 @@ public class ShipmentService
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	private final AttributeSetHelper attributeSetHelper;
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
-	public ShipmentService(@NonNull final AttributeSetHelper attributeSetHelper)
+	private final AttributeSetHelper attributeSetHelper;
+	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
+	private final AsyncBathMilestoneService asyncBathMilestoneService;
+
+	public ShipmentService(
+			@NonNull final AttributeSetHelper attributeSetHelper,
+			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
+			@NonNull final AsyncBathMilestoneService asyncBathMilestoneService)
 	{
 		this.attributeSetHelper = attributeSetHelper;
+		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
+		this.asyncBathMilestoneService = asyncBathMilestoneService;
 	}
 
 	public ShipmentScheduleEnqueuer.Result updateShipmentSchedulesAndGenerateShipments(@NonNull final JsonCreateShipmentRequest request)
@@ -127,6 +150,52 @@ public class ShipmentService
 		updateShipmentSchedules(request.getCreateShipmentInfoList(), cache);
 
 		return generateShipments(toGenerateShipmentsRequest(request));
+	}
+
+	@NonNull
+	public Set<InOutId> generateShipmentsSync(@NonNull final Set<OrderId> orderIds, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final List<Set<ShipmentScheduleId>> shipmentScheduleIdsForOrderIds =
+				orderIds.stream()
+						.map(shipmentSchedulePA::retrieveUnprocessedSchedulesOrderId)
+						.filter(scheduleIdSet -> !scheduleIdSet.isEmpty())
+						.collect(ImmutableList.toImmutableList());
+
+		if (shipmentScheduleIdsForOrderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
+				.asyncBatchId(asyncBatchId)
+				.orgId(Env.getOrgId())
+				.milestoneName(MilestoneName.SHIPMENT_CREATION)
+				.build();
+
+		final AsyncBatchMilestone savedAsyncBatchMilestone = asyncBathMilestoneService.save(asyncBatchMilestone);
+
+		asyncBatchMilestoneObserver.observeOn(savedAsyncBatchMilestone.getIdNotNull());
+
+		trxManager.runInNewTrx(
+				() -> shipmentScheduleIdsForOrderIds.forEach(this::createShipmentScheduleEnqueuer));
+
+		asyncBatchMilestoneObserver.waitToBeProcessed(savedAsyncBatchMilestone.getIdNotNull());
+
+		return orderIds.stream()
+				.map(shipmentSchedulePA::retrieveScheduleIdsByOrderId)
+				.map(shipmentScheduleAllocDAO::retrieveOnShipmentLineRecordsByScheduleIds)
+				.map(scheduleId2qtyPickRecords -> scheduleId2qtyPickRecords.values()
+						.stream()
+						.flatMap(List::stream)
+						.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
+						.map(InOutLineId::ofRepoIdOrNull)
+						.filter(Objects::nonNull)
+						.map(inOutDAO::getLineById)
+						.map(I_M_InOutLine::getM_InOut_ID)
+						.map(InOutId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet()))
+				.flatMap(Set::stream)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final JsonCreateShipmentRequest request)
@@ -448,6 +517,30 @@ public class ShipmentService
 		}
 
 		return candidateKey2ShipmentId.build();
+	}
+
+	@NonNull
+	private IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> createShipmentSchedulesQueryFilters(@NonNull final Set<ShipmentScheduleId> ids)
+	{
+		return queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
+				.addInArrayFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids);
+	}
+
+	private void createShipmentScheduleEnqueuer(@NonNull final Set<ShipmentScheduleId> ids)
+	{
+		final ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters
+				.builder()
+				.adPInstanceId(adPInstanceDAO.createSelectionId())
+				.queryFilters(createShipmentSchedulesQueryFilters(ids))
+				.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+				.completeShipments(true)
+				.build();
+
+		new ShipmentScheduleEnqueuer()
+				.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
+				.createWorkpackages(workPackageParameters);
 	}
 
 	//

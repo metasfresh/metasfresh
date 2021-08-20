@@ -23,8 +23,13 @@ package de.metas.ordercandidate.api.impl;
  */
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.ordercandidate.api.IOLCandDAO;
+import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.PoReferenceLookupKey;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
@@ -62,6 +67,8 @@ public class OLCandDAO implements IOLCandDAO
 	//
 	// return olCandId > 0 ? OptionalInt.of(olCandId) : OptionalInt.empty();
 	// }
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@Override
 	public List<I_C_OLCand> retrieveReferencing(final Properties ctx, final String tableName, final int recordId, final String trxName)
@@ -71,8 +78,7 @@ public class OLCandDAO implements IOLCandDAO
 
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_OLCand.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_OLCand.class, ctx, trxName)
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_AD_Table_ID, tableId)
 
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Record_ID, recordId)
@@ -91,8 +97,7 @@ public class OLCandDAO implements IOLCandDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 		final int orderLineId = ol.getC_OrderLine_ID();
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
 				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OrderLine_ID, orderLineId)
 				.addOnlyActiveRecordsFilter()
 				.andCollect(I_C_Order_Line_Alloc.COLUMN_C_OLCand_ID)
@@ -110,8 +115,7 @@ public class OLCandDAO implements IOLCandDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(ol);
 		final int orderLineId = ol.getC_OrderLine_ID();
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
 				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OrderLine_ID, orderLineId)
 				// .addOnlyActiveRecordsFilter() // note that we also load records that are inactive or belong to different AD_Clients
 				.orderBy(I_C_Order_Line_Alloc.COLUMN_C_Order_Line_Alloc_ID)
@@ -126,8 +130,7 @@ public class OLCandDAO implements IOLCandDAO
 		final String trxName = InterfaceWrapperHelper.getTrxName(olCand);
 		final int olCandId = olCand.getC_OLCand_ID();
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
+		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class, ctx, trxName)
 				.addEqualsFilter(I_C_Order_Line_Alloc.COLUMN_C_OLCand_ID, olCandId)
 				// .addOnlyActiveRecordsFilter() // note that we also load records that are inactive or belong to different AD_Clients
 				.orderBy(I_C_Order_Line_Alloc.COLUMN_C_Order_Line_Alloc_ID)
@@ -142,7 +145,7 @@ public class OLCandDAO implements IOLCandDAO
 		final Set<String> poReferences = targetKeySet.stream().map(PoReferenceLookupKey::getPoReference).collect(Collectors.toSet());
 		final Set<Integer> orgIdSet = targetKeySet.stream().map(PoReferenceLookupKey::getOrgId).map(OrgId::getRepoId).collect(Collectors.toSet());
 
-		final IQueryBuilder<I_C_OLCand> olCandsQBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_C_OLCand> olCandsQBuilder = queryBL
 				.createQueryBuilder(I_C_OLCand.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_OLCand.COLUMNNAME_POReference, poReferences)
@@ -178,5 +181,25 @@ public class OLCandDAO implements IOLCandDAO
 		});
 
 		return ImmutableMap.copyOf(nrOfOLCandsByPoReferenceKey);
+	}
+
+	@NonNull
+	public Set<OrderId> getOrderIdsToOLCandIds(@NonNull final Set<OLCandId> olCandIds)
+	{
+		final Set<OrderLineId> orderLineIds = getOrderLineIdsByOLCandIds(olCandIds);
+
+		return orderDAO.retrieveIdsByOrderLineIds(orderLineIds);
+	}
+
+	@NonNull
+	private Set<OrderLineId> getOrderLineIdsByOLCandIds(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
+				.addInArrayFilter(I_C_Order_Line_Alloc.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.create()
+				.stream()
+				.map(I_C_Order_Line_Alloc::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

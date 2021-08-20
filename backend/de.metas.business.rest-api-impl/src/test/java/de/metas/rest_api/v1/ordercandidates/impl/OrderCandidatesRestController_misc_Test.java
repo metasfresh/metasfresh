@@ -41,7 +41,7 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.assertj.core.api.Assertions.*;
 
-public class OrderCandidatesRestControllerImpl_misc_Test
+public class OrderCandidatesRestController_misc_Test
 {
 	@BeforeAll
 	public static void initStatic()

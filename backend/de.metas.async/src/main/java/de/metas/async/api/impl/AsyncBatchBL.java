@@ -27,20 +27,7 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.locks.ReentrantLock;
-
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchBuilder;
@@ -48,6 +35,7 @@ import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Milestone;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -57,10 +45,22 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
+import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class AsyncBatchBL implements IAsyncBatchBL
 {
@@ -214,6 +214,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 		if (asyncBatchRecord.isProcessed())
 		{
+			return true;
+		}
+
+		if (isAsyncBatchEligibleToProcess(asyncBatchId))
+		{
 			return false;
 		}
 
@@ -227,6 +232,13 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		asyncBatchRecord.setIsProcessing(false);
 		queueDAO.save(asyncBatchRecord);
 		return true;
+	}
+
+	private boolean isAsyncBatchEligibleToProcess(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final List<I_C_Async_Batch_Milestone> milestones = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId);
+
+		return milestones.isEmpty();
 	}
 
 	@VisibleForTesting
@@ -431,5 +443,22 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	public I_C_Async_Batch getAsyncBatchById(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		return asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+	}
+
+	public void updateProcessedFromMilestones(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final boolean allMilestonesAreProcessed = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId)
+				.stream()
+				.allMatch(I_C_Async_Batch_Milestone::isProcessed);
+
+		if (allMilestonesAreProcessed)
+		{
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+
+			asyncBatch.setProcessed(true);
+			asyncBatch.setIsProcessing(false);
+
+			queueDAO.save(asyncBatch);
+		}
 	}
 }
