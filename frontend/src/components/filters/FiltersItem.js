@@ -145,18 +145,8 @@ class FiltersItem extends PureComponent {
    * @param {*} value
    * @param {*} id
    * @param {*} valueTo
-   * @param {*} filterId
-   * @param {*} defaultValue
    */
-  setValue = (parameter, value, id, valueTo = '', filterId, defaultValue) => {
-    const { resetInitialValues } = this.props;
-
-    // if user changed field value and defaultValue is not null, then we need
-    // to reset it's initial value so that it won't be set
-    if (defaultValue != null) {
-      resetInitialValues && resetInitialValues(filterId, parameter);
-    }
-
+  setValue = (parameter, value, id, valueTo = '') => {
     if (!Array.isArray(parameter)) {
       parameter = [parameter];
     }
@@ -428,15 +418,9 @@ class FiltersItem extends PureComponent {
    * @summary clears this filter completely, removing it from the active filters
    */
   handleClear = () => {
-    const {
-      clearFilters,
-      closeFilterMenu,
-      returnBackToDropdown,
-      resetInitialValues,
-    } = this.props;
+    const { clearFilters, closeFilterMenu, returnBackToDropdown } = this.props;
     const { filter } = this.state;
 
-    resetInitialValues && resetInitialValues(filter.filterId);
     clearFilters(filter);
     closeFilterMenu();
     returnBackToDropdown && returnBackToDropdown();
@@ -643,7 +627,6 @@ class FiltersItem extends PureComponent {
 /**
  * @typedef {object} Props Component props
  * @prop {func} applyFilters
- * @prop {func} [resetInitialValues]
  * @prop {func} [clearFilters]
  * @prop {*} [filterWrapper]
  * @prop {string} [panelCaption]
@@ -665,7 +648,6 @@ class FiltersItem extends PureComponent {
  */
 FiltersItem.propTypes = {
   applyFilters: PropTypes.func.isRequired,
-  resetInitialValues: PropTypes.func,
   clearFilters: PropTypes.func,
   filtersWrapper: PropTypes.any,
   panelCaption: PropTypes.string,

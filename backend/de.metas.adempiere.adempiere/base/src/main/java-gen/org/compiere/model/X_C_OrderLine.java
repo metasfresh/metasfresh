@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1131851300L;
+	private static final long serialVersionUID = -1248532788L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -759,6 +759,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isGroupCompensationLine() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsGroupCompensationLine);
+	}
+
+	@Override
+	public void setIsHideWhenPrinting (final boolean IsHideWhenPrinting)
+	{
+		set_Value (COLUMNNAME_IsHideWhenPrinting, IsHideWhenPrinting);
+	}
+
+	@Override
+	public boolean isHideWhenPrinting() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHideWhenPrinting);
 	}
 
 	@Override

@@ -112,6 +112,7 @@ public class AttachmentEntryRepository
 	public byte[] retrieveAttachmentEntryData(@NonNull final AttachmentEntryId attachmentEntryId)
 	{
 		final I_AD_AttachmentEntry record = retrieveAttachmentEntryRecordInTrx(attachmentEntryId);
+
 		return record.getBinaryData();
 	}
 

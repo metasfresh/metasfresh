@@ -182,7 +182,7 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 */
 	boolean hasHUAssignmentsForModel(Object model);
 
-	void deleteHUAssignments(Object model, Collection<I_M_HU> husToUnAssign, String trxName);
+	void deleteHUAssignments(Object model, Collection<HuId> husToUnAssign, String trxName);
 
 	/**
 	 * @return all HU assignments for the given HU and table

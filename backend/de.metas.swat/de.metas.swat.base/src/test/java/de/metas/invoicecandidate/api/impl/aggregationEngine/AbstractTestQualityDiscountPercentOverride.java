@@ -35,6 +35,7 @@ import java.util.List;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import de.metas.business.BusinessTestHelper;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.bpartner.BPartnerLocationId;
@@ -44,6 +45,8 @@ import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 
 public abstract class AbstractTestQualityDiscountPercentOverride extends AbstractNewAggregationEngineTests
 {
@@ -53,8 +56,9 @@ public abstract class AbstractTestQualityDiscountPercentOverride extends Abstrac
 	@Override
 	protected List<I_C_Invoice_Candidate> step_createInvoiceCandidates()
 	{
-
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		return createInvoiceCandidate()
 				.setInstanceName("ic1")

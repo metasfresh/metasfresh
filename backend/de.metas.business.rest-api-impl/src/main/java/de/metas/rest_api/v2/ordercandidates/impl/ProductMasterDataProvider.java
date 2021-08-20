@@ -123,6 +123,7 @@ final class ProductMasterDataProvider
 							.resourceIdentifier(productIdentifier.getRawValue())
 							.build();
 				}
+				break;
 			default:
 				throw new AdempiereException("Unsupported external reference type!")
 						.appendParametersToMessage()

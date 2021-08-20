@@ -6,7 +6,7 @@ CREATE OR REPLACE FUNCTION GenerateHUAttributesKey(huId numeric)
     STABLE
 AS $BODY$
 		-- IMPORTANT: keep in sync with other Generate*AttributesKey functions (e.g. GenerateASIStorageAttributesKey)
-		SELECT COALESCE(string_agg(sub.keyPart, '&'), '-1002'/*NONE*/)
+		SELECT COALESCE(string_agg(sub.keyPart, '§&§'), '-1002'/*NONE*/)
 		FROM (
 			SELECT
 				(case
