@@ -37,7 +37,7 @@
     "@cypress/webpack-preprocessor": "5.9.1",
     "babel-eslint": "10.1.0",
     "babel-loader": "8.2.2",
-    "cypress": "8.3.0",
+    "cypress": "7.7.0",
     "eslint": "7.32.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-chai-friendly": "0.7.2",
