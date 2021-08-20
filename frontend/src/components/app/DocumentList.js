@@ -109,11 +109,9 @@ export default class DocumentList extends Component {
       onRedirectToDocument,
       filtersActive,
       mapConfig,
-      initialValuesNulled,
       triggerSpinner,
       viewId,
       onFilterChange,
-      onResetInitialFilters,
       hasIncluded,
       onRedirectToNewDocument,
       onSortData,
@@ -224,11 +222,9 @@ export default class DocumentList extends Component {
                   {...{
                     viewId,
                     filtersActive,
-                    initialValuesNulled,
                   }}
                   windowType={windowId}
                   updateDocList={onFilterChange}
-                  resetInitialValues={onResetInitialFilters}
                 />
               )}
 
@@ -382,7 +378,6 @@ DocumentList.propTypes = {
   panelsState: PropTypes.string,
   pageLength: PropTypes.number,
   filtersActive: PropTypes.any,
-  initialValuesNulled: PropTypes.any,
   isShowIncluded: PropTypes.bool,
   hasShowIncluded: PropTypes.bool,
   triggerSpinner: PropTypes.bool,
@@ -393,7 +388,6 @@ DocumentList.propTypes = {
   onChangePage: PropTypes.func,
   onFilterChange: PropTypes.func,
   onRedirectToDocument: PropTypes.func,
-  onResetInitialFilters: PropTypes.func,
   onRedirectToNewDocument: PropTypes.func,
   onUpdateQuickActions: PropTypes.func,
   setQuickActionsComponentRef: PropTypes.func,

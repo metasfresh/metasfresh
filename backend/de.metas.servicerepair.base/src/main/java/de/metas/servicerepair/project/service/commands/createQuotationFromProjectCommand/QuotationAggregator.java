@@ -50,6 +50,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class QuotationAggregator
 {
@@ -64,6 +65,7 @@ public class QuotationAggregator
 	private final ProjectQuotationPriceCalculator priceCalculator;
 
 	private final ArrayList<ServiceRepairProjectCostCollector> costCollectorsToAggregate = new ArrayList<>();
+	private final AtomicInteger nextRepairingGroupIndex = new AtomicInteger(1);
 	private QuotationLineIdsByCostCollectorIdIndex generatedQuotationLineIdsIndexedByCostCollectorId;
 
 	@Builder
@@ -185,9 +187,12 @@ public class QuotationAggregator
 				throw new AdempiereException("No task found for " + key);
 			}
 
+			final int groupIndex = nextRepairingGroupIndex.getAndIncrement();
+
 			return RepairedProductAggregator.builder()
 					.priceCalculator(priceCalculator)
 					.key(key)
+					.groupCaption(String.valueOf(groupIndex))
 					.repairOrderSummary(task.getRepairOrderSummary())
 					.repairServicePerformedId(task.getRepairServicePerformedId())
 					.build();
@@ -203,7 +208,7 @@ public class QuotationAggregator
 			throw new AdempiereException("Unknown key type: " + key);
 		}
 	}
-
+	
 	private OrderFactory newOrderFactory()
 	{
 		return OrderFactory.newSalesOrder()
@@ -220,6 +225,7 @@ public class QuotationAggregator
 				.projectId(project.getProjectId());
 	}
 
+	
 	public final QuotationLineIdsByCostCollectorIdIndex getQuotationLineIdsIndexedByCostCollectorId()
 	{
 		Objects.requireNonNull(generatedQuotationLineIdsIndexedByCostCollectorId, "generatedQuotationLineIdsIndexedByCostCollectorId");

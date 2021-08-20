@@ -48,7 +48,9 @@ import javax.annotation.Nullable;
 public interface IProductBL extends ISingletonService
 {
 	I_M_Product getById(ProductId productId);
-	
+
+	I_M_Product getByIdInTrx(ProductId productId);
+
 	ProductId getProductIdByValue(OrgId orgId, String productValue);
 
 	UOMPrecision getUOMPrecision(I_M_Product product);

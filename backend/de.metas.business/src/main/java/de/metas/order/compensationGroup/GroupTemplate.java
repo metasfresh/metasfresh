@@ -3,6 +3,7 @@ package de.metas.order.compensationGroup;
 import com.google.common.collect.ImmutableList;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.util.OptionalBoolean;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -45,6 +46,7 @@ public class GroupTemplate
 {
 	@Nullable GroupTemplateId id;
 	@NonNull String name;
+	boolean isNamePrinted;
 	@Nullable ActivityId activityId;
 	@Nullable ProductCategoryId productCategoryId;
 
@@ -55,6 +57,7 @@ public class GroupTemplate
 	private GroupTemplate(
 			@Nullable final GroupTemplateId id,
 			@NonNull final String name,
+			@Nullable final Boolean isNamePrinted,
 			@Nullable final ActivityId activityId,
 			@Nullable final ProductCategoryId productCategoryId,
 			@NonNull final List<GroupTemplateRegularLine> regularLinesToAdd,
@@ -62,6 +65,7 @@ public class GroupTemplate
 	{
 		this.id = id;
 		this.name = name;
+		this.isNamePrinted = OptionalBoolean.ofNullableBoolean(isNamePrinted).orElseTrue();
 		this.activityId = activityId;
 		this.productCategoryId = productCategoryId;
 		this.regularLinesToAdd = ImmutableList.copyOf(regularLinesToAdd);

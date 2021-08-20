@@ -1697,9 +1697,8 @@ public class InterfaceWrapperHelper
 		return new ModelCopyHelper();
 	}
 
-	public static boolean isOldValues(final Object model)
+	public static boolean isOldValues(@NonNull final Object model)
 	{
-		Check.assumeNotNull(model, "model not null");
 		if (POWrapper.isHandled(model))
 		{
 			return POWrapper.isOldValues(model);
@@ -1718,6 +1717,15 @@ public class InterfaceWrapperHelper
 					+ "\n Class: " + (model == null ? null : model.getClass()));
 		}
 	}
+
+	public static void assertNotOldValues(@NonNull final Object model)
+	{
+		if (isOldValues(model))
+		{
+			throw new AdempiereException("Model was expected to not use old values: " + model + " (" + model.getClass() + ")");
+		}
+	}
+
 
 	/**
 	 * If the given <code>model</code> is not null and has all the columns which are defined inside the given <code>clazz</code>'s {@link IModelClassInfo},<br>

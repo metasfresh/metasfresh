@@ -5,7 +5,6 @@ import React, { Component } from 'react';
 import { DragDropContext } from 'react-dnd';
 import HTML5Backend from 'react-dnd-html5-backend';
 import { connect } from 'react-redux';
-import { List } from 'immutable';
 
 import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
@@ -397,7 +396,7 @@ export class DraggableWrapper extends Component {
                       this.handleOptionSelect('interval', option)
                     }
                     tabIndex={0}
-                    list={List([{ caption: 'week', value: 'week' }])}
+                    list={[{ caption: 'week', value: 'week' }]}
                     selected={interval}
                     isFocused={listFocused === 'interval'}
                     isToggled={listToggled === 'interval'}
@@ -415,13 +414,13 @@ export class DraggableWrapper extends Component {
                     onSelect={(option) =>
                       this.handleOptionSelect('when', option)
                     }
-                    list={List([
+                    list={[
                       { caption: 'now', value: 'now' },
                       {
                         caption: 'last week',
                         value: 'lastWeek',
                       },
-                    ])}
+                    ]}
                     tabIndex={0}
                     selected={when}
                     isFocused={listFocused === 'when'}

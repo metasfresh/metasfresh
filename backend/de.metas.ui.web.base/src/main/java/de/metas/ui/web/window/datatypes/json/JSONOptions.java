@@ -53,7 +53,7 @@ import lombok.ToString;
 @ToString(doNotUseGetters = true)
 @EqualsAndHashCode(doNotUseGetters = true)
 @Getter
-public final class JSONOptions
+public class JSONOptions
 {
 	public static JSONOptionsBuilder prepareFrom(@NonNull final UserSession userSession)
 	{

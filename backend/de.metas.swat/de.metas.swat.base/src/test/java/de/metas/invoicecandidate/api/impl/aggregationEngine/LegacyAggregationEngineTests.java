@@ -32,9 +32,12 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.business.BusinessTestHelper;
 import de.metas.invoice.InvoiceDocBaseType;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_DocType;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -70,7 +73,9 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 	@Test
 	public void test_simple01()
 	{
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -135,8 +140,9 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 	@Test
 	public void test_API()
 	{
-
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -194,7 +200,9 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		// we also need a regular invoice candidate, or 'updateInvalidCandidates()' won't set the NetAmtToInvoice of the manual candidate to a positive value.
 		// but note that we will only invoice the manual candidate, and not 'regularIc1'.
 
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate regularIc1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -244,7 +252,9 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		// we also need a regular invoice candidate, or 'updateInvalidCandidates()' won't set the NetAmtToInvoice of the manual candidate to a positive value.
 		// but note that we will only invoice the manual candidate, and not 'regularIc1'.
 
-		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(1, 2);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
+		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
 
 		final I_C_Invoice_Candidate regularIc1 = createInvoiceCandidate()
 				.setBillBPartnerAndLocationId(billBPartnerAndLocationId)
@@ -487,10 +497,12 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 	@Test
 	public void test_regularLines_with_PartialCreditMemo_QtyNotOne()
 	{
-		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(1, 10, 5, true, true);
+		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
+
+		final I_C_Invoice_Candidate ic1 = createInvoiceCandidate(bPartner.getC_BPartner_ID(), 10, 5, true, true);
 		InterfaceWrapperHelper.save(ic1);
 
-		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(1, -30, 2, true, true);
+		final I_C_Invoice_Candidate ic2 = createInvoiceCandidate(bPartner.getC_BPartner_ID(), -30, 2, true, true);
 		ic2.setC_ILCandHandler(manualHandler);
 		InterfaceWrapperHelper.save(ic2);
 		Assert.assertEquals("IC2- IsError", false, ic2.isError());

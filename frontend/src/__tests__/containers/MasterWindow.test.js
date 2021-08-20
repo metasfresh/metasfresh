@@ -116,7 +116,7 @@ describe('MasterWindowContainer', () => {
     history = createMemoryHistory({ initialEntries: [path] });
   });
 
-  it('renders without errors', async (done) => {
+  it('renders without errors', async () => {
     const initialState = createInitialState();
     const store = createStore(
       rootReducer,
@@ -207,10 +207,9 @@ describe('MasterWindowContainer', () => {
       }, { timeout: 8000, interval: 500 });  
     });
 
-    done();
   }, 10000);
 
-  it('reacts to websocket events and updates the UI correctly when discount is applied', async (done) => {
+  it('reacts to websocket events and updates the UI correctly when discount is applied', async () => {
     const initialState = createInitialState();
     const store = createStore(
       rootReducer,
@@ -335,10 +334,9 @@ describe('MasterWindowContainer', () => {
       });  
     });
 
-    done();
   }, 20000);
 
-  it('removes old and includes new rows on ws event', async (done) => {
+  it('removes old and includes new rows on ws event', async () => {
     const initialState = createInitialState();
     const store = createStore(
       rootReducer,
@@ -461,6 +459,5 @@ describe('MasterWindowContainer', () => {
       }, { timeout: 8000, interval: 500 });  
     });     
 
-    done();
   }, 20000);
 });

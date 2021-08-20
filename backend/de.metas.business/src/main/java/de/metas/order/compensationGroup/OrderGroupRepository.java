@@ -56,6 +56,34 @@ import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.MutableInt;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Order_CompensationGroup;
+import org.eevolution.api.ProductBOMId;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.delete;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -492,6 +520,7 @@ public class OrderGroupRepository implements GroupRepository
 		final GroupId groupId = createNewGroupId(GroupCreateRequest.builder()
 				.orderId(orderId)
 				.name(newGroupTemplate.getName())
+				.isNamePrinted(newGroupTemplate.isNamePrinted())
 				.activityId(newGroupTemplate.getActivityId())
 				.productCategoryId(newGroupTemplate.getProductCategoryId())
 				.groupTemplateId(newGroupTemplate.getId())
@@ -591,6 +620,7 @@ public class OrderGroupRepository implements GroupRepository
 		final I_C_Order_CompensationGroup groupPO = newInstance(I_C_Order_CompensationGroup.class);
 		groupPO.setC_Order_ID(request.getOrderId().getRepoId());
 		groupPO.setName(request.getName());
+		groupPO.setIsNamePrinted(request.isNamePrinted());
 
 		groupPO.setC_Activity_ID(ActivityId.toRepoId(request.getActivityId()));
 
