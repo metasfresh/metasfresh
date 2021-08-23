@@ -118,7 +118,7 @@ export const DROPUP_START = 10;
  * @constant
  * @type {integer} Used to indicate the offset position for resizing the table container
  */
-export const DROPDOWN_OFFSET_BIG = 250;
+export const DROPDOWN_OFFSET_BIG = 220;
 
 /**
  * @constant

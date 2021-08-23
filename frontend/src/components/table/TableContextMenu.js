@@ -14,7 +14,6 @@ import { setFilter } from '../../actions/ListActions';
 import keymap from '../../shortcuts/keymap';
 import {
   DROPDOWN_OFFSET_BIG,
-  TBL_CONTEXT_MENU_HEIGHT,
   TBL_CONTEXT_MENU_MAX_Y,
 } from '../../constants/Constants';
 
@@ -134,8 +133,8 @@ class TableContextMenu extends Component {
         if (references.length > 2) {
           // for more than 5 links we add scroll, no of links is not limited
           if (references.length > 5) {
-            this.contextMenu.style.height = TBL_CONTEXT_MENU_HEIGHT;
-            this.contextMenu.style.overflowY = 'auto';
+            // this.contextMenu.style.height = TBL_CONTEXT_MENU_HEIGHT;
+            // this.contextMenu.style.overflowY = 'auto';
           }
           updateTableHeight(DROPDOWN_OFFSET_BIG);
           offset = DROPDOWN_OFFSET_BIG;
@@ -235,53 +234,55 @@ class TableContextMenu extends Component {
         tabIndex="0"
         onBlur={blur}
       >
-        {contextMenu.supportZoomInto && (
-          <div
-            className="context-menu-item"
-            onClick={() => handleZoomInto(contextMenu.fieldName)}
-          >
-            <i className="meta-icon-share" />
-            {` ${counterpart.translate('window.table.zoomInto')}`}
-          </div>
-        )}
+        <div className="context-menu-main-options">
+          {contextMenu.supportZoomInto && (
+            <div
+              className="context-menu-item"
+              onClick={() => handleZoomInto(contextMenu.fieldName)}
+            >
+              <i className="meta-icon-share" />
+              {` ${counterpart.translate('window.table.zoomInto')}`}
+            </div>
+          )}
 
-        {showFieldEdit && (
-          <div className="context-menu-item" onClick={handleFieldEdit}>
-            <i className="meta-icon-edit" />
-            {` ${counterpart.translate('window.table.editField')}`}
-            <span className="tooltip-inline">{keymap.FAST_INLINE_EDIT}</span>
-          </div>
-        )}
+          {showFieldEdit && (
+            <div className="context-menu-item" onClick={handleFieldEdit}>
+              <i className="meta-icon-edit" />
+              {` ${counterpart.translate('window.table.editField')}`}
+              <span className="tooltip-inline">{keymap.FAST_INLINE_EDIT}</span>
+            </div>
+          )}
 
-        {(contextMenu.supportZoomInto || showFieldEdit) && (
-          <hr className="context-menu-separator" />
-        )}
+          {(contextMenu.supportZoomInto || showFieldEdit) && (
+            <hr className="context-menu-separator" />
+          )}
 
-        {isSelectedOne && !mainTable && (
-          <div className="context-menu-item" onClick={handleAdvancedEdit}>
-            <i className="meta-icon-edit" />
-            {` ${counterpart.translate('window.table.advancedEdit')}`}
-            <span className="tooltip-inline">{keymap.ADVANCED_EDIT}</span>
-          </div>
-        )}
+          {isSelectedOne && !mainTable && (
+            <div className="context-menu-item" onClick={handleAdvancedEdit}>
+              <i className="meta-icon-edit" />
+              {` ${counterpart.translate('window.table.advancedEdit')}`}
+              <span className="tooltip-inline">{keymap.ADVANCED_EDIT}</span>
+            </div>
+          )}
 
-        {mainTable && (
-          <div className="context-menu-item" onClick={this.handleOpenNewTab}>
-            <i className="meta-icon-file" />
-            {` ${counterpart.translate('window.table.openInNewTab')}`}
-            <span className="tooltip-inline">{keymap.OPEN_SELECTED}</span>
-          </div>
-        )}
+          {mainTable && (
+            <div className="context-menu-item" onClick={this.handleOpenNewTab}>
+              <i className="meta-icon-file" />
+              {` ${counterpart.translate('window.table.openInNewTab')}`}
+              <span className="tooltip-inline">{keymap.OPEN_SELECTED}</span>
+            </div>
+          )}
 
-        {handleDelete && (
-          <div className="context-menu-item" onClick={handleDelete}>
-            <i className="meta-icon-trash" />
-            {` ${counterpart.translate('window.delete.caption')}`}
-            <span className="tooltip-inline">{keymap.REMOVE_SELECTED}</span>
-          </div>
-        )}
+          {handleDelete && (
+            <div className="context-menu-item" onClick={handleDelete}>
+              <i className="meta-icon-trash" />
+              {` ${counterpart.translate('window.delete.caption')}`}
+              <span className="tooltip-inline">{keymap.REMOVE_SELECTED}</span>
+            </div>
+          )}
+        </div>
 
-        {this.renderReferences()}
+        <div className="context-menu-references">{this.renderReferences()}</div>
       </div>
     );
   }
