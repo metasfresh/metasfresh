@@ -34,6 +34,7 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.util.DB;
@@ -43,8 +44,8 @@ import org.slf4j.Logger;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
-import de.metas.document.IDocumentLocationBL;
-import de.metas.document.model.IDocumentLocation;
+import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.letters.api.ITextTemplateBL;
 import de.metas.letters.model.I_AD_BoilerPlate;
 import de.metas.letters.model.I_C_Letter;
@@ -155,8 +156,8 @@ public final class TextTemplateBL implements ITextTemplateBL
 
 		//
 		// Update BPartnerAddress string
-		final IDocumentLocation docLocation = new LetterDocumentLocationAdapter(letter);
-		Services.get(IDocumentLocationBL.class).setBPartnerAddress(docLocation);
+		final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
+		documentLocationBL.updateRenderedAddressAndCapturedLocation(new LetterDocumentLocationAdapter(letter));
 
 		//
 		// Check/Set BP Contact

@@ -16,6 +16,30 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Properties;
+
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.tax.api.TaxId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
+
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -673,10 +697,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		final Timestamp taxDate = io != null ? io.getMovementDate() : invoice.getDateInvoiced();
 
-		final BPartnerLocationId taxBPartnerLocationId = io != null ? BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID())
-				: BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
-
-		final I_C_BPartner_Location toBPLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(taxBPartnerLocationId);
+		final BPartnerLocationAndCaptureId taxBPartnerLocationId = io != null
+				? InOutDocumentLocationAdapterFactory.locationAdapter(io).getBPartnerLocationAndCaptureId()
+				: InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
 
 		final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
 
@@ -696,7 +719,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					.isSOTrx(isSOTrx)
 					.billDate(taxDate)
 					.billFromCountryId(fromCountryId)
-					.billToC_Location_ID(toBPLocation.getC_Location_ID())
 					.build()
 					.throwOrLogWarning(true, log);
 		}

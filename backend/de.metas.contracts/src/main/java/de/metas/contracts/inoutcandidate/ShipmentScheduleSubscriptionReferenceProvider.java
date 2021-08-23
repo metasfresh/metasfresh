@@ -2,8 +2,11 @@ package de.metas.contracts.inoutcandidate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -63,8 +66,9 @@ public class ShipmentScheduleSubscriptionReferenceProvider implements ShipmentSc
 		Check.errorIf(subscriptionLine == null,
 				"Unable to load the referenced C_SubscriptionProgress for M_ShipmentSchedule_ID={}; M_ShipmentSchedule.Record_ID={}",
 				sched.getM_ShipmentSchedule_ID(), subscriptionProgressId);
-
-		final ZonedDateTime eventDate = TimeUtil.asZonedDateTime(subscriptionLine.getEventDate());
+		
+		final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoId(sched.getAD_Org_ID()));
+		final ZonedDateTime eventDate = TimeUtil.asZonedDateTime(subscriptionLine.getEventDate(), timeZone);
 
 		return ShipmentScheduleReferencedLine.builder()
 				.recordRef(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, subscriptionLine.getC_Flatrate_Term_ID()))

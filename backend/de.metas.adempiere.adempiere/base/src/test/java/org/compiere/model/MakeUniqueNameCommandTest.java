@@ -1,17 +1,15 @@
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.location.CountryId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.MBPartnerLocation.MakeUniqueNameCommand;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.location.CountryId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -37,6 +35,7 @@ import de.metas.location.CountryId;
 
 public class MakeUniqueNameCommandTest
 {
+	private static final String companyName= "Company1";
 	private CountryId countryId_DE;
 	private CountryId countryId_RO;
 
@@ -107,7 +106,26 @@ public class MakeUniqueNameCommandTest
 				.build()
 				.execute();
 
-		assertThat(nameUnique).isEqualTo("city");
+		assertThat(nameUnique).isEqualTo("city address1");
+	}
+
+	@Test
+	public void noPresetName_no_duplicates_withCompanyName()
+	{
+		final I_C_Location address = newInstance(I_C_Location.class);
+		address.setAddress1("address1");
+		address.setAddress2("address2");
+		address.setCity("city");
+		address.setC_Country_ID(countryId_DE.getRepoId());
+
+		final String nameUnique = MakeUniqueNameCommand.builder()
+				.name(".")
+				.companyName(companyName)
+				.address(address)
+				.build()
+				.execute();
+
+		assertThat(nameUnique).isEqualTo("city address1 Company1");
 	}
 
 	@Test
@@ -143,6 +161,39 @@ public class MakeUniqueNameCommandTest
 				.execute();
 
 		assertThat(nameUnique).isEqualTo("Germany (2)");
+	}
+
+	@Test
+	public void noPresetName_addressWithOnlyCountryAndCompanyNameSet()
+	{
+		final I_C_Location address = newInstance(I_C_Location.class);
+		address.setC_Country_ID(countryId_DE.getRepoId());
+
+		final String nameUnique = MakeUniqueNameCommand.builder()
+				.name(".")
+				.address(address)
+				.companyName(companyName)
+				.existingNames(ImmutableList.of("Company1"))
+				.build()
+				.execute();
+		//The Country name is ignored because the companyName is not empty
+		assertThat(nameUnique).isEqualTo("Company1 (2)");
+	}
+
+	@Test
+	public void noPresetName_withOnlyCompanyNameSet_with_existing_name()
+	{
+		final I_C_Location address = newInstance(I_C_Location.class);
+
+		final String nameUnique = MakeUniqueNameCommand.builder()
+				.name(".")
+				.address(address)
+				.companyName(companyName)
+				.existingNames(ImmutableList.of("Company1"))
+				.build()
+				.execute();
+
+		assertThat(nameUnique).isEqualTo("Company1 (2)");
 	}
 
 }
