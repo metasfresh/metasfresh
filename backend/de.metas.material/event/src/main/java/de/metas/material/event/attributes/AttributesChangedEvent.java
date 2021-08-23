@@ -45,7 +45,7 @@ public class AttributesChangedEvent implements MaterialEvent
 {
 	public static final String TYPE = "AttributesChangedEvent";
 
-	private final EventDescriptor eventDescriptor;
+	EventDescriptor eventDescriptor;
 
 	@NonNull
 	WarehouseId warehouseId;
