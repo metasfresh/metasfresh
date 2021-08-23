@@ -37,6 +37,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class AlbertaPrescriptionRequestDAO
@@ -52,11 +53,11 @@ public class AlbertaPrescriptionRequestDAO
 	}
 
 	@NonNull
-	public List<I_Alberta_PrescriptionRequest> getForOrderId(@NonNull final OrderId orderId)
+	public List<I_Alberta_PrescriptionRequest> getByOrderIds(@NonNull final Set<OrderId> orderIds)
 	{
 		return queryBL.createQueryBuilder(I_Alberta_PrescriptionRequest.class)
-				.addEqualsFilter(I_Alberta_PrescriptionRequest.COLUMN_C_Order_ID, orderId.getRepoId())
 				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_Alberta_PrescriptionRequest.COLUMN_C_Order_ID, orderIds)
 				.create()
 				.list();
 	}

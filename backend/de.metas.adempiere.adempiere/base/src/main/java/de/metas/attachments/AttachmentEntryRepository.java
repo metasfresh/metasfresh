@@ -112,6 +112,7 @@ public class AttachmentEntryRepository
 		return result.build();
 	}
 
+	@NonNull
 	public Set<AttachmentEntry> getByReferencedRecords(@NonNull final Set<TableRecordReference> referencedRecords)
 	{
 		final ImmutableSet.Builder<AttachmentEntry> attachmentEntries = ImmutableSet.builder();

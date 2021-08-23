@@ -25,7 +25,6 @@ package de.metas.document.archive.api;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
-import org.compiere.model.I_AD_Archive;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -39,6 +38,7 @@ import lombok.Value;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_DocType;
@@ -124,6 +124,11 @@ public class ArchiveFileNameService
 			fileNameParts.add(Integer.toString(computeFileNameRequest.getRecordReference().getRecord_ID()));
 		}
 
+		if (Check.isNotBlank(computeFileNameRequest.getSuffix()))
+		{
+			fileNameParts.add(computeFileNameRequest.getSuffix());
+		}
+
 		final String fileName = fileNameParts.toString();
 		return fileName + computeFileNameRequest.fileExtension;
 	}
@@ -147,19 +152,24 @@ public class ArchiveFileNameService
 		@NonNull
 		String fileExtension;
 
+		@Nullable
+		String suffix;
+
 		@Builder
 		public ComputeFileNameRequest(
 				@Nullable final OrgId orgId,
 				@Nullable final DocTypeId docTypeId,
 				@NonNull final TableRecordReference recordReference,
 				@Nullable final String documentNo,
-				@Nullable final String fileExtension)
+				@Nullable final String fileExtension,
+				@Nullable final String suffix)
 		{
 			this.orgId = orgId;
 			this.docTypeId = docTypeId;
 			this.recordReference = recordReference;
 			this.documentNo = documentNo;
 			this.fileExtension = CoalesceUtil.coalesceNotNull(fileExtension, DEFAULT_PDF_EXTENSION);
+			this.suffix = suffix;
 		}
 	}
 }

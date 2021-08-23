@@ -1,8 +1,6 @@
 package de.metas.attachments;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableSet;
-import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
@@ -28,7 +26,7 @@ import java.util.Set;
  */
 @Value
 @ToString
-public final class AttachmentEntry
+public class AttachmentEntry
 {
 	public enum Type
 	{
@@ -182,17 +180,18 @@ public final class AttachmentEntry
 	}
 
 	@NonNull
-	public Optional<String> getFilename_Override(@NonNull final ImmutableSet<TableRecordReference> tableRecordReferences)
+	public Optional<String> getFilename_Override(@NonNull final TableRecordReference tableRecordReference)
 	{
 		if (linkedRecord2AttachmentName == null)
 		{
 			return Optional.empty();
 		}
 
-		return tableRecordReferences
-				.stream()
-				.map(linkedRecord2AttachmentName::get)
-				.filter(Check::isNotBlank)
-				.findFirst();
+		return Optional.ofNullable(linkedRecord2AttachmentName.get(tableRecordReference));
+	}
+
+	public boolean hasLinkToRecord(@NonNull final TableRecordReference tableRecordReference)
+	{
+		return linkedRecords.contains(tableRecordReference);
 	}
 }

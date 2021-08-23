@@ -23,9 +23,11 @@
 package de.metas.ui.web.order.attachmenteditor;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentLinksRequest;
 import de.metas.attachments.AttachmentTags;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -57,25 +59,33 @@ import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 
 public class OrderAttachmentRow implements IViewRow
 {
+	private static final String SYS_CONFIG_PREFIX = "de.metas.ui.web.order.attachmenteditor.OrderAttachmentRow.field";
+
 	public static final String FIELD_IsAttachToPurchaseOrder = "IsAttachToPurchaseOrder";
 	@Getter
 	@ViewColumn(seqNo = 10, widgetType = DocumentFieldWidgetType.YesNo,
-			widgetSize = WidgetSize.Small, captionKey = "IsAttachToPurchaseOrder",
-			displayed = ViewColumn.ViewColumnLayout.Displayed.SYSCONFIG,
+			widgetSize = WidgetSize.Small,
+			captionKey = "IsAttachToPurchaseOrder",
 			fieldName = FIELD_IsAttachToPurchaseOrder,
 			editor = ViewEditorRenderMode.ALWAYS)
 	private final Boolean isAttachToPurchaseOrder;
 
 	@ViewColumn(seqNo = 20, widgetType = DocumentFieldWidgetType.Lookup,
-			widgetSize = WidgetSize.Small, captionKey = I_Alberta_PrescriptionRequest.COLUMNNAME_C_BPartner_Patient_ID,
+			widgetSize = WidgetSize.Small,
+			captionKey = I_Alberta_PrescriptionRequest.COLUMNNAME_C_BPartner_Patient_ID,
 			displayed = ViewColumn.ViewColumnLayout.Displayed.SYSCONFIG,
+			displayedSysConfigPrefix = SYS_CONFIG_PREFIX,
+			fieldName = I_Alberta_PrescriptionRequest.COLUMNNAME_C_BPartner_Patient_ID,
 			editor = ViewEditorRenderMode.NEVER)
 	@Getter
 	private final LookupValue patient;
 
 	@ViewColumn(seqNo = 30, widgetType = DocumentFieldWidgetType.Lookup,
-			widgetSize = WidgetSize.Small, captionKey = I_C_BPartner_AlbertaPatient.COLUMNNAME_C_BPartner_Payer_ID,
+			widgetSize = WidgetSize.Small,
+			captionKey = I_C_BPartner_AlbertaPatient.COLUMNNAME_C_BPartner_Payer_ID,
 			displayed = ViewColumn.ViewColumnLayout.Displayed.SYSCONFIG,
+			displayedSysConfigPrefix = SYS_CONFIG_PREFIX,
+			fieldName = I_C_BPartner_AlbertaPatient.COLUMNNAME_C_BPartner_Payer_ID,
 			editor = ViewEditorRenderMode.NEVER)
 	@Getter
 	private final LookupValue payer;
@@ -83,23 +93,31 @@ public class OrderAttachmentRow implements IViewRow
 	@ViewColumn(seqNo = 40, widgetType = DocumentFieldWidgetType.Lookup,
 			widgetSize = WidgetSize.Small, captionKey = I_Alberta_PrescriptionRequest.COLUMNNAME_C_BPartner_Pharmacy_ID,
 			displayed = ViewColumn.ViewColumnLayout.Displayed.SYSCONFIG,
+			displayedSysConfigPrefix = SYS_CONFIG_PREFIX,
+			fieldName = I_Alberta_PrescriptionRequest.COLUMNNAME_C_BPartner_Pharmacy_ID,
 			editor = ViewEditorRenderMode.NEVER)
 	@Getter
 	private final LookupValue pharmacy;
 
 	@ViewColumn(seqNo = 50, widgetType = DocumentFieldWidgetType.ZonedDateTime,
-			widgetSize = WidgetSize.Small, captionKey = I_C_Order.COLUMNNAME_DatePromised,
+			widgetSize = WidgetSize.Small,
+			captionKey = I_C_Order.COLUMNNAME_DatePromised,
 			editor = ViewEditorRenderMode.NEVER)
 	@Getter
 	private final ZonedDateTime datePromised;
 
 	@ViewColumn(seqNo = 60, widgetType = DocumentFieldWidgetType.Text,
-			widgetSize = WidgetSize.Small, captionKey = I_AD_AttachmentEntry.COLUMNNAME_FileName,
+			widgetSize = WidgetSize.Small,
+			captionKey = I_AD_AttachmentEntry.COLUMNNAME_FileName,
 			editor = ViewEditorRenderMode.NEVER)
 	@Getter
 	private final String filename;
 
 	private final I_C_Order selectedPurchaseOrder;
+
+	@NonNull
+	private final Set<TableRecordReference> salesOrderRecordRefs;
+
 	private final AttachmentEntry attachmentEntry;
 	private final DocumentId rowId;
 
@@ -116,7 +134,9 @@ public class OrderAttachmentRow implements IViewRow
 			@Nullable final LookupValue payer,
 			@Nullable final LookupValue pharmacy,
 			@Nullable final ZonedDateTime datePromised,
-			@Nullable final String filename)
+			@Nullable final String filename,
+			@Nullable final Set<TableRecordReference> salesOrderRecordRefs,
+			@NonNull final DocumentId rowId)
 	{
 		this.isAttachToPurchaseOrder = isAttachToPurchaseOrder;
 		this.isAttachToPurchaseOrderInitial = isAttachToPurchaseOrderInitial;
@@ -127,7 +147,8 @@ public class OrderAttachmentRow implements IViewRow
 		this.filename = filename;
 		this.selectedPurchaseOrder = selectedPurchaseOrder;
 		this.attachmentEntry = attachmentEntry;
-		rowId = DocumentId.of(attachmentEntry.getId());
+		this.salesOrderRecordRefs = CoalesceUtil.coalesceNotNull(salesOrderRecordRefs, ImmutableSet.of());
+		this.rowId = rowId;
 
 		values = ViewRowFieldNameAndJsonValuesHolder.newInstance(OrderAttachmentRow.class);
 	}
@@ -198,7 +219,7 @@ public class OrderAttachmentRow implements IViewRow
 					? getSalesOrderRecordRef()
 					.map(salesOrderRecordRef -> AttachmentLinksRequest.builder()
 							.attachmentEntryId(attachmentEntry.getId())
-							.linksToRemove(ImmutableList.of(salesOrderRecordRef))
+							.linksToRemove(ImmutableList.copyOf(salesOrderRecordRef))
 							.tagsToRemove(emailAttachmentTag)
 							.build()
 					)
@@ -220,14 +241,11 @@ public class OrderAttachmentRow implements IViewRow
 	}
 
 	@NonNull
-	private Optional<TableRecordReference> getSalesOrderRecordRef()
+	private Optional<Set<TableRecordReference>> getSalesOrderRecordRef()
 	{
-		if (selectedPurchaseOrder.getLink_Order_ID() <= 0)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(TableRecordReference.of(I_C_Order.Table_Name, selectedPurchaseOrder.getLink_Order_ID()));
+		return salesOrderRecordRefs.isEmpty()
+				? Optional.empty()
+				: Optional.of(salesOrderRecordRefs);
 	}
 
 	private TableRecordReference getPurchaseOrderRecordRef()
@@ -240,7 +258,7 @@ public class OrderAttachmentRow implements IViewRow
 	{
 		final Set<TableRecordReference> poRelatedRecordRefs = new HashSet<>();
 		poRelatedRecordRefs.add(getPurchaseOrderRecordRef());
-		getSalesOrderRecordRef().ifPresent(poRelatedRecordRefs::add);
+		poRelatedRecordRefs.addAll(salesOrderRecordRefs);
 
 		return poRelatedRecordRefs;
 	}

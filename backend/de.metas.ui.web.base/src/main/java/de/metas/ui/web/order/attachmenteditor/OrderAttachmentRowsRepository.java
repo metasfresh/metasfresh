@@ -56,7 +56,7 @@ public class OrderAttachmentRowsRepository
 		pharmacyLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
 	}
 
-	public OrderAttachmentRows getByOrderId(@NonNull final OrderId orderId)
+	public OrderAttachmentRows getByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
 	{
 		return OrderAttachmentRowsLoader.builder()
 				.albertaPrescriptionRequestDAO(albertaPrescriptionRequestDAO)
@@ -65,7 +65,7 @@ public class OrderAttachmentRowsRepository
 				.patientLookup(patientLookup)
 				.payerLookup(payerLookup)
 				.pharmacyLookup(pharmacyLookup)
-				.orderId(orderId)
+				.purchaseOrderId(purchaseOrderId)
 				.build()
 				.load();
 	}

@@ -39,6 +39,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+import static de.metas.util.FileUtil.getFileBaseName;
 import static de.metas.util.FileUtil.getFileExtension;
 
 @Interceptor(I_AD_Attachment_MultiRef.class)
@@ -66,6 +67,8 @@ public class AD_Attachment_MultiRef
 				.map(extension -> "." + extension)
 				.orElse(null);
 
+		final String fileBaseName = getFileBaseName(attachmentEntry.getFileName());
+
 		if (tableRecordReference.getTableName().equals(I_C_Order.Table_Name))
 		{
 			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(record.getRecord_ID()));
@@ -75,6 +78,7 @@ public class AD_Attachment_MultiRef
 					.recordReference(tableRecordReference)
 					.documentNo(order.getDocumentNo())
 					.fileExtension(fileExtension)
+					.suffix(fileBaseName)
 					.build();
 
 			record.setFileName_Override(archiveFileNameService.computeFileName(computeFileNameRequest));

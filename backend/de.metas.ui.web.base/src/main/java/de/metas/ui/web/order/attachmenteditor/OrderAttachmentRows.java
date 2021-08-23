@@ -98,10 +98,7 @@ final class OrderAttachmentRows implements IEditableRowsData<OrderAttachmentRow>
 	}
 
 	@Override
-	public void invalidateAll()
-	{
-
-	}
+	public void invalidateAll() {}
 
 	@NonNull
 	Optional<ImmutableList<AttachmentLinksRequest>> createAttachmentLinksRequestList()

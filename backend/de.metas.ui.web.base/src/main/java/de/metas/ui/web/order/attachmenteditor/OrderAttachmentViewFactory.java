@@ -78,7 +78,7 @@ public class OrderAttachmentViewFactory implements IViewFactory
 
 		Check.assumeNotNull(orderId, PARAM_PURCHASE_ORDER_ID + " is mandatory!");
 
-		final OrderAttachmentRows rows = rowsRepo.getByOrderId(orderId);
+		final OrderAttachmentRows rows = rowsRepo.getByPurchaseOrderId(orderId);
 
 		return OrderAttachmentView.builder()
 				.attachmentEntryService(attachmentEntryService)
