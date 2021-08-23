@@ -17,6 +17,7 @@ import {
   TBL_CONTEXT_X_OFFSET,
   TBL_CONTEXT_MENU_X_MAX,
   TBL_CONTEXT_MENU_Y_MAX,
+  TBL_CONTEXT_POPUP_HEIGHT,
 } from '../../constants/Constants';
 
 class TableContextMenu extends Component {
@@ -195,7 +196,7 @@ class TableContextMenu extends Component {
           left: positionX,
           top: positionY,
           display,
-          height: docId ? '215px' : '',
+          height: docId ? TBL_CONTEXT_POPUP_HEIGHT : '',
         }}
         className={
           'context-menu context-menu-open panel-bordered panel-primary'

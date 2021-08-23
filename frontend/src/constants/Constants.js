@@ -206,3 +206,9 @@ export const TBL_CONTEXT_X_OFFSET = 145;
  * @type {integer} Used to indicate the offset to apply when exceeds TBL_CONTEXT_MENU_Y_MAX
  */
 export const TBL_CONTEXT_Y_OFFSET = 65;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the popup pre-defined height
+ */
+export const TBL_CONTEXT_POPUP_HEIGHT = '215px';
