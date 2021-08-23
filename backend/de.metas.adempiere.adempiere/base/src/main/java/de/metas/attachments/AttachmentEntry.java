@@ -1,6 +1,7 @@
 package de.metas.attachments;
 
 import com.google.common.base.Preconditions;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
@@ -183,14 +184,16 @@ public class AttachmentEntry
 	 * @return the attachment's filename as seen from the given {@code tableRecordReference}. Note that different records might share the same attachment, but refer to it under different file names.
 	 */
 	@NonNull
-	public Optional<String> getFilename(@NonNull final TableRecordReference tableRecordReference)
+	public String getFilename(@NonNull final TableRecordReference tableRecordReference)
 	{
 		if (linkedRecord2AttachmentName == null)
 		{
-			return Optional.empty();
+			return filename;
 		}
 
-		return Optional.ofNullable(linkedRecord2AttachmentName.get(tableRecordReference));
+		return CoalesceUtil.coalesce(
+				linkedRecord2AttachmentName.get(tableRecordReference), 
+				filename);
 	}
 
 	public boolean hasLinkToRecord(@NonNull final TableRecordReference tableRecordReference)
