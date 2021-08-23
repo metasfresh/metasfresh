@@ -1,42 +1,13 @@
 package de.metas.handlingunits.ddorder.api.impl;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.function.Function;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ISysConfigBL;
-import org.adempiere.warehouse.LocatorId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.adempiere.warehouse.api.impl.WarehouseDAO;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
-import org.eevolution.api.DDOrderLineId;
-import org.eevolution.api.IDDOrderDAO;
-import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.I_DD_OrderLine;
-import org.eevolution.model.X_DD_OrderLine;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.gui.search.IHUPackingAware;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
 import de.metas.adempiere.gui.search.impl.DDOrderLineHUPackingAware;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
@@ -62,17 +33,45 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.api.impl.WarehouseDAO;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
+import org.eevolution.api.DDOrderLineId;
+import org.eevolution.api.IDDOrderDAO;
+import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.X_DD_OrderLine;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class HUDDOrderBL implements IHUDDOrderBL
 {
 
-	
 	private static final String SYS_Config_DDOrder_isCreateMovementOnComplete = "DDOrder_isCreateMovementOnComplete";
 	private static final AdMessageKey MSG_HU_for_product = AdMessageKey.of("de.metas.handlingunits.ddorder.api.impl.HUDDOrderBL.NoHu_For_Product");
-	
+
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL .class);
+	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IDDOrderDAO ddOrderDAO = Services.get(IDDOrderDAO.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -84,7 +83,6 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	private final IHUDDOrderDAO huDDOrderDAO = Services.get(IHUDDOrderDAO.class);
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
 	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
-
 
 	@Override
 	public DDOrderLinesAllocator createMovements()
@@ -106,7 +104,11 @@ public class HUDDOrderBL implements IHUDDOrderBL
 	{
 		//
 		// Unassign the given HUs from DD_OrderLine
-		huAssignmentBL.unassignHUs(ddOrderLine, hus);
+		final Collection<HuId> huIdsToUnassign = hus.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(Collectors.toSet());
+		huAssignmentBL.unassignHUs(ddOrderLine, huIdsToUnassign);
 
 		//
 		// Remove those HUs from scheduled to move list (task 08639)
@@ -258,7 +260,7 @@ public class HUDDOrderBL implements IHUDDOrderBL
 						.setParameter("Warehouse", warehouseId)
 						.setParameter("Locator", locatorId);
 			}
-			
+
 			processDDOrderLine(ddOrderLine, hus);
 		}
 
@@ -272,17 +274,16 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.setSkipCompletingDDOrder(true)
 				.process();
 	}
-	
+
 	@Override
 	public List<I_M_HU> retrieveAvailableHusToMove(@NonNull final I_DD_OrderLine ddOrderLine, @NonNull final IQueryOrderBy queryOrderBy)
 	{
 		final IHUQueryBuilder huQueryBuilder = handlingUnitsDAO.createHUQueryBuilder().setOnlyTopLevelHUs();
 
-		
 		final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByLocatorRepoId(ddOrderLine.getM_Locator_ID());
 		final LocatorId locatorId = LocatorId.ofRepoId(warehouseId, ddOrderLine.getM_Locator_ID());
 		final ProductId productId = ProductId.ofRepoId(ddOrderLine.getM_Product_ID());
-		
+
 		huQueryBuilder.addOnlyInWarehouseId(warehouseId);
 		huQueryBuilder.addOnlyInLocatorId(locatorId.getRepoId());
 		huQueryBuilder.addOnlyWithProductId(productId);
@@ -292,10 +293,11 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.setOrderBy(queryOrderBy)
 				.list();
 	}
-	
+
 	/**
 	 * retrieve the Hus needed to move in order to be able to move the dd orderline qty
 	 * if the qty needed is less then one from storage, will split the HU
+	 *
 	 * @param ddOrderLine
 	 */
 	private List<I_M_HU> retrieveNeededHusToMove(@NonNull final I_DD_OrderLine ddOrderLine)
@@ -305,32 +307,32 @@ public class HUDDOrderBL implements IHUDDOrderBL
 				.addColumn(I_M_HU.COLUMNNAME_M_Locator_ID)
 				.addColumn(I_M_HU.COLUMN_Created)
 				.createQueryOrderBy();
-		
+
 		final List<I_M_HU> hus = retrieveAvailableHusToMove(ddOrderLine, queryOrderBy);
 		final I_C_UOM uom = uomDAO.getById(ddOrderLine.getC_UOM_ID());
 		Quantity qtyFromHus = Quantity.zero(uom);
 		Quantity unallocatedQty = Quantity.of(ddOrderLine.getQtyEntered(), uom);
 		final Quantity qtyEntered = Quantity.of(ddOrderLine.getQtyEntered(), uom);
-		
+
 		final List<I_M_HU> neededHus = new ArrayList<I_M_HU>();
-		
+
 		for (final I_M_HU hu : hus)
 		{
 			final IHUStorage storage = storageFactory.getStorage(hu);
 			final Quantity qtyActual = storage.getQtyForProductStorages(uom);
-			
+
 			if (qtyEntered.compareTo(qtyFromHus) > 0)
 			{
 				qtyFromHus = qtyFromHus.add(qtyActual);
 				unallocatedQty = qtyEntered.subtract(qtyFromHus);
-				
+
 				// transform HU if needed
 				if (unallocatedQty.signum() < 0)
 				{
 					// transform
 					final Quantity qtyCU = qtyActual.add(unallocatedQty);
 					final List<I_M_HU> createdHUs = transformHu(hu, qtyCU);
-					
+
 					// move the newlly created hus
 					neededHus.addAll(createdHUs);
 
@@ -342,9 +344,9 @@ public class HUDDOrderBL implements IHUDDOrderBL
 					neededHus.add(hu);
 				}
 			}
-			
+
 			// if we allocated entire qty, exit
-			if(unallocatedQty.signum() == 0)
+			if (unallocatedQty.signum() == 0)
 			{
 				break;
 			}
@@ -357,14 +359,14 @@ public class HUDDOrderBL implements IHUDDOrderBL
 		}
 		return neededHus;
 	}
-	
+
 	private final List<I_M_HU> transformHu(@NonNull final I_M_HU hu, @NonNull final Quantity qtyCU)
 	{
 		final HUTransformService huTransformService = HUTransformService.newInstance();
-		
+
 		return huTransformService.cuToNewCU(hu, qtyCU);
 	}
-	
+
 	@Override
 	public boolean isCreateMovementOnComplete()
 	{

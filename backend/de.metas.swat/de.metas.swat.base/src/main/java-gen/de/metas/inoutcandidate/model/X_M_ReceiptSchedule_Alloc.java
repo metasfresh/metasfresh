@@ -1,27 +1,28 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ReceiptSchedule_Alloc
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements I_M_ReceiptSchedule_Alloc, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1961227194L;
+	private static final long serialVersionUID = -1655085704L;
 
     /** Standard Constructor */
-    public X_M_ReceiptSchedule_Alloc (Properties ctx, int M_ReceiptSchedule_Alloc_ID, String trxName)
+    public X_M_ReceiptSchedule_Alloc (final Properties ctx, final int M_ReceiptSchedule_Alloc_ID, @Nullable final String trxName)
     {
       super (ctx, M_ReceiptSchedule_Alloc_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_ReceiptSchedule_Alloc (Properties ctx, ResultSet rs, String trxName)
+    public X_M_ReceiptSchedule_Alloc (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -29,18 +30,18 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public void setCatch_UOM_ID (int Catch_UOM_ID)
+	public void setCatch_UOM_ID (final int Catch_UOM_ID)
 	{
 		if (Catch_UOM_ID < 1) 
 			set_Value (COLUMNNAME_Catch_UOM_ID, null);
 		else 
-			set_Value (COLUMNNAME_Catch_UOM_ID, Integer.valueOf(Catch_UOM_ID));
+			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
 	}
 
 	@Override
@@ -79,15 +80,14 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	@Override
-	public void setDocStatus (java.lang.String DocStatus)
+	public void setDocStatus (final @Nullable java.lang.String DocStatus)
 	{
-
 		throw new IllegalArgumentException ("DocStatus is virtual column");	}
 
 	@Override
 	public java.lang.String getDocStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
+		return get_ValueAsString(COLUMNNAME_DocStatus);
 	}
 
 	@Override
@@ -97,13 +97,13 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut)
+	public void setM_InOut(final org.compiere.model.I_M_InOut M_InOut)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
 	}
 
 	@Override
-	public void setM_InOut_ID (int M_InOut_ID)
+	public void setM_InOut_ID (final int M_InOut_ID)
 	{
 		throw new IllegalArgumentException ("M_InOut_ID is virtual column");	}
 
@@ -120,18 +120,18 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setM_InOutLine(org.compiere.model.I_M_InOutLine M_InOutLine)
+	public void setM_InOutLine(final org.compiere.model.I_M_InOutLine M_InOutLine)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
 	}
 
 	@Override
-	public void setM_InOutLine_ID (int M_InOutLine_ID)
+	public void setM_InOutLine_ID (final int M_InOutLine_ID)
 	{
 		if (M_InOutLine_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
+			set_ValueNoCheck (COLUMNNAME_M_InOutLine_ID, M_InOutLine_ID);
 	}
 
 	@Override
@@ -141,12 +141,12 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setM_ReceiptSchedule_Alloc_ID (int M_ReceiptSchedule_Alloc_ID)
+	public void setM_ReceiptSchedule_Alloc_ID (final int M_ReceiptSchedule_Alloc_ID)
 	{
 		if (M_ReceiptSchedule_Alloc_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_ReceiptSchedule_Alloc_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_ReceiptSchedule_Alloc_ID, Integer.valueOf(M_ReceiptSchedule_Alloc_ID));
+			set_ValueNoCheck (COLUMNNAME_M_ReceiptSchedule_Alloc_ID, M_ReceiptSchedule_Alloc_ID);
 	}
 
 	@Override
@@ -162,18 +162,18 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setM_ReceiptSchedule(de.metas.inoutcandidate.model.I_M_ReceiptSchedule M_ReceiptSchedule)
+	public void setM_ReceiptSchedule(final de.metas.inoutcandidate.model.I_M_ReceiptSchedule M_ReceiptSchedule)
 	{
 		set_ValueFromPO(COLUMNNAME_M_ReceiptSchedule_ID, de.metas.inoutcandidate.model.I_M_ReceiptSchedule.class, M_ReceiptSchedule);
 	}
 
 	@Override
-	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
+	public void setM_ReceiptSchedule_ID (final int M_ReceiptSchedule_ID)
 	{
 		if (M_ReceiptSchedule_ID < 1) 
 			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, M_ReceiptSchedule_ID);
 	}
 
 	@Override
@@ -183,77 +183,77 @@ public class X_M_ReceiptSchedule_Alloc extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setQtyAllocated (java.math.BigDecimal QtyAllocated)
+	public void setQtyAllocated (final @Nullable BigDecimal QtyAllocated)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyAllocated, QtyAllocated);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyAllocated() 
+	public BigDecimal getQtyAllocated() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyAllocated);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyAllocated);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyAllocatedInCatchUOM (java.math.BigDecimal QtyAllocatedInCatchUOM)
+	public void setQtyAllocatedInCatchUOM (final @Nullable BigDecimal QtyAllocatedInCatchUOM)
 	{
 		set_Value (COLUMNNAME_QtyAllocatedInCatchUOM, QtyAllocatedInCatchUOM);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyAllocatedInCatchUOM() 
+	public BigDecimal getQtyAllocatedInCatchUOM() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyAllocatedInCatchUOM);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyAllocatedInCatchUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyWithIssues (java.math.BigDecimal QtyWithIssues)
+	public void setQtyWithIssues (final BigDecimal QtyWithIssues)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyWithIssues, QtyWithIssues);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyWithIssues() 
+	public BigDecimal getQtyWithIssues() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyWithIssues);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyWithIssues);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQtyWithIssuesInCatchUOM (java.math.BigDecimal QtyWithIssuesInCatchUOM)
+	public void setQtyWithIssuesInCatchUOM (final @Nullable BigDecimal QtyWithIssuesInCatchUOM)
 	{
 		set_Value (COLUMNNAME_QtyWithIssuesInCatchUOM, QtyWithIssuesInCatchUOM);
 	}
 
 	@Override
-	public java.math.BigDecimal getQtyWithIssuesInCatchUOM() 
+	public BigDecimal getQtyWithIssuesInCatchUOM() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyWithIssuesInCatchUOM);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyWithIssuesInCatchUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQualityDiscountPercent (java.math.BigDecimal QualityDiscountPercent)
+	public void setQualityDiscountPercent (final @Nullable BigDecimal QualityDiscountPercent)
 	{
 		throw new IllegalArgumentException ("QualityDiscountPercent is virtual column");	}
 
 	@Override
-	public java.math.BigDecimal getQualityDiscountPercent() 
+	public BigDecimal getQualityDiscountPercent() 
 	{
-		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
-	public void setQualityNote (java.lang.String QualityNote)
+	public void setQualityNote (final @Nullable java.lang.String QualityNote)
 	{
 		throw new IllegalArgumentException ("QualityNote is virtual column");	}
 
 	@Override
 	public java.lang.String getQualityNote() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_QualityNote);
+		return get_ValueAsString(COLUMNNAME_QualityNote);
 	}
 }

@@ -1,20 +1,25 @@
 package de.metas.contracts.refund;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.compiere.util.TimeUtil.asTimestamp;
-
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.Multimaps;
+import de.metas.bpartner.BPartnerContactId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.refund.RefundConfig.RefundMode;
+import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
+import de.metas.document.location.DocumentLocation;
+import de.metas.invoice.service.InvoiceScheduleRepository;
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.Money;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
@@ -23,24 +28,19 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.Multimaps;
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.contracts.refund.RefundContract.NextInvoiceDate;
-import de.metas.invoice.service.InvoiceScheduleRepository;
-import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.Money;
-import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Value;
+import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.getValueOverrideOrValue;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.compiere.util.TimeUtil.asTimestamp;
 
 /*
  * #%L
@@ -107,7 +107,7 @@ public class RefundInvoiceCandidateRepository
 
 		if (recordId > 0)
 		{
-			Optional.of(InvoiceCandidateId.ofRepoId(recordId));
+			return Optional.of(InvoiceCandidateId.ofRepoId(recordId));
 		}
 		return Optional.empty();
 	}
@@ -135,9 +135,9 @@ public class RefundInvoiceCandidateRepository
 		// i.e. we need the "next" IC whose DateToInvoice is after the query's date
 		//
 		final ImmutableListMultimap<Timestamp, I_C_Invoice_Candidate> //
-		dateToInvoice2InvoiceCandidateRecords = Multimaps.index(
+				dateToInvoice2InvoiceCandidateRecords = Multimaps.index(
 				records,
-				record -> (Timestamp)getValueOverrideOrValue(record, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice));
+				record -> getValueOverrideOrValue(record, I_C_Invoice_Candidate.COLUMNNAME_DateToInvoice));
 		final Timestamp minDateToInvoice = dateToInvoice2InvoiceCandidateRecords
 				.keySet()
 				.stream()
@@ -249,8 +249,14 @@ public class RefundInvoiceCandidateRepository
 			record = load(refundCandidate.getId(), I_C_Invoice_Candidate.class);
 		}
 
-		record.setBill_BPartner_ID(refundCandidate.getBpartnerId().getRepoId());
-		record.setBill_Location_ID(refundCandidate.getBpartnerLocationId().getRepoId());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(record)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(refundCandidate.getBpartnerId())
+								 .bpartnerLocationId(refundCandidate.getBpartnerLocationId())
+								 .contactId(BPartnerContactId.ofRepoIdOrNull(refundCandidate.getBpartnerId(), record.getBill_User_ID()))
+								 .build());
+
 		record.setDateToInvoice(asTimestamp(refundCandidate.getInvoiceableFrom()));
 
 		record.setM_Product_ID(RefundConfigs.extractProductId(refundCandidate.getRefundConfigs()).getRepoId());
@@ -276,7 +282,7 @@ public class RefundInvoiceCandidateRepository
 	}
 
 	@Value
-	public static final class RefundInvoiceCandidateQuery
+	public static class RefundInvoiceCandidateQuery
 	{
 		RefundContract refundContract;
 

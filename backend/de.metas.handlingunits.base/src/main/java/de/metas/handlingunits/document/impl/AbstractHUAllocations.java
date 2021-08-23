@@ -1,18 +1,6 @@
 package de.metas.handlingunits.document.impl;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUContext;
@@ -25,6 +13,19 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Abstract implementation of {@link IHUAllocations} which:
@@ -211,7 +212,11 @@ public abstract class AbstractHUAllocations implements IHUAllocations
 	{
 		final Object documentLineModel = getDocumentLineModel();
 		final String trxName = getTrxName();
-		huAssignmentBL.unassignHUs(documentLineModel, husToUnassign, trxName);
+		final Set<HuId> huIdsToUnassign = husToUnassign.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.collect(Collectors.toSet());
+		huAssignmentBL.unassignHUs(documentLineModel, huIdsToUnassign, trxName);
 		deleteAllocations(husToUnassign);
 
 		//

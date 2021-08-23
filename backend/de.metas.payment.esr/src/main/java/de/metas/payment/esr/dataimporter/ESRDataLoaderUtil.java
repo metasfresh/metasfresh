@@ -1,15 +1,5 @@
 package de.metas.payment.esr.dataimporter;
 
-import java.util.List;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
-
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
@@ -28,6 +18,7 @@ import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.api.IESRLineHandlersService;
 import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
@@ -36,6 +27,15 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Env;
+
+import java.util.List;
 
 /*
  * #%L
@@ -58,11 +58,11 @@ import lombok.experimental.UtilityClass;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
  * This class contains methods useful to any ESR data loader.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @UtilityClass
 public class ESRDataLoaderUtil
@@ -86,15 +86,16 @@ public class ESRDataLoaderUtil
 	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
 
-	public I_ESR_ImportLine newLine(@NonNull final I_ESR_Import esrImport)
+	public I_ESR_ImportLine newLine(@NonNull final I_ESR_ImportFile esrImportFile)
 	{
-		final I_ESR_ImportLine newLine = InterfaceWrapperHelper.newInstance(I_ESR_ImportLine.class, esrImport);
-		newLine.setAD_Org_ID(esrImport.getAD_Org_ID());
-		newLine.setESR_Import(esrImport);
+		final I_ESR_ImportLine newLine = InterfaceWrapperHelper.newInstance(I_ESR_ImportLine.class, esrImportFile);
+		newLine.setAD_Org_ID(esrImportFile.getAD_Org_ID());
+		newLine.setESR_Import_ID(esrImportFile.getESR_Import_ID());
+		newLine.setESR_ImportFile_ID(esrImportFile.getESR_ImportFile_ID());
 
 		// all lines of one esrImport have the same C_BP_BankAccount_ID, so in future these two column can be removed from the line
 
-		int bankAccountRecordId = esrImport.getC_BP_BankAccount_ID();
+		int bankAccountRecordId = esrImportFile.getC_BP_BankAccount_ID();
 		Check.assumeGreaterThanZero(bankAccountRecordId, "C_BP_BankAccount_ID is mandatory in ESR_Import");
 
 		newLine.setC_BP_BankAccount_ID(bankAccountRecordId);
@@ -132,8 +133,8 @@ public class ESRDataLoaderUtil
 		if (esrReferenceNumberDocument == null)
 		{
 			addMatchErrorMsg(importLine,
-					Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_NO_ESR_NO_FOUND_IN_DB_1P,
-							new Object[] { completeEsrReferenceNumberStr }));
+							 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_NO_ESR_NO_FOUND_IN_DB_1P,
+															   new Object[] { completeEsrReferenceNumberStr }));
 		}
 		else
 		{
@@ -173,7 +174,7 @@ public class ESRDataLoaderUtil
 				addMatchErrorMsg(
 						importLine,
 						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P,
-								new Object[] { completeEsrReferenceNumberStr, tableName }));
+														  new Object[] { completeEsrReferenceNumberStr, tableName }));
 			}
 		}
 
@@ -283,7 +284,7 @@ public class ESRDataLoaderUtil
 			if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
 			{
 				addMatchErrorMsg(importLine,
-						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_INVOICE_ORG));
+								 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_INVOICE_ORG));
 			}
 			// check the org: should not match with invoices which have the partner from other org
 			else if (Services.get(IESRLineHandlersService.class).applyESRMatchingBPartnerOfTheInvoice(invoice, importLine))
@@ -311,26 +312,26 @@ public class ESRDataLoaderUtil
 					else
 					{
 						addMatchErrorMsg(importLine,
-								Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_BPARTNER_VALUES, new Object[] {
-										invoicePartner.getValue(),
-										bpValue
-								}));
+										 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_BPARTNER_VALUES, new Object[] {
+												 invoicePartner.getValue(),
+												 bpValue
+										 }));
 					}
 				}
 
 				if (!invoiceDocumentNo.equals(documentNo))
 				{
 					addMatchErrorMsg(importLine,
-							Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_DOCUMENT_NOS, new Object[] {
-									invoiceDocumentNo,
-									documentNo
-							}));
+									 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_DOCUMENT_NOS, new Object[] {
+											 invoiceDocumentNo,
+											 documentNo
+									 }));
 				}
 			}
 			else
 			{
 				addMatchErrorMsg(importLine,
-						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
+								 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
 			}
 
 		}
@@ -345,7 +346,7 @@ public class ESRDataLoaderUtil
 				if (invoiceFallback.getAD_Org_ID() != importLine.getAD_Org_ID())
 				{
 					addMatchErrorMsg(importLine,
-							Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_INVOICE_ORG));
+									 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_INVOICE_ORG));
 				}
 				else
 				{
@@ -408,21 +409,21 @@ public class ESRDataLoaderUtil
 		return str + "; " + msg;
 	}
 
-	public void evaluateESRAccountNumber(final I_ESR_Import esrImport, final I_ESR_ImportLine importLine)
+	public void evaluateESRAccountNumber(final I_ESR_ImportFile esrImportFile, final I_ESR_ImportLine importLine)
 	{
-		int bankAccountRecordId = esrImport.getC_BP_BankAccount_ID();
+		int bankAccountRecordId = esrImportFile.getC_BP_BankAccount_ID();
 		Check.assumeGreaterThanZero(bankAccountRecordId, "C_BP_BankAccount_ID is mandatory in ESR_Import");
 
 		final BankAccount bankAccount = bpBankAccountRepo.getById(BankAccountId.ofRepoId(bankAccountRecordId));
 
 		final String postAcctNo = importLine.getESRPostParticipantNumber();
-		
-		if (isQRR(importLine) )
+
+		if (isQRR(importLine))
 		{
 			if (!bankAccount.isAccountNoMatching(postAcctNo))
 			{
-			ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
-					new Object[] { bankAccount, postAcctNo }));
+				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
+																								 new Object[] { bankAccount, postAcctNo }));
 			}
 		}
 		else
@@ -444,17 +445,16 @@ public class ESRDataLoaderUtil
 			{
 
 				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
-						new Object[] { postAcctNo }));
+																								 new Object[] { postAcctNo }));
 			}
 		}
 
 	}
-	
+
 	private static boolean isQRR(@NonNull final I_ESR_ImportLine importLine)
 	{
 		return ESRType.TYPE_QRR.getCode().equals(importLine.getType());
 	}
-	
 
 	private boolean existsPostFinanceUserNumberFitsPostAcctNo(final List<I_ESR_PostFinanceUserNumber> postFinanceUserNumbers, @NonNull final String postAcctNo)
 	{

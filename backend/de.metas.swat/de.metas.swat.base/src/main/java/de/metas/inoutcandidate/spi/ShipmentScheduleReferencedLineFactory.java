@@ -33,8 +33,6 @@ public class ShipmentScheduleReferencedLineFactory
 	/**
 	 * May not be {@code null}
 	 *
-	 * @param shipmentSchedule
-	 * @return
 	 * @throws UnsupportedShipmentScheduleTableId if no {@link ShipmentScheduleReferencedLineProvider} is available for the given {@code shipmentSchedule}'s {@code AD_Table_ID}.
 	 */
 	public ShipmentScheduleReferencedLine createFor(@NonNull final I_M_ShipmentSchedule shipmentSchedule)

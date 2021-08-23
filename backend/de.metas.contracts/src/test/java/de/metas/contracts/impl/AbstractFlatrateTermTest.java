@@ -1,6 +1,8 @@
 package de.metas.contracts.impl;
 
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.CreateFlatrateTermRequest;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -28,6 +30,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
@@ -143,6 +146,7 @@ public abstract class AbstractFlatrateTermTest
 		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 	}
 
 	protected void initialize()
