@@ -179,8 +179,11 @@ public class AttachmentEntry
 				.build();
 	}
 
+	/**
+	 * @return the attachment's filename as seen from the given {@code tableRecordReference}. Note that different records might share the same attachment, but refer to it under different file names.
+	 */
 	@NonNull
-	public Optional<String> getFilename_Override(@NonNull final TableRecordReference tableRecordReference)
+	public Optional<String> getFilename(@NonNull final TableRecordReference tableRecordReference)
 	{
 		if (linkedRecord2AttachmentName == null)
 		{

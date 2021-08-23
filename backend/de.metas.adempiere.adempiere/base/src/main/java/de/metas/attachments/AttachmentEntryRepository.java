@@ -215,10 +215,7 @@ public class AttachmentEntryRepository
 
 		syncLinkedRecords(attachmentEntry, attachmentEntryRecord);
 
-		return attachmentEntry
-				.toBuilder()
-				.id(AttachmentEntryId.ofRepoId(attachmentEntryRecord.getAD_AttachmentEntry_ID()))
-				.build();
+		return forRecord(attachmentEntryRecord);
 	}
 
 	private void syncLinkedRecords(

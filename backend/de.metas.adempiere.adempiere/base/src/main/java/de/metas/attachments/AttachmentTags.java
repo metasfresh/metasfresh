@@ -1,25 +1,23 @@
 package de.metas.attachments;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
 import com.google.common.base.Joiner;
 import com.google.common.base.Joiner.MapJoiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.base.Splitter.MapSplitter;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Singular;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L
@@ -77,7 +75,7 @@ public final class AttachmentTags
 	 * and when a PDF is created for the invoice to which it is attached, then this attachment's PDF shall be appended to that invoice's PDF.
 	 */
 	public static final String TAGNAME_CONCATENATE_PDF_TO_INVOICE_PDF = "Concatenate_Pdf_to_InvoicePdf";
-	public static final String TAGNAME_SEND_VIA_EMAIL = "send-via-email";
+	public static final String TAGNAME_SEND_VIA_EMAIL = "Send_via_Email";
 	public static final String TAGNAME_BPARTNER_RECIPIENT_ID = "C_BPartner_Recipient_ID";
 	public static final String TAGNAME_STORED_PREFIX = "Stored_";
 
