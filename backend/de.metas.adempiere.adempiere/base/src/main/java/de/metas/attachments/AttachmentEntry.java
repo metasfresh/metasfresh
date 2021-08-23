@@ -191,7 +191,7 @@ public class AttachmentEntry
 			return filename;
 		}
 
-		return CoalesceUtil.coalesce(
+		return CoalesceUtil.coalesceNotNull(
 				linkedRecord2AttachmentName.get(tableRecordReference), 
 				filename);
 	}
