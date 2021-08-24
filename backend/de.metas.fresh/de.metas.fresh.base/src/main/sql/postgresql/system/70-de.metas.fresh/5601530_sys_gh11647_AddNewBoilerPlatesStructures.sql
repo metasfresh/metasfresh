@@ -1244,3 +1244,418 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,652571,0,544244,546315,588073,'F',TO_TIMESTAMP('2021-08-23 17:33:00','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','Y','N','N','N',0,'Mandant',50,0,0,TO_TIMESTAMP('2021-08-23 17:33:00','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+-------------
+
+
+-- 2021-08-24T09:05:25.579Z
+-- URL zum Konzept
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,InternalName,IsActive,IsAdvancedTab,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,579561,0,544245,541765,144,'Y',TO_TIMESTAMP('2021-08-24 11:05:25','YYYY-MM-DD HH24:MI:SS'),100,'D','N','N','AD_Product_Category_BoilerPlate','Y','N','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Produktkategorie textbaustein','N',40,0,TO_TIMESTAMP('2021-08-24 11:05:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:05:25.651Z
+-- URL zum Konzept
+INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Tab_ID=544245 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
+;
+
+-- 2021-08-24T09:05:25.690Z
+-- URL zum Konzept
+/* DDL */  select update_tab_translation_from_ad_element(579561) 
+;
+
+-- 2021-08-24T09:05:25.709Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(544245)
+;
+
+-- 2021-08-24T09:05:44.998Z
+-- URL zum Konzept
+UPDATE AD_Tab SET AD_Column_ID=575389, Parent_Column_ID=2020, TabLevel=1,Updated=TO_TIMESTAMP('2021-08-24 11:05:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=544245
+;
+
+-- 2021-08-24T09:05:51.113Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575373,652580,0,544245,TO_TIMESTAMP('2021-08-24 11:05:51','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.',22,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','N','N','N','Y','N','Mandant',TO_TIMESTAMP('2021-08-24 11:05:51','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:05:51.125Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=652580 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-08-24T09:05:51.134Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102) 
+;
+
+-- 2021-08-24T09:05:52.486Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652580
+;
+
+-- 2021-08-24T09:05:52.510Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(652580)
+;
+
+-- 2021-08-24T09:05:52.636Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575374,652581,0,544245,TO_TIMESTAMP('2021-08-24 11:05:52','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten',22,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','N','N','N','N','N','Sektion',TO_TIMESTAMP('2021-08-24 11:05:52','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:05:52.649Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=652581 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-08-24T09:05:52.650Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113) 
+;
+
+-- 2021-08-24T09:05:53.184Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652581
+;
+
+-- 2021-08-24T09:05:53.192Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(652581)
+;
+
+-- 2021-08-24T09:05:53.265Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575375,652582,0,544245,TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100,22,'D','Y','N','N','N','N','N','N','N','Produktkategorie textbaustein',TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:05:53.269Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=652582 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-08-24T09:05:53.270Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579561) 
+;
+
+-- 2021-08-24T09:05:53.273Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652582
+;
+
+-- 2021-08-24T09:05:53.274Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(652582)
+;
+
+-- 2021-08-24T09:05:53.328Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575380,652583,0,544245,TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:05:53.331Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=652583 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-08-24T09:05:53.332Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348) 
+;
+
+-- 2021-08-24T09:05:53.758Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652583
+;
+
+-- 2021-08-24T09:05:53.758Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(652583)
+;
+
+-- 2021-08-24T09:05:53.850Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575387,652584,0,544245,TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','N','N','N','N','N','N','N','Textbaustein',TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:05:53.855Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=652584 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-08-24T09:05:53.856Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(504410) 
+;
+
+-- 2021-08-24T09:05:53.865Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652584
+;
+
+-- 2021-08-24T09:05:53.866Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(652584)
+;
+
+-- 2021-08-24T09:05:53.929Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575388,652585,0,544245,TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100,'Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst',22,'D','"Reihenfolge" bestimmt die Reihenfolge der Einträge','Y','N','N','N','N','N','N','N','Reihenfolge',TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:05:53.933Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=652585 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-08-24T09:05:53.934Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(566) 
+;
+
+-- 2021-08-24T09:05:53.951Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652585
+;
+
+-- 2021-08-24T09:05:53.951Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(652585)
+;
+
+-- 2021-08-24T09:05:54.025Z
+-- URL zum Konzept
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,575389,652586,0,544245,TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100,'Kategorie eines Produktes',10,'D','Identifiziert die Kategorie zu der ein Produkt gehört. Produktkategorien werden für Preisfindung und Auswahl verwendet.','Y','N','N','N','N','N','N','N','Produkt Kategorie',TO_TIMESTAMP('2021-08-24 11:05:53','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:05:54.030Z
+-- URL zum Konzept
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=652586 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2021-08-24T09:05:54.032Z
+-- URL zum Konzept
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(453) 
+;
+
+-- 2021-08-24T09:05:54.086Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652586
+;
+
+-- 2021-08-24T09:05:54.086Z
+-- URL zum Konzept
+/* DDL */ select AD_Element_Link_Create_Missing_Field(652586)
+;
+
+-- 2021-08-24T09:06:08.148Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,544245,543355,TO_TIMESTAMP('2021-08-24 11:06:08','YYYY-MM-DD HH24:MI:SS'),100,'Y','main',10,TO_TIMESTAMP('2021-08-24 11:06:08','YYYY-MM-DD HH24:MI:SS'),100,'main')
+;
+
+-- 2021-08-24T09:06:08.158Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_UI_Section_ID=543355 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2021-08-24T09:06:11.476Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,544181,543355,TO_TIMESTAMP('2021-08-24 11:06:11','YYYY-MM-DD HH24:MI:SS'),100,'Y',10,TO_TIMESTAMP('2021-08-24 11:06:11','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:06:17.315Z
+-- URL zum Konzept
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,544181,546316,TO_TIMESTAMP('2021-08-24 11:06:17','YYYY-MM-DD HH24:MI:SS'),100,'Y','main',10,TO_TIMESTAMP('2021-08-24 11:06:17','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:06:27.501Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,652584,0,544245,546316,588077,'F',TO_TIMESTAMP('2021-08-24 11:06:27','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Textbaustein',10,0,0,TO_TIMESTAMP('2021-08-24 11:06:27','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:06:34.807Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,652583,0,544245,546316,588078,'F',TO_TIMESTAMP('2021-08-24 11:06:34','YYYY-MM-DD HH24:MI:SS'),100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','N','Y','N','N','N',0,'Aktiv',20,0,0,TO_TIMESTAMP('2021-08-24 11:06:34','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:06:47.543Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,652585,0,544245,546316,588079,'F',TO_TIMESTAMP('2021-08-24 11:06:47','YYYY-MM-DD HH24:MI:SS'),100,'Zur Bestimmung der Reihenfolge der Einträge; die kleinste Zahl kommt zuerst','"Reihenfolge" bestimmt die Reihenfolge der Einträge','Y','N','N','Y','N','N','N',0,'Reihenfolge',30,0,0,TO_TIMESTAMP('2021-08-24 11:06:47','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:06:54.942Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,652581,0,544245,546316,588080,'F',TO_TIMESTAMP('2021-08-24 11:06:54','YYYY-MM-DD HH24:MI:SS'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','N','Y','N','N','N',0,'Sektion',40,0,0,TO_TIMESTAMP('2021-08-24 11:06:54','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:07:01.020Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,652580,0,544245,546316,588081,'F',TO_TIMESTAMP('2021-08-24 11:07:00','YYYY-MM-DD HH24:MI:SS'),100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','N','Y','N','N','N',0,'Mandant',50,0,0,TO_TIMESTAMP('2021-08-24 11:07:00','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2021-08-24T09:07:16.437Z
+-- URL zum Konzept
+UPDATE AD_Table SET AD_Window_ID=144,Updated=TO_TIMESTAMP('2021-08-24 11:07:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=541765
+;
+
+-- 2021-08-24T09:08:16.074Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=588068
+;
+
+-- 2021-08-24T09:08:16.089Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652563
+;
+
+-- 2021-08-24T09:08:16.094Z
+-- URL zum Konzept
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=652563
+;
+
+-- 2021-08-24T09:08:16.101Z
+-- URL zum Konzept
+DELETE FROM AD_Field WHERE AD_Field_ID=652563
+;
+
+-- 2021-08-24T09:08:16.116Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=588067
+;
+
+-- 2021-08-24T09:08:16.120Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652564
+;
+
+-- 2021-08-24T09:08:16.120Z
+-- URL zum Konzept
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=652564
+;
+
+-- 2021-08-24T09:08:16.122Z
+-- URL zum Konzept
+DELETE FROM AD_Field WHERE AD_Field_ID=652564
+;
+
+-- 2021-08-24T09:08:16.129Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652565
+;
+
+-- 2021-08-24T09:08:16.129Z
+-- URL zum Konzept
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=652565
+;
+
+-- 2021-08-24T09:08:16.134Z
+-- URL zum Konzept
+DELETE FROM AD_Field WHERE AD_Field_ID=652565
+;
+
+-- 2021-08-24T09:08:16.143Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=588065
+;
+
+-- 2021-08-24T09:08:16.146Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652566
+;
+
+-- 2021-08-24T09:08:16.146Z
+-- URL zum Konzept
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=652566
+;
+
+-- 2021-08-24T09:08:16.147Z
+-- URL zum Konzept
+DELETE FROM AD_Field WHERE AD_Field_ID=652566
+;
+
+-- 2021-08-24T09:08:16.158Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=588064
+;
+
+-- 2021-08-24T09:08:16.161Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652567
+;
+
+-- 2021-08-24T09:08:16.161Z
+-- URL zum Konzept
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=652567
+;
+
+-- 2021-08-24T09:08:16.162Z
+-- URL zum Konzept
+DELETE FROM AD_Field WHERE AD_Field_ID=652567
+;
+
+-- 2021-08-24T09:08:16.171Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=588066
+;
+
+-- 2021-08-24T09:08:16.173Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652568
+;
+
+-- 2021-08-24T09:08:16.174Z
+-- URL zum Konzept
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=652568
+;
+
+-- 2021-08-24T09:08:16.175Z
+-- URL zum Konzept
+DELETE FROM AD_Field WHERE AD_Field_ID=652568
+;
+
+-- 2021-08-24T09:08:16.182Z
+-- URL zum Konzept
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=652569
+;
+
+-- 2021-08-24T09:08:16.183Z
+-- URL zum Konzept
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=652569
+;
+
+-- 2021-08-24T09:08:16.184Z
+-- URL zum Konzept
+DELETE FROM AD_Field WHERE AD_Field_ID=652569
+;
+
+-- 2021-08-24T09:08:16.194Z
+-- URL zum Konzept
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=546314
+;
+
+-- 2021-08-24T09:08:16.197Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Column WHERE AD_UI_Column_ID=544179
+;
+
+-- 2021-08-24T09:08:16.199Z
+-- URL zum Konzept
+DELETE FROM  AD_UI_Section_Trl WHERE AD_UI_Section_ID=543353
+;
+
+-- 2021-08-24T09:08:16.203Z
+-- URL zum Konzept
+DELETE FROM AD_UI_Section WHERE AD_UI_Section_ID=543353
+;
+
+-- 2021-08-24T09:08:16.206Z
+-- URL zum Konzept
+DELETE FROM  AD_Tab_Trl WHERE AD_Tab_ID=544243
+;
+
+-- 2021-08-24T09:08:16.207Z
+-- URL zum Konzept
+DELETE FROM AD_Tab WHERE AD_Tab_ID=544243
+;
+
+
