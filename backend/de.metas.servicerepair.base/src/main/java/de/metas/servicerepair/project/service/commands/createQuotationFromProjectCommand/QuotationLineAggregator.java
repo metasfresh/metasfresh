@@ -116,8 +116,9 @@ class QuotationLineAggregator
 			final OrderLineDetailCreateRequest detail = computeOrderLineDetailCreateRequest(costCollector);
 			details.add(detail);
 
-			// NOTE: use the price from price list
-			// manualPrice = manualPrice != null ? manualPrice.add(detail.getAmount()) : detail.getAmount();
+			manualPrice = costCollector.getWarrantyCase().isYes()
+					? Money.zero(priceCalculator.getCurrencyId())
+					: null; // NOTE: use the price from price list
 		}
 		else
 		{
@@ -130,9 +131,9 @@ class QuotationLineAggregator
 	public void collectNotMatchingItem(@NonNull final ServiceRepairProjectCostCollector costCollector)
 	{
 		final ServiceRepairProjectCostCollectorType type = key.getType();
-		if(type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
+		if (type == ServiceRepairProjectCostCollectorType.RepairingConsumption)
 		{
-			if(costCollector.getType() == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
+			if (costCollector.getType() == ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
 			{
 				// NOTE: usually we increment with ONE.
 				// We are adding as BigDecimal to avoid cases when the product to return and the service product have different UOMs.

@@ -100,7 +100,9 @@ export default class Table extends PureComponent {
   };
 
   handleClick = (e, item) => {
-    const { keyProperty, selected, onSelect, onDeselect } = this.props;
+    const { keyProperty, selected, onSelect, onDeselect, featureType } =
+      this.props;
+    const disableMultiSel = featureType === 'SEARCH' ? true : false;
     const id = item[keyProperty];
 
     if (e && e.button === 0) {
@@ -113,12 +115,14 @@ export default class Table extends PureComponent {
         if (isSelected) {
           onDeselect(id);
         } else {
+          // selection with [CTRL + click] happens here
           let newSelectionItems =
             selected && !selected.includes(id) ? [...selected, id] : [id];
-          onSelect(newSelectionItems);
+          disableMultiSel ? onSelect(id) : onSelect(newSelectionItems);
         }
       } else if (selectRange) {
-        if (isAnySelected) {
+        // selection using [SHIFT + click] to select a range happens here
+        if (isAnySelected && !disableMultiSel) {
           const newSelection = this.getProductRange(id);
           onSelect(newSelection);
         } else {
@@ -239,9 +243,8 @@ export default class Table extends PureComponent {
 
               handleSelect(array[currentId + 1], false, 0);
 
-              const focusedElem = document.getElementsByClassName(
-                'js-attributes'
-              )[0];
+              const focusedElem =
+                document.getElementsByClassName('js-attributes')[0];
 
               if (focusedElem) {
                 focusedElem.getElementsByTagName('input')[0].focus();
@@ -421,8 +424,11 @@ export default class Table extends PureComponent {
 
   updateHeight = (heightNew) => {
     heightNew = heightNew ? heightNew : 0;
-    this.tableContainer.style.paddingBottom = `${this.initialPaddingBottom +
-      heightNew}px`;
+    if (this.tableContainer) {
+      this.tableContainer.style.paddingBottom = `${
+        this.initialPaddingBottom + heightNew
+      }px`;
+    }
   };
 
   render() {

@@ -23,6 +23,7 @@
 package de.metas.order;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
@@ -31,6 +32,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.project.ProjectId;
 import de.metas.request.RequestTypeId;
+import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
@@ -38,7 +40,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_PriceList_Version;
 
 import javax.annotation.Nullable;
@@ -81,6 +82,9 @@ public interface IOrderBL extends ISingletonService
 
 	BPartnerLocationId getBillToLocationId(I_C_Order order);
 
+	@Nullable
+	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
+		
 	@NonNull BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
@@ -113,18 +117,18 @@ public interface IOrderBL extends ISingletonService
 
 	PriceListId retrievePriceListId(I_C_Order order, PricingSystemId pricingSystemIdOverride);
 
-	/**
-	 * Set Target Sales Document Type.
-	 * This method is also setting IsSOTrx to true.
-	 *
-	 * @param soDocSubType sales DocSubType
-	 */
-	void setDocTypeTargetId(I_C_Order order, String soDocSubType);
 
 	/**
 	 * Sets Target Document Type based on {@link I_C_Order#isSOTrx()} (Standard Order or PO)
 	 */
-	void setDocTypeTargetId(I_C_Order order);
+	void setDefaultDocTypeTargetId(I_C_Order order);
+
+	void setPODocTypeTargetId(I_C_Order order, String poDocSubType);
+
+	/**
+	 * Set Target Sales Document Type.
+	 */
+	void setSODocTypeTargetId(I_C_Order order, final String soDocSubType);
 
 	void setDocTypeTargetIdAndUpdateDescription(I_C_Order order, DocTypeId docTypeId);
 
@@ -175,10 +179,10 @@ public interface IOrderBL extends ISingletonService
 	 * Is Tax Included in Amount.
 	 *
 	 * @param tax optional
-	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
+	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, for the given
 	 * <code>order</code> the value of {@link I_C_Order#isTaxIncluded()} is returned.
 	 */
-	boolean isTaxIncluded(I_C_Order order, I_C_Tax tax);
+	boolean isTaxIncluded(I_C_Order order, Tax tax);
 
 	/**
 	 * Close given order line by setting the line's <code>QtyOrdered</code> to the current <code>QtyDelviered</code>.
@@ -223,6 +227,8 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isRequisition(@NonNull I_C_Order order);
 
+	boolean isMediated(@NonNull I_C_Order order);
+
 	boolean isPrepay(OrderId orderId);
 
 	boolean isPrepay(I_C_Order order);
@@ -252,4 +258,6 @@ public interface IOrderBL extends ISingletonService
 	void validateHaddexDate(I_C_Order order);
 
 	boolean isHaddexOrder(I_C_Order order);
+
+	void closeOrder(final OrderId orderId);
 }

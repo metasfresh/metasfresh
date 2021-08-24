@@ -6,7 +6,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for C_BPartner_Location
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_BPartner_Location 
 {
 
@@ -27,6 +27,29 @@ public interface I_C_BPartner_Location
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Address.
+	 * Anschrift
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAddress (@Nullable java.lang.String Address);
+
+	/**
+	 * Get Address.
+	 * Anschrift
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAddress();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Address = new ModelColumn<>(I_C_BPartner_Location.class, "Address", null);
+	String COLUMNNAME_Address = "Address";
 
 	/**
 	 * Set Organisation.
@@ -51,27 +74,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Address.
-	 * Anschrift
+	 * Set Org Mapping.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setAddress (@Nullable String Address);
+	void setAD_Org_Mapping_ID (int AD_Org_Mapping_ID);
 
 	/**
-	 * Get Address.
-	 * Anschrift
+	 * Get Org Mapping.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getAddress();
+	int getAD_Org_Mapping_ID();
 
-	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Address = new ModelColumn<>(I_C_BPartner_Location.class, "Address", null);
-	String COLUMNNAME_Address = "Address";
+	@Nullable org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping();
+
+	void setAD_Org_Mapping(@Nullable org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping);
+
+	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_AD_Org_Mapping> COLUMN_AD_Org_Mapping_ID = new ModelColumn<>(I_C_BPartner_Location.class, "AD_Org_Mapping_ID", org.compiere.model.I_AD_Org_Mapping.class);
+	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
 
 	/**
 	 * Set Partner Name.
@@ -80,7 +105,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setBPartnerName (@Nullable String BPartnerName);
+	void setBPartnerName (@Nullable java.lang.String BPartnerName);
 
 	/**
 	 * Get Partner Name.
@@ -89,7 +114,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getBPartnerName();
+	@Nullable java.lang.String getBPartnerName();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_BPartner_Location.class, "BPartnerName", null);
 	String COLUMNNAME_BPartnerName = "BPartnerName";
@@ -155,39 +180,12 @@ public interface I_C_BPartner_Location
 	 */
 	int getC_Location_ID();
 
-	I_C_Location getC_Location();
+	org.compiere.model.I_C_Location getC_Location();
 
-	void setC_Location(I_C_Location C_Location);
+	void setC_Location(org.compiere.model.I_C_Location C_Location);
 
-	ModelColumn<I_C_BPartner_Location, I_C_Location> COLUMN_C_Location_ID = new ModelColumn<>(I_C_BPartner_Location.class, "C_Location_ID", I_C_Location.class);
+	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_Location> COLUMN_C_Location_ID = new ModelColumn<>(I_C_BPartner_Location.class, "C_Location_ID", org.compiere.model.I_C_Location.class);
 	String COLUMNNAME_C_Location_ID = "C_Location_ID";
-
-	/**
-	 * Set Sales Region.
-	 * Sales coverage region
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_SalesRegion_ID (int C_SalesRegion_ID);
-
-	/**
-	 * Get Sales Region.
-	 * Sales coverage region
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_SalesRegion_ID();
-
-	@Nullable I_C_SalesRegion getC_SalesRegion();
-
-	void setC_SalesRegion(@Nullable I_C_SalesRegion C_SalesRegion);
-
-	ModelColumn<I_C_BPartner_Location, I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new ModelColumn<>(I_C_BPartner_Location.class, "C_SalesRegion_ID", I_C_SalesRegion.class);
-	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
 
 	/**
 	 * Get Created.
@@ -215,13 +213,40 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Sales Region.
+	 * Sales coverage region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_SalesRegion_ID (int C_SalesRegion_ID);
+
+	/**
+	 * Get Sales Region.
+	 * Sales coverage region
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_SalesRegion_ID();
+
+	@Nullable org.compiere.model.I_C_SalesRegion getC_SalesRegion();
+
+	void setC_SalesRegion(@Nullable org.compiere.model.I_C_SalesRegion C_SalesRegion);
+
+	ModelColumn<I_C_BPartner_Location, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new ModelColumn<>(I_C_BPartner_Location.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
+	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+
+	/**
 	 * Set eMail.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEMail (@Nullable String EMail);
+	void setEMail (@Nullable java.lang.String EMail);
 
 	/**
 	 * Get eMail.
@@ -230,7 +255,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEMail();
+	@Nullable java.lang.String getEMail();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_EMail = new ModelColumn<>(I_C_BPartner_Location.class, "EMail", null);
 	String COLUMNNAME_EMail = "EMail";
@@ -243,7 +268,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEMail2 (@Nullable String EMail2);
+	void setEMail2 (@Nullable java.lang.String EMail2);
 
 	/**
 	 * Get Alternative eMail.
@@ -253,7 +278,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEMail2();
+	@Nullable java.lang.String getEMail2();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_EMail2 = new ModelColumn<>(I_C_BPartner_Location.class, "EMail2", null);
 	String COLUMNNAME_EMail2 = "EMail2";
@@ -265,7 +290,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalId (@Nullable String ExternalId);
+	void setExternalId (@Nullable java.lang.String ExternalId);
 
 	/**
 	 * Get External ID.
@@ -274,7 +299,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getExternalId();
+	@Nullable java.lang.String getExternalId();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_BPartner_Location.class, "ExternalId", null);
 	String COLUMNNAME_ExternalId = "ExternalId";
@@ -287,7 +312,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setFax (@Nullable String Fax);
+	void setFax (@Nullable java.lang.String Fax);
 
 	/**
 	 * Get Fax.
@@ -297,7 +322,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getFax();
+	@Nullable java.lang.String getFax();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Fax = new ModelColumn<>(I_C_BPartner_Location.class, "Fax", null);
 	String COLUMNNAME_Fax = "Fax";
@@ -310,7 +335,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setFax2 (@Nullable String Fax2);
+	void setFax2 (@Nullable java.lang.String Fax2);
 
 	/**
 	 * Get Fax2.
@@ -320,7 +345,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getFax2();
+	@Nullable java.lang.String getFax2();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Fax2 = new ModelColumn<>(I_C_BPartner_Location.class, "Fax2", null);
 	String COLUMNNAME_Fax2 = "Fax2";
@@ -332,7 +357,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setGLN (@Nullable String GLN);
+	void setGLN (@Nullable java.lang.String GLN);
 
 	/**
 	 * Get GLN.
@@ -341,7 +366,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getGLN();
+	@Nullable java.lang.String getGLN();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_GLN = new ModelColumn<>(I_C_BPartner_Location.class, "GLN", null);
 	String COLUMNNAME_GLN = "GLN";
@@ -465,7 +490,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setISDN (@Nullable String ISDN);
+	void setISDN (@Nullable java.lang.String ISDN);
 
 	/**
 	 * Get ISDN.
@@ -475,7 +500,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getISDN();
+	@Nullable java.lang.String getISDN();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_ISDN = new ModelColumn<>(I_C_BPartner_Location.class, "ISDN", null);
 	String COLUMNNAME_ISDN = "ISDN";
@@ -642,7 +667,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -651,7 +676,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Name = new ModelColumn<>(I_C_BPartner_Location.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
@@ -664,7 +689,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPhone (@Nullable String Phone);
+	void setPhone (@Nullable java.lang.String Phone);
 
 	/**
 	 * Get Phone.
@@ -674,7 +699,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPhone();
+	@Nullable java.lang.String getPhone();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Phone = new ModelColumn<>(I_C_BPartner_Location.class, "Phone", null);
 	String COLUMNNAME_Phone = "Phone";
@@ -686,7 +711,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPhone2 (@Nullable String Phone2);
+	void setPhone2 (@Nullable java.lang.String Phone2);
 
 	/**
 	 * Get Phone (alternative).
@@ -695,7 +720,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPhone2();
+	@Nullable java.lang.String getPhone2();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Phone2 = new ModelColumn<>(I_C_BPartner_Location.class, "Phone2", null);
 	String COLUMNNAME_Phone2 = "Phone2";
@@ -707,7 +732,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSetup_Place_No (@Nullable String Setup_Place_No);
+	void setSetup_Place_No (@Nullable java.lang.String Setup_Place_No);
 
 	/**
 	 * Get Setup Place No..
@@ -716,7 +741,7 @@ public interface I_C_BPartner_Location
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getSetup_Place_No();
+	@Nullable java.lang.String getSetup_Place_No();
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Setup_Place_No = new ModelColumn<>(I_C_BPartner_Location.class, "Setup_Place_No", null);
 	String COLUMNNAME_Setup_Place_No = "Setup_Place_No";

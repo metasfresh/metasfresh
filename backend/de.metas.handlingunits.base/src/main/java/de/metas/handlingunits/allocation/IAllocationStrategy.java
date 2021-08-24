@@ -37,10 +37,6 @@ public interface IAllocationStrategy
 {
 	/**
 	 * Execute the <code>request</code> on given HU.
-	 *
-	 * @param hu
-	 * @param request
-	 * @return result
 	 */
 	IAllocationResult execute(I_M_HU hu, IAllocationRequest request);
 }

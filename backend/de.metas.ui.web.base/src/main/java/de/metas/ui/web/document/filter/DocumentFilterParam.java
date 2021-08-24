@@ -1,29 +1,26 @@
 package de.metas.ui.web.document.filter;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.ui.web.view.descriptor.SqlAndParams;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.ToString;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -58,10 +55,14 @@ public final class DocumentFilterParam
 		NOT_EQUAL, //
 		IN_ARRAY, //
 		LIKE, //
-		/** Like (case-insensitive) */
+		/**
+		 * Like (case-insensitive)
+		 */
 		LIKE_I, //
 		NOT_LIKE, //
-		/** Not Like (case-insensitive) */
+		/**
+		 * Not Like (case-insensitive)
+		 */
 		NOT_LIKE_I, //
 		GREATER, //
 		GREATER_OR_EQUAL, //
@@ -88,6 +89,11 @@ public final class DocumentFilterParam
 	public static Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static DocumentFilterParam ofSqlWhereClause(final String sqlWhereClause)
+	{
+		return ofSqlWhereClause(true, sqlWhereClause);
 	}
 
 	public static DocumentFilterParam ofSqlWhereClause(final boolean joinAnd, final String sqlWhereClause)
@@ -129,7 +135,9 @@ public final class DocumentFilterParam
 		sqlWhereClause = null;
 	}
 
-	/** Hardcoded SQL WHERE clause builder */
+	/**
+	 * Hardcoded SQL WHERE clause builder
+	 */
 	private DocumentFilterParam(final boolean joinAnd, @NonNull final SqlAndParams sqlWhereClause)
 	{
 		this.joinAnd = joinAnd;
@@ -147,7 +155,8 @@ public final class DocumentFilterParam
 		return getSqlWhereClause() != null;
 	}
 
-	@Nullable public String getValueAsString()
+	@Nullable
+	public String getValueAsString()
 	{
 		return value != null ? value.toString() : null;
 	}
@@ -158,26 +167,25 @@ public final class DocumentFilterParam
 		return valueInt != null ? valueInt : defaultValue;
 	}
 
-	public Boolean getValueAsBoolean(final Boolean defaultValue)
+	@Nullable
+	public Boolean getValueAsBoolean(@Nullable final Boolean defaultValue)
 	{
-		return DisplayType.toBoolean(value, defaultValue);
+		return StringUtils.toBoolean(value, defaultValue);
 	}
 
-	public LocalDate getValueAsLocalDateOr(final LocalDate defaultValue)
+	@Nullable
+	public LocalDate getValueAsLocalDateOr(@Nullable final LocalDate defaultValue)
 	{
 		return value != null ? DateTimeConverters.fromObjectToLocalDate(value) : defaultValue;
 	}
 
-	public LocalDate getValueToAsLocalDateOr(final LocalDate defaultValue)
-	{
-		return valueTo != null ? DateTimeConverters.fromObjectToLocalDate(valueTo) : defaultValue;
-	}
-
+	@Nullable
 	public Instant getValueAsInstant()
 	{
 		return value != null ? DateTimeConverters.fromObjectToInstant(value) : null;
 	}
 
+	@Nullable
 	public Instant getValueToAsInstant()
 	{
 		return valueTo != null ? DateTimeConverters.fromObjectToInstant(valueTo) : null;
@@ -195,8 +203,7 @@ public final class DocumentFilterParam
 		}
 		else if (value instanceof LookupValuesList)
 		{
-			final Collection<LookupValue> lookupValues = ((LookupValuesList)value).getValues();
-			return lookupValues;
+			return ((LookupValuesList)value).getValues();
 		}
 		else
 		{
@@ -225,9 +232,10 @@ public final class DocumentFilterParam
 
 	public List<Integer> getValueAsIntList()
 	{
-		return getValueAsList(itemObj -> convertToInt(itemObj));
+		return getValueAsList(DocumentFilterParam::convertToInt);
 	}
 
+	@Nullable
 	private static Integer convertToInt(final Object itemObj)
 	{
 		if (itemObj == null)
@@ -250,6 +258,7 @@ public final class DocumentFilterParam
 		}
 	}
 
+	@Nullable
 	public <T extends RepoIdAware> T getValueAsRepoIdOrNull(final @NonNull IntFunction<T> repoIdMapper)
 	{
 		final int idInt = getValueAsInt(-1);
@@ -258,11 +267,6 @@ public final class DocumentFilterParam
 			return null;
 		}
 		return repoIdMapper.apply(idInt);
-	}
-
-	public LocalDate getValueAsLocalDate()
-	{
-		return DateTimeConverters.fromObjectToLocalDate(value);
 	}
 
 	//
@@ -276,8 +280,8 @@ public final class DocumentFilterParam
 		private boolean joinAnd = true;
 		private String fieldName;
 		private Operator operator = Operator.EQUAL;
-		private Object value;
-		private Object valueTo;
+		@Nullable private Object value;
+		@Nullable private Object valueTo;
 
 		private Builder()
 		{
@@ -313,13 +317,13 @@ public final class DocumentFilterParam
 			return this;
 		}
 
-		public Builder setValue(final Object value)
+		public Builder setValue(@Nullable final Object value)
 		{
 			this.value = value;
 			return this;
 		}
 
-		public Builder setValueTo(final Object valueTo)
+		public Builder setValueTo(@Nullable final Object valueTo)
 		{
 			this.valueTo = valueTo;
 			return this;

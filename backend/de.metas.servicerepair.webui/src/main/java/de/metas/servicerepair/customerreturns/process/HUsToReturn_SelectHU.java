@@ -26,19 +26,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.servicerepair.customerreturns.HUsToReturnViewContext;
-import de.metas.servicerepair.customerreturns.HUsToReturnViewFactory;
 import de.metas.servicerepair.customerreturns.RepairCustomerReturnsService;
 import de.metas.ui.web.handlingunits.HUEditorRow;
-import de.metas.ui.web.handlingunits.HUEditorView;
-import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.window.datatypes.DocumentId;
-import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
-import javax.annotation.Nullable;
-
-public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IProcessPrecondition
+public class HUsToReturn_SelectHU extends HUsToReturnViewBasedProcess implements IProcessPrecondition
 {
 	private final RepairCustomerReturnsService repairCustomerReturnsService = SpringContextHolder.instance.getBean(RepairCustomerReturnsService.class);
 
@@ -77,37 +69,5 @@ public class HUsToReturn_SelectHU extends ViewBasedProcessTemplate implements IP
 		getView().removeHUIdsAndInvalidate(ImmutableList.of(row.getHuId()));
 
 		return MSG_OK;
-	}
-
-	@Override
-	protected HUEditorView getView()
-	{
-		return HUEditorView.cast(super.getView());
-	}
-
-	public HUsToReturnViewContext getHUsToReturnViewContext()
-	{
-		return getView()
-				.getParameter(HUsToReturnViewFactory.PARAM_HUsToReturnViewContext, HUsToReturnViewContext.class)
-				.orElseThrow(() -> new AdempiereException("No view context"));
-	}
-
-	@Nullable
-	protected HUEditorRow getSingleSelectedRowOrNull()
-	{
-		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
-		if (!selectedRowIds.isSingleDocumentId())
-		{
-			return null;
-		}
-
-		final DocumentId rowId = selectedRowIds.getSingleDocumentId();
-		return getView().getById(rowId);
-	}
-
-	@Override
-	protected HUEditorRow getSingleSelectedRow()
-	{
-		return HUEditorRow.cast(super.getSingleSelectedRow());
 	}
 }

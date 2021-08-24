@@ -22,14 +22,16 @@
 
 package de.metas.util.web.exception;
 
+import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.bpartner.service.BPartnerIdNotFoundException;
-import de.metas.common.rest_api.JsonError;
+import de.metas.common.rest_api.v1.JsonError;
 import de.metas.dao.selection.pagination.PageNotFoundException;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.security.permissions2.PermissionNotGrantedException;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.compiere.util.Env;
@@ -58,7 +60,7 @@ public class RestResponseEntityExceptionHandler
 	}
 
 	@ExceptionHandler(PageNotFoundException.class)
-	public ResponseEntity<JsonError> handlePageNotFoundExceptionn(@NonNull final PageNotFoundException e)
+	public ResponseEntity<JsonError> handlePageNotFoundException(@NonNull final PageNotFoundException e)
 	{
 		return logAndCreateError(e, HttpStatus.NOT_FOUND);
 	}
@@ -130,9 +132,9 @@ public class RestResponseEntityExceptionHandler
 	{
 		final String logMessage = coalesceSuppliers(
 				() -> detail,
-				() -> e.getMessage(),
+				e::getMessage,
 				() -> e.getClass().getSimpleName());
-		logger.error(logMessage, e);
+		Loggables.withLogger(logger, Level.ERROR).addLog(logMessage, e);
 
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 

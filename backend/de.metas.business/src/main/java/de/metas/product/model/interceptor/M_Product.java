@@ -16,8 +16,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import de.metas.product.ProductPOCopyRecordSupport;
-
 /*
  * #%L
  * de.metas.business
@@ -44,13 +42,6 @@ import de.metas.product.ProductPOCopyRecordSupport;
 public class M_Product
 {
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
-
-	@Init
-	public void init(final IModelValidationEngine engine)
-	{
-		CopyRecordFactory.enableForTableName(I_M_Product.Table_Name);
-		CopyRecordFactory.registerCopyRecordSupport(I_M_Product.Table_Name, ProductPOCopyRecordSupport.class);
-	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void afterNew(final @NonNull I_M_Product product, @NonNull final ModelChangeType changeType)

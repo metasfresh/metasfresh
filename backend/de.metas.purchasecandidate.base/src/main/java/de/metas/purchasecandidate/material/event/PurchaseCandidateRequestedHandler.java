@@ -19,12 +19,15 @@ import de.metas.product.ProductRepository;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.purchasecandidate.DemandGroupReference;
+import de.metas.purchasecandidate.IPurchaseCandidateBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
+import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.quantity.Quantity;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -64,7 +67,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<PurchaseCandidateRequestedEvent>
 {
 	public static final ThreadLocal<Boolean> INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD = ThreadLocal.withInitial(() -> false);
-
+	private final IPurchaseCandidateBL purchaseCandidateBL = Services.get(IPurchaseCandidateBL.class);
 	private final ProductRepository productRepository;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final PostMaterialEventService postMaterialEventService;
@@ -138,11 +141,12 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				// .purchaseItem(purchaseItem) purchase items are only returned by the vendor gateway
 				.qtyToPurchase(Quantity.of(materialDescriptor.getQuantity(), uomRecord))
 				.salesOrderAndLineIdOrNull(orderandLineIdOrNull)
-
+				.source(PurchaseCandidateSource.MaterialDisposition)
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.forecastLineId(ForecastLineId.ofRepoIdOrNull(event.getForecastId(), event.getForecastLineId()))
 				.build();
 
+		purchaseCandidateBL.updateCandidatePricingDiscount(newPurchaseCandidate);
 		saveCandidateAndPostCreatedEvent(event, newPurchaseCandidate);
 	}
 

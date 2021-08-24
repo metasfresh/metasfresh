@@ -19,6 +19,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import io.swagger.annotations.ApiModel;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -125,7 +126,7 @@ public final class JSONDocumentLayout
 		type = windowId;
 
 		tabId = null;
-		tabid = tabId;
+		tabid = null;
 
 		internalName = null;
 
@@ -136,47 +137,40 @@ public final class JSONDocumentLayout
 
 		final DocumentLayoutSingleRow singleRowLayout = layout.getSingleRowLayout();
 		sections = JSONDocumentLayoutSection.ofSectionsList(singleRowLayout.getSections(), options);
-
+		setAdvSearchWindows(this.sections, this.windowId, null, options);
 		//
 		// Included tabs
-		if (options.isShowAdvancedFields())
-		{
-			tabs = ImmutableList.of();
-			putDebugProperty("tabs-info", "not showing tabs when showing advanced fields");
-		}
-		else
-		{
-			final ImmutableListMultimap<DetailId, JSONDocumentLayoutElement> elementsByTabIdToInline = sections.stream()
-					.flatMap(JSONDocumentLayoutSection::streamInlineTabElements)
-					.collect(ImmutableListMultimap.toImmutableListMultimap(
-							element -> element.getInlineTabId(),
-							element -> element
-					));
+		final ImmutableListMultimap<DetailId, JSONDocumentLayoutElement> elementsByTabIdToInline = sections.stream()
+				.flatMap(JSONDocumentLayoutSection::streamInlineTabElements)
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						element -> element.getInlineTabId(),
+						element -> element
+				));
 
-			final ImmutableSet<DetailId> tabIdsToInline = elementsByTabIdToInline.keySet();
+		final ImmutableSet<DetailId> tabIdsToInline = elementsByTabIdToInline.keySet();
 
-			final ArrayList<JSONDocumentLayoutTab> jsonTabs = new ArrayList<>();
-			for (DocumentLayoutDetailDescriptor tab : layout.getDetails())
+		final ArrayList<JSONDocumentLayoutTab> jsonTabs = new ArrayList<>();
+		for (final DocumentLayoutDetailDescriptor tab : layout.getDetails())
+		{
+			final JSONDocumentLayoutTab jsonTab = JSONDocumentLayoutTab.ofOrNull(tab, options);
+			if (jsonTab == null)
 			{
-				final JSONDocumentLayoutTab jsonTab = JSONDocumentLayoutTab.ofOrNull(tab, options);
-				if (jsonTab == null)
-				{
-					continue;
-				}
-				else if (tabIdsToInline.contains(jsonTab.getTabId()))
-				{
-					final ImmutableList<JSONDocumentLayoutElement> elements = elementsByTabIdToInline.get(jsonTab.getTabId());
-					elements.forEach(element -> element.setInlineTab(jsonTab));
-					// NOTE: not adding the tab to the json tabs list because we don't want to render it as included tab
-				}
-				else
-				{
-					jsonTabs.add(jsonTab);
-				}
+				continue;
 			}
-
-			tabs = ImmutableList.copyOf(jsonTabs);
+			else if (tabIdsToInline.contains(jsonTab.getTabId()))
+			{
+				final ImmutableList<JSONDocumentLayoutElement> elements = elementsByTabIdToInline.get(jsonTab.getTabId());
+				elements.forEach(element -> element.setInlineTab(jsonTab));
+				// NOTE: not adding the tab to the json tabs list because we don't want to render it as included tab
+			}
+			else
+			{
+				jsonTabs.add(jsonTab);
+			}
 		}
+
+		tabs = ImmutableList.copyOf(jsonTabs);
+
 
 		filters = null;
 
@@ -261,4 +255,19 @@ public final class JSONDocumentLayout
 		}
 	}
 
+	private static void setAdvSearchWindows(
+			@NonNull final List<JSONDocumentLayoutSection> sections,
+			@NonNull final WindowId windowId,
+			@Nullable final DetailId tabId,
+			@NonNull final JSONDocumentLayoutOptions jsonOpts)
+	{
+		sections.stream()
+				.flatMap(section -> section.getColumns().stream())
+				.flatMap(column -> column.getElementGroups().stream())
+				.flatMap(elementGroup -> elementGroup.getElementLines().stream())
+				.flatMap(elementLine -> elementLine.getElements().stream())
+				.flatMap(element -> element.getFields().stream())
+				.forEach(field -> field.setAdvSearchWindow(windowId, tabId, jsonOpts));
+
+	}
 }

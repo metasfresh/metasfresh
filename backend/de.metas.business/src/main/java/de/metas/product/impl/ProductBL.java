@@ -13,6 +13,7 @@ import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
+import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -72,9 +73,14 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public ProductId getProductIdByValue(String productValue)
+	public ProductId getProductIdByValue(
+			@NonNull final OrgId orgId, 
+			@NonNull final String productValue)
 	{
-		return productsRepo.retrieveProductIdByValue(productValue);
+		final ProductQuery query = ProductQuery.builder()
+				.orgId(orgId)
+				.value(productValue).build();
+		return productsRepo.retrieveProductIdBy(query);
 	}
 
 	@Override
@@ -212,12 +218,6 @@ public final class ProductBL implements IProductBL
 	@Override
 	public AttributeSetId getAttributeSetId(final I_M_Product product)
 	{
-		int attributeSetId = product.getM_AttributeSet_ID();
-		if (attributeSetId > 0)
-		{
-			return AttributeSetId.ofRepoId(attributeSetId);
-		}
-
 		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoIdOrNull(product.getM_Product_Category_ID());
 		if (productCategoryId == null) // guard against NPE which might happen in unit tests
 		{
@@ -225,7 +225,7 @@ public final class ProductBL implements IProductBL
 		}
 
 		final I_M_Product_Category productCategoryRecord = productsRepo.getProductCategoryById(productCategoryId);
-		attributeSetId = productCategoryRecord.getM_AttributeSet_ID();
+		final int attributeSetId = productCategoryRecord.getM_AttributeSet_ID();
 		return attributeSetId > 0 ? AttributeSetId.ofRepoId(attributeSetId) : AttributeSetId.NONE;
 	}
 
@@ -491,6 +491,23 @@ public final class ProductBL implements IProductBL
 		final org.compiere.model.I_M_Product product = getById(productId);
 
 		return product.isHaddexCheck();
+	}
+
+	@Nullable
+	@Override
+	public I_M_AttributeSet getProductMasterDataSchemaOrNull(final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+
+		final int attributeSetRepoId = product.getM_AttributeSet_ID();
+
+		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
+		if (attributeSetId.isNone())
+		{
+			return null;
+		}
+
+		return attributesRepo.getAttributeSetById(attributeSetId);
 	}
 
 }

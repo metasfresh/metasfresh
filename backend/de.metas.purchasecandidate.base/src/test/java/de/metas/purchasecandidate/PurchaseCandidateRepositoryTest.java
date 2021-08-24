@@ -104,6 +104,8 @@ public class PurchaseCandidateRepositoryTest
 		purchaseCandidateRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		purchaseCandidateRecord.setQtyToPurchase(TEN);
 		purchaseCandidateRecord.setPurchaseDatePromised(SystemTime.asTimestamp());
+		purchaseCandidateRecord.setExternalHeaderId("H1");
+		purchaseCandidateRecord.setExternalLineId("H1");
 		saveRecord(purchaseCandidateRecord);
 	}
 
@@ -128,6 +130,7 @@ public class PurchaseCandidateRepositoryTest
 				.allSatisfy(candidateRecord -> {
 					assertThat(candidateRecord.getC_PurchaseCandidate_ID()).isEqualTo(id.getRepoId());
 					assertThat(candidateRecord.getDemandReference()).isEqualTo("nextDemandReference");
+					assertThat(candidateRecord.getExternalPurchaseOrderURL()).isEqualTo("example.com");
 				});
 	}
 

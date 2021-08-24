@@ -24,10 +24,19 @@
             <artifactId>de.metas.adempiere.adempiere.base</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>de.metas.business</groupId>
+            <artifactId>de.metas.business</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
         <dependency>
             <groupId>de.metas.common.externalsystem</groupId>
             <artifactId>de-metas-common-externalsystem</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.common.ordercandidates</groupId>
+            <artifactId>de-metas-common-ordercandidates</artifactId>
             <version>${metasfresh-common.version}</version>
         </dependency>
 
@@ -55,7 +64,22 @@
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.externalreference</groupId>
+            <artifactId>de.metas.externalreference</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.vertical.healthcare.alberta</groupId>
+            <artifactId>de.metas.vertical.healthcare.alberta</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>

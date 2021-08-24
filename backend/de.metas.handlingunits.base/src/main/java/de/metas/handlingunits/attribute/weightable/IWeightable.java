@@ -45,7 +45,6 @@ public interface IWeightable
 	/**
 	 * Checks if attached HU storage is weightable.
 	 *
-	 * @param attributeStorage
 	 * @return true if this "weightable" allows the user to weight it; i.e.
 	 *         <ul>
 	 *         <li><code>true</code> if the attached HU Storage is weightable
@@ -131,25 +130,21 @@ public interface IWeightable
 	BigDecimal getWeightGross();
 
 	/**
-	 * @param attribute
 	 * @return true if given attribute is the attribute used for the weight tare adjust
 	 */
 	boolean isWeightTareAdjustAttribute(final AttributeCode attribute);
 
 	/**
-	 * @param attribute
 	 * @return true if given attribute is the attribute used for the weight tare
 	 */
 	boolean isWeightTareAttribute(final AttributeCode attribute);
 
 	/**
-	 * @param attribute
 	 * @return true if given attribute is the attribute used for the weight net
 	 */
 	boolean isWeightNetAttribute(final AttributeCode attribute);
 
 	/**
-	 * @param attribute
 	 * @return true if given attribute is the attribute used for the weight gross
 	 */
 	boolean isWeightGrossAttribute(final AttributeCode attribute);

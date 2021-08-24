@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.purchasecandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_PurchaseCandidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_PurchaseCandidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 977603177L;
+	private static final long serialVersionUID = -466560030L;
 
     /** Standard Constructor */
     public X_C_PurchaseCandidate (final Properties ctx, final int C_PurchaseCandidate_ID, @Nullable final String trxName)
@@ -177,6 +177,21 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+	}
+
+	@Override
+	public int getC_TaxCategory_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -192,15 +207,90 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setDemandReference (final java.lang.String DemandReference)
+	public void setDemandReference (final String DemandReference)
 	{
 		set_Value (COLUMNNAME_DemandReference, DemandReference);
 	}
 
 	@Override
-	public java.lang.String getDemandReference() 
+	public String getDemandReference()
 	{
 		return get_ValueAsString(COLUMNNAME_DemandReference);
+	}
+
+	@Override
+	public void setDiscount (final @Nullable BigDecimal Discount)
+	{
+		set_Value (COLUMNNAME_Discount, Discount);
+	}
+
+	@Override
+	public BigDecimal getDiscount() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Discount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setDiscountEff (final @Nullable BigDecimal DiscountEff)
+	{
+		set_ValueNoCheck (COLUMNNAME_DiscountEff, DiscountEff);
+	}
+
+	@Override
+	public BigDecimal getDiscountEff() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DiscountEff);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setDiscountInternal (final @Nullable BigDecimal DiscountInternal)
+	{
+		set_ValueNoCheck (COLUMNNAME_DiscountInternal, DiscountInternal);
+	}
+
+	@Override
+	public BigDecimal getDiscountInternal() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DiscountInternal);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setExternalHeaderId (final @Nullable String ExternalHeaderId)
+	{
+		set_Value (COLUMNNAME_ExternalHeaderId, ExternalHeaderId);
+	}
+
+	@Override
+	public String getExternalHeaderId()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalHeaderId);
+	}
+
+	@Override
+	public void setExternalLineId (final @Nullable String ExternalLineId)
+	{
+		set_Value (COLUMNNAME_ExternalLineId, ExternalLineId);
+	}
+
+	@Override
+	public String getExternalLineId()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalLineId);
+	}
+
+	@Override
+	public void setExternalPurchaseOrderURL (final @Nullable String ExternalPurchaseOrderURL)
+	{
+		set_Value (COLUMNNAME_ExternalPurchaseOrderURL, ExternalPurchaseOrderURL);
+	}
+
+	@Override
+	public String getExternalPurchaseOrderURL()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalPurchaseOrderURL);
 	}
 
 	@Override
@@ -213,6 +303,30 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public boolean isAggregatePO() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAggregatePO);
+	}
+
+	@Override
+	public void setIsManualDiscount (final boolean IsManualDiscount)
+	{
+		set_Value (COLUMNNAME_IsManualDiscount, IsManualDiscount);
+	}
+
+	@Override
+	public boolean isManualDiscount() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManualDiscount);
+	}
+
+	@Override
+	public void setIsManualPrice (final boolean IsManualPrice)
+	{
+		set_Value (COLUMNNAME_IsManualPrice, IsManualPrice);
+	}
+
+	@Override
+	public boolean isManualPrice() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManualPrice);
 	}
 
 	@Override
@@ -237,6 +351,18 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public boolean isRequisitionCreated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsRequisitionCreated);
+	}
+
+	@Override
+	public void setIsTaxIncluded (final boolean IsTaxIncluded)
+	{
+		set_Value (COLUMNNAME_IsTaxIncluded, IsTaxIncluded);
+	}
+
+	@Override
+	public boolean isTaxIncluded() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsTaxIncluded);
 	}
 
 	@Override
@@ -348,6 +474,57 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 	public int getM_WarehousePO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_WarehousePO_ID);
+	}
+
+	@Override
+	public void setPriceDifference (final @Nullable BigDecimal PriceDifference)
+	{
+		throw new IllegalArgumentException ("PriceDifference is virtual column");	}
+
+	@Override
+	public BigDecimal getPriceDifference() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceDifference);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPriceEffective (final @Nullable BigDecimal PriceEffective)
+	{
+		set_ValueNoCheck (COLUMNNAME_PriceEffective, PriceEffective);
+	}
+
+	@Override
+	public BigDecimal getPriceEffective() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceEffective);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPriceEntered (final @Nullable BigDecimal PriceEntered)
+	{
+		set_Value (COLUMNNAME_PriceEntered, PriceEntered);
+	}
+
+	@Override
+	public BigDecimal getPriceEntered() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceEntered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPriceInternal (final @Nullable BigDecimal PriceInternal)
+	{
+		set_ValueNoCheck (COLUMNNAME_PriceInternal, PriceInternal);
+	}
+
+	@Override
+	public BigDecimal getPriceInternal() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PriceInternal);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -463,86 +640,109 @@ public class X_C_PurchaseCandidate extends org.compiere.model.PO implements I_C_
 		return get_ValueAsTimestamp(COLUMNNAME_ReminderDate);
 	}
 
+	/** 
+	 * Source AD_Reference_ID=541284
+	 * Reference name: PO Sources
+	 */
+	public static final int SOURCE_AD_Reference_ID=541284;
+	/** Material Disposition = MD */
+	public static final String SOURCE_MaterialDisposition = "MD";
+	/** Sales Order = SO */
+	public static final String SOURCE_SalesOrder = "SO";
+	/** API = API */
+	public static final String SOURCE_API = "API";
 	@Override
-	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
+	public void setSource (final @Nullable String Source)
+	{
+		set_ValueNoCheck (COLUMNNAME_Source, Source);
+	}
+
+	@Override
+	public String getSource()
+	{
+		return get_ValueAsString(COLUMNNAME_Source);
+	}
+
+	@Override
+	public void setUserElementString1 (final @Nullable String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
 
 	@Override
-	public java.lang.String getUserElementString1() 
+	public String getUserElementString1()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString1);
 	}
 
 	@Override
-	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
+	public void setUserElementString2 (final @Nullable String UserElementString2)
 	{
 		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
 	}
 
 	@Override
-	public java.lang.String getUserElementString2() 
+	public String getUserElementString2()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString2);
 	}
 
 	@Override
-	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
+	public void setUserElementString3 (final @Nullable String UserElementString3)
 	{
 		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
 	}
 
 	@Override
-	public java.lang.String getUserElementString3() 
+	public String getUserElementString3()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString3);
 	}
 
 	@Override
-	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
+	public void setUserElementString4 (final @Nullable String UserElementString4)
 	{
 		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
 	}
 
 	@Override
-	public java.lang.String getUserElementString4() 
+	public String getUserElementString4()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString4);
 	}
 
 	@Override
-	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
+	public void setUserElementString5 (final @Nullable String UserElementString5)
 	{
 		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
 	}
 
 	@Override
-	public java.lang.String getUserElementString5() 
+	public String getUserElementString5()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString5);
 	}
 
 	@Override
-	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
+	public void setUserElementString6 (final @Nullable String UserElementString6)
 	{
 		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
 	}
 
 	@Override
-	public java.lang.String getUserElementString6() 
+	public String getUserElementString6()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString6);
 	}
 
 	@Override
-	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
+	public void setUserElementString7 (final @Nullable String UserElementString7)
 	{
 		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
 	}
 
 	@Override
-	public java.lang.String getUserElementString7() 
+	public String getUserElementString7()
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}

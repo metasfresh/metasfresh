@@ -18,6 +18,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.api.IESRImportBL;
@@ -63,7 +64,9 @@ import javax.annotation.Nullable;
 public class ESRImportEnqueuer
 {
 
-	public static final String LINES_ALREADY_EXIST_PLEASE_CHOOSE_A_NEW_ESR_MSG = "de.metas.payment.esr.dataimporter.ESRImportEnqueuer.LinesAlreadyExistChoseNewESR";
+	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES = AdMessageKey.of("ESR_Import_LoadFromFile.InconsitentTypes");
+	private static final AdMessageKey ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE =  AdMessageKey.of("ESR_Import_LoadFromFile.CantGuessFileType");
+	public static final  AdMessageKey LINES_ALREADY_EXIST_PLEASE_CHOOSE_A_NEW_ESR_MSG =  AdMessageKey.of("de.metas.payment.esr.dataimporter.ESRImportEnqueuer.LinesAlreadyExistChoseNewESR");
 
 	public static final ESRImportEnqueuer newInstance()
 	{
@@ -179,8 +182,7 @@ public class ESRImportEnqueuer
 			final String guessedType = ESRDataLoaderFactory.guessTypeFromFileName(fileName);
 			if (Check.isEmpty(guessedType))
 			{
-				final String msg = Services.get(IMsgBL.class).getMsg(getCtx(), "ESR_Import_LoadFromFile.CantGuessFileType");
-				throw new AdempiereException(msg);
+				throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_CANT_GUESS_FILE_TYPE);
 			}
 			else
 			{
@@ -196,8 +198,7 @@ public class ESRImportEnqueuer
 			if (!Check.isEmpty(guessedType) && !guessedType.equalsIgnoreCase(esrImport.getDataType()))
 			{
 				// throw error, telling the user to check the ESI_import's type
-				final String msg = Services.get(IMsgBL.class).getMsg(getCtx(), "ESR_Import_LoadFromFile.InconsitentTypes");
-				throw new AdempiereException(msg);
+				throw new AdempiereException(ESR_IMPORT_LOAD_FROM_FILE_INCONSITENT_TYPES);
 			}
 		}
 	}

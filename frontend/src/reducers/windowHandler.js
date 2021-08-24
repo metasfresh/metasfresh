@@ -2,7 +2,7 @@ import update from 'immutability-helper';
 import { Set as iSet } from 'immutable';
 import { createSelector } from 'reselect';
 import { createCachedSelector } from 're-reselect';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import { get } from 'lodash';
 
 import {
@@ -43,6 +43,7 @@ import {
   UPDATE_DATA_PROPERTY,
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
+  UPDATE_INLINE_TAB_DATA,
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
@@ -166,13 +167,8 @@ export const getData = (state, isModal = false) => {
 export const getElementLayout = (state, isModal, layoutPath) => {
   const selector = isModal ? 'modal' : 'master';
   const layout = state.windowHandler[selector].layout;
-  const [
-    sectionIdx,
-    columnIdx,
-    elGroupIdx,
-    elLineIdx,
-    elIdx,
-  ] = layoutPath.split('_');
+  const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
+    layoutPath.split('_');
 
   return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
     elGroupIdx
@@ -185,13 +181,8 @@ export const getInlineTabLayout = ({
   layoutId: layoutPath,
 }) => {
   const layout = state.windowHandler.inlineTab[inlineTabId].layout;
-  const [
-    sectionIdx,
-    columnIdx,
-    elGroupIdx,
-    elLineIdx,
-    elIdx,
-  ] = layoutPath.split('_');
+  const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
+    layoutPath.split('_');
   // console.log('Section:', sectionIdx);
   // console.log('Column:', columnIdx);
   // console.log('elGroupIndex:', elGroupIdx)
@@ -310,18 +301,15 @@ export const getProcessWidgetFields = createCachedSelector(
  *
  * @param {object} state - redux state
  */
-export const getMasterDocStatus = createSelector(
-  getData,
-  (data) => {
-    return [
-      {
-        status: data.DocStatus || null,
-        action: data.DocAction || null,
-        displayed: true,
-      },
-    ];
-  }
-);
+export const getMasterDocStatus = createSelector(getData, (data) => {
+  return [
+    {
+      status: data.DocStatus || null,
+      action: data.DocAction || null,
+      displayed: true,
+    },
+  ];
+});
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
@@ -364,6 +352,7 @@ export default function windowHandler(state = initialState, action) {
           windowId: action.windowId,
           viewId: action.viewId,
           profileId: action.profileId,
+          title: action.title,
         },
       };
     case UPDATE_RAW_MODAL: {
@@ -567,7 +556,7 @@ export default function windowHandler(state = initialState, action) {
       } else {
         const currentVal = state[scope] ? state[scope][property] : {};
 
-        newValue = merge.recursive(true, currentVal, value);
+        newValue = merge(currentVal, value);
       }
 
       return update(state, {
@@ -593,22 +582,16 @@ export default function windowHandler(state = initialState, action) {
         }),
       });
     case UPDATE_DATA_INCLUDED_TABS_INFO:
-      return Object.assign({}, state, {
-        [action.scope]: Object.assign({}, state[action.scope], {
-          includedTabsInfo: Object.keys(
-            state[action.scope].includedTabsInfo
-          ).reduce((result, current) => {
-            result[current] = Object.assign(
-              {},
-              state[action.scope].includedTabsInfo[current],
-              action.includedTabsInfo[current]
-                ? action.includedTabsInfo[current]
-                : {}
-            );
-            return result;
-          }, {}),
-        }),
-      });
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          includedTabsInfo: {
+            ...state.master.includedTabsInfo,
+            ...action.includedTabsInfo,
+          },
+        },
+      };
     // END OF SCOPED ACTIONS
 
     case OPEN_FILTER_BOX:
@@ -804,6 +787,23 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     }
+
+    case UPDATE_INLINE_TAB_DATA: {
+      return {
+        ...state,
+        inlineTab: {
+          ...state.inlineTab,
+          [`${action.payload.inlineTabId}`]: {
+            ...state.inlineTab[`${action.payload.inlineTabId}`],
+            data: {
+              ...state.inlineTab[`${action.payload.inlineTabId}`].data,
+              ...action.payload.data,
+            },
+          },
+        },
+      };
+    }
+
     case SET_INLINE_TAB_WRAPPER_DATA: {
       return {
         ...state,

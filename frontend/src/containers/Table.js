@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { getZoomIntoWindow, deleteRequest } from '../api';
 import { containerPropTypes } from '../utils/tableHelpers';
 import { mapIncluded } from '../utils/documentListHelper';
-
+import { isGermanLanguage } from '../utils/locale';
 import { getTableId, getTable } from '../reducers/tables';
 import {
   updateTableSelection,
@@ -83,14 +83,8 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselect = (id) => {
-    const {
-      deselectTableRows,
-      windowId,
-      viewId,
-      docId,
-      tabId,
-      isModal,
-    } = this.props;
+    const { deselectTableRows, windowId, viewId, docId, tabId, isModal } =
+      this.props;
     const tableId = getTableId({ windowId, viewId, docId, tabId });
 
     deselectTableRows({
@@ -103,14 +97,8 @@ class TableContainer extends PureComponent {
   };
 
   handleDeselectAll = (callback) => {
-    const {
-      deselectTableRows,
-      windowId,
-      viewId,
-      docId,
-      tabId,
-      isModal,
-    } = this.props;
+    const { deselectTableRows, windowId, viewId, docId, tabId, isModal } =
+      this.props;
 
     callback && callback();
 
@@ -214,9 +202,7 @@ class TableContainer extends PureComponent {
       res &&
         res.data &&
         window.open(
-          `/window/${res.data.documentPath.windowId}/${
-            res.data.documentPath.documentId
-          }`,
+          `/window/${res.data.documentPath.windowId}/${res.data.documentPath.documentId}`,
           '_blank'
         );
     });
@@ -283,10 +269,7 @@ const mapStateToProps = (state, props) => {
     allowShortcut: handleShortcuts,
     allowOutsideClick: state.windowHandler.allowOutsideClick,
     modalVisible,
-    isGerman:
-      state.appHandler.me.language && state.appHandler.me.language.key
-        ? state.appHandler.me.language.key.includes('de')
-        : false,
+    isGerman: isGermanLanguage(state.appHandler.me.language),
   };
 };
 

@@ -23,9 +23,9 @@
 package de.metas.cucumber.stepdefs.issue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.issue.JsonCreateIssueResponse;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.v1.issue.JsonCreateIssueResponse;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.error.AdIssueId;
 import de.metas.organization.OrgId;
@@ -56,10 +56,10 @@ public class AD_Issue_StepDef
 		this.testContext = testContext;
 	}
 
-	@Given("I_AD_PInstance with id {string} is created")
-	public void new_PInstanceId_is_created(final String PInstanceIdString)
+	@Given("I_AD_PInstance with id {int} is created")
+	public void new_PInstanceId_is_created(final int pInstanceIdString)
 	{
-		pInstanceId = PInstanceId.ofRepoId(Integer.parseInt(PInstanceIdString));
+		pInstanceId = PInstanceId.ofRepoId(pInstanceIdString);
 		final I_AD_PInstance pInstance = InterfaceWrapperHelper.newInstance(I_AD_PInstance.class);
 		pInstance.setAD_PInstance_ID(pInstanceId.getRepoId());
 		pInstance.setAD_Process_ID(150);

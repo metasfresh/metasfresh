@@ -24,6 +24,7 @@ package de.metas.fresh.model.validator;
 
 import java.text.DateFormat;
 
+import de.metas.fresh.product.ProductPOCopyRecordSupport;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListenerService;
@@ -57,6 +58,7 @@ import de.metas.fresh.printing.spi.impl.C_Order_MFGWarehouse_Report_RecordTextPr
 import de.metas.i18n.Language;
 import de.metas.notification.INotificationBL;
 import de.metas.util.Services;
+import org.compiere.model.I_M_Product;
 
 public class Main extends AbstractModuleInterceptor
 {
@@ -115,6 +117,11 @@ public class Main extends AbstractModuleInterceptor
 		// task 09833
 		// Register the Printing Info ctx provider for C_Order_MFGWarehouse_Report
 		Services.get(INotificationBL.class).addCtxProvider(C_Order_MFGWarehouse_Report_RecordTextProvider.instance);
+		
+		//
+		// register ProductPOCopyRecordSupport, which needs to know about many different tables
+		CopyRecordFactory.enableForTableName(I_M_Product.Table_Name);
+		CopyRecordFactory.registerCopyRecordSupport(I_M_Product.Table_Name, ProductPOCopyRecordSupport.class);
 	}
 
 	@Override
@@ -130,8 +137,9 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.fresh.material.interceptor.Fresh_QtyOnHand.INSTANCE);
 		engine.addModelValidator(de.metas.fresh.material.interceptor.PMM_PurchaseCandidate.INSTANCE);
 
-		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order.instance); // task 09028
-		engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order_MFGWarehouse_ReportLine.instance); // task 09028
+		// these two are now spring components
+		// engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order.instance); // task 09028
+		// engine.addModelValidator(de.metas.fresh.ordercheckup.model.validator.C_Order_MFGWarehouse_ReportLine.instance); // task 09028
 
 		// task 09421
 		engine.addModelValidator(de.metas.fresh.mrp_productinfo.model.validator.C_Order.INSTANCE);

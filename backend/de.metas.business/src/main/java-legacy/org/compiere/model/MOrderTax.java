@@ -16,23 +16,23 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.Properties;
-
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.logging.LogManager;
+import de.metas.order.IOrderLineBL;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.util.Services;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderLineBL;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /**
  * Order Tax Model
@@ -124,7 +124,7 @@ public class MOrderTax extends X_C_OrderTax
 		}
 
 		final boolean taxIncluded = Services.get(IOrderLineBL.class).isTaxIncluded(line);
-		final I_C_Tax tax = Services.get(ITaxDAO.class).getTaxById(line.getC_Tax_ID());
+		final Tax tax = Services.get(ITaxDAO.class).getTaxById(line.getC_Tax_ID());
 
 		//
 		// Create New
@@ -132,7 +132,7 @@ public class MOrderTax extends X_C_OrderTax
 		retValue.set_TrxName(trxName);
 		retValue.setClientOrg(line);
 		retValue.setC_Order_ID(line.getC_Order_ID());
-		retValue.setC_Tax_ID(tax.getC_Tax_ID());
+		retValue.setC_Tax_ID(tax.getTaxId().getRepoId());
 		retValue.setIsWholeTax(tax.isWholeTax());
 		retValue.setPrecision(precision);
 		retValue.setIsTaxIncluded(taxIncluded);

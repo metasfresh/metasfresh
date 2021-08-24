@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1021364214L;
+	private static final long serialVersionUID = 1245221438L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -637,6 +637,10 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String DELIVERYVIARULE_Delivery = "D";
 	/** Shipper = S */
 	public static final String DELIVERYVIARULE_Shipper = "S";
+	/** Normalpost = NP */
+	public static final String DELIVERYVIARULE_Normalpost = "NP";
+	/** Luftpost = LU */
+	public static final String DELIVERYVIARULE_Luftpost = "LU";
 	@Override
 	public void setDeliveryViaRule (final java.lang.String DeliveryViaRule)
 	{
@@ -839,6 +843,18 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setExternalPurchaseOrderURL (final @Nullable java.lang.String ExternalPurchaseOrderURL)
+	{
+		set_Value (COLUMNNAME_ExternalPurchaseOrderURL, ExternalPurchaseOrderURL);
+	}
+
+	@Override
+	public java.lang.String getExternalPurchaseOrderURL() 
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalPurchaseOrderURL);
 	}
 
 	@Override
@@ -1688,7 +1704,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public java.sql.Timestamp getreturnDate() 
+	public java.sql.Timestamp getreturnDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_returnDate);
 	}

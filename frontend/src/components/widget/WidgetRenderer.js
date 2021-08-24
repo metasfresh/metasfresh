@@ -27,6 +27,7 @@ import Lookup from './Lookup/Lookup';
 import Switch from './Switch';
 import Amount from './Amount';
 import Password from './Password';
+import CostPrice from './CostPrice';
 
 class WidgetRenderer extends PureComponent {
   constructor(props) {
@@ -112,9 +113,17 @@ class WidgetRenderer extends PureComponent {
       onBlurWithParams,
       onSetWidgetType,
       onHandleProcess,
+      openModal,
+      closeModal,
       forwardedRef,
       disconnected,
+      isFilterActive, // flag used to identify if the component belongs to an active filter
+      updateItems,
     } = this.props;
+
+    const filterActiveState =
+      typeof isFilterActive === 'undefined' ? false : isFilterActive; // safety check - do not pass `undefined` further down
+
     const { tabIndex, onFocus } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
     widgetProperties.ref = forwardedRef;
@@ -146,6 +155,10 @@ class WidgetRenderer extends PureComponent {
       parameterName: fields[0].parameterName,
       validStatus: widgetData[0].validStatus,
       onChange: onPatch,
+      ref: forwardedRef,
+      isFilterActive: filterActiveState,
+      updateItems,
+      disconnected,
     };
     const dateProps = {
       field: widgetField,
@@ -157,7 +170,11 @@ class WidgetRenderer extends PureComponent {
         disabled: readonly,
         tabIndex: tabIndex,
       },
+      isFilterActive: filterActiveState,
+      updateItems,
+      defaultValue: widgetData[0].defaultValue,
       onChange: this.handleDateChange,
+      disconnected,
     };
     const dateRangeProps = {
       mandatory: widgetData[0].mandatory,
@@ -167,7 +184,14 @@ class WidgetRenderer extends PureComponent {
       tabIndex,
       onShow,
       onHide,
+      isFilterActive: filterActiveState,
+      defaultValue: widgetData[0].defaultValue,
+      defaultValueTo: widgetData[0].defaultValueTo,
+      updateItems,
+      field: widgetData[0].field,
+      disconnected,
     };
+
     const attributesProps = {
       entity,
       fields,
@@ -179,6 +203,8 @@ class WidgetRenderer extends PureComponent {
       fieldName: widgetField,
       handleBackdropLock,
       patch: (option) => onPatch(widgetField, option),
+      openModal,
+      closeModal,
       tabIndex,
       autoFocus,
       readonly,
@@ -329,6 +355,8 @@ class WidgetRenderer extends PureComponent {
             forceHeight={forceHeight}
             newRecordCaption={fields[0].newRecordCaption}
             newRecordWindowId={fields[0].newRecordWindowId}
+            advSearchCaption={fields[0].advSearchCaption} // Search Assistant entry in the  Lookup
+            advSearchWindowId={fields[0].advSearchWindowId}
             listenOnKeys={listenOnKeys}
             listenOnKeysFalse={listenOnKeysFalse}
             closeTableField={closeTableField}
@@ -375,6 +403,8 @@ class WidgetRenderer extends PureComponent {
       case 'LongText': {
         const classNameParams = { icon: true };
         let renderContent = null;
+        delete widgetProperties.id; // removed the id as this is not used anyway
+        // this was passed as a prop (i.e inline filter and due to that we got warnings due to dup ID for elements)
 
         if (widgetType === 'Text') {
           renderContent = (
@@ -429,6 +459,8 @@ class WidgetRenderer extends PureComponent {
               subentity,
               widgetProperties,
               onPatch,
+              isFilterActive: filterActiveState,
+              updateItems,
             }}
             getClassNames={this.getClassNames}
           />
@@ -437,7 +469,10 @@ class WidgetRenderer extends PureComponent {
       case 'CostPrice':
         return (
           <div className={classnames(this.getClassNames(), 'number-field')}>
-            <input {...widgetProperties} type="number" />
+            <CostPrice
+              {...widgetProperties}
+              precision={widgetData[0].precision}
+            />
           </div>
         );
       case 'YesNo':
@@ -451,6 +486,8 @@ class WidgetRenderer extends PureComponent {
               widgetField,
               id,
               filterWidget,
+              isFilterActive: filterActiveState,
+              updateItems,
             }}
             handlePatch={onPatch}
           />
@@ -562,7 +599,7 @@ class WidgetRenderer extends PureComponent {
         const entry = widgetData[0];
 
         if (entry && entry.value && Array.isArray(entry.value.values)) {
-          values = entry.value.values;
+          values = [...entry.value.values];
         }
 
         return (
@@ -571,9 +608,10 @@ class WidgetRenderer extends PureComponent {
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
+            dataId={dataId}
             tabId={tabId}
             rowId={rowId}
-            windowType={windowType}
+            windowId={windowType}
             viewId={viewId}
             selected={values}
             readonly={readonly}
@@ -584,6 +622,7 @@ class WidgetRenderer extends PureComponent {
               })
             }
             tabIndex={tabIndex}
+            disconnected={disconnected}
           />
         );
       }

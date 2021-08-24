@@ -20,7 +20,7 @@ describe('SysConfig Tests', function() {
 
     toggleNotFrequentFilters();
     selectNotFrequentFilterWidget('default');
-    cy.writeIntoStringField('Name', 'webui.frontend.cors.enabled', false, null, true);
+    cy.writeIntoStringField('Name', 'webui.frontend.allow-cross-site-usage', false, null, true);
 
     applyFilters();
 

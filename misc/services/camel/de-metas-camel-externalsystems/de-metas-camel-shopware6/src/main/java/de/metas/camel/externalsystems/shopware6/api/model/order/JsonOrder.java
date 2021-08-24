@@ -30,6 +30,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+
 @Value
 @Builder
 @JsonDeserialize(builder = JsonOrder.JsonOrderBuilder.class)
@@ -40,20 +43,36 @@ public class JsonOrder
 	String id;
 
 	@NonNull
-	@JsonProperty("versionId")
-	String versionId;
-
-	@NonNull
 	@JsonProperty("billingAddressId")
 	String billingAddressId;
 
 	@NonNull
-	@JsonProperty("billingAddressVersionId")
-	String billingAddressVersionId;
-
-	@NonNull
 	@JsonProperty("orderCustomer")
 	JsonOrderCustomer orderCustomer;
+
+	@NonNull
+	@JsonProperty("currencyId")
+	String currencyId;
+
+	@Nullable
+	@JsonProperty("orderNumber")
+	String orderNumber;
+
+	@Nullable
+	@JsonProperty("orderDate")
+	ZonedDateTime orderDate;
+
+	@Nullable
+	@JsonProperty("stateMachineState")
+	JsonStateMachine stateMachine;
+
+	@NonNull
+	@JsonProperty("createdAt")
+	ZonedDateTime createdAt;
+
+	@Nullable
+	@JsonProperty("updatedAt")
+	ZonedDateTime updatedAt;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")

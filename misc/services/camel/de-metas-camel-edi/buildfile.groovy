@@ -16,7 +16,7 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
 			<h3>EDI</h3>
 		"""
 
-    final misc = new Misc()
+    final Misc misc = new Misc()
     final String dockerLatestTag = "${misc.mkDockerTag(env.BRANCH_NAME)}_LATEST"
 
     if (!misc.isAnyFileChanged(scmVars) && !forceBuild) {
@@ -51,7 +51,12 @@ def build(final MvnConf mvnConf, final Map scmVars, final boolean forceBuild = f
             'de-metas-edi-esb-camel', // artifactName
             env.BRANCH_NAME, // branchName
             env.MF_VERSION, // versionSuffix
-            './') // workDir
+            './', // workDir
+            '', // additionalBuildArgs
+            'Dockerfile', // dockerFile
+            '', // pullRegistry - empty string means "use dockerhub!"
+            'dockerhub_metasfresh' // pullRegistryCredentialsId
+    ) 
     final String publishedDockerImageName = dockerBuildAndPush(dockerConf)
 
     currentBuild.description = """${currentBuild.description}<p/>

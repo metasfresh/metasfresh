@@ -53,16 +53,17 @@ public class WEBUI_SalesOrder_PurchaseView_Launcher
 	{
 		if (!context.isSingleSelection())
 		{
-			return ProcessPreconditionsResolution
-					.rejectWithInternalReason("one and only one order shall be selected");
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		// Only sales orders
 		final I_C_Order salesOrder = orderDAO.getById(OrderId.ofRepoId(context.getSingleSelectedRecordId()), I_C_Order.class);
+		if (salesOrder == null)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only existing records that were saved at least once are allowed");
+		}
 		if (!salesOrder.isSOTrx())
 		{
-			return ProcessPreconditionsResolution
-					.rejectWithInternalReason("only sales orders are allowed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("only sales orders are allowed");
 		}
 
 		final DocStatus docStatus = DocStatus.ofCode(salesOrder.getDocStatus());

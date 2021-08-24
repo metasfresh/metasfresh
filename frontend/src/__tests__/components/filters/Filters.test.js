@@ -3,7 +3,7 @@ import * as Immutable from 'immutable';
 import { mount, shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
@@ -21,8 +21,7 @@ import filtersStoreThree from '../../../../test_setup/fixtures/filters/filtersSt
 const mockStore = configureStore([]);
 
 const createStore = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,
@@ -174,7 +173,7 @@ describe('Filters tests', () => {
       wrapper.find('.meta-icon-close-alt').simulate('click');
       wrapper.update();
 
-      expect(wrapper.find('FiltersItem').state().activeFilter).toBeFalsy();
+      expect(wrapper.find('FiltersItem').state().activeFilter).toBeTruthy();
       wrapper
         .find('.filter-widget .filter-btn-wrapper .applyBtn')
         .simulate('click');

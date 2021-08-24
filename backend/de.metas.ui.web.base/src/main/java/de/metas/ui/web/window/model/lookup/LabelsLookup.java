@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.lookup;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
@@ -206,7 +207,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		final String id = evalCtx.getIdToFilterAsString();
 		if (id == null)
@@ -226,7 +227,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		final String filter = evalCtx.getFilter();
 		return labelsValuesLookupDataSource.findEntities(evalCtx, filter);
@@ -247,7 +248,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 		}
 		else
 		{
-			return ImmutableSet.<Object>copyOf(stringIds);
+			return ImmutableSet.copyOf(stringIds);
 		}
 	}
 

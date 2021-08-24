@@ -1,24 +1,25 @@
 package de.metas.inventory.event;
 
 import java.util.Collection;
-import java.util.List;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
 
 import com.google.common.collect.ImmutableList;
 
-import de.metas.document.engine.IDocumentBL;
 import de.metas.event.Topic;
-import de.metas.event.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -44,53 +45,43 @@ import lombok.NonNull;
 
 public class InventoryUserNotificationsProducer
 {
-	public static final InventoryUserNotificationsProducer newInstance()
+	public static InventoryUserNotificationsProducer newInstance()
 	{
 		return new InventoryUserNotificationsProducer();
 	}
 
-	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
-	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.inventory.UserNotifications")
-			.type(Type.REMOTE)
-			.build();
-
 	// services
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
+
+	/** Topic used to send notifications about shipments/receipts that were generated/reversed asynchronously */
+	public static final Topic EVENTBUS_TOPIC = Topic.remote("de.metas.inventory.UserNotifications");
 
 	/** M_Inventory internal use */
-	private static final int WINDOW_INTERNAL_INVENTORY = 341; // FIXME: HARDCODED
+	private static final AdWindowId WINDOW_INTERNAL_INVENTORY = AdWindowId.ofRepoId(341); // FIXME: HARDCODED
 	private static final AdMessageKey MSG_Event_InventoryGenerated = AdMessageKey.of("Event_InventoryGenerated");
 
 	private InventoryUserNotificationsProducer()
 	{
 	}
 
-	public InventoryUserNotificationsProducer notifyGenerated(final Collection<? extends I_M_Inventory> inventories)
+	public void notifyGenerated(@Nullable final Collection<? extends I_M_Inventory> inventories)
 	{
 		if (inventories == null || inventories.isEmpty())
 		{
-			return this;
+			return;
 		}
 
-		postNotifications(inventories.stream()
-				.map(this::createUserNotification)
+		notificationBL.sendAfterCommit(inventories.stream()
+				.map(InventoryUserNotificationsProducer::toUserNotification)
 				.collect(ImmutableList.toImmutableList()));
-
-		return this;
 	}
 
-	public final InventoryUserNotificationsProducer notifyGenerated(@NonNull final I_M_Inventory inventory)
-	{
-		notifyGenerated(ImmutableList.of(inventory));
-		return this;
-	}
-
-	private final UserNotificationRequest createUserNotification(@NonNull final I_M_Inventory inventory)
+	private static UserNotificationRequest toUserNotification(@NonNull final I_M_Inventory inventory)
 	{
 		final TableRecordReference inventoryRef = TableRecordReference.of(inventory);
 
-		return newUserNotificationRequest()
+		return UserNotificationRequest.builder()
+				.topic(EVENTBUS_TOPIC)
 				.recipientUserId(getNotificationRecipientUserId(inventory))
 				.contentADMessage(MSG_Event_InventoryGenerated)
 				.contentADMessageParam(inventoryRef)
@@ -99,22 +90,17 @@ public class InventoryUserNotificationsProducer
 
 	}
 
-	private final UserNotificationRequest.UserNotificationRequestBuilder newUserNotificationRequest()
-	{
-		return UserNotificationRequest.builder()
-				.topic(EVENTBUS_TOPIC);
-	}
-
-	private final UserId getNotificationRecipientUserId(final I_M_Inventory inventory)
+	private static UserId getNotificationRecipientUserId(final I_M_Inventory inventory)
 	{
 		//
 		// In case of reversal i think we shall notify the current user too
-		if (docActionBL.isDocumentReversedOrVoided(inventory))
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(inventory.getDocStatus());
+		if (docStatus.isReversedOrVoided())
 		{
-			final int currentUserId = Env.getAD_User_ID(Env.getCtx()); // current/triggering user
-			if (currentUserId > 0)
+			final UserId loggedUserId = Env.getLoggedUserIdIfExists().orElse(null);
+			if (loggedUserId != null)
 			{
-				return UserId.ofRepoId(currentUserId);
+				return loggedUserId;
 			}
 
 			return UserId.ofRepoId(inventory.getUpdatedBy()); // last updated
@@ -125,10 +111,5 @@ public class InventoryUserNotificationsProducer
 		{
 			return UserId.ofRepoId(inventory.getCreatedBy());
 		}
-	}
-
-	private void postNotifications(final List<UserNotificationRequest> notifications)
-	{
-		Services.get(INotificationBL.class).sendAfterCommit(notifications);
 	}
 }

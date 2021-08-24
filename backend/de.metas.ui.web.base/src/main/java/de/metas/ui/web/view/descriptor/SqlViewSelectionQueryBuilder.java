@@ -695,7 +695,7 @@ public final class SqlViewSelectionQueryBuilder
 		{
 			rowsPresentInTable = keyColumnNamesMap.prepareSqlFilterByRowIds()
 					.sqlColumnPrefix(sqlTableAlias + ".")
-					.useKeyColumnName(true)
+					.mappingType(SqlViewKeyColumnNamesMap.MappingType.SOURCE_TABLE)
 					.rowIds(rowIds)
 					.rowIdsConverter(rowIdsConverter)
 					.embedSqlParams(true)

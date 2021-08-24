@@ -45,6 +45,7 @@ import {
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
 } from '../constants/ActionTypes';
+import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { toggleFullScreen, preFormatPostDATA } from '../utils';
 import { getScope, parseToDisplay } from '../utils/documentListHelper';
@@ -92,12 +93,13 @@ export function toggleOverlay(data) {
   };
 }
 
-export function openRawModal(windowId, viewId, profileId) {
+export function openRawModal({ windowId, viewId, profileId, title }) {
   return {
     type: OPEN_RAW_MODAL,
-    windowId: windowId,
-    viewId: viewId,
-    profileId: profileId,
+    windowId,
+    viewId,
+    profileId,
+    title,
   };
 }
 
@@ -332,6 +334,9 @@ export function openModal({
   childViewId = null,
   childViewSelectedIds = null,
   staticModalType = null,
+  parentWindowId = null,
+  parentDocumentId = null,
+  parentFieldId = null,
 }) {
   const isMobile =
     currentDevice.type === 'mobile' || currentDevice.type === 'tablet';
@@ -358,6 +363,9 @@ export function openModal({
       parentViewSelectedIds,
       childViewId,
       childViewSelectedIds,
+      parentWindowId,
+      parentDocumentId,
+      parentFieldId,
     },
   };
 }
@@ -426,7 +434,7 @@ export function updateTabLayout(windowId, tabId) {
       .then(({ data }) => {
         dispatch(setUpdatedTabLayout(tabId, data));
 
-        return Promise.reject(tabId);
+        return Promise.resolve(tabId);
       })
       .catch((error) => {
         return Promise.reject(error);
@@ -498,6 +506,35 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
 }
 
 /*
+ * @method createSearchWindow
+ * @summary - special function that is used to get the window view information for the search and opens a modal with that view
+ *            this is a hacky way of opening the window as this wasn't existing for the SEARCH type (check how `NEW` was opening)
+ * param {object}
+ */
+export function createSearchWindow({
+  windowId: windowType,
+  docId,
+  tabId,
+  rowId,
+  isModal,
+  dispatch,
+  title,
+}) {
+  dispatch(
+    createView({
+      windowId: windowType,
+      viewType: 'grid',
+      refDocumentId: docId,
+      refTabId: tabId,
+      refRowIds: [rowId],
+      isModal,
+    })
+  ).then(({ windowId, viewId }) => {
+    dispatch(openRawModal({ windowId, viewId, title }));
+  });
+}
+
+/*
  * Main method to generate window
  */
 export function createWindow({
@@ -508,10 +545,27 @@ export function createWindow({
   isModal,
   isAdvanced,
   disconnected,
+  title,
 }) {
   let disconnectedData = null;
   let documentId = docId || 'NEW';
   return (dispatch) => {
+    if (documentId === 'SEARCH') {
+      // use specific function for search window creation
+      createSearchWindow({
+        windowId: windowType,
+        docId,
+        tabId,
+        rowId,
+        isModal,
+        isAdvanced,
+        disconnected,
+        dispatch,
+        title,
+      });
+      return false;
+    }
+
     if (documentId.toLowerCase() === 'new') {
       documentId = 'NEW';
     }
@@ -524,8 +578,10 @@ export function createWindow({
       if (!response || !response.data) {
         return Promise.resolve(null);
       }
-
-      const data = response.data[0];
+      // Note: this `documents` key comes only as a result of a PATCH, this is the reason this check is needed
+      const data = response.data.documents
+        ? response.data.documents[0]
+        : response.data[0];
       const tabs = data.includedTabsInfo;
       let docId = data.id;
 
@@ -552,7 +608,11 @@ export function createWindow({
 
       let elem = 0;
 
-      response.data.forEach((value, index) => {
+      let responseDocuments = response.data.documents
+        ? response.data.documents
+        : response.data;
+
+      responseDocuments.forEach((value, index) => {
         if (value.rowId === rowId) {
           elem = index;
         }
@@ -560,34 +620,45 @@ export function createWindow({
 
       if (documentId === 'NEW') {
         dispatch(updateModal(null, docId));
+        const { includedTabsInfo } = responseDocuments[0];
+        includedTabsInfo &&
+          dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
       }
 
       // TODO: Is `elem` ever different than 0 ?
-      docId = response.data[elem].id;
-      dispatch(
-        initDataSuccess({
-          data: parseToDisplay(response.data[elem].fieldsByName),
-          docId,
-          saveStatus: data.saveStatus,
-          scope: getScope(isModal),
-          standardActions: data.standardActions,
-          validStatus: data.validStatus,
-          includedTabsInfo: data.includedTabsInfo,
-          websocket: data.websocketEndpoint,
-          hasComments: data.hasComments,
-        })
-      );
+      docId = responseDocuments[elem].id;
+      disconnected !== 'inlineTab' &&
+        dispatch(
+          initDataSuccess({
+            data: parseToDisplay(responseDocuments[elem].fieldsByName),
+            docId,
+            saveStatus: data.saveStatus,
+            scope: getScope(isModal),
+            standardActions: data.standardActions,
+            validStatus: data.validStatus,
+            includedTabsInfo: data.includedTabsInfo,
+            websocket: data.websocketEndpoint,
+            hasComments: data.hasComments,
+          })
+        );
 
       if (isModal) {
         if (rowId === 'NEW') {
-          dispatch(
-            mapDataToState(response.data, false, 'NEW', docId, windowType)
-          );
-          dispatch(updateStatus(response.data));
-          dispatch(updateModal(data.rowId));
           /** special case of inlineTab - disconnectedData will be used for data feed */
           if (disconnected === 'inlineTab') {
-            disconnectedData = response.data[0];
+            disconnectedData = responseDocuments[0];
+          } else {
+            dispatch(
+              mapDataToState({
+                data: response.data,
+                isModal: false,
+                rowId: 'NEW',
+                docId,
+                windowType,
+              })
+            );
+            dispatch(updateStatus(responseDocuments));
+            dispatch(updateModal(data.rowId));
           }
         }
       } else {
@@ -618,16 +689,16 @@ export function createWindow({
           /** post get layout action triggered for the inlineTab case */
           if (disconnectedData && disconnected === 'inlineTab') {
             dispatch(inlineTabAfterGetLayout({ data, disconnectedData }));
+          } else {
+            dispatch(initLayoutSuccess(data, getScope(isModal)));
           }
-
-          dispatch(initLayoutSuccess(data, getScope(isModal)));
         })
         .catch((e) => Promise.reject(e));
     });
   };
 }
 
-const getChangelogUrl = function(windowId, docId, tabId, rowId) {
+const getChangelogUrl = function (windowId, docId, tabId, rowId) {
   let documentId = docId;
 
   if (!docId && rowId) {
@@ -758,7 +829,8 @@ export function patch(
   isModal,
   isAdvanced,
   viewId,
-  isEdit
+  isEdit,
+  disconnected
 ) {
   return async (dispatch) => {
     const symbol = Symbol();
@@ -782,12 +854,35 @@ export function patch(
     try {
       const response = await patchRequest(options);
       const data =
-        response.data instanceof Array ? response.data : [response.data];
+        response.data.documents instanceof Array
+          ? response.data.documents
+          : response.data;
       const dataItem = data[0];
+      const includedTabsInfo =
+        dataItem && dataItem.includedTabsInfo
+          ? dataItem.includedTabsInfo
+          : undefined;
+
+      // prevent recursion in merge
+      data.documents &&
+        data.documents.documents &&
+        delete data.documents.documents;
 
       await dispatch(
-        mapDataToState(data, isModal, rowId, id, windowType, isAdvanced)
+        mapDataToState({
+          data,
+          isModal,
+          rowId,
+          id,
+          windowType,
+          isAdvanced,
+          disconnected,
+        })
       );
+
+      // update the inlineTabsInfo if such information is present
+      includedTabsInfo &&
+        dispatch(updateDataIncludedTabsInfo('master', includedTabsInfo));
 
       if (
         dataItem &&
@@ -813,7 +908,7 @@ export function patch(
         await dispatch(indicatorState('saved'));
         await dispatch({ type: PATCH_SUCCESS, symbol });
 
-        return data;
+        return response.data;
       }
     } catch (error) {
       await dispatch(indicatorState('error'));
@@ -830,14 +925,15 @@ export function patch(
       });
 
       await dispatch(
-        mapDataToState(
-          response.data,
+        mapDataToState({
+          data: response.data,
           isModal,
           rowId,
           id,
           windowType,
-          isAdvanced
-        )
+          isAdvanced,
+          disconnected,
+        })
       );
     }
   };
@@ -861,14 +957,14 @@ export function fireUpdateData({
       fetchAdvancedFields: fetchAdvancedFields,
     }).then((response) => {
       dispatch(
-        mapDataToState(
-          response.data,
+        mapDataToState({
+          data: response.data,
           isModal,
           rowId,
           documentId,
           windowId,
-          fetchAdvancedFields
-        )
+          fetchAdvancedFields,
+        })
       );
     });
   };
@@ -891,7 +987,7 @@ function updateData(doc, scope) {
   };
 }
 
-function mapDataToState(data, isModal, rowId) {
+function mapDataToState({ data, isModal, rowId, disconnected }) {
   return (dispatch) => {
     const dataArray = typeof data.splice === 'function' ? data : [data];
 
@@ -907,7 +1003,10 @@ function mapDataToState(data, isModal, rowId) {
         !(index === 0 && rowId === 'NEW') &&
         (!item.rowId || (isModal && item.rowId))
       ) {
-        dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
+        // used this trick to differentiate and have the correct path to patch endpoint when using the inlinetab within modal
+        // otherwise the tabId is updated in the windowHandler.modal.tabId and then the endpoint for the PATCH in modal is altered
+        disconnected !== 'inlineTab' &&
+          dispatch(updateData(parsedItem, getScope(isModal && index === 0)));
       }
     });
   };
@@ -1205,7 +1304,9 @@ export function handleProcessResponse(response, type, id, parentId) {
             }
 
             if (targetTab === 'SAME_TAB_OVERLAY') {
-              await dispatch(openRawModal(windowId, viewId, action.profileId));
+              await dispatch(
+                openRawModal({ windowId, viewId, profileId: action.profileId })
+              );
             }
             break;
           }

@@ -25,6 +25,7 @@ package de.metas.ui.web.window.controller;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
@@ -41,6 +42,7 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentAdvSearch;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangeLog;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayout;
@@ -49,8 +51,10 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions.JSONDocum
 import de.metas.ui.web.window.datatypes.json.JSONDocumentList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions.JSONDocumentOptionsBuilder;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentPatchResult;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
@@ -60,6 +64,7 @@ import de.metas.ui.web.window.descriptor.DocumentDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
 import de.metas.ui.web.window.model.Document;
@@ -71,11 +76,14 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.LabelsLookup;
 import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
+import org.adempiere.ad.service.ILookupDAO;
+import org.adempiere.ad.service.TableRefInfo;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -109,30 +117,37 @@ public class WindowRestController
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final UserSession userSession;
 	private final DocumentCollection documentCollection;
 	private final DocumentChangeLogService documentChangeLogService;
 	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+	private final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider;
 	private final ProcessRestController processRestController;
 	private final DocumentWebsocketPublisher websocketPublisher;
 	private final CommentsService commentsService;
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
 	public WindowRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final DocumentCollection documentCollection,
 			@NonNull final DocumentChangeLogService documentChangeLogService,
 			@NonNull final NewRecordDescriptorsProvider newRecordDescriptorsProvider,
+			@NonNull final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider,
 			@NonNull final ProcessRestController processRestController,
 			@NonNull final DocumentWebsocketPublisher websocketPublisher,
-			@NonNull final CommentsService commentsService)
+			@NonNull final CommentsService commentsService,
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
 		this.userSession = userSession;
 		this.documentCollection = documentCollection;
 		this.documentChangeLogService = documentChangeLogService;
 		this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
+		this.advancedSearchDescriptorsProvider = advancedSearchDescriptorsProvider;
 		this.processRestController = processRestController;
 		this.websocketPublisher = websocketPublisher;
 		this.commentsService = commentsService;
+		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
 	private JSONOptionsBuilder newJSONOptions()
@@ -143,7 +158,8 @@ public class WindowRestController
 	private JSONDocumentLayoutOptionsBuilder newJSONLayoutOptions()
 	{
 		return JSONDocumentLayoutOptions.prepareFrom(userSession)
-				.newRecordDescriptorsProvider(newRecordDescriptorsProvider);
+				.newRecordDescriptorsProvider(newRecordDescriptorsProvider)
+				.advancedSearchDescriptorsProvider(advancedSearchDescriptorsProvider);
 	}
 
 	private JSONDocumentOptionsBuilder newJSONDocumentOptions()
@@ -338,16 +354,10 @@ public class WindowRestController
 	 * @param documentIdStr the string to identify the document to be returned. May also be {@link DocumentId#NEW_ID_STRING}, if a new record shall be created.
 	 */
 	@PatchMapping("/{windowId}/{documentId}")
-	public List<JSONDocument> patchRootDocument(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-			,
-			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced
-			//
-			,
+	public JSONDocumentPatchResult patchRootDocument(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
 			@RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		final DocumentPath documentPath = DocumentPath.builder()
@@ -360,22 +370,12 @@ public class WindowRestController
 	}
 
 	@PatchMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
-	public List<JSONDocument> patchIncludedDocument(
-			@PathVariable("windowId") final String windowIdStr
-			//
-			,
-			@PathVariable("documentId") final String documentIdStr
-			//
-			,
-			@PathVariable("tabId") final String detailIdStr
-			//
-			,
-			@PathVariable("rowId") final String rowIdStr
-			//
-			,
-			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced
-			//
-			,
+	public JSONDocumentPatchResult patchIncludedDocument(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("tabId") final String detailIdStr,
+			@PathVariable("rowId") final String rowIdStr,
+			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
 			@RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		final DocumentPath documentPath = DocumentPath.builder()
@@ -389,7 +389,7 @@ public class WindowRestController
 		return patchDocument(documentPath, advanced, events);
 	}
 
-	private List<JSONDocument> patchDocument(
+	private JSONDocumentPatchResult patchDocument(
 			final DocumentPath documentPath,
 			final boolean advanced,
 			final List<JSONDocumentChangedEvent> events)
@@ -403,7 +403,7 @@ public class WindowRestController
 		return Execution.callInNewExecution("window.commit", () -> patchDocument0(documentPath, events, jsonOpts));
 	}
 
-	private List<JSONDocument> patchDocument0(
+	private JSONDocumentPatchResult patchDocument0(
 			final DocumentPath documentPath,
 			final List<JSONDocumentChangedEvent> events,
 			final JSONDocumentOptions jsonOpts)
@@ -422,7 +422,10 @@ public class WindowRestController
 		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
 		websocketPublisher.convertAndPublish(jsonDocumentEvents);
 
-		return jsonDocumentEvents;
+		return JSONDocumentPatchResult.builder()
+				.documents(jsonDocumentEvents)
+				.triggerActions(Execution.getCurrentFrontendTriggerActionsOrEmpty())
+				.build();
 	}
 
 	@PostMapping("/{windowId}/{documentId}/duplicate")
@@ -540,7 +543,7 @@ public class WindowRestController
 	 * Typeahead for root document's field
 	 */
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/typeahead")
-	public JSONLookupValuesList getDocumentFieldTypeahead(
+	public JSONLookupValuesPage getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr
 			//
 			,
@@ -563,7 +566,7 @@ public class WindowRestController
 	 * Typeahead for included document's field
 	 */
 	@GetMapping(value = "/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/typeahead")
-	public JSONLookupValuesList getDocumentFieldTypeahead(
+	public JSONLookupValuesPage getDocumentFieldTypeahead(
 			@PathVariable("windowId") final String windowIdStr
 			//
 			,
@@ -591,7 +594,7 @@ public class WindowRestController
 	/**
 	 * Typeahead: unified implementation
 	 */
-	private JSONLookupValuesList getDocumentFieldTypeahead(
+	private JSONLookupValuesPage getDocumentFieldTypeahead(
 			final DocumentPath documentPath,
 			final String fieldName,
 			final String query)
@@ -599,7 +602,7 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		return documentCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query))
-				.transform(this::toJSONLookupValuesList);
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
@@ -733,7 +736,7 @@ public class WindowRestController
 				.build();
 	}
 
-	private static DocumentZoomIntoInfo getDocumentFieldZoomInto(
+	private DocumentZoomIntoInfo getDocumentFieldZoomInto(
 			@NonNull final Document document,
 			@NonNull final String fieldName)
 	{
@@ -766,8 +769,30 @@ public class WindowRestController
 						.setParameter("zoomIntoTableIdFieldName", zoomIntoTableIdFieldName);
 			}
 
-			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(adTableId);
+			final String tableName = adTableDAO.retrieveTableName(adTableId);
 			return DocumentZoomIntoInfo.of(tableName, recordId);
+		}
+		// label field
+		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
+		{
+			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor()
+					.getLookupDescriptor()
+					.orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
+							.setParameter("field", field)));
+			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
+
+			if (labelsValueColumnName.endsWith("_ID"))
+			{
+				final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+				final TableRefInfo tableRefInfo = lookupDAO
+						.retrieveTableDirectRefInfo(labelsValueColumnName);
+
+				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
+			}
+			else
+			{
+				return DocumentZoomIntoInfo.of(lookup.getLabelsTableName(), -1);
+			}
 		}
 		// Key Field
 		else if (singleKeyFieldDescriptor != null && singleKeyFieldDescriptor.getFieldName().equals(fieldName))
@@ -781,7 +806,8 @@ public class WindowRestController
 		// Regular lookup value
 		else
 		{
-			return field.getZoomIntoInfo();
+			return field.getZoomIntoInfo()
+					.overrideWindowIdIfPossible(customizedWindowInfoMapRepository.get());
 		}
 	}
 
@@ -795,13 +821,9 @@ public class WindowRestController
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-
 		final DetailId selectedTabId = DetailId.fromJson(selectedTabIdStr);
 		final DocumentIdsSelection selectedRowIds = DocumentIdsSelection.ofCommaSeparatedString(selectedRowIdsAsStr);
-		final Set<TableRecordReference> selectedIncludedRecords = selectedRowIds.stream()
-				.map(rowId -> rootDocumentPath.createChildPath(selectedTabId, rowId))
-				.map(documentCollection::getTableRecordReference)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<TableRecordReference> selectedIncludedRecords = getTableRecordReferences(rootDocumentPath, selectedTabId, selectedRowIds);
 
 		return getDocumentActions(
 				rootDocumentPath,
@@ -809,6 +831,28 @@ public class WindowRestController
 				selectedIncludedRecords,
 				returnDisabled,
 				DisplayPlace.SingleDocumentActionsMenu);
+	}
+
+	private ImmutableSet<TableRecordReference> getTableRecordReferences(
+			@NonNull final DocumentPath rootDocumentPath,
+			@Nullable final DetailId tabId,
+			@NonNull final DocumentIdsSelection selectedRowIds)
+	{
+		if (selectedRowIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		if (tabId == null)
+		{
+			throw new AdempiereException("selectedTabId shall be specified when selectedRowIds is set");
+		}
+
+		return selectedRowIds.stream()
+				.filter(DocumentId::isInt) // consider only int keys because only those can be converted to TableRecordReference
+				.map(rowId -> rootDocumentPath.createChildPath(tabId, rowId))
+				.map(documentCollection::getTableRecordReference)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/topActions")
@@ -909,6 +953,41 @@ public class WindowRestController
 					.getProcessor()
 					.processNewRecordDocument(document);
 		}));
+	}
+
+	@PostMapping("/{windowId}/{documentId}/field/{fieldName}/advSearchResult")
+	public List<JSONDocument> advSearchResult(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr,
+			@PathVariable("fieldName") final String fieldName,
+			@RequestBody final JSONDocumentAdvSearch body
+	)
+	{
+		userSession.assertLoggedIn();
+
+		final String advSearchWindowIdStr = body.getAdvSearchWindowId();
+		final String selectionIdStr = body.getSelectedId();
+
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+
+		return Execution.callInNewExecution("window.advSearch", () -> advSearchResult0(WindowId.fromJson(advSearchWindowIdStr), selectionIdStr, documentPath, fieldName));
+	}
+
+	private List<JSONDocument> advSearchResult0(final WindowId windowId, final String selectionIdStr, final DocumentPath documentPath, final String fieldName)
+	{
+		final IDocumentChangesCollector changesCollector = Execution.getCurrentDocumentChangesCollectorOrNull();
+		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions().build();
+
+		documentCollection.forDocumentWritable(documentPath, changesCollector, document -> {
+			advancedSearchDescriptorsProvider.getAdvancedSearchDescriptor(windowId)
+					.getProcessor()
+					.processSelection(windowId, document, fieldName, selectionIdStr);
+			return null;
+		});
+		final List<JSONDocument> jsonDocumentEvents = JSONDocument.ofEvents(changesCollector, jsonOpts);
+		websocketPublisher.convertAndPublish(jsonDocumentEvents);
+		return jsonDocumentEvents;
 	}
 
 	@PostMapping("/{windowId}/{documentId}/discardChanges")

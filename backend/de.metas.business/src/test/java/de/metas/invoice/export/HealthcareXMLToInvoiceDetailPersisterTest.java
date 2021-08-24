@@ -22,11 +22,7 @@
 
 package de.metas.invoice.export;
 
-import static org.assertj.core.api.Assertions.*;
-import static de.metas.invoice.export.HealthcareXMLToInvoiceDetailPersister.*;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.business.BusinessTestHelper;
 import de.metas.business.TestInvoice;
 import de.metas.business.TestInvoiceLine;
 import de.metas.invoice.InvoiceId;
@@ -40,16 +36,21 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Invoice_Detail;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 public class HealthcareXMLToInvoiceDetailPersisterTest
 {
-
+	private final ZoneId timeZone = ZoneId.of("Europe/Berlin");
 	private OrgId orgId;
 	private TestInvoice testInvoice;
 	private XmlRequest xmlRequest;
@@ -59,7 +60,7 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 	{
 		AdempiereTestHelper.get().init();
 
-		orgId = BusinessTestHelper.createOrgWithTimeZone();
+		orgId = AdempiereTestHelper.createOrgWithTimeZone("org", timeZone);
 		testInvoice = TestInvoice.builder()
 				.orgId(orgId)
 				.soTrx(SOTrx.SALES)
@@ -73,12 +74,18 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 		xmlRequest = requestConverter.toCrossVersionRequest(inputStream);
 	}
 
-	/** Create a C_Invoice (with just one line) and then verifies that the correct I_C_Invoice_Details are generated. */
+	private Timestamp parseTimestamp(final String localDate)
+	{
+		return Timestamp.from(LocalDate.parse(localDate).atStartOfDay(timeZone).toInstant());
+	}
+
+	/**
+	 * Create a C_Invoice (with just one line) and then verifies that the correct I_C_Invoice_Details are generated.
+	 */
 	@Test
 	void extractInvoiceDetails()
 	{
 		// given
-		orgId = BusinessTestHelper.createOrgWithTimeZone();
 		testInvoice = TestInvoice.builder()
 				.orgId(orgId)
 				.soTrx(SOTrx.SALES)
@@ -122,7 +129,7 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 						tuple(invoiceId, 0, "Patient_Salutation", "Herr", null),
 						tuple(invoiceId, 0, "Patient_GivenName", "Peter", null),
 						tuple(invoiceId, 0, "Patient_FamilyName", "Muster", null),
-						tuple(invoiceId, 0, "Patient_BirthDate", null, TimeUtil.parseTimestamp("1964-02-28")),
+						tuple(invoiceId, 0, "Patient_BirthDate", null, parseTimestamp("1964-02-28")),
 						tuple(invoiceId, 0, "Patient_Street", "Musterstrasse 5", null),
 						tuple(invoiceId, 0, "Patient_ZIP", "7304", null),
 						tuple(invoiceId, 0, "Patient_City", "Maienfeld", null),
@@ -139,10 +146,10 @@ public class HealthcareXMLToInvoiceDetailPersisterTest
 						tuple(invoiceId, 0, "Referrer_ZSR", "R234567", null),
 						tuple(invoiceId, 0, "Referrer_GLN", "2034567890333", null),
 						tuple(invoiceId, 0, "Referrer_Phone", "061 956 99 00", null),
-						tuple(invoiceId, 0, "Treatment_Date_Begin", null, TimeUtil.parseTimestamp("2013-03-08")),
-						tuple(invoiceId, 0, "Treatment_Date_End", null, TimeUtil.parseTimestamp("2013-03-20")),
+						tuple(invoiceId, 0, "Treatment_Date_Begin", null, parseTimestamp("2013-03-08")),
+						tuple(invoiceId, 0, "Treatment_Date_End", null, parseTimestamp("2013-03-20")),
 
-						tuple(invoiceId, invoiceLineId(0), "Service_Date", null, TimeUtil.parseTimestamp("2013-03-08")),
+						tuple(invoiceId, invoiceLineId(0), "Service_Date", null, parseTimestamp("2013-03-08")),
 						tuple(invoiceId, invoiceLineId(0), "Service_Name", "Konsultation, erste 5 Min. (Grundkonsultation)", null)
 				);
 	}

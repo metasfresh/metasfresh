@@ -17,10 +17,11 @@ import {
   getInlineTabLayoutAndData,
   setInlineTabItemProp,
 } from '../../actions/InlineTabActions';
+import { fieldValueToString } from '../../utils/tableHelpers';
 import { deleteRequest } from '../../api';
 import Prompt from '../app/Prompt';
 import counterpart from 'counterpart';
-
+import { isGermanLanguage } from '../../utils/locale';
 class InlineTab extends PureComponent {
   /**
    * @method toggleOpen
@@ -100,6 +101,17 @@ class InlineTab extends PureComponent {
     );
   };
 
+  /**
+   * @method formatHeaderDataUsingType
+   * @summary function responsible for converting properly the value of the field used further for concatenating the header caption
+   */
+  formatHeaderDataUsingType = ({ fieldValue, fieldType, precision }) => {
+    const { isGerman } = this.props;
+
+    if (fieldValue === null) return;
+    return fieldValueToString({ fieldValue, fieldType, precision, isGerman });
+  };
+
   render() {
     const {
       id: docId,
@@ -112,6 +124,7 @@ class InlineTab extends PureComponent {
       fieldsOrder,
       promptOpen,
       isOpen,
+      allowDelete,
     } = this.props;
     const valid = validStatus ? validStatus.valid : true;
 
@@ -135,7 +148,13 @@ class InlineTab extends PureComponent {
               if (fieldsByName[fieldKey]) {
                 return (
                   <Fragment key={`${fieldKey}_${index}`}>
-                    <span>{fieldsByName[fieldKey].value}</span>
+                    <span>
+                      {this.formatHeaderDataUsingType({
+                        fieldValue: fieldsByName[fieldKey].value,
+                        fieldType: fieldsByName[fieldKey].widgetType,
+                        precision: fieldsByName[fieldKey].precision,
+                      })}
+                    </span>
                     <span>&nbsp;&nbsp;</span>
                   </Fragment>
                 );
@@ -162,17 +181,19 @@ class InlineTab extends PureComponent {
                     disconnected={`inlineTab`} // This has to match the windowHandler.inlineTab path in the redux store
                   />
                   {/* Delete button */}
-                  <div className="row">
-                    <div className="col-lg-12">
-                      <button
-                        className="btn btn-meta-outline-secondary btn-sm btn-pull-right"
-                        onClick={() => this.handleDelete(rowId)}
-                      >
-                        {counterpart.translate('window.Delete.caption')}
-                      </button>
-                      <div className="clearfix" />
+                  {allowDelete && (
+                    <div className="row">
+                      <div className="col-lg-12">
+                        <button
+                          className="btn btn-meta-outline-secondary btn-sm btn-pull-right"
+                          onClick={() => this.handleDelete(rowId)}
+                        >
+                          {counterpart.translate('window.Delete.caption')}
+                        </button>
+                        <div className="clearfix" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {/* These prompt strings are hardcoded because they need to be provided by the BE */}
                   {promptOpen && (
                     <Prompt
@@ -213,6 +234,8 @@ InlineTab.propTypes = {
   updateDataValidStatus: PropTypes.func.isRequired,
   setInlineTabItemProp: PropTypes.func.isRequired,
   isOpen: PropTypes.bool,
+  isGerman: PropTypes.bool,
+  allowDelete: PropTypes.bool,
 };
 
 /**
@@ -233,20 +256,19 @@ const mapStateToProps = (state, props) => {
     ? inlineTab[selector].promptOpen
     : false;
   const isOpen = inlineTab[selector] ? inlineTab[selector].isOpen : false;
+  const isGerman = isGermanLanguage(state.appHandler.me.language);
 
   return {
     layout,
     data,
     promptOpen,
     isOpen,
+    isGerman,
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    getInlineTabLayoutAndData,
-    updateDataValidStatus,
-    setInlineTabItemProp,
-  }
-)(InlineTab);
+export default connect(mapStateToProps, {
+  getInlineTabLayoutAndData,
+  updateDataValidStatus,
+  setInlineTabItemProp,
+})(InlineTab);

@@ -12,7 +12,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.session.ExpiringSession;
+import org.springframework.session.MapSession;
 import org.springframework.session.SessionRepository;
 import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
 
@@ -53,7 +53,7 @@ public class SessionConfig
 	private int checkExpiredSessionsRateInMinutes;
 
 	@Bean
-	public SessionRepository<ExpiringSession> sessionRepository(
+	public SessionRepository<MapSession> sessionRepository(
 			final SessionProperties properties,
 			final ApplicationEventPublisher applicationEventPublisher)
 	{

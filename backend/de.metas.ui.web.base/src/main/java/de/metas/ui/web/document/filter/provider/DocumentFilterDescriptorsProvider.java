@@ -1,10 +1,13 @@
 package de.metas.ui.web.document.filter.provider;
 
-import java.util.Collection;
-
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+import javax.annotation.Nullable;
+import java.util.Collection;
 
 /*
  * #%L
@@ -44,6 +47,7 @@ public interface DocumentFilterDescriptorsProvider
 	/**
 	 * @return filter descriptor or <code>null</code>
 	 */
+	@Nullable
 	DocumentFilterDescriptor getByFilterIdOrNull(final String filterId);
 
 	/**
@@ -57,5 +61,22 @@ public interface DocumentFilterDescriptorsProvider
 			throw new AdempiereException("Filter '" + filterId + "' was not found in " + this);
 		}
 		return filterDescriptor;
+	}
+
+	default DocumentFilter unwrap(@NonNull final JSONDocumentFilter jsonFilter)
+	{
+		final String filterId = jsonFilter.getFilterId();
+		final DocumentFilterDescriptor filterDescriptor = getByFilterIdOrNull(filterId);
+
+		// Ad-hoc filters (e.g. zoom references)
+		if (filterDescriptor == null)
+		{
+			return JSONDocumentFilter.unwrapAsGenericFilter(jsonFilter);
+		}
+		// Filter with descriptor
+		else
+		{
+			return filterDescriptor.unwrap(jsonFilter);
+		}
 	}
 }

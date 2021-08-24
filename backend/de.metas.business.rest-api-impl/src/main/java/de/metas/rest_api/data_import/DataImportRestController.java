@@ -2,8 +2,8 @@ package de.metas.rest_api.data_import;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
-import de.metas.common.rest_api.JsonErrorItem;
-import de.metas.common.rest_api.JsonMetasfreshId;
+import de.metas.common.rest_api.v1.JsonErrorItem;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.impexp.ActualImportRecordsResult;
 import de.metas.impexp.AsyncImportRecordsResponse;
 import de.metas.impexp.DataImportRequest;
@@ -62,7 +62,10 @@ import java.nio.charset.StandardCharsets;
  * #L%
  */
 
-@RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API + "/import")
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/import",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/import",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/import" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class DataImportRestController

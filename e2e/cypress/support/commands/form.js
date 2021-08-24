@@ -70,10 +70,8 @@ Cypress.Commands.add('getCheckboxValue', (fieldName, modal) => {
 
   return cy.get(path).then(el => {
     // noinspection RedundantIfStatementJS
-    if (el.find('checked').length || el.find('.checked').length) {
-      return true;
-    }
-    return false;
+    const input = el.find('input');
+    return input.hasClass('is-checked') ? true : false;
   });
 });
 
@@ -83,18 +81,18 @@ Cypress.Commands.add('expectCheckboxValue', (fieldName, isChecked, modal) => {
   cy.waitForSaveIndicator();
 
   const path = createFieldPath(fieldName, modal);
+  cy.get('.notification-item').should('not.exist');
 
-  const timeout = { timeout: 20000 };
   if (isChecked) {
-    return cy
-      .get(path)
-      .find('.checked', timeout)
-      .should('exist');
+    cy.get(path).then(el => {
+      const inputCheck = el.find('input');
+      return inputCheck.hasClass('is-checked') ? true : false;
+    });
   } else {
-    return cy
-      .get(path)
-      .find('.checked', timeout)
-      .should('not.exist');
+    cy.get(path).then(el => {
+      const inputCheck = el.find('input');
+      return inputCheck.hasClass('is-checked') ? false : true;
+    });
   }
 });
 
@@ -215,15 +213,28 @@ Cypress.Commands.add('writeIntoStringField', (fieldName, stringValue, modal, rew
   cy.log(`writeIntoStringField - fieldName=${fieldName}; stringValue=${stringValue}; modal=${modal}; patchUrlPattern=${patchUrlPattern}`);
 
   const path = createFieldPath(fieldName, modal);
+
   cy.get(path)
     .find('input')
-    .type('{selectall}')
-    .wait(500)
+    .type('{selectall}');
+
+  cy.get('.indicator-pending').should('not.exist');
+
+  cy.get(path)
+    .find('input')
     .type(stringValue, { delay: 20 });
+
+  // ^^ the Code above removes the flakyness and does not use wait !!!
+  //
+  // cy.get(path)
+  //   .find('input')
+  //   .type('{selectall}')
+  //   .wait(500)
+  //   .type(stringValue, { delay: 20 });
   // if a typed string has missing characters, maybe the delay of type is not good and we should try another workaround.
   // for more details see: https://github.com/cypress-io/cypress/issues/3817
   // If you are wondering why we are using the wait(500) above ^^
-  // Notes: 
+  // Notes:
   //  - we tried to used `delay` but that did not worked and made the tests to fail with chopped text
   //  - we picked the easiest solution, there are more complex solutions also but imply much allocated time to fix
   //    there is such solution documented in the link above (there are two links within to a blog) with event listeners on elements
@@ -350,7 +361,7 @@ Cypress.Commands.add('selectInListField', (fieldName, listValue, modal, rewriteU
 
   cy.get(path)
     .find('.input-dropdown')
-    .click();  // -- removed click as dropdown shows up when you clear and type
+    .click(); // -- removed click as dropdown shows up when you clear and type
 
   // no f*cki'n clue why it started going ape shit when there was the correct '.input-dropdown-list-option' here
   cy.get('.input-dropdown-list')

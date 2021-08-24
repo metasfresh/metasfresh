@@ -1,5 +1,23 @@
 package de.metas.ui.web.window.datatypes.json;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.ui.web.window.datatypes.DebugProperties;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import io.swagger.annotations.ApiModel;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -11,27 +29,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.ui.web.window.datatypes.DebugProperties;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import io.swagger.annotations.ApiModel;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -59,7 +56,7 @@ import lombok.NonNull;
 @EqualsAndHashCode
 public class JSONLookupValuesList
 {
-	public static final JSONLookupValuesList ofLookupValuesList(
+	public static JSONLookupValuesList ofLookupValuesList(
 			@Nullable final LookupValuesList lookupValues,
 			@NonNull final String adLanguage)
 	{
@@ -68,6 +65,13 @@ public class JSONLookupValuesList
 			return EMPTY;
 		}
 
+		final ImmutableList<JSONLookupValue> jsonValuesList = toListOfJSONLookupValues(lookupValues, adLanguage);
+		final DebugProperties otherProperties = lookupValues.getDebugProperties();
+		return new JSONLookupValuesList(jsonValuesList, otherProperties);
+	}
+
+	static ImmutableList<JSONLookupValue> toListOfJSONLookupValues(@NonNull final LookupValuesList lookupValues, @NonNull final String adLanguage)
+	{
 		Stream<JSONLookupValue> jsonValues = lookupValues.getValues()
 				.stream()
 				.map(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, adLanguage));
@@ -77,13 +81,11 @@ public class JSONLookupValuesList
 			jsonValues = jsonValues.sorted(Comparator.comparing(JSONLookupValue::getCaption));
 		}
 
-		final ImmutableList<JSONLookupValue> jsonValuesList = jsonValues.collect(ImmutableList.toImmutableList());
-		final DebugProperties otherProperties = lookupValues.getDebugProperties();
-		return new JSONLookupValuesList(jsonValuesList, otherProperties);
+		return jsonValues.collect(ImmutableList.toImmutableList());
 	}
 
 	@JsonCreator
-	private static final JSONLookupValuesList ofJSONLookupValuesList(@JsonProperty("values") final List<JSONLookupValue> jsonLookupValues)
+	private static JSONLookupValuesList ofJSONLookupValuesList(@JsonProperty("values") final List<JSONLookupValue> jsonLookupValues)
 	{
 		if (jsonLookupValues == null || jsonLookupValues.isEmpty())
 		{
@@ -93,7 +95,7 @@ public class JSONLookupValuesList
 		return new JSONLookupValuesList(ImmutableList.copyOf(jsonLookupValues), DebugProperties.EMPTY);
 	}
 
-	public static final Collector<JSONLookupValue, ?, JSONLookupValuesList> collect()
+	public static Collector<JSONLookupValue, ?, JSONLookupValuesList> collect()
 	{
 		final Supplier<List<JSONLookupValue>> supplier = ArrayList::new;
 		final BiConsumer<List<JSONLookupValue>, JSONLookupValue> accumulator = List::add;
@@ -105,7 +107,7 @@ public class JSONLookupValuesList
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public static final LookupValuesList lookupValuesListFromJsonMap(final Map<String, Object> map)
+	public static LookupValuesList lookupValuesListFromJsonMap(final Map<String, Object> map)
 	{
 		@SuppressWarnings("unchecked")
 		final List<Object> values = (List<Object>)map.get("values");
@@ -189,18 +191,6 @@ public class JSONLookupValuesList
 			otherProperties = new LinkedHashMap<>();
 		}
 		otherProperties.put(name, jsonValue);
-	}
-
-	public JSONLookupValuesList setDefaultValue(final JSONLookupValue defaultValue)
-	{
-		this.defaultValue = defaultValue == null ? null : defaultValue.getKey();
-		return this;
-	}
-
-	public JSONLookupValuesList setDefaultValue(final LookupValue defaultValue)
-	{
-		this.defaultValue = defaultValue == null ? null : defaultValue.getIdAsString();
-		return this;
 	}
 
 	@JsonSetter

@@ -4,33 +4,6 @@ import { getQueryString } from '../utils';
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 // @TODO: Everything should be moved to api
 
-export function createInstance(entity, windowId, docId, tabId, subentity) {
-  const url = `${config.API_URL}/${entity}/${windowId}/${docId}${
-    tabId ? `/${tabId}` : ''
-  }${subentity ? `/${subentity}` : ''}`;
-
-  return axios.post(url);
-}
-
-// TODO: This should be moved to the api
-export function completeRequest(
-  entity,
-  docType,
-  docId,
-  tabId,
-  rowId,
-  subentity,
-  subentityId
-) {
-  return axios.post(
-    `${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
-      docId ? `/${docId}` : ''
-    }${tabId ? `/${tabId}` : ''}${rowId ? `/${rowId}` : ''}${
-      subentity ? `/${subentity}` : ''
-    }${subentityId ? `/${subentityId}` : ''}/complete`
-  );
-}
-
 // TODO: This should be moved to the api
 export function autocompleteRequest({
   attribute,
@@ -106,9 +79,7 @@ export function dropdownModalRequest({
   viewId,
 }) {
   return axios.get(`
-    ${
-      config.API_URL
-    }/${entity}/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`);
+    ${config.API_URL}/${entity}/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`);
 }
 
 export function duplicateRequest(entity, docType, docId) {
@@ -186,9 +157,7 @@ export function processNewRecord(entity, docType, docId) {
 }
 
 export function openFile(entity, docType, docId, fileType, fileId) {
-  const url = `${
-    config.API_URL
-  }/${entity}/${docType}/${docId}/${fileType}/${fileId}`;
+  const url = `${config.API_URL}/${entity}/${docType}/${docId}/${fileType}/${fileId}`;
 
   window.open(url, '_blank');
 }

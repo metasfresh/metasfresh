@@ -24,6 +24,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.GuavaCollectors;
@@ -254,11 +255,12 @@ public class HUEditorView implements IView
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup source for filterId=" + filterId + ", parameterName=" + filterParameterName))
-				.findEntities(ctx);
+				.findEntities(ctx)
+				.getValues();
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
@@ -292,13 +294,8 @@ public class HUEditorView implements IView
 	}
 
 	@Override
-	public TableRecordReference getTableRecordReferenceOrNull(final DocumentId rowId)
+	public TableRecordReference getTableRecordReferenceOrNull(final @NonNull DocumentId rowId)
 	{
-		if (rowId == null)
-		{
-			return null;
-		}
-
 		final HUEditorRowId huRowId = HUEditorRowId.ofDocumentId(rowId);
 		if (huRowId.isHU())
 		{

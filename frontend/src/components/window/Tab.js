@@ -58,9 +58,6 @@ Tab.propTypes = {
 };
 
 export { Tab };
-export default connect(
-  null,
-  {
-    fetchTab,
-  }
-)(Tab);
+export default connect(null, {
+  fetchTab,
+})(Tab);

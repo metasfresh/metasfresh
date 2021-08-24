@@ -1,0 +1,53 @@
+{
+  "bpartnerIdentifier": "ext-ALBERTA-patientId",
+  "orgCode": "001",
+  "jsonRequestLocationUpsert": {
+    "requestItems": [
+      {
+        "locationIdentifier": "ext-ALBERTA-delivery_patientId",
+        "location": {
+          "active": null,
+          "activeSet": false,
+          "name": null,
+          "nameSet": false,
+          "bpartnerName": "address name",
+          "bpartnerNameSet": true,
+          "address1": "address",
+          "address1Set": true,
+          "address2": "additionalAddress",
+          "address2Set": true,
+          "address3": "additionalAddress2",
+          "address3Set": true,
+          "address4": null,
+          "address4Set": false,
+          "poBox": null,
+          "poBoxSet": false,
+          "postal": "99999",
+          "postalSet": true,
+          "city": "test-city",
+          "citySet": true,
+          "district": null,
+          "districtSet": false,
+          "region": null,
+          "regionSet": false,
+          "countryCode": "DE",
+          "countryCodeSet": true,
+          "gln": null,
+          "glnSet": false,
+          "shipTo": true,
+          "shipToSet": true,
+          "shipToDefault": null,
+          "shipToDefaultSet": false,
+          "billTo": null,
+          "billToSet": false,
+          "billToDefault": null,
+          "billToDefaultSet": false
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

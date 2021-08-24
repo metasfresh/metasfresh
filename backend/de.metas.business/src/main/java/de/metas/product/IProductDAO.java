@@ -1,16 +1,20 @@
 package de.metas.product;
 
+import de.metas.order.compensationGroup.GroupCategoryId;
+import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -60,7 +64,6 @@ public interface IProductDAO extends ISingletonService
 	@NonNull
 	ProductCategoryId getDefaultProductCategoryId();
 
-
 	/**
 	 * @return All the active products with the given product planning schema selector
 	 */
@@ -68,7 +71,7 @@ public interface IProductDAO extends ISingletonService
 
 	/**
 	 * @return the product of the given <code>org</code> that is mapped to the given <code>product</code> or <code>null</code> if the given product references no mapping, or the mapping is not active
-	 *         or if there is no pendant in the given <code>org</code>.
+	 * or if there is no pendant in the given <code>org</code>.
 	 * task http://dewiki908/mediawiki/index.php/09700_Counter_Documents_%28100691234288%29
 	 */
 	@Nullable
@@ -95,6 +98,16 @@ public interface IProductDAO extends ISingletonService
 	ProductId retrieveProductIdBy(ProductQuery query);
 
 	Optional<ProductCategoryId> retrieveProductCategoryIdByCategoryValue(@NonNull String categoryValue);
+
+	Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId);
+	
+	void clearIndividualMasterDataFromProduct(ProductId productId);
+
+	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
+
+	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
+			@NonNull GroupCategoryId groupCategoryId,
+			@NonNull OrgId targetOrgId);
 
 	@Value
 	class ProductQuery
@@ -134,7 +147,7 @@ public interface IProductDAO extends ISingletonService
 		}
 	}
 
-	Stream<I_M_Product> streamAllProducts();
+	Stream<I_M_Product> streamAllProducts(@Nullable Instant since);
 
 	/**
 	 * @return product category or null if the productId is null

@@ -45,6 +45,7 @@ import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.debug.JSONCacheResetResult.JSONCacheResetResultBuilder;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.kpi.data.KPIDataProvider;
 import de.metas.ui.web.menu.MenuTreeRepository;
 import de.metas.ui.web.process.ProcessRestController;
 import de.metas.ui.web.session.UserSession;
@@ -273,7 +274,7 @@ public class DebugRestController
 	@RequestMapping(value = "/eventBus/postEvent", method = RequestMethod.GET)
 	public void postEvent(
 			@RequestParam(name = "topicName", defaultValue = "de.metas.event.GeneralNotifications") final String topicName //
-			, @RequestParam(name = "message", defaultValue = "test message") final String message//
+			//, @RequestParam(name = "message", defaultValue = "test message") final String message//
 			, @RequestParam(name = "toUserId", defaultValue = "-1") final int toUserId//
 			, @RequestParam(name = "important", defaultValue = "false") final boolean important//
 			//
@@ -349,18 +350,21 @@ public class DebugRestController
 	{
 		websockets_and_invalidation(
 				de.metas.ui.web.websocket.WebSocketConfig.class.getPackage().getName(),
-				de.metas.ui.web.window.invalidation.DocumentCacheInvalidationDispatcher.class.getName()), //
-		view(de.metas.ui.web.view.IView.class.getPackage().getName()), //
+				de.metas.ui.web.window.invalidation.DocumentCacheInvalidationDispatcher.class.getName()),
+		view(de.metas.ui.web.view.IView.class.getPackage().getName()),
 		cache(
 				de.metas.cache.CCache.class.getName(),
 				de.metas.cache.CacheMgt.class.getName(),
 				de.metas.cache.model.IModelCacheService.class.getName() // model caching
-		), //
+		),
 		model_interceptors(
-				org.compiere.model.ModelValidationEngine.class.getName(), //
+				org.compiere.model.ModelValidationEngine.class.getName(),
 				org.adempiere.ad.modelvalidator.IModelValidationEngine.class.getPackage().getName() // for annotated interceptors etc
-		) //
-		;
+		),
+		dashboard(
+				"de.metas.ui.web.dashboard",
+				KPIDataProvider.class.getPackage().getName()
+		);
 
 		private final Set<String> loggerNames;
 

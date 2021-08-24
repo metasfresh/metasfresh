@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.Env;
@@ -51,9 +53,10 @@ import de.metas.common.util.CoalesceUtil;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	public static final AddressCountryLookupDescriptor newInstance()
+	public static AddressCountryLookupDescriptor newInstance()
 	{
 		return new AddressCountryLookupDescriptor();
 	}
@@ -144,7 +147,7 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		final Object id = evalCtx.getIdToFilter();
 		if (id == null)
@@ -170,7 +173,7 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		//
 		// Determine what we will filter
@@ -184,15 +187,14 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 				.getValues()
 				.stream()
 				.filter(filter)
-				.skip(offset)
-				.limit(limit)
-				.collect(LookupValuesList.collect());
+				.collect(LookupValuesList.collect())
+				.pageByOffsetAndLimit(offset, limit);
 	}
 
 	private LookupValuesList getAllCountriesById()
 	{
 		final Object cacheKey = "ALL";
-		return allCountriesCache.getOrLoad(cacheKey, () -> retriveAllCountriesById());
+		return allCountriesCache.getOrLoad(cacheKey, this::retriveAllCountriesById);
 	}
 
 	private LookupValuesList retriveAllCountriesById()
@@ -200,7 +202,7 @@ public class AddressCountryLookupDescriptor implements LookupDescriptor, LookupD
 		return Services.get(ICountryDAO.class)
 				.getCountries(Env.getCtx())
 				.stream()
-				.map(countryRecord -> createLookupValue(countryRecord))
+				.map(this::createLookupValue)
 				.collect(LookupValuesList.collect());
 
 	}

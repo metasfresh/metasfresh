@@ -188,11 +188,13 @@ class MasterWindowContainer extends PureComponent {
       sortingOrder = (ordering.ascending ? '+' : '-') + ordering.fieldName;
     }
 
-    updateTabLayout(windowType, activeTabId).then(() => {
-      getTabRequest(activeTabId, windowType, docId, sortingOrder).then((rows) =>
-        updateTabTableData(tableId, rows)
-      );
-    });
+    updateTabLayout(windowType, activeTabId)
+      .then(() => {
+        getTabRequest(activeTabId, windowType, docId, sortingOrder).then(
+          (rows) => updateTabTableData(tableId, rows)
+        );
+      })
+      .catch((error) => error);
   };
 
   deleteTabsTables = () => {
@@ -323,18 +325,15 @@ const mapStateToProps = (state) => ({
   breadcrumb: state.menuHandler.breadcrumb,
 });
 
-export default connect(
-  mapStateToProps,
-  {
-    addNotification,
-    attachFileAction,
-    clearMasterData,
-    fireUpdateData,
-    sortTab,
-    updateTabRowsData,
-    updateTabTableData,
-    push,
-    deleteTable,
-    updateTabLayout,
-  }
-)(MasterWindowContainer);
+export default connect(mapStateToProps, {
+  addNotification,
+  attachFileAction,
+  clearMasterData,
+  fireUpdateData,
+  sortTab,
+  updateTabRowsData,
+  updateTabTableData,
+  push,
+  deleteTable,
+  updateTabLayout,
+})(MasterWindowContainer);

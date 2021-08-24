@@ -147,6 +147,75 @@ public interface I_C_BPartner
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Org_Mapping_ID (int AD_Org_Mapping_ID);
+
+	/**
+	 * Get Org Mapping.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Org_Mapping_ID();
+
+	@Nullable org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping();
+
+	void setAD_Org_Mapping(@Nullable org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_AD_Org_Mapping> COLUMN_AD_Org_Mapping_ID = new ModelColumn<>(I_C_BPartner.class, "AD_Org_Mapping_ID", org.compiere.model.I_AD_Org_Mapping.class);
+	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
+
+	/**
+	 * Set Role.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAlbertaRole (@Nullable java.lang.String AlbertaRole);
+
+	/**
+	 * Get Role.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAlbertaRole();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_AlbertaRole = new ModelColumn<>(I_C_BPartner.class, "AlbertaRole", null);
+	String COLUMNNAME_AlbertaRole = "AlbertaRole";
+
+	/**
+	 * Set Title.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAlbertaTitle (@Nullable java.lang.String AlbertaTitle);
+
+	/**
+	 * Get Title.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getAlbertaTitle();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_AlbertaTitle = new ModelColumn<>(I_C_BPartner.class, "AlbertaTitle", null);
+	String COLUMNNAME_AlbertaTitle = "AlbertaTitle";
+
+	/**
 	 * Set Consolidate Shipments allowed.
 	 *
 	 * <br>Type: YesNo
@@ -326,7 +395,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -336,7 +405,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Greeting (ID).
-	 * Anrede zum Druck auf Korrespondenz
+	 * Greeting to print on correspondence
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -344,11 +413,6 @@ public interface I_C_BPartner
 	 */
 	int getC_Greeting_ID();
 
-	@Nullable org.compiere.model.I_C_Greeting getC_Greeting();
-
-	void setC_Greeting(@Nullable org.compiere.model.I_C_Greeting C_Greeting);
-
-	ModelColumn<I_C_BPartner, org.compiere.model.I_C_Greeting> COLUMN_C_Greeting_ID = new ModelColumn<>(I_C_BPartner.class, "C_Greeting_ID", org.compiere.model.I_C_Greeting.class);
 	String COLUMNNAME_C_Greeting_ID = "C_Greeting_ID";
 
 	/**
@@ -671,6 +735,56 @@ public interface I_C_BPartner
 	String COLUMNNAME_DebtorId = "DebtorId";
 
 	/**
+	 * Set Default Ship To City.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDefaultShipTo_City (@Nullable java.lang.String DefaultShipTo_City);
+
+	/**
+	 * Get Default Ship To City.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDefaultShipTo_City();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_DefaultShipTo_City = new ModelColumn<>(I_C_BPartner.class, "DefaultShipTo_City", null);
+	String COLUMNNAME_DefaultShipTo_City = "DefaultShipTo_City";
+
+	/**
+	 * Set Default Ship To Postal.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDefaultShipTo_Postal (@Nullable java.lang.String DefaultShipTo_Postal);
+
+	/**
+	 * Get Default Ship To Postal.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDefaultShipTo_Postal();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_DefaultShipTo_Postal = new ModelColumn<>(I_C_BPartner.class, "DefaultShipTo_Postal", null);
+	String COLUMNNAME_DefaultShipTo_Postal = "DefaultShipTo_Postal";
+
+	/**
 	 * Set Lieferart.
 	 * Defines the timing of Delivery
 	 *
@@ -826,6 +940,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_EMail = new ModelColumn<>(I_C_BPartner.class, "EMail", null);
 	String COLUMNNAME_EMail = "EMail";
+
+	/**
+	 * Set Exclude From Promotions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setExcludeFromPromotions (boolean ExcludeFromPromotions);
+
+	/**
+	 * Get Exclude From Promotions.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isExcludeFromPromotions();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_ExcludeFromPromotions = new ModelColumn<>(I_C_BPartner.class, "ExcludeFromPromotions", null);
+	String COLUMNNAME_ExcludeFromPromotions = "ExcludeFromPromotions";
 
 	/**
 	 * Set External ID.
@@ -1119,6 +1254,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsAggregatePO = "IsAggregatePO";
 
 	/**
+	 * Set Is Alberta doctor.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsAlbertaDoctor (boolean IsAlbertaDoctor);
+
+	/**
+	 * Get Is Alberta doctor.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isAlbertaDoctor();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsAlbertaDoctor = new ModelColumn<>(I_C_BPartner.class, "IsAlbertaDoctor", null);
+	String COLUMNNAME_IsAlbertaDoctor = "IsAlbertaDoctor";
+
+	/**
 	 * Set Allow campaign prices.
 	 * Wenn auf "ja" gesetzt, dann werden bei der Preisberechnung auch Aktionspreise berücksichtigt.
 	 *
@@ -1163,6 +1321,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsAllowPriceMutation = new ModelColumn<>(I_C_BPartner.class, "IsAllowPriceMutation", null);
 	String COLUMNNAME_IsAllowPriceMutation = "IsAllowPriceMutation";
+
+	/**
+	 * Set Archived.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsArchived (boolean IsArchived);
+
+	/**
+	 * Get Archived.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isArchived();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsArchived = new ModelColumn<>(I_C_BPartner.class, "IsArchived", null);
+	String COLUMNNAME_IsArchived = "IsArchived";
 
 	/**
 	 * Set Company.
@@ -1255,6 +1436,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
 
 	/**
+	 * Set EDI DESADV Receipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEdiDesadvRecipient (boolean IsEdiDesadvRecipient);
+
+	/**
+	 * Get EDI DESADV Receipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEdiDesadvRecipient();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsEdiDesadvRecipient = new ModelColumn<>(I_C_BPartner.class, "IsEdiDesadvRecipient", null);
+	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
+
+	/**
 	 * Set Mitarbeiter.
 	 * Indicates if  this Business Partner is an employee
 	 *
@@ -1278,7 +1480,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsEmployee = "IsEmployee";
 
 	/**
-	 * Set Haddex Check.
+	 * Set Haddex Prüfung erforderlich.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1287,7 +1489,7 @@ public interface I_C_BPartner
 	void setIsHaddexCheck (boolean IsHaddexCheck);
 
 	/**
-	 * Get Haddex Check.
+	 * Get Haddex Prüfung erforderlich.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1655,8 +1857,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_Logo_ID = "Logo_ID";
 
 	/**
-	 * Set Rabatt-Schema.
-	 * Schema um den prozentualen Rabatt zu berechnen
+	 * Set Discount Schema.
+	 * Schema to calculate the trade discount percentage
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1665,8 +1867,8 @@ public interface I_C_BPartner
 	void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
 
 	/**
-	 * Get Rabatt-Schema.
-	 * Schema um den prozentualen Rabatt zu berechnen
+	 * Get Discount Schema.
+	 * Schema to calculate the trade discount percentage
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1770,6 +1972,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_M_FreightCost_ID = new ModelColumn<>(I_C_BPartner.class, "M_FreightCost_ID", null);
 	String COLUMNNAME_M_FreightCost_ID = "M_FreightCost_ID";
+
+	/**
+	 * Set Marketing Campaign.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMKTG_Campaign_ID (int MKTG_Campaign_ID);
+
+	/**
+	 * Get Marketing Campaign.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMKTG_Campaign_ID();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_MKTG_Campaign_ID = new ModelColumn<>(I_C_BPartner.class, "MKTG_Campaign_ID", null);
+	String COLUMNNAME_MKTG_Campaign_ID = "MKTG_Campaign_ID";
 
 	/**
 	 * Set Preisliste.
@@ -2114,6 +2337,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_PO_DiscountSchema_ID = "PO_DiscountSchema_ID";
 
 	/**
+	 * Set PO_Incoterm.
+	 * Internationale Handelsklauseln (engl. International Commercial Terms)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPO_Incoterm (@Nullable java.lang.String PO_Incoterm);
+
+	/**
+	 * Get PO_Incoterm.
+	 * Internationale Handelsklauseln (engl. International Commercial Terms)
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPO_Incoterm();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_PO_Incoterm = new ModelColumn<>(I_C_BPartner.class, "PO_Incoterm", null);
+	String COLUMNNAME_PO_Incoterm = "PO_Incoterm";
+
+	/**
 	 * Set Zahlungskondition.
 	 * Payment rules for a purchase order
 	 *
@@ -2377,6 +2623,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_ReferenceNo = new ModelColumn<>(I_C_BPartner.class, "ReferenceNo", null);
 	String COLUMNNAME_ReferenceNo = "ReferenceNo";
+
+	/**
+	 * Set Referrer.
+	 * Referring web address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReferrer (@Nullable java.lang.String Referrer);
+
+	/**
+	 * Get Referrer.
+	 * Referring web address
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReferrer();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Referrer = new ModelColumn<>(I_C_BPartner.class, "Referrer", null);
+	String COLUMNNAME_Referrer = "Referrer";
 
 	/**
 	 * Set Wiedervorlage Datum Aussen.
@@ -2749,7 +3018,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_SO_TargetDocTypeReason = "SO_TargetDocTypeReason";
 
 	/**
-	 * Set Steuer-ID.
+	 * Set Tax ID.
 	 * Tax Identification
 	 *
 	 * <br>Type: String
@@ -2759,7 +3028,7 @@ public interface I_C_BPartner
 	void setTaxID (@Nullable java.lang.String TaxID);
 
 	/**
-	 * Get Steuer-ID.
+	 * Get Tax ID.
 	 * Tax Identification
 	 *
 	 * <br>Type: String
@@ -2770,6 +3039,29 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_TaxID = new ModelColumn<>(I_C_BPartner.class, "TaxID", null);
 	String COLUMNNAME_TaxID = "TaxID";
+
+	/**
+	 * Set Short title.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTitleShort (@Nullable java.lang.String TitleShort);
+
+	/**
+	 * Get Short title.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getTitleShort();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_TitleShort = new ModelColumn<>(I_C_BPartner.class, "TitleShort", null);
+	String COLUMNNAME_TitleShort = "TitleShort";
 
 	/**
 	 * Get Updated.

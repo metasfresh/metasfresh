@@ -1,4 +1,4 @@
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import reducer, {
@@ -12,8 +12,7 @@ import generalData from '../../../test_setup/fixtures/grid/data.json';
 
 
 const createState = function(state = {}) {
-  return merge.recursive(
-    true,
+  return merge(
     {
       ...initialState,
     },

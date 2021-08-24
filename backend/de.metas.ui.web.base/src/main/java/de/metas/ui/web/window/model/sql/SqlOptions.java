@@ -1,12 +1,11 @@
 package de.metas.ui.web.window.model.sql;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 /*
  * #%L
@@ -30,13 +29,17 @@ import lombok.ToString;
  * #L%
  */
 
-/** Various instructions to SQL code generators */
-@EqualsAndHashCode
-@ToString
+/**
+ * Various instructions to SQL code generators
+ */
+@EqualsAndHashCode(doNotUseGetters = true)
+@ToString(doNotUseGetters = true)
 public class SqlOptions
 {
-	/** advice the SQL code generators to use table alias (e.g. "master") instead of fully qualified table name */
-	public static final SqlOptions usingTableAlias(@NonNull final String sqlTableAlias)
+	/**
+	 * advice the SQL code generators to use table alias (e.g. "master") instead of fully qualified table name
+	 */
+	public static SqlOptions usingTableAlias(@NonNull final String sqlTableAlias)
 	{
 		if (USE_TABLE_ALIAS_MASTER.tableAlias.equals(sqlTableAlias))
 		{
@@ -49,8 +52,10 @@ public class SqlOptions
 				.build();
 	}
 
-	/** advice the SQL code generators to use fully qualified table name instead of table alias */
-	public static final SqlOptions usingTableName(final String tableName)
+	/**
+	 * advice the SQL code generators to use fully qualified table name instead of table alias
+	 */
+	public static SqlOptions usingTableName(final String tableName)
 	{
 		return SqlOptions.builder()
 				.useTableAlias(false)

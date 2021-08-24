@@ -403,7 +403,7 @@ public class ServiceRepairProjectService
 
 	public void importCostsFromRepairOrderAndMarkTaskCompleted(@NonNull final RepairManufacturingOrderInfo repairOrder)
 	{
-		final ServiceRepairProjectTaskId taskId = projectTaskRepository
+		ServiceRepairProjectTask task = projectTaskRepository
 				.getTaskByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
 				.orElseThrow(() -> new AdempiereException("No task found for " + repairOrder));
 
@@ -419,13 +419,12 @@ public class ServiceRepairProjectService
 				continue;
 			}
 
-			createCostCollector(toCreateProjectCostCollectorRequest(taskId, mfgCostCollector));
+			createCostCollector(toCreateProjectCostCollectorRequest(task, mfgCostCollector));
 		}
 
-		if (!projectCostCollectorRepository.matchesByTaskAndProduct(taskId, repairOrder.getRepairedProductId()))
+		if (!projectCostCollectorRepository.matchesByTaskAndProduct(task.getId(), repairOrder.getRepairedProductId()))
 		{
 			final ProductId repairedProductId = repairOrder.getRepairedProductId();
-			final ServiceRepairProjectTask task = projectTaskRepository.getById(taskId);
 			final HuId repairedVhuId = Objects.requireNonNull(task.getRepairVhuId());
 			final AttributeSetInstanceId asiId = handlingUnitsBL.createASIFromHUAttributes(repairedProductId, repairedVhuId);
 
@@ -434,31 +433,34 @@ public class ServiceRepairProjectService
 					.type(ServiceRepairProjectCostCollectorType.RepairedProductToReturn)
 					.productId(repairedProductId)
 					.asiId(asiId)
+					.warrantyCase(task.getWarrantyCase())
 					.qtyReserved(repairOrder.getRepairedQty())
 					.reservedVhuId(repairedVhuId)
 					.build());
 		}
 
-		projectTaskRepository.changeById(taskId, task -> task.withRepairOrderDone(true));
+		task = task.withRepairOrderDone(true);
+		projectTaskRepository.save(task);
 	}
 
 	private static CreateProjectCostCollectorRequest toCreateProjectCostCollectorRequest(
-			@NonNull final ServiceRepairProjectTaskId taskId,
+			@NonNull final ServiceRepairProjectTask task,
 			@NonNull final RepairManufacturingCostCollector consumedComponentOrResource)
 	{
 		return CreateProjectCostCollectorRequest.builder()
-				.taskId(taskId)
+				.taskId(task.getId())
 				.type(ServiceRepairProjectCostCollectorType.RepairingConsumption)
 				.productId(consumedComponentOrResource.getProductId())
 				.qtyConsumed(consumedComponentOrResource.getQtyConsumed())
 				.repairOrderCostCollectorId(consumedComponentOrResource.getId())
+				.warrantyCase(task.getWarrantyCase())
 				.build();
 	}
 
 	public void unimportCostsFromRepairOrder(@NonNull final RepairManufacturingOrderInfo repairOrder)
 	{
 		final ServiceRepairProjectTaskId taskId = projectTaskRepository
-				.getTaskByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
+				.getTaskIdByRepairOrderId(repairOrder.getProjectId(), repairOrder.getId())
 				.orElseThrow(() -> new AdempiereException("No task found for " + repairOrder));
 
 		final ImmutableList<ServiceRepairProjectCostCollector> costCollectorsToDelete = projectCostCollectorRepository

@@ -54,6 +54,13 @@
             <artifactId>metasfresh-dist-serverRoot</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- spring-boot-starter-data-elasticsearch hauls in netty-transport:4.1.49 which lacks the class Duplex ChannelConfig -->
+                <exclusion>
+                    <artifactId>netty-transport</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>de.metas.migration</groupId>
@@ -70,23 +77,22 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util.web</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>
-            <version>4.0.2</version>
-            <scope>compile</scope>
+            <version>${amqp-client.version}</version>
+            <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.skyscreamer</groupId>
-            <artifactId>jsonassert</artifactId>
-            <scope>test</scope>
-            <version>1.5.0</version>
         </dependency>
 
         <!--
@@ -117,7 +123,27 @@
             <artifactId>testcontainers</artifactId>
             <version>${testcontainers.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- avoid ClassNotFoundException regarding InputCoercionException-->
+                <exclusion>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                    <artifactId>jackson-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>${jackson.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>rabbitmq</artifactId>

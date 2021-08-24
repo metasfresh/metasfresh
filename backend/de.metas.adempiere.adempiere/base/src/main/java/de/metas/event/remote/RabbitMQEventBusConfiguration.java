@@ -4,9 +4,11 @@ import java.util.Optional;
 
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.AnonymousQueue;
+import org.springframework.amqp.core.Base64UrlNamingStrategy;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
+import org.springframework.amqp.core.NamingStrategy;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionNameStrategy;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -125,8 +127,8 @@ public class RabbitMQEventBusConfiguration
 		@Bean(QUEUE_BEAN_NAME)
 		public AnonymousQueue eventsQueue()
 		{
-			final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
-			return new AnonymousQueue(eventQueueNamingStrategy);
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy("metasfresh.events." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy); 
 		}
 
 		@Bean
@@ -156,7 +158,7 @@ public class RabbitMQEventBusConfiguration
 		@Bean(QUEUE_BEAN_NAME)
 		public AnonymousQueue cacheInvalidationQueue()
 		{
-			final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
 			return new AnonymousQueue(eventQueueNamingStrategy);
 		}
 
@@ -188,7 +190,7 @@ public class RabbitMQEventBusConfiguration
 		@Bean(QUEUE_BEAN_NAME)
 		public AnonymousQueue accountingQueue()
 		{
-			final AnonymousQueue.NamingStrategy eventQueueNamingStrategy = new AnonymousQueue.Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
 			return new AnonymousQueue(eventQueueNamingStrategy);
 		}
 

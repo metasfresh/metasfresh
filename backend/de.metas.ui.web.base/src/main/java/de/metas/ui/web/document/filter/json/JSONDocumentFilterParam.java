@@ -1,16 +1,15 @@
 package de.metas.ui.web.document.filter.json;
 
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.Value;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -36,12 +35,11 @@ import lombok.Value;
 
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 @Value
-final class JSONDocumentFilterParam
+public class JSONDocumentFilterParam
 {
 	/**
 	 * Creates {@link JSONDocumentFilterParam} from {@link DocumentFilterParam} if the given filter is not internal.
 	 * 
-	 * @param filterParam
 	 * @return JSON document filter parameter
 	 */
 	/* package */static Optional<JSONDocumentFilterParam> of(final DocumentFilterParam filterParam, final JSONOptions jsonOpts)
@@ -61,20 +59,19 @@ final class JSONDocumentFilterParam
 	}
 
 	@JsonProperty("parameterName")
-	private final String parameterName;
+	String parameterName;
 
 	@JsonProperty("value")
-	private final Object value;
+	Object value;
 
 	@JsonProperty("valueTo")
-	private final Object valueTo;
+	Object valueTo;
 
 	@JsonCreator
 	private JSONDocumentFilterParam(
-			@JsonProperty("parameterName") final String parameterName //
-			, @JsonProperty("value") final Object value //
-			, @JsonProperty("valueTo") final Object valueTo //
-	)
+			@JsonProperty("parameterName") final String parameterName,
+			@JsonProperty("value") final Object value,
+			@JsonProperty("valueTo") final Object valueTo)
 	{
 		this.parameterName = parameterName;
 		this.value = value;

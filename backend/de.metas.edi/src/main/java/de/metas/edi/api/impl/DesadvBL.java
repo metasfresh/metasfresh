@@ -8,6 +8,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Order;
@@ -132,6 +134,12 @@ public class DesadvBL implements IDesadvBL
 	public DesadvBL(@NonNull final HURepository huRepository)
 	{
 		this.huRepository = huRepository;
+	}
+
+	@Override
+	public List<I_EDI_DesadvLine> retrieveLinesByIds(final Collection<Integer> desadvLineIds)
+	{
+		return desadvDAO.retrieveLinesByIds(desadvLineIds);
 	}
 
 	@Override
@@ -304,10 +312,12 @@ public class DesadvBL implements IDesadvBL
 			desadv.setMovementDate(order.getDatePromised());
 			desadv.setC_Currency_ID(order.getC_Currency_ID());
 
-			desadv.setHandOver_Partner_ID(order.getHandOver_Partner_ID());
-			desadv.setHandOver_Location_ID(order.getHandOver_Location_ID());
-			desadv.setDropShip_BPartner_ID(order.getDropShip_BPartner_ID());
-			desadv.setDropShip_Location_ID(order.getDropShip_Location_ID());
+			// the DESADV recipient might need an explicitly set dropship/handover partner and location; even if it is the same as the buyer's one
+			desadv.setHandOver_Partner_ID(CoalesceUtil.firstGreaterThanZero(order.getHandOver_Partner_ID(), order.getC_BPartner_ID()));
+			desadv.setHandOver_Location_ID(CoalesceUtil.firstGreaterThanZero(order.getHandOver_Location_ID(), order.getC_BPartner_Location_ID()));
+			
+			desadv.setDropShip_BPartner_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_BPartner_ID(), order.getC_BPartner_ID()));
+			desadv.setDropShip_Location_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()));
 
 			desadv.setBill_Location_ID(BPartnerLocationId.toRepoId(orderBL.getBillToLocationId(order)));
 			// note: the minimal acceptable fulfillment is currently set by a model interceptor
@@ -651,7 +661,7 @@ public class DesadvBL implements IDesadvBL
 
 	private void extractAndSetPackagingGTINs(
 			@NonNull final HU rootHU,
-			@NonNull BPartnerId bPartnerId,
+			@NonNull final BPartnerId bPartnerId,
 			@NonNull final I_EDI_DesadvLine_Pack packRecord)
 	{
 		final String packagingGTIN = rootHU.getPackagingGTINs().get(bPartnerId);
@@ -956,7 +966,7 @@ public class DesadvBL implements IDesadvBL
 	@Override
 	public ReportResultData printSSCC18_Labels(
 			@NonNull final Properties ctx,
-			@NonNull final Collection<Integer> desadvLinePack_IDs_ToPrint)
+			@NonNull final Collection<EDIDesadvLinePackId> desadvLinePack_IDs_ToPrint)
 	{
 		Check.assumeNotEmpty(desadvLinePack_IDs_ToPrint, "desadvLineSSCC_IDs_ToPrint not empty");
 

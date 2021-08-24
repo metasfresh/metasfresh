@@ -22,17 +22,16 @@ package de.metas.handlingunits.storage;
  * #L%
  */
 
-import java.util.List;
-import java.util.stream.Stream;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Factory for HU related quantities.<br>
@@ -54,9 +53,6 @@ public interface IHUStorageFactory
 	 *
 	 * NOTE: Collect the product storages directly from given HUs. Don't navigate them to collect the product storages from possible included HUs.
 	 *
-	 *
-	 * @param hus
-	 * @param productId
 	 * @return product storages; never return {@code null}. Only return items for existing storages. E.g. if none of the given {@code hus} has a storage, return an empty list.
 	 */
 	List<IHUProductStorage> getHUProductStorages(List<I_M_HU> hus, ProductId productId);

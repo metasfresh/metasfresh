@@ -20,8 +20,10 @@ import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.model.validator.M_HU;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
@@ -61,7 +63,7 @@ import static org.junit.Assert.assertThat;
 
 /**
  * Contains masterdata and common stuff to be used by different tests.
- * This class is convenient whenever you want to test with (aggregate) HUs that were created by the {@link LUTUProducerDestination}.
+ * This class is convenient whenever you want to test with HUs that were created by the {@link LUTUProducerDestination}.
  *
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -206,6 +208,8 @@ public class LUTUProducerDestinationTestSupport
 		locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		saveRecord(locator);
 
+		helper.addEmptiesNetworkLine(warehouse);
+
 		return LocatorId.ofRecord(locator);
 	}
 
@@ -243,7 +247,7 @@ public class LUTUProducerDestinationTestSupport
 	/**
 	 * Makes a stand alone CU with the given quantity and status "active".
 	 */
-	public I_M_HU mkRealStandAloneCuWithCuQty(final String strCuQty)
+	public I_M_HU mkRealStandAloneCuWithCuQty(@NonNull final String strCuQty)
 	{
 		final IHUProducerAllocationDestination producer = HUProducerDestination.ofVirtualPI()
 				.setLocatorId(defaultLocatorId);
@@ -269,7 +273,12 @@ public class LUTUProducerDestinationTestSupport
 		return cuToSplit;
 	}
 
-	public I_M_HU mkRealCUWithTUandQtyCU(final String strCuQty)
+	public I_M_HU mkRealCUWithTUandQtyCU(@NonNull final String strCuQty)
+	{
+		return mkRealCUWithTUandQtyCU(Quantity.of(strCuQty, helper.uomKg));
+	}
+
+	public I_M_HU mkRealCUWithTUandQtyCU(@NonNull final Quantity cuQty)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -279,8 +288,7 @@ public class LUTUProducerDestinationTestSupport
 		lutuProducer.setNoLU();
 		lutuProducer.setTUPI(piTU_IFCO);
 
-		final BigDecimal cuQty = new BigDecimal(strCuQty);
-		helper.load(lutuProducer, helper.pTomatoProductId, cuQty, helper.uomKg);
+		helper.load(lutuProducer, helper.pTomatoProductId, cuQty.toBigDecimal(), cuQty.getUOM());
 		final List<I_M_HU> createdTUs = lutuProducer.getCreatedHUs();
 		assertThat(createdTUs.size(), is(1));
 

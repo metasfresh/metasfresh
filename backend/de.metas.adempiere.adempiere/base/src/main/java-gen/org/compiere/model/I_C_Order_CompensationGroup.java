@@ -51,6 +51,28 @@ public interface I_C_Order_CompensationGroup
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Activity_ID();
+
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
 	 * Set Compensation Group Schema.
 	 *
 	 * <br>Type: Search

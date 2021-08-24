@@ -28,11 +28,13 @@ import lombok.Getter;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner_Location;
 
+import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_BPartnerLocation;
+
 @AllArgsConstructor
 @Getter
 public enum BPLocationExternalReferenceType implements IExternalReferenceType
 {
-	BPARTNER_LOCATION("BPartnerLocation", I_C_BPartner_Location.Table_Name);
+	BPARTNER_LOCATION(TYPE_BPartnerLocation, I_C_BPartner_Location.Table_Name);
 
 	private final String code;
 	private final String tableName;

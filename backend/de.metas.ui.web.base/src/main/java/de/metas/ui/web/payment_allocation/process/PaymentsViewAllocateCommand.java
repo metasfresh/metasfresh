@@ -35,6 +35,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeWithPrecalculatedAmountRequest;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfig;
@@ -64,8 +65,8 @@ public class PaymentsViewAllocateCommand
 	private final MoneyService moneyService;
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 
-	private final PaymentRow paymentRow;
-	private final List<InvoiceRow> invoiceRows;
+	private final ImmutableList<PaymentRow> paymentRows;
+	private final ImmutableList<InvoiceRow> invoiceRows;
 	private final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy;
 	private final boolean allowPurchaseSalesInvoiceCompensation;
 	private final LocalDate defaultDateTrx;
@@ -75,7 +76,7 @@ public class PaymentsViewAllocateCommand
 			@NonNull final MoneyService moneyService,
 			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService,
 			//
-			@Nullable final PaymentRow paymentRow,
+			@NonNull @Singular final ImmutableList<PaymentRow> paymentRows,
 			@NonNull @Singular final ImmutableList<InvoiceRow> invoiceRows,
 			@Nullable final PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy,
 			@NonNull final Boolean allowPurchaseSalesInvoiceCompensation,
@@ -84,7 +85,7 @@ public class PaymentsViewAllocateCommand
 		this.moneyService = moneyService;
 		this.invoiceProcessingServiceCompanyService = invoiceProcessingServiceCompanyService;
 
-		this.paymentRow = paymentRow;
+		this.paymentRows = paymentRows;
 		this.invoiceRows = invoiceRows;
 		this.payableRemainingOpenAmtPolicy = CoalesceUtil.coalesce(payableRemainingOpenAmtPolicy, PayableRemainingOpenAmtPolicy.DO_NOTHING);
 		this.allowPurchaseSalesInvoiceCompensation = allowPurchaseSalesInvoiceCompensation;
@@ -110,7 +111,7 @@ public class PaymentsViewAllocateCommand
 		{
 			throw new AdempiereException("Invalid allocation")
 					.appendParametersToMessage()
-					.setParameter("paymentRow", paymentRow)
+					.setParameter("paymentRows", paymentRows)
 					.setParameter("invoiceRows", invoiceRows)
 					.setParameter("payableRemainingOpenAmtPolicy", payableRemainingOpenAmtPolicy);
 		}
@@ -120,14 +121,14 @@ public class PaymentsViewAllocateCommand
 	@Nullable
 	private PaymentAllocationBuilder preparePaymentAllocationBuilder()
 	{
-		if (paymentRow == null && invoiceRows.isEmpty())
+		if (paymentRows.isEmpty() && invoiceRows.isEmpty())
 		{
 			return null;
 		}
 
-		final List<PaymentDocument> paymentDocuments = paymentRow != null
-				? ImmutableList.of(toPaymentDocument(paymentRow))
-				: ImmutableList.of();
+		final ImmutableList<PaymentDocument> paymentDocuments = paymentRows.stream()
+				.map(this::toPaymentDocument)
+				.collect(ImmutableList.toImmutableList());
 
 		final ImmutableList<PayableDocument> invoiceDocuments = invoiceRows.stream()
 				.map(row -> toPayableDocument(row, paymentDocuments, moneyService, invoiceProcessingServiceCompanyService))
@@ -159,8 +160,10 @@ public class PaymentsViewAllocateCommand
 		final Money discountAmt = moneyService.toMoney(row.getDiscountAmt());
 		final CurrencyId currencyId = openAmt.getCurrencyId();
 
-		@Nullable final Amount serviceFeeAmt = row.getServiceFeeAmt();
-		@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
+		@Nullable
+		final Amount serviceFeeAmt = row.getServiceFeeAmt();
+		@Nullable
+		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 		if (serviceFeeAmt != null && !serviceFeeAmt.isZero())
 		{
 			final InvoiceProcessingContext invoiceProcessingContext = extractInvoiceProcessingContext(row, paymentDocuments, invoiceProcessingServiceCompanyService);
@@ -228,7 +231,12 @@ public class PaymentsViewAllocateCommand
 		{
 			final @NonNull ZonedDateTime evaluationDate = SystemTime.asZonedDateTime();
 			final InvoiceProcessingServiceCompanyConfig config = invoiceProcessingServiceCompanyService.getByCustomerId(row.getBPartnerId(), evaluationDate)
-					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice " + row.getDocumentNo()));
+					.orElseThrow(() -> new AdempiereException("Invoice with Service Fees: no config found for invoice-C_BPartner_ID=" + BPartnerId.toRepoId(row.getBPartnerId()))
+							.appendParametersToMessage()
+							.setParameter("C_Invoice_ID", InvoiceId.toRepoId(row.getInvoiceId()))
+							.setParameter("C_Invoice.DocumentNo", row.getDocumentNo())
+
+					);
 
 			return InvoiceProcessingContext.builder()
 					.serviceCompanyId(config.getServiceCompanyBPartnerId())

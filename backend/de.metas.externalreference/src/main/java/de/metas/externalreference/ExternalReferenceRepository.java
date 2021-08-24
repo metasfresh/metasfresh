@@ -50,7 +50,8 @@ public class ExternalReferenceRepository
 	private final ExternalReferenceTypes externalReferenceTypes;
 	private final ExternalSystems externalSystems;
 
-	public ExternalReferenceRepository(@NonNull final IQueryBL queryBL,
+	public ExternalReferenceRepository(
+			@NonNull final IQueryBL queryBL,
 			@NonNull final ExternalSystems externalSystems,
 			@NonNull final ExternalReferenceTypes externalReferenceTypes)
 	{
@@ -87,7 +88,7 @@ public class ExternalReferenceRepository
 
 	public ExternalReferenceId save(@NonNull final ExternalReference externalReference)
 	{
-		final I_S_ExternalReference record = InterfaceWrapperHelper.newInstance(I_S_ExternalReference.class);
+		final I_S_ExternalReference record = InterfaceWrapperHelper.loadOrNew(externalReference.getExternalReferenceId(), I_S_ExternalReference.class);
 
 		record.setAD_Org_ID(externalReference.getOrgId().getRepoId());
 		record.setExternalReference(externalReference.getExternalReference());
@@ -95,6 +96,7 @@ public class ExternalReferenceRepository
 		record.setType(externalReference.getExternalReferenceType().getCode());
 		record.setRecord_ID(externalReference.getRecordId());
 		record.setVersion(externalReference.getVersion());
+		record.setExternalReferenceURL(externalReference.getExternalReferenceUrl());
 
 		InterfaceWrapperHelper.saveRecord(record);
 
@@ -149,6 +151,19 @@ public class ExternalReferenceRepository
 		}
 
 		return result.build();
+	}
+
+	@NonNull
+	public Optional<ExternalReference> getExternalReferenceByMFReference(@NonNull final GetExternalReferenceByRecordIdReq request)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, request.getRecordId())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, request.getExternalReferenceType().getCode())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, request.getExternalSystem().getCode())
+				.create()
+				.firstOnlyOptional(I_S_ExternalReference.class)
+				.map(this::buildExternalReference);
 	}
 
 	private ExternalReferenceQuery buildExternalReferenceQuery(final I_S_ExternalReference record)
@@ -218,6 +233,7 @@ public class ExternalReferenceRepository
 				.externalSystem(externalSystem)
 				.recordId(record.getRecord_ID())
 				.version(record.getVersion())
+				.externalReferenceUrl(record.getExternalReferenceURL())
 				.build();
 	}
 

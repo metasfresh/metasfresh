@@ -41,7 +41,7 @@ public class Weightables
 	/**
 	 * Boolean property which if set, it will allow user to change weights but ONLY on VHU level
 	 *
-	 * @task http://dewiki908/mediawiki/index.php/08270_Wareneingang_POS_multiple_lines_in_1_TU_%28107035315495%29
+	 * task http://dewiki908/mediawiki/index.php/08270_Wareneingang_POS_multiple_lines_in_1_TU_%28107035315495%29
 	 */
 	public static final String PROPERTY_WeightableOnlyIfVHU = IWeightable.class.getName() + ".WeightableOnlyIfVHU";
 
@@ -50,7 +50,7 @@ public class Weightables
 		return new AttributeStorageWeightableWrapper(attributeStorage);
 	}
 
-	public static final void updateWeightNet(@NonNull final IWeightable weightable)
+	public static void updateWeightNet(@NonNull final IWeightable weightable)
 	{
 		// NOTE: we calculate WeightGross, no matter if our HU is allowed to be weighted by user
 		// final boolean weightUOMFriendly = weightable.isWeightable();

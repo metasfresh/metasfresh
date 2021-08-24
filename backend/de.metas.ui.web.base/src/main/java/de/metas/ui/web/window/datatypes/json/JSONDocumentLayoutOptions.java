@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -71,6 +72,8 @@ public class JSONDocumentLayoutOptions
 	private final boolean debugShowColumnNamesForCaption;
 	@Getter
 	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+	@Getter
+	private final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider;
 	private final Supplier<Duration> defaultLookupSearchStartDelaySupplier;
 	private static final Supplier<Duration> ZERO_DURATION_SUPPLIER = Suppliers.ofInstance(Duration.ZERO);
 
@@ -82,12 +85,14 @@ public class JSONDocumentLayoutOptions
 			final boolean showAdvancedFields,
 			final boolean debugShowColumnNamesForCaption,
 			@Nullable final NewRecordDescriptorsProvider newRecordDescriptorsProvider,
+			@Nullable final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider,
 			@Nullable final Supplier<Duration> defaultLookupSearchStartDelaySupplier)
 	{
 		this.jsonOpts = jsonOpts;
 		this.showAdvancedFields = showAdvancedFields;
 		this.debugShowColumnNamesForCaption = debugShowColumnNamesForCaption;
 		this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
+		this.advancedSearchDescriptorsProvider = advancedSearchDescriptorsProvider;
 		this.defaultLookupSearchStartDelaySupplier = defaultLookupSearchStartDelaySupplier != null
 				? defaultLookupSearchStartDelaySupplier
 				: ZERO_DURATION_SUPPLIER;
@@ -114,13 +119,13 @@ public class JSONDocumentLayoutOptions
 		public String toString()
 		{
 			return "basic layout elements";
-		};
+		}
 
 		@Override
 		public boolean test(final DocumentLayoutElementDescriptor layoutElement)
 		{
 			return !layoutElement.isAdvancedField();
-		};
+		}
 	};
 
 	private static final Predicate<DocumentLayoutElementDescriptor> FILTER_DocumentLayoutElementDescriptor_ALL = new Predicate<DocumentLayoutElementDescriptor>()
@@ -129,13 +134,13 @@ public class JSONDocumentLayoutOptions
 		public String toString()
 		{
 			return "all layout elements";
-		};
+		}
 
 		@Override
 		public boolean test(final DocumentLayoutElementDescriptor layoutElement)
 		{
 			return true;
-		};
+		}
 	};
 
 	public String getAdLanguage()

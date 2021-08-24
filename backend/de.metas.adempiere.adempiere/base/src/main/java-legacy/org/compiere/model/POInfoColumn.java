@@ -1,35 +1,20 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved. *
- * This program is free software; you can redistribute it and/or modify it *
- * under the terms version 2 of the GNU General Public License as published *
- * by the Free Software Foundation. This program is distributed in the hope *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. *
- * See the GNU General Public License for more details. *
- * You should have received a copy of the GNU General Public License along *
- * with this program; if not, write to the Free Software Foundation, Inc., *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA. *
- * For the text or an alternative of this public license, you may reach us *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA *
- * or via info@compiere.org or http://www.compiere.org/license.html *
- *****************************************************************************/
 package org.compiere.model;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.Properties;
-
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.service.TableRefInfo;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.util.Optional;
+import java.util.Properties;
 
 /**
  * PO Info Column Info Value Object
@@ -46,50 +31,27 @@ public final class POInfoColumn implements Serializable
 
 	private static final transient Logger logger = LogManager.getLogger(POInfoColumn.class);
 
-	/**
-	 * Constructor
-	 *
-	 * @param ad_Column_ID Column ID
-	 * @param columnName Column name
-	 * @param columnSQL virtual column
-	 * @param displayType Display Type
-	 * @param isMandatory Mandatory
-	 * @param isUpdateable Updateable
-	 * @param defaultLogic Default Logic
-	 * @param columnLabel Column Label
-	 * @param columnDescription Column Description
-	 * @param isKey true if key
-	 * @param isParent true if parent
-	 * @param ad_Reference_Value_ID reference value
-	 * @param validationCode sql validation code
-	 * @param fieldLength Field Length
-	 * @param valueMin minimal value
-	 * @param valueMax maximal value
-	 * @param isTranslated translated
-	 * @param isEncrypted encrypted
-	 * @param isAllowLogging allow logging
-	 */
 	public POInfoColumn(
-			int ad_Column_ID,
-			String tableName,
-			String columnName,
-			String columnSQL,
-			int displayType,
-			boolean isMandatory,
-			boolean isUpdateable,
-			String defaultLogic,
-			String columnLabel,
-			String columnDescription,
-			boolean isKey,
-			boolean isParent,
-			int ad_Reference_Value_ID,
-			int AD_Val_Rule_ID,
-			int fieldLength,
-			String valueMin,
-			String valueMax,
-			boolean isTranslated,
-			boolean isEncrypted,
-			boolean isAllowLogging)
+			final int ad_Column_ID,
+			final String tableName,
+			final String columnName,
+			final String columnSQL,
+			final int displayTypeParam,
+			final boolean isMandatory,
+			final boolean isUpdateable,
+			final String defaultLogic,
+			final String columnLabel,
+			final String columnDescription,
+			final boolean isKey,
+			final boolean isParent,
+			final int ad_Reference_Value_ID,
+			final int AD_Val_Rule_ID,
+			final int fieldLength,
+			final String valueMin,
+			final String valueMax,
+			final boolean isTranslated,
+			final boolean isEncrypted,
+			final boolean isAllowLogging)
 	{
 		AD_Column_ID = ad_Column_ID;
 		ColumnName = columnName;
@@ -106,53 +68,32 @@ public final class POInfoColumn implements Serializable
 			this.sqlColumnForSelect = ColumnName;
 		}
 
-		int displayTypeToSet = displayType;
-
-		TableRefInfo tableRefInfo = null;
-
-		// task #500: For DisplayType=Table or Search and AD_Reference_Value_ID > 0, retrieve the ITableRefInfo
-		if (ad_Reference_Value_ID > 0 && (isTableDisplayType(displayType) || isSearchDisplayType(displayType)))
+		if (isString(tableName, columnName, displayTypeParam, ad_Reference_Value_ID))
 		{
-			// The method org.adempiere.ad.service.ILookupDAO.retrieveTableRefInfo(int) logs warnings when the {@link ITableRefInfo} was not found.
-			// Permit warnings here because we shouldn't have Table or Search types with no reference table IDs.
-			tableRefInfo = Services.get(ILookupDAO.class).retrieveTableRefInfo(ad_Reference_Value_ID);
+			this.DisplayType = org.compiere.util.DisplayType.String;
+			this.ColumnClass = String.class;
 		}
-
-		// FIXME: HARDCODED
-		if (columnName.equals("AD_Language") ||
-				columnName.equals("EntityType") ||
-				// task #500: Also allow type String for non-numeric types with a reference value (Table and search)
-				// Note that the column shall not be a numeric key
-				(tableRefInfo != null && !tableRefInfo.isNumericKey()))
-
-		{
-			displayTypeToSet = org.compiere.util.DisplayType.String;
-			ColumnClass = String.class;
-		}
-
 		else if (columnName.equals("Posted") || columnName.equals("Processed") || columnName.equals("Processing"))
-
 		{
-			ColumnClass = Boolean.class;
+			this.DisplayType = displayTypeParam;
+			this.ColumnClass = Boolean.class;
 		}
 		else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
-
 		{
-			displayTypeToSet = org.compiere.util.DisplayType.ID;
-			ColumnClass = Integer.class;
+			this.DisplayType = org.compiere.util.DisplayType.ID;
+			this.ColumnClass = Integer.class;
 		}
 		else
-
 		{
-			ColumnClass = org.compiere.util.DisplayType.getClass(displayType, true);
+			this.DisplayType = displayTypeParam;
+			this.ColumnClass = org.compiere.util.DisplayType.getClass(displayTypeParam, true);
 		}
 
-		DisplayType = displayTypeToSet;
 		IsMandatory = isMandatory;
 		IsUpdateable = isUpdateable;
 		DefaultLogic = defaultLogic;
-		ColumnLabel = columnLabel;
-		ColumnDescription = columnDescription;
+		//ColumnLabel = columnLabel;
+		//ColumnDescription = columnDescription;
 		IsKey = isKey;
 		IsParent = isParent;
 		//
@@ -170,104 +111,168 @@ public final class POInfoColumn implements Serializable
 		IsAllowLogging = isAllowLogging;
 	}   // Column
 
-	/**
-	 * Return true only for Search display type
-	 *
-	 * @param displayType
-	 * @return
-	 */
-	private boolean isSearchDisplayType(int displayType)
+	private static boolean isString(
+			final String tableName,
+			final String columnName,
+			final int displayType,
+			final int ad_Reference_Value_ID)
 	{
-		if (org.compiere.util.DisplayType.Search == displayType)
+		if (org.compiere.util.DisplayType.String == displayType)
 		{
 			return true;
 		}
-		return false;
-	}
 
-	/**
-	 * Return true only for Table display type
-	 *
-	 * @param displayType
-	 * @return
-	 */
-	private boolean isTableDisplayType(int displayType)
-	{
-		if (org.compiere.util.DisplayType.Table == displayType)
+		// FIXME: HARDCODED
+		if (columnName.equals("AD_Language")
+				|| columnName.equals("EntityType"))
 		{
 			return true;
 		}
+
+		// task #500: Also allow type String for non-numeric types with a reference value (Table and search)
+		if (ad_Reference_Value_ID > 0
+				&& (isTableDisplayType(displayType) || isSearchDisplayType(displayType)))
+		{
+			// The method org.adempiere.ad.service.ILookupDAO.retrieveTableRefInfo(int) logs warnings when the {@link ITableRefInfo} was not found.
+			// Permit warnings here because we shouldn't have Table or Search types with no reference table IDs.
+			final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
+			final ExplainedOptional<TableRefInfo> tableRefInfo = lookupDAO.getTableRefInfo(ad_Reference_Value_ID);
+			if (!tableRefInfo.isPresent())
+			{
+				// NOTE: avoid log WARN or ERROR because that one might trigger ErrorManager which might call POInfo => recursion
+				System.err.println("Failed retrieving reference info for " + tableName + "." + columnName + " because " + tableRefInfo.getExplanation().getDefaultValue()
+						+ ". Considering not a string reference.");
+				return false;
+			}
+
+			return !tableRefInfo.get().isNumericKey();
+		}
+
 		return false;
 	}
 
-	/** Column ID */
+	private static boolean isSearchDisplayType(final int displayType)
+	{
+		return org.compiere.util.DisplayType.Search == displayType;
+	}
+
+	private static boolean isTableDisplayType(final int displayType)
+	{
+		return org.compiere.util.DisplayType.Table == displayType;
+	}
+
+	/**
+	 * Column ID
+	 */
 	final int AD_Column_ID;
-	/** Column Name */
+	/**
+	 * Column Name
+	 */
 	private final String ColumnName;
 
 	private final String TableName;
 
-	/** Virtual Column SQL */
+	/**
+	 * Virtual Column SQL
+	 */
 	private final String ColumnSQL;
-	/** Is Virtual Column */
+	/**
+	 * Is Virtual Column
+	 */
 	private final boolean virtualColumn;
-	/** Is Lazy Loading */
+	/**
+	 * Is Lazy Loading
+	 */
 	boolean IsLazyLoading;
-	/** Display Type */
+	/**
+	 * Display Type
+	 */
 	final int DisplayType;
-	/** Data Type */
+	/**
+	 * Data Type
+	 */
 	final Class<?> ColumnClass;
-	/** Mandatory */
+	/**
+	 * Mandatory
+	 */
 	final boolean IsMandatory;
-	/** Default Value */
+	/**
+	 * Default Value
+	 */
 	final String DefaultLogic;
-	/** Updateable */
+	/**
+	 * Updateable
+	 */
 	boolean IsUpdateable;
-	/** Label */
-	private final String ColumnLabel;
-	/** Description */
-	private final String ColumnDescription;
-	/** PK */
+	/**
+	 * PK
+	 */
 	final boolean IsKey;
-	/** FK to Parent */
-	final boolean IsParent;
-	/** Translated */
+	/**
+	 * FK to Parent
+	 */
+	private final boolean IsParent;
+	/**
+	 * Translated
+	 */
 	private final boolean IsTranslated;
-	/** Encrypted */
+	/**
+	 * Encrypted
+	 */
 	final boolean IsEncrypted;
-	/** Allow Logging */
+	/**
+	 * Allow Logging
+	 */
 	final boolean IsAllowLogging;
 
-	/** Reference Value */
+	/**
+	 * Reference Value
+	 */
 	final int AD_Reference_Value_ID;
-	/** Validation */
+	/**
+	 * Validation
+	 */
 	// public String ValidationCode;
 	final int AD_Val_Rule_ID;
 
-	/** Field Length */
+	/**
+	 * Field Length
+	 */
 	final int FieldLength;
-	/** Min Value */
+	/**
+	 * Min Value
+	 */
 	final String ValueMin;
-	/** Max Value */
+	/**
+	 * Max Value
+	 */
 	final String ValueMax;
-	/** Min Value */
+	/**
+	 * Min Value
+	 */
 	final BigDecimal ValueMin_BD;
-	/** Max Value */
+	/**
+	 * Max Value
+	 */
 	final BigDecimal ValueMax_BD;
 
-	/* package */boolean IsCalculated = false;
+	/* package */ boolean IsCalculated = false;
 	// metas: us215
-	/* package */boolean IsUseDocumentSequence = false;
+	/* package */ boolean IsUseDocumentSequence = false;
 	// metas: 05133
-	/* package */boolean IsStaleable = true;
+	/* package */ boolean IsStaleable = true;
 	// metas: 01537
-	/* package */boolean IsSelectionColumn;
+	/* package */ boolean IsSelectionColumn;
 
 	private final String sqlColumnForSelect;
 
-	/** Cached {@link MLookupInfo} for {@link Env#WINDOW_None} (most used case) */
+	/**
+	 * Cached {@link MLookupInfo} for {@link Env#WINDOW_None} (most used case)
+	 */
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType") @Nullable
 	private Optional<MLookupInfo> _lookupInfoForWindowNone = null;
-	
+
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType") @Nullable
 	private Optional<String> _referencedTableName = null; // lazy, cached
 
 	/**
@@ -278,16 +283,16 @@ public final class POInfoColumn implements Serializable
 	@Override
 	public String toString()
 	{
-		final StringBuilder sb = new StringBuilder("POInfo.Column[")
-				.append(ColumnName)
-				.append(",ID=").append(AD_Column_ID)
-				.append(",DisplayType=").append(DisplayType)
-				.append(",ColumnClass=").append(ColumnClass)
-				.append("]");
-		return sb.toString();
-	}	// toString
+		return "POInfo.Column["
+				+ ColumnName
+				+ ",ID=" + AD_Column_ID
+				+ ",DisplayType=" + DisplayType
+				+ ",ColumnClass=" + ColumnClass
+				+ "]";
+	}    // toString
 
-	private static final BigDecimal toBigDecimalOrNull(final String valueStr, final String name)
+	@Nullable
+	private static BigDecimal toBigDecimalOrNull(final String valueStr, final String name)
 	{
 		if (Check.isEmpty(valueStr, true))
 		{
@@ -314,16 +319,6 @@ public final class POInfoColumn implements Serializable
 	public int getAD_Column_ID()
 	{
 		return this.AD_Column_ID;
-	}
-
-	public String getColumnLabel()
-	{
-		return this.ColumnLabel;
-	}
-
-	public String getColumnDescription()
-	{
-		return this.ColumnDescription;
 	}
 
 	boolean isTranslated()
@@ -366,9 +361,19 @@ public final class POInfoColumn implements Serializable
 		return IsMandatory;
 	}
 
+	public boolean isKey()
+	{
+		return IsKey;
+	}
+
 	public boolean isParent()
 	{
 		return IsParent;
+	}
+
+	public boolean isStaleable()
+	{
+		return IsStaleable;
 	}
 
 	public int getAD_Val_Rule_ID()
@@ -381,14 +386,15 @@ public final class POInfoColumn implements Serializable
 		return org.compiere.util.DisplayType.isLookup(DisplayType);
 	}
 
+	@Nullable
 	public String getReferencedTableNameOrNull()
 	{
 		Optional<String> referencedTableName = _referencedTableName;
-		if(referencedTableName == null)
+		if (referencedTableName == null)
 		{
 			_referencedTableName = referencedTableName = computeReferencedTableName();
 		}
-		
+
 		return referencedTableName.orElse(null);
 	}
 
@@ -396,14 +402,14 @@ public final class POInfoColumn implements Serializable
 	{
 		// Special lookups (Location, Locator etc)
 		final String refTableName = org.compiere.util.DisplayType.getTableName(DisplayType);
-		if(refTableName != null)
+		if (refTableName != null)
 		{
 			return Optional.of(refTableName);
 		}
 
 		// Regular lookups
 		final MLookupInfo lookupInfo = getLookupInfo(Env.WINDOW_None);
-		if(lookupInfo != null)
+		if (lookupInfo != null)
 		{
 			return Optional.ofNullable(lookupInfo.getTableName());
 		}
@@ -411,15 +417,16 @@ public final class POInfoColumn implements Serializable
 		return Optional.empty();
 	}
 
+	@Nullable
 	public MLookupInfo getLookupInfo(final int windowNo)
 	{
 		//
 		// List, Table, TableDir
-		if(isLookup())
+		if (isLookup())
 		{
-			if(windowNo == Env.WINDOW_None)
+			if (windowNo == Env.WINDOW_None)
 			{
-				if(_lookupInfoForWindowNone == null)
+				if (_lookupInfoForWindowNone == null)
 				{
 					final MLookupInfo lookupInfoCached = MLookupFactory.getLookupInfo(
 							Env.WINDOW_None
@@ -434,7 +441,7 @@ public final class POInfoColumn implements Serializable
 				return _lookupInfoForWindowNone.orElse(null);
 			}
 
-			final MLookupInfo lookupInfo = MLookupFactory.getLookupInfo(
+			return MLookupFactory.getLookupInfo(
 					windowNo
 					, DisplayType
 					, TableName
@@ -442,7 +449,6 @@ public final class POInfoColumn implements Serializable
 					, AD_Reference_Value_ID
 					, IsParent
 					, AD_Val_Rule_ID);
-			return lookupInfo;
 		}
 		else
 		{
@@ -450,6 +456,7 @@ public final class POInfoColumn implements Serializable
 		}
 	}
 
+	@Nullable
 	public Lookup getLookup(final Properties ctx, final int windowNo)
 	{
 		//
@@ -459,13 +466,12 @@ public final class POInfoColumn implements Serializable
 			try
 			{
 				final MLookupInfo lookupInfo = getLookupInfo(windowNo);
-				if(lookupInfo == null)
+				if (lookupInfo == null)
 				{
 					return null;
 				}
 
-				final Lookup lookup = MLookupFactory.ofLookupInfo(ctx, lookupInfo, AD_Column_ID);
-				return lookup;
+				return MLookupFactory.ofLookupInfo(ctx, lookupInfo, AD_Column_ID);
 			}
 			catch (final Exception e)
 			{
@@ -483,4 +489,4 @@ public final class POInfoColumn implements Serializable
 	{
 		return org.compiere.util.DisplayType.isPassword(ColumnName, DisplayType);
 	}
-}	// POInfoColumn
+}    // POInfoColumn

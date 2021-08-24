@@ -43,7 +43,7 @@ class MenuOverlay extends Component {
    */
   debounceEventHandler = (...args) => {
     const debounced = debounce(...args);
-    return function(e) {
+    return function (e) {
       e.persist();
       return debounced(e);
     };
@@ -396,16 +396,13 @@ class MenuOverlay extends Component {
       .getElementsByClassName('menu-overlay-query')[0]
       .getElementsByClassName('js-menu-item')[0];
     const browseItem = document.getElementsByClassName('js-browse-item')[0];
-    const isBrowseItemActive = document.activeElement.classList.contains(
-      'js-browse-item'
-    );
-    const overlay = document.activeElement.classList.contains(
-      'js-menu-overlay'
-    );
+    const isBrowseItemActive =
+      document.activeElement.classList.contains('js-browse-item');
+    const overlay =
+      document.activeElement.classList.contains('js-menu-overlay');
     const headerLink = document.getElementsByClassName('js-menu-header')[0];
-    const isHeaderLinkActive = document.activeElement.classList.contains(
-      'js-menu-header'
-    );
+    const isHeaderLinkActive =
+      document.activeElement.classList.contains('js-menu-header');
     const headerItem = document.getElementsByClassName('js-menu-header')[0];
     const prevParentSibling =
       document.activeElement.parentElement.previousSibling;

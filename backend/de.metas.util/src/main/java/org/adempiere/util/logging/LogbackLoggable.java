@@ -35,7 +35,7 @@ public final class LogbackLoggable implements ILoggable
 
 	/**
 	 * @param logger slf4j logger
-	 * @param level the logging level to be used when {@link #addLog(String)} is called.
+	 * @param level the logging level to be used when {@link #addLog(String, Object...)}  is called.
 	 */
 	public LogbackLoggable(@NonNull final Logger logger, @NonNull final Level level)
 	{

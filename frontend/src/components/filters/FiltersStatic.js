@@ -53,10 +53,7 @@ FiltersStatic.propTypes = {
   push: PropTypes.func,
 };
 
-export default connect(
-  null,
-  {
-    clearStaticFilters,
-    push,
-  }
-)(FiltersStatic);
+export default connect(null, {
+  clearStaticFilters,
+  push,
+})(FiltersStatic);

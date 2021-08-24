@@ -1,45 +1,15 @@
 package de.metas.material.cockpit.availableforsales.interceptor;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import de.metas.i18n.AdMessageKey;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.LinkedHashMultimap;
-
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
 import de.metas.Profiles;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.i18n.AdMessageKey;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiQuery;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesMultiResult;
@@ -48,6 +18,7 @@ import de.metas.material.cockpit.availableforsales.AvailableForSalesRepository;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesResult;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesResult.Quantities;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -65,6 +36,35 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Issue;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -106,11 +106,7 @@ public class AvailableForSalesUtil
 		{
 			return false;
 		}
-		if (!orderRecord.isSOTrx())
-		{
-			return false;
-		}
-		return true;
+		return orderRecord.isSOTrx();
 	}
 
 	public boolean isOrderLineEligibleForFeature(@NonNull final I_C_OrderLine orderLineRecord)
@@ -127,12 +123,7 @@ public class AvailableForSalesUtil
 		}
 
 		final I_M_Product productRecord = Services.get(IProductDAO.class).getById(productId);
-		if (!productRecord.isStocked())
-		{
-			return false;
-		}
-
-		return true;
+		return productRecord.isStocked();
 	}
 
 	public List<CheckAvailableForSalesRequest> createRequests(@NonNull final I_C_Order orderRecord)
@@ -190,7 +181,7 @@ public class AvailableForSalesUtil
 
 	private class CheckAvailableForSalesRequestsCollector
 	{
-		private final LinkedHashMultimap<CheckAvailableForSalesRequestContext, CheckAvailableForSalesRequest> requests = LinkedHashMultimap.create();
+		private final SetMultimap<CheckAvailableForSalesRequestContext, CheckAvailableForSalesRequest> requests = MultimapBuilder.hashKeys().hashSetValues().build();
 
 		public void collect(
 				@NonNull final List<CheckAvailableForSalesRequest> requests,
@@ -273,13 +264,13 @@ public class AvailableForSalesUtil
 		{
 			future.get(config.getAsyncTimeoutMillis(), TimeUnit.MILLISECONDS);
 		}
-		catch (InterruptedException | ExecutionException | TimeoutException ex)
+		catch (final InterruptedException | ExecutionException | TimeoutException ex)
 		{
 			handleAsyncException(errorNotificationRecipient, ex);
 		}
 	}
 
-	private void handleAsyncException(@NonNull final UserId errorNotificationRecipient, @NonNull Exception e1)
+	private void handleAsyncException(@NonNull final UserId errorNotificationRecipient, @NonNull final Exception e1)
 	{
 		final Throwable cause = AdempiereException.extractCause(e1);
 		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(cause);
@@ -335,7 +326,7 @@ public class AvailableForSalesUtil
 		for (final CheckAvailableForSalesRequest request : requests)
 		{
 			final Instant dateOfInterest = TimeUtil.asInstant(request.getPreparationDate());
-			final int productId = request.getProductId().getRepoId();
+			final ProductId productId = request.getProductId();
 			final AttributesKey storageAttributesKey = AttributesKeys
 					.createAttributesKeyFromASIStorageAttributes(request.getAttributeSetInstanceId())
 					.orElse(AttributesKey.NONE);
@@ -344,7 +335,7 @@ public class AvailableForSalesUtil
 					.builder()
 					.dateOfInterest(dateOfInterest)
 					.productId(productId)
-					.storageAttributesKey(storageAttributesKey)
+					.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(storageAttributesKey))
 					.shipmentDateLookAheadHours(config.getShipmentDateLookAheadHours())
 					.salesOrderLookBehindHours(config.getSalesOrderLookBehindHours())
 					.build();

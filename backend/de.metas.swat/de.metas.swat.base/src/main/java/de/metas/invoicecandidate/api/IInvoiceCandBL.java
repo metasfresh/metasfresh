@@ -40,6 +40,7 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.Tax;
 import de.metas.util.ISingletonService;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
@@ -49,7 +50,6 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_InvoiceSchedule;
-import org.compiere.model.I_C_Tax;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -282,12 +282,19 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void setError(I_C_Invoice_Candidate ic, Throwable e);
 
+	void setInvoicingErrorAndSave(
+			I_C_Invoice_Candidate ic,
+			String errorMsg,
+			I_AD_Note note);
+
+	void clearInvoicingErrorAndSave(@NonNull I_C_Invoice_Candidate ic);
+
 	/**
 	 * Retrieve tax override if set, C_Tax otherwise
 	 *
 	 * @return tax override if set, C_Tax otherwise; never return null
 	 */
-	I_C_Tax getTaxEffective(I_C_Invoice_Candidate candidate);
+	Tax getTaxEffective(I_C_Invoice_Candidate candidate);
 
 	/**
 	 * Get quality percent override if set, quality percent otherwise. Never returns <code>null</code>.

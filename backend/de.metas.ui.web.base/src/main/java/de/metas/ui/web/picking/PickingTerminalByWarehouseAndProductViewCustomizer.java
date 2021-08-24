@@ -1,13 +1,9 @@
 package de.metas.ui.web.picking;
 
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.picking.model.X_M_Picking_Config;
+import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterConverter;
 import de.metas.ui.web.view.SqlViewCustomizer;
 import de.metas.ui.web.view.ViewProfile;
 import de.metas.ui.web.view.ViewProfileId;
@@ -24,6 +20,10 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.util.Services;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -80,15 +80,16 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 	{
 		sqlViewBindingBuilder
 				.groupingBinding(createSqlViewGroupingBinding())
+				.filterConverter(ProductBarcodeFilterConverter.instance)
 				.clearDefaultOrderBys()
 				.defaultOrderBy(DocumentQueryOrderBy.byFieldName(FIELDNAME_ProductOrBPartner, true))
 				.orderByAliasFieldNames(FIELDNAME_ProductOrBPartner,
-						I_M_Packageable_V.COLUMNNAME_M_Product_ID,
-						I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID,
-						I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
+										I_M_Packageable_V.COLUMNNAME_M_Product_ID,
+										I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID,
+										I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID);
 	}
 
-	private static final SqlViewGroupingBinding createSqlViewGroupingBinding()
+	private static SqlViewGroupingBinding createSqlViewGroupingBinding()
 	{
 		return SqlViewGroupingBinding.builder()
 				.groupBy(I_M_Packageable_V.COLUMNNAME_M_Warehouse_ID)
@@ -117,10 +118,10 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 	public void customizeViewLayout(final ViewLayout.ChangeBuilder viewLayoutBuilder)
 	{
 		viewLayoutBuilder.element(DocumentLayoutElementDescriptor.builder()
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.addField(DocumentLayoutElementFieldDescriptor.builder(FIELDNAME_ProductOrBPartner)
-						.setPublicField(true))
-				.build());
+										  .setWidgetType(DocumentFieldWidgetType.Lookup)
+										  .addField(DocumentLayoutElementFieldDescriptor.builder(FIELDNAME_ProductOrBPartner)
+															.setPublicField(true))
+										  .build());
 
 		viewLayoutBuilder.elementsOrder(
 				FIELDNAME_ProductOrBPartner,
@@ -143,8 +144,7 @@ public class PickingTerminalByWarehouseAndProductViewCustomizer implements SqlVi
 		// Grouping row
 		if (rowBuilder.isRootRow())
 		{
-			final LookupValue productLV = rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_M_Product_ID);
-			return productLV;
+			return rowBuilder.getFieldValueAsLookupValue(I_M_Packageable_V.COLUMNNAME_M_Product_ID);
 		}
 		// Detail/included row
 		else

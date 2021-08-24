@@ -28,6 +28,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.organization.OrgId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
@@ -76,6 +77,7 @@ public class FlatrateMaterialBalanceConfigMatcher implements IMaterialBalanceCon
 
 		final List<I_C_Flatrate_Term> terms = flatrateDB.retrieveTerms(
 				ctx,
+				OrgId.ofRepoId(inout.getAD_Org_ID()),
 				partnerId.getRepoId(),
 				inout.getDateOrdered(),
 				product.getM_Product_Category_ID(),

@@ -1,5 +1,4 @@
 package de.metas.util;
-
 /*
  * #%L
  * de.metas.util
@@ -22,8 +21,9 @@ package de.metas.util;
  * #L%
  */
 
+import com.google.common.base.CharMatcher;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import lombok.NonNull;
 import org.adempiere.util.lang.IPair;
@@ -34,11 +34,11 @@ import org.slf4j.helpers.MessageFormatter;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.text.Format;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,6 +95,11 @@ public final class StringUtils
 		}
 
 		return strTrim;
+	}
+
+	public static Optional<String> trimBlankToOptional(@Nullable final String str)
+	{
+		return Optional.ofNullable(trimBlankToNull(str));
 	}
 
 	/**
@@ -367,7 +372,7 @@ public final class StringUtils
 	}
 
 	/**
-	 * Formats the given message the using {@link Format}.
+	 * Formats the given message the using {@link MessageFormat}.
 	 */
 	public static String formatJavaTextFormatMessage(final String message, @Nullable final Object... params)
 	{
@@ -478,7 +483,7 @@ public final class StringUtils
 	 *
 	 * @return {@code true} if the given string consists only of digits (i.e. contains no letter, whitespace decimal point etc).
 	 */
-	public static boolean isNumber(final String stringToVerify)
+	public static boolean isNumber(@Nullable final String stringToVerify)
 	{
 		// Null or empty strings are not numbers
 		if (stringToVerify == null || stringToVerify.isEmpty())
@@ -659,30 +664,17 @@ public final class StringUtils
 	 * @param in in
 	 * @return cleaned string
 	 */
-	public static String cleanWhitespace(final String in)
+	public static String cleanWhitespace(@Nullable String in)
 	{
-		final char[] inArray = in.toCharArray();
-		final StringBuilder out = new StringBuilder(inArray.length);
-		boolean lastWasSpace = false;
-		for (final char c : inArray)
+		if (in == null)
 		{
-			if (Character.isWhitespace(c))
-			{
-				if (!lastWasSpace)
-				{
-					out.append(' ');
-				}
-				lastWasSpace = true;
-			}
-			else
-			{
-				out.append(c);
-				lastWasSpace = false;
-			}
+			return in;
 		}
-		return out.toString();
+		
+		return CharMatcher.whitespace().removeFrom(in);
 	}    // cleanWhitespace
 
+	
 	/**
 	 * remove white space from the begin
 	 */

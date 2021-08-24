@@ -1,29 +1,8 @@
 package de.metas.ui.web.window.model.sql;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.security.UserRolePermissionsKey;
 import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -33,6 +12,7 @@ import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -46,6 +26,25 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IPair;
+import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -237,7 +236,7 @@ public class SqlDocumentQueryBuilder
 	}
 
 	/** @return SQL key column name; never returns null */
-	private static final String extractSingleKeyColumnName(final DocumentEntityDescriptor entityDescriptor)
+	private static String extractSingleKeyColumnName(final DocumentEntityDescriptor entityDescriptor)
 	{
 		final DocumentFieldDescriptor idField = entityDescriptor.getSingleIdField();
 		final SqlDocumentFieldDataBindingDescriptor idFieldBinding = SqlDocumentFieldDataBindingDescriptor.castOrNull(idField.getDataBinding());
@@ -288,7 +287,7 @@ public class SqlDocumentQueryBuilder
 		return sqlAndParams;
 	}
 
-	private final IPair<IStringExpression, List<Object>> buildSql()
+	private IPair<IStringExpression, List<Object>> buildSql()
 	{
 		final List<Object> sqlParams = new ArrayList<>();
 
@@ -436,18 +435,26 @@ public class SqlDocumentQueryBuilder
 						sqlWhereClauseBuilder.append("(");
 					}
 
-					final Map<String, Object> keyColumnName2value = extractComposedKey(recordId, keyFields);
+					final SqlComposedKey composedKey = extractComposedKey(recordId, keyFields);
 					boolean firstKeyPart = true;
-					for (final Map.Entry<String, Object> keyPart : keyColumnName2value.entrySet())
+					for (final String keyColumnName : composedKey.getKeyColumnNames())
 					{
 						if (!firstKeyPart)
 						{
 							sqlWhereClauseBuilder.append(" AND ");
 						}
 
-						final String keyColumnName = keyPart.getKey();
-						final Object value = keyPart.getValue();
-						sqlWhereClauseBuilder.append(" ").append(keyColumnName).append("=").append(sqlParams.placeholder(value));
+						sqlWhereClauseBuilder.append(" ").append(keyColumnName);
+
+						final Object value = composedKey.getValue(keyColumnName);
+						if(!JSONNullValue.isNull(value))
+						{
+							sqlWhereClauseBuilder.append("=").append(sqlParams.placeholder(value));
+						}
+						else
+						{
+							sqlWhereClauseBuilder.append(" IS NULL");
+						}
 
 						firstKeyPart = false;
 					}
@@ -630,8 +637,9 @@ public class SqlDocumentQueryBuilder
 		return pageLength;
 	}
 
-	/** @return map of (keyColumnName, value) pairs */
-	public static Map<String, Object> extractComposedKey(final DocumentId recordId, final List<? extends SqlEntityFieldBinding> keyFields)
+	public static SqlComposedKey extractComposedKey(
+			final DocumentId recordId,
+			final List<? extends SqlEntityFieldBinding> keyFields)
 	{
 		final int count = keyFields.size();
 		if (count < 1)
@@ -645,13 +653,17 @@ public class SqlDocumentQueryBuilder
 			throw new AdempiereException("Invalid composed key '" + recordId + "'. Expected " + count + " parts but it has " + composedKeyParts.size());
 		}
 
-		final ImmutableMap.Builder<String, Object> composedKey = ImmutableMap.builder();
+		final ImmutableSet.Builder<String> keyColumnNames = ImmutableSet.builder();
+		final ImmutableMap.Builder<String, Object> values = ImmutableMap.builder();
 		for (int i = 0; i < count; i++)
 		{
 			final SqlEntityFieldBinding keyField = keyFields.get(i);
 			final String keyColumnName = keyField.getColumnName();
+			keyColumnNames.add(keyColumnName);
 
 			final Object valueObj = composedKeyParts.get(i);
+
+			@Nullable
 			final Object valueConv = DataTypes.convertToValueClass(
 					keyColumnName,
 					valueObj,
@@ -659,9 +671,12 @@ public class SqlDocumentQueryBuilder
 					keyField.getSqlValueClass(),
 					(LookupValueByIdSupplier)null);
 
-			composedKey.put(keyColumnName, valueConv);
+			if(!JSONNullValue.isNull(valueConv))
+			{
+				values.put(keyColumnName, valueConv);
+			}
 		}
 
-		return composedKey.build();
+		return SqlComposedKey.of(keyColumnNames.build(), values.build());
 	}
 }

@@ -189,17 +189,6 @@ function filterViewSuccess(id, data, isModal) {
 }
 
 /**
- * @method filterViewError
- * @summary
- */
-function filterViewError(id, error, isModal) {
-  return {
-    type: FILTER_VIEW_ERROR,
-    payload: { id, error, isModal },
-  };
-}
-
-/**
  * @method fetchLocationConfigSuccess
  * @summary
  */
@@ -332,12 +321,6 @@ export function fetchDocument({
       orderBy,
     })
       .then((response) => {
-        // remove the old filter from the store
-        if (!websocketRefresh) {
-          const entityRelatedId = getEntityRelatedId({ windowId, viewId });
-          dispatch(deleteFilter(entityRelatedId));
-        }
-
         dispatch(fetchDocumentSuccess(windowId, response.data, isModal));
 
         const tableId = getTableId({ windowId, viewId });
@@ -391,10 +374,8 @@ export function fetchDocument({
           response.data.result &&
           response.data.result.length
         ) {
-          const {
-            includedView,
-            supportIncludedViews,
-          } = response.data.result[0];
+          const { includedView, supportIncludedViews } =
+            response.data.result[0];
           const includedWindowId = supportIncludedViews
             ? state.viewHandler.includedView.windowId ||
               includedView.windowType ||
@@ -529,6 +510,17 @@ export function fetchLayout(
 }
 
 /**
+ * @method filterViewError
+ * @summary
+ */
+function filterViewError(id, error, isModal) {
+  return {
+    type: FILTER_VIEW_ERROR,
+    payload: { id, error, isModal },
+  };
+}
+
+/**
  * @method filterView
  * @summary filter grid view
  */
@@ -539,6 +531,10 @@ export function filterView(windowId, viewId, filters, isModal = false) {
     return filterViewRequest(windowId, viewId, filters)
       .then((response) => {
         dispatch(filterViewSuccess(windowId, response.data, isModal));
+
+        // remove the old filter from the store
+        const entityRelatedId = getEntityRelatedId({ windowId, viewId });
+        dispatch(deleteFilter(entityRelatedId));
 
         // remove table, so that we won't add filtered rows to the previous data
         const tableId = getTableId({ windowId, viewId });

@@ -26,10 +26,13 @@ import de.metas.cache.CCache;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -112,18 +115,23 @@ public class RecordWindowFinder
 	// Parameters
 	@NonNull private final String _tableName;
 	private final int _recordId;
-	private boolean checkRecordPresentInWindow = false; // false to be backwards compatible
 	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	@Nullable private final MQuery _query_Provided;
 	@Deprecated
+	@SuppressWarnings("DeprecatedIsStillUsed")
 	@Nullable private final AdWindowId alreadyKnownWindowId;
+	private boolean checkRecordPresentInWindow = false; // false to be backwards compatible
+	private boolean checkParentRecord = false; // false to be backwards compatible
+	private boolean ignoreExcludeFromZoomTargetsFlag;
 
 	//
-	// Effective values
+	// State
 	@Nullable private GenericZoomIntoTableInfo _tableInfo;
 	@Nullable private SOTrx _recordSOTrx_Effective = null;
+	@NonNull private final HashMap<String, Boolean> checkRecordIsMatchingWhereClauseCache = new HashMap<>();
 
-	private static final CCache<String, GenericZoomIntoTableInfo> tableInfoByTableName = CCache.<String, GenericZoomIntoTableInfo>builder()
+	private static final CCache<TableInfoCacheKey, GenericZoomIntoTableInfo> tableInfoByTableName = CCache.<TableInfoCacheKey, GenericZoomIntoTableInfo>builder()
 			.tableName(I_AD_Table.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Column.Table_Name)
 			.additionalTableNameToResetFor(I_AD_Window.Table_Name)
@@ -131,23 +139,21 @@ public class RecordWindowFinder
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
 
-	private final HashMap<String, Boolean> checkRecordIsMatchingWhereClauseCache = new HashMap<>();
-
-	private RecordWindowFinder(final String tableName, final int recordId)
+	private RecordWindowFinder(final @NonNull String tableName, final int recordId)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
+		if (recordId < 0)
+		{
+			logger.warn("No Record_ID provided to detect the AD_Window_ID by TableName={}. Going forward.", tableName);
+		}
 
 		_tableName = tableName;
 		_recordId = recordId;
-		if (_recordId < 0)
-		{
-			logger.warn("No Record_ID provided to detect the AD_Window_ID by TableName={}. Going forward.", _tableName);
-		}
 		_query_Provided = null;
 		alreadyKnownWindowId = null;
 	}
 
-	private RecordWindowFinder(final String tableName)
+	private RecordWindowFinder(final @NonNull String tableName)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 		_tableName = tableName;
@@ -163,7 +169,6 @@ public class RecordWindowFinder
 		Check.assumeNotEmpty(tableName, "tableName is not empty for {}", query);
 		_tableName = tableName;
 		_recordId = -1;
-
 		_query_Provided = query;
 		alreadyKnownWindowId = null;
 	}
@@ -187,7 +192,24 @@ public class RecordWindowFinder
 
 	public RecordWindowFinder checkRecordPresentInWindow()
 	{
-		this.checkRecordPresentInWindow = true;
+		return checkRecordPresentInWindow(true);
+	}
+
+	private RecordWindowFinder checkRecordPresentInWindow(final boolean checkRecordPresentInWindow)
+	{
+		this.checkRecordPresentInWindow = checkRecordPresentInWindow;
+		return this;
+	}
+
+	public RecordWindowFinder checkParentRecord()
+	{
+		this.checkParentRecord = true;
+		return this;
+	}
+
+	public RecordWindowFinder ignoreExcludeFromZoomTargetsFlag()
+	{
+		this.ignoreExcludeFromZoomTargetsFlag = true;
 		return this;
 	}
 
@@ -230,6 +252,24 @@ public class RecordWindowFinder
 			if (window != null && isRecordPresentInWindow(window))
 			{
 				return Optional.of(window.getAdWindowId());
+			}
+		}
+
+		//
+		// Check parent window
+		if (checkParentRecord)
+		{
+			final TableRecordReference parentRecordRef = retrieveParentRecordRef().orElse(null);
+			if (parentRecordRef != null)
+			{
+				final Optional<AdWindowId> parentWindowId = RecordWindowFinder.newInstance(parentRecordRef)
+						.checkRecordPresentInWindow(checkRecordPresentInWindow)
+						.checkParentRecord()
+						.findAdWindowId();
+				if (parentWindowId.isPresent())
+				{
+					return parentWindowId;
+				}
 			}
 		}
 
@@ -293,7 +333,7 @@ public class RecordWindowFinder
 
 		final GenericZoomIntoTableInfo tableInfo = getTableInfo();
 		final String tableName = tableInfo.getTableName();
-		final String keyColumnName = tableInfo.getKeyColumnName();
+		final String keyColumnName = tableInfo.getSingleKeyColumnName();
 		final int recordId = getRecord_ID();
 
 		final MQuery query = new MQuery(tableName);
@@ -332,7 +372,7 @@ public class RecordWindowFinder
 				return null;
 			}
 
-			final String keyColumnName = getTableInfo().getKeyColumnName();
+			final String keyColumnName = getTableInfo().getSingleKeyColumnName();
 			return keyColumnName + "=" + recordId;
 		}
 	}
@@ -341,14 +381,16 @@ public class RecordWindowFinder
 	{
 		if (_tableInfo == null)
 		{
-			_tableInfo = tableInfoByTableName.getOrLoad(getTableName(), this::retrieveTableInfo);
+			_tableInfo = tableInfoByTableName.getOrLoad(
+					TableInfoCacheKey.builder().tableName(getTableName()).ignoreExcludeFromZoomTargetsFlag(ignoreExcludeFromZoomTargetsFlag).build(),
+					this::retrieveTableInfo);
 		}
 		return _tableInfo;
 	}
 
-	private GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final String tableName)
+	private GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final TableInfoCacheKey key)
 	{
-		return tableInfoRepository.retrieveTableInfo(tableName)
+		return tableInfoRepository.retrieveTableInfo(key.getTableName(), key.isIgnoreExcludeFromZoomTargetsFlag())
 				.withCustomizedWindowIds(customizedWindowInfoMapRepository.get());
 	}
 
@@ -371,5 +413,49 @@ public class RecordWindowFinder
 		}
 
 		return DB.retrieveRecordSOTrx(tableName, sqlWhereClause).orElse(SOTrx.SALES);
+	}
+
+	private Optional<TableRecordReference> retrieveParentRecordRef()
+	{
+		final GenericZoomIntoTableInfo tableInfo = getTableInfo();
+		if (tableInfo.getParentTableName() == null
+				|| tableInfo.getParentLinkColumnName() == null)
+		{
+			return Optional.empty();
+		}
+
+		final String sqlWhereClause = getRecordWhereClause(); // might be null
+		if (sqlWhereClause == null || Check.isBlank(sqlWhereClause))
+		{
+			return Optional.empty();
+		}
+
+		final String sql = "SELECT " + tableInfo.getParentLinkColumnName()
+				+ " FROM " + tableInfo.getTableName()
+				+ " WHERE " + sqlWhereClause;
+		try
+		{
+			final int parentRecordId = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql);
+			if (parentRecordId < InterfaceWrapperHelper.getFirstValidIdByColumnName(tableInfo.getParentTableName() + "_ID"))
+			{
+				return Optional.empty();
+			}
+
+			final TableRecordReference parentRecordRef = TableRecordReference.of(tableInfo.getParentTableName(), parentRecordId);
+			return Optional.of(parentRecordRef);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed retrieving parent record ID from current record. Returning empty. \n\tthis={} \n\tSQL: {}", this, sql, ex);
+			return Optional.empty();
+		}
+	}
+
+	@Value
+	@Builder
+	private static class TableInfoCacheKey
+	{
+		@NonNull String tableName;
+		boolean ignoreExcludeFromZoomTargetsFlag;
 	}
 }

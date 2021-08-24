@@ -66,7 +66,8 @@ public class Percent
 		}
 	}
 
-	public static Percent ofNullable(final BigDecimal value)
+	@Nullable
+	public static Percent ofNullable(@Nullable final BigDecimal value)
 	{
 		return value != null ? of(value) : null;
 	}
@@ -93,7 +94,7 @@ public class Percent
 	}
 
 	/**
-	 * Like {@link #of(BigDecimal, BigDecimal, int)} with a scale of 2.
+	 * Like {@link #of(BigDecimal, BigDecimal, int)} with a scale of 2 and "half-up".
 	 */
 	public static Percent of(@NonNull final BigDecimal numerator, @NonNull final BigDecimal denominator)
 	{
@@ -101,13 +102,14 @@ public class Percent
 	}
 
 	/**
-	 * Like {@link #of(BigDecimal, BigDecimal, int, RoundingMode)} with a scale of 2 and "half-up".
+	 * Like {@link #of(BigDecimal, BigDecimal, int, RoundingMode)} with "half-up".
 	 *
 	 * Examples:
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("4"), 2)} returns an instance of "25%".
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"), 2)} returns an instance of "33.33%".
+	 * <li>{@code Percent.of(new BigDecimal("2"), new BigDecimal("100"), 2)} returns an instance of "2%".
 	 *
-	 * @param denominator if zero, then {@value #ZERO} percent is returned.
+	 * @param denominator if zero, then {@link #ZERO} percent is returned.
 	 * @return a percent instance with max. two digits after the decimal point.
 	 */
 	public static Percent of(
@@ -275,6 +277,11 @@ public class Percent
 
 	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision)
 	{
+		return addToBase(base,precision,RoundingMode.HALF_UP);
+	}
+	
+	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision, final RoundingMode roundingMode)
+	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");
 
 		if (base.signum() == 0)
@@ -283,12 +290,12 @@ public class Percent
 		}
 		else if (isZero())
 		{
-			return base.setScale(precision, RoundingMode.HALF_UP);
+			return base.setScale(precision, roundingMode);
 		}
 		else
 		{
 			// make sure the base we work with does not have more digits than we expect from the given precision.
-			final BigDecimal baseToUse = base.setScale(precision, RoundingMode.HALF_UP);
+			final BigDecimal baseToUse = base.setScale(precision, roundingMode);
 
 			return baseToUse
 					.setScale(precision + 2)

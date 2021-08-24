@@ -1,17 +1,11 @@
 package de.metas.ordercandidate.api;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.warehouse.WarehouseId;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderLineGroup;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -23,6 +17,11 @@ import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -74,6 +73,7 @@ public class OLCandCreateRequest
 
 	LocalDate dateOrdered;
 	LocalDate dateRequired;
+	LocalDate dateCandidate;
 
 	LocalDate presetDateInvoiced;
 	DocTypeId docTypeInvoiceId;
@@ -105,6 +105,18 @@ public class OLCandCreateRequest
 	PaymentRule paymentRule;
 
 	PaymentTermId paymentTermId;
+	OrderLineGroup orderLineGroup;
+
+	Integer line;
+	String description;
+
+	Boolean isManualPrice;
+	Boolean isImportedWithIssues;
+
+	String deliveryViaRule;
+	String deliveryRule;
+
+	String importWarningMessage;
 
 	@Builder
 	private OLCandCreateRequest(
@@ -139,7 +151,16 @@ public class OLCandCreateRequest
 			@Nullable final ShipperId shipperId,
 			@Nullable final BPartnerId salesRepId,
 			@Nullable final PaymentRule paymentRule,
-			@Nullable final PaymentTermId paymentTermId)
+			@Nullable final PaymentTermId paymentTermId,
+			@Nullable final OrderLineGroup orderLineGroup,
+			@Nullable final LocalDate dateCandidate,
+			@Nullable final Integer line,
+			@Nullable final String description,
+			@Nullable final Boolean isManualPrice,
+			@Nullable final Boolean isImportedWithIssues,
+			@Nullable final String deliveryViaRule,
+			@Nullable final String deliveryRule,
+			@Nullable final String importWarningMessage)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -157,6 +178,8 @@ public class OLCandCreateRequest
 		this.handOverBPartner = handOverBPartner;
 		this.poReference = poReference;
 		this.dateRequired = dateRequired;
+
+		this.dateCandidate = dateCandidate;
 
 		this.dateOrdered = dateOrdered;
 		this.presetDateInvoiced = presetDateInvoiced;
@@ -185,5 +208,13 @@ public class OLCandCreateRequest
 		this.paymentRule = paymentRule;
 
 		this.paymentTermId = paymentTermId;
+		this.orderLineGroup = orderLineGroup;
+		this.line = line;
+		this.description = description;
+		this.isManualPrice = isManualPrice;
+		this.isImportedWithIssues = isImportedWithIssues;
+		this.deliveryViaRule = deliveryViaRule;
+		this.deliveryRule = deliveryRule;
+		this.importWarningMessage = importWarningMessage;
 	}
 }

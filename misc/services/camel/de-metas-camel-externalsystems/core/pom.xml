@@ -38,8 +38,8 @@
     <properties>
         <java.version>14</java.version>
         <spring-boot.version>2.3.1.RELEASE</spring-boot.version>
-        <camel.version>3.7.2</camel.version>
-        <guava.version>28.0-jre</guava.version>
+        <camel.version>3.7.3</camel.version>
+        <guava.version>30.1.1-jre</guava.version>
         <smooks.version>1.7.1</smooks.version>
         <jackson.version>2.12.1</jackson.version>
         <!--
@@ -47,9 +47,6 @@
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
         -->
         <assertj.version>3.19.0</assertj.version>
-
-        <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.1.5</spring-boot-admin.version>
 
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
@@ -131,6 +128,21 @@
             <artifactId>jackson-datatype-jsr310</artifactId>
             <version>${jackson.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -140,7 +152,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        
         <!-- Camel -->
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
@@ -166,6 +182,12 @@
         <dependency>
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-http-starter</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.camel.springboot</groupId>
+            <artifactId>camel-rabbitmq-starter</artifactId>
             <version>${camel.version}</version>
         </dependency>
 
@@ -220,21 +242,20 @@
                 <version>${spring-boot.version}</version>
                 <executions>
                     <execution>
+                        <id>spring-boot-externalsystems-build-info</id>
                         <goals>
-                            <goal>repackage</goal>
+                            <goal>build-info</goal> <!-- create build-info.properties; thanks to https://docs.spring.io/spring-boot/docs/current/reference/html/howto-build.html#howto-build-info -->
                         </goals>
+                        <configuration>
+                            <additionalProperties>
+                                <jenkinsBuildNo>${env.BUILD_NUMBER}</jenkinsBuildNo>
+                                <jenkinsBuildTag>${env.BUILD_TAG}</jenkinsBuildTag>
+                                <jenkinsBuildUrl>${env.BUILD_URL}</jenkinsBuildUrl>
+                                <jenkinsJobName>${env.JOB_NAME}</jenkinsJobName>
+                            </additionalProperties>
+                        </configuration>
                     </execution>
                 </executions>
-
-                <configuration>
-                    <!-- we *also* need the normal main jar to be used in app
-                    so don't replace the normal jar, but create the executable jar with this classifier -->
-                    <classifier>exec</classifier>
-
-                    <executable>true</executable>
-                    <mainClass>de.metas.edi.esb.ESBCamelApplication</mainClass>
-
-                </configuration>
             </plugin>
 
             <!-- Allows the example to be run via 'mvn camel:run' -->
@@ -257,7 +278,7 @@
             <plugin>
                 <groupId>com.google.cloud.tools</groupId>
                 <artifactId>jib-maven-plugin</artifactId>
-                 <configuration>
+                <configuration>
                     <to>
                         <!-- we expect those environment variables to be set from the outside world -->
                         <!-- without specifying the tag in the image name, jib will push "latest", thx https://github.com/GoogleContainerTools/jib/issues/2237#issuecomment-575967019 -->
@@ -275,6 +296,12 @@
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
                         <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                        <auth>
+                            <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <!-- we authenticate on pulls to avoid the rate limit -->
+                            <username>${env.DOCKERHUB_REGISTRY_USERNAME}</username>
+                            <password>${env.DOCKERHUB_REGISTRY_PASSWORD}</password>
+                        </auth>
                     </from>
                 </configuration>
                 <executions>
@@ -286,7 +313,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <!-- Create tests JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

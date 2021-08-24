@@ -46,8 +46,11 @@ BEGIN
                   FROM C_AllocationLine al
                            INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID = ah.C_AllocationHdr_ID)
                   WHERE al.C_Payment_ID = p_C_Payment_ID
-                    AND ah.DocStatus IN ('CO', 'CL')
-                    AND ah.IsActive = 'Y'
+                    AND ah.IsActive = 'Y' AND al.IsActive='Y'
+                    -- IMPORTANT: do not filter by DocStatus because if we do then
+                    -- the payment testAllocation performed when the allocation is completed will skip that allocation
+                    -- so the result will be wrong.
+                    -- AND ah.DocStatus IN ('CO', 'CL')
                   GROUP BY ah.AD_Client_ID,
                            ah.AD_Org_ID,
                            ah.C_Currency_ID,

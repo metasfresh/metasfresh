@@ -38,7 +38,6 @@ public interface IOrderCheckupDAO extends ISingletonService
 	/**
 	 * For the given order line, return a {@link I_PP_Product_Planning} which has either <code>IsManufactured='Y'</code> or, if there is not such, with has <code>IsTraded='Y'</code>.
 	 *
-	 * @param orderLine
 	 * @return product data planning or <code>null</code>.
 	 */
 	I_PP_Product_Planning retrieveProductPlanningOrNull(I_C_OrderLine orderLine);
@@ -46,7 +45,6 @@ public interface IOrderCheckupDAO extends ISingletonService
 	/**
 	 * For the given order line, return those warehouses that are referenced by a manufacturing_<code>PP_Product_Planning</code> record that also references the order line.
 	 *
-	 * @param orderLine
 	 * @return warehouse or null
 	 */
 	I_M_Warehouse retrieveManufacturingWarehouseOrNull(I_C_OrderLine orderLine);

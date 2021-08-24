@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.util.Evaluatee;
 
@@ -190,7 +191,7 @@ public class PickingSlotView implements IView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
 	{
 		throw new UnsupportedOperationException();
 	}

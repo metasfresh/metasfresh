@@ -3,7 +3,7 @@
 #FROM cypress/base:10
 
 # See the available Docker images here: https://github.com/cypress-io/cypress-docker-images/tree/master/browsers
-FROM cypress/browsers:node14.7.0-chrome84
+FROM cypress/browsers:node14.16.0-chrome90-ff88
 
 # to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
 # that way we should get the latest updates since the release of our base image 

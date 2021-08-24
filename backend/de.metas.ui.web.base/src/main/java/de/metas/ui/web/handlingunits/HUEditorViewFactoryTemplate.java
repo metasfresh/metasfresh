@@ -424,7 +424,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 			@NonNull final DocumentFilterList requestStickyFilters,
 			@Nullable final Set<Integer> filterOnlyIds)
 	{
-		final DocumentFilter stickyFilter_HUIds_Existing = HUIdsFilterHelper.findExistingOrNull(requestStickyFilters);
+		final DocumentFilter stickyFilter_HUIds_Existing = HUIdsFilterHelper.findExisting(requestStickyFilters).orElse(null);
 
 		// Create the sticky filter by HUIds from builder's huIds (if any huIds)
 		if (stickyFilter_HUIds_Existing == null && filterOnlyIds != null && !filterOnlyIds.isEmpty())
@@ -457,7 +457,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setFilterId(FILTER_ID)
 					.setDisplayName(barcodeCaption)
 					.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
-					.setFrequentUsed(false)
+					.setFrequentUsed(true)
 					.addParameter(DocumentFilterParamDescriptor.builder()
 							.setFieldName(PARAM_Barcode)
 							.setDisplayName(barcodeCaption)

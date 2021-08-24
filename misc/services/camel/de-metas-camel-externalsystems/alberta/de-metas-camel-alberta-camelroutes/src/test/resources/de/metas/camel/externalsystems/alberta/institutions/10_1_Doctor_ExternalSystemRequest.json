@@ -1,0 +1,15 @@
+{
+  "orgCode": "001",
+  "externalSystemName": "Alberta",
+  "command": "syncBPartnerById",
+  "adPInstanceId": 10009936,
+  "externalSystemConfigId": 1,
+  "parameters": {
+    "APIKey": "APIKey",
+    "Tenant": "Tenant",
+    "ChildConfigValue": "ChildConfigValue",
+    "BasePath": "https://basePath",
+    "Alberta_Id": "test",
+    "Alberta_Role": "PhysicianDoctor"
+  }
+}

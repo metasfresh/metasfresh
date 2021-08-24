@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model.lookup;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
@@ -41,11 +42,11 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 	int FIRST_ROW = 0;
 	int DEFAULT_PageLength = 10;
 
-	LookupValuesList findEntities(Evaluatee ctx, int pageLength);
+	LookupValuesPage findEntities(Evaluatee ctx, int pageLength);
 
-	LookupValuesList findEntities(Evaluatee ctx, String filter, int firstRow, int pageLength);
+	LookupValuesPage findEntities(Evaluatee ctx, String filter, int firstRow, int pageLength);
 
-	default LookupValuesList findEntities(final Evaluatee ctx, final String filter)
+	default LookupValuesPage findEntities(final Evaluatee ctx, final String filter)
 	{
 		return findEntities(ctx, filter, FIRST_ROW, DEFAULT_PageLength);
 	}
@@ -53,7 +54,7 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 	/**
 	 * @return all lookup values
 	 */
-	default LookupValuesList findEntities(final Evaluatee ctx)
+	default LookupValuesPage findEntities(final Evaluatee ctx)
 	{
 		return findEntities(ctx, Integer.MAX_VALUE);
 	}
@@ -66,7 +67,7 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 	 * @return lookup values in the same order as the collection order
 	 */
 	@NonNull
-	default LookupValuesList findByIdsOrdered(@NonNull final Collection<? extends Object> ids)
+	default LookupValuesList findByIdsOrdered(@NonNull final Collection<?> ids)
 	{
 		if (ids.isEmpty())
 		{

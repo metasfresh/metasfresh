@@ -26,6 +26,8 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_OrgChange_History;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_InOut;
@@ -205,7 +207,8 @@ public class RequestBL implements IRequestBL
 		return createRequest(requestCandidate);
 	}
 
-	private I_R_Request createRequest(final RequestCandidate requestCandidate)
+	@Override
+	public I_R_Request createRequest(final RequestCandidate requestCandidate)
 	{
 		return requestsRepo.createRequest(requestCandidate);
 	}

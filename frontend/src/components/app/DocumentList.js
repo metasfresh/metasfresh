@@ -13,7 +13,7 @@ import {
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
 import BlankPage from '../BlankPage';
-import DataLayoutWrapper from '../DataLayoutWrapper';
+import SelectionAttributes from './SelectionAttributes';
 import Filters from '../filters/Filters';
 import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../../containers/Table';
@@ -122,6 +122,7 @@ export default class DocumentList extends Component {
       childSelected,
       parentSelected,
       filterId,
+      featureType,
     } = this.props;
     const {
       staticFilters,
@@ -325,6 +326,7 @@ export default class DocumentList extends Component {
                 focusOnFieldName={layout.focusOnFieldName}
                 toggleState={panelsState}
                 spinnerVisible={triggerSpinner}
+                featureType={featureType}
                 parentView={
                   isIncluded
                     ? {
@@ -353,8 +355,7 @@ export default class DocumentList extends Component {
                 }}
               >
                 {layout.supportAttributes && !isIncluded && !hasIncluded && (
-                  <DataLayoutWrapper
-                    className="table-flex-wrapper attributes-selector js-not-unselect"
+                  <SelectionAttributes
                     entity="documentView"
                     supportAttribute={table.supportAttribute}
                     setClickOutsideLock={this.setClickOutsideLock}

@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.core.to_mf;
 
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.rest_api.JsonError;
-import de.metas.common.rest_api.JsonErrorItem;
+import de.metas.common.rest_api.v1.JsonError;
+import de.metas.common.rest_api.v1.JsonErrorItem;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -82,7 +82,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("http://{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/error");
+				.toD("{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/error");
 		//@formatter:on
 	}
 
@@ -106,7 +106,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 			exception.printStackTrace(pw);
 
 			content.append(" Error Message: ").append(exception.getLocalizedMessage()).append("\n");
-			content.append(" Error Stacktrace: ").append(sw.toString());
+			content.append(" Error Stacktrace: ").append(sw);
 		}
 
 		exchange.getIn().setBody(content.toString());

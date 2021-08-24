@@ -1,11 +1,6 @@
 package de.metas.edi.process;
 
-import java.util.List;
-
-import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
-
+import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
@@ -17,6 +12,11 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.report.ReportResultData;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -61,13 +61,13 @@ public class EDI_Desadv_PrintSSCCLabels extends JavaProcess implements IProcessP
 		final IQueryFilter<I_EDI_Desadv> selectedRecordsFilter = getProcessInfo()
 				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		final List<Integer> list = queryBL
+		final Set<EDIDesadvLinePackId> list = queryBL
 				.createQueryBuilder(I_EDI_Desadv.class)
 				.filter(selectedRecordsFilter)
 				.andCollectChildren(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID)
 				.andCollectChildren(I_EDI_DesadvLine_Pack.COLUMN_EDI_DesadvLine_ID)
 				.create()
-				.listIds();
+				.listIds(EDIDesadvLinePackId::ofRepoId);
 
 		final ReportResultData reportResult = desadvBL.printSSCC18_Labels(getCtx(), list);
 

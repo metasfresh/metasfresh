@@ -140,7 +140,7 @@ import lombok.NonNull;
 	}
 
 	@Override
-	public void subtractAllocatedQty(final BigDecimal qtyAllocated)
+	public void subtractAllocatedQty(@NonNull final BigDecimal qtyAllocated)
 	{
 		final BigDecimal qtyToAllocateNew = qtyToAllocate.subtract(qtyAllocated);
 		Check.assume(qtyToAllocateNew.signum() >= 0,

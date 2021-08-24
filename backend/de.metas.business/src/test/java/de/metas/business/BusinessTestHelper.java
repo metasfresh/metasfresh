@@ -1,5 +1,6 @@
 package de.metas.business;
 
+import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -10,7 +11,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
-import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
@@ -20,7 +21,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -32,8 +32,10 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_UOM;
@@ -43,7 +45,9 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 
 /*
  * #%L
@@ -211,6 +215,27 @@ public class BusinessTestHelper
 		return product;
 	}
 
+	public I_M_Product_Category createM_Product_Cagetory(@NonNull final String name, @NonNull final I_M_AttributeSet attributeSet)
+	{
+		final I_M_Product_Category category = newInstance(I_M_Product_Category.class);
+		category.setName(name);
+		category.setM_AttributeSet_ID(attributeSet.getM_AttributeSet_ID());
+		save(category);
+
+		return category;
+	}
+
+	public I_M_Product createProduct(@NonNull final String name,
+			@Nullable final I_C_UOM uom ,
+			@NonNull final I_M_Product_Category category)
+	{
+		final I_M_Product product = createProduct(name,uom);
+
+		product.setM_Product_Category_ID(category.getM_Product_Category_ID());
+		save(product);
+		return product;
+	}
+
 	public ResourceId createManufacturingResource(
 			@NonNull final String name,
 			@NonNull final I_C_UOM timeUOM)
@@ -252,6 +277,18 @@ public class BusinessTestHelper
 		return bpl;
 	}
 
+	public I_C_BP_Group createStandardBPGroup()
+	{
+		final I_C_BP_Group bpGroupRecord = newInstanceOutOfTrx(I_C_BP_Group.class);
+		bpGroupRecord.setC_BP_Group_ID(BPGroupId.STANDARD.getRepoId());
+		bpGroupRecord.setName("Standard");
+		bpGroupRecord.setIsDefault(true);
+		setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+
+		saveRecord(bpGroupRecord);
+		return bpGroupRecord;
+	}
+
 	public I_C_BP_Group createBPGroup(
 			final String name,
 			final boolean isDefault)
@@ -260,7 +297,7 @@ public class BusinessTestHelper
 		POJOWrapper.setInstanceName(bpGroupRecord, name);
 		bpGroupRecord.setName(name);
 		bpGroupRecord.setIsDefault(isDefault);
-		InterfaceWrapperHelper.setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
+		setValue(bpGroupRecord, I_C_BP_Group.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 
 		saveRecord(bpGroupRecord);
 		return bpGroupRecord;
@@ -331,8 +368,8 @@ public class BusinessTestHelper
 		saveRecord(noTaxCategoryFound);
 
 		final I_C_Tax noTaxFound = newInstanceOutOfTrx(I_C_Tax.class);
-		noTaxFound.setC_Tax_ID(ITaxDAO.C_TAX_ID_NO_TAX_FOUND);
-		noTaxFound.setC_TaxCategory(noTaxCategoryFound);
+		noTaxFound.setC_Tax_ID(Tax.C_TAX_ID_NO_TAX_FOUND);
+		noTaxFound.setC_TaxCategory_ID(TaxCategoryId.NOT_FOUND.getRepoId());
 		saveRecord(noTaxFound);
 	}
 

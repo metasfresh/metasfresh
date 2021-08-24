@@ -98,9 +98,8 @@ class TableWrapper extends PureComponent {
 
   triggerFocus = (idFocused, idFocusedDown) => {
     if (this.table) {
-      const rowsSelected = this.table.table.getElementsByClassName(
-        'row-selected'
-      );
+      const rowsSelected =
+        this.table.table.getElementsByClassName('row-selected');
 
       if (rowsSelected.length > 0) {
         if (typeof idFocused === 'number') {
@@ -251,10 +250,8 @@ class TableWrapper extends PureComponent {
       // view is only visible when an item is selected. At the same time we'll hide the
       // included view.
       if (parentView) {
-        const {
-          windowId: parentWindowId,
-          viewId: parentViewId,
-        } = this.props.parentView;
+        const { windowId: parentWindowId, viewId: parentViewId } =
+          this.props.parentView;
 
         deselectTableRows({
           id: getTableId({ windowId: parentWindowId, viewId: parentViewId }),
@@ -378,7 +375,7 @@ class TableWrapper extends PureComponent {
               handleAdvancedEdit={onHandleAdvancedEdit}
               onOpenNewTab={handleOpenNewTab}
               handleDelete={
-                !isModal && (tabInfo && tabInfo.allowDelete)
+                !isModal && tabInfo && tabInfo.allowDelete
                   ? this.handleDelete
                   : null
               }

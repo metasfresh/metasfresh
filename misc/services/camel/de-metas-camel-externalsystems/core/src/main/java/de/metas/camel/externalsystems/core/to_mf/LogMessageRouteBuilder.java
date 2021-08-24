@@ -25,8 +25,8 @@ package de.metas.camel.externalsystems.core.to_mf;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
-import de.metas.common.rest_api.CreatePInstanceLogRequest;
-import de.metas.common.rest_api.JsonPInstanceLog;
+import de.metas.common.rest_api.v1.CreatePInstanceLogRequest;
+import de.metas.common.rest_api.v1.JsonPInstanceLog;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -56,7 +56,7 @@ public class LogMessageRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("http://{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/message");
+				.toD("{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/message");
 		//@formatter:on
 	}
 
@@ -66,7 +66,7 @@ public class LogMessageRouteBuilder extends RouteBuilder
 
 		if (!(exchangeBody instanceof LogMessageRequest))
 		{
-			throw new RuntimeException("Wrong exchange boyd class! Expected: " + LogMessageRequest.class.getName() + "!");
+			throw new RuntimeException("Wrong exchange body class! Expected: " + LogMessageRequest.class.getName() + "!");
 		}
 
 		final LogMessageRequest logMessageRequest = (LogMessageRequest)exchangeBody;

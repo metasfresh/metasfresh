@@ -1,15 +1,15 @@
 package de.metas.order.compensationGroup;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.product.ProductCategoryId;
-import de.metas.util.Check;
+import de.metas.product.acct.api.ActivityId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -35,32 +35,36 @@ import lombok.Value;
 
 /**
  * Template used when creating new groups.
- * 
+ * <p>
  * It contains an name/productCategoryId and a list of compensation products to be added on group creation.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 @Value
 public class GroupTemplate
 {
-	GroupTemplateId id;
-	String name;
-	ProductCategoryId productCategoryId;
-	List<GroupTemplateLine> lines;
+	@Nullable GroupTemplateId id;
+	@NonNull String name;
+	@Nullable ActivityId activityId;
+	@Nullable ProductCategoryId productCategoryId;
+
+	@NonNull ImmutableList<GroupTemplateRegularLine> regularLinesToAdd;
+	@NonNull ImmutableList<GroupTemplateCompensationLine> compensationLines;
 
 	@Builder
 	private GroupTemplate(
-			final GroupTemplateId id,
+			@Nullable final GroupTemplateId id,
 			@NonNull final String name,
-			final ProductCategoryId productCategoryId,
-			@Singular List<GroupTemplateLine> lines)
+			@Nullable final ActivityId activityId,
+			@Nullable final ProductCategoryId productCategoryId,
+			@NonNull final List<GroupTemplateRegularLine> regularLinesToAdd,
+			@NonNull final @Singular List<GroupTemplateCompensationLine> compensationLines)
 	{
-		Check.assumeNotEmpty(lines, "lines is not empty");
-
 		this.id = id;
 		this.name = name;
+		this.activityId = activityId;
 		this.productCategoryId = productCategoryId;
-		this.lines = ImmutableList.copyOf(lines);
+		this.regularLinesToAdd = ImmutableList.copyOf(regularLinesToAdd);
+		this.compensationLines = ImmutableList.copyOf(compensationLines);
 	}
 }

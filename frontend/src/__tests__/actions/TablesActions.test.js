@@ -1,7 +1,7 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import produce from 'immer';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import { combineReducers } from 'redux';
 import nock from 'nock';
 
@@ -37,8 +37,7 @@ const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       viewHandler: initialViewsState,
       tables: { ...tablesHandler(undefined, {}) },
@@ -51,11 +50,24 @@ const createState = function(state = {}) {
 
 describe('TableActions general', () => {
   it('should call DELETE_TABLE action with correct payload', () => {
-    const payload = { id: '143_143-F' };
-    const action = deleteTable(payload.id);
+    const { windowType, viewId } = gridProps.props1;
+    const id = getTableId({ windowId: windowType, viewId });
+    const payload = { id };
 
-    expect(action.type).toEqual(ACTION_TYPES.DELETE_TABLE);
-    expect(action.payload).toHaveProperty('id', payload.id);
+    const initialState = createState({
+      tables: {
+        length: 1,
+        [id]: { id },
+      },
+    });
+    const store = mockStore(initialState);
+    const expectedActions = [
+      { type: ACTION_TYPES.DELETE_ATTRIBUTES },
+      { type: ACTION_TYPES.DELETE_TABLE, payload }
+    ];
+
+    store.dispatch(deleteTable(id));
+    expect(store.getActions()).toEqual(expect.arrayContaining(expectedActions));
   });
 
   it(`dispatches 'SET_ACTIVE_SORT' action when setting active sort`, () => {

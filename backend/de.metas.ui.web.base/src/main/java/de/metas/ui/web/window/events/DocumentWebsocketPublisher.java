@@ -81,7 +81,7 @@ public class DocumentWebsocketPublisher
 			{
 				collector = trx.getPropertyAndProcessAfterCommit(
 						JSONDocumentChangedWebSocketEventCollector.class.getName(),
-						() -> JSONDocumentChangedWebSocketEventCollector.newInstance(),
+						JSONDocumentChangedWebSocketEventCollector::newInstance,
 						c -> {
 							sendAllAndClear(c, websocketSender);
 							c.markAsClosed();
@@ -148,7 +148,7 @@ public class DocumentWebsocketPublisher
 		forCollector(collector -> collector.mergeFrom(collectorToMerge));
 	}
 
-	private static final void collectFrom(final JSONDocumentChangedWebSocketEventCollector collector, final JSONDocument event)
+	private static void collectFrom(final JSONDocumentChangedWebSocketEventCollector collector, final JSONDocument event)
 	{
 		final WindowId windowId = event.getWindowId();
 		if (windowId == null)
@@ -163,6 +163,7 @@ public class DocumentWebsocketPublisher
 		}
 
 		final DocumentId documentId = event.getId();
+		collector.staleRootDocument(windowId, documentId);
 		event.getIncludedTabsInfos().forEach(tabInfo -> collector.mergeFrom(windowId, documentId, tabInfo));
 	}
 

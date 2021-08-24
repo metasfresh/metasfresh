@@ -1,8 +1,6 @@
 // note that we set a default version for this library in jenkins, so we don't have to specify it here
 @Library('misc')
 import de.metas.jenkins.DockerConf
-@Library('misc')
-import de.metas.jenkins.DockerConf
 import de.metas.jenkins.MvnConf
 
 Map build(
@@ -56,7 +54,7 @@ Map build(
                 // set the artifact version of everything below ${mvnConf.pomFile}
                 // processAllModules=true: also update those modules that have a parent version range!
                 sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -DnewVersion=${env.MF_VERSION} -DprocessAllModules=true -Dincludes=\"de.metas*:*\" ${mvnConf.resolveParams} ${VERSIONS_PLUGIN}:set"
-                // Set the metasfresh.version property from [1,10.0.0] to our current build version
+                // Set the metasfresh.version property from to our current build version
                 // From the documentation: "Set a property to a given version without any sanity checks"; that's what we want here..sanity is clearly overated
                 sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dproperty=metasfresh.version -DnewVersion=${env.MF_VERSION} ${VERSIONS_PLUGIN}:set-property"
 
@@ -111,7 +109,7 @@ Map build(
 
                 dir('de.metas.cucumber') {
                     def distributionBuildFile = load('buildfile.groovy')
-                    distributionBuildFile.build(mvnConf)
+                    distributionBuildFile.build(mvnConf, scmVars)
                 }
 
                 final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"

@@ -1,12 +1,39 @@
 package de.metas.ui.web.dashboard;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-
-import org.elasticsearch.client.Client;
+import com.google.common.collect.ImmutableList;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
+import de.metas.i18n.ExplainedOptional;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardItemPatchPath;
+import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
+import de.metas.ui.web.dashboard.json.JSONDashboard;
+import de.metas.ui.web.dashboard.json.JSONDashboardItem;
+import de.metas.ui.web.dashboard.json.JsonKPI;
+import de.metas.ui.web.dashboard.json.JsonKPIDataResult;
+import de.metas.ui.web.dashboard.json.JsonKPIZoomInfoDetails;
+import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
+import de.metas.ui.web.dashboard.json.KPIJsonOptions;
+import de.metas.ui.web.dashboard.websocket.UserDashboardWebsocketProducerFactory;
+import de.metas.ui.web.dashboard.websocket.UserDashboardWebsocketSender;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
+import de.metas.ui.web.kpi.data.KPIDataContext;
+import de.metas.ui.web.kpi.data.KPIDataResult;
+import de.metas.ui.web.kpi.data.KPIZoomIntoDetailsInfo;
+import de.metas.ui.web.kpi.descriptor.KPI;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.CreateViewRequest;
+import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.websocket.WebSocketProducersRegistry;
+import de.metas.ui.web.websocket.WebsocketSender;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
+import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -17,29 +44,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.elasticsearch.IESSystem;
-import de.metas.logging.LogManager;
-import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardItemPatchPath;
-import de.metas.ui.web.dashboard.UserDashboardRepository.UserDashboardKey;
-import de.metas.ui.web.dashboard.json.JSONDashboard;
-import de.metas.ui.web.dashboard.json.JSONDashboardChangedEventsList;
-import de.metas.ui.web.dashboard.json.JSONDashboardChangedEventsList.JSONDashboardChangedEventsListBuilder;
-import de.metas.ui.web.dashboard.json.JSONDashboardItem;
-import de.metas.ui.web.dashboard.json.JSONDashboardItemChangedEvent;
-import de.metas.ui.web.dashboard.json.JSONDashboardOrderChangedEvent;
-import de.metas.ui.web.dashboard.json.JsonKPI;
-import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.websocket.WebsocketSender;
-import de.metas.ui.web.websocket.WebsocketTopicName;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
-import de.metas.util.Services;
-import io.swagger.annotations.ApiParam;
+import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -64,94 +74,118 @@ import io.swagger.annotations.ApiParam;
  */
 
 @RestController
-@RequestMapping(value = DashboardRestController.ENDPOINT)
+@RequestMapping(WebConfig.ENDPOINT_ROOT + "/dashboard")
 public class DashboardRestController
 {
-	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/dashboard";
-
 	private static final Logger logger = LogManager.getLogger(DashboardRestController.class);
-	@Autowired
-	private UserSession userSession;
-	@Autowired
-	private UserDashboardRepository userDashboardRepo;
-	@Autowired
-	private Client elasticsearchClient;
-	@Autowired
-	private WebsocketSender websocketSender;
+	private final UserSession userSession;
+	private final UserDashboardRepository dashboardRepo;
+	private final UserDashboardDataService dashboardDataService;
+	private final UserDashboardWebsocketSender websocketSender;
+	private final IViewsRepository viewRepo;
 
-	private JSONOptions newJSONOpts()
+	public DashboardRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final UserDashboardRepository dashboardRepo,
+			@NonNull final UserDashboardDataService dashboardDataService,
+			@NonNull final WebSocketProducersRegistry websocketProducersRegistry,
+			@NonNull final WebsocketSender websocketSender, final IViewsRepository viewRepo)
 	{
-		return JSONOptions.of(userSession);
+		this.userSession = userSession;
+		this.dashboardRepo = dashboardRepo;
+		this.dashboardDataService = dashboardDataService;
+		this.viewRepo = viewRepo;
+		this.websocketSender = new UserDashboardWebsocketSender(websocketSender, websocketProducersRegistry);
 	}
 
-	private JSONDocumentLayoutOptions newJSONLayoutOptions()
+	private ExplainedOptional<UserDashboard> getUserDashboard()
 	{
-		return JSONDocumentLayoutOptions.of(userSession);
-	}
-
-	private UserDashboard getUserDashboardForReading()
-	{
-		if (!isElasticSearchEnabled())
-		{
-			return UserDashboard.EMPTY;
-		}
-
-		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
 		// TODO: assert readable by current user
-		return dashboard;
-	}
-
-	private boolean isElasticSearchEnabled()
-	{
-		return Services.get(IESSystem.class).isEnabled();
-	}
-
-	private UserDashboard getUserDashboardForWriting()
-	{
-		if (!isElasticSearchEnabled())
+		final UserDashboard userDashboard = dashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId())).orElse(null);
+		if (userDashboard == null)
 		{
-			return UserDashboard.EMPTY;
+			return ExplainedOptional.emptyBecause("User has no dashboard");
 		}
-
-		final UserDashboard dashboard = userDashboardRepo.getUserDashboard(UserDashboardKey.of(userSession.getClientId()));
-		// TODO: assert writable by current user
-		return dashboard;
-	}
-
-	private void sendEvents(final UserDashboard dashboard, final JSONDashboardChangedEventsList events)
-	{
-		if (events.isEmpty())
+		else
 		{
-			return;
+			return ExplainedOptional.of(userDashboard);
 		}
-
-		final WebsocketTopicName websocketEndpoint = dashboard.getWebsocketEndpoint();
-		websocketSender.convertAndSend(websocketEndpoint, events);
-		logger.trace("Notified WS {}: {}", websocketEndpoint, events);
 	}
 
 	@GetMapping("/kpis")
-	public JSONDashboard getKPIsDashboard()
-	{
-		return getJSONDashboard(DashboardWidgetType.KPI);
-	}
+	public JSONDashboard getKPIsDashboard() { return getJSONDashboard(DashboardWidgetType.KPI); }
 
 	@GetMapping("/targetIndicators")
-	public JSONDashboard getTargetIndicatorsDashboard()
-	{
-		return getJSONDashboard(DashboardWidgetType.TargetIndicator);
-	}
+	public JSONDashboard getTargetIndicatorsDashboard() { return getJSONDashboard(DashboardWidgetType.TargetIndicator); }
 
-	public JSONDashboard getJSONDashboard(final DashboardWidgetType widgetType)
+	private JSONDashboard getJSONDashboard(@NonNull final DashboardWidgetType widgetType)
 	{
 		userSession.assertLoggedIn();
+		final KPIJsonOptions jsonOpts = newKPIJsonOptions();
 
-		final UserDashboard userDashboard = getUserDashboardForReading();
-		final WebsocketTopicName websocketEndpoint = userDashboard.getWebsocketEndpoint();
-		return JSONDashboard.of(
-				userDashboard.getItems(widgetType),
-				websocketEndpoint != null ? websocketEndpoint.getAsString() : null,
-				newJSONLayoutOptions());
+		final ExplainedOptional<UserDashboard> optionalDashboard = getUserDashboard();
+		if (!optionalDashboard.isPresent())
+		{
+			return JSONDashboard.EMPTY.withNoDashboardReason(optionalDashboard.getExplanation().translate(jsonOpts.getAdLanguage()));
+		}
+
+		final UserDashboard dashboard = optionalDashboard.get();
+		final KPIDataContext kpiDataContext = KPIDataContext.ofUserSession(userSession);
+
+		final UserDashboardDataResponse data = dashboardDataService
+				.getData(dashboard.getId())
+				.getAllItems(UserDashboardDataRequest.builder()
+						.widgetType(widgetType)
+						.context(kpiDataContext)
+						.build());
+
+		return toJSONDashboard(
+				dashboard,
+				widgetType,
+				data,
+				jsonOpts);
+
+	}
+
+	private JSONDashboard toJSONDashboard(
+			@NonNull final UserDashboard userDashboard,
+			@NonNull final DashboardWidgetType widgetType,
+			@NonNull final UserDashboardDataResponse data,
+			@NonNull final KPIJsonOptions jsonOpts)
+	{
+		return JSONDashboard.builder()
+				.items(toJSONDashboardItemsNoFail(userDashboard.getItems(widgetType), data, jsonOpts))
+				.websocketEndpoint(UserDashboardWebsocketProducerFactory.createWebsocketTopicName(userSession.getSessionId()).getAsString())
+				.build();
+	}
+
+	private static ImmutableList<JSONDashboardItem> toJSONDashboardItemsNoFail(
+			@NonNull final Collection<UserDashboardItem> items,
+			@NonNull final UserDashboardDataResponse data,
+			@NonNull final KPIJsonOptions jsonOpts)
+	{
+		return items.stream()
+				.map(item -> toJSONDashboardItemNoFail(item, data, jsonOpts))
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	private static JSONDashboardItem toJSONDashboardItemNoFail(
+			@NonNull final UserDashboardItem item,
+			@NonNull final UserDashboardDataResponse data,
+			@NonNull final KPIJsonOptions jsonOpts)
+	{
+		try
+		{
+			final UserDashboardItemDataResponse itemData = data.getItemById(item.getId()).orElse(null);
+			return JSONDashboardItem.of(item, itemData, jsonOpts);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed converting {} to JSON. Skipped", item, ex);
+			return null;
+		}
 	}
 
 	@GetMapping("/kpis/available")
@@ -161,15 +195,30 @@ public class DashboardRestController
 	{
 		userSession.assertLoggedIn();
 
-		final Collection<KPI> kpis = userDashboardRepo.getKPIsAvailableToAdd();
+		final Collection<KPI> kpis = dashboardRepo.getKPIsAvailableToAdd();
 
-		final JSONOptions jsonOpts = newJSONOpts();
+		final KPIJsonOptions jsonOpts = newKPIJsonOptions();
 		return kpis.stream()
-				.map(kpi -> JsonKPI.of(kpi, jsonOpts))
+				.map(kpi -> toJsonKPI(kpi, jsonOpts))
 				.sorted(Comparator.comparing(JsonKPI::getCaption))
 				.skip(firstRow >= 0 ? firstRow : 0)
 				.limit(pageLength > 0 ? pageLength : Integer.MAX_VALUE)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private JsonKPI toJsonKPI(@NonNull final KPI kpi, @NonNull final KPIJsonOptions jsonOpts)
+	{
+		KPIDataResult data = null;
+		try
+		{
+			data = dashboardDataService.getKPIData(kpi.getId());
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed fetching sample data for {}", kpi, ex);
+		}
+
+		return JsonKPI.of(kpi, data, jsonOpts);
 	}
 
 	@PostMapping("/kpis/new")
@@ -184,131 +233,215 @@ public class DashboardRestController
 		return addDashboardItem(jsonRequest, DashboardWidgetType.TargetIndicator);
 	}
 
-	private final JSONDashboardItem addDashboardItem(final JsonUserDashboardItemAddRequest jsonRequest, final DashboardWidgetType widgetType)
+	private JSONDashboardItem addDashboardItem(final JsonUserDashboardItemAddRequest jsonRequest, final DashboardWidgetType widgetType)
 	{
 		userSession.assertLoggedIn();
 
 		final UserDashboardItemAddRequest request = UserDashboardItemAddRequest.of(jsonRequest, widgetType, userSession.getAD_Language());
-		final int itemId = userDashboardRepo.addUserDashboardItem(getUserDashboardForWriting(), request);
+		final UserDashboardItemId itemId = dashboardRepo.addUserDashboardItem(getUserDashboard().get(), request);
 
 		//
 		// Notify on websocket
-		final UserDashboard dashboard = getUserDashboardForReading();
-		sendEvents(dashboard, JSONDashboardChangedEventsList.builder()
-				.event(JSONDashboardOrderChangedEvent.of(dashboard.getId(), widgetType, dashboard.getItemIds(widgetType)))
-				.build());
+		final UserDashboard dashboard = getUserDashboard().get();
+		websocketSender.sendDashboardItemsOrderChangedEvent(dashboard, widgetType);
 
 		// Return newly created item
-		final UserDashboardItem targetIndicatorItem = dashboard.getItemById(widgetType, itemId);
-		return JSONDashboardItem.of(targetIndicatorItem, newJSONLayoutOptions());
+		final UserDashboardItem item = dashboard.getItemById(widgetType, itemId);
+		final UserDashboardItemDataResponse data = dashboardDataService.getData(dashboard.getId())
+				.getItemData(UserDashboardItemDataRequest.builder()
+						.itemId(item.getId())
+						.widgetType(widgetType)
+						.context(KPIDataContext.ofUserSession(userSession))
+						.build());
+		return JSONDashboardItem.of(item, data, newKPIJsonOptions());
 	}
 
 	@GetMapping("/kpis/{itemId}/data")
-	public KPIDataResult getKPIData( //
-			@PathVariable final int itemId //
-			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
-			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
-			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //
-	)
+	public JsonKPIDataResult getKPIData(
+			@PathVariable("itemId") final int itemId,
+			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case ofValueAndField temporal data") final long fromMillis,
+			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case ofValueAndField temporal data") final long toMillis,
+			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues)
 	{
-		return getKPIData(DashboardWidgetType.KPI, itemId, fromMillis, toMillis, prettyValues);
+		return getKPIData(
+				DashboardWidgetType.KPI,
+				UserDashboardItemId.ofRepoId(itemId),
+				fromMillis > 0 ? Instant.ofEpochMilli(fromMillis) : null,
+				toMillis > 0 ? Instant.ofEpochMilli(toMillis) : null,
+				prettyValues);
 	}
 
 	@GetMapping("/targetIndicators/{itemId}/data")
-	public KPIDataResult getTargetIndicatorData( //
-			@PathVariable final int itemId //
-			, @RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case of temporal data") final long fromMillis //
-			, @RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case of temporal data") final long toMillis //
-			, @RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues //
-	)
+	public JsonKPIDataResult getTargetIndicatorData(
+			@PathVariable("itemId") final int itemId,
+			@RequestParam(name = "fromMillis", required = false, defaultValue = "0") @ApiParam("interval rage start, in case ofValueAndField temporal data") final long fromMillis,
+			@RequestParam(name = "toMillis", required = false, defaultValue = "0") @ApiParam("interval rage end, in case ofValueAndField temporal data") final long toMillis,
+			@RequestParam(name = "prettyValues", required = false, defaultValue = "true") @ApiParam("if true, the server will format the values") final boolean prettyValues)
 	{
-		return getKPIData(DashboardWidgetType.TargetIndicator, itemId, fromMillis, toMillis, prettyValues);
+		return getKPIData(
+				DashboardWidgetType.TargetIndicator,
+				UserDashboardItemId.ofRepoId(itemId),
+				fromMillis > 0 ? Instant.ofEpochMilli(fromMillis) : null,
+				toMillis > 0 ? Instant.ofEpochMilli(toMillis) : null,
+				prettyValues);
 	}
 
-	private final KPIDataResult getKPIData(final DashboardWidgetType widgetType, final int itemId, final long fromMillis, final long toMillis, final boolean prettyValues)
+	private JsonKPIDataResult getKPIData(
+			@NonNull final DashboardWidgetType widgetType,
+			@NonNull final UserDashboardItemId itemId,
+			@Nullable final Instant from,
+			@Nullable final Instant to,
+			final boolean prettyValues)
 	{
 		userSession.assertLoggedIn();
 
-		final UserDashboardItem dashboardItem = getUserDashboardForReading()
-				.getItemById(widgetType, itemId);
+		final UserDashboardId dashboardId = getUserDashboard().get().getId();
+		final UserDashboardItemDataResponse itemData = dashboardDataService
+				.getData(dashboardId)
+				.getItemData(UserDashboardItemDataRequest.builder()
+						.widgetType(widgetType)
+						.itemId(itemId)
+						.context(KPIDataContext.builderFromUserSession(userSession)
+								.from(from)
+								.to(to)
+								.build())
+						.build());
 
-		final KPI kpi = dashboardItem.getKPI();
-		final TimeRange timeRange = dashboardItem.getTimeRangeDefaults().createTimeRange(fromMillis, toMillis);
+		return JsonKPIDataResult.of(
+				itemData,
+				newKPIJsonOptions().withPrettyValues(prettyValues));
+	}
 
-		final JSONOptions jsonOptions = JSONOptions.of(userSession);
-		return KPIDataLoader.newInstance(elasticsearchClient, kpi, jsonOptions)
-				.setTimeRange(timeRange)
-				.setFormatValues(prettyValues)
-				.retrieveData()
-				.setItemId(dashboardItem.getId());
+	private KPIJsonOptions newKPIJsonOptions()
+	{
+		return KPIJsonOptions.builder()
+				.adLanguage(userSession.getAD_Language())
+				.prettyValues(true)
+				.zoneId(userSession.getTimeZone())
+				.debugShowColumnNamesForCaption(userSession.isShowColumnNamesForCaption())
+				.build();
 	}
 
 	@DeleteMapping("/kpis/{itemId}")
 	public void deleteKPIItem(@PathVariable("itemId") final int itemId)
 	{
-		deleteDashboardItem(DashboardWidgetType.KPI, itemId);
+		deleteDashboardItem(DashboardWidgetType.KPI, UserDashboardItemId.ofRepoId(itemId));
 	}
 
 	@DeleteMapping("/targetIndicators/{itemId}")
 	public void deleteTargetIndicatorItem(@PathVariable("itemId") final int itemId)
 	{
-		deleteDashboardItem(DashboardWidgetType.TargetIndicator, itemId);
+		deleteDashboardItem(DashboardWidgetType.TargetIndicator, UserDashboardItemId.ofRepoId(itemId));
 	}
 
-	private void deleteDashboardItem(final DashboardWidgetType widgetType, final int itemId)
+	private void deleteDashboardItem(final DashboardWidgetType widgetType, final UserDashboardItemId itemId)
 	{
 		userSession.assertLoggedIn();
 
-		userDashboardRepo.deleteUserDashboardItem(getUserDashboardForWriting(), widgetType, itemId);
+		dashboardRepo.deleteUserDashboardItem(getUserDashboard().get(), widgetType, itemId);
 
-		//
-		// Notify on websocket
-		final UserDashboard dashboard = getUserDashboardForReading();
-		sendEvents(dashboard, JSONDashboardChangedEventsList.builder()
-				.event(JSONDashboardOrderChangedEvent.of(dashboard.getId(), widgetType, dashboard.getItemIds(widgetType)))
-				.build());
+		websocketSender.sendDashboardItemsOrderChangedEvent(
+				getUserDashboard().get(),
+				widgetType);
+	}
+
+	@GetMapping("/targetIndicators/{itemId}/details")
+	public JsonKPIZoomInfoDetails getTargetIndicatorDetails(
+			@PathVariable("itemId") final int itemRepoId)
+	{
+		userSession.assertLoggedIn();
+
+		final UserDashboardItemId itemId = UserDashboardItemId.ofRepoId(itemRepoId);
+		final KPIZoomIntoDetailsInfo detailsInfo = getKPIZoomDetailsInfo(itemId);
+
+		final ViewId viewId = createView(detailsInfo);
+
+		return JsonKPIZoomInfoDetails.builder()
+				.windowId(viewId.getWindowId().toJson())
+				.viewId(viewId.toJson())
+				.build();
+	}
+
+	private KPIZoomIntoDetailsInfo getKPIZoomDetailsInfo(@NonNull final UserDashboardItemId itemId)
+	{
+		final UserDashboardId dashboardId = getUserDashboard().get().getId();
+		return dashboardDataService
+				.getData(dashboardId)
+				.getZoomIntoDetailsInfo(UserDashboardItemDataRequest.builder()
+						.widgetType(DashboardWidgetType.TargetIndicator)
+						.itemId(itemId)
+						.context(KPIDataContext.ofUserSession(userSession))
+						.build())
+				.orElseThrow(() -> new AdempiereException("Details not available"));
+	}
+
+	private ViewId createView(final KPIZoomIntoDetailsInfo detailsInfo)
+	{
+		final WindowId targetWindowId = getTargetWindowId(detailsInfo);
+
+		return viewRepo.createView(CreateViewRequest.builder(targetWindowId)
+				.addStickyFilters(DocumentFilter.builder()
+						.filterId("userDashboardItem")
+						.caption(detailsInfo.getFilterCaption())
+						.addParameter(DocumentFilterParam.ofSqlWhereClause(detailsInfo.getSqlWhereClause()))
+						.build())
+				.setUseAutoFilters(true)
+				.build())
+				.getViewId();
+	}
+
+	private WindowId getTargetWindowId(final KPIZoomIntoDetailsInfo detailsInfo)
+	{
+		final WindowId targetWindowId = detailsInfo.getTargetWindowId();
+		if (targetWindowId != null)
+		{
+			return targetWindowId;
+		}
+
+		return RecordWindowFinder.findAdWindowId(detailsInfo.getTableName())
+				.map(WindowId::of)
+				.orElseThrow(() -> new AdempiereException("No window available to show the details"));
 	}
 
 	@PatchMapping("/kpis/{itemId}")
 	public JSONDashboardItem changeKPIItem(@PathVariable("itemId") final int itemId, @RequestBody final List<JSONPatchEvent<DashboardItemPatchPath>> events)
 	{
-		return changeDashboardItem(DashboardWidgetType.KPI, itemId, events);
+		return changeDashboardItem(DashboardWidgetType.KPI, UserDashboardItemId.ofRepoId(itemId), events);
 	}
 
 	@PatchMapping("/targetIndicators/{itemId}")
 	public JSONDashboardItem changeTargetIndicatorItem(@PathVariable("itemId") final int itemId, @RequestBody final List<JSONPatchEvent<DashboardItemPatchPath>> events)
 	{
-		return changeDashboardItem(DashboardWidgetType.TargetIndicator, itemId, events);
+		return changeDashboardItem(DashboardWidgetType.TargetIndicator, UserDashboardItemId.ofRepoId(itemId), events);
 	}
 
-	private final JSONDashboardItem changeDashboardItem(final DashboardWidgetType widgetType, final int itemId, final List<JSONPatchEvent<DashboardItemPatchPath>> events)
+	private JSONDashboardItem changeDashboardItem(
+			final DashboardWidgetType widgetType,
+			final UserDashboardItemId itemId,
+			final List<JSONPatchEvent<DashboardItemPatchPath>> events)
 	{
 		userSession.assertLoggedIn();
 
 		//
-		// Chage the dashboard item
+		// Change the dashboard item
 		final UserDashboardItemChangeRequest request = UserDashboardItemChangeRequest.of(widgetType, itemId, userSession.getAD_Language(), events);
-		final UserDashboardItemChangeResult changeResult = userDashboardRepo.changeUserDashboardItem(getUserDashboardForWriting(), request);
+		final UserDashboardItemChangeResult changeResult = dashboardRepo.changeUserDashboardItem(getUserDashboard().get(), request);
 
 		//
 		// Notify on websocket
-		final UserDashboard dashboard = getUserDashboardForReading();
-		{
-			final JSONDashboardChangedEventsListBuilder eventBuilder = JSONDashboardChangedEventsList.builder()
-					.event(JSONDashboardItemChangedEvent.of(changeResult.getDashboardId(), changeResult.getItemId()));
-
-			if (changeResult.isPositionChanged())
-			{
-				eventBuilder.event(JSONDashboardOrderChangedEvent.of(changeResult.getDashboardId(), changeResult.getDashboardWidgetType(), changeResult.getDashboardOrderedItemIds()));
-			}
-
-			sendEvents(dashboard, eventBuilder.build());
-		}
+		final UserDashboard dashboard = getUserDashboard().get();
+		websocketSender.sendDashboardItemChangedEvent(dashboard, changeResult);
 
 		// Return the changed item
 		{
 			final UserDashboardItem item = dashboard.getItemById(widgetType, itemId);
-			return JSONDashboardItem.of(item, newJSONLayoutOptions());
+			final UserDashboardItemDataResponse data = dashboardDataService.getData(dashboard.getId())
+					.getItemData(UserDashboardItemDataRequest.builder()
+							.itemId(item.getId())
+							.widgetType(widgetType)
+							.context(KPIDataContext.ofUserSession(userSession))
+							.build());
+			return JSONDashboardItem.of(item, data, newKPIJsonOptions());
 		}
 	}
 }

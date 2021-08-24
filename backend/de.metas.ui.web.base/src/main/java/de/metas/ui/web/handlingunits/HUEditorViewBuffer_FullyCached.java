@@ -22,7 +22,6 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
-import de.metas.ui.web.handlingunits.HUIdsFilterHelper.HUIdsFilterData;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewRowsOrderBy;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
@@ -86,16 +85,9 @@ class HUEditorViewBuffer_FullyCached implements HUEditorViewBuffer
 		this.viewId = viewId;
 		this.huEditorRepo = huEditorRepo;
 
-		HUIdsFilterData huIdsFilterData = HUIdsFilterHelper.extractFilterDataOrNull(stickyFilters);
-		if (huIdsFilterData == null)
-		{
-			huIdsFilterData = HUIdsFilterData.newEmpty();
-		}
-		else
-		{
-			huIdsFilterData = huIdsFilterData.copy();
-		}
-		this.huIdsFilterData = huIdsFilterData;
+		this.huIdsFilterData = HUIdsFilterHelper.extractFilterData(stickyFilters)
+				.map(HUIdsFilterData::copy)
+				.orElseGet(HUIdsFilterData::acceptAll);
 
 		stickyFiltersWithoutHUIdsFilter = stickyFilters.stream()
 				.filter(HUIdsFilterHelper::isNotHUIdsFilter)

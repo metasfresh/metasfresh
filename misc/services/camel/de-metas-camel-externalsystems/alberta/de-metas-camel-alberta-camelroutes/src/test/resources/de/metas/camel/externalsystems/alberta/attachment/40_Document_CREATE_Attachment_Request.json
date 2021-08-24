@@ -1,0 +1,48 @@
+{
+  "orgCode": "orgCode",
+  "targets": [
+    {
+      "externalReferenceType": "BPartner",
+      "externalReferenceIdentifier": "ext-ALBERTA-document_patientId"
+    },
+    {
+      "externalReferenceType": "UserID",
+      "externalReferenceIdentifier": "ext-ALBERTA-userId"
+    }
+  ],
+  "attachment": {
+    "fileName": "Document name.pdf",
+    "data": "dGhpcyBpcyBhIGR1bW15IHRlc3QgZmlsZQ==",
+    "mimeType": "application/pdf",
+    "tags": [
+      {
+        "name": "alberta_document_id",
+        "value": "document_id"
+      },
+      {
+        "name": "alberta_document_archived",
+        "value": "false"
+      },
+      {
+        "name": "alberta_document_therapyId",
+        "value": "1"
+      },
+      {
+        "name": "alberta_document_therapyTypeId",
+        "value": "11"
+      },
+      {
+        "name": "alberta_document_createdAt",
+        "value": "2015-07-20T15:49:04.123Z"
+      },
+      {
+        "name": "alberta_document_updatedAt",
+        "value": "2015-08-20T15:49:04.456Z"
+      },
+      {
+        "name": "alberta_document_endpoint",
+        "value": "/document"
+      }
+    ]
+  }
+}

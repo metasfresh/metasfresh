@@ -22,8 +22,8 @@
 
 package de.metas.edi.esb.remadvimport.ecosio;
 
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponse;
-import de.metas.common.rest_api.remittanceadvice.JsonCreateRemittanceAdviceResponseItem;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponse;
+import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceResponseItem;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 

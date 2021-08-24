@@ -18,6 +18,7 @@ import com.google.common.collect.ImmutableSet;
 
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.esr.api.IESRBPBankAccountDAO;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -69,7 +70,8 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.create()
 				.list();
 	}
-
+	
+	
 	/**
 	 * Explode the given {@code esrString} into a number of syntactically equivalent strings that can be matched against {@code C_BP_BankAccount.ESR_RenderedAccountNo}.
 	 * <p>
@@ -135,7 +137,7 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.list(I_ESR_PostFinanceUserNumber.class);
 	}
 
-	private static String MSG_NOT_ESR_ACCOUNT_FOR_ORG = "NoESRAccountForOrganiazation";
+	private static  AdMessageKey MSG_NOT_ESR_ACCOUNT_FOR_ORG =  AdMessageKey.of("NoESRAccountForOrganiazation");
 
 	@Override
 	public final List<I_C_BP_BankAccount> fetchOrgEsrAccounts(@NonNull final I_AD_Org org)
@@ -184,4 +186,29 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				});
 		throw new AdempiereException(msg);
 	}
+	
+	@Override
+	public final List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(@NonNull final String IBAN)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+
+		final IQueryFilter<I_C_BP_BankAccount> esrAccountmatichingIBANorQR_IBAN = queryBL.createCompositeQueryFilter(I_C_BP_BankAccount.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, IBAN)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, IBAN);
+			
+				
+
+		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true)
+				.filter(esrAccountmatichingIBANorQR_IBAN)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create()
+				.list();
+	}
+	
 }

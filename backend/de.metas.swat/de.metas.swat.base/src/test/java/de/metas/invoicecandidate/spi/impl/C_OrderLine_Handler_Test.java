@@ -19,6 +19,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
 import de.metas.organization.OrgId;
@@ -203,7 +204,7 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						OrgId.ofRepoId(order1.getAD_Org_ID()),
 						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
 						order1.getC_BPartner_Location_ID(),
-						order1.isSOTrx()))
+						SOTrx.ofBoolean(order1.isSOTrx())))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 

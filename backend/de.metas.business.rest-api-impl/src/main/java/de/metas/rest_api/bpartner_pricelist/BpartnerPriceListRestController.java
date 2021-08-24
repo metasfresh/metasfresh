@@ -1,12 +1,13 @@
 package de.metas.rest_api.bpartner_pricelist;
 
-import static de.metas.common.rest_api.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v1.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 
 import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.web.MetasfreshRestAPIConstants;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.metas.Profiles;
 import de.metas.lang.SOTrx;
-import de.metas.rest_api.bpartner.impl.BpartnerRestController;
 import de.metas.rest_api.bpartner_pricelist.command.GetPriceListCommand;
 import de.metas.rest_api.bpartner_pricelist.response.JsonResponsePriceList;
 import de.metas.rest_api.utils.IdentifierString;
@@ -50,7 +50,10 @@ import lombok.NonNull;
  * #L%
  */
 
-@RequestMapping(BpartnerRestController.ENDPOINT)
+@RequestMapping(value = {
+		MetasfreshRestAPIConstants.ENDPOINT_API_DEPRECATED + "/bpartner",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V1 + "/bpartner",
+		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/bpartner" })
 @RestController
 @Profile(Profiles.PROFILE_App)
 public class BpartnerPriceListRestController

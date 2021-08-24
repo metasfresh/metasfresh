@@ -83,7 +83,7 @@ import lombok.NonNull;
  */
 class ClientSetup
 {
-	public static final ClientSetup newInstance(final Properties ctx)
+	public static ClientSetup newInstance(final Properties ctx)
 	{
 		return new ClientSetup(ctx);
 	}
@@ -97,8 +97,6 @@ class ClientSetup
 	private final transient IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final transient IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final transient ILocationBL locationBL = Services.get(ILocationBL.class);
-
-	private static final OrgId AD_Org_ID_Main = OrgId.ofRepoId(1000000);
 
 	// Parameters
 	private final Properties _ctx;
@@ -128,15 +126,15 @@ class ClientSetup
 			adClientInfo = clientDAO.retrieveClientInfo(getCtx(), adClient.getAD_Client_ID());
 			InterfaceWrapperHelper.setTrxName(adClientInfo, ITrx.TRXNAME_ThreadInherited);
 			//
-			adOrg = orgDAO.getById(AD_Org_ID_Main);
+			adOrg = orgDAO.getById(OrgId.MAIN);
 			InterfaceWrapperHelper.setTrxName(adOrg, ITrx.TRXNAME_ThreadInherited);
 			//
-			final OrgInfo adOrgInfo = orgDAO.getOrgInfoByIdInTrx(AD_Org_ID_Main);
+			final OrgInfo adOrgInfo = orgDAO.getOrgInfoByIdInTrx(OrgId.MAIN);
 			adOrgInfoChangeRequest = OrgInfoUpdateRequest.builder()
 					.orgId(OrgId.ofRepoId(adOrg.getAD_Org_ID()));
 			//
 			orgBPartner = partnerOrgBL.retrieveLinkedBPartner(adOrg);
-			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationById(adOrgInfo.getOrgBPartnerLocationId());
+			orgBPartnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(adOrgInfo.getOrgBPartnerLocationId());
 			orgContact = bpartnerDAO.retrieveDefaultContactOrNull(orgBPartner, I_AD_User.class);
 			Check.assumeNotNull(orgContact, "orgContact not null"); // TODO: create if does not exist
 			

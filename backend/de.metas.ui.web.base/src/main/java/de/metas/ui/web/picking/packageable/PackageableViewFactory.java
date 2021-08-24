@@ -1,14 +1,10 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.ui.web.picking.PickingConstants;
+import de.metas.ui.web.picking.packageable.filters.ProductBarcodeFilterData;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
@@ -19,7 +15,15 @@ import de.metas.ui.web.view.descriptor.IncludedViewLayout;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAwares;
+import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -47,18 +51,16 @@ import lombok.NonNull;
  * Factory class for {@link PackageableView} intances.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ViewFactory(windowId = PickingConstants.WINDOWID_PickingView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PackageableViewFactory implements IViewFactory
 {
 	private final PackageableRowsRepository pickingViewRepo;
-
 	private final PickingCandidateService pickingCandidateService;
 
+	private static final String VIEWPARAM_ProductBarcodeFilterData = "ProductBarcodeFilterData";
+
 	/**
-	 *
-	 * @param pickingViewRepo
 	 * @param pickingCandidateService when a new view is created, this stateless instance is given to that view
 	 */
 	public PackageableViewFactory(
@@ -80,8 +82,8 @@ public class PackageableViewFactory implements IViewFactory
 				.setCaption("Picking")
 				//
 				.setIncludedViewLayout(IncludedViewLayout.builder()
-						.openOnSelect(true)
-						.build())
+											   .openOnSelect(true)
+											   .build())
 				//
 				.addElementsFromViewRowClass(PackageableRow.class, viewDataType)
 				//
@@ -107,15 +109,34 @@ public class PackageableViewFactory implements IViewFactory
 				.viewId(viewId)
 				.rowsData(rowsData)
 				.pickingCandidateService(pickingCandidateService)
+				.barcodeFilterData(extractProductBarcodeFilterData(request).orElse(null))
 				.build();
 	}
 
-	private static Set<ShipmentScheduleId> extractShipmentScheduleIds(final CreateViewRequest request)
+	@Builder(builderMethodName = "createViewRequest", builderClassName = "$CreateViewRequestBuilder")
+	private static CreateViewRequest createCreateViewRequest(
+			@NonNull final List<ShipmentScheduleId> shipmentScheduleIds,
+			@Nullable final ProductBarcodeFilterData barcodeFilterData)
+	{
+		Check.assumeNotEmpty(shipmentScheduleIds, "shipmentScheduleIds");
+
+		return CreateViewRequest.builder(PickingConstants.WINDOWID_PickingView)
+				.setFilterOnlyIds(RepoIdAwares.asRepoIds(shipmentScheduleIds))
+				.setParameter(VIEWPARAM_ProductBarcodeFilterData, barcodeFilterData)
+				.build();
+	}
+
+	private static Set<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final CreateViewRequest request)
 	{
 		return request.getFilterOnlyIds()
 				.stream()
 				.map(ShipmentScheduleId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static Optional<ProductBarcodeFilterData> extractProductBarcodeFilterData(@NonNull final CreateViewRequest request)
+	{
+		return Optional.ofNullable(request.getParameterAs(VIEWPARAM_ProductBarcodeFilterData, ProductBarcodeFilterData.class));
 	}
 
 }

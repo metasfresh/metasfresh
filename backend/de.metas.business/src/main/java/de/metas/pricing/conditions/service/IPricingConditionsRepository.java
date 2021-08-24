@@ -5,6 +5,7 @@ import java.util.Collection;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_DiscountSchemaBreak;
 
+import de.metas.pricing.conditions.CopyDiscountSchemaBreaksRequest;
 import de.metas.pricing.conditions.PricingConditions;
 import de.metas.pricing.conditions.PricingConditionsBreak;
 import de.metas.pricing.conditions.PricingConditionsId;
@@ -34,7 +35,7 @@ public interface IPricingConditionsRepository extends ISingletonService
 
 	void copyDiscountSchemaBreaks(IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter, PricingConditionsId toPricingConditionsId);
 
-	void copyDiscountSchemaBreaksWithProductId(IQueryFilter<I_M_DiscountSchemaBreak> sourceFilter, PricingConditionsId toPricingConditionsId, ProductId toProductId, boolean allowCopyToSameSchema);
+	void copyDiscountSchemaBreaksWithProductId(CopyDiscountSchemaBreaksRequest request);
 
 	boolean isSingleProductId(IQueryFilter<I_M_DiscountSchemaBreak> queryFilter);
 

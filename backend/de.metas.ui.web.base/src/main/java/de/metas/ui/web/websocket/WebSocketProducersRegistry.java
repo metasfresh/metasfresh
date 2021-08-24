@@ -1,30 +1,29 @@
 package de.metas.ui.web.websocket;
 
+import com.google.common.base.MoreObjects;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.datatypes.json.JSONOptions;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.util.concurrent.CustomizableThreadFactory;
+import org.slf4j.Logger;
+import org.springframework.beans.factory.BeanFactoryUtils;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import javax.annotation.PostConstruct;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-import javax.annotation.PostConstruct;
-
-import org.adempiere.util.concurrent.CustomizableThreadFactory;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.BeanFactoryUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Component;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.datatypes.json.JSONOptions;
-import de.metas.util.Check;
-import lombok.NonNull;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -50,7 +49,7 @@ import lombok.NonNull;
 
 /**
  * {@link WebSocketProducer}s registry.
- *
+ * <p>
  * This component is responsible for:
  * <ul>
  * <li>automatically registering all {@link WebSocketProducerFactory} implementations which were found in spring context
@@ -58,28 +57,29 @@ import lombok.NonNull;
  * </ul>
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Component
 public final class WebSocketProducersRegistry
 {
 	private static final Logger logger = LogManager.getLogger(WebSocketProducersRegistry.class);
+	private final WebsocketSender websocketSender;
+	private final ApplicationContext context;
 
 	private final ScheduledExecutorService scheduler;
-	@Autowired
-	private WebsocketSender websocketSender;
-	@Autowired
-	private ApplicationContext context;
 
 	private final ConcurrentHashMap<String, WebSocketProducerFactory> _producerFactoriesByTopicNamePrefix = new ConcurrentHashMap<>();
 	private final ConcurrentHashMap<WebsocketTopicName, WebSocketProducerInstance> _producersByTopicName = new ConcurrentHashMap<>();
 
-	public WebSocketProducersRegistry()
+	public WebSocketProducersRegistry(
+			@NonNull final WebsocketSender websocketSender,
+			@NonNull final ApplicationContext context)
 	{
 		scheduler = Executors.newSingleThreadScheduledExecutor(CustomizableThreadFactory.builder()
 				.setThreadNamePrefix(getClass().getName())
 				.setDaemon(true)
 				.build());
+		this.websocketSender = websocketSender;
+		this.context = context;
 	}
 
 	@PostConstruct
@@ -87,7 +87,7 @@ public final class WebSocketProducersRegistry
 	{
 		BeanFactoryUtils.beansOfTypeIncludingAncestors(context, WebSocketProducerFactory.class)
 				.values()
-				.forEach(producerFactory -> registerProducerFactory(producerFactory));
+				.forEach(this::registerProducerFactory);
 
 	}
 
@@ -115,6 +115,7 @@ public final class WebSocketProducersRegistry
 		logger.info("Registered producer factory: {}", producerFactory);
 	}
 
+	@Nullable
 	private WebSocketProducerFactory getWebSocketProducerFactoryOrNull(final WebsocketTopicName topicName)
 	{
 		if (topicName == null)
@@ -126,7 +127,7 @@ public final class WebSocketProducersRegistry
 				.entrySet()
 				.stream()
 				.filter(topicPrefixAndFactory -> topicName.startsWith(topicPrefixAndFactory.getKey()))
-				.map(topicPrefixAndFactory -> topicPrefixAndFactory.getValue())
+				.map(Map.Entry::getValue)
 				.findFirst()
 				.orElse(null);
 
@@ -137,6 +138,7 @@ public final class WebSocketProducersRegistry
 		return _producersByTopicName.get(topicName);
 	}
 
+	@Nullable
 	private WebSocketProducerInstance getOrCreateWebSocketProducerOrNull(final WebsocketTopicName topicName)
 	{
 		final WebSocketProducerInstance existingProducer = _producersByTopicName.get(topicName);
@@ -215,6 +217,16 @@ public final class WebSocketProducersRegistry
 		}
 	}
 
+	public <T extends WebSocketProducer> Stream<T> streamActiveProducersOfType(
+			@NonNull final Class<T> producerType)
+	{
+		return _producersByTopicName.values()
+				.stream()
+				.filter(producerInstance -> producerType.isInstance(producerInstance.producer))
+				.filter(producerInstance -> producerInstance.hasActiveSubscriptions())
+				.map(producerInstance -> producerType.cast(producerInstance.producer));
+	}
+
 	private static final class WebSocketProducerInstance
 	{
 		private final WebsocketTopicName topicName;
@@ -223,7 +235,7 @@ public final class WebSocketProducersRegistry
 		private final WebsocketSender websocketSender;
 
 		private final HashSet<WebsocketSubscriptionId> activeSubscriptionIds = new HashSet<>();
-		private ScheduledFuture<?> scheduledFuture;
+		@Nullable private ScheduledFuture<?> scheduledFuture;
 
 		private WebSocketProducerInstance(
 				@NonNull final WebsocketTopicName topicName,
@@ -250,6 +262,8 @@ public final class WebSocketProducersRegistry
 		{
 			activeSubscriptionIds.add(subscriptionId);
 			logger.trace("{}: session {} subscribed", this, subscriptionId);
+
+			producer.onNewSubscription(subscriptionId);
 
 			startIfSubscriptions();
 		}
@@ -295,9 +309,14 @@ public final class WebSocketProducersRegistry
 			}
 		}
 
+		public synchronized boolean hasActiveSubscriptions()
+		{
+			return !activeSubscriptionIds.isEmpty();
+		}
+
 		private void stopIfNoSubscription()
 		{
-			if (!activeSubscriptionIds.isEmpty())
+			if (hasActiveSubscriptions())
 			{
 				return;
 			}
@@ -325,10 +344,19 @@ public final class WebSocketProducersRegistry
 			try
 			{
 				final JSONOptions jsonOpts = JSONOptions.newInstance();
-				final Object event = producer.produceEvent(jsonOpts);
-				websocketSender.convertAndSend(topicName, event);
-
-				logger.trace("Event sent to {}: {}", topicName, event);
+				final List<?> events = producer.produceEvents(jsonOpts);
+				if (events != null && !events.isEmpty())
+				{
+					for (final Object event : events)
+					{
+						websocketSender.convertAndSend(topicName, event);
+						logger.trace("Event sent to {}: {}", topicName, event);
+					}
+				}
+				else
+				{
+					logger.trace("Got no events from {}", producer);
+				}
 			}
 			catch (final Exception ex)
 			{

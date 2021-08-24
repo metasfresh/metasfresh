@@ -49,5 +49,7 @@ public enum JsonBPRelationRole
 	@ApiEnum("Pflegedienst / Nursing service")
 	NursingService,
 	@ApiEnum("Payer / Payer")
-	Payer
+	Payer,
+	@ApiEnum("Apotheke / Pharmacy")
+	Pharmacy
 }

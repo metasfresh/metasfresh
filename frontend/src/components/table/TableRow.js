@@ -305,21 +305,20 @@ class TableRow extends PureComponent {
         },
         () => {
           if (focus) {
-            const elem = document.activeElement.getElementsByClassName(
-              'js-input-field'
-            )[0];
+            const elem =
+              document.activeElement.getElementsByClassName(
+                'js-input-field'
+              )[0];
 
             if (elem) {
               mark && elem.select();
               elem.focus();
             }
 
-            const disabled = document.activeElement.querySelector(
-              '.input-disabled'
-            );
-            const readonly = document.activeElement.querySelector(
-              '.input-readonly'
-            );
+            const disabled =
+              document.activeElement.querySelector('.input-disabled');
+            const readonly =
+              document.activeElement.querySelector('.input-readonly');
 
             if (disabled || readonly) {
               !listenOnKeys && changeListenOnTrue();
@@ -582,13 +581,8 @@ class TableRow extends PureComponent {
    * @param {string} huType - type of the row (CU/TU etc) no generate proper icon
    */
   renderTree = (huType) => {
-    const {
-      indent,
-      lastChild,
-      includedDocuments,
-      collapsed,
-      collapsible,
-    } = this.props;
+    const { indent, lastChild, includedDocuments, collapsed, collapsible } =
+      this.props;
 
     let indentation = [];
 

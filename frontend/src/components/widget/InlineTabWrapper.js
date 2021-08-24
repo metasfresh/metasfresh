@@ -21,6 +21,7 @@ import { connect } from 'react-redux';
 import {
   createWindow,
   updateDataValidStatus,
+  updateDataIncludedTabsInfo,
 } from '../../actions/WindowActions';
 import {
   fetchInlineTabWrapperData,
@@ -97,6 +98,7 @@ class InlineTabWrapper extends PureComponent {
       inlineTabBranch,
       updateDataValidStatus,
       isDocumentValid,
+      updateDataIncludedTabsInfo,
     } = this.props;
     // if item is invalid we will remove it
     const newEntry = inlineTabBranch[`${windowId}_${tabId}_${rowId}`];
@@ -111,9 +113,11 @@ class InlineTabWrapper extends PureComponent {
         // perform deletion
         deleteRequest('window', windowId, docId, tabId, rowId).then(
           (deleteResponse) => {
-            let { validStatus } = deleteResponse.data[0];
+            let { validStatus, includedTabsInfo } = deleteResponse.data[0];
             updateDataValidStatus('master', validStatus || { valid: true });
             this.updateTable(true);
+            includedTabsInfo &&
+              updateDataIncludedTabsInfo('master', includedTabsInfo);
           }
         );
       } else {
@@ -145,15 +149,16 @@ class InlineTabWrapper extends PureComponent {
    * @summanry - function used to get the order from the `elements` array of the `inlineTab`
    *             currently we are getting the first four. In future development this might be refactored for
    *             more specific ordering. This is the reason I did not even put that in a constant.
+   *             TODO: Ideally the BE should send a template to be followed (currently we take the first 4)
    * @param {array} inlineTab
    */
-  getFieldsDisplayOrder = (inlineTab) => {
-    const { elements } = inlineTab;
+  getFieldsDisplayOrder = (elements) => {
     const orderFields = [];
     elements.map((elementItem, index) => {
       if (index < 4) orderFields.push(elementItem.fields[0].field);
       return elementItem;
     });
+
     return orderFields;
   };
 
@@ -172,19 +177,23 @@ class InlineTabWrapper extends PureComponent {
       addNewFormVisible,
       addNewData,
       rowId,
-      inlineTab: { caption, tabId },
+      inlineTab: { caption, tabId, elements },
       dataId,
       showMore,
+      includedTabsInfo,
     } = this.props;
+
+    // flag used to show or not the button that will render the form that allows new form creation
+    const allowCreateNew =
+      includedTabsInfo && includedTabsInfo.allowCreateNew ? true : false;
+
+    // flag used to show or not the delete button, also doing some extra safety check to make sure the correct boolean value is set
+    const allowDelete =
+      includedTabsInfo && includedTabsInfo.allowDelete ? true : false;
 
     if (!tabData) return false;
 
-    const inlineFieldsDisplayOrder = [
-      'Name',
-      'Address',
-      'Firstname',
-      'Lastname',
-    ]; // this.getFieldsDisplayOrder(inlineTab);
+    const inlineFieldsDisplayOrder = this.getFieldsDisplayOrder(elements);
 
     return (
       <div
@@ -224,6 +233,7 @@ class InlineTabWrapper extends PureComponent {
                   key={`${index}_${tabItem.rowId}`}
                   fieldsOrder={inlineFieldsDisplayOrder}
                   updateTable={this.updateTable}
+                  allowDelete={allowDelete}
                   {...tabItem}
                 />
               ) : (
@@ -236,7 +246,7 @@ class InlineTabWrapper extends PureComponent {
         <div>
           <div>
             {/* `Add New` - button */}
-            {!addNewFormVisible && (
+            {!addNewFormVisible && allowCreateNew && (
               <div className="inlinetab-action-button">
                 <button
                   className="btn btn-meta-outline-secondary btn-distance btn-sm"
@@ -314,6 +324,8 @@ InlineTabWrapper.propTypes = {
   setInlineTabShowMore: PropTypes.func.isRequired,
   updateDataValidStatus: PropTypes.func.isRequired,
   isDocumentValid: PropTypes.bool.isRequired,
+  includedTabsInfo: PropTypes.object,
+  updateDataIncludedTabsInfo: PropTypes.func,
 };
 
 /**
@@ -345,6 +357,10 @@ const mapStateToProps = (state, props) => {
   const addNewData = inlineTab[`${windowId}_${tabId}_${rowId}`];
   const inlineTabBranch = inlineTab;
   const isDocumentValid = master.validStatus ? master.validStatus.valid : false;
+  const includedTabsInfo =
+    master.includedTabsInfo && master.includedTabsInfo[tabId]
+      ? master.includedTabsInfo[tabId]
+      : null;
 
   return {
     tabData,
@@ -354,15 +370,14 @@ const mapStateToProps = (state, props) => {
     showMore,
     inlineTabBranch, // redux branch
     isDocumentValid,
+    includedTabsInfo, // this holds the allowCreateNew, allowDelete, stale props
   };
 };
-export default connect(
-  mapStateToProps,
-  {
-    fetchInlineTabWrapperData,
-    createWindow,
-    setInlineTabAddNew,
-    setInlineTabShowMore,
-    updateDataValidStatus,
-  }
-)(onClickOutside(InlineTabWrapper));
+export default connect(mapStateToProps, {
+  fetchInlineTabWrapperData,
+  createWindow,
+  setInlineTabAddNew,
+  setInlineTabShowMore,
+  updateDataValidStatus,
+  updateDataIncludedTabsInfo,
+})(onClickOutside(InlineTabWrapper));
