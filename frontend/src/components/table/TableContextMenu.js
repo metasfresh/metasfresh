@@ -163,7 +163,7 @@ class TableContextMenu extends Component {
       docId,
     } = this.props;
 
-    const { contextMenu, display } = this.state;
+    const { contextMenu } = this.state;
     const positionY =
       contextMenu.y > TBL_CONTEXT_MENU_Y_MAX
         ? contextMenu.y - TBL_CONTEXT_Y_OFFSET
