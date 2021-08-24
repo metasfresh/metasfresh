@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inoutcandidate.ShipmentScheduleId;
@@ -48,6 +49,8 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 public class M_ShipmentSchedule_StepDef
 {
@@ -113,6 +116,16 @@ public class M_ShipmentSchedule_StepDef
 				.isTrue();
 	}
 
+	@Then("the shipment-schedule is closed")
+	public void assertShipmentScheduleIsClosed(@NonNull final DataTable dataTable) throws JsonProcessingException
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			assertShipmentScheduleIsClosed(tableRow);
+		}
+	}
+
 	private ShipmentScheduleQueries createShipmentScheduleQueries(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
@@ -125,6 +138,13 @@ public class M_ShipmentSchedule_StepDef
 
 			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 			queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID, orderLine.getC_OrderLine_ID());
+
+			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
+
+			if (warehouseId > 0)
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID, warehouseId);
+			}
 
 			final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
 
@@ -210,9 +230,12 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
-	@Then("the M_ShipmentSchedules have these properties:")
-	public void theShipmentSchedulesHaveTheseProperties(@NonNull final DataTable dataTable)
+	private void assertShipmentScheduleIsClosed(@NonNull final Map<String, String> tableRow)
 	{
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
+		assertNotNull(shipmentSchedule);
+		assertEquals(shipmentSchedule.isClosed(), Boolean.TRUE);
 	}
 }

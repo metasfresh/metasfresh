@@ -1,5 +1,4 @@
 import React from 'react';
-import * as Immutable from 'immutable';
 import { mount, shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
@@ -36,22 +35,16 @@ const createStore = function (state = {}) {
   return res;
 };
 
-const createInitialProps = function(
+const createInitialProps = function (
   basicFixtures = filtersFixtures.data1,
   additionalProps = {}
 ) {
-  const initialValuesNulled = additionalProps.initialValuesNulled
-    ? additionalProps.initialValuesNulled
-    : basicFixtures.initialValuesNulled;
-
   return {
     ...basicFixtures,
-    resetInitialValues: jest.fn(),
     updateDocList: jest.fn(),
     ...additionalProps,
     filterData,
     filtersActive,
-    initialValuesNulled: Immutable.Map(initialValuesNulled),
   };
 };
 

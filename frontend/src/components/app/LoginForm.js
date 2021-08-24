@@ -2,7 +2,6 @@ import counterpart from 'counterpart';
 import Moment from 'moment';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { List } from 'immutable';
 import { withRouter } from 'react-router-dom';
 import classnames from 'classnames';
 
@@ -35,10 +34,6 @@ class LoginForm extends Component {
     };
   }
 
-  /**
-   * @method componentDidMount
-   * @summary ToDo: Describe the method.
-   */
   componentDidMount() {
     const { path } = this.props;
 
@@ -47,10 +42,6 @@ class LoginForm extends Component {
     }
   }
 
-  /**
-   * @method UNSAFE_componentWillUpdate
-   * @summary ToDo: Describe the method.
-   */
   UNSAFE_componentWillUpdate(nextProps, nextState) {
     if (this.roleSelector && nextState.roleSelect) {
       this.roleSelector.instanceRef.dropdown.focus();
@@ -157,12 +148,12 @@ class LoginForm extends Component {
         if (response.data.loginComplete) {
           return this.handleSuccess();
         }
-        const roles = List(response.data.roles);
+        const roles = response.data.roles;
 
         this.setState({
           roleSelect: true,
           roles,
-          role: roles.get(0),
+          role: roles[0],
         });
       })
       .then(() => {
@@ -276,10 +267,6 @@ class LoginForm extends Component {
     this.setState({ dropdownFocused: false });
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method.
-   */
   render() {
     const {
       roleSelect,

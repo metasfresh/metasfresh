@@ -42,9 +42,9 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo, matchingESRAccountNumbers);
 
 		final IQueryBuilder<I_C_BP_BankAccount> esrPostalFinanceUserESRRenderedAccountNo = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
-				.andCollectChildren(I_ESR_PostFinanceUserNumber.COLUMN_C_BP_BankAccount_ID, I_ESR_PostFinanceUserNumber.class)
+				.andCollectChildren(I_ESR_PostFinanceUserNumber.COLUMNNAME_C_BP_BankAccount_ID, I_ESR_PostFinanceUserNumber.class)
 				.addInArrayFilter(I_C_BP_BankAccount.COLUMNNAME_ESR_RenderedAccountNo, matchingESRAccountNumbers)
-				.andCollect(I_ESR_PostFinanceUserNumber.COLUMN_C_BP_BankAccount_ID, I_C_BP_BankAccount.class);
+				.andCollect(I_ESR_PostFinanceUserNumber.COLUMNNAME_C_BP_BankAccount_ID, I_C_BP_BankAccount.class);
 
 		final IQueryFilter<I_C_BP_BankAccount> esrAccountNoFromBankAcctOrESRPostFinanceUser = queryBL.createCompositeQueryFilter(I_C_BP_BankAccount.class)
 				.setJoinOr()

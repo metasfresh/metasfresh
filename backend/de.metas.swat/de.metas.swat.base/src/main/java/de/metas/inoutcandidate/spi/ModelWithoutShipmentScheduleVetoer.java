@@ -29,7 +29,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 
 /**
  * Implementors of this interface can be registered using
- * {@link IShipmentScheduleHandlerBL#registerListener(ModelWithoutInOutCandidateListener)}. They are notified if a given
+ * {@link IShipmentScheduleHandlerBL#registerVetoer(ModelWithoutShipmentScheduleVetoer, String)} . They are notified if a given
  * {@link ShipmentScheduleHandler} wants to create a {@link I_M_ShipmentSchedule} for a given data record and they can veto
  * that creation.
  *
@@ -57,8 +57,6 @@ public interface ModelWithoutShipmentScheduleVetoer
 	 * @param model
 	 *            the record that the given
 	 *            <code>handler</code> identified as "lacking a shipment schedule". The implementor can assume that this model can be accessed using {@link InterfaceWrapperHelper}.
-	 * @param handler
-	 *            the handler that found the model and would also create the shipment schedule(s)
 	 * @return {@link OnMissingCandidate#I_VETO} if there are reasons that no <code>I_M_ShipmentSchedule</code>
 	 *         should be created. Each implementation can assume that no <code>I_M_ShipmentSchedule</code> is create if
 	 *         at least one

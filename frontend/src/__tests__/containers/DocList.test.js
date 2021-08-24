@@ -126,7 +126,7 @@ describe('DocList', () => {
     const props = propsFixtures.props1;
     const history = createMemoryHistory({ initialEntries: [`/window/${props.windowId}`]} );
 
-    it('renders without errors and loads quick actions', async (done) => {
+    it('renders without errors and loads quick actions', async () => {
       const initialState = createInitialState();
       const store = createStore(
         rootReducer,
@@ -291,7 +291,6 @@ describe('DocList', () => {
         });
       });   
 
-      done();
     }, 20000);
   });
 });

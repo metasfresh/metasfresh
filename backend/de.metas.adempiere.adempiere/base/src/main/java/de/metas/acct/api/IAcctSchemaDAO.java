@@ -22,19 +22,17 @@ package de.metas.acct.api;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.organization.OrgId;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AcctSchema;
 import org.compiere.model.I_C_AcctSchema_Default;
 import org.compiere.model.I_C_AcctSchema_GL;
 
-import de.metas.organization.OrgId;
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
 
 public interface IAcctSchemaDAO extends ISingletonService
 {

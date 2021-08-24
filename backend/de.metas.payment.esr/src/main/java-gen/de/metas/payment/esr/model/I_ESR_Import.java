@@ -1,18 +1,20 @@
 package de.metas.payment.esr.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ESR_Import
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_ESR_Import 
 {
 
-    /** TableName=ESR_Import */
-    public static final String Table_Name = "ESR_Import";
+	String Table_Name = "ESR_Import";
 
-    /** AD_Table_ID=540409 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540409 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -22,7 +24,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_AttachmentEntry_ID (int AD_AttachmentEntry_ID);
+	void setAD_AttachmentEntry_ID (int AD_AttachmentEntry_ID);
 
 	/**
 	 * Get Attachment.
@@ -31,12 +33,10 @@ public interface I_ESR_Import
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_AttachmentEntry_ID();
+	int getAD_AttachmentEntry_ID();
 
-    /** Column definition for AD_AttachmentEntry_ID */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_AD_AttachmentEntry_ID = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "AD_AttachmentEntry_ID", null);
-    /** Column name AD_AttachmentEntry_ID */
-    public static final String COLUMNNAME_AD_AttachmentEntry_ID = "AD_AttachmentEntry_ID";
+	ModelColumn<I_ESR_Import, Object> COLUMN_AD_AttachmentEntry_ID = new ModelColumn<>(I_ESR_Import.class, "AD_AttachmentEntry_ID", null);
+	String COLUMNNAME_AD_AttachmentEntry_ID = "AD_AttachmentEntry_ID";
 
 	/**
 	 * Get Client.
@@ -46,10 +46,9 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -59,7 +58,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -69,10 +68,9 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Partner Bank Account.
@@ -82,7 +80,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
+	void setC_BP_BankAccount_ID (int C_BP_BankAccount_ID);
 
 	/**
 	 * Get Partner Bank Account.
@@ -92,10 +90,9 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BP_BankAccount_ID();
+	int getC_BP_BankAccount_ID();
 
-    /** Column name C_BP_BankAccount_ID */
-    public static final String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
+	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
 	 * Get Created.
@@ -105,12 +102,10 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_ESR_Import, Object> COLUMN_Created = new ModelColumn<>(I_ESR_Import.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -120,35 +115,32 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Daten-Typ.
-	 * Art der Daten
+	 * Set Data Type.
+	 * Type of data
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDataType (java.lang.String DataType);
+	void setDataType (@Nullable java.lang.String DataType);
 
 	/**
-	 * Get Daten-Typ.
-	 * Art der Daten
+	 * Get Data Type.
+	 * Type of data
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDataType();
+	@Nullable java.lang.String getDataType();
 
-    /** Column definition for DataType */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_DataType = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "DataType", null);
-    /** Column name DataType */
-    public static final String COLUMNNAME_DataType = "DataType";
+	ModelColumn<I_ESR_Import, Object> COLUMN_DataType = new ModelColumn<>(I_ESR_Import.class, "DataType", null);
+	String COLUMNNAME_DataType = "DataType";
 
 	/**
 	 * Set Document Date.
@@ -157,7 +149,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDateDoc (java.sql.Timestamp DateDoc);
+	void setDateDoc (java.sql.Timestamp DateDoc);
 
 	/**
 	 * Get Document Date.
@@ -166,12 +158,10 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateDoc();
+	java.sql.Timestamp getDateDoc();
 
-    /** Column definition for DateDoc */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_DateDoc = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "DateDoc", null);
-    /** Column name DateDoc */
-    public static final String COLUMNNAME_DateDoc = "DateDoc";
+	ModelColumn<I_ESR_Import, Object> COLUMN_DateDoc = new ModelColumn<>(I_ESR_Import.class, "DateDoc", null);
+	String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
 	 * Set Description.
@@ -180,7 +170,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -189,83 +179,75 @@ public interface I_ESR_Import
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
+	ModelColumn<I_ESR_Import, Object> COLUMN_Description = new ModelColumn<>(I_ESR_Import.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Gesamtbetrag.
+	 * Set Sum Control Amount.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setESR_Control_Amount (java.math.BigDecimal ESR_Control_Amount);
+	void setESR_Control_Amount (@Nullable BigDecimal ESR_Control_Amount);
 
 	/**
-	 * Get Gesamtbetrag.
+	 * Get Sum Control Amount.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getESR_Control_Amount();
+	BigDecimal getESR_Control_Amount();
 
-    /** Column definition for ESR_Control_Amount */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Control_Amount = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "ESR_Control_Amount", null);
-    /** Column name ESR_Control_Amount */
-    public static final String COLUMNNAME_ESR_Control_Amount = "ESR_Control_Amount";
+	ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Control_Amount = new ModelColumn<>(I_ESR_Import.class, "ESR_Control_Amount", null);
+	String COLUMNNAME_ESR_Control_Amount = "ESR_Control_Amount";
 
 	/**
-	 * Set Anzahl Transaktionen.
+	 * Set Control Qty Transactions.
 	 * Der Wert wurde aus der Eingabedatei eingelesen (falls dort bereit gestellt)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setESR_Control_Trx_Qty (java.math.BigDecimal ESR_Control_Trx_Qty);
+	void setESR_Control_Trx_Qty (@Nullable BigDecimal ESR_Control_Trx_Qty);
 
 	/**
-	 * Get Anzahl Transaktionen.
+	 * Get Control Qty Transactions.
 	 * Der Wert wurde aus der Eingabedatei eingelesen (falls dort bereit gestellt)
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getESR_Control_Trx_Qty();
+	BigDecimal getESR_Control_Trx_Qty();
 
-    /** Column definition for ESR_Control_Trx_Qty */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Control_Trx_Qty = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "ESR_Control_Trx_Qty", null);
-    /** Column name ESR_Control_Trx_Qty */
-    public static final String COLUMNNAME_ESR_Control_Trx_Qty = "ESR_Control_Trx_Qty";
+	ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Control_Trx_Qty = new ModelColumn<>(I_ESR_Import.class, "ESR_Control_Trx_Qty", null);
+	String COLUMNNAME_ESR_Control_Trx_Qty = "ESR_Control_Trx_Qty";
 
 	/**
-	 * Set ESR Zahlungsimport.
+	 * Set ESR Payment Import.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setESR_Import_ID (int ESR_Import_ID);
+	void setESR_Import_ID (int ESR_Import_ID);
 
 	/**
-	 * Get ESR Zahlungsimport.
+	 * Get ESR Payment Import.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getESR_Import_ID();
+	int getESR_Import_ID();
 
-    /** Column definition for ESR_Import_ID */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Import_ID = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "ESR_Import_ID", null);
-    /** Column name ESR_Import_ID */
-    public static final String COLUMNNAME_ESR_Import_ID = "ESR_Import_ID";
+	ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Import_ID = new ModelColumn<>(I_ESR_Import.class, "ESR_Import_ID", null);
+	String COLUMNNAME_ESR_Import_ID = "ESR_Import_ID";
 
 	/**
 	 * Set Anzahl Transaktionen.
@@ -277,7 +259,7 @@ public interface I_ESR_Import
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setESR_Trx_Qty (java.math.BigDecimal ESR_Trx_Qty);
+	void setESR_Trx_Qty (@Nullable BigDecimal ESR_Trx_Qty);
 
 	/**
 	 * Get Anzahl Transaktionen.
@@ -289,12 +271,10 @@ public interface I_ESR_Import
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public java.math.BigDecimal getESR_Trx_Qty();
+	BigDecimal getESR_Trx_Qty();
 
-    /** Column definition for ESR_Trx_Qty */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Trx_Qty = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "ESR_Trx_Qty", null);
-    /** Column name ESR_Trx_Qty */
-    public static final String COLUMNNAME_ESR_Trx_Qty = "ESR_Trx_Qty";
+	ModelColumn<I_ESR_Import, Object> COLUMN_ESR_Trx_Qty = new ModelColumn<>(I_ESR_Import.class, "ESR_Trx_Qty", null);
+	String COLUMNNAME_ESR_Trx_Qty = "ESR_Trx_Qty";
 
 	/**
 	 * Set Hash.
@@ -303,7 +283,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHash (java.lang.String Hash);
+	void setHash (@Nullable java.lang.String Hash);
 
 	/**
 	 * Get Hash.
@@ -312,12 +292,10 @@ public interface I_ESR_Import
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHash();
+	@Nullable java.lang.String getHash();
 
-    /** Column definition for Hash */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_Hash = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "Hash", null);
-    /** Column name Hash */
-    public static final String COLUMNNAME_Hash = "Hash";
+	ModelColumn<I_ESR_Import, Object> COLUMN_Hash = new ModelColumn<>(I_ESR_Import.class, "Hash", null);
+	String COLUMNNAME_Hash = "Hash";
 
 	/**
 	 * Set Active.
@@ -327,7 +305,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -337,37 +315,54 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_ESR_Import, Object> COLUMN_IsActive = new ModelColumn<>(I_ESR_Import.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Zahlungseingang.
-	 * Dies ist eine Verkaufs-Transaktion (Zahlungseingang)
+	 * Set Archive File.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsReceipt (boolean IsReceipt);
+	void setIsArchiveFile (boolean IsArchiveFile);
 
 	/**
-	 * Get Zahlungseingang.
-	 * Dies ist eine Verkaufs-Transaktion (Zahlungseingang)
+	 * Get Archive File.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isReceipt();
+	boolean isArchiveFile();
 
-    /** Column definition for IsReceipt */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_IsReceipt = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "IsReceipt", null);
-    /** Column name IsReceipt */
-    public static final String COLUMNNAME_IsReceipt = "IsReceipt";
+	ModelColumn<I_ESR_Import, Object> COLUMN_IsArchiveFile = new ModelColumn<>(I_ESR_Import.class, "IsArchiveFile", null);
+	String COLUMNNAME_IsArchiveFile = "IsArchiveFile";
+
+	/**
+	 * Set Receipt.
+	 * This is a sales transaction (receipt)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReceipt (boolean IsReceipt);
+
+	/**
+	 * Get Receipt.
+	 * This is a sales transaction (receipt)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReceipt();
+
+	ModelColumn<I_ESR_Import, Object> COLUMN_IsReceipt = new ModelColumn<>(I_ESR_Import.class, "IsReceipt", null);
+	String COLUMNNAME_IsReceipt = "IsReceipt";
 
 	/**
 	 * Set Reconciled.
@@ -377,7 +372,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsReconciled (boolean IsReconciled);
+	void setIsReconciled (boolean IsReconciled);
 
 	/**
 	 * Get Reconciled.
@@ -387,12 +382,10 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isReconciled();
+	boolean isReconciled();
 
-    /** Column definition for IsReconciled */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_IsReconciled = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "IsReconciled", null);
-    /** Column name IsReconciled */
-    public static final String COLUMNNAME_IsReconciled = "IsReconciled";
+	ModelColumn<I_ESR_Import, Object> COLUMN_IsReconciled = new ModelColumn<>(I_ESR_Import.class, "IsReconciled", null);
+	String COLUMNNAME_IsReconciled = "IsReconciled";
 
 	/**
 	 * Set Is Valid.
@@ -402,7 +395,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsValid (boolean IsValid);
+	void setIsValid (boolean IsValid);
 
 	/**
 	 * Get Is Valid.
@@ -412,12 +405,10 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isValid();
+	boolean isValid();
 
-    /** Column definition for IsValid */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_IsValid = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "IsValid", null);
-    /** Column name IsValid */
-    public static final String COLUMNNAME_IsValid = "IsValid";
+	ModelColumn<I_ESR_Import, Object> COLUMN_IsValid = new ModelColumn<>(I_ESR_Import.class, "IsValid", null);
+	String COLUMNNAME_IsValid = "IsValid";
 
 	/**
 	 * Set Processed.
@@ -426,7 +417,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
 	 * Get Processed.
@@ -435,12 +426,10 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_ESR_Import, Object> COLUMN_Processed = new ModelColumn<>(I_ESR_Import.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Process Now.
@@ -451,7 +440,7 @@ public interface I_ESR_Import
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setProcessing (boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
 	 * Get Process Now.
@@ -460,12 +449,10 @@ public interface I_ESR_Import
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_ESR_Import, Object> COLUMN_Processing = new ModelColumn<>(I_ESR_Import.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Get Updated.
@@ -475,12 +462,10 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_ESR_Import, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_ESR_Import, Object>(I_ESR_Import.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_ESR_Import, Object> COLUMN_Updated = new ModelColumn<>(I_ESR_Import.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -490,8 +475,7 @@ public interface I_ESR_Import
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

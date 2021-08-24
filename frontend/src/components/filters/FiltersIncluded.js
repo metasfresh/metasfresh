@@ -12,11 +12,7 @@ import FiltersItem from './FiltersItem';
  * @extends Component
  */
 class FiltersIncluded extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    this.state = { isOpenDropdown: false, openFilterId: null };
-  }
+  state = { isOpenDropdown: false, openFilterId: null };
 
   /**
    * @method handleClickOutside
@@ -90,7 +86,6 @@ class FiltersIncluded extends PureComponent {
       active,
       modalVisible,
       activeFiltersCaptions,
-      resetInitialValues,
       allChildFiltersCleared,
     } = this.props;
 
@@ -170,7 +165,6 @@ class FiltersIncluded extends PureComponent {
                   windowType,
                   active,
                   viewId,
-                  resetInitialValues,
                   applyFilters,
                   clearFilters,
                 }}
@@ -200,7 +194,6 @@ class FiltersIncluded extends PureComponent {
 
 FiltersIncluded.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
-  resetInitialValues: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   filtersWrapper: PropTypes.any,
   activeFiltersCaptions: PropTypes.object,

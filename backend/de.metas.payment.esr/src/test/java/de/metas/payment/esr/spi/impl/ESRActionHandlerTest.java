@@ -1,41 +1,5 @@
 package de.metas.payment.esr.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-/*
- * #%L
- * de.metas.payment.esr
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_Payment;
-import org.junit.jupiter.api.Test;
-
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.payment.esr.ESRTestBase;
@@ -47,6 +11,19 @@ import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
 import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Payment;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ESRActionHandlerTest extends ESRTestBase
 {
@@ -59,7 +36,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", /* "536417000120686", */ "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
+		esrImportBL.evaluateLine(esrImportLine);
 
 		esrImportBL.process(esrImport);
 
@@ -88,7 +65,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine = setupESR_ImportLine("000120686", "10", false, "000000010501536417000120686", /* "536417000120686", */ "01-059931-0", "15364170", "40", false);
 		final I_ESR_Import esrImport = esrImportLine.getESR_Import();
 
-		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
+		esrImportBL.evaluateLine(esrImportLine);
 
 		esrImportBL.process(esrImport);
 
@@ -122,7 +99,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 				"40", /* esr transaction amount */
 				false /* createAllocation */);
 
-		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
+		esrImportBL.evaluateLine(esrImportLine);
 		assertThat(esrImportLine.getC_Invoice()).isNotNull();
 		assertThat(esrImportLine.getC_Invoice().getGrandTotal()).isEqualByComparingTo("10"); // guard
 
@@ -187,7 +164,7 @@ public class ESRActionHandlerTest extends ESRTestBase
 		invoice.setProcessed(true);
 		save(invoice);
 
-		esrImportBL.evaluateLine(esrImportLine.getESR_Import(), esrImportLine);
+		esrImportBL.evaluateLine(esrImportLine);
 
 		esrImportBL.process(esrImport);
 

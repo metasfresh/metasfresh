@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
@@ -100,7 +101,7 @@ public class OLCandPIIPPriceValidator implements IOLCandValidator
 
 		final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 		final LocalDate datePromisedEffective = TimeUtil.asLocalDate(olCandEffectiveValuesBL.getDatePromised_Effective(olCand));
-		final BPartnerLocationId billBPLocationId = olCandEffectiveValuesBL.getBillLocationEffectiveId(olCand);
+		final BPartnerLocationAndCaptureId billBPLocationId = olCandEffectiveValuesBL.getBillLocationAndCaptureEffectiveId(olCand);
 
 		final PriceListId plId = Services.get(IPriceListDAO.class).retrievePriceListIdByPricingSyst(pricingSystemId, billBPLocationId, SOTrx.SALES);
 		if (plId == null)

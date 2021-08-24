@@ -1,7 +1,8 @@
 package de.metas.tax.api.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.lang.SOTrx;
@@ -26,15 +27,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.MBPartnerLocation;
 import org.compiere.model.X_C_TaxCategory;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -47,8 +44,6 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
@@ -78,7 +73,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			@NonNull final Timestamp shipDate,
 			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
-			final int shipC_BPartner_Location_ID,
+			final BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			@NonNull final SOTrx soTrx)
 	{
 		if (taxCategoryId != null)
@@ -102,13 +97,10 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				}
 			}
 
-			final I_C_BPartner_Location bpLocTo = loadOutOfTrx(shipC_BPartner_Location_ID, I_C_BPartner_Location.class);
-			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpLocTo.getC_BPartner_ID(), bpLocTo.getC_BPartner_Location_ID());
-
 			final Tax tax = taxDAO.getBy(TaxQuery.builder()
 					.fromCountryId(countryFromId)
 					.orgId(orgId)
-					.bPartnerLocationId(bPartnerLocationId)
+					.bPartnerLocationId(shipBPartnerLocationId)
 					.dateOfInterest(shipDate)
 					.taxCategoryId(taxCategoryId)
 					.warehouseId(warehouseId)
@@ -124,14 +116,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		final AdempiereException ex = new AdempiereException(StringUtils.formatMessage(
 				"Could not retrieve C_Tax_ID; will return the Tax-Not-Found-C_Tax_ID; Method paratmers:"
 						+ "model= {}, taxCategoryId={}, productId={}, shipDate={}, adOrgId={}, "
-						+ "warehouse={}, shipC_BPartner_Location_ID={}, isSOTrx={}, trxName={}",
+						+ "warehouse={}, shipBPartnerLocationId={}, isSOTrx={}, trxName={}",
 				model,
 				taxCategoryId,
 				productId,
 				shipDate,
 				orgId,
 				warehouseId,
-				shipC_BPartner_Location_ID,
+				shipBPartnerLocationId,
 				soTrx.isSales()));
 		log.warn("getTax - error: ", ex);
 
@@ -148,8 +140,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final Timestamp shipDate,
 			@NonNull final OrgId orgId,
 			final WarehouseId warehouseId,
-			final int billC_BPartner_Location_ID,
-			final int shipC_BPartner_Location_ID,
+			final BPartnerLocationAndCaptureId shipBPLocationId,
 			final boolean isSOTrx)
 	{
 		//
@@ -167,18 +158,16 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 
 		// Check Partner/Location
-		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location={}", shipBPLocationId);
 
 		int taxId = 0;
 
-		final I_C_BPartner_Location shipBPLocation = new MBPartnerLocation(ctx, shipC_BPartner_Location_ID, null);
-
-		final I_C_Location shipToLocation = shipBPLocation.getC_Location();
+		final CountryId shipToCountryId = Services.get(IBPartnerBL.class).getCountryId(shipBPLocationId);
+		final String shipToCountryCode = Services.get(ICountryDAO.class).retrieveCountryCode2ByCountryId(shipToCountryId);
 		final boolean isEULocation = countryAreaBL.isMemberOf(ctx,
-				ICountryAreaBL.COUNTRYAREAKEY_EU,
-				shipToLocation.getC_Country().getCountryCode(),
-				billDate);
-		final int shipToCountryRepoId = shipToLocation.getC_Country_ID();
+															  ICountryAreaBL.COUNTRYAREAKEY_EU,
+															  shipToCountryCode,
+															  billDate);
 
 		final CountryId shipFromCountryId;
 		if (warehouseId != null)
@@ -198,10 +187,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				shipFromCountryId = Services.get(ICountryDAO.class).getDefaultCountryId();
 			}
 		}
-		final int shipFromCountryRepoId = CountryId.toRepoId(shipFromCountryId);
 
 		// bp has tax certificate?
-		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(shipBPLocation.getC_BPartner_ID());
+		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(shipBPLocationId.getBpartnerId());
 		final boolean hasTaxCertificate = !Check.isEmpty(bp.getVATaxID(), true);
 
 		// String sql = "SELECT DISTINCT t.C_Tax_ID,t.validFrom, t.To_Country_ID FROM C_Tax t,M_Product pr,C_Charge c " +
@@ -216,18 +204,18 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				"LEFT JOIN M_Pricelist_Version plv on pp.M_Pricelist_Version_ID = plv.M_Pricelist_Version_ID " +
 				"LEFT JOIN M_Pricelist pl on plv.M_Pricelist_ID = pl.M_Pricelist_ID " +
 				"LEFT JOIN C_Charge c ON c.C_TaxCategory_ID = t.C_TaxCategory_ID " +
-				"WHERE t.validFrom < ? AND t.isActive='Y' AND t.C_Country_ID = " + shipFromCountryRepoId + " ";
+				"WHERE t.validFrom < ? AND t.isActive='Y' AND t.C_Country_ID = " + shipFromCountryId.getRepoId() + " ";
 
-		if (shipToCountryRepoId == shipFromCountryRepoId)
+		if (CountryId.equals(shipToCountryId, shipFromCountryId))
 		{
-			sql += " AND t.To_Country_ID = " + shipToCountryRepoId + " ";
+			sql += " AND t.To_Country_ID = " + shipToCountryId.getRepoId() + " ";
 		}
 		else if (isEULocation)
 		{
 			// To_Country_ID should be null for all other taxes
-			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryRepoId + ") ";
+			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryId.getRepoId() + ") ";
 			// metas: Abweichungen zu EU finden wenn definiert
-			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID = " + shipToCountryRepoId + ") ";
+			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID = " + shipToCountryId.getRepoId() + ") ";
 			sql += " AND t.IsToEULocation = 'Y' ";
 			if (hasTaxCertificate)
 			{
@@ -241,9 +229,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		else
 		{
 			// rest of the world
-			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryRepoId + ") ";
+			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryId.getRepoId() + ") ";
 			// Abweichungen zu Drittland finden finden wenn definiert
-			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID =" + shipToLocation.getC_Country().getC_Country_ID() + ") ";
+			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID =" + shipToCountryId.getRepoId() + ") ";
 			sql += " AND t.IsToEULocation = 'N' ";
 		}
 		// product or charge
@@ -294,7 +282,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		catch (final SQLException e)
 		{
 			log.error("getGermanTax - error: ", e);
-			throw new DBException(e, sql, new Object[] { billDate, productId != null ? productId : chargeId });
+			throw new DBException(e, sql, billDate, productId != null ? productId : chargeId);
 		}
 		finally
 		{
@@ -308,11 +296,10 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					.taxCategoryId(taxCategoryId)
 					.isSOTrx(isSOTrx)
 					.shipDate(shipDate)
-					.shipFromC_Location_ID(0)
-					.shipToC_Location_ID(shipBPLocation.getC_Location_ID())
+					.shipFromCountryId(shipFromCountryId)
+					.shipToCountryId(shipToCountryId)
 					.billDate(billDate)
-					.billFromC_Location_ID(0)
-					.billToC_Location_ID(InterfaceWrapperHelper.loadOutOfTrx(billC_BPartner_Location_ID, I_C_BPartner_Location.class).getC_Location_ID())
+					.billFromC_Location_ID(null)
 					.build();
 		}
 		return taxId;
@@ -331,8 +318,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			final Timestamp shipDate,
 			final int AD_Org_ID,
 			final int M_Warehouse_ID,
-			final int billC_BPartner_Location_ID,
-			final int shipC_BPartner_Location_ID,
+			final BPartnerLocationAndCaptureId billBPLocationId,
+			final BPartnerLocationAndCaptureId shipBPLocationId,
 			final boolean IsSOTrx)
 	{
 		if (M_Product_ID > 0 || C_Charge_ID > 0)
@@ -345,8 +332,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 					shipDate,
 					OrgId.ofRepoId(AD_Org_ID),
 					WarehouseId.ofRepoIdOrNull(M_Warehouse_ID),
-					billC_BPartner_Location_ID,
-					shipC_BPartner_Location_ID,
+					shipBPLocationId,
 					IsSOTrx);
 		}
 		else

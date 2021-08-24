@@ -325,7 +325,9 @@ class SubHeader extends Component {
         hotkey: keymap.OPEN_COMMENTS,
       },
     ]
-      .filter((docLink) => standardActions.has(docLink.action))
+      .filter((docLink) =>
+        standardActions.find((action) => action === docLink.action)
+      )
       .map((docLink) => {
         return this.renderDocLink(docLink);
       });
