@@ -198,7 +198,6 @@ class TableContextMenu extends Component {
               !handleDelete)
               ? 'none'
               : 'block',
-          display,
           height: docId ? TBL_CONTEXT_POPUP_HEIGHT : '',
         }}
         className={
