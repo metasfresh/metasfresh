@@ -195,8 +195,7 @@ class TableContextMenu extends Component {
               (!contextMenu.supportZoomInto ||
                 !showFieldEdit ||
                 !isSelectedOne ||
-                !handleDelete)) ||
-            docId
+                !handleDelete)) 
               ? 'none'
               : 'block',
           height: docId ? TBL_CONTEXT_POPUP_HEIGHT : '',
