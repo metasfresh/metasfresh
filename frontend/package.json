@@ -87,7 +87,7 @@
     "jest-environment-jsdom": "27.0.6",
     "jest-enzyme": "7.1.2",
     "jest-junit": "12.2.0",
-    "jest-localstorage-mock": "2.4.14",
+    "jest-localstorage-mock": "2.4.17",
     "jsdoc": "3.6.7",
     "jsdom": "16.7.0",
     "json-loader": "0.5.7",
