@@ -369,7 +369,8 @@ public class ESRImportEnqueuer
 				final I_ESR_ImportFile esrImportFile = esrImportFiles.next();
 				if (esrHash.equals(esrImportFile.getHash()))
 				{
-					throw new AdempiereException("File not imported - identical with previous file: " + esrImportFile.getFileName());
+					throw new AdempiereException("File not imported - identical with previous file: " + esrImportFile.getFileName())
+							.markAsUserValidationError();
 				}
 			}
 		}
