@@ -259,7 +259,7 @@ public class ESRImportEnqueuer
 		catch (final Exception ex)
 		{
 			// provide more info about why the file could not be unzipped
-			throw new AdempiereException(ex);
+			throw new AdempiereException(ex).markAsUserValidationError();
 		}
 	}
 
