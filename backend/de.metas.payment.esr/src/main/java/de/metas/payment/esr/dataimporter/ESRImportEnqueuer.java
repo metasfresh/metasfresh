@@ -37,7 +37,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -221,6 +223,7 @@ public class ESRImportEnqueuer
 	{
 		final ZipInputStream zipStream = new ZipInputStream(in);
 
+		final List<ZipFileResource> resources = new ArrayList<>();
 		try
 		{
 			ZipEntry zipEntry = zipStream.getNextEntry();
@@ -233,23 +236,7 @@ public class ESRImportEnqueuer
 				}
 				final ZipFileResource unzippedFile = extractResource(zipStream, zipEntry);
 
-				final byte[] unzippedData = unzippedFile.getData();
-
-				final String hash = computeESRHashAndCheckForDuplicates(OrgId.ofRepoId(esrImport.getAD_Org_ID()), unzippedData);
-
-				final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
-				esrImportFile.setHash(hash);
-				checkUpdateDataType(esrImportFile, unzippedFile.getFilename());
-
-				final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
-						esrImportFile,
-						unzippedFile.getFilename(),
-						unzippedData);
-				final AttachmentEntryId attachmentEntryId = attachmentEntry.getId();
-
-				esrImportFile.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());
-				esrImportFile.setFileName(unzippedFile.getFilename());
-				InterfaceWrapperHelper.save(esrImportFile);
+				resources.add(unzippedFile);
 
 				zipEntry = zipStream.getNextEntry();
 			}
@@ -259,7 +246,33 @@ public class ESRImportEnqueuer
 		catch (final Exception ex)
 		{
 			// provide more info about why the file could not be unzipped
-			throw new AdempiereException(ex).markAsUserValidationError();
+			throw new AdempiereException(ex);
+		}
+
+		createImportFiles(esrImport, resources);
+	}
+
+	private void createImportFiles(final @NonNull I_ESR_Import esrImport, List<ZipFileResource> unzippedFiles)
+	{
+		for (final ZipFileResource unzippedFile : unzippedFiles)
+		{
+			final byte[] unzippedData = unzippedFile.getData();
+
+			final String hash = computeESRHashAndCheckForDuplicates(OrgId.ofRepoId(esrImport.getAD_Org_ID()), unzippedData);
+
+			final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
+			esrImportFile.setHash(hash);
+			checkUpdateDataType(esrImportFile, unzippedFile.getFilename());
+
+			final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
+					esrImportFile,
+					unzippedFile.getFilename(),
+					unzippedData);
+			final AttachmentEntryId attachmentEntryId = attachmentEntry.getId();
+
+			esrImportFile.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());
+			esrImportFile.setFileName(unzippedFile.getFilename());
+			save(esrImportFile);
 		}
 	}
 
@@ -369,8 +382,7 @@ public class ESRImportEnqueuer
 				final I_ESR_ImportFile esrImportFile = esrImportFiles.next();
 				if (esrHash.equals(esrImportFile.getHash()))
 				{
-					throw new AdempiereException("File not imported - identical with previous file: " + esrImportFile.getFileName())
-							.markAsUserValidationError();
+					throw new AdempiereException("File not imported - identical with previous file: " + esrImportFile.getFileName());
 				}
 			}
 		}
