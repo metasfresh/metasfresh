@@ -97,8 +97,6 @@ public class ESRImportEnqueuer
 	private String asyncBatchDesc = "ESR Import process";
 	private PInstanceId pinstanceId;
 
-	private ESRImportEnqueuerDuplicateFilePolicy duplicateFilePolicy;
-
 	private ILoggable loggable = Loggables.nop();
 
 	private ESRImportEnqueuer()
@@ -360,47 +358,18 @@ public class ESRImportEnqueuer
 
 		//
 		// Check for duplicates
-		final String preventDuplicates = sysConfigBL.getValue(ESRConstants.SYSCONFIG_PreventDuplicateImportFiles);
-		if (Check.isEmpty(preventDuplicates, true) || "-".equals(preventDuplicates))
-		{
-			// the sys config not defined. Functionality to work as before
-		}
-		else
+		final Boolean preventDuplicates = sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_PreventDuplicateImportFiles, true);
+		if (preventDuplicates)
 		{
 			final Iterator<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveActiveESRImportFiles(orgId);
 
-			// will turn true if another identical hash was seen in the list of esr imports
-			boolean seen = false;
+			// throw exception if another identical hash was seen in the list of esr imports
 			while (esrImportFiles.hasNext())
 			{
-				if (esrHash.equals(esrImportFiles.next().getHash()))
+				final I_ESR_ImportFile esrImportFile = esrImportFiles.next();
+				if (esrHash.equals(esrImportFile.getHash()))
 				{
-					seen = true;
-					break;
-				}
-			}
-
-			if (seen)
-			{
-				// Warning: ask the user if we shall import the duplicate file
-				if ("W".equalsIgnoreCase(preventDuplicates))
-				{
-					if (!getDuplicateFilePolicy().isImportDuplicateFile())
-					{
-						getDuplicateFilePolicy().onNotImportingDuplicateFile();
-						throw new AdempiereException("File not imported - identical with previous file");
-					}
-
-				}
-				// Error: inform the user we will not import the duplicate file
-				else if ("E".equalsIgnoreCase(preventDuplicates))
-				{
-					getDuplicateFilePolicy().onNotImportingDuplicateFile();
-					throw new AdempiereException("File not imported - identical with previous file");
-				}
-				else
-				{
-					throw new AdempiereException("Sysconfig " + ESRConstants.SYSCONFIG_PreventDuplicateImportFiles + " must be either W or E");
+					throw new AdempiereException("File not imported - identical with previous file: " + esrImportFile.getFileName());
 				}
 			}
 		}
@@ -480,16 +449,4 @@ public class ESRImportEnqueuer
 	{
 		loggable.addLog(msg, msgParameters);
 	}
-
-	public ESRImportEnqueuer duplicateFilePolicy(final ESRImportEnqueuerDuplicateFilePolicy duplicateFilePolicy)
-	{
-		this.duplicateFilePolicy = duplicateFilePolicy;
-		return this;
-	}
-
-	private ESRImportEnqueuerDuplicateFilePolicy getDuplicateFilePolicy()
-	{
-		return duplicateFilePolicy;
-	}
-
 }
