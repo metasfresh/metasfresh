@@ -160,7 +160,7 @@ public class ESRImportEnqueuer
 
 		if (esrImport.isArchiveFile())
 		{
-			createImportFilesFromZips(esrImport, in, attachmentEntry.getFilename());
+			createImportFilesFromZips(esrImport, in);
 		}
 
 		else
@@ -218,12 +218,22 @@ public class ESRImportEnqueuer
 	}
 
 	private void createImportFilesFromZips(@NonNull final I_ESR_Import esrImport,
-			@NonNull final ByteArrayInputStream in,
-			@NonNull final String filename)
+			@NonNull final ByteArrayInputStream in)
+	{
+		final List<ZipFileResource> unzippedFiles = getZipFileResources(in);
+
+		for (final ZipFileResource unzippedFile : unzippedFiles)
+		{
+			createImportFileFromSingleAttachment(esrImport, unzippedFile.getData(), unzippedFile.getFilename());
+		}
+	}
+
+	@NonNull
+	private List<ZipFileResource> getZipFileResources(final @NonNull ByteArrayInputStream in)
 	{
 		final ZipInputStream zipStream = new ZipInputStream(in);
 
-		final List<ZipFileResource> resources = new ArrayList<>();
+		final List<ZipFileResource> unzippedFiles = new ArrayList<>();
 		try
 		{
 			ZipEntry zipEntry = zipStream.getNextEntry();
@@ -236,7 +246,7 @@ public class ESRImportEnqueuer
 				}
 				final ZipFileResource unzippedFile = extractResource(zipStream, zipEntry);
 
-				resources.add(unzippedFile);
+				unzippedFiles.add(unzippedFile);
 
 				zipEntry = zipStream.getNextEntry();
 			}
@@ -249,31 +259,7 @@ public class ESRImportEnqueuer
 			throw new AdempiereException(ex);
 		}
 
-		createImportFiles(esrImport, resources);
-	}
-
-	private void createImportFiles(final @NonNull I_ESR_Import esrImport, List<ZipFileResource> unzippedFiles)
-	{
-		for (final ZipFileResource unzippedFile : unzippedFiles)
-		{
-			final byte[] unzippedData = unzippedFile.getData();
-
-			final String hash = computeESRHashAndCheckForDuplicates(OrgId.ofRepoId(esrImport.getAD_Org_ID()), unzippedData);
-
-			final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
-			esrImportFile.setHash(hash);
-			checkUpdateDataType(esrImportFile, unzippedFile.getFilename());
-
-			final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
-					esrImportFile,
-					unzippedFile.getFilename(),
-					unzippedData);
-			final AttachmentEntryId attachmentEntryId = attachmentEntry.getId();
-
-			esrImportFile.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());
-			esrImportFile.setFileName(unzippedFile.getFilename());
-			save(esrImportFile);
-		}
+		return unzippedFiles;
 	}
 
 	private void checkUpdateDataType(final I_ESR_ImportFile esrImportFile, final String fileName)
