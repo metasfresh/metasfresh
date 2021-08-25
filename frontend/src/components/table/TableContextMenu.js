@@ -191,11 +191,11 @@ class TableContextMenu extends Component {
           left: positionX,
           top: positionY,
           display:
-            (supportOpenRecord === false &&
-              (!contextMenu.supportZoomInto ||
-                !showFieldEdit ||
-                !isSelectedOne ||
-                !handleDelete)) 
+            supportOpenRecord === false &&
+            (!contextMenu.supportZoomInto ||
+              !showFieldEdit ||
+              !isSelectedOne ||
+              !handleDelete)
               ? 'none'
               : 'block',
           height: docId ? TBL_CONTEXT_POPUP_HEIGHT : '',
