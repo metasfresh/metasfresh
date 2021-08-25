@@ -68,6 +68,7 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FREIGH
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.VALUE_PREFIX;
+import static java.math.BigDecimal.ZERO;
 
 public class OLCandRequestProcessor implements Processor
 {
@@ -161,17 +162,30 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
 		final OrderCandidate orderCandidate = context.getOrderNotNull();
-		final String bPartnerExternalId = CoalesceUtil.coalesce(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
+
+		final String bPartnerExternalId = CoalesceUtil.coalesceNotNull(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
 		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
+		
+		// extract the C_BPartner_ID
+		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
+				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
+				bPartnerExternalIdentifier);
 
-		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), bPartnerExternalIdentifier);
+		// extract the AD_User_ID (contact-ID)
+		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
+				bPartnerUpsertResponse.getResponseContactItems(),
+				bPartnerExternalIdentifier);
 
+		// extract the C_BPartner_Location_ID
 		final String shippingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getShippingBPLocationExternalIdNotNull());
-		final JsonMetasfreshId shippingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(bPartnerUpsertResponse.getResponseLocationItems(), shippingBPLocationExternalIdentifier);
+		final JsonMetasfreshId shippingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
+				bPartnerUpsertResponse.getResponseLocationItems(),
+				shippingBPLocationExternalIdentifier);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
 				.bPartnerIdentifier(String.valueOf(bpartnerId.getValue()))
 				.bPartnerLocationIdentifier(String.valueOf(shippingBPartnerLocationId.getValue()))
+				.contactIdentifier(String.valueOf(contactId.getValue()))
 				.build();
 	}
 
@@ -182,17 +196,28 @@ public class OLCandRequestProcessor implements Processor
 	{
 		final OrderCandidate orderCandidate = context.getOrderNotNull();
 
-		final String bPartnerExternalId = CoalesceUtil.coalesce(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
+		final String bPartnerExternalId = CoalesceUtil.coalesceNotNull(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
 		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
+		// extract the C_BPartner_ID
+		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
+				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), 
+				bPartnerExternalIdentifier);
 
-		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), bPartnerExternalIdentifier);
-
+		// extract the AD_User_ID (contact-ID)
+		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
+				bPartnerUpsertResponse.getResponseContactItems(),
+				bPartnerExternalIdentifier);
+		
+		// extract the C_BPartner_Location_ID
 		final String billingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getBillingBPLocationExternalIdNotNull());
-		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(bPartnerUpsertResponse.getResponseLocationItems(), billingBPLocationExternalIdentifier);
+		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
+				bPartnerUpsertResponse.getResponseLocationItems(), 
+				billingBPLocationExternalIdentifier);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
 				.bPartnerIdentifier(String.valueOf(bpartnerId.getValue()))
 				.bPartnerLocationIdentifier(String.valueOf(billingBPartnerLocationId.getValue()))
+				.contactIdentifier(String.valueOf(contactId.getValue()))
 				.build();
 	}
 
@@ -204,7 +229,7 @@ public class OLCandRequestProcessor implements Processor
 		final ShopwareClient shopwareClient = importOrdersRouteContext.getShopwareClient();
 
 		return shopwareClient.getOrderLines(orderId)
-				.map(JsonOrderLines::getOrderLinesWithProductId)
+				.map(JsonOrderLines::filterForOrderLinesWithProductId)
 				.orElseThrow(() -> new RuntimeException("Missing order lines! OrderId=" + orderId));
 	}
 
@@ -212,14 +237,19 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder,
 			@NonNull final JsonOrderLine orderLine)
 	{
+		final JsonOrderLineGroup jsonOrderLineGroup = getJsonOrderLineGroup(orderLine);
+
+		// in case of a "bundle" item (group main item), we ignore the price, because we already get al the components' prices
+		final BigDecimal price = jsonOrderLineGroup.isGroupMainItem() ? ZERO : orderLine.getUnitPrice();
+
 		return olCandCreateRequestBuilder
 				.externalLineId(orderLine.getId())
 				.productIdentifier(ExternalIdentifierFormat.formatExternalId(orderLine.getProductId()))
-				.price(orderLine.getUnitPrice())
+				.price(price)
 				.qty(orderLine.getQuantity())
 				.description(orderLine.getDescription())
 				.line(orderLine.getPosition())
-				.orderLineGroup(getJsonOrderLineGroup(orderLine))
+				.orderLineGroup(jsonOrderLineGroup)
 				.build();
 	}
 
@@ -250,6 +280,9 @@ public class OLCandRequestProcessor implements Processor
 				.build();
 	}
 
+	/**
+	 * Take the metasfresh bpartner-upsert-response and extract the C_BPartner_ID that corresponds to the given {@code externalIdentifier}.
+	 */
 	@NonNull
 	private JsonMetasfreshId getMetasfreshIdForExternalIdentifier(
 			@NonNull final List<JsonResponseUpsertItem> bPartnerResponseUpsertItems,
@@ -288,7 +321,7 @@ public class OLCandRequestProcessor implements Processor
 	{
 		if (routeContext.getShopware6ConfigMappings() == null
 				|| routeContext.getShopware6ConfigMappings().getJsonExternalSystemShopware6ConfigMappingList().isEmpty()
-		        || routeContext.getBPartnerCustomerGroup() == null)
+				|| routeContext.getBPartnerCustomerGroup() == null)
 		{
 			return;
 		}
@@ -308,8 +341,8 @@ public class OLCandRequestProcessor implements Processor
 		matchingConfig.ifPresent(config -> olCandCreateRequestBuilder.orderDocType(JsonOrderDocType.ofCode(config.getDocTypeOrder()))
 				.paymentRule(JSONPaymentRule.ofCode(config.getPaymentRule()))
 				.paymentTerm(Check.isBlank(config.getPaymentTermValue())
-						? null
-						: VALUE_PREFIX + "-" + config.getPaymentTermValue()));
+									 ? null
+									 : VALUE_PREFIX + "-" + config.getPaymentTermValue()));
 	}
 
 	@NonNull

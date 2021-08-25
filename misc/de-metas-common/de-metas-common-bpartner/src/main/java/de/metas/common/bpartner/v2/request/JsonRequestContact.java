@@ -29,6 +29,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 
 @Getter
@@ -318,7 +320,7 @@ public class JsonRequestContact
 		this.metasfreshBPartnerIdSet = true;
 	}
 
-	public void setInvoiceEmailEnabled(final Boolean invoiceEmailEnabled)
+	public void setInvoiceEmailEnabled(@Nullable final Boolean invoiceEmailEnabled)
 	{
 		this.invoiceEmailEnabled = invoiceEmailEnabled;
 		invoiceEmailEnabledSet = true;
