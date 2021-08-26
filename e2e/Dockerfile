@@ -11,7 +11,7 @@ FROM cypress/browsers:node14.7.0-chrome84
 ARG CACHEBUST=1
 
 
-RUN apt-get update && apt-get -y upgrade && apt-get -y autoremove
+RUN apt-get update --allow-releaseinfo-change && apt-get -y upgrade && apt-get -y autoremove
 
 WORKDIR /e2e
 
