@@ -438,7 +438,7 @@ public class ESRImportBL implements IESRImportBL
 		final ArrayKey key;
 
 		if (line.getC_Invoice_ID() > 0
-				&& !line.getC_Invoice().isPaid()
+				//&& !line.getC_Invoice().isPaid()
 				&& line.getC_Invoice().getAD_Org_ID() == line.getAD_Org_ID() // only if orgs match
 			// we also want to handle invoices that are already paid, because this line links them to another payment
 			/* && !line.getC_Invoice().isPaid() */)
@@ -1167,13 +1167,13 @@ public class ESRImportBL implements IESRImportBL
 
 			final String invoiceOrgName = orgsRepo.retrieveOrgValue(invoice.getAD_Org_ID());
 			final String importLineOrgName = orgsRepo.retrieveOrgValue(importLine.getAD_Org_ID());
-			ESRDataLoaderUtil.addMatchErrorMsg(importLine,
-											   msgBL.getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
-													   invoiceOrgName,
-													   importLineOrgName }));
 		}
+		ESRDataLoaderUtil.addMatchErrorMsg(importLine,
+										   msgBL.getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
+												   invoiceOrgName,
+												   importLineOrgName }));
 
-		importLine.setC_Invoice(invoice);
+		importLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		importLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
 
 		importLine.setESR_Invoice_Grandtotal(invoice.getGrandTotal());
