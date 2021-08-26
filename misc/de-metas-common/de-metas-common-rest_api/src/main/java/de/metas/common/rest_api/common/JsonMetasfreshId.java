@@ -41,6 +41,7 @@ public class JsonMetasfreshId
 		return new JsonMetasfreshId(value);
 	}
 
+	@Nullable
 	public static JsonMetasfreshId ofOrNull(@Nullable final Integer value)
 	{
 		if (isEmpty(value))

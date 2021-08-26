@@ -143,16 +143,34 @@ public class OLCandRequestProcessor implements Processor
 				.map(orderLine -> processOrderLine(olCandCreateRequestBuilder, orderLine))
 				.forEach(olCandCreateBulkRequestBuilder::request);
 
-		if (context.getShippingCostNotNull().getCalculatedTaxes() != null)
+		final TaxProductIdProvider taxProductIdProvider = context.getTaxProductIdProvider();
+		if (taxProductIdProvider != null)
 		{
-			context.getShippingCostNotNull().getCalculatedTaxes()
-					.stream()
-					.map(tax -> processTax(context.getTaxProductIdProvider(), olCandCreateRequestBuilder, tax))
-					.filter(Optional::isPresent)
-					.map(Optional::get)
-					.forEach(olCandCreateBulkRequestBuilder::request);
+			if (context.getShippingCostNotNull().getTotalPrice().signum() > 0)
+			{
+				final List<JsonTax> calculatedTaxes = context.getShippingCostNotNull().getCalculatedTaxes();
+				if (calculatedTaxes.isEmpty())
+				{ // case: the order is tax-free
+					final BigDecimal taxRate = ZERO;
+					olCandCreateRequestBuilder
+							.externalLineId(FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX + taxRate)
+							.line(null)
+							.orderLineGroup(null)
+							.description(null)
+							.productIdentifier(String.valueOf(taxProductIdProvider.getProductIdByVatRate(taxRate).getValue()))
+							.price(context.getShippingCostNotNull().getTotalPrice())
+							.qty(BigDecimal.ONE)
+							.build();
+				}
+				else
+				{
+					calculatedTaxes.stream()
+							.map(tax -> processTax(taxProductIdProvider, olCandCreateRequestBuilder, tax))
+							.filter(Optional::isPresent).map(Optional::get)
+							.forEach(olCandCreateBulkRequestBuilder::request);
+				}
+			}
 		}
-
 		return olCandCreateBulkRequestBuilder.build();
 	}
 
@@ -165,7 +183,7 @@ public class OLCandRequestProcessor implements Processor
 
 		final String bPartnerExternalId = CoalesceUtil.coalesceNotNull(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
 		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
-		
+
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
 				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
@@ -200,18 +218,18 @@ public class OLCandRequestProcessor implements Processor
 		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
 		// extract the C_BPartner_ID
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(
-				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), 
+				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
 				bPartnerExternalIdentifier);
 
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseContactItems(),
 				bPartnerExternalIdentifier);
-		
+
 		// extract the C_BPartner_Location_ID
 		final String billingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getBillingBPLocationExternalIdNotNull());
 		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
-				bPartnerUpsertResponse.getResponseLocationItems(), 
+				bPartnerUpsertResponse.getResponseLocationItems(),
 				billingBPLocationExternalIdentifier);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
@@ -347,15 +365,10 @@ public class OLCandRequestProcessor implements Processor
 
 	@NonNull
 	private Optional<JsonOLCandCreateRequest> processTax(
-			@Nullable final TaxProductIdProvider taxProductIdProvider,
+			@NonNull final TaxProductIdProvider taxProductIdProvider,
 			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder,
 			@NonNull final JsonTax tax)
 	{
-		if (taxProductIdProvider == null)
-		{
-			return Optional.empty();
-		}
-
 		return Optional.of(
 				olCandCreateRequestBuilder
 						.externalLineId(FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX + tax.getTaxRate())

@@ -1,0 +1,38 @@
+{
+  "total": 1,
+  "data": [
+    {
+      "shippingDateLatest": "2021-03-03T00:00:00.000+00:00",
+      "shippingOrderAddress": {
+        "countryId": "the",
+        "firstName": "whole",
+        "lastName": "JSON",
+        "street": "Object",
+        "zipcode": "will",
+        "city": "be",
+        "phoneNumber": "ignored",
+        "additionalAddressLine1": "as",
+        "additionalAddressLine2": "we",
+        "orderId": "only",
+        "versionId": "pick",
+        "createdAt": "2021-02-25T15:27:34.518+00:00",
+        "updatedAt": "2021-02-26T15:27:34.518+00:00",
+        "id": "the"
+      },
+      "shippingCosts": {
+        "unitPrice": 7.5,
+        "quantity": 1,
+        "totalPrice": 7.5,
+        "calculatedTaxes": [],
+        "taxRules": [],
+        "referencePrice": null,
+        "listPrice": null,
+        "extensions": [],
+        "apiAlias": "calculated_price"
+      },
+      "stateId": "last",
+      "id": "address"
+    }
+  ],
+  "aggregations": []
+}
