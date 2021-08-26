@@ -1,22 +1,13 @@
 package de.metas.bpartner.composite;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.bpartner.OrgMappingId;
-import org.adempiere.ad.table.RecordChangeLog;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.user.role.UserRole;
 import de.metas.greeting.GreetingId;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
@@ -24,6 +15,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.ad.table.RecordChangeLog;
+
+import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -66,6 +65,7 @@ public class BPartnerContact
 	public static final String MOBILE_PHONE = "mobilePhone";
 	public static final String DESCRIPTION = "description";
 	public static final String GREETING_ID = "greetingId";
+	public static final String ROLES = "roles";
 
 	private BPartnerContactId id;
 
@@ -116,6 +116,9 @@ public class BPartnerContact
 	@Setter(AccessLevel.NONE)
 	private final Set<String> handles = new HashSet<>();
 
+	@Setter(AccessLevel.NONE)
+	private final List<UserRole> roles;
+
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
 	 * <p>
@@ -140,7 +143,8 @@ public class BPartnerContact
 			@Nullable final String phone,
 			@Nullable final BPartnerContactType contactType,
 			@Nullable final RecordChangeLog changeLog,
-			@Nullable final OrgMappingId orgMappingId)
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final List<UserRole> roles)
 	{
 		setId(id);
 
@@ -165,6 +169,7 @@ public class BPartnerContact
 		this.changeLog = changeLog;
 
 		this.orgMappingId = orgMappingId;
+		this.roles = roles;
 	}
 
 	public BPartnerContact deepCopy()

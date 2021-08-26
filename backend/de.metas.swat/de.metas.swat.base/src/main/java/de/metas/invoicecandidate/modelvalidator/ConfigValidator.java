@@ -31,6 +31,7 @@ import de.metas.aggregation.listeners.IAggregationListener;
 import de.metas.aggregation.listeners.IAggregationListeners;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.bpartner.user.role.interceptor.C_User_Assigned_Role;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.event.IEventBusFactory;
@@ -122,6 +123,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_InventoryLine());
 		engine.addModelValidator(new M_ProductGroup_Product());
 		engine.addModelValidator(new M_ProductGroup());
+		engine.addModelValidator(new C_User_Assigned_Role());
 	}
 
 	@Override
