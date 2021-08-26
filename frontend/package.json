@@ -123,7 +123,7 @@
     "@fullcalendar/interaction": "5.9.0",
     "@fullcalendar/react": "5.9.0",
     "@fullcalendar/timegrid": "5.9.0",
-    "@stomp/stompjs": "5.4.3",
+    "@stomp/stompjs": "6.1.0",
     "@zxing/library": "0.12.3",
     "axios": "^0.21.1",
     "bootstrap": "4.3.1",
@@ -183,7 +183,7 @@
     "redux-promise": "0.6.0",
     "redux-thunk": "2.3.0",
     "reselect": "4.0.0",
-    "sockjs-client": "1.4.0",
+    "sockjs-client": "1.5.2",
     "throttle-debounce": "2.1.0",
     "timer-machine": "1.1.0",
     "uuid": "8.3.2"
