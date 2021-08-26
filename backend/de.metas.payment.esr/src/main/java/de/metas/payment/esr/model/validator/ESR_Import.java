@@ -72,7 +72,7 @@ public class ESR_Import
 		final Optional<BPartnerId> orgBPartnerIdOptional = bPartnerOrgBL.retrieveLinkedBPartnerId(orgId);
 		if (!orgBPartnerIdOptional.isPresent())
 		{
-			esrImport.setAD_Org_ID(-1);
+			esrImport.setC_BP_BankAccount_ID(-1);
 			return;
 		}
 
@@ -81,7 +81,7 @@ public class ESR_Import
 
 		if (!orgBankAccount.isPresent())
 		{
-			esrImport.setAD_Org_ID(-1);
+			esrImport.setC_BP_BankAccount_ID(-1);
 			return;
 		}
 
