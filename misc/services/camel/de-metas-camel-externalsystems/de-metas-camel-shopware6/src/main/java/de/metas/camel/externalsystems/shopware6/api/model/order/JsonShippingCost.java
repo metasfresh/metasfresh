@@ -43,7 +43,7 @@ public class JsonShippingCost
 	@JsonProperty("calculatedTaxes")
 	List<JsonTax> calculatedTaxes;
 
-	@NonNull
+	@Nullable
 	@JsonProperty("totalPrice")
 	BigDecimal totalPrice;
 	

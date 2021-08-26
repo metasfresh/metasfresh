@@ -146,21 +146,28 @@ public class OLCandRequestProcessor implements Processor
 		final TaxProductIdProvider taxProductIdProvider = context.getTaxProductIdProvider();
 		if (taxProductIdProvider != null)
 		{
-			if (context.getShippingCostNotNull().getTotalPrice().signum() > 0)
+			final BigDecimal totalPrice = context.getShippingCostNotNull().getTotalPrice();
+			final List<JsonTax> calculatedTaxes = context.getShippingCostNotNull().getCalculatedTaxes();
+
+			final boolean hasTotalShippingPrice = totalPrice != null && totalPrice.signum() > 0;
+			final boolean hasCalculatedTaxes = calculatedTaxes != null && !calculatedTaxes.isEmpty();
+			final boolean orderContainsShippingCosts = hasTotalShippingPrice || hasCalculatedTaxes;
+
+			if (orderContainsShippingCosts)
 			{
-				final List<JsonTax> calculatedTaxes = context.getShippingCostNotNull().getCalculatedTaxes();
-				if (calculatedTaxes.isEmpty())
-				{ // case: the order is tax-free
+				if (!hasCalculatedTaxes)
+				{ // case: the order is tax-free; there is just a total shipping price
 					final BigDecimal taxRate = ZERO;
-					olCandCreateRequestBuilder
-							.externalLineId(FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX + taxRate)
-							.line(null)
-							.orderLineGroup(null)
-							.description(null)
-							.productIdentifier(String.valueOf(taxProductIdProvider.getProductIdByVatRate(taxRate).getValue()))
-							.price(context.getShippingCostNotNull().getTotalPrice())
-							.qty(BigDecimal.ONE)
-							.build();
+					olCandCreateBulkRequestBuilder.request(
+							olCandCreateRequestBuilder
+									.externalLineId(FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX + taxRate)
+									.line(null)
+									.orderLineGroup(null)
+									.description(null)
+									.productIdentifier(JsonMetasfreshId.toValueStr(taxProductIdProvider.getProductIdByVatRate(taxRate)))
+									.price(totalPrice)
+									.qty(BigDecimal.ONE)
+									.build());
 				}
 				else
 				{
@@ -201,9 +208,9 @@ public class OLCandRequestProcessor implements Processor
 				shippingBPLocationExternalIdentifier);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
-				.bPartnerIdentifier(String.valueOf(bpartnerId.getValue()))
-				.bPartnerLocationIdentifier(String.valueOf(shippingBPartnerLocationId.getValue()))
-				.contactIdentifier(String.valueOf(contactId.getValue()))
+				.bPartnerIdentifier(JsonMetasfreshId.toValueStr(bpartnerId))
+				.bPartnerLocationIdentifier(JsonMetasfreshId.toValueStr(shippingBPartnerLocationId))
+				.contactIdentifier(JsonMetasfreshId.toValueStr(contactId))
 				.build();
 	}
 
@@ -233,9 +240,9 @@ public class OLCandRequestProcessor implements Processor
 				billingBPLocationExternalIdentifier);
 
 		return JsonRequestBPartnerLocationAndContact.builder()
-				.bPartnerIdentifier(String.valueOf(bpartnerId.getValue()))
-				.bPartnerLocationIdentifier(String.valueOf(billingBPartnerLocationId.getValue()))
-				.contactIdentifier(String.valueOf(contactId.getValue()))
+				.bPartnerIdentifier(JsonMetasfreshId.toValueStr(bpartnerId))
+				.bPartnerLocationIdentifier(JsonMetasfreshId.toValueStr(billingBPartnerLocationId))
+				.contactIdentifier(JsonMetasfreshId.toValueStr(contactId))
 				.build();
 	}
 
@@ -258,7 +265,9 @@ public class OLCandRequestProcessor implements Processor
 		final JsonOrderLineGroup jsonOrderLineGroup = getJsonOrderLineGroup(orderLine);
 
 		// in case of a "bundle" item (group main item), we ignore the price, because we already get al the components' prices
-		final BigDecimal price = jsonOrderLineGroup.isGroupMainItem() ? ZERO : orderLine.getUnitPrice();
+		final BigDecimal price = (jsonOrderLineGroup != null && jsonOrderLineGroup.isGroupMainItem()) 
+				? ZERO 
+				: orderLine.getUnitPrice();
 
 		return olCandCreateRequestBuilder
 				.externalLineId(orderLine.getId())
@@ -375,7 +384,7 @@ public class OLCandRequestProcessor implements Processor
 						.line(null)
 						.orderLineGroup(null)
 						.description(null)
-						.productIdentifier(String.valueOf(taxProductIdProvider.getProductIdByVatRate(tax.getTaxRate()).getValue()))
+						.productIdentifier(JsonMetasfreshId.toValueStr(taxProductIdProvider.getProductIdByVatRate(tax.getTaxRate())))
 						.price(tax.getPrice())
 						.qty(BigDecimal.ONE)
 						.build()
