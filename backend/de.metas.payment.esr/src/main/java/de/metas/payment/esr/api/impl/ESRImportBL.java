@@ -1167,11 +1167,12 @@ public class ESRImportBL implements IESRImportBL
 
 			final String invoiceOrgName = orgsRepo.retrieveOrgValue(invoice.getAD_Org_ID());
 			final String importLineOrgName = orgsRepo.retrieveOrgValue(importLine.getAD_Org_ID());
+
+			ESRDataLoaderUtil.addMatchErrorMsg(importLine,
+											   msgBL.getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
+													   invoiceOrgName,
+													   importLineOrgName }));
 		}
-		ESRDataLoaderUtil.addMatchErrorMsg(importLine,
-										   msgBL.getMsg(ctx, ESR_NO_HAS_WRONG_ORG_2P, new Object[] {
-												   invoiceOrgName,
-												   importLineOrgName }));
 
 		importLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		importLine.setC_BPartner_ID(invoice.getC_BPartner_ID());
