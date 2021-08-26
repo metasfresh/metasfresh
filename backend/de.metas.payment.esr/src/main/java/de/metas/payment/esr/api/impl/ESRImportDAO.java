@@ -13,11 +13,13 @@ import de.metas.document.refid.api.IReferenceNoDAO;
 import de.metas.document.refid.model.I_C_ReferenceNo;
 import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.api.PaymentQuery;
 import de.metas.payment.esr.ESRConstants;
 import de.metas.payment.esr.ESRImportId;
@@ -31,7 +33,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -64,6 +65,8 @@ public class ESRImportDAO implements IESRImportDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	/**
 	 * Used to order lines by <code>LineNo, ESR_ImportLine_ID</code>.
@@ -419,7 +422,6 @@ public class ESRImportDAO implements IESRImportDAO
 		final Money trxAmt = extractESRPaymentAmt(esrLine);
 
 		final Set<PaymentId> existentPaymentIds = paymentBL.getPaymentIds(PaymentQuery.builder()
-																				  .limit(QueryLimit.ofInt(1))
 																				  .docStatus(DocStatus.Completed)
 																				  .dateTrx(esrLine.getPaymentDate())
 																				  .bpartnerId(bpartnerId)
@@ -438,7 +440,14 @@ public class ESRImportDAO implements IESRImportDAO
 					return Optional.of(paymentId);
 				}
 			}
-			return Optional.empty();
+
+			final de.metas.invoice.InvoiceId invoiceId = de.metas.invoice.InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID());
+			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+			final I_C_Payment payment = paymentDAO.getById(paymentId);
+			if (paymentBL.isMatchInvoice(payment, invoice))
+			{
+				return Optional.of(paymentId);
+			}
 		}
 
 		return Optional.empty();

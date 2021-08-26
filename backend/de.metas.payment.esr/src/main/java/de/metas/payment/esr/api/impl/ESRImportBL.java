@@ -1142,6 +1142,11 @@ public class ESRImportBL implements IESRImportBL
 					importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Current_Invoice);
 				}
 			}
+
+			else if(invoice.isPaid() && paymentId != null)
+			{
+				importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
+			}
 			else if (X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched.equals(importLine.getESR_Document_Status()) && paymentId == null)
 			{
 				importLine.setESR_Payment_Action(null);
