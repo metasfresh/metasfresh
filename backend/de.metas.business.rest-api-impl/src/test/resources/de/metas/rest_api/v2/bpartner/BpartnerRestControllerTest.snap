@@ -163,7 +163,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "invoiceEmailEnabled" : true,
         "name" : "c1_name",
         "newsletter" : false,
-        "phone" : "c1_phone"
+        "phone" : "c1_phone",
+        "roles" : [ ]
       },
       {
         "active" : true,
@@ -232,7 +233,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "invoiceEmailEnabled" : true,
         "name" : "c2_name",
         "newsletter" : false,
-        "phone" : "c2_phone"
+        "phone" : "c2_phone",
+        "roles" : [ ]
       }
     ],
     "locations" : [
@@ -494,6 +496,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "value" : "contactRecord.value"
       },
       {
@@ -563,7 +566,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "invoiceEmailEnabled" : true,
         "name" : "newContact_name",
         "newsletter" : false,
-        "phone" : "newContact_phone"
+        "phone" : "newContact_phone",
+        "roles" : [ ]
       }
     ],
     "locations" : [
@@ -770,6 +774,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "value" : "contactRecord.value"
       },
       {
@@ -836,7 +841,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "userId" : 100014
         },
         "name" : "jsonContact.name-UPDATED",
-        "newsletter" : false
+        "newsletter" : false,
+        "roles" : [ ]
       }
     ],
     "locations" : [
@@ -1043,6 +1049,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "value" : "contactRecord.value"
       }
     ],
@@ -1250,6 +1257,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "value" : "contactRecord.value"
       }
     ],
