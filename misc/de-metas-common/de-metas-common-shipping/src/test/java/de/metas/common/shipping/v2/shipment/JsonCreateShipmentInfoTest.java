@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de-metas-common-shipping
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,27 +20,24 @@
  * #L%
  */
 
-package de.metas.rest_api.v2.ordercandidates.impl;
+package de.metas.common.shipping.v2.shipment;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
-import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
-import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
+import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
-public class JsonOLProcessCompositeResponseTest
+public class JsonCreateShipmentInfoTest
 {
 	private ObjectMapper objectMapper;
 
@@ -60,42 +57,34 @@ public class JsonOLProcessCompositeResponseTest
 	}
 
 	@Test
-	public void test() throws Exception
+	public void test() throws IOException
 	{
-
-		final JsonOLProcessCompositeResponse request = JsonOLProcessCompositeResponse.builder()
-				.olCandProcessResponse(getJsonOLCandProcessResponse())
-				.shipmentResponse(getJsonCreateShipmentResponse())
+		final JsonCreateShipmentInfo shipmentInfo = JsonCreateShipmentInfo.builder()
+				.shipmentScheduleId(JsonMetasfreshId.of(1))
+				.shipmentScheduleIdentifier(ShipmentScheduleIdentifier.builder()
+													.externalHeaderId("externalHeaderId")
+													.externalLineId("externalLineId")
+													.build())
+				.deliveryRule("deliveryRule")
+				.movementQuantity(BigDecimal.TEN)
+				.businessPartnerSearchKey("businessPartnerSearchKey")
+				.documentNo("documentNo")
+				.shipperInternalName("shipperInternalName")
+				.shipToLocation(JsonLocation.builder()
+										.city("city")
+										.countryCode("countryCode")
+										.houseNo("houseNo")
+										.street("street")
+										.zipCode("zipCode")
+										.build())
+				.attributes(ImmutableList.of(JsonAttributeInstance.builder()
+													 .attributeCode("attributeCode")
+													 .valueDate(LocalDate.now())
+													 .valueNumber(BigDecimal.TEN)
+													 .valueStr("valueStr").build()))
 				.build();
 
-		testSerializeDeserialize(request);
-	}
-
-	private JsonOLCandProcessResponse getJsonOLCandProcessResponse()
-	{
-		final JsonOLCandClearingResponse olCandClearingResponse = JsonOLCandClearingResponse.builder()
-				.olCandIdToValidationStatus(ImmutableMap.of(1, true))
-				.successfullyCleared(true).build();
-
-		final JsonGenerateOrdersResponse generateOrdersResponse = JsonGenerateOrdersResponse.builder()
-				.orderIds(ImmutableList.of(JsonMetasfreshId.of(2)))
-				.build();
-
-		return JsonOLCandProcessResponse.builder()
-				.jsonOLCandClearingResponse(olCandClearingResponse)
-				.jsonGenerateOrdersResponse(generateOrdersResponse)
-				.build();
-	}
-
-	private JsonCreateShipmentResponse getJsonCreateShipmentResponse()
-	{
-		final List<JsonMetasfreshId> asyncWorkpackageIds = ImmutableList.of(JsonMetasfreshId.of(1));
-		final List<JsonMetasfreshId> shipmentIds = ImmutableList.of(JsonMetasfreshId.of(1));
-
-		return JsonCreateShipmentResponse.builder()
-				.createdAsyncWorkpackageIdList(asyncWorkpackageIds)
-				.createdShipmentIds(shipmentIds)
-				.build();
+		testSerializeDeserialize(shipmentInfo);
 	}
 
 	private void testSerializeDeserialize(final Object obj) throws IOException

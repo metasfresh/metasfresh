@@ -23,7 +23,10 @@
 package de.metas.cucumber.stepdefs.olcand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -36,7 +39,7 @@ import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.order.OrderId;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
-import de.metas.rest_api.v2.ordercandidates.impl.JsonOLProcessCompositeResponse;
+import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -49,6 +52,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -65,7 +69,11 @@ public class C_OLCand_StepDef
 	private final StepDefData<I_C_Invoice> invoiceTable;
 	private final TestContext testContext;
 
-	final ObjectMapper mapper = new ObjectMapper();
+	final ObjectMapper mapper = new ObjectMapper()
+			.findAndRegisterModules()
+			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+			.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE)
+			.enable(MapperFeature.USE_ANNOTATIONS);
 
 	public C_OLCand_StepDef(
 			@NonNull final StepDefData<I_C_Order> orderTable,
@@ -88,17 +96,40 @@ public class C_OLCand_StepDef
 	@Then("process metasfresh response")
 	public void process_metasfresh_response(@NonNull final DataTable table) throws JsonProcessingException
 	{
-		final JsonOLProcessCompositeResponse compositeResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonOLProcessCompositeResponse.class);
+		final JsonProcessCompositeResponse compositeResponse = mapper.readValue(testContext.getApiResponse().getContent(), JsonProcessCompositeResponse.class);
 		assertThat(compositeResponse).isNotNull();
 
 		final Map<String, String> row = table.asMaps().get(0);
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
-		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, "Shipment.Identifier");
-		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, "Invoice.Identifier");
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Order.Identifier");
+		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Shipment.Identifier");
+		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "Invoice.Identifier");
 
-		processOrderResponse(compositeResponse.getOlCandProcessResponse(), orderIdentifier);
-		processShipmentResponse(compositeResponse.getShipmentResponse(), shipmentIdentifier);
-		processInvoiceResponse(compositeResponse.getInvoiceInfoResponse(), invoiceIdentifier);
+		if (orderIdentifier == null)
+		{
+			assertThat(compositeResponse.getOlCandProcessResponse()).isEqualTo(null);
+		}
+		else
+		{
+			processOrderResponse(compositeResponse.getOlCandProcessResponse(), orderIdentifier);
+		}
+
+		if (shipmentIdentifier == null)
+		{
+			assertThat(compositeResponse.getShipmentResponse()).isEqualTo(null);
+		}
+		else
+		{
+			processShipmentResponse(compositeResponse.getShipmentResponse(), shipmentIdentifier);
+		}
+
+		if (invoiceIdentifier == null)
+		{
+			assertThat(compositeResponse.getInvoiceInfoResponse()).isEqualTo(null);
+		}
+		else
+		{
+			processInvoiceResponse(compositeResponse.getInvoiceInfoResponse(), invoiceIdentifier);
+		}
 	}
 
 	private void processOrderResponse(
@@ -121,7 +152,7 @@ public class C_OLCand_StepDef
 
 		assertThat(order).isNotNull();
 
-		orderTable.put(orderIdentifier, order);
+		orderTable.putOrReplace(orderIdentifier, order);
 	}
 
 	private void processShipmentResponse(
@@ -136,14 +167,26 @@ public class C_OLCand_StepDef
 
 		assertThat(generatedShipmentIds).isNotEmpty();
 
-		final I_M_InOut shipment = queryBL.createQueryBuilder(I_M_InOut.class)
+		final List<I_M_InOut> shipments = queryBL.createQueryBuilder(I_M_InOut.class)
 				.addInArrayFilter(I_M_InOut.COLUMNNAME_M_InOut_ID, generatedShipmentIds)
 				.create()
-				.firstOnly(I_M_InOut.class);
+				.list();
 
-		assertThat(shipment).isNotNull();
+		assertThat(shipments).isNotNull();
 
-		shipmentTable.put(shipmentIdentifier, shipment);
+		if (shipments.size() > 1)
+		{
+			final List<String> identifiers = splitIdentifiers(shipmentIdentifier);
+
+			for (int index = 0; index < shipments.size(); index++)
+			{
+				shipmentTable.putOrReplace(identifiers.get(index), shipments.get(index));
+			}
+		}
+		else
+		{
+			shipmentTable.putOrReplace(shipmentIdentifier, shipments.get(0));
+		}
 	}
 
 	private void processInvoiceResponse(
@@ -166,6 +209,12 @@ public class C_OLCand_StepDef
 
 		assertThat(invoice).isNotNull();
 
-		invoiceTable.put(invoiceIdentifier, invoice);
+		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+	}
+
+	@NonNull
+	private List<String> splitIdentifiers(@NonNull final String identifiers)
+	{
+		return Arrays.asList(identifiers.split(","));
 	}
 }

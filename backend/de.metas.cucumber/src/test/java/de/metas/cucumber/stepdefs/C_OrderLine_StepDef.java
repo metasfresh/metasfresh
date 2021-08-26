@@ -168,7 +168,9 @@ public class C_OrderLine_StepDef
 	{
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "Order.Identifier");
 		final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
-		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qty");
+		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(row, "qtydelivered");
+		final BigDecimal qtyordered = DataTableUtil.extractBigDecimalForColumnName(row, "qtyordered");
+		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 		final BigDecimal price = DataTableUtil.extractBigDecimalWithScaleForColumnName(row, "price");
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
@@ -182,6 +184,8 @@ public class C_OrderLine_StepDef
 		assertThat(orderLine.getDiscount()).isEqualTo(discount);
 		assertThat(orderLine.isProcessed()).isEqualTo(processed);
 		assertThat(orderLine.getM_Product_ID()).isEqualTo(productId);
+		assertThat(orderLine.getQtyOrdered()).isEqualTo(qtyordered);
+		assertThat(orderLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(orderLine.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());

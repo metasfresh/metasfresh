@@ -33,8 +33,8 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-@JsonDeserialize(builder = JsonOLProcessCompositeResponse.JsonOLProcessCompositeResponseBuilder.class)
-public class JsonOLProcessCompositeResponse
+@JsonDeserialize(builder = JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder.class)
+public class JsonProcessCompositeResponse
 {
 	JsonOLCandProcessResponse olCandProcessResponse;
 
@@ -43,7 +43,7 @@ public class JsonOLProcessCompositeResponse
 	List<JSONInvoiceInfoResponse> invoiceInfoResponse;
 
 	@Builder
-	JsonOLProcessCompositeResponse(
+	JsonProcessCompositeResponse(
 			@JsonProperty("olCandProcessResponse") final JsonOLCandProcessResponse olCandProcessResponse,
 			@JsonProperty("shipmentResponse") final JsonCreateShipmentResponse shipmentResponse,
 			@JsonProperty("invoiceInfoResponse") final List<JSONInvoiceInfoResponse> invoiceInfoResponse)

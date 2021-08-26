@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class OLCandDAO implements IOLCandDAO
@@ -154,11 +155,10 @@ public class OLCandDAO implements IOLCandDAO
 		if (searchingTimeWindow != null)
 		{
 			olCandsQBuilder.addBetweenFilter(I_C_OLCand.COLUMNNAME_Created, TimeUtil.asTimestamp(searchingTimeWindow.getStartDate()),
-					TimeUtil.asTimestamp(searchingTimeWindow.getEndDate()), DateTruncQueryFilterModifier.DAY);
+											 TimeUtil.asTimestamp(searchingTimeWindow.getEndDate()), DateTruncQueryFilterModifier.DAY);
 		}
 
 		final List<I_C_OLCand> olCands = olCandsQBuilder.create().list();
-
 
 		final Map<PoReferenceLookupKey, Integer> nrOfOLCandsByPoReferenceKey = new HashMap<>();
 
@@ -184,22 +184,39 @@ public class OLCandDAO implements IOLCandDAO
 	}
 
 	@NonNull
-	public Set<OrderId> getOrderIdsToOLCandIds(@NonNull final Set<OLCandId> olCandIds)
+	public Set<OrderId> getOrderIdsByOLCandIds(@NonNull final Set<OLCandId> olCandIds)
 	{
-		final Set<OrderLineId> orderLineIds = getOrderLineIdsByOLCandIds(olCandIds);
+		final Set<OrderLineId> orderLineIds = this.retrieveOLCandIdToOrderLineId(olCandIds)
+				.values()
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
 
 		return orderDAO.retrieveIdsByOrderLineIds(orderLineIds);
 	}
 
 	@NonNull
-	private Set<OrderLineId> getOrderLineIdsByOLCandIds(@NonNull final Set<OLCandId> olCandIds)
+	public Map<OLCandId, I_C_OLCand> retrieveByIds(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						olCand -> OLCandId.ofRepoId(olCand.getC_OLCand_ID()),
+						Function.identity())
+				);
+	}
+
+	@NonNull
+	public Map<OLCandId, OrderLineId> retrieveOLCandIdToOrderLineId(@NonNull final Set<OLCandId> olCandIds)
 	{
 		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
 				.addInArrayFilter(I_C_Order_Line_Alloc.COLUMNNAME_C_OLCand_ID, olCandIds)
 				.create()
 				.stream()
-				.map(I_C_Order_Line_Alloc::getC_OrderLine_ID)
-				.map(OrderLineId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+				.collect(ImmutableMap.toImmutableMap(
+						olAlloc -> OLCandId.ofRepoId(olAlloc.getC_OLCand_ID()),
+						olAlloc -> OrderLineId.ofRepoId(olAlloc.getC_OrderLine_ID())
+				));
 	}
 }

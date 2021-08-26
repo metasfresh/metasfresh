@@ -118,5 +118,4 @@ public interface IShipmentSchedulePA extends ISingletonService
 
 	ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsByOrderId(OrderId orderId);
 
-	Set<ShipmentScheduleId> retrieveUnprocessedSchedulesOrderId(@NonNull final OrderId orderId);
 }

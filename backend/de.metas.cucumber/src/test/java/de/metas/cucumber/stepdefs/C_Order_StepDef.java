@@ -224,6 +224,7 @@ public class C_Order_StepDef
 		final String deliveryViaRule = DataTableUtil.extractStringForColumnName(row, "deliveryViaRule");
 		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "processed", false);
 		final String externalId = DataTableUtil.extractStringForColumnName(row, "externalId");
+		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 
 		final I_C_Order order = orderTable.get(identifier);
 
@@ -234,6 +235,7 @@ public class C_Order_StepDef
 		assertThat(order.getDeliveryRule()).isEqualTo(deliveryRule);
 		assertThat(order.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
 		assertThat(order.isProcessed()).isEqualTo(processed);
+		assertThat(order.getDocStatus()).isEqualTo(docStatus);
 
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyCode));
 		assertThat(order.getC_Currency_ID()).isEqualTo(currency.getId().getRepoId());

@@ -24,16 +24,21 @@ package de.metas.rest_api.v2.shipping;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inoutcandidate.ShipmentScheduleId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -51,6 +56,10 @@ class GenerateShipmentsRequest
 	@NonNull
 	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
 
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	AsyncBatchId asyncBatchId;
+
 	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, String> result = ImmutableMap.builder();
@@ -65,5 +74,11 @@ class GenerateShipmentsRequest
 			result.put(entry.getKey(), documentNo);
 		}
 		return result.build();
+	}
+
+	@NonNull
+	public Optional<AsyncBatchId> getAsyncBatchId()
+	{
+		return Optional.ofNullable(asyncBatchId);
 	}
 }

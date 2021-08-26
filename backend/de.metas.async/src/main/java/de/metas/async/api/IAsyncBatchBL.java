@@ -8,7 +8,6 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 
 import java.util.Optional;
 
@@ -91,4 +90,6 @@ public interface IAsyncBatchBL extends ISingletonService
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
 
 	void updateProcessedFromMilestones(AsyncBatchId asyncBatchId);
+
+	I_C_Async_Batch newProcessAsyncBatch(String asyncBatchType);
 }

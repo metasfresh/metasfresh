@@ -71,11 +71,13 @@ public class C_Invoice_StepDef
 		final String poReference = DataTableUtil.extractStringForColumnName(row, "poReference");
 		final String paymentTerm = DataTableUtil.extractStringForColumnName(row, "paymentTerm");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
+		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 
 		assertThat(invoice.getC_BPartner_ID()).isEqualTo(bpartnerId);
 		assertThat(invoice.getC_BPartner_Location_ID()).isEqualTo(bpartnerLocationId);
 		assertThat(invoice.getPOReference()).isEqualTo(poReference);
 		assertThat(invoice.isProcessed()).isEqualTo(processed);
+		assertThat(invoice.getDocStatus()).isEqualTo(docStatus);
 
 		final PaymentTermQuery query = PaymentTermQuery.builder()
 				.orgId(StepDefConstants.ORG_ID)

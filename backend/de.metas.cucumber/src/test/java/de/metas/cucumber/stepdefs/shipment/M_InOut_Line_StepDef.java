@@ -74,12 +74,12 @@ public class M_InOut_Line_StepDef
 
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
-		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, "qty");
-		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
+		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
-		assertThat(shipmentLine.getMovementQty()).isEqualTo(qty);
-		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(productId);
+		assertThat(shipmentLine.getMovementQty()).isEqualTo(movementqty);
+		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
 	}
 }

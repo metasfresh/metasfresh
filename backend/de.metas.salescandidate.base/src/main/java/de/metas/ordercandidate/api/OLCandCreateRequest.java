@@ -121,6 +121,8 @@ public class OLCandCreateRequest
 
 	AsyncBatchId asyncBatchId;
 
+	BigDecimal qtyShipped;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -164,7 +166,8 @@ public class OLCandCreateRequest
 			@Nullable final String deliveryViaRule,
 			@Nullable final String deliveryRule,
 			@Nullable final String importWarningMessage,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final AsyncBatchId asyncBatchId,
+			@Nullable final BigDecimal qtyShipped)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -221,5 +224,6 @@ public class OLCandCreateRequest
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;
 		this.asyncBatchId = asyncBatchId;
+		this.qtyShipped = qtyShipped;
 	}
 }

@@ -94,7 +94,7 @@ public class OrderService
 
 		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
 
-		return olCandDAO.getOrderIdsToOLCandIds(olCandIds);
+		return olCandDAO.getOrderIdsByOLCandIds(olCandIds);
 	}
 
 	@NonNull

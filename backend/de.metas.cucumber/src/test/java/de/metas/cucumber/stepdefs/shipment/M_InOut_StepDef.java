@@ -56,6 +56,7 @@ public class M_InOut_StepDef
 			final Timestamp dateOrdered = DataTableUtil.extractDateTimestampForColumnName(row, "dateordered");
 			final String poReference = DataTableUtil.extractStringForColumnName(row, "poreference");
 			final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
+			final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 
 			final I_M_InOut shipment = shipmentTable.get(identifier);
 
@@ -64,6 +65,7 @@ public class M_InOut_StepDef
 			assertThat(shipment.getDateOrdered()).isEqualTo(dateOrdered);
 			assertThat(shipment.getPOReference()).isEqualTo(poReference);
 			assertThat(shipment.isProcessed()).isEqualTo(processed);
+			assertThat(shipment.getDocStatus()).isEqualTo(docStatus);
 		}
 	}
 }

@@ -6,16 +6,16 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for C_OLCand
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_OLCand
+public interface I_C_OLCand 
 {
 
 	String Table_Name = "C_OLCand";
 
-	//	/** AD_Table_ID=540244 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540244 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -2150,6 +2150,27 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_QtyItemCapacity = new ModelColumn<>(I_C_OLCand.class, "QtyItemCapacity", null);
 	String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
+
+	/**
+	 * Set Qty Shipped.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyShipped (@Nullable BigDecimal QtyShipped);
+
+	/**
+	 * Get Qty Shipped.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyShipped();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_QtyShipped = new ModelColumn<>(I_C_OLCand.class, "QtyShipped", null);
+	String COLUMNNAME_QtyShipped = "QtyShipped";
 
 	/**
 	 * Set Record ID.

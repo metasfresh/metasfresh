@@ -66,6 +66,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
@@ -266,13 +267,41 @@ public class InvoiceService
 			return ImmutableSet.of();
 		}
 
-		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
-				.asyncBatchId(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()))
-				.orgId(Env.getOrgId())
-				.milestoneName(MilestoneName.INVOICE_CREATION)
-				.build();
+		generateInvoicesForAsyncBatch(invoiceCandIds, asyncBatch);
 
-		final AsyncBatchMilestoneId milestoneId = asyncBathMilestoneService.save(asyncBatchMilestone).getIdNotNull();
+		return invoiceDAO.getInvoiceIdsForOrderIds(ImmutableList.copyOf(orderIds))
+				.values()
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public Set<InvoiceId> generateInvoicesFromShipmentLines(
+			@NonNull final List<I_M_InOutLine> shipmentLines,
+			@NonNull final I_C_Async_Batch asyncBatch)
+	{
+		final Set<InvoiceCandidateId> invoiceCandidateIds = shipmentLines.stream()
+				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
+				.flatMap(List::stream)
+				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+				.map(InvoiceCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		generateInvoicesForAsyncBatch(invoiceCandidateIds, asyncBatch);
+
+		return invoiceCandidateIds.stream()
+				.map(invoiceCandDAO::retrieveIlForIc)
+				.flatMap(List::stream)
+				.map(org.compiere.model.I_C_InvoiceLine::getC_Invoice_ID)
+				.map(InvoiceId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final I_C_Async_Batch asyncBatch)
+	{
+		final AsyncBatchMilestoneId milestoneId = newScheduleInvoiceMilestone(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
+
+		assignAsyncBatchIdToInvoiceCandidates(invoiceCandIds, AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
 
 		asyncBatchMilestoneObserver.observeOn(milestoneId);
 
@@ -288,11 +317,6 @@ public class InvoiceService
 		});
 
 		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
-
-		return invoiceDAO.getInvoiceIdsForOrderIds(ImmutableList.copyOf(orderIds))
-				.values()
-				.stream()
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private JsonInvoiceCandidatesResponseItem buildJSONItem(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
@@ -397,5 +421,27 @@ public class InvoiceService
 		invoicingParams.setDateInvoiced(LocalDate.now());
 
 		return invoicingParams;
+	}
+
+	@NonNull
+	private AsyncBatchMilestoneId newScheduleInvoiceMilestone(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
+				.asyncBatchId(asyncBatchId)
+				.orgId(Env.getOrgId())
+				.milestoneName(MilestoneName.INVOICE_CREATION)
+				.build();
+
+		final AsyncBatchMilestone milestone = asyncBathMilestoneService.save(asyncBatchMilestone);
+
+		return milestone.getIdNotNull();
+	}
+
+	private void assignAsyncBatchIdToInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> ids, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		invoiceCandDAO.getByIds(ids)
+				.stream()
+				.peek(invoiceCand -> invoiceCand.setC_Async_Batch_ID(asyncBatchId.getRepoId()))
+				.forEach(invoiceCandDAO::save);
 	}
 }

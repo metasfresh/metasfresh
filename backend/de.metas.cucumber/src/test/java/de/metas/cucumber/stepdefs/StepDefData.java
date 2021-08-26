@@ -28,9 +28,8 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class StepDefData<T>
 {
@@ -43,6 +42,20 @@ public class StepDefData<T>
 		assertThat(oldRecord)
 				.as("An identifier may be used just once, but %s was already used with %s", identifier, oldRecord)
 				.isNull();
+	}
+
+	public void putOrReplace(@NonNull final String identifier, @NonNull final T productRecord)
+	{
+		final T oldRecord = records.get(identifier);
+
+		if (oldRecord == null)
+		{
+			put(identifier, productRecord);
+		}
+		else
+		{
+			records.replace(identifier, productRecord);
+		}
 	}
 
 	public void putAll(@NonNull final Map<String, T> map)

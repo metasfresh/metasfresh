@@ -126,6 +126,9 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final AsyncBatchId asyncBatchId;
 
+	@Getter
+	private final BigDecimal qtyShipped;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -142,7 +145,8 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final DocTypeId orderDocTypeId,
 			@Nullable final BPartnerId salesRepId,
 			@Nullable final OrderLineGroup orderLineGroup,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final AsyncBatchId asyncBatchId,
+			@Nullable final BigDecimal qtyShipped)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -189,6 +193,7 @@ public final class OLCand implements IProductPriceAware
 		this.orderLineGroup = orderLineGroup;
 
 		this.asyncBatchId = asyncBatchId;
+		this.qtyShipped = qtyShipped;
 	}
 
 	@Override

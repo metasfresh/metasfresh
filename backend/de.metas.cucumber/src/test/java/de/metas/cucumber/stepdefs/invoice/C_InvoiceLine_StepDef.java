@@ -60,11 +60,13 @@ public class C_InvoiceLine_StepDef
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
 
 			final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 
-			//dev-note: we assume the tests are not using the same product on different lines
+			//dev-note: we assume the tests are not using the same product and qty on different lines
 			final I_C_InvoiceLine invoiceLineRecord = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoiceRecord.getC_Invoice_ID())
 					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId)
+					.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_QtyInvoiced, qtyinvoiced)
 					.create()
 					.firstOnlyNotNull(I_C_InvoiceLine.class);
 
@@ -74,12 +76,12 @@ public class C_InvoiceLine_StepDef
 
 	private void validateInvoiceLine(@NonNull final I_C_InvoiceLine invoiceLine, @NonNull final Map<String, String> row)
 	{
-		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, "qty");
-		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final int productId = DataTableUtil.extractIntForColumnName(row, "productIdentifier.m_product_id");
+		final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
+		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
-		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qty);
-		assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
 		assertThat(invoiceLine.getM_Product_ID()).isEqualTo(productId);
+		assertThat(invoiceLine.getQtyInvoiced()).isEqualTo(qtyinvoiced);
+		assertThat(invoiceLine.isProcessed()).isEqualTo(processed);
 	}
 }

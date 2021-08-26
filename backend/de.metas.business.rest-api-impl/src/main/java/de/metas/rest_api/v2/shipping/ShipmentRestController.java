@@ -28,10 +28,12 @@ import de.metas.async.QueueWorkPackageId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
+import de.metas.common.shipping.v2.shipment.JsonProcessShipmentRequest;
 import de.metas.common.shipping.v2.shipment.mpackage.JsonCreateShippingPackagesRequest;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.rest_api.v2.shipping.mpackage.ShippingPackageService;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -44,6 +46,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -117,6 +120,26 @@ public class ShipmentRestController
 			final String adLanguage = Env.getADLanguageOrBaseLanguage();
 			return ResponseEntity.badRequest()
 					.body(JsonErrors.ofThrowable(ex, adLanguage));
+		}
+	}
+
+	@PutMapping("/process")
+	public ResponseEntity<JsonProcessCompositeResponse> processShipments(@RequestBody final JsonProcessShipmentRequest request)
+	{
+		log.debug("*** processShipments: Started with JsonProcessShipmentRequest: {}", request);
+
+		try
+		{
+			final JsonProcessCompositeResponse response = shipmentService.processShipmentSchedules(request);
+
+			log.debug("*** processShipments: Execution done!");
+
+			return ResponseEntity.ok(response);
+		}
+		catch (final Exception ex)
+		{
+			log.warn("Got exception while processing {}", request, ex);
+			return ResponseEntity.badRequest().build();
 		}
 	}
 

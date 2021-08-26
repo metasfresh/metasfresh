@@ -144,11 +144,11 @@ public class OrderCandidatesRestController
 	}
 
 	@PutMapping(PATH_PROCESS)
-	public ResponseEntity<JsonOLProcessCompositeResponse> processOLCands(@RequestBody @NonNull final JsonOLCandProcessRequest request)
+	public ResponseEntity<JsonProcessCompositeResponse> processOLCands(@RequestBody @NonNull final JsonOLCandProcessRequest request)
 	{
 		try
 		{
-			final JsonOLProcessCompositeResponse response = orderCandidateRestControllerService.processOLCands(request);
+			final JsonProcessCompositeResponse response = orderCandidateRestControllerService.processOLCands(request);
 			return ResponseEntity.ok(response);
 		}
 		catch (final Exception ex)

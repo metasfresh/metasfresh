@@ -29,6 +29,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @JsonDeserialize(builder = JsonOLCandProcessRequest.JsonOLCandProcessRequestBuilder.class)
 public class JsonOLCandProcessRequest
@@ -43,17 +45,20 @@ public class JsonOLCandProcessRequest
 
 	Boolean invoice;
 
+	Boolean closeOrder;
+
 	@Builder
 	JsonOLCandProcessRequest(
 			@JsonProperty("externalHeaderId") @NonNull final String externalHeaderId,
 			@JsonProperty("inputDataSourceName") @NonNull final String inputDataSourceName,
 			@JsonProperty("ship") @NonNull final Boolean ship,
-			@JsonProperty("invoice") @NonNull final Boolean invoice
-	)
+			@JsonProperty("invoice") @NonNull final Boolean invoice,
+			@JsonProperty("closeOrder") @Nullable final Boolean closeOrder)
 	{
 		this.externalHeaderId = externalHeaderId;
 		this.inputDataSourceName = inputDataSourceName;
 		this.ship = ship;
 		this.invoice = invoice;
+		this.closeOrder = closeOrder;
 	}
 }

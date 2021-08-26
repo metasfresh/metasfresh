@@ -603,16 +603,4 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.listIds(ShipmentScheduleId::ofRepoId);
 	}
 
-	@NonNull
-	@Override
-	public Set<ShipmentScheduleId> retrieveUnprocessedSchedulesOrderId(@NonNull final OrderId orderId)
-	{
-		return queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMN_C_Order_ID, orderId)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
-				.create()
-				.listIds(ShipmentScheduleId::ofRepoId);
-	}
 }

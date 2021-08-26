@@ -62,6 +62,8 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.compiere.util.Env.getCtx;
+
 public class AsyncBatchBL implements IAsyncBatchBL
 {
 	// services
@@ -460,5 +462,15 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 			queueDAO.save(asyncBatch);
 		}
+	}
+
+	@NonNull
+	public I_C_Async_Batch newProcessAsyncBatch(@NonNull final String asyncBatchType)
+	{
+		return newAsyncBatch()
+				.setContext(getCtx())
+				.setC_Async_Batch_Type(asyncBatchType)
+				.setName(asyncBatchType)
+				.build();
 	}
 }
