@@ -459,8 +459,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=652707
 
 -- 2021-08-25T07:23:00.477Z
 -- URL zum Konzept
-/* DDL */ select AD_Element_Link_Create_Missing_Field(652707)
-;
+--/* DDL */ select AD_Element_Link_Create_Missing_Field(652707)
+--;
 
 -- 2021-08-25T07:23:52.450Z
 -- URL zum Konzept
