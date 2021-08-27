@@ -25,6 +25,7 @@ package de.metas.payment.esr.model.validator;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.organization.OrgId;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
@@ -34,6 +35,7 @@ import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -72,17 +74,16 @@ public class ESR_Import
 		final Optional<BPartnerId> orgBPartnerIdOptional = bPartnerOrgBL.retrieveLinkedBPartnerId(orgId);
 		if (!orgBPartnerIdOptional.isPresent())
 		{
-			esrImport.setC_BP_BankAccount_ID(-1);
-			return;
+			throw new OrgHasNoBPartnerLinkException(orgId);
 		}
 
+		final BPartnerId orgBpartnerId = orgBPartnerIdOptional.get();
 		final Optional<I_C_BP_BankAccount> orgBankAccount =
-				bankAccountDAO.retrieveDefaultBankAccountInTrx(orgBPartnerIdOptional.get());
+				bankAccountDAO.retrieveDefaultBankAccountInTrx(orgBpartnerId);
 
 		if (!orgBankAccount.isPresent())
 		{
-			esrImport.setC_BP_BankAccount_ID(-1);
-			return;
+			throw new AdempiereException("No default bank account found for " + orgBpartnerId);
 		}
 
 		esrImport.setC_BP_BankAccount_ID(orgBankAccount.get().getC_BP_BankAccount_ID());
