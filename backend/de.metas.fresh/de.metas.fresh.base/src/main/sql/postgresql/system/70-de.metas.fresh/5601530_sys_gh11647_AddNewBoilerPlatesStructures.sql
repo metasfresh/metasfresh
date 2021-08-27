@@ -1659,3 +1659,16 @@ DELETE FROM AD_Tab WHERE AD_Tab_ID=544243
 ;
 
 
+
+----------------
+--- increase field length for description in C_DocType_trl
+
+-- 2021-08-24T12:11:47.586Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=36, FieldLength=1024,Updated=TO_TIMESTAMP('2021-08-24 14:11:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=557776
+;
+
+-- 2021-08-24T12:11:49.994Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('c_doctype_trl','Description','TEXT',null,null)
+;
