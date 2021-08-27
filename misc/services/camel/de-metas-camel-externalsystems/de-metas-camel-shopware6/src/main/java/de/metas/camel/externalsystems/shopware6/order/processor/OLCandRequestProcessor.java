@@ -378,6 +378,10 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder,
 			@NonNull final JsonTax tax)
 	{
+		if (tax.getPrice().signum() == 0)
+		{
+			return Optional.empty();
+		}
 		return Optional.of(
 				olCandCreateRequestBuilder
 						.externalLineId(FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX + tax.getTaxRate())
