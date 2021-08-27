@@ -63,7 +63,8 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
       "userId" : 100014
     },
     "name" : "jsonContact.name",
-    "newsletter" : false
+    "newsletter" : false,
+    "roles" : [ ]
   }
 ]
 
@@ -139,6 +140,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
     "phone" : "contactRecord.phone",
+    "roles" : [ ],
     "value" : "contactRecord.value"
   }
 ]
@@ -215,6 +217,7 @@ de.metas.rest_api.v2.bpartner.ContactRestControllerTest.createOrUpdateContact_up
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
     "phone" : "contactRecord.phone",
+    "roles" : [ ],
     "value" : "contactRecord.value"
   }
 ]

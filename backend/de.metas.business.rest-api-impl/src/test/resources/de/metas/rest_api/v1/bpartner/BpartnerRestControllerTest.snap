@@ -167,7 +167,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "name" : "c1_name",
         "newsletter" : false,
-        "phone" : "c1_phone"
+        "phone" : "c1_phone",
+        "roles" : [ ]
       },
       {
         "active" : true,
@@ -236,7 +237,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "name" : "c2_name",
         "newsletter" : false,
-        "phone" : "c2_phone"
+        "phone" : "c2_phone",
+        "roles" : [ ]
       }
     ],
     "locations" : [
@@ -501,6 +503,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "value" : "contactRecord.value"
       },
       {
@@ -570,7 +573,8 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         },
         "name" : "newContact-_name",
         "newsletter" : false,
-        "phone" : "newContact-_phone"
+        "phone" : "newContact-_phone",
+        "roles" : [ ]
       }
     ],
     "locations" : [
@@ -779,6 +783,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "value" : "contactRecord.value"
       }
     ],
@@ -988,6 +993,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "value" : "contactRecord.value"
       }
     ],
@@ -1197,6 +1203,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "value" : "contactRecord.value"
       }
     ],
