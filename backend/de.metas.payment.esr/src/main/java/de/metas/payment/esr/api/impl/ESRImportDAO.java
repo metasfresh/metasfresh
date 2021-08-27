@@ -421,18 +421,20 @@ public class ESRImportDAO implements IESRImportDAO
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(esrLine.getC_BPartner_ID());
 		final Money trxAmt = extractESRPaymentAmt(esrLine);
 
-		final Set<PaymentId> existentPaymentIds = paymentBL.getPaymentIds(PaymentQuery.builder()
-																				  .docStatus(DocStatus.Completed)
-																				  .dateTrx(esrLine.getPaymentDate())
-																				  .bpartnerId(bpartnerId)
-																				  .invoiceId(InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID()))
-																				  .payAmt(trxAmt)
-																				  .build());
+		final Iterator<PaymentId> paymentIdIterator = paymentBL.getPaymentIds(PaymentQuery.builder()
+																					  .docStatus(DocStatus.Completed)
+																					  .dateTrx(esrLine.getPaymentDate())
+																					  .bpartnerId(bpartnerId)
+																					  .invoiceId(InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID()))
+																					  .payAmt(trxAmt)
+																					  .build())
+				.stream().iterator();
 
-		List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText());
-		while (existentPaymentIds.iterator().hasNext())
+		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText());
+
+		while (paymentIdIterator.hasNext())
 		{
-			final PaymentId paymentId = existentPaymentIds.iterator().next();
+			final PaymentId paymentId = paymentIdIterator.next();
 			for (final I_ESR_ImportLine line : lines)
 			{
 				if (line.getC_Payment_ID() == paymentId.getRepoId())
@@ -440,7 +442,6 @@ public class ESRImportDAO implements IESRImportDAO
 					return Optional.of(paymentId);
 				}
 			}
-
 			final de.metas.invoice.InvoiceId invoiceId = de.metas.invoice.InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID());
 			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 			final I_C_Payment payment = paymentDAO.getById(paymentId);
