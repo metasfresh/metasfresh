@@ -437,6 +437,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return Optional.empty();
 		}
 
+		if (!InterfaceWrapperHelper.isModelInterface(model.getClass()))
+		{
+			return Optional.empty();
+		}
+
 		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(model, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
 
 		return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
@@ -465,12 +470,14 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@NonNull
-	public I_C_Async_Batch newAsyncBatch(@NonNull final String asyncBatchType)
+	public AsyncBatchId newAsyncBatch(@NonNull final String asyncBatchType)
 	{
-		return newAsyncBatch()
+		final I_C_Async_Batch asyncBatch = newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType)
 				.setName(asyncBatchType)
 				.build();
+
+		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 }

@@ -32,6 +32,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -42,11 +43,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static de.metas.async.Async_Constants.SYS_Config_WaitTimeOutMS;
+import static de.metas.async.Async_Constants.SYS_Config_WaitTimeOutMS_DEFAULT_VALUE;
+
 @Service
 public class AsyncBatchMilestoneObserver
 {
 	private static final Logger logger = LogManager.getLogger(AsyncBatchMilestoneObserver.class);
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final Map<AsyncBatchMilestoneId, CompletableFuture<Void>> asyncBatch2Completion = new ConcurrentHashMap<>();
 
@@ -65,6 +70,7 @@ public class AsyncBatchMilestoneObserver
 
 		if (successful)
 		{
+			logger.debug("asyncBatchMilestoneId={} completed successfully", id);
 			asyncBatch2Completion.get(id).complete(null);
 		}
 		else
@@ -75,6 +81,10 @@ public class AsyncBatchMilestoneObserver
 		}
 	}
 
+	/**
+	 * Waits max. the timeout specified in {@code ÀD_SysConfig de.metas.async.AsyncBatchMilestoneObserver.WaitTimeOutMS}
+	 * for the given AsyncBatchMilestoneId to be completed.
+	 */
 	public void waitToBeProcessed(@NonNull final AsyncBatchMilestoneId id)
 	{
 		if (asyncBatch2Completion.get(id) == null)
@@ -86,7 +96,10 @@ public class AsyncBatchMilestoneObserver
 		try
 		{
 			final CompletableFuture<Void> completableFuture = asyncBatch2Completion.get(id);
-			completableFuture.get(1000 * 60 * 5, TimeUnit.MILLISECONDS);
+
+			final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
+
+			completableFuture.get(timeoutMS, TimeUnit.MILLISECONDS);
 
 			removeObserver(id);
 		}
@@ -108,7 +121,9 @@ public class AsyncBatchMilestoneObserver
 		}
 		catch (final Exception e)
 		{
-			throw AdempiereException.wrapIfNeeded(e);
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("asyncBatchMilestoneId", id);
 		}
 	}
 

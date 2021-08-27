@@ -24,9 +24,11 @@ package de.metas.async.asyncbatchmilestone;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch_Milestone;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -34,16 +36,21 @@ import javax.annotation.Nullable;
 @Value
 public class AsyncBatchMilestoneId implements RepoIdAware
 {
+	int repoId;
+
+	@NonNull
+	AsyncBatchId asyncBatchId;
+
 	@JsonCreator
-	public static AsyncBatchMilestoneId ofRepoId(final int repoId)
+	public static AsyncBatchMilestoneId ofRepoId(@NonNull final AsyncBatchId asyncBatchId, final int repoId)
 	{
-		return new AsyncBatchMilestoneId(repoId);
+		return new AsyncBatchMilestoneId(asyncBatchId, repoId);
 	}
 
 	@Nullable
-	public static AsyncBatchMilestoneId ofRepoIdOrNull(final int repoId)
+	public static AsyncBatchMilestoneId ofRepoIdOrNull(@Nullable final AsyncBatchId asyncBatchId, final int repoId)
 	{
-		return repoId > 0 ? new AsyncBatchMilestoneId(repoId) : null;
+		return asyncBatchId != null && repoId > 0 ? new AsyncBatchMilestoneId(asyncBatchId, repoId) : null;
 	}
 
 	public static int toRepoId(@Nullable final AsyncBatchMilestoneId AsyncBatchMilestoneId)
@@ -51,11 +58,10 @@ public class AsyncBatchMilestoneId implements RepoIdAware
 		return AsyncBatchMilestoneId != null ? AsyncBatchMilestoneId.getRepoId() : -1;
 	}
 
-	int repoId;
-
-	private AsyncBatchMilestoneId(final int repoId)
+	private AsyncBatchMilestoneId(final @NonNull AsyncBatchId asyncBatchId, final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, I_C_Async_Batch_Milestone.COLUMNNAME_C_Async_Batch_Milestone_ID);
+		this.asyncBatchId = asyncBatchId;
 	}
 
 	@Override

@@ -127,11 +127,6 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 		@Override
 		public Optional<AsyncBatchId> extractAsyncBatchFromItem(final WorkpackagesOnCommitSchedulerTemplate<Object>.Collector collector, final Object item)
 		{
-			if (!InterfaceWrapperHelper.isModelInterface(item.getClass()))
-			{
-				return Optional.empty();
-			}
-
 			return asyncBatchBL.getAsyncBatchId(item);
 		}
 	};

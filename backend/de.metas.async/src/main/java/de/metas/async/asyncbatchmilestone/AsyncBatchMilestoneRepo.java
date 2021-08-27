@@ -100,9 +100,11 @@ public class AsyncBatchMilestoneRepo
 	@NonNull
 	private AsyncBatchMilestone toAsyncBatchMilestone(@NonNull final I_C_Async_Batch_Milestone record)
 	{
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(record.getC_Async_Batch_ID());
+
 		return AsyncBatchMilestone.builder()
-				.id(AsyncBatchMilestoneId.ofRepoId(record.getC_Async_Batch_Milestone_ID()))
-				.asyncBatchId(AsyncBatchId.ofRepoId(record.getC_Async_Batch_ID()))
+				.id(AsyncBatchMilestoneId.ofRepoId(asyncBatchId, record.getC_Async_Batch_Milestone_ID()))
+				.asyncBatchId(asyncBatchId)
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.milestoneName(MilestoneName.ofCode(record.getName()))
 				.processed(record.isProcessed())

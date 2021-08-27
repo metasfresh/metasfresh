@@ -127,6 +127,9 @@ public class OrderCandidatesRestController
 		}
 	}
 
+	/**
+	 * @deprecated please consider using {@link OrderCandidatesRestController#processOLCands(de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest)} instead.
+	 */
 	@Deprecated
 	@PutMapping(PATH_CLEAR_TO_PROCESS)
 	public ResponseEntity<JsonOLCandClearingResponse> clearOLCandidates(@RequestBody @NonNull final JsonOLCandClearRequest jsonOLCandClearRequest)

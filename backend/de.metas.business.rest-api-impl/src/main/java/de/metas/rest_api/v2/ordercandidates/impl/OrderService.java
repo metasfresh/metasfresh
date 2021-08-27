@@ -29,7 +29,6 @@ import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
 import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
 import de.metas.async.asyncbatchmilestone.MilestoneName;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCand;
@@ -75,12 +74,12 @@ public class OrderService
 
 	@NonNull
 	public Set<OrderId> generateOrderSync(
-			@NonNull final I_C_Async_Batch asyncBatch,
+			@NonNull final AsyncBatchId asyncBatchId,
 			@NonNull final Set<OLCandId> olCandIds)
 	{
 
 		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
-				.asyncBatchId(AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()))
+				.asyncBatchId(asyncBatchId)
 				.orgId(Env.getOrgId())
 				.milestoneName(MilestoneName.SALES_ORDER_CREATION)
 				.build();
@@ -90,7 +89,7 @@ public class OrderService
 		asyncBatchMilestoneObserver.observeOn(milestoneId);
 
 		trxManager.runInNewTrx(
-				() -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID())));
+				() -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId));
 
 		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
 

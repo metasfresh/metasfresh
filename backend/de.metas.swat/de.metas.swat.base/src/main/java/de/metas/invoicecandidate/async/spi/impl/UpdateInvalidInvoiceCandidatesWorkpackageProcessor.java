@@ -63,7 +63,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 		SCHEDULER.schedule(request);
 	}
 
-	private static final IInvoiceCandUpdateScheduler SCHEDULER = new UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(true);
+	private static final IInvoiceCandUpdateScheduler SCHEDULER = new UpdateInvalidInvoiceCandidatesWorkpackageProcessorScheduler(true/*createOneWorkpackagePerAsyncBatch*/);
 
 	private static final String SYSCONFIG_MaxInvoiceCandidatesToUpdate = "de.metas.invoicecandidate.async.spi.impl.UpdateInvalidInvoiceCandidatesWorkpackageProcessor.MaxInvoiceCandidatesToUpdate";
 

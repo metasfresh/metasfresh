@@ -33,7 +33,6 @@ import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
 import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
 import de.metas.async.asyncbatchmilestone.MilestoneName;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerQuery;
@@ -212,9 +211,7 @@ public class ShipmentService
 
 		updateShipmentSchedules(shipmentRequest);
 
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
-
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
 
 		final GenerateShipmentsRequest generateShipmentsRequest = toGenerateShipmentsRequest(shipmentRequest.getCreateShipmentInfoList(), asyncBatchId);
 
@@ -233,7 +230,7 @@ public class ShipmentService
 
 		if (request.getInvoice())
 		{
-			final List<JSONInvoiceInfoResponse> invoiceInfoResponse = generateInvoicesForShipmentScheduleIds(generateShipmentsRequest.getScheduleIds(), asyncBatch);
+			final List<JSONInvoiceInfoResponse> invoiceInfoResponse = generateInvoicesForShipmentScheduleIds(generateShipmentsRequest.getScheduleIds(), asyncBatchId);
 
 			responseBuilder.invoiceInfoResponse(invoiceInfoResponse);
 		}
@@ -311,14 +308,14 @@ public class ShipmentService
 	@NonNull
 	private List<JSONInvoiceInfoResponse> generateInvoicesForShipmentScheduleIds(
 			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds,
-			@NonNull final I_C_Async_Batch asyncBatch)
+			@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final List<I_M_InOutLine> shipmentLines = retrieveInOuLineIdByShipScheduleId(shipmentScheduleIds)
 				.stream()
 				.map(inOutDAO::getLineById)
 				.collect(ImmutableList.toImmutableList());
 
-		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines, asyncBatch);
+		final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines, asyncBatchId);
 
 		return invoiceIds.stream()
 				.map(invoiceId -> invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
@@ -562,7 +559,7 @@ public class ShipmentService
 		}
 
 		final AsyncBatchId asyncBatchId = request.getAsyncBatchId()
-				.orElseGet(() -> AsyncBatchId.ofRepoId(asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule).getC_Async_Batch_ID()));
+				.orElseGet(() -> asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule));
 
 		final AsyncBatchMilestoneId milestoneId = newScheduleShipmentMilestone(asyncBatchId);
 

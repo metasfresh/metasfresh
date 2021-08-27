@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
@@ -254,8 +253,7 @@ public class OrderCandidateRestControllerService
 	@NonNull
 	public JsonProcessCompositeResponse processOLCands(@NonNull final JsonOLCandProcessRequest request)
 	{
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
 
 		final JsonOLCandClearingResponse clearingResponse =
 				clearOLCandidates(request.getInputDataSourceName(), request.getExternalHeaderId(), asyncBatchId);
@@ -276,7 +274,7 @@ public class OrderCandidateRestControllerService
 				.map(OLCandId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatch, validOlCandIds);
+		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId, validOlCandIds);
 
 		jsonOLCandProcessResponseBuilder
 				.jsonGenerateOrdersResponse(buildGenerateOrdersResponse(orderIds))
@@ -293,7 +291,7 @@ public class OrderCandidateRestControllerService
 
 		if (request.getInvoice())
 		{
-			final Set<InvoiceId> invoiceIds = invoiceService.generateInvoiceSync(orderIds, asyncBatch);
+			final Set<InvoiceId> invoiceIds = invoiceService.generateInvoiceSync(orderIds, asyncBatchId);
 
 			final List<JSONInvoiceInfoResponse> invoiceInfoResponses = invoiceIds.stream()
 					.map(invoiceId -> invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))

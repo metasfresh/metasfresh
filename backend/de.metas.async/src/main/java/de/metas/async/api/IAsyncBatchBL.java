@@ -91,5 +91,5 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	void updateProcessedFromMilestones(AsyncBatchId asyncBatchId);
 
-	I_C_Async_Batch newAsyncBatch(String asyncBatchType);
+	AsyncBatchId newAsyncBatch(String asyncBatchType);
 }

@@ -84,13 +84,14 @@ public class AsyncBathMilestoneService
 
 		if (workPackagesFinalized >= workPackages.size())
 		{
-			milestones.forEach(milestone -> {
+			for (final AsyncBatchMilestone milestone : milestones)
+			{
 				final AsyncBatchMilestone finalizedAsyncBatchMilestone = milestone.toBuilder().processed(true).build();
 
 				save(finalizedAsyncBatchMilestone);
 
 				asyncBatchMilestoneObserver.notifyMilestoneProcessedFor(milestone.getIdNotNull(), workPackagesWithErrorCount <= 0);
-			});
+			}
 		}
 	}
 }
