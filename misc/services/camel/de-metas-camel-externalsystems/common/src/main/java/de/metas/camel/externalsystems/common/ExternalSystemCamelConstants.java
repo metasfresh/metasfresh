@@ -29,11 +29,14 @@ public class ExternalSystemCamelConstants
 {
 	public static final String HEADER_ORG_CODE = "orgCode";
 	public static final String HEADER_BPARTNER_IDENTIFIER = "bPartnerIdentifier";
-	public static final String HEADER_PINSTANCE_ID = "pInstanceId";
+	public static final String HEADER_PINSTANCE_ID = "X-ADPInstanceId";
+	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "X-ExternalSystemConfigId";
 
 	public static String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
 	public static String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";
+
+	public static String MF_RETRIEVE_BPARTNER_V2_CAMEL_URI = "metasfresh.retrieve-bpartner-v2.camel.uri";
 
 	public static String MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI = "metasfresh.upsert-bpartnerlocation-v2.camel.uri";
 
