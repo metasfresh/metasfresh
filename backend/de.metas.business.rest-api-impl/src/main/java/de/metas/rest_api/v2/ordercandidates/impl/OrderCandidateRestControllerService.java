@@ -254,7 +254,7 @@ public class OrderCandidateRestControllerService
 	@NonNull
 	public JsonProcessCompositeResponse processOLCands(@NonNull final JsonOLCandProcessRequest request)
 	{
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newProcessAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
+		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 
 		final JsonOLCandClearingResponse clearingResponse =

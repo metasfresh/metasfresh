@@ -86,7 +86,7 @@ public interface IAsyncBatchDAO extends ISingletonService
 	 */
 	I_C_Queue_WorkPackage_Notified fetchWorkPackagesNotified(I_C_Queue_WorkPackage workPackage);
 
-	AsyncBatchId retrieveAsyncBatchIdFromMilestone(AsyncBatchMilestoneId milestoneId);
+	AsyncBatchId retrieveAsyncBatchIdByMilestone(AsyncBatchMilestoneId milestoneId);
 
 	List<I_C_Async_Batch_Milestone> retrieveMilestonesForAsyncBatchId(AsyncBatchId id);
 }

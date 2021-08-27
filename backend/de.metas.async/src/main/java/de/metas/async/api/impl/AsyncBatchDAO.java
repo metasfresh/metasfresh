@@ -145,7 +145,7 @@ public class AsyncBatchDAO implements IAsyncBatchDAO
 	}
 
 	@Override
-	public AsyncBatchId retrieveAsyncBatchIdFromMilestone(@NonNull final AsyncBatchMilestoneId milestoneId)
+	public AsyncBatchId retrieveAsyncBatchIdByMilestone(@NonNull final AsyncBatchMilestoneId milestoneId)
 	{
 		final I_C_Async_Batch_Milestone record = queryBL.createQueryBuilder(I_C_Async_Batch_Milestone.class)
 				.addEqualsFilter(I_C_Async_Batch_Milestone.COLUMN_C_Async_Batch_Milestone_ID, milestoneId)

@@ -25,6 +25,7 @@ package de.metas.async.asyncbatchmilestone;
 import de.metas.async.AsyncBatchId;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -42,6 +43,11 @@ public class AsyncBatchMilestoneQuery
 			@Nullable final AsyncBatchId asyncBatchId,
 			@Nullable final Boolean processed)
 	{
+		if (asyncBatchId == null && processed == null)
+		{
+			throw new AdempiereException("At least one of attributes: asyncBatchId or processed needs to be provided when creating an AsyncBatchMilestoneQuery");
+		}
+
 		this.asyncBatchId = asyncBatchId;
 		this.processed = processed;
 	}

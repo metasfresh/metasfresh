@@ -416,7 +416,7 @@ public class InvoiceService
 	private IInvoicingParams getDefaultIInvoicingParams()
 	{
 		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(true);
+		invoicingParams.setIgnoreInvoiceSchedule(false);
 		invoicingParams.setSupplementMissingPaymentTermIds(true);
 		invoicingParams.setDateInvoiced(LocalDate.now());
 

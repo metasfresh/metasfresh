@@ -95,7 +95,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -213,7 +212,7 @@ public class ShipmentService
 
 		updateShipmentSchedules(shipmentRequest);
 
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newProcessAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
+		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule);
 
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 
@@ -563,7 +562,7 @@ public class ShipmentService
 		}
 
 		final AsyncBatchId asyncBatchId = request.getAsyncBatchId()
-				.orElseGet(() -> AsyncBatchId.ofRepoId(asyncBatchBL.newProcessAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule).getC_Async_Batch_ID()));
+				.orElseGet(() -> AsyncBatchId.ofRepoId(asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_ShipmentSchedule).getC_Async_Batch_ID()));
 
 		final AsyncBatchMilestoneId milestoneId = newScheduleShipmentMilestone(asyncBatchId);
 
@@ -683,15 +682,6 @@ public class ShipmentService
 		}
 
 		return candidateKey2ShipmentId.build();
-	}
-
-	@NonNull
-	private IQueryFilter<de.metas.handlingunits.model.I_M_ShipmentSchedule> createShipmentSchedulesQueryFilters(@NonNull final Set<ShipmentScheduleId> ids)
-	{
-		return queryBL.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_Processed, false)
-				.addInArrayFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, ids);
 	}
 
 	@NonNull

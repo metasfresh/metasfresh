@@ -465,7 +465,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	}
 
 	@NonNull
-	public I_C_Async_Batch newProcessAsyncBatch(@NonNull final String asyncBatchType)
+	public I_C_Async_Batch newAsyncBatch(@NonNull final String asyncBatchType)
 	{
 		return newAsyncBatch()
 				.setContext(getCtx())

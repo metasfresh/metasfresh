@@ -92,7 +92,7 @@ public class AsyncBatchMilestoneObserver
 		}
 		catch (final TimeoutException timeoutException)
 		{
-			final AsyncBatchId asyncBatchId = asyncBatchDAO.retrieveAsyncBatchIdFromMilestone(id);
+			final AsyncBatchId asyncBatchId = asyncBatchDAO.retrieveAsyncBatchIdByMilestone(id);
 
 			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
 
