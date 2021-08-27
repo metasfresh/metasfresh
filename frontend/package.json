@@ -148,7 +148,7 @@
     "moment-timezone": "0.5.33",
     "numeral": "2.0.6",
     "object-hash": "2.2.0",
-    "pigeon-maps": "0.14.0",
+    "pigeon-maps": "0.19.7",
     "pigeon-marker": "0.3.4",
     "prop-types": "15.7.2",
     "qhistory": "1.1.0",
