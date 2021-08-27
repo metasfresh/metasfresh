@@ -127,6 +127,7 @@ public class OrderCandidatesRestController
 		}
 	}
 
+	@Deprecated
 	@PutMapping(PATH_CLEAR_TO_PROCESS)
 	public ResponseEntity<JsonOLCandClearingResponse> clearOLCandidates(@RequestBody @NonNull final JsonOLCandClearRequest jsonOLCandClearRequest)
 	{

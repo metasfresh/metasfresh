@@ -28,6 +28,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
+@Deprecated
 @Value
 @Builder
 @JsonDeserialize(builder = JsonOLCandClearRequest.JsonOLCandClearRequestBuilder.class)
