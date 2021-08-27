@@ -23,25 +23,32 @@
 package de.metas.common.bpartner.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
 public class JsonResponseContactRole
 {
 	public static final String NAME = "name";
+	public static final String UNIQUE_PER_BPARTNER = "uniquePerBPartner";
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty(required = true)
 	String name;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Boolean isUniquePerBpartner;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
 	private JsonResponseContactRole(
-			@JsonProperty(NAME) final String name
-	)
+			@JsonProperty(NAME) @NonNull final String name,
+			@JsonProperty(UNIQUE_PER_BPARTNER) final boolean isUniquePerBpartner)
 	{
 		this.name = name;
+		this.isUniquePerBpartner = isUniquePerBpartner ? true : null;
 	}
 }

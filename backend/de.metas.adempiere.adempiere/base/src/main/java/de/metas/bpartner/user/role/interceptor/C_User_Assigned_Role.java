@@ -34,8 +34,10 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_User_Assigned_Role;
 import org.compiere.model.I_C_User_Role;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_User_Assigned_Role.class)
+@Component
 public class C_User_Assigned_Role
 {
 	private static final AdMessageKey MSG_USER_ROLE_ALREADY_ASSIGNED = AdMessageKey.of("UserRoleAlreadyAssigned");

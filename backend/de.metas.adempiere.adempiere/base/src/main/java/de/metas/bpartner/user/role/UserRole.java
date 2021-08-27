@@ -22,6 +22,7 @@
 
 package de.metas.bpartner.user.role;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
@@ -29,13 +30,14 @@ public class UserRole
 {
 	private String name;
 
-	private UserRole(final String name)
+	private boolean uniquePerBpartner;
+
+	@Builder
+	private UserRole(final String name,
+			final boolean uniquePerBpartner)
 	{
 		this.name = name;
+		this.uniquePerBpartner = uniquePerBpartner;
 	}
 
-	public static UserRole ofName(final String name)
-	{
-		return new UserRole(name);
-	}
 }

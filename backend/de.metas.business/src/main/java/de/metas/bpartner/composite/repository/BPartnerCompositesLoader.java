@@ -53,6 +53,7 @@ import org.compiere.model.I_C_User_Assigned_Role;
 import org.compiere.model.I_C_User_Role;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -118,7 +119,7 @@ final class BPartnerCompositesLoader
 
 		final CompositeRelatedRecords relatedRecords = retrieveRelatedRecords(bPartnerIds);
 
-		final ImmutableMap.Builder<BPartnerId, BPartnerComposite> result = ImmutableMap.<BPartnerId, BPartnerComposite>builder();
+		final ImmutableMap.Builder<BPartnerId, BPartnerComposite> result = ImmutableMap.builder();
 
 		for (final I_C_BPartner bPartnerRecord : bPartnerRecords)
 		{
@@ -401,16 +402,20 @@ final class BPartnerCompositesLoader
 								.addOnlyActiveRecordsFilter()
 								.addEqualsFilter(I_C_User_Assigned_Role.COLUMNNAME_AD_User_ID, user.getAD_User_ID())
 								.create())
+				.orderBy(I_C_User_Role.COLUMNNAME_Name)
 				.create()
 				.stream()
-				.map(I_C_User_Role::getName)
-				.map(UserRole::ofName)
+				.map(role -> UserRole.builder()
+						.name(role.getName())
+						.uniquePerBpartner(role.isUniqueForBPartner())
+						.build())
 				.collect(Collectors.toList());
 	}
 
 	/**
 	 * IMPORTANT: please keep in sync with {@link de.metas.banking.api.IBPBankAccountDAO#deactivateIBANAccountsByBPartnerExcept(BPartnerId, Collection)}
 	 */
+	@Nullable
 	private static BPartnerBankAccount ofBankAccountRecordOrNull(
 			@NonNull final I_C_BP_BankAccount bankAccountRecord,
 			@NonNull final CompositeRelatedRecords relatedRecords)

@@ -372,9 +372,12 @@ public class JsonRetrieverService
 				final Greeting greeting = greetingRepository.getByIdAndLang(contact.getGreetingId(), language);
 				greetingTrl = greeting.getGreeting();
 			}
-			List<JsonResponseContactRole> roles = contact.getRoles()
+			final List<JsonResponseContactRole> roles = contact.getRoles()
 					.stream()
-					.map(role -> JsonResponseContactRole.builder().name(role.getName()).build())
+					.map(role -> JsonResponseContactRole.builder()
+							.name(role.getName())
+							.isUniquePerBpartner(role.isUniquePerBpartner())
+							.build())
 					.collect(Collectors.toList());
 
 			return JsonResponseContact.builder()

@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.invoicecandidate.modelvalidator;
 
 /*
@@ -31,7 +28,6 @@ import de.metas.aggregation.listeners.IAggregationListener;
 import de.metas.aggregation.listeners.IAggregationListeners;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.aggregation.model.X_C_Aggregation;
-import de.metas.bpartner.user.role.interceptor.C_User_Assigned_Role;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.event.IEventBusFactory;
@@ -73,7 +69,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	private static final IAggregationListener aggregationListener = new AggregationListenerAdapter()
 	{
 		@Override
-		protected void onEvent(I_C_Aggregation aggregation)
+		protected void onEvent(final I_C_Aggregation aggregation)
 		{
 			Services.get(IInvoiceCandDAO.class).invalidateCandsForAggregationBuilder(aggregation);
 		}
@@ -123,7 +119,6 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_InventoryLine());
 		engine.addModelValidator(new M_ProductGroup_Product());
 		engine.addModelValidator(new M_ProductGroup());
-		engine.addModelValidator(new C_User_Assigned_Role());
 	}
 
 	@Override
@@ -143,7 +138,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 	/**
 	 * Setup de.metas.aggregation
 	 */
-	private final void setupAggregations()
+	private void setupAggregations()
 	{
 		//
 		// In case there was no aggregation found, fallback to our legacy IC header/line aggregation key builders
