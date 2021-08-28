@@ -229,7 +229,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "name" : "c2_name",
         "newsletter" : false,
         "phone" : "c2_phone",
-        "subjectMatterContact" : false
+        "subjectMatterContact" : false,
+        "roles" : [ ]        
       }
     ],
     "locations" : [
@@ -492,6 +493,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
+        "roles" : [ ],        
         "value" : "contactRecord.value"
       },
       {
@@ -559,7 +561,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "name" : "newContact_name",
         "newsletter" : false,
         "phone" : "newContact_phone",
-        "subjectMatterContact" : false
+        "subjectMatterContact" : false,
+        "roles" : [ ]        
       }
     ],
     "locations" : [
@@ -766,6 +769,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
+        "roles" : [ ],        
         "value" : "contactRecord.value"
       },
       {
@@ -830,7 +834,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "membershipContact" : false,
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
-        "subjectMatterContact" : false
+        "subjectMatterContact" : false,
+        "roles" : [ ]        
       }
     ],
     "locations" : [
@@ -1037,6 +1042,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
+        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -1244,6 +1250,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "subjectMatterContact" : false,
+        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],

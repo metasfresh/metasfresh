@@ -24,8 +24,10 @@ package de.metas.async.spi.impl;
 
 import java.util.Properties;
 
+import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Loggables;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -82,8 +84,13 @@ public class NotifyAsyncBatch implements INotifyAsyncBatch
 		final String trxName = InterfaceWrapperHelper.getTrxName(asyncBatch);
 
 		final int boilerPlateId = asyncBatchType.getAD_BoilerPlate_ID();
-		Check.assume(boilerPlateId > 0, "Boiler plate should not be null for async batch type {} ", asyncBatchType);
-
+		if (boilerPlateId <= 0)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog("sendEMail - C_Async_Batch_Type_ID={} of C_Async_Batch_ID={} has no AD_BoilerPlate_ID; -> not sending mail", 
+															asyncBatchType.getC_Async_Batch_Type_ID());
+			return;
+		}
+		
 		final MADBoilerPlate text = new MADBoilerPlate(ctx, boilerPlateId, trxName);
 
 		Boolean isSent = null;

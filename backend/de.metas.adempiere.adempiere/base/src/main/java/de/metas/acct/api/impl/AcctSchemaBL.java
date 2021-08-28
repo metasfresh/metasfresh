@@ -95,7 +95,7 @@ public class AcctSchemaBL implements IAcctSchemaBL
 		Services.get(ITrxManager.class).runInNewTrx(localTrxName -> {
 			try
 			{
-				updateDebitorCreditorIdsAndSave(acctSchema, bpartner);
+				updateDebitorCreditorIds(acctSchema, bpartner);
 				InterfaceWrapperHelper.save(bpartner);
 			}
 			catch (final RuntimeException runException)

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-common-bpartner
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,36 +20,35 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model.order;
+package de.metas.common.bpartner.v2.response;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.List;
-
 @Value
-@Builder
-@JsonDeserialize(builder = JsonShippingCost.JsonShippingCostBuilder.class)
-public class JsonShippingCost
+public class JsonResponseContactRole
 {
-	@Nullable
-	@JsonProperty("calculatedTaxes")
-	List<JsonTax> calculatedTaxes;
+	public static final String NAME = "name";
+	public static final String UNIQUE_PER_BPARTNER = "uniquePerBPartner";
 
-	@Nullable
-	@JsonProperty("totalPrice")
-	BigDecimal totalPrice;
-	
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonShippingCostBuilder
+	@ApiModelProperty(required = true)
+	String name;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Boolean isUniquePerBpartner;
+
+	@Builder(toBuilder = true)
+	@JsonCreator
+	private JsonResponseContactRole(
+			@JsonProperty(NAME) @NonNull final String name,
+			@JsonProperty(UNIQUE_PER_BPARTNER) final boolean isUniquePerBpartner)
 	{
+		this.name = name;
+		this.isUniquePerBpartner = isUniquePerBpartner ? true : null;
 	}
 }
