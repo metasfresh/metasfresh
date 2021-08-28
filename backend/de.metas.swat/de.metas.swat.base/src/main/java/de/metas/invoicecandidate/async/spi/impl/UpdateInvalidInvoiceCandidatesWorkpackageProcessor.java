@@ -58,7 +58,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 	 *
 	 * NOTE: the workpackages are not created right away, but the models are collected per database transaction and a workpackage is enqueued when the transaction is committed.
 	 */
-	public static final void schedule(@NonNull final IInvoiceCandUpdateSchedulerRequest request)
+	public static void schedule(@NonNull final IInvoiceCandUpdateSchedulerRequest request)
 	{
 		SCHEDULER.schedule(request);
 	}
