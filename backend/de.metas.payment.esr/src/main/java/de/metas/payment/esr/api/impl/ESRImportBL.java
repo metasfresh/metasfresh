@@ -42,7 +42,6 @@ import de.metas.payment.esr.dataimporter.ESRDataLoaderFactory;
 import de.metas.payment.esr.dataimporter.ESRDataLoaderUtil;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
-import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDuplicateFilePolicy;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
@@ -1402,7 +1401,6 @@ public class ESRImportBL implements IESRImportBL
 				.asyncBatchDesc(runESRImportRequest.getAsyncBatchDescription())
 				.pinstanceId(runESRImportRequest.getPInstanceId())
 				.loggable(runESRImportRequest.getLoggable())
-				.duplicateFilePolicy(ESRImportEnqueuerDuplicateFilePolicy.NEVER)
 				.execute();
 	}
 
