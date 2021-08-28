@@ -61,9 +61,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "value" : 4
           }
         },
-        "baseLanguage" : true,
+        "leftToRight" : true,
         "decimalPoint" : false,
-        "leftToRight" : true
+        "baseLanguage" : true
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -162,6 +162,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "name" : "c1_name",
         "newsletter" : false,
         "phone" : "c1_phone",
+        "roles" : [ ],
         "subjectMatterContact" : false
       },
       {
@@ -229,8 +230,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "name" : "c2_name",
         "newsletter" : false,
         "phone" : "c2_phone",
-        "subjectMatterContact" : false,
-        "roles" : [ ]        
+        "roles" : [ ],
+        "subjectMatterContact" : false
       }
     ],
     "locations" : [
@@ -492,8 +493,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "subjectMatterContact" : false,
-        "roles" : [ ],        
         "value" : "contactRecord.value"
       },
       {
@@ -561,8 +562,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "name" : "newContact_name",
         "newsletter" : false,
         "phone" : "newContact_phone",
-        "subjectMatterContact" : false,
-        "roles" : [ ]        
+        "roles" : [ ],
+        "subjectMatterContact" : false
       }
     ],
     "locations" : [
@@ -768,8 +769,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "subjectMatterContact" : false,
-        "roles" : [ ],        
         "value" : "contactRecord.value"
       },
       {
@@ -834,8 +835,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "membershipContact" : false,
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
-        "subjectMatterContact" : false,
-        "roles" : [ ]        
+        "roles" : [ ],
+        "subjectMatterContact" : false
       }
     ],
     "locations" : [
@@ -1041,8 +1042,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "subjectMatterContact" : false,
-        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
@@ -1249,8 +1250,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
+        "roles" : [ ],
         "subjectMatterContact" : false,
-        "roles" : [ ],        
         "value" : "contactRecord.value"
       }
     ],
