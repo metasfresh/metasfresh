@@ -650,12 +650,12 @@ public class ESRImportBL implements IESRImportBL
 		}
 
 		refresh(line);
-		final PaymentId payemntId = fetchDuplicatePaymentIfExists(line);
-		if (payemntId != null)
+		final PaymentId paymentId = fetchDuplicatePaymentIfExists(line);
+		if (paymentId != null)
 		{
 			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
 			handleUnsupportedTrxType(line);
-			line.setC_Payment_ID(payemntId.getRepoId());
+			line.setC_Payment_ID(paymentId.getRepoId());
 			esrImportDAO.save(line);
 			return true;
 		}
