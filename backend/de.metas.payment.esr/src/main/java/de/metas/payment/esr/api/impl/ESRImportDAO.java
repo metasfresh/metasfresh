@@ -383,7 +383,8 @@ public class ESRImportDAO implements IESRImportDAO
 	}
 
 	@Override
-	public List<I_ESR_ImportLine> fetchESRLinesForESRLineText(final String esrImportLineText)
+	public List<I_ESR_ImportLine> fetchESRLinesForESRLineText(final String esrImportLineText,
+			final int excludeESRImportLineID)
 	{
 		if (esrImportLineText == null)
 		{
@@ -392,9 +393,15 @@ public class ESRImportDAO implements IESRImportDAO
 
 		final String strippedText = esrImportLineText.trim();
 
-		return queryBL.createQueryBuilder(I_ESR_ImportLine.class)
+		final IQueryBuilder<I_ESR_ImportLine> esrimportLineIQueryBuilder = queryBL.createQueryBuilder(I_ESR_ImportLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addStringLikeFilter(I_ESR_ImportLine.COLUMNNAME_ESRLineText, strippedText, /* ignoreCase */true)
+				.addStringLikeFilter(I_ESR_ImportLine.COLUMNNAME_ESRLineText, strippedText, /* ignoreCase */true);
+
+		if (excludeESRImportLineID > 0)
+		{
+			esrimportLineIQueryBuilder.addNotEqualsFilter(I_ESR_ImportLine.COLUMNNAME_ESR_ImportLine_ID, excludeESRImportLineID);
+		}
+		return esrimportLineIQueryBuilder
 				.create()
 				.list(I_ESR_ImportLine.class);
 	}
@@ -430,7 +437,7 @@ public class ESRImportDAO implements IESRImportDAO
 																					  .build())
 				.stream().iterator();
 
-		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText());
+		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText(),esrLine.getESR_ImportLine_ID());
 
 		while (paymentIdIterator.hasNext())
 		{
@@ -441,6 +448,12 @@ public class ESRImportDAO implements IESRImportDAO
 				{
 					return Optional.of(paymentId);
 				}
+			}
+
+			if (paymentId.getRepoId() == esrLine.getC_Payment_ID())
+			{
+				// payment is the same. No further validation needed
+				continue;
 			}
 			final de.metas.invoice.InvoiceId invoiceId = de.metas.invoice.InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID());
 			final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);

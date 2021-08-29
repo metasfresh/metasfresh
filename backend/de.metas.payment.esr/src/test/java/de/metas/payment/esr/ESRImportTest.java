@@ -248,7 +248,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		assertThat(esrImportLine2.isValid(), is(true));
 		assertThat(esrImportLine2.isProcessed(), is(false));
-		assertThat(esrImportLine2.getESR_Payment_Action(), nullValue());
+		assertThat(esrImportLine2.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment));
 		assertThat(esrImportLine2.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 		assertThat(esrImportLine2.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal(-25)));
 
