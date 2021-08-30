@@ -27,6 +27,7 @@ import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
 import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.payment.esr.model.I_ESR_ImportLine;
+import de.metas.payment.esr.model.X_ESR_ImportLine;
 import de.metas.security.permissions.Access;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -452,7 +453,13 @@ public class ESRImportDAO implements IESRImportDAO
 
 			if (paymentId.getRepoId() == esrLine.getC_Payment_ID())
 			{
-				// payment is the same. No further validation needed
+				// The esr line was already marked as duplicate and this payment was alerady set to it
+				if(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(esrLine.getESR_Payment_Action()))
+				{
+					return Optional.of(paymentId);
+				}
+
+				// otherwise, it just means that the payment was already set so we don't have to check for duplicates
 				continue;
 			}
 			final de.metas.invoice.InvoiceId invoiceId = de.metas.invoice.InvoiceId.ofRepoIdOrNull(esrLine.getC_Invoice_ID());
