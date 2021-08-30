@@ -29,7 +29,11 @@ import org.junit.runner.RunWith;
 @RunWith(Cucumber.class)
 @CucumberOptions(
 		glue = "de.metas.cucumber.stepdefs",
-		plugin = { "html:target/cucumber.html", "message:target/cucumber.message","de.metas.cucumber.CucumberLifeCycleSupport" })
+		plugin = {
+				"html:target/cucumber.html",
+				"json:target/cucumber.json" /* this json-output is needed for the Jenkins plugin that's supposed to publish it */,
+				"message:target/cucumber.message",
+				"de.metas.cucumber.CucumberLifeCycleSupport" })
 public class RunCucumberTest
 {
 }
