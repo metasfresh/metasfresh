@@ -1143,7 +1143,7 @@ public class ESRImportBL implements IESRImportBL
 				}
 			}
 
-			else if(invoice.isPaid() && paymentId != null)
+			else if (invoice.isPaid() && paymentId != null)
 			{
 				importLine.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
 			}

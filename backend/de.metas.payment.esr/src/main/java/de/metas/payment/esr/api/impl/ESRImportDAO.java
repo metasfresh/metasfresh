@@ -438,7 +438,7 @@ public class ESRImportDAO implements IESRImportDAO
 																					  .build())
 				.stream().iterator();
 
-		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText(),esrLine.getESR_ImportLine_ID());
+		final List<I_ESR_ImportLine> lines = fetchESRLinesForESRLineText(esrLine.getESRLineText(), esrLine.getESR_ImportLine_ID());
 
 		while (paymentIdIterator.hasNext())
 		{
@@ -454,7 +454,7 @@ public class ESRImportDAO implements IESRImportDAO
 			if (paymentId.getRepoId() == esrLine.getC_Payment_ID())
 			{
 				// The esr line was already marked as duplicate and this payment was alerady set to it
-				if(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(esrLine.getESR_Payment_Action()))
+				if (X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment.equals(esrLine.getESR_Payment_Action()))
 				{
 					return Optional.of(paymentId);
 				}
