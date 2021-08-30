@@ -159,7 +159,7 @@ public class JsonConverters
 				: OrderLineGroup.builder()
 				.groupKey(jsonOrderLineGroup.getGroupKey())
 				.isGroupMainItem(jsonOrderLineGroup.isGroupMainItem())
-				.discount(Percent.of(jsonOrderLineGroup.getDiscount()))
+				.discount(Percent.ofNullable(jsonOrderLineGroup.getDiscount()))
 				.build();
 
 		if (orderLineGroup != null && orderLineGroup.isGroupMainItem() && productBL.isStocked(productInfo.getProductId()))

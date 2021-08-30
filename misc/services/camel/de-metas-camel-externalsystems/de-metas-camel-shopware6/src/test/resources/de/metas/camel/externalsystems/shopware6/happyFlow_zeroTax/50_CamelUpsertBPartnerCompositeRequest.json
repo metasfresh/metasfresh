@@ -55,7 +55,6 @@
               {
                 "contactIdentifier": "ext-Shopware6-customerId-billTo",
                 "contact": {
-                  "name": "firstName lastName",
                   "firstName": "firstName",
                   "lastName": "lastName",
                   "email": "someEamil@web.de",
