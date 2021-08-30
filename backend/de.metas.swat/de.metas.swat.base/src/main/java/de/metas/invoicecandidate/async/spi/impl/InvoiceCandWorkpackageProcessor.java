@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.async.spi.impl;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkpackageParamDAO;
@@ -69,6 +70,8 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
+
+	private final IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 
 	private final IInvoiceGenerateResult _result;
 	private InvoicingParams _invoicingParams = null; // lazy loaded
@@ -125,8 +128,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 		// After invoices were generated, schedule another update invalid workpackage to update any remaining invoice candidates.
 		// This is a workaround and we do that because our testers reported that randomly, when we do mass invoicing,
 		// sometimes there are some invoice candidates invalidated.
-		Services.get(IInvoiceCandUpdateSchedulerService.class)
-				.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(localCtx, localTrxName));
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(getC_Queue_WorkPackage().getC_Async_Batch_ID());
+
+		invoiceCandUpdateSchedulerService.scheduleForUpdate(InvoiceCandUpdateSchedulerRequest.of(localCtx, localTrxName, asyncBatchId));
 
 		return Result.SUCCESS;
 	}

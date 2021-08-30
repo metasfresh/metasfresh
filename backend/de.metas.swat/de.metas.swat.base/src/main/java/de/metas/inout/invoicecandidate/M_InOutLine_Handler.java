@@ -4,13 +4,16 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
@@ -18,7 +21,9 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
@@ -52,7 +57,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.ImmutableMapEntry;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -117,6 +121,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -408,6 +413,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
 		}
 
+		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
 		saveRecord(icRecord);
@@ -517,7 +523,26 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
+		final org.compiere.model.I_M_InOut shipment = inOutBL.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
+
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLineQuery(inoutLine);
+
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipment.getC_Async_Batch_ID());
+
+		if (asyncBatchId != null)
+		{
+			final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = icQueryBuilder.create()
+					.listIds()
+					.stream()
+					.map(InvoiceCandidateId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+
+
+			invoiceCandidateIds.forEach(invoiceCandidateId -> invoiceCandBL.setAsyncBatch(invoiceCandidateId, asyncBatchId));
+
+			invoiceCandDAO.invalidateCandsFor(invoiceCandidateIds);
+			return;
+		}
 
 		invoiceCandDAO.invalidateCandsFor(icQueryBuilder);
 	}

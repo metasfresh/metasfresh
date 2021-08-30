@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Order
  *  @author metasfresh (generated) 
@@ -287,6 +288,27 @@ public interface I_C_Order
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	ModelColumn<I_C_Order, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Order.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
+
+	/**
 	 * Set Partner Bank Account.
 	 * Bank Account of the Business Partner
 	 *
@@ -424,7 +446,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Cash Journal Line.
-	 * Cash Journal Line
+	 * Kassenbuch Zeile
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -434,7 +456,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Cash Journal Line.
-	 * Cash Journal Line
+	 * Kassenbuch Zeile
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -558,6 +580,33 @@ public interface I_C_Order
 	int getC_DocTypeTarget_ID();
 
 	String COLUMNNAME_C_DocTypeTarget_ID = "C_DocTypeTarget_ID";
+
+	/**
+	 * Set Frame Agreement Order.
+	 * Reference to corresponding FrameAgreement Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_FrameAgreement_Order_ID (int C_FrameAgreement_Order_ID);
+
+	/**
+	 * Get Frame Agreement Order.
+	 * Reference to corresponding FrameAgreement Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_FrameAgreement_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_FrameAgreement_Order();
+
+	void setC_FrameAgreement_Order(@Nullable org.compiere.model.I_C_Order C_FrameAgreement_Order);
+
+	ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_C_FrameAgreement_Order_ID = new ModelColumn<>(I_C_Order.class, "C_FrameAgreement_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_FrameAgreement_Order_ID = "C_FrameAgreement_Order_ID";
 
 	/**
 	 * Set Sales order.
@@ -1255,7 +1304,7 @@ public interface I_C_Order
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
 
 	/**
-	 * Set Summe Gesamt.
+	 * Set Grand Total.
 	 * Total amount of document
 	 *
 	 * <br>Type: Amount
@@ -1265,7 +1314,7 @@ public interface I_C_Order
 	void setGrandTotal (BigDecimal GrandTotal);
 
 	/**
-	 * Get Summe Gesamt.
+	 * Get Grand Total.
 	 * Total amount of document
 	 *
 	 * <br>Type: Amount
@@ -1550,7 +1599,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Berechnete Menge.
-	 * Is this invoiced?
+	 * Fakturiert?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1560,7 +1609,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Berechnete Menge.
-	 * Is this invoiced?
+	 * Fakturiert?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1708,8 +1757,8 @@ public interface I_C_Order
 	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
-	 * Set Transferred.
-	 * Transferred to General Ledger (i.e. accounted)
+	 * Set Transfer to General Ledger.
+	 * Indicates whether the transactions associated with this document are transferred to the General Ledger.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1718,8 +1767,8 @@ public interface I_C_Order
 	void setIsTransferred (boolean IsTransferred);
 
 	/**
-	 * Get Transferred.
-	 * Transferred to General Ledger (i.e. accounted)
+	 * Get Transfer to General Ledger.
+	 * Indicates whether the transactions associated with this document are transferred to the General Ledger.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2004,7 +2053,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Payment BPartner.
-	 * Business Partner responsible for the payment
+	 * Zahlungspartner
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2014,7 +2063,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Payment BPartner.
-	 * Business Partner responsible for the payment
+	 * Zahlungspartner
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2027,7 +2076,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Payment Location.
-	 * Location of the Business Partner responsible for the payment
+	 * Zahlungsanschrift
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2037,7 +2086,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Payment Location.
-	 * Location of the Business Partner responsible for the payment
+	 * Zahlungsanschrift
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: false
@@ -2246,7 +2295,7 @@ public interface I_C_Order
 
 	/**
 	 * Set Promotion Code.
-	 * User entered promotion code at sales time
+	 * Werbecode
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2256,7 +2305,7 @@ public interface I_C_Order
 
 	/**
 	 * Get Promotion Code.
-	 * User entered promotion code at sales time
+	 * Werbecode
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2387,27 +2436,6 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, org.compiere.model.I_C_Order> COLUMN_Ref_Proposal_ID = new ModelColumn<>(I_C_Order.class, "Ref_Proposal_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_Ref_Proposal_ID = "Ref_Proposal_ID";
-
-	/**
-	 * Set Return Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setreturnDate (@Nullable java.sql.Timestamp returnDate);
-
-	/**
-	 * Get Return Date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.sql.Timestamp getreturnDate();
-
-	ModelColumn<I_C_Order, Object> COLUMN_returnDate = new ModelColumn<>(I_C_Order.class, "returnDate", null);
-	String COLUMNNAME_returnDate = "returnDate";
 
 	/**
 	 * Set Sales partner code.

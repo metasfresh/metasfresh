@@ -17,8 +17,6 @@ public interface IAsyncBatchListeners extends ISingletonService
 
 	/**
 	 * register listeners for creating notice for async batch
-	 * 
-	 * @param l
 	 */
 	void registerAsyncBatchNoticeListener(IAsyncBatchListener l, final String asyncBatchType);
 
@@ -29,13 +27,11 @@ public interface IAsyncBatchListeners extends ISingletonService
 
 	/**
 	 * register notifiers
-	 * @param notifyAsyncBatch
 	 */
 	void registerAsyncBatchNotifier(INotifyAsyncBatch notifyAsyncBatch);
 	
 	/**
 	 * notify the fact that async batch was processed or one of his WPs was processed
-	 * @param asyncBatch
 	 */
 	void notify(I_C_Async_Batch asyncBatch);
 }

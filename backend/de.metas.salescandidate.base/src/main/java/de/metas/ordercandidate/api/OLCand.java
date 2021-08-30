@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import com.google.common.base.MoreObjects;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -122,6 +123,12 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final OrderLineGroup orderLineGroup;
 
+	@Getter
+	private final AsyncBatchId asyncBatchId;
+
+	@Getter
+	private final BigDecimal qtyShipped;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -137,7 +144,9 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final ShipperId shipperId,
 			@Nullable final DocTypeId orderDocTypeId,
 			@Nullable final BPartnerId salesRepId,
-			@Nullable final OrderLineGroup orderLineGroup)
+			@Nullable final OrderLineGroup orderLineGroup,
+			@Nullable final AsyncBatchId asyncBatchId,
+			@Nullable final BigDecimal qtyShipped)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -182,6 +191,9 @@ public final class OLCand implements IProductPriceAware
 
 		this.orderDocTypeId = orderDocTypeId;
 		this.orderLineGroup = orderLineGroup;
+
+		this.asyncBatchId = asyncBatchId;
+		this.qtyShipped = qtyShipped;
 	}
 
 	@Override
@@ -422,5 +434,15 @@ public final class OLCand implements IProductPriceAware
 	public BPartnerInfo getBPartnerInfo()
 	{
 		return bpartnerInfo;
+	}
+
+	public boolean isAssignToBatch(@NonNull final AsyncBatchId asyncBatchIdCandidate)
+	{
+		if (this.asyncBatchId == null)
+		{
+			return false;
+		}
+
+		return asyncBatchId.getRepoId() == asyncBatchIdCandidate.getRepoId();
 	}
 }

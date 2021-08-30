@@ -395,6 +395,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 			}
 		}
 
+		if (shipmentSchedule.getC_Async_Batch_ID() > 0)
+		{
+			shipment.setC_Async_Batch_ID(shipmentSchedule.getC_Async_Batch_ID());
+		}
+
 		//
 		// Save Shipment Header
 		InterfaceWrapperHelper.save(shipment);

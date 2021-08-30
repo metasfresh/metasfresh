@@ -230,6 +230,7 @@ public class JsonConverters
 				.importWarningMessage(request.getImportWarningMessage())
 				.deliveryRule(request.getDeliveryRule())
 				.deliveryViaRule(request.getDeliveryViaRule())
+				.qtyShipped(request.getQtyShipped())
 				//
 				;
 	}

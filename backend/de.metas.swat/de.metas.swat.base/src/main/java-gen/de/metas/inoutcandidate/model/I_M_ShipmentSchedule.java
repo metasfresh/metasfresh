@@ -1,18 +1,21 @@
 package de.metas.inoutcandidate.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_ShipmentSchedule
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
-@SuppressWarnings("javadoc")
-public interface I_M_ShipmentSchedule 
+@SuppressWarnings("unused")
+public interface I_M_ShipmentSchedule
 {
 
-    /** TableName=M_ShipmentSchedule */
-    public static final String Table_Name = "M_ShipmentSchedule";
+	String Table_Name = "M_ShipmentSchedule";
 
-    /** AD_Table_ID=500221 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=500221 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +26,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +38,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +48,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Table.
@@ -59,7 +60,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Table_ID (int AD_Table_ID);
+	void setAD_Table_ID (int AD_Table_ID);
 
 	/**
 	 * Get Table.
@@ -69,10 +70,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Table_ID();
+	int getAD_Table_ID();
 
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
 	 * Set Contact.
@@ -82,7 +82,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	void setAD_User_ID (int AD_User_ID);
 
 	/**
 	 * Get Contact.
@@ -92,10 +92,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_ID();
+	int getAD_User_ID();
 
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
 	 * Set Ansprechpartner abw..
@@ -104,7 +103,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_Override_ID (int AD_User_Override_ID);
+	void setAD_User_Override_ID (int AD_User_Override_ID);
 
 	/**
 	 * Get Ansprechpartner abw..
@@ -113,10 +112,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_Override_ID();
+	int getAD_User_Override_ID();
 
-    /** Column name AD_User_Override_ID */
-    public static final String COLUMNNAME_AD_User_Override_ID = "AD_User_Override_ID";
+	String COLUMNNAME_AD_User_Override_ID = "AD_User_Override_ID";
 
 	/**
 	 * Set Consolidate Shipments allowed.
@@ -125,7 +123,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAllowConsolidateInOut (boolean AllowConsolidateInOut);
+	void setAllowConsolidateInOut (boolean AllowConsolidateInOut);
 
 	/**
 	 * Get Consolidate Shipments allowed.
@@ -134,12 +132,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isAllowConsolidateInOut();
+	boolean isAllowConsolidateInOut();
 
-    /** Column definition for AllowConsolidateInOut */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_AllowConsolidateInOut = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "AllowConsolidateInOut", null);
-    /** Column name AllowConsolidateInOut */
-    public static final String COLUMNNAME_AllowConsolidateInOut = "AllowConsolidateInOut";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_AllowConsolidateInOut = new ModelColumn<>(I_M_ShipmentSchedule.class, "AllowConsolidateInOut", null);
+	String COLUMNNAME_AllowConsolidateInOut = "AllowConsolidateInOut";
 
 	/**
 	 * Set Bill Business Partner.
@@ -148,7 +144,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setBill_BPartner_ID (int Bill_BPartner_ID);
+	void setBill_BPartner_ID (int Bill_BPartner_ID);
 
 	/**
 	 * Get Bill Business Partner.
@@ -157,10 +153,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getBill_BPartner_ID();
+	int getBill_BPartner_ID();
 
-    /** Column name Bill_BPartner_ID */
-    public static final String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
+	String COLUMNNAME_Bill_BPartner_ID = "Bill_BPartner_ID";
 
 	/**
 	 * Set Bill Location.
@@ -169,7 +164,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBill_Location_ID (int Bill_Location_ID);
+	void setBill_Location_ID (int Bill_Location_ID);
 
 	/**
 	 * Get Bill Location.
@@ -178,10 +173,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getBill_Location_ID();
+	int getBill_Location_ID();
 
-    /** Column name Bill_Location_ID */
-    public static final String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
+	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
 	 * Set Bill Contact.
@@ -190,7 +184,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBill_User_ID (int Bill_User_ID);
+	void setBill_User_ID (int Bill_User_ID);
 
 	/**
 	 * Get Bill Contact.
@@ -199,10 +193,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getBill_User_ID();
+	int getBill_User_ID();
 
-    /** Column name Bill_User_ID */
-    public static final String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
 
 	/**
 	 * Set Address.
@@ -211,7 +204,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setBPartnerAddress (java.lang.String BPartnerAddress);
+	void setBPartnerAddress (java.lang.String BPartnerAddress);
 
 	/**
 	 * Get Address.
@@ -220,12 +213,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBPartnerAddress();
+	java.lang.String getBPartnerAddress();
 
-    /** Column definition for BPartnerAddress */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_BPartnerAddress = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "BPartnerAddress", null);
-    /** Column name BPartnerAddress */
-    public static final String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_BPartnerAddress = new ModelColumn<>(I_M_ShipmentSchedule.class, "BPartnerAddress", null);
+	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
 
 	/**
 	 * Set Anschrift-Text abw..
@@ -234,7 +225,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBPartnerAddress_Override (java.lang.String BPartnerAddress_Override);
+	void setBPartnerAddress_Override (@Nullable java.lang.String BPartnerAddress_Override);
 
 	/**
 	 * Get Anschrift-Text abw..
@@ -243,146 +234,31 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getBPartnerAddress_Override();
+	@Nullable java.lang.String getBPartnerAddress_Override();
 
-    /** Column definition for BPartnerAddress_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_BPartnerAddress_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "BPartnerAddress_Override", null);
-    /** Column name BPartnerAddress_Override */
-    public static final String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_BPartnerAddress_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "BPartnerAddress_Override", null);
+	String COLUMNNAME_BPartnerAddress_Override = "BPartnerAddress_Override";
 
 	/**
-	 * Set Can be exported from.
-	 * Timestamp from which onwards the record may be exported
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCanBeExportedFrom (java.sql.Timestamp CanBeExportedFrom);
-
-	/**
-	 * Get Can be exported from.
-	 * Timestamp from which onwards the record may be exported
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCanBeExportedFrom();
-
-    /** Column definition for CanBeExportedFrom */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_CanBeExportedFrom = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "CanBeExportedFrom", null);
-    /** Column name CanBeExportedFrom */
-    public static final String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
-
-	/**
-	 * Set Catch UOM.
-	 * Catch weight UOM as taken from the product master data.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setCatch_UOM_ID (int Catch_UOM_ID);
-
-	/**
-	 * Get Catch UOM.
-	 * Catch weight UOM as taken from the product master data.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getCatch_UOM_ID();
-
-    /** Column name Catch_UOM_ID */
-    public static final String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
-
-	/**
-	 * Set Business Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
-
-	/**
-	 * Get Business Partner.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_ID();
-
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
-
-	/**
-	 * Set Location.
+	 * Set Async Batch.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
 
 	/**
-	 * Get Location.
+	 * Get Async Batch.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_Location_ID();
-
-    /** Column name C_BPartner_Location_ID */
-    public static final String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
-
-	/**
-	 * Set Geschäftspartner abw..
-	 * Bezeichnet einen Geschäftspartner
-	 *
-	 * <br>Type: Table
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_Override_ID (int C_BPartner_Override_ID);
+	int getC_Async_Batch_ID();
 
-	/**
-	 * Get Geschäftspartner abw..
-	 * Bezeichnet einen Geschäftspartner
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_Override_ID();
-
-    /** Column name C_BPartner_Override_ID */
-    public static final String COLUMNNAME_C_BPartner_Override_ID = "C_BPartner_Override_ID";
-
-	/**
-	 * Set C_BPartner_Vendor_ID.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
-
-	/**
-	 * Get C_BPartner_Vendor_ID.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public int getC_BPartner_Vendor_ID();
-
-    /** Column name C_BPartner_Vendor_ID */
-    public static final String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
 	 * Set Standort abw..
@@ -392,7 +268,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
 
 	/**
 	 * Get Standort abw..
@@ -402,10 +278,91 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BP_Location_Override_ID();
+	int getC_BP_Location_Override_ID();
 
-    /** Column name C_BP_Location_Override_ID */
-    public static final String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+
+	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+
+	/**
+	 * Set Location.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
+
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set Geschäftspartner abw..
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Override_ID (int C_BPartner_Override_ID);
+
+	/**
+	 * Get Geschäftspartner abw..
+	 * Bezeichnet einen Geschäftspartner
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Override_ID();
+
+	String COLUMNNAME_C_BPartner_Override_ID = "C_BPartner_Override_ID";
+
+	/**
+	 * Set C_BPartner_Vendor_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Vendor_ID (int C_BPartner_Vendor_ID);
+
+	/**
+	 * Get C_BPartner_Vendor_ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Vendor_ID();
+
+	String COLUMNNAME_C_BPartner_Vendor_ID = "C_BPartner_Vendor_ID";
 
 	/**
 	 * Set Currency.
@@ -417,7 +374,7 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setC_Currency_ID (int C_Currency_ID);
+	void setC_Currency_ID (int C_Currency_ID);
 
 	/**
 	 * Get Currency.
@@ -429,10 +386,9 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public int getC_Currency_ID();
+	int getC_Currency_ID();
 
-    /** Column name C_Currency_ID */
-    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Document Type.
@@ -442,7 +398,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_DocType_ID (int C_DocType_ID);
+	void setC_DocType_ID (int C_DocType_ID);
 
 	/**
 	 * Get Document Type.
@@ -452,10 +408,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_DocType_ID();
+	int getC_DocType_ID();
 
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
 	 * Set Sales order.
@@ -465,7 +420,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Order_ID (int C_Order_ID);
+	void setC_Order_ID (int C_Order_ID);
 
 	/**
 	 * Get Sales order.
@@ -475,16 +430,14 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Order_ID();
+	int getC_Order_ID();
 
-	public org.compiere.model.I_C_Order getC_Order();
+	@Nullable org.compiere.model.I_C_Order getC_Order();
 
-	public void setC_Order(org.compiere.model.I_C_Order C_Order);
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
 
-    /** Column definition for C_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_Order>(I_M_ShipmentSchedule.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
-    /** Column name C_Order_ID */
-    public static final String COLUMNNAME_C_Order_ID = "C_Order_ID";
+	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Orderline.
@@ -493,7 +446,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_OrderLine_ID (int C_OrderLine_ID);
+	void setC_OrderLine_ID (int C_OrderLine_ID);
 
 	/**
 	 * Get Orderline.
@@ -502,44 +455,14 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_OrderLine_ID();
+	int getC_OrderLine_ID();
 
-	public org.compiere.model.I_C_OrderLine getC_OrderLine();
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine();
 
-	public void setC_OrderLine(org.compiere.model.I_C_OrderLine C_OrderLine);
+	void setC_OrderLine(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine);
 
-    /** Column definition for C_OrderLine_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_OrderLine>(I_M_ShipmentSchedule.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
-    /** Column name C_OrderLine_ID */
-    public static final String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public java.sql.Timestamp getCreated();
-
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getCreatedBy();
-
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
 	 * Set UOM.
@@ -551,7 +474,7 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setC_UOM_ID (int C_UOM_ID);
+	void setC_UOM_ID (int C_UOM_ID);
 
 	/**
 	 * Get UOM.
@@ -563,10 +486,79 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public int getC_UOM_ID();
+	int getC_UOM_ID();
 
-    /** Column name C_UOM_ID */
-    public static final String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCanBeExportedFrom (@Nullable java.sql.Timestamp CanBeExportedFrom);
+
+	/**
+	 * Get Can be exported from.
+	 * Timestamp from which onwards the record may be exported
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getCanBeExportedFrom();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_CanBeExportedFrom = new ModelColumn<>(I_M_ShipmentSchedule.class, "CanBeExportedFrom", null);
+	String COLUMNNAME_CanBeExportedFrom = "CanBeExportedFrom";
+
+	/**
+	 * Set Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCatch_UOM_ID (int Catch_UOM_ID);
+
+	/**
+	 * Get Catch UOM.
+	 * Catch weight UOM as taken from the product master data.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCatch_UOM_ID();
+
+	String COLUMNNAME_Catch_UOM_ID = "Catch_UOM_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Created = new ModelColumn<>(I_M_ShipmentSchedule.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Date.
@@ -576,7 +568,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateOrdered (java.sql.Timestamp DateOrdered);
+	void setDateOrdered (@Nullable java.sql.Timestamp DateOrdered);
 
 	/**
 	 * Get Date.
@@ -586,12 +578,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateOrdered();
+	@Nullable java.sql.Timestamp getDateOrdered();
 
-    /** Column definition for DateOrdered */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DateOrdered = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "DateOrdered", null);
-    /** Column name DateOrdered */
-    public static final String COLUMNNAME_DateOrdered = "DateOrdered";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DateOrdered = new ModelColumn<>(I_M_ShipmentSchedule.class, "DateOrdered", null);
+	String COLUMNNAME_DateOrdered = "DateOrdered";
 
 	/**
 	 * Set Shipmentdate.
@@ -600,7 +590,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryDate (java.sql.Timestamp DeliveryDate);
+	void setDeliveryDate (@Nullable java.sql.Timestamp DeliveryDate);
 
 	/**
 	 * Get Shipmentdate.
@@ -609,12 +599,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDeliveryDate();
+	@Nullable java.sql.Timestamp getDeliveryDate();
 
-    /** Column definition for DeliveryDate */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryDate = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "DeliveryDate", null);
-    /** Column name DeliveryDate */
-    public static final String COLUMNNAME_DeliveryDate = "DeliveryDate";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryDate = new ModelColumn<>(I_M_ShipmentSchedule.class, "DeliveryDate", null);
+	String COLUMNNAME_DeliveryDate = "DeliveryDate";
 
 	/**
 	 * Set Lieferdatum eff..
@@ -625,7 +613,7 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setDeliveryDate_Effective (java.sql.Timestamp DeliveryDate_Effective);
+	void setDeliveryDate_Effective (@Nullable java.sql.Timestamp DeliveryDate_Effective);
 
 	/**
 	 * Get Lieferdatum eff..
@@ -634,12 +622,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public java.sql.Timestamp getDeliveryDate_Effective();
+	@Nullable java.sql.Timestamp getDeliveryDate_Effective();
 
-    /** Column definition for DeliveryDate_Effective */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryDate_Effective = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "DeliveryDate_Effective", null);
-    /** Column name DeliveryDate_Effective */
-    public static final String COLUMNNAME_DeliveryDate_Effective = "DeliveryDate_Effective";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryDate_Effective = new ModelColumn<>(I_M_ShipmentSchedule.class, "DeliveryDate_Effective", null);
+	String COLUMNNAME_DeliveryDate_Effective = "DeliveryDate_Effective";
 
 	/**
 	 * Set Lieferdatum abw.
@@ -648,7 +634,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryDate_Override (java.sql.Timestamp DeliveryDate_Override);
+	void setDeliveryDate_Override (@Nullable java.sql.Timestamp DeliveryDate_Override);
 
 	/**
 	 * Get Lieferdatum abw.
@@ -657,12 +643,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDeliveryDate_Override();
+	@Nullable java.sql.Timestamp getDeliveryDate_Override();
 
-    /** Column definition for DeliveryDate_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryDate_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "DeliveryDate_Override", null);
-    /** Column name DeliveryDate_Override */
-    public static final String COLUMNNAME_DeliveryDate_Override = "DeliveryDate_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryDate_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "DeliveryDate_Override", null);
+	String COLUMNNAME_DeliveryDate_Override = "DeliveryDate_Override";
 
 	/**
 	 * Set Lieferart.
@@ -672,7 +656,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryRule (java.lang.String DeliveryRule);
+	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
 	 * Get Lieferart.
@@ -682,12 +666,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDeliveryRule();
+	java.lang.String getDeliveryRule();
 
-    /** Column definition for DeliveryRule */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryRule = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "DeliveryRule", null);
-    /** Column name DeliveryRule */
-    public static final String COLUMNNAME_DeliveryRule = "DeliveryRule";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryRule = new ModelColumn<>(I_M_ShipmentSchedule.class, "DeliveryRule", null);
+	String COLUMNNAME_DeliveryRule = "DeliveryRule";
 
 	/**
 	 * Set Lieferart abw..
@@ -696,7 +678,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryRule_Override (java.lang.String DeliveryRule_Override);
+	void setDeliveryRule_Override (@Nullable java.lang.String DeliveryRule_Override);
 
 	/**
 	 * Get Lieferart abw..
@@ -705,12 +687,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDeliveryRule_Override();
+	@Nullable java.lang.String getDeliveryRule_Override();
 
-    /** Column definition for DeliveryRule_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryRule_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "DeliveryRule_Override", null);
-    /** Column name DeliveryRule_Override */
-    public static final String COLUMNNAME_DeliveryRule_Override = "DeliveryRule_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryRule_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "DeliveryRule_Override", null);
+	String COLUMNNAME_DeliveryRule_Override = "DeliveryRule_Override";
 
 	/**
 	 * Set Lieferung.
@@ -720,7 +700,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryViaRule (java.lang.String DeliveryViaRule);
+	void setDeliveryViaRule (java.lang.String DeliveryViaRule);
 
 	/**
 	 * Get Lieferung.
@@ -730,12 +710,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDeliveryViaRule();
+	java.lang.String getDeliveryViaRule();
 
-    /** Column definition for DeliveryViaRule */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryViaRule = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "DeliveryViaRule", null);
-    /** Column name DeliveryViaRule */
-    public static final String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryViaRule = new ModelColumn<>(I_M_ShipmentSchedule.class, "DeliveryViaRule", null);
+	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
 
 	/**
 	 * Set Lieferung durch abw..
@@ -744,7 +722,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryViaRule_Override (java.lang.String DeliveryViaRule_Override);
+	void setDeliveryViaRule_Override (@Nullable java.lang.String DeliveryViaRule_Override);
 
 	/**
 	 * Get Lieferung durch abw..
@@ -753,12 +731,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDeliveryViaRule_Override();
+	@Nullable java.lang.String getDeliveryViaRule_Override();
 
-    /** Column definition for DeliveryViaRule_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryViaRule_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "DeliveryViaRule_Override", null);
-    /** Column name DeliveryViaRule_Override */
-    public static final String COLUMNNAME_DeliveryViaRule_Override = "DeliveryViaRule_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DeliveryViaRule_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "DeliveryViaRule_Override", null);
+	String COLUMNNAME_DeliveryViaRule_Override = "DeliveryViaRule_Override";
 
 	/**
 	 * Set Doc Sub Type.
@@ -768,7 +744,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocSubType (java.lang.String DocSubType);
+	void setDocSubType (@Nullable java.lang.String DocSubType);
 
 	/**
 	 * Get Doc Sub Type.
@@ -778,12 +754,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocSubType();
+	@Nullable java.lang.String getDocSubType();
 
-    /** Column definition for DocSubType */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DocSubType = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "DocSubType", null);
-    /** Column name DocSubType */
-    public static final String COLUMNNAME_DocSubType = "DocSubType";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_DocSubType = new ModelColumn<>(I_M_ShipmentSchedule.class, "DocSubType", null);
+	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
 	 * Set Export Status.
@@ -792,7 +766,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setExportStatus (java.lang.String ExportStatus);
+	void setExportStatus (java.lang.String ExportStatus);
 
 	/**
 	 * Get Export Status.
@@ -801,12 +775,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getExportStatus();
+	java.lang.String getExportStatus();
 
-    /** Column definition for ExportStatus */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExportStatus = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "ExportStatus", null);
-    /** Column name ExportStatus */
-    public static final String COLUMNNAME_ExportStatus = "ExportStatus";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ExportStatus = new ModelColumn<>(I_M_ShipmentSchedule.class, "ExportStatus", null);
+	String COLUMNNAME_ExportStatus = "ExportStatus";
 
 	/**
 	 * Set Kopf-Aggregationsmerkmal.
@@ -815,7 +787,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setHeaderAggregationKey (java.lang.String HeaderAggregationKey);
+	void setHeaderAggregationKey (@Nullable java.lang.String HeaderAggregationKey);
 
 	/**
 	 * Get Kopf-Aggregationsmerkmal.
@@ -824,12 +796,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getHeaderAggregationKey();
+	@Nullable java.lang.String getHeaderAggregationKey();
 
-    /** Column definition for HeaderAggregationKey */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_HeaderAggregationKey = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "HeaderAggregationKey", null);
-    /** Column name HeaderAggregationKey */
-    public static final String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_HeaderAggregationKey = new ModelColumn<>(I_M_ShipmentSchedule.class, "HeaderAggregationKey", null);
+	String COLUMNNAME_HeaderAggregationKey = "HeaderAggregationKey";
 
 	/**
 	 * Set Active.
@@ -839,7 +809,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -849,12 +819,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsActive = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set abw. Anschrift.
@@ -863,7 +831,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsBPartnerAddress_Override (boolean IsBPartnerAddress_Override);
+	void setIsBPartnerAddress_Override (boolean IsBPartnerAddress_Override);
 
 	/**
 	 * Get abw. Anschrift.
@@ -872,12 +840,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isBPartnerAddress_Override();
+	boolean isBPartnerAddress_Override();
 
-    /** Column definition for IsBPartnerAddress_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsBPartnerAddress_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsBPartnerAddress_Override", null);
-    /** Column name IsBPartnerAddress_Override */
-    public static final String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsBPartnerAddress_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsBPartnerAddress_Override", null);
+	String COLUMNNAME_IsBPartnerAddress_Override = "IsBPartnerAddress_Override";
 
 	/**
 	 * Set Geschlossen.
@@ -886,7 +852,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsClosed (boolean IsClosed);
+	void setIsClosed (boolean IsClosed);
 
 	/**
 	 * Get Geschlossen.
@@ -895,12 +861,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isClosed();
+	boolean isClosed();
 
-    /** Column definition for IsClosed */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsClosed = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsClosed", null);
-    /** Column name IsClosed */
-    public static final String COLUMNNAME_IsClosed = "IsClosed";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsClosed", null);
+	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
 	 * Set Delivery stop.
@@ -909,7 +873,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDeliveryStop (boolean IsDeliveryStop);
+	void setIsDeliveryStop (boolean IsDeliveryStop);
 
 	/**
 	 * Get Delivery stop.
@@ -918,12 +882,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDeliveryStop();
+	boolean isDeliveryStop();
 
-    /** Column definition for IsDeliveryStop */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsDeliveryStop = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsDeliveryStop", null);
-    /** Column name IsDeliveryStop */
-    public static final String COLUMNNAME_IsDeliveryStop = "IsDeliveryStop";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsDeliveryStop = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsDeliveryStop", null);
+	String COLUMNNAME_IsDeliveryStop = "IsDeliveryStop";
 
 	/**
 	 * Set Displayed.
@@ -933,7 +895,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDisplayed (boolean IsDisplayed);
+	void setIsDisplayed (boolean IsDisplayed);
 
 	/**
 	 * Get Displayed.
@@ -943,12 +905,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDisplayed();
+	boolean isDisplayed();
 
-    /** Column definition for IsDisplayed */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsDisplayed = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsDisplayed", null);
-    /** Column name IsDisplayed */
-    public static final String COLUMNNAME_IsDisplayed = "IsDisplayed";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsDisplayed = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsDisplayed", null);
+	String COLUMNNAME_IsDisplayed = "IsDisplayed";
 
 	/**
 	 * Set Streckengeschäft.
@@ -958,7 +918,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsDropShip (boolean IsDropShip);
+	void setIsDropShip (boolean IsDropShip);
 
 	/**
 	 * Get Streckengeschäft.
@@ -968,12 +928,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isDropShip();
+	boolean isDropShip();
 
-    /** Column definition for IsDropShip */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsDropShip = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsDropShip", null);
-    /** Column name IsDropShip */
-    public static final String COLUMNNAME_IsDropShip = "IsDropShip";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsDropShip = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsDropShip", null);
+	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
 	 * Set EDI DESADV Receipient.
@@ -984,7 +942,7 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setIsEdiDesadvRecipient (boolean IsEdiDesadvRecipient);
+	void setIsEdiDesadvRecipient (boolean IsEdiDesadvRecipient);
 
 	/**
 	 * Get EDI DESADV Receipient.
@@ -995,12 +953,10 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public boolean isEdiDesadvRecipient();
+	boolean isEdiDesadvRecipient();
 
-    /** Column definition for IsEdiDesadvRecipient */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsEdiDesadvRecipient = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsEdiDesadvRecipient", null);
-    /** Column name IsEdiDesadvRecipient */
-    public static final String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsEdiDesadvRecipient = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsEdiDesadvRecipient", null);
+	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
 
 	/**
 	 * Set Recompute.
@@ -1012,7 +968,7 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setIsToRecompute (boolean IsToRecompute);
+	void setIsToRecompute (boolean IsToRecompute);
 
 	/**
 	 * Get Recompute.
@@ -1024,12 +980,10 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public boolean isToRecompute();
+	boolean isToRecompute();
 
-    /** Column definition for IsToRecompute */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsToRecompute = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "IsToRecompute", null);
-    /** Column name IsToRecompute */
-    public static final String COLUMNNAME_IsToRecompute = "IsToRecompute";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_IsToRecompute = new ModelColumn<>(I_M_ShipmentSchedule.class, "IsToRecompute", null);
+	String COLUMNNAME_IsToRecompute = "IsToRecompute";
 
 	/**
 	 * Set Line Net Amount.
@@ -1038,7 +992,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLineNetAmt (java.math.BigDecimal LineNetAmt);
+	void setLineNetAmt (@Nullable BigDecimal LineNetAmt);
 
 	/**
 	 * Get Line Net Amount.
@@ -1047,12 +1001,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getLineNetAmt();
+	BigDecimal getLineNetAmt();
 
-    /** Column definition for LineNetAmt */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_LineNetAmt = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "LineNetAmt", null);
-    /** Column name LineNetAmt */
-    public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_LineNetAmt = new ModelColumn<>(I_M_ShipmentSchedule.class, "LineNetAmt", null);
+	String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
 	 * Set Attributes.
@@ -1062,7 +1014,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
 
 	/**
 	 * Get Attributes.
@@ -1072,16 +1024,98 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_AttributeSetInstance_ID();
+	int getM_AttributeSetInstance_ID();
 
-	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
 
-	public void setM_AttributeSetInstance(org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
-    /** Column definition for M_AttributeSetInstance_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_AttributeSetInstance>(I_M_ShipmentSchedule.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
-    /** Column name M_AttributeSetInstance_ID */
-    public static final String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
+	 * Set Packvorschrift-Produkt Zuordnung (berechnet).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_Calculated_ID (int M_HU_PI_Item_Product_Calculated_ID);
+
+	/**
+	 * Get Packvorschrift-Produkt Zuordnung (berechnet).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_Calculated_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_HU_PI_Item_Product_Calculated_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_HU_PI_Item_Product_Calculated_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID = "M_HU_PI_Item_Product_Calculated_ID";
+
+	/**
+	 * Set Packing Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_ID (int M_HU_PI_Item_Product_ID);
+
+	/**
+	 * Get Packing Instruction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_HU_PI_Item_Product_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_HU_PI_Item_Product_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
+	/**
+	 * Set Packvorschrift-Produkt Zuordnung abw..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Item_Product_Override_ID (int M_HU_PI_Item_Product_Override_ID);
+
+	/**
+	 * Get Packvorschrift-Produkt Zuordnung abw..
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Item_Product_Override_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_HU_PI_Item_Product_Override_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_HU_PI_Item_Product_Override_ID", null);
+	String COLUMNNAME_M_HU_PI_Item_Product_Override_ID = "M_HU_PI_Item_Product_Override_ID";
+
+	/**
+	 * Set Packvorschrift Version.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_HU_PI_Version_ID (int M_HU_PI_Version_ID);
+
+	/**
+	 * Get Packvorschrift Version.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_HU_PI_Version_ID();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_HU_PI_Version_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_HU_PI_Version_ID", null);
+	String COLUMNNAME_M_HU_PI_Version_ID = "M_HU_PI_Version_ID";
 
 	/**
 	 * Set M_IolCandHandler.
@@ -1090,7 +1124,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_IolCandHandler_ID (int M_IolCandHandler_ID);
+	void setM_IolCandHandler_ID (int M_IolCandHandler_ID);
 
 	/**
 	 * Get M_IolCandHandler.
@@ -1099,16 +1133,14 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_IolCandHandler_ID();
+	int getM_IolCandHandler_ID();
 
-	public de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler();
+	@Nullable de.metas.inoutcandidate.model.I_M_IolCandHandler getM_IolCandHandler();
 
-	public void setM_IolCandHandler(de.metas.inoutcandidate.model.I_M_IolCandHandler M_IolCandHandler);
+	void setM_IolCandHandler(@Nullable de.metas.inoutcandidate.model.I_M_IolCandHandler M_IolCandHandler);
 
-    /** Column definition for M_IolCandHandler_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, de.metas.inoutcandidate.model.I_M_IolCandHandler> COLUMN_M_IolCandHandler_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, de.metas.inoutcandidate.model.I_M_IolCandHandler>(I_M_ShipmentSchedule.class, "M_IolCandHandler_ID", de.metas.inoutcandidate.model.I_M_IolCandHandler.class);
-    /** Column name M_IolCandHandler_ID */
-    public static final String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
+	ModelColumn<I_M_ShipmentSchedule, de.metas.inoutcandidate.model.I_M_IolCandHandler> COLUMN_M_IolCandHandler_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_IolCandHandler_ID", de.metas.inoutcandidate.model.I_M_IolCandHandler.class);
+	String COLUMNNAME_M_IolCandHandler_ID = "M_IolCandHandler_ID";
 
 	/**
 	 * Set Product.
@@ -1118,7 +1150,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Product_ID (int M_Product_ID);
+	void setM_Product_ID (int M_Product_ID);
 
 	/**
 	 * Get Product.
@@ -1128,10 +1160,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Product_ID();
+	int getM_Product_ID();
 
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Shipment constraint.
@@ -1140,7 +1171,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Shipment_Constraint_ID (int M_Shipment_Constraint_ID);
+	void setM_Shipment_Constraint_ID (int M_Shipment_Constraint_ID);
 
 	/**
 	 * Get Shipment constraint.
@@ -1149,16 +1180,14 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Shipment_Constraint_ID();
+	int getM_Shipment_Constraint_ID();
 
-	public de.metas.inoutcandidate.model.I_M_Shipment_Constraint getM_Shipment_Constraint();
+	@Nullable de.metas.inoutcandidate.model.I_M_Shipment_Constraint getM_Shipment_Constraint();
 
-	public void setM_Shipment_Constraint(de.metas.inoutcandidate.model.I_M_Shipment_Constraint M_Shipment_Constraint);
+	void setM_Shipment_Constraint(@Nullable de.metas.inoutcandidate.model.I_M_Shipment_Constraint M_Shipment_Constraint);
 
-    /** Column definition for M_Shipment_Constraint_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, de.metas.inoutcandidate.model.I_M_Shipment_Constraint> COLUMN_M_Shipment_Constraint_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, de.metas.inoutcandidate.model.I_M_Shipment_Constraint>(I_M_ShipmentSchedule.class, "M_Shipment_Constraint_ID", de.metas.inoutcandidate.model.I_M_Shipment_Constraint.class);
-    /** Column name M_Shipment_Constraint_ID */
-    public static final String COLUMNNAME_M_Shipment_Constraint_ID = "M_Shipment_Constraint_ID";
+	ModelColumn<I_M_ShipmentSchedule, de.metas.inoutcandidate.model.I_M_Shipment_Constraint> COLUMN_M_Shipment_Constraint_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_Shipment_Constraint_ID", de.metas.inoutcandidate.model.I_M_Shipment_Constraint.class);
+	String COLUMNNAME_M_Shipment_Constraint_ID = "M_Shipment_Constraint_ID";
 
 	/**
 	 * Set Shipment Candidate.
@@ -1167,7 +1196,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
+	void setM_ShipmentSchedule_ID (int M_ShipmentSchedule_ID);
 
 	/**
 	 * Get Shipment Candidate.
@@ -1176,12 +1205,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_ShipmentSchedule_ID();
+	int getM_ShipmentSchedule_ID();
 
-    /** Column definition for M_ShipmentSchedule_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_ShipmentSchedule_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "M_ShipmentSchedule_ID", null);
-    /** Column name M_ShipmentSchedule_ID */
-    public static final String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_ShipmentSchedule_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_ShipmentSchedule_ID", null);
+	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
 	 * Set Shipper.
@@ -1191,7 +1218,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Shipper_ID (int M_Shipper_ID);
+	void setM_Shipper_ID (int M_Shipper_ID);
 
 	/**
 	 * Get Shipper.
@@ -1201,16 +1228,14 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Shipper_ID();
+	int getM_Shipper_ID();
 
-	public org.compiere.model.I_M_Shipper getM_Shipper();
+	@Nullable org.compiere.model.I_M_Shipper getM_Shipper();
 
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper);
+	void setM_Shipper(@Nullable org.compiere.model.I_M_Shipper M_Shipper);
 
-    /** Column definition for M_Shipper_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Shipper>(I_M_ShipmentSchedule.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
-    /** Column name M_Shipper_ID */
-    public static final String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
+	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_Shipper> COLUMN_M_Shipper_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_Shipper_ID", org.compiere.model.I_M_Shipper.class);
+	String COLUMNNAME_M_Shipper_ID = "M_Shipper_ID";
 
 	/**
 	 * Set Tour.
@@ -1219,7 +1244,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Tour_ID (int M_Tour_ID);
+	void setM_Tour_ID (int M_Tour_ID);
 
 	/**
 	 * Get Tour.
@@ -1228,12 +1253,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Tour_ID();
+	int getM_Tour_ID();
 
-    /** Column definition for M_Tour_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_Tour_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "M_Tour_ID", null);
-    /** Column name M_Tour_ID */
-    public static final String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_M_Tour_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_Tour_ID", null);
+	String COLUMNNAME_M_Tour_ID = "M_Tour_ID";
 
 	/**
 	 * Set Destination warehouse locator.
@@ -1244,7 +1267,7 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
+	void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID);
 
 	/**
 	 * Get Destination warehouse locator.
@@ -1255,10 +1278,9 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public int getM_Warehouse_Dest_ID();
+	int getM_Warehouse_Dest_ID();
 
-    /** Column name M_Warehouse_Dest_ID */
-    public static final String COLUMNNAME_M_Warehouse_Dest_ID = "M_Warehouse_Dest_ID";
+	String COLUMNNAME_M_Warehouse_Dest_ID = "M_Warehouse_Dest_ID";
 
 	/**
 	 * Set Warehouse.
@@ -1268,7 +1290,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Warehouse_ID (int M_Warehouse_ID);
+	void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/**
 	 * Get Warehouse.
@@ -1278,10 +1300,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Warehouse_ID();
+	int getM_Warehouse_ID();
 
-    /** Column name M_Warehouse_ID */
-    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
 	 * Set Lager abw..
@@ -1291,7 +1312,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setM_Warehouse_Override_ID (int M_Warehouse_Override_ID);
+	void setM_Warehouse_Override_ID (int M_Warehouse_Override_ID);
 
 	/**
 	 * Get Lager abw..
@@ -1301,10 +1322,9 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getM_Warehouse_Override_ID();
+	int getM_Warehouse_Override_ID();
 
-    /** Column name M_Warehouse_Override_ID */
-    public static final String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
+	String COLUMNNAME_M_Warehouse_Override_ID = "M_Warehouse_Override_ID";
 
 	/**
 	 * Set Nr of order line candidates with the same PO ref.
@@ -1313,7 +1333,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setNrOfOLCandsWithSamePOReference (int NrOfOLCandsWithSamePOReference);
+	void setNrOfOLCandsWithSamePOReference (int NrOfOLCandsWithSamePOReference);
 
 	/**
 	 * Get Nr of order line candidates with the same PO ref.
@@ -1322,12 +1342,31 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getNrOfOLCandsWithSamePOReference();
+	int getNrOfOLCandsWithSamePOReference();
 
-    /** Column definition for NrOfOLCandsWithSamePOReference */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_NrOfOLCandsWithSamePOReference = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "NrOfOLCandsWithSamePOReference", null);
-    /** Column name NrOfOLCandsWithSamePOReference */
-    public static final String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_NrOfOLCandsWithSamePOReference = new ModelColumn<>(I_M_ShipmentSchedule.class, "NrOfOLCandsWithSamePOReference", null);
+	String COLUMNNAME_NrOfOLCandsWithSamePOReference = "NrOfOLCandsWithSamePOReference";
+
+	/**
+	 * Set Packbeschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackDescription (@Nullable java.lang.String PackDescription);
+
+	/**
+	 * Get Packbeschreibung.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPackDescription();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PackDescription = new ModelColumn<>(I_M_ShipmentSchedule.class, "PackDescription", null);
+	String COLUMNNAME_PackDescription = "PackDescription";
 
 	/**
 	 * Set Pick From Order.
@@ -1336,7 +1375,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPickFrom_Order_ID (int PickFrom_Order_ID);
+	void setPickFrom_Order_ID (int PickFrom_Order_ID);
 
 	/**
 	 * Get Pick From Order.
@@ -1345,16 +1384,14 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPickFrom_Order_ID();
+	int getPickFrom_Order_ID();
 
-	public org.eevolution.model.I_PP_Order getPickFrom_Order();
+	@Nullable org.eevolution.model.I_PP_Order getPickFrom_Order();
 
-	public void setPickFrom_Order(org.eevolution.model.I_PP_Order PickFrom_Order);
+	void setPickFrom_Order(@Nullable org.eevolution.model.I_PP_Order PickFrom_Order);
 
-    /** Column definition for PickFrom_Order_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.eevolution.model.I_PP_Order> COLUMN_PickFrom_Order_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, org.eevolution.model.I_PP_Order>(I_M_ShipmentSchedule.class, "PickFrom_Order_ID", org.eevolution.model.I_PP_Order.class);
-    /** Column name PickFrom_Order_ID */
-    public static final String COLUMNNAME_PickFrom_Order_ID = "PickFrom_Order_ID";
+	ModelColumn<I_M_ShipmentSchedule, org.eevolution.model.I_PP_Order> COLUMN_PickFrom_Order_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "PickFrom_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PickFrom_Order_ID = "PickFrom_Order_ID";
 
 	/**
 	 * Set Order Reference.
@@ -1364,7 +1401,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPOReference (java.lang.String POReference);
+	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -1374,12 +1411,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPOReference();
+	@Nullable java.lang.String getPOReference();
 
-    /** Column definition for POReference */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "POReference", null);
-    /** Column name POReference */
-    public static final String COLUMNNAME_POReference = "POReference";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_POReference = new ModelColumn<>(I_M_ShipmentSchedule.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Bereitstellungsdatum.
@@ -1388,7 +1423,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationDate (java.sql.Timestamp PreparationDate);
+	void setPreparationDate (@Nullable java.sql.Timestamp PreparationDate);
 
 	/**
 	 * Get Bereitstellungsdatum.
@@ -1397,12 +1432,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPreparationDate();
+	@Nullable java.sql.Timestamp getPreparationDate();
 
-    /** Column definition for PreparationDate */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PreparationDate = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "PreparationDate", null);
-    /** Column name PreparationDate */
-    public static final String COLUMNNAME_PreparationDate = "PreparationDate";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PreparationDate = new ModelColumn<>(I_M_ShipmentSchedule.class, "PreparationDate", null);
+	String COLUMNNAME_PreparationDate = "PreparationDate";
 
 	/**
 	 * Set Bereitstellungsdatum eff..
@@ -1413,7 +1446,7 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setPreparationDate_Effective (java.sql.Timestamp PreparationDate_Effective);
+	void setPreparationDate_Effective (@Nullable java.sql.Timestamp PreparationDate_Effective);
 
 	/**
 	 * Get Bereitstellungsdatum eff..
@@ -1424,12 +1457,10 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public java.sql.Timestamp getPreparationDate_Effective();
+	@Nullable java.sql.Timestamp getPreparationDate_Effective();
 
-    /** Column definition for PreparationDate_Effective */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PreparationDate_Effective = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "PreparationDate_Effective", null);
-    /** Column name PreparationDate_Effective */
-    public static final String COLUMNNAME_PreparationDate_Effective = "PreparationDate_Effective";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PreparationDate_Effective = new ModelColumn<>(I_M_ShipmentSchedule.class, "PreparationDate_Effective", null);
+	String COLUMNNAME_PreparationDate_Effective = "PreparationDate_Effective";
 
 	/**
 	 * Set Bereitstellungsdatum abw..
@@ -1438,7 +1469,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPreparationDate_Override (java.sql.Timestamp PreparationDate_Override);
+	void setPreparationDate_Override (@Nullable java.sql.Timestamp PreparationDate_Override);
 
 	/**
 	 * Get Bereitstellungsdatum abw..
@@ -1447,12 +1478,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPreparationDate_Override();
+	@Nullable java.sql.Timestamp getPreparationDate_Override();
 
-    /** Column definition for PreparationDate_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PreparationDate_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "PreparationDate_Override", null);
-    /** Column name PreparationDate_Override */
-    public static final String COLUMNNAME_PreparationDate_Override = "PreparationDate_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PreparationDate_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "PreparationDate_Override", null);
+	String COLUMNNAME_PreparationDate_Override = "PreparationDate_Override";
 
 	/**
 	 * Set Priorität.
@@ -1462,7 +1491,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPriorityRule (java.lang.String PriorityRule);
+	void setPriorityRule (@Nullable java.lang.String PriorityRule);
 
 	/**
 	 * Get Priorität.
@@ -1472,12 +1501,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPriorityRule();
+	@Nullable java.lang.String getPriorityRule();
 
-    /** Column definition for PriorityRule */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PriorityRule = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "PriorityRule", null);
-    /** Column name PriorityRule */
-    public static final String COLUMNNAME_PriorityRule = "PriorityRule";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PriorityRule = new ModelColumn<>(I_M_ShipmentSchedule.class, "PriorityRule", null);
+	String COLUMNNAME_PriorityRule = "PriorityRule";
 
 	/**
 	 * Set Priorität Abw..
@@ -1486,7 +1513,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPriorityRule_Override (java.lang.String PriorityRule_Override);
+	void setPriorityRule_Override (@Nullable java.lang.String PriorityRule_Override);
 
 	/**
 	 * Get Priorität Abw..
@@ -1495,12 +1522,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getPriorityRule_Override();
+	@Nullable java.lang.String getPriorityRule_Override();
 
-    /** Column definition for PriorityRule_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PriorityRule_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "PriorityRule_Override", null);
-    /** Column name PriorityRule_Override */
-    public static final String COLUMNNAME_PriorityRule_Override = "PriorityRule_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_PriorityRule_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "PriorityRule_Override", null);
+	String COLUMNNAME_PriorityRule_Override = "PriorityRule_Override";
 
 	/**
 	 * Set Processed.
@@ -1509,7 +1534,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
 	 * Get Processed.
@@ -1518,12 +1543,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Processed = new ModelColumn<>(I_M_ShipmentSchedule.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Process Now.
@@ -1534,7 +1557,7 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setProcessing (boolean Processing);
+	void setProcessing (boolean Processing);
 
 	/**
 	 * Get Process Now.
@@ -1545,12 +1568,10 @@ public interface I_M_ShipmentSchedule
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public boolean isProcessing();
+	boolean isProcessing();
 
-    /** Column definition for Processing */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Processing = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "Processing", null);
-    /** Column name Processing */
-    public static final String COLUMNNAME_Processing = "Processing";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Processing = new ModelColumn<>(I_M_ShipmentSchedule.class, "Processing", null);
+	String COLUMNNAME_Processing = "Processing";
 
 	/**
 	 * Set Produktbeschreibung.
@@ -1560,7 +1581,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProductDescription (java.lang.String ProductDescription);
+	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
 	 * Get Produktbeschreibung.
@@ -1570,12 +1591,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getProductDescription();
+	@Nullable java.lang.String getProductDescription();
 
-    /** Column definition for ProductDescription */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ProductDescription = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "ProductDescription", null);
-    /** Column name ProductDescription */
-    public static final String COLUMNNAME_ProductDescription = "ProductDescription";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ProductDescription = new ModelColumn<>(I_M_ShipmentSchedule.class, "ProductDescription", null);
+	String COLUMNNAME_ProductDescription = "ProductDescription";
 
 	/**
 	 * Set Gelieferte Menge.
@@ -1585,7 +1604,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyDelivered (java.math.BigDecimal QtyDelivered);
+	void setQtyDelivered (@Nullable BigDecimal QtyDelivered);
 
 	/**
 	 * Get Gelieferte Menge.
@@ -1595,12 +1614,35 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyDelivered();
+	BigDecimal getQtyDelivered();
 
-    /** Column definition for QtyDelivered */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyDelivered = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyDelivered", null);
-    /** Column name QtyDelivered */
-    public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyDelivered = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyDelivered", null);
+	String COLUMNNAME_QtyDelivered = "QtyDelivered";
+
+	/**
+	 * Set Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setQtyItemCapacity (@Nullable BigDecimal QtyItemCapacity);
+
+	/**
+	 * Get Packaging capacity.
+	 * Capacity in the respective product's unit of measuerement
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getQtyItemCapacity();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyItemCapacity = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyItemCapacity", null);
+	String COLUMNNAME_QtyItemCapacity = "QtyItemCapacity";
 
 	/**
 	 * Set Bestand.
@@ -1610,7 +1652,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyOnHand (java.math.BigDecimal QtyOnHand);
+	void setQtyOnHand (@Nullable BigDecimal QtyOnHand);
 
 	/**
 	 * Get Bestand.
@@ -1620,12 +1662,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyOnHand();
+	BigDecimal getQtyOnHand();
 
-    /** Column definition for QtyOnHand */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOnHand = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyOnHand", null);
-    /** Column name QtyOnHand */
-    public static final String COLUMNNAME_QtyOnHand = "QtyOnHand";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOnHand = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyOnHand", null);
+	String COLUMNNAME_QtyOnHand = "QtyOnHand";
 
 	/**
 	 * Set Qty Ordered.
@@ -1635,7 +1675,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyOrdered (java.math.BigDecimal QtyOrdered);
+	void setQtyOrdered (@Nullable BigDecimal QtyOrdered);
 
 	/**
 	 * Get Qty Ordered.
@@ -1645,12 +1685,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyOrdered();
+	BigDecimal getQtyOrdered();
 
-    /** Column definition for QtyOrdered */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyOrdered", null);
-    /** Column name QtyOrdered */
-    public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyOrdered", null);
+	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
 	 * Set QtyOrdered_Calculated.
@@ -1659,7 +1697,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyOrdered_Calculated (java.math.BigDecimal QtyOrdered_Calculated);
+	void setQtyOrdered_Calculated (@Nullable BigDecimal QtyOrdered_Calculated);
 
 	/**
 	 * Get QtyOrdered_Calculated.
@@ -1668,12 +1706,33 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyOrdered_Calculated();
+	BigDecimal getQtyOrdered_Calculated();
 
-    /** Column definition for QtyOrdered_Calculated */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered_Calculated = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyOrdered_Calculated", null);
-    /** Column name QtyOrdered_Calculated */
-    public static final String COLUMNNAME_QtyOrdered_Calculated = "QtyOrdered_Calculated";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered_Calculated = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyOrdered_Calculated", null);
+	String COLUMNNAME_QtyOrdered_Calculated = "QtyOrdered_Calculated";
+
+	/**
+	 * Set Bestellte Menge (LU).
+	 * Bestellte Menge (LU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyOrdered_LU (BigDecimal QtyOrdered_LU);
+
+	/**
+	 * Get Bestellte Menge (LU).
+	 * Bestellte Menge (LU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyOrdered_LU();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered_LU = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyOrdered_LU", null);
+	String COLUMNNAME_QtyOrdered_LU = "QtyOrdered_LU";
 
 	/**
 	 * Set Bestellt abw..
@@ -1682,7 +1741,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyOrdered_Override (java.math.BigDecimal QtyOrdered_Override);
+	void setQtyOrdered_Override (@Nullable BigDecimal QtyOrdered_Override);
 
 	/**
 	 * Get Bestellt abw..
@@ -1691,12 +1750,33 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyOrdered_Override();
+	BigDecimal getQtyOrdered_Override();
 
-    /** Column definition for QtyOrdered_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyOrdered_Override", null);
-    /** Column name QtyOrdered_Override */
-    public static final String COLUMNNAME_QtyOrdered_Override = "QtyOrdered_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyOrdered_Override", null);
+	String COLUMNNAME_QtyOrdered_Override = "QtyOrdered_Override";
+
+	/**
+	 * Set Bestellte Menge (TU).
+	 * Bestellte Menge (TU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQtyOrdered_TU (BigDecimal QtyOrdered_TU);
+
+	/**
+	 * Get Bestellte Menge (TU).
+	 * Bestellte Menge (TU)
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyOrdered_TU();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyOrdered_TU = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyOrdered_TU", null);
+	String COLUMNNAME_QtyOrdered_TU = "QtyOrdered_TU";
 
 	/**
 	 * Set Picked (stock UOM).
@@ -1705,7 +1785,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyPickList (java.math.BigDecimal QtyPickList);
+	void setQtyPickList (@Nullable BigDecimal QtyPickList);
 
 	/**
 	 * Get Picked (stock UOM).
@@ -1714,37 +1794,33 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyPickList();
+	BigDecimal getQtyPickList();
 
-    /** Column definition for QtyPickList */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyPickList = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyPickList", null);
-    /** Column name QtyPickList */
-    public static final String COLUMNNAME_QtyPickList = "QtyPickList";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyPickList = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyPickList", null);
+	String COLUMNNAME_QtyPickList = "QtyPickList";
 
 	/**
-	 * Set Open Qty.
-	 * Offene Menge
+	 * Set Qty Reserved.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyReserved (java.math.BigDecimal QtyReserved);
+	void setQtyReserved (@Nullable BigDecimal QtyReserved);
 
 	/**
-	 * Get Open Qty.
-	 * Offene Menge
+	 * Get Qty Reserved.
+	 * Open Qty
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyReserved();
+	BigDecimal getQtyReserved();
 
-    /** Column definition for QtyReserved */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyReserved = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyReserved", null);
-    /** Column name QtyReserved */
-    public static final String COLUMNNAME_QtyReserved = "QtyReserved";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyReserved = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyReserved", null);
+	String COLUMNNAME_QtyReserved = "QtyReserved";
 
 	/**
 	 * Set Ausliefermenge.
@@ -1753,7 +1829,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyToDeliver (java.math.BigDecimal QtyToDeliver);
+	void setQtyToDeliver (@Nullable BigDecimal QtyToDeliver);
 
 	/**
 	 * Get Ausliefermenge.
@@ -1762,35 +1838,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyToDeliver();
+	BigDecimal getQtyToDeliver();
 
-    /** Column definition for QtyToDeliver */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyToDeliver", null);
-    /** Column name QtyToDeliver */
-    public static final String COLUMNNAME_QtyToDeliver = "QtyToDeliver";
-
-	/**
-	 * Set Different Catch Weight Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public void setQtyToDeliverCatch_Override (java.math.BigDecimal QtyToDeliverCatch_Override);
-
-	/**
-	 * Get Different Catch Weight Qty.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	public java.math.BigDecimal getQtyToDeliverCatch_Override();
-
-    /** Column definition for QtyToDeliverCatch_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliverCatch_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyToDeliverCatch_Override", null);
-    /** Column name QtyToDeliverCatch_Override */
-    public static final String COLUMNNAME_QtyToDeliverCatch_Override = "QtyToDeliverCatch_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyToDeliver", null);
+	String COLUMNNAME_QtyToDeliver = "QtyToDeliver";
 
 	/**
 	 * Set Liefermenge abw..
@@ -1800,7 +1851,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyToDeliver_Override (java.math.BigDecimal QtyToDeliver_Override);
+	void setQtyToDeliver_Override (@Nullable BigDecimal QtyToDeliver_Override);
 
 	/**
 	 * Get Liefermenge abw..
@@ -1810,12 +1861,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyToDeliver_Override();
+	BigDecimal getQtyToDeliver_Override();
 
-    /** Column definition for QtyToDeliver_Override */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyToDeliver_Override", null);
-    /** Column name QtyToDeliver_Override */
-    public static final String COLUMNNAME_QtyToDeliver_Override = "QtyToDeliver_Override";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyToDeliver_Override", null);
+	String COLUMNNAME_QtyToDeliver_Override = "QtyToDeliver_Override";
 
 	/**
 	 * Set Erl. Liefermenge abw..
@@ -1825,7 +1874,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setQtyToDeliver_OverrideFulfilled (java.math.BigDecimal QtyToDeliver_OverrideFulfilled);
+	void setQtyToDeliver_OverrideFulfilled (@Nullable BigDecimal QtyToDeliver_OverrideFulfilled);
 
 	/**
 	 * Get Erl. Liefermenge abw..
@@ -1835,12 +1884,73 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getQtyToDeliver_OverrideFulfilled();
+	BigDecimal getQtyToDeliver_OverrideFulfilled();
 
-    /** Column definition for QtyToDeliver_OverrideFulfilled */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver_OverrideFulfilled = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyToDeliver_OverrideFulfilled", null);
-    /** Column name QtyToDeliver_OverrideFulfilled */
-    public static final String COLUMNNAME_QtyToDeliver_OverrideFulfilled = "QtyToDeliver_OverrideFulfilled";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver_OverrideFulfilled = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyToDeliver_OverrideFulfilled", null);
+	String COLUMNNAME_QtyToDeliver_OverrideFulfilled = "QtyToDeliver_OverrideFulfilled";
+
+	/**
+	 * Set Different Catch Weight Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToDeliverCatch_Override (@Nullable BigDecimal QtyToDeliverCatch_Override);
+
+	/**
+	 * Get Different Catch Weight Qty.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToDeliverCatch_Override();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliverCatch_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyToDeliverCatch_Override", null);
+	String COLUMNNAME_QtyToDeliverCatch_Override = "QtyToDeliverCatch_Override";
+
+	/**
+	 * Set Menge TU (berechnet).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTU_Calculated (@Nullable BigDecimal QtyTU_Calculated);
+
+	/**
+	 * Get Menge TU (berechnet).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTU_Calculated();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Calculated = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Calculated", null);
+	String COLUMNNAME_QtyTU_Calculated = "QtyTU_Calculated";
+
+	/**
+	 * Set Menge TU (ausgewiesen).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTU_Override (@Nullable BigDecimal QtyTU_Override);
+
+	/**
+	 * Get Menge TU (ausgewiesen).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTU_Override();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Override", null);
+	String COLUMNNAME_QtyTU_Override = "QtyTU_Override";
 
 	/**
 	 * Set Record ID.
@@ -1850,7 +1960,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setRecord_ID (int Record_ID);
+	void setRecord_ID (int Record_ID);
 
 	/**
 	 * Get Record ID.
@@ -1860,12 +1970,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getRecord_ID();
+	int getRecord_ID();
 
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Record_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set Best Before Policy.
@@ -1874,7 +1982,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setShipmentAllocation_BestBefore_Policy (java.lang.String ShipmentAllocation_BestBefore_Policy);
+	void setShipmentAllocation_BestBefore_Policy (@Nullable java.lang.String ShipmentAllocation_BestBefore_Policy);
 
 	/**
 	 * Get Best Before Policy.
@@ -1883,12 +1991,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getShipmentAllocation_BestBefore_Policy();
+	@Nullable java.lang.String getShipmentAllocation_BestBefore_Policy();
 
-    /** Column definition for ShipmentAllocation_BestBefore_Policy */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ShipmentAllocation_BestBefore_Policy = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "ShipmentAllocation_BestBefore_Policy", null);
-    /** Column name ShipmentAllocation_BestBefore_Policy */
-    public static final String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_ShipmentAllocation_BestBefore_Policy = new ModelColumn<>(I_M_ShipmentSchedule.class, "ShipmentAllocation_BestBefore_Policy", null);
+	String COLUMNNAME_ShipmentAllocation_BestBefore_Policy = "ShipmentAllocation_BestBefore_Policy";
 
 	/**
 	 * Set Positionssumme.
@@ -1897,7 +2003,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setSinglePriceTag_ID (java.lang.String SinglePriceTag_ID);
+	void setSinglePriceTag_ID (@Nullable java.lang.String SinglePriceTag_ID);
 
 	/**
 	 * Get Positionssumme.
@@ -1906,12 +2012,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getSinglePriceTag_ID();
+	@Nullable java.lang.String getSinglePriceTag_ID();
 
-    /** Column definition for SinglePriceTag_ID */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_SinglePriceTag_ID = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "SinglePriceTag_ID", null);
-    /** Column name SinglePriceTag_ID */
-    public static final String COLUMNNAME_SinglePriceTag_ID = "SinglePriceTag_ID";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_SinglePriceTag_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "SinglePriceTag_ID", null);
+	String COLUMNNAME_SinglePriceTag_ID = "SinglePriceTag_ID";
 
 	/**
 	 * Set Status.
@@ -1920,7 +2024,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setStatus (java.lang.String Status);
+	void setStatus (@Nullable java.lang.String Status);
 
 	/**
 	 * Get Status.
@@ -1929,12 +2033,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getStatus();
+	@Nullable java.lang.String getStatus();
 
-    /** Column definition for Status */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "Status", null);
-    /** Column name Status */
-    public static final String COLUMNNAME_Status = "Status";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Status = new ModelColumn<>(I_M_ShipmentSchedule.class, "Status", null);
+	String COLUMNNAME_Status = "Status";
 
 	/**
 	 * Get Updated.
@@ -1944,12 +2046,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Updated = new ModelColumn<>(I_M_ShipmentSchedule.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -1959,8 +2059,7 @@ public interface I_M_ShipmentSchedule
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

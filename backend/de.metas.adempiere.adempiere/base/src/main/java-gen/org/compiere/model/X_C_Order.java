@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Order
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1245221438L;
+	private static final long serialVersionUID = -2060347156L;
 
     /** Standard Constructor */
     public X_C_Order (final Properties ctx, final int C_Order_ID, @Nullable final String trxName)
@@ -184,6 +184,21 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
+	{
+		if (C_Async_Batch_ID < 1) 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
+	}
+
+	@Override
+	public int getC_Async_Batch_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
 
 	@Override
@@ -384,6 +399,33 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getC_DocTypeTarget_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocTypeTarget_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Order getC_FrameAgreement_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_FrameAgreement_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_FrameAgreement_Order(final org.compiere.model.I_C_Order C_FrameAgreement_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_FrameAgreement_Order_ID, org.compiere.model.I_C_Order.class, C_FrameAgreement_Order);
+	}
+
+	@Override
+	public void setC_FrameAgreement_Order_ID (final int C_FrameAgreement_Order_ID)
+	{
+		if (C_FrameAgreement_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_FrameAgreement_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_FrameAgreement_Order_ID, C_FrameAgreement_Order_ID);
+	}
+
+	@Override
+	public int getC_FrameAgreement_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_FrameAgreement_Order_ID);
 	}
 
 	@Override
@@ -979,6 +1021,10 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public static final String INCOTERM_DDU_FreiUnverzollt = "DDU";
 	/** DDP_Verzollt = DDP */
 	public static final String INCOTERM_DDP_Verzollt = "DDP";
+	/** DAP - Delivered at Place = DAP */
+	public static final String INCOTERM_DAP_DeliveredAtPlace = "DAP";
+	/** DPU_geliefertBenannterOrtEntladen = DPU */
+	public static final String INCOTERM_DPU_geliefertBenannterOrtEntladen = "DPU";
 	@Override
 	public void setIncoterm (final @Nullable java.lang.String Incoterm)
 	{
@@ -1695,18 +1741,6 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	public int getRef_Proposal_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Ref_Proposal_ID);
-	}
-
-	@Override
-	public void setreturnDate (final @Nullable java.sql.Timestamp returnDate)
-	{
-		set_Value (COLUMNNAME_returnDate, returnDate);
-	}
-
-	@Override
-	public java.sql.Timestamp getreturnDate()
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_returnDate);
 	}
 
 	@Override

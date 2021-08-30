@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_InOut
  *  @author metasfresh (generated) 
@@ -137,6 +138,27 @@ public interface I_M_InOut
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_M_InOut.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
 	 * Set Business Partner.
@@ -1363,7 +1385,7 @@ public interface I_M_InOut
 	 * Set Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1373,7 +1395,7 @@ public interface I_M_InOut
 	 * Get Order Reference.
 	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

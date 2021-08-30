@@ -97,7 +97,6 @@ public class OLCandRepository
 		});
 	}
 
-
 	private I_C_OLCand createAndSaveOLCandRecord(@NonNull final OLCandCreateRequest request)
 	{
 		final I_C_OLCand olCandPO = newInstance(I_C_OLCand.class);
@@ -156,8 +155,8 @@ public class OLCandRepository
 		olCandPO.setDateCandidate(CoalesceUtil.coalesce(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
-				.atTime(LocalTime.MAX)
-				.atZone(timeZone)));
+															  .atTime(LocalTime.MAX)
+															  .atZone(timeZone)));
 
 		olCandPO.setPresetDateInvoiced(TimeUtil.asTimestamp(request.getPresetDateInvoiced()));
 		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
@@ -258,10 +257,20 @@ public class OLCandRepository
 			olCandPO.setLine(request.getLine());
 		}
 
+		if (request.getAsyncBatchId() != null)
+		{
+			olCandPO.setC_Async_Batch_ID(request.getAsyncBatchId().getRepoId());
+		}
+
 		final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssuesInterface = InterfaceWrapperHelper.create(olCandPO, org.adempiere.process.rpl.model.I_C_OLCand.class);
 		if (request.getIsImportedWithIssues() != null)
 		{
 			olCandWithIssuesInterface.setIsImportedWithIssues(request.getIsImportedWithIssues());
+		}
+
+		if (request.getQtyShipped() != null)
+		{
+			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());
 		}
 
 		saveRecord(olCandWithIssuesInterface);
@@ -294,6 +303,14 @@ public class OLCandRepository
 		{
 			final InputDataSourceId inputDataSourceId = Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceIdByInternalName(olCandQuery.getInputDataSourceName());
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_InputDataSource_ID, inputDataSourceId);
+		}
+		if (olCandQuery.getExternalLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_ExternalLineId, olCandQuery.getExternalLineId());
+		}
+		if (olCandQuery.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_AD_Org_ID, olCandQuery.getOrgId());
 		}
 
 		return queryBuilder;
