@@ -39,7 +39,7 @@ ORDER BY QtyBatch DESC;]]>
 	<field name="ingredients" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="ingredients"/>
 	</field>
-	<field name="qtybatch" class="java.lang.String">
+	<field name="qtybatch" class="java.lang.Double">
 		<property name="com.jaspersoft.studio.field.label" value="qtybatch"/>
 	</field>
 	<field name="m_product_id" class="java.math.BigDecimal">
