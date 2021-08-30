@@ -64,7 +64,7 @@ import static de.metas.async.AsyncBatchId.NONE_ASYNC_BATCH_ID;
 public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 {
 	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit, but which is NOT collecting the enqueued models */
-	public static final <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelSchedulerNoCollect(
+	public static <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelSchedulerNoCollect(
 			final Class<? extends IWorkpackageProcessor> workpackageProcessorClass,
 			final Class<ModelType> modelType)
 	{
@@ -73,14 +73,14 @@ public abstract class WorkpackagesOnCommitSchedulerTemplate<ItemType>
 	}
 
 	/** Convenient method to create an instance which is scheduling a workpackage on transaction commit based on a given {@link IContextAware} */
-	public static final WorkpackagesOnCommitSchedulerTemplate<IContextAware> newContextAwareSchedulerNoCollect(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
+	public static WorkpackagesOnCommitSchedulerTemplate<IContextAware> newContextAwareSchedulerNoCollect(final Class<? extends IWorkpackageProcessor> workpackageProcessorClass)
 	{
 		final boolean collectModels = false;
 		return new ModelsScheduler<>(workpackageProcessorClass, IContextAware.class, collectModels);
 	}
 
 	/** Convenient method to create an instance which IS COLLECTING models and schedules a workpackage on transaction commit. */
-	public static final <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelScheduler(
+	public static <ModelType> WorkpackagesOnCommitSchedulerTemplate<ModelType> newModelScheduler(
 			final Class<? extends IWorkpackageProcessor> workpackageProcessorClass,
 			final Class<ModelType> modelType)
 	{

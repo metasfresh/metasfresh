@@ -28,9 +28,6 @@ import java.util.Properties;
 
 /**
  * The schedule for update request used by {@link IInvoiceCandUpdateScheduler}.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IInvoiceCandUpdateSchedulerRequest
 {
