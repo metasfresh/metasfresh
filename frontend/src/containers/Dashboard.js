@@ -73,9 +73,10 @@ export class Dashboard extends Component {
       indicator,
       processStatus,
       includedView,
-      enableTutorial,
+      // enableTutorial,
     } = this.props;
-    const { editmode, hintsEnabled, introHints } = this.state;
+    // const { editmode, hintsEnabled, introHints } = this.state;
+    const { editmode } = this.state;
 
     return (
       <Container

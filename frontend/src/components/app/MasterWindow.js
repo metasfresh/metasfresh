@@ -284,7 +284,7 @@ export default class MasterWindow extends PureComponent {
       allowShortcut,
       includedView,
       processStatus,
-      enableTutorial,
+      // enableTutorial,
       onRefreshTab,
       onSortTable,
     } = this.props;
@@ -292,10 +292,10 @@ export default class MasterWindow extends PureComponent {
       dropzoneFocused,
       newRow,
       modalTitle,
-      introEnabled,
-      hintsEnabled,
-      introSteps,
-      introHints,
+      // introEnabled,
+      // hintsEnabled,
+      // introSteps,
+      // introHints,
     } = this.state;
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
