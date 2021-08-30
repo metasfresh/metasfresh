@@ -391,7 +391,5 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
-	Set<InvoiceCandidateId> retrieveUnprocessedICIdByOrderId(Set<OrderId> ids);
-
 	Set<OrderId> retrieveOrderIdsForInvoiceCandIds(Set<InvoiceCandidateId> ids);
 }
