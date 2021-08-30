@@ -74,7 +74,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Alberta);
 		saveRecord(parentRecord);
@@ -101,7 +100,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Shopware6);
 		saveRecord(parentRecord);
@@ -131,7 +129,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Shopware6);
 		saveRecord(parentRecord);
@@ -163,7 +160,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Alberta);
 		saveRecord(parentRecord);
@@ -192,7 +188,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Alberta);
 		saveRecord(parentRecord);
@@ -218,7 +213,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Alberta);
 		saveRecord(parentRecord);
@@ -249,7 +243,6 @@ class ExternalSystemConfigRepoTest
 	{
 		// given
 		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
-		parentRecord.setCamelURL("camelUrl");
 		parentRecord.setName("name");
 		parentRecord.setType(X_ExternalSystem_Config.TYPE_Shopware6);
 		saveRecord(parentRecord);

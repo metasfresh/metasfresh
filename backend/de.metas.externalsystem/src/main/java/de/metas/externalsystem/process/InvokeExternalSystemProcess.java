@@ -22,8 +22,6 @@
 
 package de.metas.externalsystem.process;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -35,6 +33,7 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
+import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.IOrgDAO;
@@ -50,15 +49,9 @@ import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.apache.http.HttpHeaders;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
-import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashMap;
@@ -94,28 +87,19 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		final Timestamp sinceEff = extractEffectiveSinceTimestamp();
 
 		addLog("Calling with params: childConfigId {}, since {}, command {}", childConfigId, sinceEff.toInstant(), externalRequest);
-		try (final CloseableHttpClient aDefault = HttpClients.createDefault())
-		{
-			return aDefault.execute(getRequest(), response -> {
-				final int statusCode = response.getStatusLine().getStatusCode();
-				if (statusCode != 200)
-				{
-					addLog("Camel request error message: {}", response);
-				}
-				else
-				{
-					addLog("Status code from camel: {}", statusCode);
-				}
-				return statusCode == 200 ? JavaProcess.MSG_OK : JavaProcess.MSG_Error + " request returned code: " + response.toString();
-			});
-		}
+
+		final JsonExternalSystemRequest externalSystemRequest = getRequest();
+
+		SpringContextHolder.instance.getBean(ExternalSystemMessageSender.class).send(externalSystemRequest);
+
+		return MSG_OK;
 	}
 
-	protected HttpPut getRequest() throws UnsupportedEncodingException, JsonProcessingException
+	protected JsonExternalSystemRequest getRequest()
 	{
 		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
 
-		final JsonExternalSystemRequest jsonExternalSystemRequest = JsonExternalSystemRequest.builder()
+		return JsonExternalSystemRequest.builder()
 				.externalSystemConfigId(JsonMetasfreshId.of(config.getId().getRepoId()))
 				.externalSystemName(JsonExternalSystemName.of(config.getType().getName()))
 				.parameters(extractParameters(config))
@@ -123,18 +107,6 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 				.command(externalRequest)
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
 				.build();
-
-		final HttpPut request = new HttpPut(config.getCamelUrl());
-
-		// attempt to encode the request body as UTF-8. Oftherwise camel might fail to deserialize the JSON
-		// by default http-client encodes the content as ISO-8859-1, https://hc.apache.org/httpclient-legacy/charencodings.html
-		request.setHeader(HttpHeaders.CONTENT_TYPE, "application/json; charset=UTF-8");
-		
-		final String jsonExternalSystemRequestString = new ObjectMapper().writeValueAsString(jsonExternalSystemRequest);
-
-		request.setEntity(new StringEntity(jsonExternalSystemRequestString));
-
-		return request;
 	}
 
 	@Override
