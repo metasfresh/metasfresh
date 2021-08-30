@@ -78,3 +78,8 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 CREATE INDEX C_Invoice_Candidate_Recompute_Async_Batch ON C_Invoice_Candidate_Recompute (C_Async_Batch_ID,ChunkUUID)
 ;
 
+-- 2021-08-30T07:51:15.403Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO C_Async_Batch_Type (AD_Client_ID,AD_Org_ID,C_Async_Batch_Type_ID,Created,CreatedBy,InternalName,IsActive,NotificationType,SkipTimeoutMillis,Updated,UpdatedBy) VALUES (1000000,1000000,540013,TO_TIMESTAMP('2021-08-30 10:51:15','YYYY-MM-DD HH24:MI:SS'),100,'InvoiceCandidate_Processing','Y','ABP',0,TO_TIMESTAMP('2021-08-30 10:51:15','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
