@@ -53,18 +53,33 @@
           "contacts": {
             "requestItems": [
               {
-                "contactIdentifier": "ext-Shopware6-customerId",
+                "contactIdentifier": "ext-Shopware6-customerId-billTo",
                 "contact": {
                   "name": "firstName lastName",
                   "firstName": "firstName",
                   "lastName": "lastName",
                   "email": "someEamil@web.de",
-                  "invoiceEmailEnabled":true
+                  "invoiceEmailEnabled": true,
+                  "phone": "phoneNumber",
+                  "shipToDefault": false,
+                  "billToDefault": true
+                }
+              },
+              {
+                "contactIdentifier": "ext-Shopware6-customerId-shipTo",
+                "contact": {
+                  "firstName": "firstName",
+                  "lastName": "lastName",
+                  "email": "someEamil@web.de",
+                  "invoiceEmailEnabled": true,
+                  "phone": "phoneNumber",
+                  "shipToDefault": true,
+                  "billToDefault": false
                 }
               }
             ],
             "syncAdvise": {
-              "ifNotExists": "CREATE",
+              "ifNotExists": "FAIL",
               "ifExists": "DONT_UPDATE"
             }
           }
