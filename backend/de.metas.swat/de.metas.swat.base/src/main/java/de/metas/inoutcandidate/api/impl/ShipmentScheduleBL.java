@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -930,5 +931,27 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						 });
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Updated {} out of {} M_ShipmentSchedule", updatedCounter.get(), allCounter.get());
+	}
+
+	@Override
+	public void setAsyncBatch(@NonNull final ShipmentScheduleId shipmentScheduleId, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
+
+		if (shipmentSchedule.getC_Async_Batch_ID() > 0)
+		{
+			throw new AdempiereException("Reassigning shipmentSchedule.C_Async_Batch_ID is not allowed!");
+		}
+
+		if (shipmentSchedule.isProcessed())
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("ShipmentScheduleBL.setAsyncBatch(): M_ShipmentScheduled already processed,"
+																	+ " nothing to do! ShipmentScheduleId: {}", shipmentSchedule.getM_ShipmentSchedule_ID());
+			return;
+		}
+
+		shipmentSchedule.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+
+		shipmentSchedulePA.save(shipmentSchedule);
 	}
 }

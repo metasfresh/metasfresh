@@ -122,4 +122,6 @@ public interface IOrderDAO extends ISingletonService
 	void save(org.compiere.model.I_C_OrderLine orderLine);
 
 	Optional<I_C_Order> retrieveByOrderCriteria(OrderQuery query);
+
+	Set<OrderId> retrieveIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 }

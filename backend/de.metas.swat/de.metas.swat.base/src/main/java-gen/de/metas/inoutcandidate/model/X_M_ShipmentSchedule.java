@@ -1,31 +1,32 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
+public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent
 {
 
 	private static final long serialVersionUID = -1329916563L;
 
-    /** Standard Constructor */
+	/** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
-    {
-      super (ctx, M_ShipmentSchedule_ID, trxName);
-    }
+	{
+		super (ctx, M_ShipmentSchedule_ID, trxName);
+	}
 
-    /** Load Constructor */
+	/** Load Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
-    {
-      super (ctx, rs, trxName);
-    }
+	{
+		super (ctx, rs, trxName);
+	}
 
 
 	/** Load Meta Data */
@@ -38,14 +39,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setAD_Table_ID (final int AD_Table_ID)
 	{
-		if (AD_Table_ID < 1) 
+		if (AD_Table_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_Table_ID, AD_Table_ID);
 	}
 
 	@Override
-	public int getAD_Table_ID() 
+	public int getAD_Table_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Table_ID);
 	}
@@ -53,14 +54,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setAD_User_ID (final int AD_User_ID)
 	{
-		if (AD_User_ID < 0) 
+		if (AD_User_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
 	@Override
-	public int getAD_User_ID() 
+	public int getAD_User_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
@@ -68,14 +69,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setAD_User_Override_ID (final int AD_User_Override_ID)
 	{
-		if (AD_User_Override_ID < 1) 
+		if (AD_User_Override_ID < 1)
 			set_Value (COLUMNNAME_AD_User_Override_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_User_Override_ID, AD_User_Override_ID);
 	}
 
 	@Override
-	public int getAD_User_Override_ID() 
+	public int getAD_User_Override_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_Override_ID);
 	}
@@ -87,7 +88,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isAllowConsolidateInOut() 
+	public boolean isAllowConsolidateInOut()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_AllowConsolidateInOut);
 	}
@@ -95,14 +96,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
 	{
-		if (Bill_BPartner_ID < 1) 
+		if (Bill_BPartner_ID < 1)
 			set_Value (COLUMNNAME_Bill_BPartner_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_BPartner_ID, Bill_BPartner_ID);
 	}
 
 	@Override
-	public int getBill_BPartner_ID() 
+	public int getBill_BPartner_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_BPartner_ID);
 	}
@@ -110,14 +111,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setBill_Location_ID (final int Bill_Location_ID)
 	{
-		if (Bill_Location_ID < 1) 
+		if (Bill_Location_ID < 1)
 			set_Value (COLUMNNAME_Bill_Location_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_Location_ID, Bill_Location_ID);
 	}
 
 	@Override
-	public int getBill_Location_ID() 
+	public int getBill_Location_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_Location_ID);
 	}
@@ -152,14 +153,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setBill_User_ID (final int Bill_User_ID)
 	{
-		if (Bill_User_ID < 1) 
+		if (Bill_User_ID < 1)
 			set_Value (COLUMNNAME_Bill_User_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Bill_User_ID, Bill_User_ID);
 	}
 
 	@Override
-	public int getBill_User_ID() 
+	public int getBill_User_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_User_ID);
 	}
@@ -171,7 +172,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getBPartnerAddress() 
+	public java.lang.String getBPartnerAddress()
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerAddress);
 	}
@@ -183,22 +184,37 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getBPartnerAddress_Override() 
+	public java.lang.String getBPartnerAddress_Override()
 	{
 		return get_ValueAsString(COLUMNNAME_BPartnerAddress_Override);
 	}
 
 	@Override
+	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
+	{
+		if (C_Async_Batch_ID < 1)
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
+	}
+
+	@Override
+	public int getC_Async_Batch_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
+	}
+	
+	@Override
 	public void setC_BP_Location_Override_ID (final int C_BP_Location_Override_ID)
 	{
-		if (C_BP_Location_Override_ID < 1) 
+		if (C_BP_Location_Override_ID < 1)
 			set_Value (COLUMNNAME_C_BP_Location_Override_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BP_Location_Override_ID, C_BP_Location_Override_ID);
 	}
 
 	@Override
-	public int getC_BP_Location_Override_ID() 
+	public int getC_BP_Location_Override_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_ID);
 	}
@@ -218,14 +234,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_BP_Location_Override_Value_ID (final int C_BP_Location_Override_Value_ID)
 	{
-		if (C_BP_Location_Override_Value_ID < 1) 
+		if (C_BP_Location_Override_Value_ID < 1)
 			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, C_BP_Location_Override_Value_ID);
 	}
 
 	@Override
-	public int getC_BP_Location_Override_Value_ID() 
+	public int getC_BP_Location_Override_Value_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_Value_ID);
 	}
@@ -233,14 +249,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
-		if (C_BPartner_ID < 1) 
+		if (C_BPartner_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
 	@Override
-	public int getC_BPartner_ID() 
+	public int getC_BPartner_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
@@ -248,14 +264,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
-		if (C_BPartner_Location_ID < 1) 
+		if (C_BPartner_Location_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
 	@Override
-	public int getC_BPartner_Location_ID() 
+	public int getC_BPartner_Location_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
@@ -290,14 +306,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_BPartner_Override_ID (final int C_BPartner_Override_ID)
 	{
-		if (C_BPartner_Override_ID < 1) 
+		if (C_BPartner_Override_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_Override_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_Override_ID, C_BPartner_Override_ID);
 	}
 
 	@Override
-	public int getC_BPartner_Override_ID() 
+	public int getC_BPartner_Override_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Override_ID);
 	}
@@ -305,14 +321,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_BPartner_Vendor_ID (final int C_BPartner_Vendor_ID)
 	{
-		if (C_BPartner_Vendor_ID < 1) 
+		if (C_BPartner_Vendor_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, C_BPartner_Vendor_ID);
 	}
 
 	@Override
-	public int getC_BPartner_Vendor_ID() 
+	public int getC_BPartner_Vendor_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Vendor_ID);
 	}
@@ -323,7 +339,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("C_Currency_ID is virtual column");	}
 
 	@Override
-	public int getC_Currency_ID() 
+	public int getC_Currency_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
@@ -331,14 +347,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_DocType_ID (final int C_DocType_ID)
 	{
-		if (C_DocType_ID < 0) 
+		if (C_DocType_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_DocType_ID, C_DocType_ID);
 	}
 
 	@Override
-	public int getC_DocType_ID() 
+	public int getC_DocType_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
@@ -358,14 +374,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
-		if (C_Order_ID < 1) 
+		if (C_Order_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, C_Order_ID);
 	}
 
 	@Override
-	public int getC_Order_ID() 
+	public int getC_Order_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
@@ -385,14 +401,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setC_OrderLine_ID (final int C_OrderLine_ID)
 	{
-		if (C_OrderLine_ID < 1) 
+		if (C_OrderLine_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_OrderLine_ID, C_OrderLine_ID);
 	}
 
 	@Override
-	public int getC_OrderLine_ID() 
+	public int getC_OrderLine_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
 	}
@@ -403,7 +419,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("C_UOM_ID is virtual column");	}
 
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
@@ -442,7 +458,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.sql.Timestamp getDateOrdered() 
+	public java.sql.Timestamp getDateOrdered()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DateOrdered);
 	}
@@ -454,7 +470,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.sql.Timestamp getDeliveryDate() 
+	public java.sql.Timestamp getDeliveryDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate);
 	}
@@ -465,7 +481,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("DeliveryDate_Effective is virtual column");	}
 
 	@Override
-	public java.sql.Timestamp getDeliveryDate_Effective() 
+	public java.sql.Timestamp getDeliveryDate_Effective()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate_Effective);
 	}
@@ -477,12 +493,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.sql.Timestamp getDeliveryDate_Override() 
+	public java.sql.Timestamp getDeliveryDate_Override()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_DeliveryDate_Override);
 	}
 
-	/** 
+	/**
 	 * DeliveryRule AD_Reference_ID=151
 	 * Reference name: C_Order DeliveryRule
 	 */
@@ -508,12 +524,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getDeliveryRule() 
+	public java.lang.String getDeliveryRule()
 	{
 		return get_ValueAsString(COLUMNNAME_DeliveryRule);
 	}
 
-	/** 
+	/**
 	 * DeliveryRule_Override AD_Reference_ID=540009
 	 * Reference name: M_ShipmentSchedule DeliveryRule
 	 */
@@ -537,12 +553,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getDeliveryRule_Override() 
+	public java.lang.String getDeliveryRule_Override()
 	{
 		return get_ValueAsString(COLUMNNAME_DeliveryRule_Override);
 	}
 
-	/** 
+	/**
 	 * DeliveryViaRule AD_Reference_ID=152
 	 * Reference name: C_Order DeliveryViaRule
 	 */
@@ -564,12 +580,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getDeliveryViaRule() 
+	public java.lang.String getDeliveryViaRule()
 	{
 		return get_ValueAsString(COLUMNNAME_DeliveryViaRule);
 	}
 
-	/** 
+	/**
 	 * DeliveryViaRule_Override AD_Reference_ID=152
 	 * Reference name: C_Order DeliveryViaRule
 	 */
@@ -591,12 +607,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getDeliveryViaRule_Override() 
+	public java.lang.String getDeliveryViaRule_Override()
 	{
 		return get_ValueAsString(COLUMNNAME_DeliveryViaRule_Override);
 	}
 
-	/** 
+	/**
 	 * DocSubType AD_Reference_ID=148
 	 * Reference name: C_DocType SubType
 	 */
@@ -687,6 +703,10 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_FrameAgrement = "FA";
 	/** Order Call = OC */
 	public static final String DOCSUBTYPE_OrderCall = "OC";
+	/** Mediated = MED */
+	public static final String DOCSUBTYPE_Mediated = "MED";
+	/** Cost Estimate = CE */
+	public static final String DOCSUBTYPE_CostEstimate = "CE";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -694,12 +714,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getDocSubType() 
+	public java.lang.String getDocSubType()
 	{
 		return get_ValueAsString(COLUMNNAME_DocSubType);
 	}
 
-	/** 
+	/**
 	 * ExportStatus AD_Reference_ID=541161
 	 * Reference name: API_ExportStatus
 	 */
@@ -723,7 +743,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getExportStatus() 
+	public java.lang.String getExportStatus()
 	{
 		return get_ValueAsString(COLUMNNAME_ExportStatus);
 	}
@@ -735,7 +755,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getHeaderAggregationKey() 
+	public java.lang.String getHeaderAggregationKey()
 	{
 		return get_ValueAsString(COLUMNNAME_HeaderAggregationKey);
 	}
@@ -747,7 +767,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isBPartnerAddress_Override() 
+	public boolean isBPartnerAddress_Override()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBPartnerAddress_Override);
 	}
@@ -759,7 +779,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isClosed() 
+	public boolean isClosed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
 	}
@@ -771,7 +791,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isDeliveryStop() 
+	public boolean isDeliveryStop()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryStop);
 	}
@@ -783,7 +803,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isDisplayed() 
+	public boolean isDisplayed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDisplayed);
 	}
@@ -795,7 +815,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isDropShip() 
+	public boolean isDropShip()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDropShip);
 	}
@@ -806,7 +826,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("IsEdiDesadvRecipient is virtual column");	}
 
 	@Override
-	public boolean isEdiDesadvRecipient() 
+	public boolean isEdiDesadvRecipient()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEdiDesadvRecipient);
 	}
@@ -817,7 +837,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("IsToRecompute is virtual column");	}
 
 	@Override
-	public boolean isToRecompute() 
+	public boolean isToRecompute()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsToRecompute);
 	}
@@ -842,24 +862,78 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
-	}
-
-	@Override
 	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
-		if (M_AttributeSetInstance_ID < 0) 
+		if (M_AttributeSetInstance_ID < 0)
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
 	@Override
-	public int getM_AttributeSetInstance_ID() 
+	public int getM_AttributeSetInstance_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_Calculated_ID (final int M_HU_PI_Item_Product_Calculated_ID)
+	{
+		if (M_HU_PI_Item_Product_Calculated_ID < 1)
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID, null);
+		else
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID, M_HU_PI_Item_Product_Calculated_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_Calculated_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1)
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_Override_ID (final int M_HU_PI_Item_Product_Override_ID)
+	{
+		if (M_HU_PI_Item_Product_Override_ID < 1)
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, null);
+		else
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Override_ID, M_HU_PI_Item_Product_Override_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_Override_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_Override_ID);
+	}
+
+	@Override
+	public void setM_HU_PI_Version_ID (final int M_HU_PI_Version_ID)
+	{
+		if (M_HU_PI_Version_ID < 1)
+			set_Value (COLUMNNAME_M_HU_PI_Version_ID, null);
+		else
+			set_Value (COLUMNNAME_M_HU_PI_Version_ID, M_HU_PI_Version_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Version_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Version_ID);
 	}
 
 	@Override
@@ -877,14 +951,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_IolCandHandler_ID (final int M_IolCandHandler_ID)
 	{
-		if (M_IolCandHandler_ID < 1) 
+		if (M_IolCandHandler_ID < 1)
 			set_Value (COLUMNNAME_M_IolCandHandler_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_IolCandHandler_ID, M_IolCandHandler_ID);
 	}
 
 	@Override
-	public int getM_IolCandHandler_ID() 
+	public int getM_IolCandHandler_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_IolCandHandler_ID);
 	}
@@ -892,14 +966,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
-		if (M_Product_ID < 1) 
+		if (M_Product_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
-	public int getM_Product_ID() 
+	public int getM_Product_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
@@ -919,14 +993,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_Shipment_Constraint_ID (final int M_Shipment_Constraint_ID)
 	{
-		if (M_Shipment_Constraint_ID < 1) 
+		if (M_Shipment_Constraint_ID < 1)
 			set_Value (COLUMNNAME_M_Shipment_Constraint_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Shipment_Constraint_ID, M_Shipment_Constraint_ID);
 	}
 
 	@Override
-	public int getM_Shipment_Constraint_ID() 
+	public int getM_Shipment_Constraint_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Shipment_Constraint_ID);
 	}
@@ -934,14 +1008,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_ShipmentSchedule_ID (final int M_ShipmentSchedule_ID)
 	{
-		if (M_ShipmentSchedule_ID < 1) 
+		if (M_ShipmentSchedule_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_ShipmentSchedule_ID, M_ShipmentSchedule_ID);
 	}
 
 	@Override
-	public int getM_ShipmentSchedule_ID() 
+	public int getM_ShipmentSchedule_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
 	}
@@ -961,14 +1035,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
-		if (M_Shipper_ID < 1) 
+		if (M_Shipper_ID < 1)
 			set_Value (COLUMNNAME_M_Shipper_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
 	}
 
 	@Override
-	public int getM_Shipper_ID() 
+	public int getM_Shipper_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
 	}
@@ -976,14 +1050,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_Tour_ID (final int M_Tour_ID)
 	{
-		if (M_Tour_ID < 1) 
+		if (M_Tour_ID < 1)
 			set_Value (COLUMNNAME_M_Tour_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Tour_ID, M_Tour_ID);
 	}
 
 	@Override
-	public int getM_Tour_ID() 
+	public int getM_Tour_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Tour_ID);
 	}
@@ -994,7 +1068,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("M_Warehouse_Dest_ID is virtual column");	}
 
 	@Override
-	public int getM_Warehouse_Dest_ID() 
+	public int getM_Warehouse_Dest_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_Dest_ID);
 	}
@@ -1002,14 +1076,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_Warehouse_ID (final int M_Warehouse_ID)
 	{
-		if (M_Warehouse_ID < 1) 
+		if (M_Warehouse_ID < 1)
 			set_Value (COLUMNNAME_M_Warehouse_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
 	}
 
 	@Override
-	public int getM_Warehouse_ID() 
+	public int getM_Warehouse_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
@@ -1017,14 +1091,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setM_Warehouse_Override_ID (final int M_Warehouse_Override_ID)
 	{
-		if (M_Warehouse_Override_ID < 1) 
+		if (M_Warehouse_Override_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_M_Warehouse_Override_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_M_Warehouse_Override_ID, M_Warehouse_Override_ID);
 	}
 
 	@Override
-	public int getM_Warehouse_Override_ID() 
+	public int getM_Warehouse_Override_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Warehouse_Override_ID);
 	}
@@ -1036,9 +1110,21 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public int getNrOfOLCandsWithSamePOReference() 
+	public int getNrOfOLCandsWithSamePOReference()
 	{
 		return get_ValueAsInt(COLUMNNAME_NrOfOLCandsWithSamePOReference);
+	}
+
+	@Override
+	public void setPackDescription (final @Nullable java.lang.String PackDescription)
+	{
+		set_Value (COLUMNNAME_PackDescription, PackDescription);
+	}
+
+	@Override
+	public java.lang.String getPackDescription()
+	{
+		return get_ValueAsString(COLUMNNAME_PackDescription);
 	}
 
 	@Override
@@ -1056,14 +1142,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setPickFrom_Order_ID (final int PickFrom_Order_ID)
 	{
-		if (PickFrom_Order_ID < 1) 
+		if (PickFrom_Order_ID < 1)
 			set_Value (COLUMNNAME_PickFrom_Order_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_PickFrom_Order_ID, PickFrom_Order_ID);
 	}
 
 	@Override
-	public int getPickFrom_Order_ID() 
+	public int getPickFrom_Order_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_PickFrom_Order_ID);
 	}
@@ -1075,7 +1161,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getPOReference() 
+	public java.lang.String getPOReference()
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
 	}
@@ -1087,7 +1173,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.sql.Timestamp getPreparationDate() 
+	public java.sql.Timestamp getPreparationDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_PreparationDate);
 	}
@@ -1098,7 +1184,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("PreparationDate_Effective is virtual column");	}
 
 	@Override
-	public java.sql.Timestamp getPreparationDate_Effective() 
+	public java.sql.Timestamp getPreparationDate_Effective()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_PreparationDate_Effective);
 	}
@@ -1110,12 +1196,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.sql.Timestamp getPreparationDate_Override() 
+	public java.sql.Timestamp getPreparationDate_Override()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_PreparationDate_Override);
 	}
 
-	/** 
+	/**
 	 * PriorityRule AD_Reference_ID=154
 	 * Reference name: _PriorityRule
 	 */
@@ -1137,12 +1223,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getPriorityRule() 
+	public java.lang.String getPriorityRule()
 	{
 		return get_ValueAsString(COLUMNNAME_PriorityRule);
 	}
 
-	/** 
+	/**
 	 * PriorityRule_Override AD_Reference_ID=154
 	 * Reference name: _PriorityRule
 	 */
@@ -1164,7 +1250,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getPriorityRule_Override() 
+	public java.lang.String getPriorityRule_Override()
 	{
 		return get_ValueAsString(COLUMNNAME_PriorityRule_Override);
 	}
@@ -1176,7 +1262,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
@@ -1187,12 +1273,12 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 		throw new IllegalArgumentException ("Processing is virtual column");	}
 
 	@Override
-	public boolean isProcessing() 
+	public boolean isProcessing()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** 
+	/**
 	 * ProductDescription AD_Reference_ID=162
 	 * Reference name: M_Product (no summary)
 	 */
@@ -1204,7 +1290,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getProductDescription() 
+	public java.lang.String getProductDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_ProductDescription);
 	}
@@ -1216,9 +1302,21 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public BigDecimal getQtyDelivered() 
+	public BigDecimal getQtyDelivered()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyDelivered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyItemCapacity (final @Nullable BigDecimal QtyItemCapacity)
+	{
+		throw new IllegalArgumentException ("QtyItemCapacity is virtual column");	}
+
+	@Override
+	public BigDecimal getQtyItemCapacity()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyItemCapacity);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -1255,9 +1353,22 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public BigDecimal getQtyOrdered_Calculated() 
+	public BigDecimal getQtyOrdered_Calculated()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_Calculated);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyOrdered_LU (final BigDecimal QtyOrdered_LU)
+	{
+		set_Value (COLUMNNAME_QtyOrdered_LU, QtyOrdered_LU);
+	}
+
+	@Override
+	public BigDecimal getQtyOrdered_LU()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_LU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -1268,9 +1379,22 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public BigDecimal getQtyOrdered_Override() 
+	public BigDecimal getQtyOrdered_Override()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyOrdered_TU (final BigDecimal QtyOrdered_TU)
+	{
+		set_Value (COLUMNNAME_QtyOrdered_TU, QtyOrdered_TU);
+	}
+
+	@Override
+	public BigDecimal getQtyOrdered_TU()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered_TU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -1307,35 +1431,9 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public BigDecimal getQtyToDeliver() 
+	public BigDecimal getQtyToDeliver()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setQtyToDeliver_Override (final @Nullable BigDecimal QtyToDeliver_Override)
-	{
-		set_Value (COLUMNNAME_QtyToDeliver_Override, QtyToDeliver_Override);
-	}
-
-	@Override
-	public BigDecimal getQtyToDeliver_Override() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver_Override);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setQtyToDeliver_OverrideFulfilled (final @Nullable BigDecimal QtyToDeliver_OverrideFulfilled)
-	{
-		set_Value (COLUMNNAME_QtyToDeliver_OverrideFulfilled, QtyToDeliver_OverrideFulfilled);
-	}
-
-	@Override
-	public BigDecimal getQtyToDeliver_OverrideFulfilled() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver_OverrideFulfilled);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -1344,30 +1442,82 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	{
 		set_Value (COLUMNNAME_QtyToDeliverCatch_Override, QtyToDeliverCatch_Override);
 	}
-
+	
 	@Override
-	public BigDecimal getQtyToDeliverCatch_Override() 
+	public BigDecimal getQtyToDeliverCatch_Override()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliverCatch_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+	
+	@Override
+	public void setQtyTU_Calculated (final @Nullable BigDecimal QtyTU_Calculated)
+	{
+		set_Value (COLUMNNAME_QtyTU_Calculated, QtyTU_Calculated);
+	}
+
+	@Override
+	public BigDecimal getQtyTU_Calculated()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU_Calculated);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+	
+	@Override
+	public void setQtyToDeliver_Override (java.math.BigDecimal QtyToDeliver_Override)
+	{
+		set_Value (COLUMNNAME_QtyToDeliver_Override, QtyToDeliver_Override);
+	}
+
+	@Override
+	public java.math.BigDecimal getQtyToDeliver_Override() 
+	{
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyTU_Override (final @Nullable BigDecimal QtyTU_Override)
+	{
+		set_Value (COLUMNNAME_QtyTU_Override, QtyTU_Override);
+	}
+
+	@Override
+	public BigDecimal getQtyTU_Override()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+	
+	@Override
+	public void setQtyToDeliver_OverrideFulfilled (java.math.BigDecimal QtyToDeliver_OverrideFulfilled)
+	{
+		set_Value (COLUMNNAME_QtyToDeliver_OverrideFulfilled, QtyToDeliver_OverrideFulfilled);
+	}
+
+	@Override
+	public java.math.BigDecimal getQtyToDeliver_OverrideFulfilled() 
+	{
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver_OverrideFulfilled);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
 	public void setRecord_ID (final int Record_ID)
 	{
-		if (Record_ID < 0) 
+		if (Record_ID < 0)
 			set_ValueNoCheck (COLUMNNAME_Record_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_Record_ID, Record_ID);
 	}
 
 	@Override
-	public int getRecord_ID() 
+	public int getRecord_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
 	}
 
-	/** 
+	/**
 	 * ShipmentAllocation_BestBefore_Policy AD_Reference_ID=541043
 	 * Reference name: ShipmentAllocation_BestBefore_Policy
 	 */
@@ -1383,7 +1533,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getShipmentAllocation_BestBefore_Policy() 
+	public java.lang.String getShipmentAllocation_BestBefore_Policy()
 	{
 		return get_ValueAsString(COLUMNNAME_ShipmentAllocation_BestBefore_Policy);
 	}
@@ -1395,7 +1545,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getSinglePriceTag_ID() 
+	public java.lang.String getSinglePriceTag_ID()
 	{
 		return get_ValueAsString(COLUMNNAME_SinglePriceTag_ID);
 	}
@@ -1407,7 +1557,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.lang.String getStatus() 
+	public java.lang.String getStatus()
 	{
 		return get_ValueAsString(COLUMNNAME_Status);
 	}

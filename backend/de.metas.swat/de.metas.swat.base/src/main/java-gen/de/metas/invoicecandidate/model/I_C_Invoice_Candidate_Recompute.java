@@ -38,10 +38,31 @@ public interface I_C_Invoice_Candidate_Recompute
 
 	@Nullable org.compiere.model.I_AD_PInstance getAD_PInstance();
 
-	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
-
 	ModelColumn<I_C_Invoice_Candidate_Recompute, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
 	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
+
+	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
+
+	ModelColumn<I_C_Invoice_Candidate_Recompute, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
 	 * Set Invoice candidate.
@@ -63,10 +84,10 @@ public interface I_C_Invoice_Candidate_Recompute
 
 	de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate();
 
-	void setC_Invoice_Candidate(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate);
-
 	ModelColumn<I_C_Invoice_Candidate_Recompute, de.metas.invoicecandidate.model.I_C_Invoice_Candidate> COLUMN_C_Invoice_Candidate_ID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "C_Invoice_Candidate_ID", de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
 	String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
+
+	void setC_Invoice_Candidate(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate);
 
 	/**
 	 * Set C_Invoice_Candidate_Recompute.
@@ -88,4 +109,25 @@ public interface I_C_Invoice_Candidate_Recompute
 
 	ModelColumn<I_C_Invoice_Candidate_Recompute, Object> COLUMN_C_Invoice_Candidate_Recompute_ID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "C_Invoice_Candidate_Recompute_ID", null);
 	String COLUMNNAME_C_Invoice_Candidate_Recompute_ID = "C_Invoice_Candidate_Recompute_ID";
+
+	/**
+	 * Set Chunk UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChunkUUID (@Nullable String ChunkUUID);
+
+	/**
+	 * Get Chunk UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getChunkUUID();
+
+	ModelColumn<I_C_Invoice_Candidate_Recompute, Object> COLUMN_ChunkUUID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "ChunkUUID", null);
+	String COLUMNNAME_ChunkUUID = "ChunkUUID";
 }
