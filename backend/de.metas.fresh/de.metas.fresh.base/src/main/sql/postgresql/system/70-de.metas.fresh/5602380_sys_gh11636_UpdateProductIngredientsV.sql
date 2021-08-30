@@ -1,4 +1,4 @@
---DROP VIEW IF EXISTS "de.metas.fresh".product_ingredients_v;
+DROP VIEW IF EXISTS "de.metas.fresh".product_ingredients_v;
 
 CREATE OR REPLACE VIEW "de.metas.fresh".product_ingredients_v AS
 select
