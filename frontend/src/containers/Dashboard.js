@@ -1,4 +1,4 @@
-import { Hints } from 'intro.js-react';
+// import { Hints } from 'intro.js-react';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
@@ -98,9 +98,11 @@ export class Dashboard extends Component {
           />
         </div>
 
-        {enableTutorial && introHints && introHints.length > 0 && (
+        {/* Uncomment the code below if you want to enable the tutorial feature */}
+
+        {/* {enableTutorial && introHints && introHints.length > 0 && (
           <Hints enabled={hintsEnabled} hints={introHints} />
-        )}
+        )} */}
       </Container>
     );
   }
