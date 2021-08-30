@@ -66,7 +66,7 @@ public class M_InOut_Line_StepDef
 					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentRecord.getM_InOut_ID())
 					.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId)
 					.create()
-					.firstNotNull(I_M_InOutLine.class);
+					.firstOnlyNotNull(I_M_InOutLine.class);
 
 			validateShipmentLine(shipmentLineRecord, row);
 		}

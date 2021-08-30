@@ -24,6 +24,7 @@ package de.metas.ordercandidate.api.impl;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -38,6 +39,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.time.LocalDateInterval;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
@@ -186,10 +188,7 @@ public class OLCandDAO implements IOLCandDAO
 	@NonNull
 	public Set<OrderId> getOrderIdsByOLCandIds(@NonNull final Set<OLCandId> olCandIds)
 	{
-		final Set<OrderLineId> orderLineIds = this.retrieveOLCandIdToOrderLineId(olCandIds)
-				.values()
-				.stream()
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<OrderLineId> orderLineIds = ImmutableSet.copyOf(retrieveOLCandIdToOrderLineId(olCandIds).values());
 
 		return orderDAO.retrieveIdsByOrderLineIds(orderLineIds);
 	}
@@ -218,5 +217,16 @@ public class OLCandDAO implements IOLCandDAO
 						olAlloc -> OLCandId.ofRepoId(olAlloc.getC_OLCand_ID()),
 						olAlloc -> OrderLineId.ofRepoId(olAlloc.getC_OrderLine_ID())
 				));
+	}
+
+	public void assignAsyncBatchId(@NonNull final Set<OLCandId> olCandIds,@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final ICompositeQueryUpdater<I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(I_C_OLCand.class)
+				.addSetColumnValue(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId.getRepoId());
+
+		queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.create()
+				.update(updater);
 	}
 }

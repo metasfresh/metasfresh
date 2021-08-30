@@ -22,8 +22,10 @@
 
 package de.metas.rest_api.v2.ordercandidates.impl;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
@@ -31,22 +33,24 @@ import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
 import de.metas.async.asyncbatchmilestone.MilestoneName;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
-import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandId;
-import de.metas.ordercandidate.api.OLCandQuery;
-import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.rest_api.utils.IdentifierString;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
 import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
 
 @Service
@@ -54,30 +58,42 @@ public class OrderService
 {
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	private final AsyncBathMilestoneService asyncBathMilestoneService;
 	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
-	private final OLCandRepository olCandRepo;
 
 	public OrderService(
 			@NonNull final AsyncBathMilestoneService asyncBathMilestoneService,
 			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
-			@NonNull final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer,
-			@NonNull final OLCandRepository olCandRepo)
+			@NonNull final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer)
 	{
 		this.asyncBathMilestoneService = asyncBathMilestoneService;
 		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
 		this.olCandToOrderEnqueuer = olCandToOrderEnqueuer;
-		this.olCandRepo = olCandRepo;
 	}
 
 	@NonNull
-	public Set<OrderId> generateOrderSync(
-			@NonNull final AsyncBatchId asyncBatchId,
-			@NonNull final Set<OLCandId> olCandIds)
+	public Set<OrderId> generateOrderSync(@NonNull final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds)
 	{
+		if (asyncBatchId2OLCandIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
 
+		asyncBatchId2OLCandIds.keySet().forEach(this::generateOrdersForBatch);
+
+		final ImmutableSet<OLCandId> olCandIds = asyncBatchId2OLCandIds.values()
+				.stream()
+				.flatMap(List::stream)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return olCandDAO.getOrderIdsByOLCandIds(olCandIds);
+	}
+
+	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
+	{
 		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
 				.asyncBatchId(asyncBatchId)
 				.orgId(Env.getOrgId())
@@ -92,23 +108,40 @@ public class OrderService
 				() -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId));
 
 		asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
-
-		return olCandDAO.getOrderIdsByOLCandIds(olCandIds);
 	}
 
 	@NonNull
-	public List<I_C_OLCand> getOLCands(
-			@NonNull final IdentifierString identifierString,
-			@NonNull final String externalHeaderId)
+	public ImmutableMap<AsyncBatchId, List<OLCandId>> getAsyncBathId2OLCandIds(@NonNull final Set<OLCandId> olCandIds)
 	{
-		final OLCandQuery olCandQuery = OLCandQuery.builder()
-				.externalHeaderId(externalHeaderId)
-				.inputDataSourceName(identifierString.asInternalName())
-				.build();
+		if (olCandIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
 
-		return olCandRepo.getByQuery(olCandQuery)
-				.stream()
-				.map(OLCand::unbox)
-				.collect(ImmutableList.toImmutableList());
+		final Map<OLCandId, I_C_OLCand> olCandsById = olCandDAO.retrieveByIds(olCandIds);
+
+		final HashMap<AsyncBatchId, ArrayList<OLCandId>> asyncBatchId2OLCands = new HashMap<>();
+
+		olCandsById.values()
+				.forEach(olCand -> {
+					final AsyncBatchId currentAsyncBatchId = AsyncBatchId.ofRepoIdOrNone(olCand.getC_Async_Batch_ID());
+
+					final ArrayList<OLCandId> currentOLCands = new ArrayList<>();
+					currentOLCands.add(OLCandId.ofRepoId(olCand.getC_OLCand_ID()));
+
+					asyncBatchId2OLCands.merge(currentAsyncBatchId, currentOLCands, CollectionUtils::mergeLists);
+				});
+
+		Optional.ofNullable(asyncBatchId2OLCands.get(AsyncBatchId.NONE_ASYNC_BATCH_ID))
+				.ifPresent(noAsyncBatchOLCands -> {
+					final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_OLCand_Processing);
+
+					olCandDAO.assignAsyncBatchId(olCandIds, asyncBatchId);
+
+					asyncBatchId2OLCands.put(asyncBatchId, noAsyncBatchOLCands);
+					asyncBatchId2OLCands.remove(AsyncBatchId.NONE_ASYNC_BATCH_ID);
+				});
+
+		return ImmutableMap.copyOf(asyncBatchId2OLCands);
 	}
 }

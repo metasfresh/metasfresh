@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
@@ -137,6 +138,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Invalidates the invoice candidates identified by given query.
 	 */
 	void invalidateCandsFor(IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder);
+
+	/**
+	 * Invalidates the invoice candidates identified by given invoice candidate ids.
+	 *
+	 * @param invoiceCandidateIds ids to invalidate
+	 */
+	void invalidateCandsFor(@NonNull final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds);
 
 	/**
 	 * Invalidates the invoice candidates identified by given query.

@@ -1,6 +1,6 @@
 package de.metas.rest_api.v2.invoice.impl;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -38,7 +38,6 @@ import de.metas.invoicecandidate.api.IInvoicingParams;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
-import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.payment.TenderType;
 import de.metas.process.PInstanceId;
@@ -56,6 +55,7 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -75,10 +75,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_InvoiceCandidate_Processing;
 import static org.compiere.util.Env.getCtx;
 
 /*
@@ -258,29 +261,7 @@ public class InvoiceService
 	}
 
 	@NonNull
-	public Set<InvoiceId> generateInvoiceSync(
-			@NonNull final Set<OrderId> orderIds,
-			@NonNull final AsyncBatchId asyncBatchId)
-	{
-		final Set<InvoiceCandidateId> invoiceCandIds = invoiceCandDAO.retrieveUnprocessedICIdByOrderId(orderIds);
-
-		if (invoiceCandIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		generateInvoicesForAsyncBatch(invoiceCandIds, asyncBatchId);
-
-		return invoiceDAO.getInvoiceIdsForOrderIds(ImmutableList.copyOf(orderIds))
-				.values()
-				.stream()
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@NonNull
-	public Set<InvoiceId> generateInvoicesFromShipmentLines(
-			@NonNull final List<I_M_InOutLine> shipmentLines,
-			@NonNull final AsyncBatchId asyncBatchId)
+	public Set<InvoiceId> generateInvoicesFromShipmentLines(@NonNull final List<I_M_InOutLine> shipmentLines)
 	{
 		final Set<InvoiceCandidateId> invoiceCandidateIds = shipmentLines.stream()
 				.map(invoiceCandDAO::retrieveInvoiceCandidatesForInOutLine)
@@ -289,7 +270,7 @@ public class InvoiceService
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		generateInvoicesForAsyncBatch(invoiceCandidateIds, asyncBatchId);
+		processInvoiceCandidates(invoiceCandidateIds);
 
 		return invoiceCandidateIds.stream()
 				.map(invoiceCandDAO::retrieveIlForIc)
@@ -299,13 +280,18 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final AsyncBatchId asyncBatchId)
+	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	{
+		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = getAsyncBathId2InvoiceCandidateIds(invoiceCandidateIds);
+
+		asyncBatchId2InvoiceCandIds.forEach((asyncBatchId, icIds) -> generateInvoicesForAsyncBatch(ImmutableSet.copyOf(icIds), asyncBatchId));
+	}
+
+	private void generateInvoicesForAsyncBatch(@NonNull final Set<InvoiceCandidateId> invoiceCandIds, @NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Async_Batch asyncBatch = asyncBatchBL.getAsyncBatchById(asyncBatchId);
 
 		final AsyncBatchMilestoneId milestoneId = newScheduleInvoiceMilestone(asyncBatchId);
-
-		assignAsyncBatchIdToInvoiceCandidates(invoiceCandIds, asyncBatchId);
 
 		asyncBatchMilestoneObserver.observeOn(milestoneId);
 
@@ -441,11 +427,38 @@ public class InvoiceService
 		return milestone.getIdNotNull();
 	}
 
-	private void assignAsyncBatchIdToInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> ids, @NonNull final AsyncBatchId asyncBatchId)
+	@NonNull
+	private ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> getAsyncBathId2InvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		invoiceCandDAO.getByIds(ids)
-				.stream()
-				.peek(invoiceCand -> invoiceCand.setC_Async_Batch_ID(asyncBatchId.getRepoId()))
-				.forEach(invoiceCandDAO::save);
+		if (invoiceCandidateIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.getByIds(invoiceCandidateIds);
+
+		final HashMap<AsyncBatchId, ArrayList<InvoiceCandidateId>> asyncBatchId2InvoiceCand = new HashMap<>();
+
+		invoiceCandidates
+				.forEach(invoiceCandidate -> {
+					final AsyncBatchId currentAsyncBatchId = AsyncBatchId.ofRepoIdOrNone(invoiceCandidate.getC_Async_Batch_ID());
+
+					final ArrayList<InvoiceCandidateId> currentInvoiceCands = new ArrayList<>();
+					currentInvoiceCands.add(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()));
+
+					asyncBatchId2InvoiceCand.merge(currentAsyncBatchId, currentInvoiceCands, CollectionUtils::mergeLists);
+				});
+
+		Optional.ofNullable(asyncBatchId2InvoiceCand.get(AsyncBatchId.NONE_ASYNC_BATCH_ID))
+				.ifPresent(noAsyncBatchICIds -> {
+					final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch(C_Async_Batch_InternalName_InvoiceCandidate_Processing);
+
+					noAsyncBatchICIds.forEach(icID -> invoiceCandBL.setAsyncBatch(icID, asyncBatchId));
+
+					asyncBatchId2InvoiceCand.put(asyncBatchId, noAsyncBatchICIds);
+					asyncBatchId2InvoiceCand.remove(AsyncBatchId.NONE_ASYNC_BATCH_ID);
+				});
+
+		return ImmutableMap.copyOf(asyncBatchId2InvoiceCand);
 	}
 }

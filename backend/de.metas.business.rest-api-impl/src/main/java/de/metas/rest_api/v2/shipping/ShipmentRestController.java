@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.shipping;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.Profiles;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -30,7 +31,6 @@ import de.metas.common.shipping.v2.shipment.JsonCreateShipmentRequest;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentResponse;
 import de.metas.common.shipping.v2.shipment.JsonProcessShipmentRequest;
 import de.metas.common.shipping.v2.shipment.mpackage.JsonCreateShippingPackagesRequest;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
@@ -76,9 +76,9 @@ public class ShipmentRestController
 
 		try
 		{
-			final ShipmentScheduleEnqueuer.Result result = shipmentService.updateShipmentSchedulesAndGenerateShipments(request);
+			final ImmutableSet<QueueWorkPackageId> result = shipmentService.updateShipmentSchedulesAndGenerateShipments(request);
 
-			final ImmutableList<JsonMetasfreshId> workPackageIds = extractWorkpackageIds(result);
+			final ImmutableList<JsonMetasfreshId> workPackageIds = wrapWorkPackageIds(result);
 			final JsonCreateShipmentResponse jsonCreateShipmentResponse = JsonCreateShipmentResponse
 					.builder()
 					.createdAsyncWorkpackageIdList(workPackageIds)
@@ -143,9 +143,9 @@ public class ShipmentRestController
 		}
 	}
 
-	private static ImmutableList<JsonMetasfreshId> extractWorkpackageIds(@NonNull final ShipmentScheduleEnqueuer.Result result)
+	private static ImmutableList<JsonMetasfreshId> wrapWorkPackageIds(@NonNull final ImmutableSet<QueueWorkPackageId> workPackageIds)
 	{
-		return result.getEnqueuedPackageIds()
+		return workPackageIds
 				.stream()
 				.map(QueueWorkPackageId::getRepoId)
 				.map(JsonMetasfreshId::of)

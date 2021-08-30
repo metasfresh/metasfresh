@@ -70,6 +70,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
+		//dev-note: temporary workaround until we get the jasper reports to work during cucumber tests
 		if (sysConfigBL.getBooleanValue(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, false))
 		{
 			return Result.SUCCESS;

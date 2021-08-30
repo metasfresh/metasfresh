@@ -55,11 +55,6 @@ public class C_OLCandToOrderWorkpackageProcessor extends WorkpackageProcessorAda
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final String localTrxName)
 	{
-		if (!queueDAO.isWorkpackageProcessorEnabled(C_OLCandToOrderWorkpackageProcessor.class))
-		{
-			return Result.SUCCESS;
-		}
-
 		final int olCandProcessorId = getParameters().getParameterAsInt(OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
 
 		final OLCandProcessorDescriptor olCandProcessorDescriptor = olCandProcessorRepo.getById(olCandProcessorId);

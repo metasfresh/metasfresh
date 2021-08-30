@@ -39,6 +39,7 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandProcessResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.impex.InputDataSourceId;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
@@ -63,6 +64,7 @@ import de.metas.util.web.exception.MissingResourceException;
 import de.metas.vertical.healthcare.alberta.order.AlbertaOrderCompositeInfo;
 import de.metas.vertical.healthcare.alberta.order.service.AlbertaOrderService;
 import lombok.NonNull;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
@@ -82,6 +84,7 @@ public class OrderCandidateRestControllerService
 
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInOutDAO shipmentDAO = Services.get(IInOutDAO.class);
 
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
@@ -274,7 +277,9 @@ public class OrderCandidateRestControllerService
 				.map(OLCandId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId, validOlCandIds);
+		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = orderService.getAsyncBathId2OLCandIds(validOlCandIds);
+
+		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds);
 
 		jsonOLCandProcessResponseBuilder
 				.jsonGenerateOrdersResponse(buildGenerateOrdersResponse(orderIds))
@@ -284,14 +289,16 @@ public class OrderCandidateRestControllerService
 
 		if (request.getShip())
 		{
-			final Set<InOutId> createdShipmentIds = shipmentService.generateShipmentsForOLCands(validOlCandIds, asyncBatchId);
+			final Set<InOutId> createdShipmentIds = shipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
 
 			responseBuilder.shipmentResponse(shipmentService.buildCreateShipmentResponse(createdShipmentIds));
 		}
 
 		if (request.getInvoice())
 		{
-			final Set<InvoiceId> invoiceIds = invoiceService.generateInvoiceSync(orderIds, asyncBatchId);
+			final List<I_M_InOutLine> shipmentLines = shipmentDAO.retrieveShipmentLinesForOrderId(orderIds);
+
+			final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
 
 			final List<JSONInvoiceInfoResponse> invoiceInfoResponses = invoiceIds.stream()
 					.map(invoiceId -> invoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
@@ -343,7 +350,7 @@ public class OrderCandidateRestControllerService
 	{
 		final IdentifierString inputDataSourceIdentifier = IdentifierString.of(inputDataSource);
 
-		final List<I_C_OLCand> olCands = orderService.getOLCands(inputDataSourceIdentifier, externalHeaderId);
+		final List<I_C_OLCand> olCands = getOLCands(inputDataSourceIdentifier, externalHeaderId);
 
 		final List<OLCandValidationResult> olCandValidationResults = olCandValidatorService.clearOLCandidates(olCands, asyncBatchId);
 
@@ -369,5 +376,21 @@ public class OrderCandidateRestControllerService
 		return JsonGenerateOrdersResponse.builder()
 				.orderIds(orderMetasfreshIds)
 				.build();
+	}
+
+	@NonNull
+	private List<I_C_OLCand> getOLCands(
+			@NonNull final IdentifierString identifierString,
+			@NonNull final String externalHeaderId)
+	{
+		final OLCandQuery olCandQuery = OLCandQuery.builder()
+				.externalHeaderId(externalHeaderId)
+				.inputDataSourceName(identifierString.asInternalName())
+				.build();
+
+		return olCandRepo.getByQuery(olCandQuery)
+				.stream()
+				.map(OLCand::unbox)
+				.collect(ImmutableList.toImmutableList());
 	}
 }
