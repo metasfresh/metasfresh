@@ -772,8 +772,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			asyncBatchIDs.stream()
 					.map(AsyncBatchId::ofRepoIdOrNone)
-					.collect(ImmutableSet.toImmutableSet())
-					.stream()
 					.map(asyncBatchId -> InvoiceCandUpdateSchedulerRequest.of(icQuery.getCtx(), icQuery.getTrxName(), AsyncBatchId.toAsyncBatchIdOrNull(asyncBatchId)))
 					.forEach(invoiceCandScheduler::scheduleForUpdate);
 		}
@@ -1740,21 +1738,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	{
 		return convertToIQuery(multiQuery)
 				.createSelection(pInstanceId);
-	}
-
-	@NonNull
-	@Override
-	public Set<InvoiceCandidateId> retrieveUnprocessedICIdByOrderId(@NonNull final Set<OrderId> ids)
-	{
-		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, ids)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Processed, false)
-				.create()
-				.stream()
-				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
-				.map(InvoiceCandidateId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
