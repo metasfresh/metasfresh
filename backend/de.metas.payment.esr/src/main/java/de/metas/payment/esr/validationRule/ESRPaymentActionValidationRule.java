@@ -109,7 +109,6 @@ public class ESRPaymentActionValidationRule extends AbstractJavaValidationRule
 		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Allocate_Payment_With_Next_Invoice);
 		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Money_Was_Transfered_Back_to_Partner);
 		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income); // metas-tsa: added per Mark request
-		overPaymentGroup.add(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment); 
 
 		final List<String> noActionGroup = new ArrayList<String>();
 		// only show <code>X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unable_To_Assign_Income</code> action when c_invoice_id is empty
