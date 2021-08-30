@@ -1,5 +1,41 @@
 package de.metas.invoice.service.impl;
 
+import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.Properties;
+
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.costing.ChargeId;
+import de.metas.costing.impl.ChargeRepository;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.location.LocationId;
+import de.metas.tax.api.TaxId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.TaxCategoryNotFoundException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Charge;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_ProductPrice;
+import org.compiere.model.MTax;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -145,7 +181,9 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final Timestamp shipDate = io.getMovementDate();
 
-		final BPartnerLocationId shipToPartnerLocationId = BPartnerLocationId.ofRepoId(io.getC_BPartner_ID(), io.getC_BPartner_Location_ID());
+		final BPartnerLocationAndCaptureId shipToPartnerLocationId = InOutDocumentLocationAdapterFactory
+				.locationAdapter(io)
+				.getBPartnerLocationAndCaptureId();
 
 		final boolean isSOTrx = io.isSOTrx();
 
@@ -160,7 +198,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			@NonNull final OrgId orgId,
 			final Timestamp taxDate,
 			final CountryId countryFromId,
-			@NonNull final BPartnerLocationId partnerLocationId,
+			@NonNull final BPartnerLocationAndCaptureId partnerLocationId,
 			final boolean isSOTrx)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -169,8 +207,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(il.getC_Invoice_ID());
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
-
-		final I_C_BPartner_Location locationTo = bpartnerDAO.getBPartnerLocationByIdEvenInactive(partnerLocationId);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(il))
 		{
@@ -207,10 +243,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 						.isSOTrx(isSOTrx)
 						.shipDate(taxDate)
 						.shipFromCountryId(countryFromId)
-						.shipToC_Location_ID(locationTo.getC_Location_ID())
+						.shipToC_Location_ID(partnerLocationId)
 						.billDate(invoice.getDateInvoiced())
 						.billFromCountryId(countryFromId)
-						.billToC_Location_ID(bPartnerLocationRecord.getC_Location_ID())
+						.billToC_Location_ID(LocationId.ofRepoId(bPartnerLocationRecord.getC_Location_ID()))
 						.build();
 			}
 			final TaxId taxId = tax.getTaxId();
@@ -436,8 +472,6 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 	private CountryId getCountryIdOrNull(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
 		final I_C_Invoice invoice = invoiceLine.getC_Invoice();
 
 		if (invoice.getC_BPartner_Location_ID() <= 0)
@@ -449,9 +483,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		{
 			return null;
 		}
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
-
-		return CountryId.ofRepoId(bPartnerLocationRecord.getC_Location().getC_Country_ID());
+		final BPartnerLocationAndCaptureId bpartnerLocationId = InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
+		return Services.get(IBPartnerBL.class).getCountryId(bpartnerLocationId);
 	}
 
 	@Override

@@ -55,6 +55,9 @@ import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.EXTERN
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHIP_TO_SUFFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
 
+/**
+ * One instance of this class produces one {@link BPartnerRequestProducerResult}.
+ */
 @Value
 public class BPartnerUpsertRequestProducer
 {

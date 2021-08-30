@@ -7,7 +7,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.document.DocBaseAndSubType;
-import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -251,6 +250,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderIds)
 				.orderBy(I_C_OrderLine.COLUMNNAME_C_Order_ID)
 				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
+				.create()
+				.listImmutable(I_C_OrderLine.class);
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_OrderLine> retrieveOrderLinesByIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
 				.create()
 				.listImmutable(I_C_OrderLine.class);
 	}

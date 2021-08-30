@@ -56,7 +56,7 @@ public class ActivityId implements RepoIdAware
 
 	private ActivityId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "activityId");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_Activity_ID");
 	}
 
 	@Override

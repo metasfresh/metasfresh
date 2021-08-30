@@ -1,8 +1,9 @@
 package org.adempiere.mm.attributes.api;
 
-import java.util.Optional;
-
 import de.metas.util.ISingletonService;
+import org.adempiere.mm.attributes.AttributeId;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -31,4 +32,5 @@ public interface ISerialNoBL extends ISingletonService
 
 	Optional<String> getAndIncrementSerialNo(SerialNoContext context);
 
+	Optional<AttributeId> getSerialNoAttributeId();
 }

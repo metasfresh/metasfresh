@@ -1,9 +1,7 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerLocationInfo;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHULockBL;
@@ -36,7 +34,6 @@ import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -76,7 +73,6 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository = SpringContextHolder.instance.getBean(BPartnerLocationInfoRepository.class);
 	private final ShipperTransportationRepository shipperTransportationRepository = SpringContextHolder.instance.getBean(ShipperTransportationRepository.class);
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
@@ -205,8 +201,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			// Add M_Package to Shipper Transportation document
 			mPackages.forEach(mpackage -> shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage));
 
-			// Add ShipperTransportation to InOut
-			request.setShipperTransportationId(shipperTransportationId);
+			linkTransportationToShipment(request.getShipment(), shipperTransportationId);
 		}
 
 		return result.build();
@@ -356,12 +351,12 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	{
 		final I_M_InOut shipment = inOutDAO.getById(req.getInOutId());
 
-		final BPartnerLocationInfo shipFromBPLocation = getShipFromBPartnerAndLocation(shipment);
+		final BPartnerLocationAndCaptureId shipFromBPLocation = getShipFromBPartnerAndLocation(shipment);
 
 		final CreateShipperTransportationRequest createShipperTransportationRequest = CreateShipperTransportationRequest
 				.builder()
 				.shipperId(req.getShipperId())
-				.shipperBPartnerAndLocationId(shipFromBPLocation.getId())
+				.shipperBPartnerAndLocationId(shipFromBPLocation.getBpartnerLocationId())
 				.orgId(OrgId.ofRepoId(shipment.getAD_Org_ID()))
 				.shipDate(TimeUtil.asLocalDate(shipment.getMovementDate()))
 				.build();
@@ -386,13 +381,10 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		docActionBL.processEx(shipperTransportation, IDocument.ACTION_Complete);
 	}
 
-	private BPartnerLocationInfo getShipFromBPartnerAndLocation(final I_M_InOut shipment)
+	private BPartnerLocationAndCaptureId getShipFromBPartnerAndLocation(final I_M_InOut shipment)
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(shipment.getM_Warehouse_ID());
-		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
-		final BPartnerLocationId warehouseBPLocationId = BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID());
-		final BPartnerLocationInfo warehouseBPLocationInfo = bPartnerLocationInfoRepository.getByBPartnerLocationId(warehouseBPLocationId);
-		return warehouseBPLocationInfo;
+		return warehouseDAO.getWarehouseLocationById(warehouseId);
 	}
 
 	@NonNull
@@ -422,5 +414,12 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 						.build()
 				)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	private void linkTransportationToShipment(@NonNull final I_M_InOut shipment, @NonNull final ShipperTransportationId shipperTransportationId)
+	{
+		final de.metas.inout.model.I_M_InOut inOutShipment = InterfaceWrapperHelper.create(shipment, de.metas.inout.model.I_M_InOut.class);
+		inOutShipment.setM_ShipperTransportation_ID(shipperTransportationId.getRepoId());
+		inOutDAO.save(inOutShipment);
 	}
 }

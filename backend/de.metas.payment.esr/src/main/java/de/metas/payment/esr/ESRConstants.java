@@ -89,10 +89,6 @@ public final class ESRConstants
 	 */
 	public static final String SYSCONFIG_EAGER_PAYMENT_ALLOCATION = "de.metas.payment.esr.AlwaysAutoAllocateAvailablePayAmount";
 
-	public static final String ASK_PreventDuplicateImportFiles = "de.metas.payment.esr.PreventDuplicatesWarning";
-
-	public static final String WARN_PreventDuplicateImportFilesEntirely = "de.metas.payment.esr.PreventDuplicatesEtirely";
-
 	public static final String SYSCONFIG_MATCH_ORG = "de.metas.payment.esr.MatchOrg";
 
 	public static final String SYSCONFIG_CHECK_DUPLICATED = "de.metas.payment.esr.CheckDuplicated";
