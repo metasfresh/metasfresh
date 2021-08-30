@@ -2,7 +2,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
 import Container from '../components/Container';
 import DraggableWrapper from '../components/dashboard/DraggableWrapper';
 
