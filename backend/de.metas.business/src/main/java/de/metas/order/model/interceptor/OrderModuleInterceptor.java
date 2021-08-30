@@ -2,8 +2,8 @@ package de.metas.order.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.elasticsearch.IESSystem;
-import de.metas.elasticsearch.config.ESModelIndexerProfile;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.location.IDocumentLocationBL;
 import de.metas.event.Topic;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.event.OrderUserNotifications;
@@ -23,6 +23,8 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	private final OrderGroupCompensationChangesHandler groupChangesHandler = SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class);
 	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService = SpringContextHolder.instance.getBean(BPartnerSupplierApprovalService.class);
+	private final IBPartnerBL bpartnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class);
+	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
