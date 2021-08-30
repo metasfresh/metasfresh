@@ -1734,24 +1734,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public int createSelectionByQuery(InvoiceCandidateMultiQuery multiQuery, @NonNull final PInstanceId pInstanceId)
+	public int createSelectionByQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery, @NonNull final PInstanceId pInstanceId)
 	{
 		return convertToIQuery(multiQuery)
 				.createSelection(pInstanceId);
-	}
-
-	@NonNull
-	@Override
-	public Set<OrderId> retrieveOrderIdsForInvoiceCandIds(@NonNull final Set<InvoiceCandidateId> ids)
-	{
-		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, ids)
-				.create()
-				.stream()
-				.map(I_C_Invoice_Candidate::getC_Order_ID)
-				.map(OrderId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private IQuery<I_C_Invoice_Candidate> convertToIQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)

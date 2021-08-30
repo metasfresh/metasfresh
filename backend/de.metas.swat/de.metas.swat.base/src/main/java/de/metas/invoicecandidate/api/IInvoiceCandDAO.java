@@ -382,7 +382,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(OrderId orderId);
 
 	@Value
-	public static class InvoiceableInvoiceCandIdResult
+	class InvoiceableInvoiceCandIdResult
 	{
 		InvoiceCandidateId firstInvoiceableInvoiceCandId;
 
@@ -390,6 +390,4 @@ public interface IInvoiceCandDAO extends ISingletonService
 	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
-
-	Set<OrderId> retrieveOrderIdsForInvoiceCandIds(Set<InvoiceCandidateId> ids);
 }
