@@ -26,6 +26,9 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.esr.api.IESRImportDAO;
 import de.metas.payment.esr.model.I_ESR_Import;
@@ -36,6 +39,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -49,6 +53,10 @@ public class ESR_Import
 {
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private final AdMessageKey ERR_ESR_Import_DefaultAccountNotFoundForOrg = AdMessageKey.of("ESR_Import_DefaultAccountNotFoundForOrg");
 
 	public ESR_Import()
 	{
@@ -83,7 +91,10 @@ public class ESR_Import
 
 		if (!orgBankAccount.isPresent())
 		{
-			throw new AdempiereException("No default bank account found for " + orgBpartnerId);
+
+			final I_AD_Org org = orgDAO.getById(orgId);
+
+			throw new AdempiereException(msgBL.getTranslatableMsgText(ERR_ESR_Import_DefaultAccountNotFoundForOrg, org.getName()));
 		}
 
 		esrImport.setC_BP_BankAccount_ID(orgBankAccount.get().getC_BP_BankAccount_ID());
