@@ -22,9 +22,11 @@
 
 package de.metas.order.location.adapter;
 
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
 @ToString
@@ -64,12 +66,13 @@ public class OrderLineMainLocationAdapter implements IDocumentLocationAdapter
 	@Override
 	public int getC_BPartner_Location_Value_ID()
 	{
-		return -1;
+		return delegate.getC_BPartner_Location_Value_ID();
 	}
 
 	@Override
 	public void setC_BPartner_Location_Value_ID(final int C_BPartner_Location_Value_ID)
 	{
+		delegate.setC_BPartner_Location_Value_ID(C_BPartner_Location_Value_ID);
 	}
 
 	@Override
@@ -94,5 +97,14 @@ public class OrderLineMainLocationAdapter implements IDocumentLocationAdapter
 	public void setBPartnerAddress(String address)
 	{
 		delegate.setBPartnerAddress(address);
+	}
+
+	public void setFromOrderHeader(@NonNull final I_C_Order order)
+	{
+		final DocumentLocation orderLocation = order.isDropShip()
+				? OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order).toDocumentLocation()
+				: OrderDocumentLocationAdapterFactory.locationAdapter(order).toDocumentLocation();
+
+		setFrom(orderLocation);
 	}
 }
