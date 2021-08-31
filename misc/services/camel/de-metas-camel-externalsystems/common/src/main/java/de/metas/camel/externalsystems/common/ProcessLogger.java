@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-core
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,19 +20,9 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core;
+package de.metas.camel.externalsystems.common;
 
-import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
-
-public interface CoreConstants
+public interface ProcessLogger
 {
-	String AUTHORIZATION = "Authorization";
-
-	String AUTHORIZATION_TOKEN = "{{metasfresh.api.authtoken}}";
-
-	String FROM_MF_ROUTE = "rabbitmq:" + QUEUE_NAME_MF_TO_ES
-			+ "?durable=true"
-			+ "&autoDelete=false"
-			+ "&routingKey=" + QUEUE_NAME_MF_TO_ES
-			+ "&queue=" + QUEUE_NAME_MF_TO_ES;
+	void logMessage(String message, Integer adPInstanceId);
 }
