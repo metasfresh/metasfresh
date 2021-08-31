@@ -34,7 +34,6 @@ public class ExternalSystemParentConfig
 {
 	ExternalSystemParentConfigId id;
 	ExternalSystemType type;
-	String camelUrl;
 	String name;
 	IExternalSystemChildConfig childConfig;
 
@@ -42,13 +41,11 @@ public class ExternalSystemParentConfig
 	public ExternalSystemParentConfig(
 			@NonNull final ExternalSystemParentConfigId id,
 			@NonNull final ExternalSystemType type,
-			@NonNull final String camelUrl,
 			@NonNull final String name,
 			@NonNull final IExternalSystemChildConfig childConfig)
 	{
 		this.id = id;
 		this.type = type;
-		this.camelUrl = camelUrl;
 		this.name = name;
 		this.childConfig = childConfig;
 	}
