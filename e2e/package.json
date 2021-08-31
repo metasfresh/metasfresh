@@ -70,7 +70,7 @@
     "numeral": "^2.0.6",
     "react": "16.14.0",
     "react-dom": "16.14.0",
-    "sockjs-client": "1.5.1",
+    "sockjs-client": "1.5.2",
     "stompjs": "^2.3.3"
   }
 }
