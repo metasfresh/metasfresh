@@ -438,9 +438,7 @@ public class ESRImportBL implements IESRImportBL
 		final ArrayKey key;
 
 		if (line.getC_Invoice_ID() > 0
-				&& line.getC_Invoice().getAD_Org_ID() == line.getAD_Org_ID() // only if orgs match
-			// we also want to handle invoices that are already paid, because this line links them to another payment
-			/* && !line.getC_Invoice().isPaid() */)
+				&& line.getC_Invoice().getAD_Org_ID() == line.getAD_Org_ID())
 		{
 			key = Util.mkKey(
 					line.getAD_Org_ID(),
