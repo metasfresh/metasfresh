@@ -42,6 +42,8 @@ import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Result of a pricing calculation
  *
@@ -138,7 +140,7 @@ public interface IPricingResult
 
 	PricingConditionsResult getPricingConditions();
 
-	void setPricingConditions(PricingConditionsResult pricingConditions);
+	void setPricingConditions(@Nullable PricingConditionsResult pricingConditions);
 
 	/**
 	 * @return the price relevant attributes. Never return {@code null}.
