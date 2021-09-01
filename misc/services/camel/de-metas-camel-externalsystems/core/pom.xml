@@ -88,25 +88,25 @@
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-alberta-camelroutes</artifactId>
-            <version>10.0.0</version>
+            <version>${metasfresh.version}</version>
         </dependency>
 
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-externalsystems-common</artifactId>
-            <version>10.0.0</version>
+            <version>${metasfresh.version}</version>
         </dependency>
 
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-shopware6</artifactId>
-            <version>10.0.0</version>
+            <version>${metasfresh.version}</version>
         </dependency>
 
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-rabbitmq</artifactId>
-            <version>${metasfresh-common.version}</version>
+            <version>${metasfresh.version}</version>
         </dependency>
 
         <dependency>
