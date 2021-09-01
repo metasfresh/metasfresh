@@ -1,4 +1,4 @@
---DROP VIEW "de.metas.fresh".product_ingredients_v;
+--DROP VIEW IF EXISTS "de.metas.fresh".product_ingredients_v;
 
 CREATE OR REPLACE VIEW "de.metas.fresh".product_ingredients_v AS
 select
@@ -17,9 +17,9 @@ select
     nf.Name                                                 as nutritionName,
     pn.SeqNo                                                as NutritionSeqNo,
     pn.nutritionqty,
-    pi.qty                              as qtybatch,
+    TO_NUMBER(replace(pi.qty, '%',''), 'FM9G999.99')     as qtybatch,
     i.name as componentName,
-    (select name from m_product where m_product_id = i.m_product_id) as componentIngredients,
+    productIngred.ingredients as componentIngredients,
     p.M_product_ID
 from m_product p
          left outer join ad_orginfo oi on p.ad_org_id = oi.ad_org_id
@@ -33,4 +33,5 @@ from m_product p
          left outer join M_Product_Nutrition pn
                          on pn.M_product_ID = p.M_product_ID and nf.M_Nutrition_Fact_ID = pn.M_Nutrition_Fact_ID
          left outer join m_product_ingredients pi on pi.m_product_id = p.m_product_id
-         left outer JOIN m_ingredients i on pi.m_ingredients_id = i.m_ingredients_id;
+         left outer JOIN m_ingredients i on pi.m_ingredients_id = i.m_ingredients_id
+         left outer join m_product productIngred on i.m_product_id = productIngred.m_product_id;

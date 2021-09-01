@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.currency.CurrencyCode;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -34,6 +35,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -47,6 +49,9 @@ public class JSONInvoiceInfoResponse
 	@Singular
 	@NonNull
 	List<JSONInvoiceLineInfo> lineInfos;
+
+	@Nullable
+	JsonMetasfreshId invoiceId;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")

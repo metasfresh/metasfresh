@@ -281,6 +281,11 @@ class OLCandOrderFactory
 			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
 		}
 
+		if (candidateOfGroup.getAsyncBatchId() != null)
+		{
+			order.setC_Async_Batch_ID(candidateOfGroup.getAsyncBatchId().getRepoId());
+		}
+
 		// Save to SO the external header id, so that on completion it can be linked with its payment
 		order.setExternalId(candidateOfGroup.getExternalHeaderId());
 

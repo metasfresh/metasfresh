@@ -117,7 +117,7 @@ public class M_ShipmentSchedule_StepDef
 	}
 
 	@Then("the shipment-schedule is closed")
-	public void assertShipmentScheduleIsClosed(@NonNull final DataTable dataTable) throws JsonProcessingException
+	public void assertShipmentScheduleIsClosed(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
