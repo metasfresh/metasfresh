@@ -51,6 +51,8 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 	static final String RETRIEVE_BPARTNER_ROUTE_ID = "To-MF_retrieveBPartner_V2";
 	@VisibleForTesting
 	static final String RETRIEVE_BPARTNER_PROCESSOR_ID = "RetrieveBPartnerProcessorId";
+	@VisibleForTesting
+	static final String RETRIEVE_BPARTNER_ENDPOINT_ID = "RetrieveBPartnerEndpointId";
 
 	@Override
 	public void configure()
@@ -109,6 +111,8 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.GET))
-				.to("{{metasfresh.retrieve-bpartner-v2.api.uri}}/${header." + HEADER_BPARTNER_IDENTIFIER + "}");
+				.toD("{{metasfresh.retrieve-bpartner-v2.api.uri}}/${header." + HEADER_BPARTNER_IDENTIFIER + "}").id(RETRIEVE_BPARTNER_ENDPOINT_ID)
+
+				.to(direct(UNPACK_V2_API_RESPONSE));
 	}
 }

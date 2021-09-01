@@ -40,7 +40,9 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.core.CoreConstants.AUTHORIZATION;
+import static de.metas.camel.externalsystems.core.to_mf.v2.BPartnerRouteBuilderV2.RETRIEVE_BPARTNER_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.core.to_mf.v2.BPartnerRouteBuilderV2.RETRIEVE_BPARTNER_ROUTE_ID;
+import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 
 public class BPartnerRouteBuilderV2Test extends CamelTestSupport
 {
@@ -80,9 +82,16 @@ public class BPartnerRouteBuilderV2Test extends CamelTestSupport
 	private void prepareRouteForTesting() throws Exception
 	{
 		AdviceWith.adviceWith(context, RETRIEVE_BPARTNER_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("{{metasfresh.retrieve-bpartner-v2.api.uri}}/${header." + HEADER_BPARTNER_IDENTIFIER + "}")
-									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_BPARTNER_RETRIEVE));
+							  advice -> {
+								  advice.weaveById(RETRIEVE_BPARTNER_ENDPOINT_ID)
+										  .replace()
+										  .to(MOCK_BPARTNER_RETRIEVE);
+
+								  advice.interceptSendToEndpoint("direct:" + UNPACK_V2_API_RESPONSE)
+										  .skipSendToOriginalEndpoint()
+										  .process(); // do nothing
+							  }
+		);
 	}
 
 	@Override

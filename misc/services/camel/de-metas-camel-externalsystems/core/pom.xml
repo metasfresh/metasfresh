@@ -104,6 +104,12 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.camel.externalsystems</groupId>
+            <artifactId>de-metas-camel-rabbitmq</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>de.metas.common.externalreference</groupId>
             <artifactId>de-metas-common-externalreference</artifactId>
             <version>${metasfresh-common.version}</version>

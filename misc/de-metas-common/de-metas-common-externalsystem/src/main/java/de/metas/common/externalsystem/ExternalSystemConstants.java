@@ -46,4 +46,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID = "M_FreightCost_ReducedVAT_Product_ID";
 
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
+
+	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";
+	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "Routing_Key";
+	public static final String PARAM_BPARTNER_ID = "BPartnerId";
 }
