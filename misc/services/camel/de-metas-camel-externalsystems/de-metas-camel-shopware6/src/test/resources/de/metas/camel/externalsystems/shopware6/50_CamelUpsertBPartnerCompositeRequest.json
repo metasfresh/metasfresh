@@ -8,7 +8,7 @@
           "orgCode": "orgCode",
           "bpartner": {
             "code": "ext-Shopware6-customerNumber",
-            "name":"firstName lastName",
+            "name": "firstName lastName",
             "companyName": "company",
             "customer": true,
             "syncAdvise": {
@@ -55,10 +55,11 @@
               {
                 "contactIdentifier": "ext-Shopware6-customerId",
                 "contact": {
+                  "name": "firstName lastName",
                   "firstName": "firstName",
                   "lastName": "lastName",
                   "email": "someEamil@web.de",
-                  "invoiceEmailEnabled":true
+                  "invoiceEmailEnabled": true
                 }
               }
             ],
