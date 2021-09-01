@@ -22,6 +22,7 @@
 
 package de.metas.occupation;
 
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.SpringContextHolder;
@@ -33,8 +34,12 @@ import org.springframework.stereotype.Component;
 @Interceptor(I_AD_User_Occupation_Job.class)
 public class AD_User_Occupation_Job
 {
+	private final UserOccupationRepository userOccupationRepository;
 
-	private final UserOccupationRepository userOccupationRepository = SpringContextHolder.instance.getBean(UserOccupationRepository.class);
+	public AD_User_Occupation_Job(@NonNull final UserOccupationRepository userOccupationRepository)
+	{
+		this.userOccupationRepository = userOccupationRepository;
+	}
 
 	@ModelChange(
 			timings = {ModelValidator.TYPE_AFTER_DELETE}
