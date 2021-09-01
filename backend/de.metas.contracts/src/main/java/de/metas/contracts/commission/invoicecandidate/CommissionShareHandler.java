@@ -250,14 +250,15 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 		if (tax == null)
 		{
 			final I_C_BPartner_Location bpLocation = Services.get(IBPartnerDAO.class).getBPartnerLocationByIdEvenInactive(commissionToLocationId.getBpartnerLocationId());
-			TaxNotFoundException.builder()
+			throw TaxNotFoundException.builder()
 					.taxCategoryId(pricingResult.getTaxCategoryId())
 					.isSOTrx(false)
 					.billDate(icRecord.getDeliveryDate())
 					.orgId(orgId)
 					.billToC_Location_ID(LocationId.ofRepoId(bpLocation.getC_Location_ID()))
 					.build()
-					.throwOrLogWarning(true, log);
+					.appendParametersToMessage()
+					.setParameter("C_Commission_Share_ID", commissionShareRecord.getC_Commission_Share_ID());
 		}
 		icRecord.setC_Tax_ID(tax.getTaxId().getRepoId());
 		icRecord.setIsSimulation(commissionShareRecord.isSimulation());

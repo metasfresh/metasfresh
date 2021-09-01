@@ -100,7 +100,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 
-public class GetOrdersRouteBuilderTests extends CamelTestSupport
+public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 {
 	private static final String MOCK_BPARTNER_UPSERT = "mock:bPartnerUpsert";
 	private static final String MOCK_OL_CAND_CREATE = "mock:olCandCreate";
@@ -110,24 +110,27 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 
 	private static final String SALES_REP_IDENTIFIER = "mockSalesRepIdentifier";
 	private static final String JSON_SHOPWARE_MAPPINGS = "01_JsonExternalSystemShopware6ConfigMappings.json";
-	private static final String JSON_ORDERS_RESOURCE_PATH = "10_JsonOrders.json";
-	private static final String JSON_ORDER_TRANSACTIONS_PATH = "12_JsonOrderTransactions.json";
-	private static final String JSON_ORDER_PAYMENT_METHOD_PATH = "14_JsonPaymentMethod.json";
-	private static final String JSON_ORDER_GROUPS_PATH = "16_JsonCustomerGroups.json";
-	private static final String JSON_ORDER_DELIVERIES_PATH = "20_JsonOrderDeliveries.json";
-	private static final String JSON_ORDER_BILLING_ADDRESS_PATH = "30_Billing_JsonOrderAddressCustomId.json";
-	private static final String JSON_ORDER_LINES = "40_JsonOrderLines.json";
-	private static final String JSON_COUNTRY_INFO_PATH = "JsonCountry.json";
+	
+	private static final String HAPPY_FLOW = "happyFlow/";
+	
+	private static final String JSON_ORDERS_RESOURCE_PATH = HAPPY_FLOW + "10_JsonOrders.json";
+	private static final String JSON_ORDER_TRANSACTIONS_PATH = HAPPY_FLOW + "12_JsonOrderTransactions.json";
+	private static final String JSON_ORDER_PAYMENT_METHOD_PATH = HAPPY_FLOW + "14_JsonPaymentMethod.json";
+	private static final String JSON_ORDER_GROUPS_PATH = HAPPY_FLOW + "16_JsonCustomerGroups.json";
+	private static final String JSON_ORDER_DELIVERIES_PATH = HAPPY_FLOW + "20_JsonOrderDeliveries.json";
+	private static final String JSON_ORDER_BILLING_ADDRESS_PATH = HAPPY_FLOW + "30_Billing_JsonOrderAddressCustomId.json";
+	private static final String JSON_ORDER_LINES = HAPPY_FLOW + "40_JsonOrderLines.json";
+	private static final String JSON_COUNTRY_INFO_PATH = "JsonCountry_DE.json";
 
-	private static final String JSON_UPSERT_BPARTNER_REQUEST = "50_CamelUpsertBPartnerCompositeRequest.json";
-	private static final String JSON_UPSERT_BPARTNER_RESPONSE = "50_CamelUpsertBPartnerCompositeResponse.json";
+	private static final String JSON_UPSERT_BPARTNER_REQUEST = HAPPY_FLOW + "50_CamelUpsertBPartnerCompositeRequest.json";
+	private static final String JSON_UPSERT_BPARTNER_RESPONSE = HAPPY_FLOW + "50_CamelUpsertBPartnerCompositeResponse.json";
 
-	private static final String JSON_OL_CAND_CREATE_REQUEST = "60_JsonOLCandCreateBulkRequest.json";
-	private static final String JSON_ORDER_PAYMENT_CREATE_REQUEST = "63_JsonOrderPaymentCreateRequest.json";
+	private static final String JSON_OL_CAND_CREATE_REQUEST = HAPPY_FLOW + "60_JsonOLCandCreateBulkRequest.json";
+	private static final String JSON_ORDER_PAYMENT_CREATE_REQUEST = HAPPY_FLOW + "63_JsonOrderPaymentCreateRequest.json";
 
-	private static final String JSON_UPSERT_RUNTIME_PARAMS_REQUEST = "65_JsonESRuntimeParameterUpsertRequest.json";
+	private static final String JSON_UPSERT_RUNTIME_PARAMS_REQUEST = HAPPY_FLOW + "65_JsonESRuntimeParameterUpsertRequest.json";
 
-	private static final String JSON_OL_CAND_CLEAR_REQUEST = "70_JsonOLCandClearRequest.json";
+	private static final String JSON_OL_CAND_CLEAR_REQUEST = HAPPY_FLOW + "70_JsonOLCandClearRequest.json";
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
@@ -135,7 +138,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(GetOrdersRouteBuilderTests.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(GetOrdersRouteBuilder_HappyFlow_Tests.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -206,7 +209,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		final MockEndpoint upsertRuntimeParametersEndpoint = getMockEndpoint(MOCK_UPSERT_RUNTIME_PARAMETERS);
 		upsertRuntimeParametersEndpoint.expectedBodiesReceived(objectMapper.readValue(jsonUpsertRuntimeParamsRequest, JsonESRuntimeParameterUpsertRequest.class));
 
-		template.sendBody("direct:" + GET_ORDERS_ROUTE_ID, "Not relevant!");
+		template.sendBody("direct:" + GET_ORDERS_ROUTE_ID, "Body not relevant!");
 
 		assertThat(createdBPartnerProcessor.called).isEqualTo(1);
 		assertThat(successfullyCreatedOLCandProcessor.called).isEqualTo(1);
@@ -267,7 +270,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 
 	private static String loadAsString(@NonNull final String name)
 	{
-		final InputStream inputStream = GetOrdersRouteBuilderTests.class.getResourceAsStream(name);
+		final InputStream inputStream = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(name);
 		return new BufferedReader(
 				new InputStreamReader(inputStream, StandardCharsets.UTF_8))
 				.lines()
@@ -294,7 +297,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 			final ObjectMapper mapper = new ObjectMapper();
 			mapper.registerModule(new JavaTimeModule());
 
-			final InputStream ordersIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
+			final InputStream ordersIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDERS_RESOURCE_PATH);
 			final JsonOrders jsonOrders = mapper.readValue(ordersIS, JsonOrders.class);
 
 			final List<OrderCandidate> orderCandidates = jsonOrders
@@ -311,7 +314,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
 					.build();
 
-			final InputStream shopwareMappingsIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
+			final InputStream shopwareMappingsIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
 			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
 
 			final Map<String, String> parameters = new HashMap<>();
@@ -353,7 +356,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(String.class), any());
 
 			//2. mock getOrderAddressDetails
-			final InputStream billingAddressIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_BILLING_ADDRESS_PATH);
+			final InputStream billingAddressIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_BILLING_ADDRESS_PATH);
 			final JsonOrderAddress billingAddress = mapper.readValue(billingAddressIS, JsonOrderAddress.class);
 
 			Mockito.doReturn(Optional.of(JsonOrderAddressAndCustomId.builder()
@@ -363,7 +366,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.getOrderAddressDetails(nullable(String.class), nullable(String.class));
 
 			//3. mock getCountryDetails
-			final InputStream countryIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_COUNTRY_INFO_PATH);
+			final InputStream countryIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_COUNTRY_INFO_PATH);
 			final JsonCountry jsonCountry = mapper.readValue(countryIS, JsonCountry.class);
 
 			Mockito.doReturn(Optional.of(jsonCountry))
@@ -371,7 +374,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.getCountryDetails(any(String.class));
 
 			//4. mock orderLines
-			final InputStream orderLinesIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_LINES);
+			final InputStream orderLinesIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_LINES);
 			final JsonOrderLines orderLines = mapper.readValue(orderLinesIS, JsonOrderLines.class);
 
 			Mockito.doReturn(ResponseEntity.ok(orderLines))
@@ -379,7 +382,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonOrderLines.class), any());
 
 			//5. mock order transactions
-			final InputStream orderTrxIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_TRANSACTIONS_PATH);
+			final InputStream orderTrxIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_TRANSACTIONS_PATH);
 			final JsonOrderTransactions orderTransactions = mapper.readValue(orderTrxIS, JsonOrderTransactions.class);
 
 			Mockito.doReturn(ResponseEntity.ok(orderTransactions))
@@ -387,7 +390,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(JsonOrderTransactions.class), any());
 
 			//6. mock payment method
-			final InputStream paymentMethodIS = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_PAYMENT_METHOD_PATH);
+			final InputStream paymentMethodIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_PAYMENT_METHOD_PATH);
 			final JsonPaymentMethod paymentMethod = mapper.readValue(paymentMethodIS, JsonPaymentMethod.class);
 
 			Mockito.doReturn(Optional.of(paymentMethod))
@@ -395,7 +398,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 					.getPaymentMethod(any());
 
 			//7. mock order customer group
-			final InputStream orderCustomerGroup = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_ORDER_GROUPS_PATH);
+			final InputStream orderCustomerGroup = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_GROUPS_PATH);
 			final JsonCustomerGroups customerGroups = mapper.readValue(orderCustomerGroup, JsonCustomerGroups.class);
 
 			Mockito.doReturn(ResponseEntity.ok(customerGroups))
@@ -414,7 +417,7 @@ public class GetOrdersRouteBuilderTests extends CamelTestSupport
 		public void process(final Exchange exchange)
 		{
 			called++;
-			final InputStream upsertBPartnerResponse = GetOrdersRouteBuilderTests.class.getResourceAsStream(JSON_UPSERT_BPARTNER_RESPONSE);
+			final InputStream upsertBPartnerResponse = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_UPSERT_BPARTNER_RESPONSE);
 			exchange.getIn().setBody(upsertBPartnerResponse);
 		}
 	}
