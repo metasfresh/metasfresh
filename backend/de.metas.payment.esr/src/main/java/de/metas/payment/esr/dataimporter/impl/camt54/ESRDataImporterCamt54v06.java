@@ -1,12 +1,9 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.banking.BankAccount;
-import de.metas.banking.BankAccountId;
-import de.metas.banking.api.IBPBankAccountDAO;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.CurrencyCode;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.money.CurrencyId;
 import de.metas.payment.camt054_001_06.AccountNotification12;
 import de.metas.payment.camt054_001_06.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.payment.camt054_001_06.BankToCustomerDebitCreditNotificationV06;
@@ -22,8 +19,8 @@ import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.ESRType;
-import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.Env;
@@ -92,32 +89,22 @@ import java.util.List;
  */
 public class ESRDataImporterCamt54v06
 {
-	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
-	private final I_ESR_ImportFile header;
-	private final MultiVersionStreamReaderDelegate xsr;
+	@Nullable private final CurrencyCode bankAccountCurrencyCode;
+	@NonNull private final String adLanguage;
 
-	public ESRDataImporterCamt54v06(@NonNull final I_ESR_ImportFile header, @NonNull final MultiVersionStreamReaderDelegate xsr)
+	@Builder
+	private ESRDataImporterCamt54v06(
+			@Nullable final CurrencyCode bankAccountCurrencyCode,
+			@NonNull final String adLanguage)
 	{
-		this.header = header;
-		this.xsr = xsr;
-	}
-
-	/**
-	 * Constructor only to unit test particular methods. Wont't work in production.
-	 */
-	@VisibleForTesting
-	ESRDataImporterCamt54v06()
-	{
-		this.xsr = null;
-		this.header = null;
+		this.bankAccountCurrencyCode = bankAccountCurrencyCode;
+		this.adLanguage = adLanguage;
 	}
 
 	/**
 	 * create ESRStatement using <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param bkToCstmrDbtCdtNtfctn
-	 * @return
 	 */
 	public ESRStatement createESRStatement(@NonNull final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn)
 	{
@@ -153,8 +140,6 @@ public class ESRDataImporterCamt54v06
 	 * iterateEntryDetails for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
 	 *
 	 * @param stmtBuilder builder to which the individual {@link ESRTransaction}s are added.
-	 * @param ctrlQty
-	 * @param ntry
 	 * @return the given {@code ctrlQty}, plus the <code>NbOfTxs</code> of the given {@code ntry}'s {@code ntryDtl}s (if any).
 	 */
 	@VisibleForTesting
@@ -196,10 +181,6 @@ public class ESRDataImporterCamt54v06
 
 	/**
 	 * iterateTransactionDetails for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param ntry
-	 * @param ntryDtl
-	 * @return
 	 */
 	private List<ESRTransaction> iterateTransactionDetails(
 			@NonNull final ReportEntry8 ntry,
@@ -244,10 +225,6 @@ public class ESRDataImporterCamt54v06
 
 	/**
 	 * extractAmountAndType for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param ntry
-	 * @param txDtls
-	 * @param trxBuilder
 	 */
 	private void extractAmountAndType(
 			@NonNull final ReportEntry8 ntry,
@@ -277,17 +254,13 @@ public class ESRDataImporterCamt54v06
 		else
 		{
 			// we get charged; currently not supported
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
 			trxBuilder.trxType(ESRConstants.ESRTRXTYPE_UNKNOWN)
-					.errorMsg(msgBL.getMsg(Env.getCtx(), ESRDataImporterCamt54.MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, new Object[] { ntry.getCdtDbtInd() }));
+					.errorMsg(getErrorMsg(ESRDataImporterCamt54.MSG_UNSUPPORTED_CREDIT_DEBIT_CODE_1P, ntry.getCdtDbtInd()));
 		}
 	}
 
 	/**
 	 * getCrdDbtMultiplier for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param creditDebitCode
-	 * @return
 	 */
 	private BigDecimal getCrdDbtMultiplier(@NonNull final CreditDebitCode creditDebitCode)
 	{
@@ -300,9 +273,6 @@ public class ESRDataImporterCamt54v06
 
 	/**
 	 * getRvslMultiplier for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param ntry
-	 * @return
 	 */
 	private BigDecimal getRvslMultiplier(@NonNull final ReportEntry8 ntry)
 	{
@@ -315,9 +285,6 @@ public class ESRDataImporterCamt54v06
 
 	/**
 	 * isReversal for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param ntry
-	 * @return
 	 */
 	private boolean isReversal(@NonNull final ReportEntry8 ntry)
 	{
@@ -327,17 +294,12 @@ public class ESRDataImporterCamt54v06
 	/**
 	 * Verifies that the currency is consistent.
 	 * iterateTransactionDetails for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param txDtls
-	 * @param trxBuilder
 	 */
 	private void verifyTransactionCurrency(
 			@NonNull final EntryTransaction8 txDtls,
 			@NonNull final ESRTransactionBuilder trxBuilder)
 	{
-		int bankAccountRecordId = header.getC_BP_BankAccount_ID();
-
-		if (bankAccountRecordId <= 0)
+		if (bankAccountCurrencyCode == null)
 		{
 			return; // nothing to do
 		}
@@ -345,19 +307,14 @@ public class ESRDataImporterCamt54v06
 		// TODO: this does not really belong into the loader! move it to the matcher code.
 		final ActiveOrHistoricCurrencyAndAmount transactionDetailAmt = txDtls.getAmt();
 
-		final BankAccount bankAccount = bpBankAccountRepo.getById(BankAccountId.ofRepoId(bankAccountRecordId));
-		final CurrencyId currencyId = bankAccount.getCurrencyId();
-
-		final String headerCurrencyISO = Services.get(ICurrencyDAO.class).getCurrencyCodeById(currencyId).toThreeLetterCode();
-		if (!headerCurrencyISO.equalsIgnoreCase(transactionDetailAmt.getCcy()))
+		final String bankAccountCurrencyCode3L = bankAccountCurrencyCode.toThreeLetterCode();
+		if (!bankAccountCurrencyCode3L.equalsIgnoreCase(transactionDetailAmt.getCcy()))
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			trxBuilder.errorMsg(msgBL.getMsg(Env.getCtx(), ESRDataImporterCamt54.MSG_BANK_ACCOUNT_MISMATCH_2P,
-											 new Object[] { headerCurrencyISO, transactionDetailAmt.getCcy() }));
+			trxBuilder.errorMsg(getErrorMsg(ESRDataImporterCamt54.MSG_BANK_ACCOUNT_MISMATCH_2P, bankAccountCurrencyCode3L, transactionDetailAmt.getCcy()));
 		}
 	}
 
-	public BankToCustomerDebitCreditNotificationV06 loadXML()
+	public static BankToCustomerDebitCreditNotificationV06 loadXML(@NonNull final MultiVersionStreamReaderDelegate xsr)
 	{
 		final Document document;
 		try
@@ -377,18 +334,19 @@ public class ESRDataImporterCamt54v06
 			throw AdempiereException.wrapIfNeeded(e);
 		}
 
-		final BankToCustomerDebitCreditNotificationV06 bkToCstmrDbtCdtNtfctn = document.getBkToCstmrDbtCdtNtfctn();
-		return bkToCstmrDbtCdtNtfctn;
+		return document.getBkToCstmrDbtCdtNtfctn();
+	}
+
+	private String getErrorMsg(@NonNull final AdMessageKey adMessage, @Nullable final Object... params)
+	{
+		return msgBL.getTranslatableMsgText(adMessage, params).translate(adLanguage);
 	}
 
 	/**
 	 * Marshals the given {@code} into an XML string and return that as the "key".
 	 * mkTrxKey for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param txDtl
-	 * @return
 	 */
-	private String mkTrxKey(@NonNull final EntryTransaction8 txDtl)
+	private static String mkTrxKey(@NonNull final EntryTransaction8 txDtl)
 	{
 		final ByteArrayOutputStream transactionKey = new ByteArrayOutputStream();
 		JAXB.marshal(txDtl, transactionKey);
@@ -405,13 +363,9 @@ public class ESRDataImporterCamt54v06
 
 	/**
 	 * asTimestamp for version 6 <code>BankToCustomerDebitCreditNotificationV06</code>
-	 *
-	 * @param valDt
-	 * @return
 	 */
-	private Timestamp asTimestamp(@NonNull final DateAndDateTimeChoice valDt)
+	private static Timestamp asTimestamp(@NonNull final DateAndDateTimeChoice valDt)
 	{
 		return new Timestamp(valDt.getDt().toGregorianCalendar().getTimeInMillis());
 	}
-
 }
