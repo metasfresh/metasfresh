@@ -1,5 +1,6 @@
 package de.metas.ordercandidate.api;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.order.DeliveryRule;
@@ -66,6 +67,7 @@ final class OLCandFactory
 				.salesRepId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_ID()))
 				.orderDocTypeId(DocTypeId.ofRepoIdOrNull(record.getC_DocTypeOrder_ID()))
 				.orderLineGroup(orderLineGroup)
+				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(record.getC_Async_Batch_ID()))
 				.build();
 	}
 }

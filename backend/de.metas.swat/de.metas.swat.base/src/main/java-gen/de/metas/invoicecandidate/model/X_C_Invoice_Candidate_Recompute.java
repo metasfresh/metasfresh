@@ -1,6 +1,7 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO implements I_C_Invoice_Candidate_Recompute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1687861534L;
+	private static final long serialVersionUID = -1975136356L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate_Recompute (final Properties ctx, final int C_Invoice_Candidate_Recompute_ID, @Nullable final String trxName)
@@ -62,15 +63,30 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate()
+	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
-		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
+		if (C_Async_Batch_ID < 1)
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
+	}
+
+	@Override
+	public int getC_Async_Batch_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
+	}
+	
+	@Override
+	public I_C_Invoice_Candidate getC_Invoice_Candidate()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.class);
 	}
 
 	@Override
 	public void setC_Invoice_Candidate(final de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate)
 	{
-		set_ValueFromPO(COLUMNNAME_C_Invoice_Candidate_ID, de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class, C_Invoice_Candidate);
+		set_ValueFromPO(COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.class, C_Invoice_Candidate);
 	}
 
 	@Override
@@ -83,7 +99,7 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public int getC_Invoice_Candidate_ID() 
+	public int getC_Invoice_Candidate_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_ID);
 	}
@@ -91,15 +107,27 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	@Override
 	public void setC_Invoice_Candidate_Recompute_ID (final int C_Invoice_Candidate_Recompute_ID)
 	{
-		if (C_Invoice_Candidate_Recompute_ID < 1) 
+		if (C_Invoice_Candidate_Recompute_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Recompute_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Recompute_ID, C_Invoice_Candidate_Recompute_ID);
 	}
 
 	@Override
-	public int getC_Invoice_Candidate_Recompute_ID() 
+	public int getC_Invoice_Candidate_Recompute_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_Recompute_ID);
+	}
+
+	@Override
+	public void setChunkUUID (final @Nullable String ChunkUUID)
+	{
+		set_Value (COLUMNNAME_ChunkUUID, ChunkUUID);
+	}
+
+	@Override
+	public String getChunkUUID()
+	{
+		return get_ValueAsString(COLUMNNAME_ChunkUUID);
 	}
 }

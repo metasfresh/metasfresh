@@ -412,4 +412,11 @@ public final class CollectionUtils
 			throw Check.mkEx("The given collection needs to have ZERO or ONE item, but has " + size + " items; collection=" + collection);
 		}
 	}
+
+	@NonNull
+	public static <T> ArrayList<T> mergeLists(@NonNull final ArrayList<T> list1,@NonNull final ArrayList<T> list2)
+	{
+		list1.addAll(list2);
+		return list1;
+	}
 }

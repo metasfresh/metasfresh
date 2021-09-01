@@ -40,7 +40,8 @@ public class StepDefConstants
 	public static final ResourceId PLANT_ID = ResourceId.ofRepoId(540011);
 	public static final LocatorId LOCATOR_ID = LocatorId.ofRepoId(WAREHOUSE_ID, 540007);
 	public static final DocTypeId DOC_TYPE_ID_MMI = DocTypeId.ofRepoId(1000023);
-	public static final OrgId ORG_ID = OrgId.ofRepoId(1000000);
+	public static final OrgId ORG_ID = OrgId.MAIN;
+	public static final OrgId ORG_ID_SYSTEM = OrgId.ANY;
 	public static final CountryId COUNTRY_ID = CountryId.ofRepoId(101);
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);
 	public static final ProductCategoryId PRODUCT_CATEGORY_STANDARD_ID = ProductCategoryId.ofRepoId(1000000);

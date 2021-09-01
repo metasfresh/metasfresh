@@ -362,6 +362,18 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 		return Optional.empty();
 	}
 
+	@NonNull
+	public Set<OrderId> retrieveIdsByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.stream()
+				.map(I_C_OrderLine::getC_Order_ID)
+				.map(OrderId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	private I_C_Order getOrderByDocumentNumberQuery(final OrderQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null document number; query={}", query);

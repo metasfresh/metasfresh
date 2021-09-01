@@ -5,6 +5,7 @@ import de.metas.Profiles;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandClearingResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
@@ -55,12 +56,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = {
 		MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/orders/sales/candidates" })
 @Profile(Profiles.PROFILE_App)
-public class OrderCandidatesRestControllerImpl
+public class OrderCandidatesRestController
 {
 	private final String PATH_BULK = "/bulk";
 	private final String PATH_CLEAR_TO_PROCESS = "/clearToProcess";
+	private final String PATH_PROCESS = "/process";
 
-	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestControllerImpl.class);
+	private static final Logger logger = LogManager.getLogger(OrderCandidatesRestController.class);
 
 	private final BpartnerRestController bpartnerRestController;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
@@ -69,7 +71,7 @@ public class OrderCandidatesRestControllerImpl
 
 	private PermissionServiceFactory permissionServiceFactory;
 
-	public OrderCandidatesRestControllerImpl(
+	public OrderCandidatesRestController(
 			@NonNull final JsonServiceFactory jsonServiceFactory,
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
@@ -125,6 +127,10 @@ public class OrderCandidatesRestControllerImpl
 		}
 	}
 
+	/**
+	 * @deprecated please consider using {@link OrderCandidatesRestController#processOLCands(de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest)} instead.
+	 */
+	@Deprecated
 	@PutMapping(PATH_CLEAR_TO_PROCESS)
 	public ResponseEntity<JsonOLCandClearingResponse> clearOLCandidates(@RequestBody @NonNull final JsonOLCandClearRequest jsonOLCandClearRequest)
 	{
@@ -137,7 +143,21 @@ public class OrderCandidatesRestControllerImpl
 		catch (final Exception ex)
 		{
 			logger.warn("Got exception while processing {}", jsonOLCandClearRequest, ex);
+			return ResponseEntity.badRequest().build();
+		}
+	}
 
+	@PutMapping(PATH_PROCESS)
+	public ResponseEntity<JsonProcessCompositeResponse> processOLCands(@RequestBody @NonNull final JsonOLCandProcessRequest request)
+	{
+		try
+		{
+			final JsonProcessCompositeResponse response = orderCandidateRestControllerService.processOLCands(request);
+			return ResponseEntity.ok(response);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Got exception while processing {}", request, ex);
 			return ResponseEntity.badRequest().build();
 		}
 	}

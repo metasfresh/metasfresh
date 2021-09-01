@@ -196,13 +196,13 @@ public class OLCandRequestProcessor implements Processor
 				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
 				bPartnerExternalIdentifier);
 
+		final String shippingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getShippingBPLocationExternalIdNotNull());
+
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseContactItems(),
-				bPartnerExternalIdentifier);
-
+				shippingBPLocationExternalIdentifier);
 		// extract the C_BPartner_Location_ID
-		final String shippingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getShippingBPLocationExternalIdNotNull());
 		final JsonMetasfreshId shippingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),
 				shippingBPLocationExternalIdentifier);
@@ -228,13 +228,13 @@ public class OLCandRequestProcessor implements Processor
 				ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()),
 				bPartnerExternalIdentifier);
 
+		final String billingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getBillingBPLocationExternalIdNotNull());
+
 		// extract the AD_User_ID (contact-ID)
 		final JsonMetasfreshId contactId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseContactItems(),
-				bPartnerExternalIdentifier);
-
+				billingBPLocationExternalIdentifier);
 		// extract the C_BPartner_Location_ID
-		final String billingBPLocationExternalIdentifier = ExternalIdentifierFormat.formatExternalId(context.getBillingBPLocationExternalIdNotNull());
 		final JsonMetasfreshId billingBPartnerLocationId = getMetasfreshIdForExternalIdentifier(
 				bPartnerUpsertResponse.getResponseLocationItems(),
 				billingBPLocationExternalIdentifier);
@@ -265,8 +265,8 @@ public class OLCandRequestProcessor implements Processor
 		final JsonOrderLineGroup jsonOrderLineGroup = getJsonOrderLineGroup(orderLine);
 
 		// in case of a "bundle" item (group main item), we ignore the price, because we already get al the components' prices
-		final BigDecimal price = (jsonOrderLineGroup != null && jsonOrderLineGroup.isGroupMainItem()) 
-				? ZERO 
+		final BigDecimal price = (jsonOrderLineGroup != null && jsonOrderLineGroup.isGroupMainItem())
+				? ZERO
 				: orderLine.getUnitPrice();
 
 		return olCandCreateRequestBuilder
@@ -312,15 +312,17 @@ public class OLCandRequestProcessor implements Processor
 	 */
 	@NonNull
 	private JsonMetasfreshId getMetasfreshIdForExternalIdentifier(
-			@NonNull final List<JsonResponseUpsertItem> bPartnerResponseUpsertItems,
+			@NonNull final List<JsonResponseUpsertItem> responseUpsertItems,
 			@NonNull final String externalIdentifier)
 	{
-		return bPartnerResponseUpsertItems
-				.stream()
-				.filter(responseItem -> responseItem.getIdentifier().equals(externalIdentifier) && responseItem.getMetasfreshId() != null)
-				.findFirst()
-				.map(JsonResponseUpsertItem::getMetasfreshId)
-				.orElseThrow(() -> new RuntimeException("Something went wrong! No JsonResponseUpsertItem was found for the externalIdentifier:" + externalIdentifier));
+		for (final JsonResponseUpsertItem responseItem : responseUpsertItems) // TODO looking for ext-Shopware6-customerId-shipTo
+		{
+			if (responseItem.getMetasfreshId() != null && responseItem.getIdentifier().equals(externalIdentifier))
+			{
+				return responseItem.getMetasfreshId();
+			}
+		}
+		throw new RuntimeException("No JsonResponseUpsertItem was found for externalIdentifier=" + externalIdentifier);
 	}
 
 	@Nullable

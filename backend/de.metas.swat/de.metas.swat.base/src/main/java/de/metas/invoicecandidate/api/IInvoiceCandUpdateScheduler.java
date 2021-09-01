@@ -25,5 +25,5 @@ package de.metas.invoicecandidate.api;
 
 public interface IInvoiceCandUpdateScheduler
 {
-	public void schedule(IInvoiceCandUpdateSchedulerRequest request);
+	void schedule(IInvoiceCandUpdateSchedulerRequest request);
 }
