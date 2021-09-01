@@ -216,12 +216,12 @@ UPDATE AD_Tab SET Name='Fachrichtung', Description=NULL, Help=NULL, CommitWarnin
 
 -- 2021-08-30T13:09:12.816Z
 -- URL zum Konzept
-UPDATE AD_WINDOW SET Name='Fachrichtung', Description=NULL, Help=NULL WHERE AD_Element_ID = 579572
+UPDATE AD_WINDOW SET Name='Fachrichtung ', Description=NULL, Help=NULL WHERE AD_Element_ID = 579572
 ;
 
 -- 2021-08-30T13:09:12.860Z
 -- URL zum Konzept
-UPDATE AD_Menu SET   Name = 'Fachrichtung', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579572
+UPDATE AD_Menu SET   Name = 'Fachrichtung ', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 579572
 ;
 
 -- 2021-08-30T13:09:27.186Z
@@ -236,7 +236,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Speciality', PrintName='Specia
 
 -- 2021-08-30T13:09:40.746Z
 -- URL zum Konzept
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Fachrichtung', PrintName='Fachrichtung',Updated=TO_TIMESTAMP('2021-08-30 16:09:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579572 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Fachrichtung ', PrintName='Fachrichtung ',Updated=TO_TIMESTAMP('2021-08-30 16:09:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579572 AND AD_Language='nl_NL'
 ;
 
 -- 2021-08-30T13:09:40.787Z
