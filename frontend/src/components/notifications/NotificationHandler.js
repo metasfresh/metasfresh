@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
 import Notification from './Notification';
 
 const EMPTY_OBJECT = { notifications: {} };
 
-class NotificationHandler extends Component {
+class NotificationHandler extends PureComponent {
   render() {
     const { notifications, children } = this.props;
 
