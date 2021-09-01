@@ -68,8 +68,8 @@
     "luxon": "2.0.2",
     "moment": "2.29.1",
     "numeral": "^2.0.6",
-    "react": "16.14.0",
-    "react-dom": "16.14.0",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
     "sockjs-client": "1.5.2",
     "stompjs": "^2.3.3"
   }
