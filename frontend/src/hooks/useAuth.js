@@ -133,7 +133,7 @@ function useProvideAuth() {
     if (isLoggedIn) {
       setAuthRequestPending(true);
 
-      return logoutRequest().then(() => _logoutSuccess());
+      return logoutRequest().finally(() => _logoutSuccess());
     }
 
     return Promise.resolve(() => _logoutSuccess());

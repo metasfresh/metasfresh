@@ -64,7 +64,7 @@ const PrivateRoute = (props) => {
     return null;
   }
 
-  return <Route {...props} render={() => <ChildRoutes />} />;
+  return <Route {...props} component={ChildRoutes} />;
 };
 
 function propsAreEqual(prevProps, nextProps) {
