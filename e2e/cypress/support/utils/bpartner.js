@@ -127,7 +127,7 @@ export class BPartner {
 
   static applyBPartner(bPartner) {
     const basicUri = `${config.API_URL}/window/123`;
-
+    cy.get('.avatar').should('be.visible');
     return cy
       .request({
         url: `${basicUri}/NEW`,

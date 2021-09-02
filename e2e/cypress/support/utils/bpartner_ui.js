@@ -157,7 +157,8 @@ export class BPartnerContact {
 }
 
 function applyBPartner(bPartner) {
-  describe(`Create new bPartner ${bPartner.name}`, function() {
+  describe(`Create new bPartner ${bPartner.name}`, function () {
+    cy.get('.avatar').should('be.visible'); // add check step to see if user is logged in and reduce flakyness
     cy.visitWindow('123', 'NEW');
     cy.writeIntoStringField('CompanyName', bPartner.name);
     cy.writeIntoStringField('Name2', bPartner.name);
@@ -167,7 +168,7 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.getCheckboxValue('IsVendor').then(isVendorValue => {
+      cy.getCheckboxValue('IsVendor').then((isVendorValue) => {
         if (bPartner.isVendor && !isVendorValue) {
           cy.clickOnCheckBox('IsVendor', true, true /*modal*/);
         }
@@ -186,7 +187,7 @@ function applyBPartner(bPartner) {
       cy.selectSingleTabRow();
 
       cy.openAdvancedEdit();
-      cy.getCheckboxValue('IsCustomer').then(isCustomerValue => {
+      cy.getCheckboxValue('IsCustomer').then((isCustomerValue) => {
         if (bPartner.isCustomer && !isCustomerValue) {
           cy.clickOnCheckBox('IsCustomer', true, true /*modal*/);
         }
@@ -233,17 +234,10 @@ function applyLocation(bPartnerLocation) {
   cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true /*modal*/, false, true);
   cy.get('.panel-modal-header-title').click();
 
-  cy.editAddress('C_Location_ID', function(url) {
+  cy.editAddress('C_Location_ID', function (url) {
     cy.writeIntoStringField('Address1', ' ', null, url);
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
-    cy.writeIntoLookupListField(
-      'C_Country_ID',
-      bPartnerLocation.country,
-      bPartnerLocation.country,
-      false /*typeList */,
-      false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/,
-      url
-    );
+    cy.writeIntoLookupListField('C_Country_ID', bPartnerLocation.country, bPartnerLocation.country, false /*typeList */, false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/, url);
   });
   cy.get('.form-field-Address').should('contain', bPartnerLocation.city);
   cy.pressDoneButton();

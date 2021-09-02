@@ -15,7 +15,6 @@ it('Read fixture and prepare the names', function () {
 describe('Create new bpartner group', function () {
   it('Create bpartner', function () {
     cy.fixture('sales/simple_customer.json').then((customerJson) => {
-      cy.get('.avatar').should('be.visible'); // add check step to see if user is logged in and reduce flakyness
       const bpartner = new BPartner({ ...customerJson, name: groupTestPartnerName }).clearLocations().clearContacts();
       bpartner.apply().then((bpartner) => {
         bpartnerID = bpartner.id;
