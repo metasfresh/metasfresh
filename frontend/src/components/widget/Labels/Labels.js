@@ -87,7 +87,6 @@ export default class Labels extends PureComponent {
 
     this.setState({
       focused: false,
-      cursor: this.props.selected.length,
     });
   };
 
@@ -224,7 +223,6 @@ export default class Labels extends PureComponent {
    */
   handleSuggestionAdd = (suggestion) => {
     const { onChange, selected } = this.props;
-    const { cursor } = this.state;
 
     this.clearInput();
 
@@ -234,8 +232,10 @@ export default class Labels extends PureComponent {
 
     onChange([...selected, suggestion]);
 
+    const newCursor = [...selected, suggestion].length;
+
     this.setState({
-      cursor: cursor + 1,
+      cursor: newCursor,
       suggestion: null,
       labelsUpdated: true,
     });
