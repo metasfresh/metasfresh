@@ -167,7 +167,7 @@ export default class Labels extends PureComponent {
           onChange(selectedNew);
 
           this.setState({
-            cursor: cursor - 1,
+            cursor: cursor === 1 ? selectedNew.length : cursor - 1,
           });
         }
 
