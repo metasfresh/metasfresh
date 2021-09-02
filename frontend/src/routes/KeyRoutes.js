@@ -26,6 +26,17 @@ function propsAreEqual(prevProps, nextProps) {
   return false;
 }
 
+function queriesAreEqual(prevProps, nextProps) {
+  const { query, windowId } = prevProps;
+  const { query: nextQuery, windowId: nextWindowId } = nextProps;
+
+  if (_.isEqual(query, nextQuery) && windowId === nextWindowId) {
+    return true;
+  }
+
+  return false;
+}
+
 /**
  * @file Functional component.
  * @module KeyRoutes/RawDocListRoute
@@ -34,7 +45,9 @@ function propsAreEqual(prevProps, nextProps) {
 const RawDocListRoute = ({ location, match }) => {
   const { search } = location;
   const { params } = match;
-  const query = queryString.parse(search);
+  const query = queryString.parse(search, {
+    ignoreQueryPrefix: true,
+  });
 
   return <DocList query={query} windowId={params.windowId} />;
 };
@@ -44,7 +57,7 @@ RawDocListRoute.propTypes = {
   match: PropTypes.object,
 };
 
-const DocListRoute = React.memo(RawDocListRoute, propsAreEqual);
+const DocListRoute = React.memo(RawDocListRoute, queriesAreEqual);
 
 /**
  * @file Functional component.
