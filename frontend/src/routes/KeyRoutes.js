@@ -43,13 +43,15 @@ function queriesAreEqual(prevProps, nextProps) {
  * @description Route for the document's lists
  */
 const RawDocListRoute = ({ location, match }) => {
-  const { search } = location;
+  const { search, pathname } = location;
   const { params } = match;
   const query = queryString.parse(search, {
     ignoreQueryPrefix: true,
   });
 
-  return <DocList query={query} windowId={params.windowId} />;
+  return (
+    <DocList query={query} windowId={params.windowId} pathname={pathname} />
+  );
 };
 
 RawDocListRoute.propTypes = {

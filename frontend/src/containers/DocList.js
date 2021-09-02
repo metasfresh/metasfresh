@@ -50,10 +50,10 @@ class DocList extends PureComponent {
    * @summary Update the url with query params if needed (ie add viewId, page etc)
    */
   updateUriCallback = (updatedQuery) => {
-    const { query } = this.props;
+    const { query, pathname } = this.props;
     const { viewId } = updatedQuery;
 
-    viewId && updateUri(location.pathname, query, updatedQuery);
+    viewId && updateUri(pathname, query, updatedQuery);
   };
 
   render() {
@@ -160,7 +160,7 @@ class DocList extends PureComponent {
  * @prop {object} query - routing query
  * @prop {object} rawModal
  * @prop {string} windowId
- * @prop {object} location
+ * @prop {string} pathname
  */
 DocList.propTypes = {
   includedView: PropTypes.object,
@@ -170,7 +170,7 @@ DocList.propTypes = {
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
   getWindowBreadcrumb: PropTypes.func.isRequired,
-  location: PropTypes.object.isRequired,
+  pathname: PropTypes.string.isRequired,
   query: PropTypes.object.isRequired,
 };
 
