@@ -270,7 +270,7 @@ public class OrderBL implements IOrderBL
 
 	private PriceListId retrievePriceListIdOrNull(
 			final PricingSystemId pricingSystemId,
-			final BPartnerLocationAndCaptureId shipToBPLocationId,
+			@Nullable final BPartnerLocationAndCaptureId shipToBPLocationId,
 			@NonNull final SOTrx soTrx)
 	{
 		if (shipToBPLocationId == null)
