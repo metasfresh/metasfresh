@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Route, useHistory } from 'react-router-dom';
-import { useDispatch, useStore } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 import queryString from 'query-string';
 
-import { clearNotifications, enableTutorial } from '../actions/AppActions';
+import {
+  clearNotifications,
+  enableTutorial,
+  getNotifications,
+  getNotificationsEndpoint,
+} from '../actions/AppActions';
 import { setBreadcrumb } from '../actions/MenuActions';
 import { useAuth } from '../hooks/useAuth';
 import ChildRoutes from './ChildRoutes';
@@ -22,7 +27,6 @@ const PrivateRoute = (props) => {
   const auth = useAuth();
   const dispatch = useDispatch();
   const history = useHistory();
-  const store = useStore();
   const { isLoggedIn, authRequestPending } = auth;
   const { location } = props;
   const query = queryString.parse(location.search, { ignoreQueryPrefix: true });
@@ -31,21 +35,24 @@ const PrivateRoute = (props) => {
   const [firstRender, setFirstRender] = useState(true);
 
   useEffect(() => {
-    const state = store.getState();
-
     if (firstRender) {
       setFirstRender(false);
       dispatch(clearNotifications());
 
-      if (!state.appHandler.isLogged && !authRequestPending()) {
+      if (!isLoggedIn && !authRequestPending()) {
         const url = location.pathname;
 
         auth.checkAuthentication().then((authenticated) => {
           if (!authenticated) {
             auth.setRedirectRoute(url);
             history.push('/login');
+          } else {
+            dispatch(getNotificationsEndpoint(auth));
+            dispatch(getNotifications());
           }
         });
+      } else if (isLoggedIn && !authRequestPending()) {
+        auth.login();
       }
 
       if (hasTutorial) {

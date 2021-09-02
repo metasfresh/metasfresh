@@ -61,7 +61,7 @@ function useProvideAuth() {
           setAuthRequestPending(false);
 
           if (resp.data) {
-            login();
+            _loginSuccess();
           } else {
             _logoutSuccess();
           }
