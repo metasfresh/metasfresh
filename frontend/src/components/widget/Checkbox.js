@@ -36,8 +36,7 @@ const Checkbox = (props) => {
       !isChanged &&
       handlePatch(widgetField, defaultValue, id);
 
-    const initialValue = updateItems ? checkedState : initialValue;
-    setCheckedValue(isChanged && value === '' ? false : !!initialValue);
+    setCheckedValue(isChanged && value === '' ? false : !!checkedState);
   }, [checkedState]);
 
   /**
@@ -70,8 +69,6 @@ const Checkbox = (props) => {
       updateItems({ widgetField, value: !checkedState });
     handlePatch(widgetField, newCheckedState, id);
   };
-
-  initialValue = updateItems ? checkedState : initialValue;
 
   return (
     <div>

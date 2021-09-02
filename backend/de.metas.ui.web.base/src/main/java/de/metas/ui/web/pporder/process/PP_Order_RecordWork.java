@@ -218,6 +218,6 @@ public class PP_Order_RecordWork
 
 	private Duration getDuration()
 	{
-		return DurationUtils.toWorkDuration(duration, durationUnit.getTemporalUnit());
+		return DurationUtils.toWorkDurationRoundUp(duration, durationUnit.getTemporalUnit());
 	}
 }

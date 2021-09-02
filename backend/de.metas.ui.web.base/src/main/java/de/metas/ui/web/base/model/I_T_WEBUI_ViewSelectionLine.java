@@ -1,7 +1,5 @@
 package de.metas.ui.web.base.model;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
 
 /*
@@ -38,10 +36,14 @@ public interface I_T_WEBUI_ViewSelectionLine
 	//
 	// Record IDs / Aggregate record IDs / Root record IDs
 	// IMPORTANT: keep in sync with I_T_WEBUI_ViewSelection !!!
-	String COLUMNNAME_IntKey1 = I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1;
-	String COLUMNNAME_IntKey2 = I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey2;
-	List<String> COLUMNNAME_IntKeys = ImmutableList.of(COLUMNNAME_IntKey1, COLUMNNAME_IntKey2);
+	String COLUMNNAME_IntKey1 = "IntKey1";
+	String COLUMNNAME_IntKey2 = "IntKey2";
+	String COLUMNNAME_IntKey3 = "IntKey3";
+	String COLUMNNAME_IntKey4 = "IntKey4";
+	ImmutableList<String> COLUMNNAME_IntKeys = ImmutableList.of(COLUMNNAME_IntKey1, COLUMNNAME_IntKey2, COLUMNNAME_IntKey3, COLUMNNAME_IntKey4);
 
-	String COLUMNNAME_StringKey1 = I_T_WEBUI_ViewSelection.COLUMNNAME_StringKey1;
-	List<String> COLUMNNAME_StringKeys = ImmutableList.of(COLUMNNAME_StringKey1);
+	String COLUMNNAME_StringKey1 = "StringKey1";
+	String COLUMNNAME_StringKey2 = "StringKey2";
+	String COLUMNNAME_StringKey3 = "StringKey3";
+	ImmutableList<String> COLUMNNAME_StringKeys = ImmutableList.of(COLUMNNAME_StringKey1, COLUMNNAME_StringKey2, COLUMNNAME_StringKey3);
 }

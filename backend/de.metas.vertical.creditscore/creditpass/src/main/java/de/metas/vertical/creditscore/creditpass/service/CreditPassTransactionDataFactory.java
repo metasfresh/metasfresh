@@ -1,19 +1,12 @@
 package de.metas.vertical.creditscore.creditpass.service;
 
-import java.util.Optional;
-
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.MBPartner;
-import org.springframework.stereotype.Service;
-
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.BPartnerLocationInfo;
-import de.metas.bpartner.service.BPartnerLocationInfoRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.location.Location;
 import de.metas.location.LocationRepository;
@@ -23,23 +16,25 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.vertical.creditscore.creditpass.model.CreditPassTransactionData;
 import lombok.NonNull;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.MBPartner;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class CreditPassTransactionDataFactory
 {
 	private final UserRepository userRepo;
-	private final BPartnerLocationInfoRepository bPartnerLocationInfoRepository;
 	private final LocationRepository locationRepository;
 	private final BankRepository bankRepository;
 
 	public CreditPassTransactionDataFactory(
 			@NonNull final UserRepository userRepo,
-			@NonNull final BPartnerLocationInfoRepository bPartnerLocationRepository,
 			@NonNull final LocationRepository locatinoRepository,
 			@NonNull final BankRepository bankRepository)
 	{
 		this.userRepo = userRepo;
-		this.bPartnerLocationInfoRepository = bPartnerLocationRepository;
 		this.locationRepository = locatinoRepository;
 		this.bankRepository = bankRepository;
 	}
@@ -62,10 +57,10 @@ public class CreditPassTransactionDataFactory
 		final BPartnerLocationId bPartnerLocationId = bpartnersRepo.getBilltoDefaultLocationIdByBpartnerId(bPartnerId);
 		if (bPartnerLocationId != null)
 		{
-			BPartnerLocationInfo bPartnerLocation = bPartnerLocationInfoRepository.getByBPartnerLocationId(bPartnerLocationId);
+			BPartnerLocationAndCaptureId bPartnerLocation = bpartnersRepo.getBPartnerLocationAndCaptureIdInTrx(bPartnerLocationId);
 			if (bPartnerLocation != null)
 			{
-				location = locationRepository.getByLocationId(bPartnerLocation.getLocationId());
+				location = locationRepository.getByLocationId(bPartnerLocation.getLocationCaptureId());
 			}
 		}
 		Optional<Location> optionalLocation = Optional.ofNullable(location);

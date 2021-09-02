@@ -181,3 +181,40 @@ export const FILTERS_TYPE_NOT_INCLUDED = 'NotIncluded';
  * @type {integer} Used to indicate the number of px until we apply left offset
  */
 export const LOOKUP_SHOW_MORE_PIXEL_NO = 250;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the max number of character for a label before chopping it
+ *                 Note: it has to be in sync with `.table-cell-label-container` size
+ */
+export const TBL_CELL_LABEL_MAX = 10;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the pos from where we apply diff with the offset on Y axis
+ */
+export const TBL_CONTEXT_MENU_X_MAX = 620;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the pos from where we apply diff with the offset on X axis
+ */
+export const TBL_CONTEXT_MENU_Y_MAX = 1430;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the offset to apply when exceeds TBL_CONTEXT_MENU_X_MAX
+ */
+export const TBL_CONTEXT_X_OFFSET = 145;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the offset to apply when exceeds TBL_CONTEXT_MENU_Y_MAX
+ */
+export const TBL_CONTEXT_Y_OFFSET = 65;
+
+/**
+ * @constant
+ * @type {integer} Used to indicate the popup pre-defined height
+ */
+export const TBL_CONTEXT_POPUP_HEIGHT = '215px';

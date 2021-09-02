@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.document.location.DocumentLocation;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -58,6 +59,8 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 */
 	BPartnerId getBPartnerId(I_M_ShipmentSchedule sched);
 
+	String getBPartnerAddress(@NonNull I_M_ShipmentSchedule sched);
+
 	DeliveryRule getDeliveryRule(I_M_ShipmentSchedule sched);
 
 	/** Consider using {@link IShipmentScheduleBL#getQtyToDeliver(I_M_ShipmentSchedule)} instead. */
@@ -72,6 +75,8 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	}
 
 	BPartnerLocationId getBPartnerLocationId(I_M_ShipmentSchedule sched);
+
+	DocumentLocation getDocumentLocation(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
 	 * @deprecated please use {@link #getBPartnerContactId(I_M_ShipmentSchedule)} as this returns BAD data!

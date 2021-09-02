@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import com.google.common.base.MoreObjects;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
@@ -56,6 +57,7 @@ import java.util.Optional;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class OLCand implements IProductPriceAware
 {
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL;
@@ -122,6 +124,12 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final OrderLineGroup orderLineGroup;
 
+	@Getter
+	private final AsyncBatchId asyncBatchId;
+
+	@Getter
+	private final BigDecimal qtyShipped;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -137,7 +145,9 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final ShipperId shipperId,
 			@Nullable final DocTypeId orderDocTypeId,
 			@Nullable final BPartnerId salesRepId,
-			@Nullable final OrderLineGroup orderLineGroup)
+			@Nullable final OrderLineGroup orderLineGroup,
+			@Nullable final AsyncBatchId asyncBatchId,
+			@Nullable final BigDecimal qtyShipped)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -145,17 +155,8 @@ public final class OLCand implements IProductPriceAware
 
 		this.dateDoc = TimeUtil.asLocalDate(olCandRecord.getDateOrdered());
 
-		this.bpartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBPartnerEffectiveId(olCandRecord))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getLocationEffectiveId(olCandRecord))
-				.contactId(this.olCandEffectiveValuesBL.getContactEffectiveId(olCandRecord))
-				.build();
-		this.billBPartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBillLocationEffectiveId(olCandRecord))
-				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord))
-				.build();
-
+		this.bpartnerInfo = olCandEffectiveValuesBL.getBuyerPartnerInfo(olCandRecord);
+		this.billBPartnerInfo = olCandEffectiveValuesBL.getBillToPartnerInfo(olCandRecord);
 		this.dropShipBPartnerInfo = olCandEffectiveValuesBL.getDropShipPartnerInfo(olCandRecord);
 		this.handOverBPartnerInfo = olCandEffectiveValuesBL.getHandOverPartnerInfo(olCandRecord);
 
@@ -182,6 +183,9 @@ public final class OLCand implements IProductPriceAware
 
 		this.orderDocTypeId = orderDocTypeId;
 		this.orderLineGroup = orderLineGroup;
+
+		this.asyncBatchId = asyncBatchId;
+		this.qtyShipped = qtyShipped;
 	}
 
 	@Override
@@ -285,7 +289,7 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.isProcessed();
 	}
 
-	public void setProcessed(final boolean processed)
+	public void setProcessed()
 	{
 		olCandRecord.setProcessed(true);
 	}
@@ -348,6 +352,10 @@ public final class OLCand implements IProductPriceAware
 		{
 			return getBillBPartnerInfo().getBpartnerLocationId();
 		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_Location_Value_ID))
+		{
+			return getBillBPartnerInfo().getLocationId();
+		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_User_ID))
 		{
 			return getBillBPartnerInfo().getContactId();
@@ -359,6 +367,10 @@ public final class OLCand implements IProductPriceAware
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_Location_ID))
 		{
 			return dropShipBPartnerInfo.orElse(bpartnerInfo).getBpartnerLocationId();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_Location_Value_ID))
+		{
+			return dropShipBPartnerInfo.orElse(bpartnerInfo).getLocationId();
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_M_PricingSystem_ID))
 		{
@@ -422,5 +434,15 @@ public final class OLCand implements IProductPriceAware
 	public BPartnerInfo getBPartnerInfo()
 	{
 		return bpartnerInfo;
+	}
+
+	public boolean isAssignToBatch(@NonNull final AsyncBatchId asyncBatchIdCandidate)
+	{
+		if (this.asyncBatchId == null)
+		{
+			return false;
+		}
+
+		return asyncBatchId.getRepoId() == asyncBatchIdCandidate.getRepoId();
 	}
 }

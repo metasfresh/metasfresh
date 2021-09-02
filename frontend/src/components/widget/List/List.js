@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { List } from 'immutable';
 import { findKey } from 'lodash';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -19,7 +18,7 @@ class ListWidget extends Component {
     super(props);
 
     this.state = {
-      list: List(),
+      list: [],
       listHash: null,
       loading: false,
       selectedItem: '',
@@ -65,11 +64,11 @@ class ListWidget extends Component {
     if (prevProps.autoFocus !== autoFocus && !isToggled) {
       if (autoFocus) {
         this.handleFocus();
-        !doNotOpenOnFocus && list.size > 1 && this.activate();
+        !doNotOpenOnFocus && list.length > 1 && this.activate();
       } else {
         if (initialFocus && !defaultValue) {
           this.handleFocus();
-          !doNotOpenOnFocus && list.size > 1 && this.activate();
+          !doNotOpenOnFocus && list.length > 1 && this.activate();
         }
       }
     }
@@ -95,7 +94,7 @@ class ListWidget extends Component {
 
     this.setState(
       {
-        list: List(),
+        list: [],
         loading: true,
       },
       () => {
@@ -138,7 +137,7 @@ class ListWidget extends Component {
             this.previousValue = '';
 
             this.setState({
-              list: List(values),
+              list: values,
               listHash: uuidv4(),
               loading: false,
             });
@@ -149,7 +148,7 @@ class ListWidget extends Component {
             }
           } else {
             this.setState({
-              list: List(values),
+              list: values,
               listHash: uuidv4(),
               loading: false,
             });
@@ -176,7 +175,7 @@ class ListWidget extends Component {
 
     this.focus();
 
-    if (!list.size && !loading) {
+    if (!list.length && !loading) {
       this.requestListData(mandatory, true);
     }
   };
@@ -194,7 +193,7 @@ class ListWidget extends Component {
       {
         autoFocus: false,
         listFocused: false,
-        list: List(),
+        list: [],
         listHash: null,
         listToggled: false,
       },
@@ -212,9 +211,12 @@ class ListWidget extends Component {
 
   activate = () => {
     const { list, listToggled } = this.state;
-    const { lookupList } = this.props;
+    const { lookupList, mandatory } = this.props;
 
-    if (!listToggled && !(lookupList && list.size < 1)) {
+    if (
+      (!listToggled && !(lookupList && list.length < 1)) ||
+      (list.size === 0 && mandatory)
+    ) {
       this.setState({
         listToggled: true,
       });
@@ -268,7 +270,7 @@ class ListWidget extends Component {
                 findKey(patchFields, ['widgetType', 'List'])
               ) {
                 this.setState({
-                  list: List(),
+                  list: [],
                   listHash: null,
                 });
               }

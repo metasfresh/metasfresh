@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.api;
 
+import de.metas.async.AsyncBatchId;
+
 import java.util.Properties;
 
 /*
@@ -26,13 +28,12 @@ import java.util.Properties;
 
 /**
  * The schedule for update request used by {@link IInvoiceCandUpdateScheduler}.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface IInvoiceCandUpdateSchedulerRequest
 {
 	Properties getCtx();
 
 	String getTrxName();
+
+	AsyncBatchId getAsyncBatchId();
 }

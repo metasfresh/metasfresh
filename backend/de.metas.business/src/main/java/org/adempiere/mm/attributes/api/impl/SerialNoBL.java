@@ -1,16 +1,18 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import java.util.Objects;
-import java.util.Optional;
-
-import org.adempiere.mm.attributes.api.ISerialNoBL;
-import org.adempiere.mm.attributes.api.SerialNoContext;
-import org.compiere.util.Evaluatees;
-
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.ISerialNoBL;
+import org.adempiere.mm.attributes.api.SerialNoContext;
+import org.compiere.util.Evaluatees;
+
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -52,5 +54,14 @@ public class SerialNoBL implements ISerialNoBL
 		return serialNo != null && !Objects.equals(serialNo, IDocumentNoBuilder.NO_DOCUMENTNO)
 				? Optional.of(serialNo)
 				: Optional.empty();
+	}
+
+	@Override
+	public Optional<AttributeId> getSerialNoAttributeId()
+	{
+		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
+		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(AttributeConstants.ATTR_SerialNo);
+		return Optional.ofNullable(attributeId);
 	}
 }

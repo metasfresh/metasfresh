@@ -22,11 +22,10 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /**
  * Use {@link IQueryBL#createCompositeQueryUpdater(Class)} to get an instance.
@@ -40,7 +39,7 @@ public interface ICompositeQueryUpdater<T> extends ISqlQueryUpdater<T>
 
 	ICompositeQueryUpdater<T> addQueryUpdater(IQueryUpdater<T> updater);
 
-	ICompositeQueryUpdater<T> addSetColumnValue(String columnName, Object value);
+	ICompositeQueryUpdater<T> addSetColumnValue(String columnName, @Nullable Object value);
 
 	ICompositeQueryUpdater<T> addSetColumnFromColumn(String columnName, ModelColumnNameValue<T> fromColumnName);
 

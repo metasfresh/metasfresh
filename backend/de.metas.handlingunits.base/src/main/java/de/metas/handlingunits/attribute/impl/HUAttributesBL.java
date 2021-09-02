@@ -170,4 +170,5 @@ public class HUAttributesBL implements IHUAttributesBL
 	{
 		return sysConfigBL.getBooleanValue("de.metas.handlingunits.attributes.AutomaticallySetBestBeforeDate", false);
 	}
+
 }

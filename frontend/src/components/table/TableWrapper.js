@@ -333,6 +333,7 @@ class TableWrapper extends PureComponent {
       onGetAllLeaves,
       onHandleAdvancedEdit,
       onOpenTableModal,
+      supportOpenRecord,
     } = this.props;
 
     const { contextMenu, promptOpen, isBatchEntry } = this.state;
@@ -381,6 +382,7 @@ class TableWrapper extends PureComponent {
               }
               handleZoomInto={onHandleZoomInto}
               updateTableHeight={this.fwdUpdateHeight}
+              supportOpenRecord={supportOpenRecord}
             />
           )}
           {!readonly && (
@@ -458,6 +460,7 @@ class TableWrapper extends PureComponent {
             windowId={windowId}
             tabId={tabId}
             selected={selected}
+            supportOpenRecord={supportOpenRecord}
             onAdvancedEdit={
               selected && selected.length > 0 && selected[0]
                 ? onHandleAdvancedEdit

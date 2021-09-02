@@ -11,7 +11,7 @@ FROM cypress/browsers:node14.16.0-chrome90-ff88
 ARG CACHEBUST=1
 
 
-RUN apt-get update && apt-get -y upgrade && apt-get -y autoremove
+RUN apt-get update --allow-releaseinfo-change && apt-get -y upgrade && apt-get -y autoremove
 
 WORKDIR /e2e
 
@@ -20,7 +20,8 @@ COPY package.json .
 
 RUN npm install
 
-COPY .babelrc .
+#COPY .babelrc .
+COPY babel.config.js .
 
 COPY reporter-config.json .
 

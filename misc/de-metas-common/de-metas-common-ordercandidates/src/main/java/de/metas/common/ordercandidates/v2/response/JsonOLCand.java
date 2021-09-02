@@ -84,9 +84,11 @@ public class JsonOLCand
 	int pricingSystemId;
 
 	// TODO document: per product, discount not yet applied
+	// TODO document: might be put irrelevant by jsonOrderLineGroup with discount
 	BigDecimal price;
 
 	// TODO document: percent
+	// TODO document: might be put irrelevant by jsonOrderLineGroup with discount 
 	BigDecimal discount;
 
 	int warehouseDestId;

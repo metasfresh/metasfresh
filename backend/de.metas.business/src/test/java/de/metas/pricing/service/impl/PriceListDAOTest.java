@@ -1,19 +1,27 @@
 package de.metas.pricing.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.Optional;
-import java.util.stream.Stream;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.order.model.I_M_Product_Category;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -28,25 +36,18 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.X_M_DiscountSchema;
 import org.compiere.util.TimeUtil;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.impl.PlainCurrencyDAO;
-import de.metas.lang.SOTrx;
-import de.metas.money.CurrencyId;
-import de.metas.order.model.I_M_Product_Category;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -84,6 +85,7 @@ public class PriceListDAOTest
 	{
 		AdempiereTestHelper.get().init();
 		POJOWrapper.setDefaultStrictValues(false);
+		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 		pricingSystem = createPricingSystem("TEST PS", "TEST PS");
 		country = createCountry();
@@ -97,18 +99,18 @@ public class PriceListDAOTest
 	public void test_retrievePriceListByPricingSyst_WithCountryMatched()
 	{
 		createPriceList(pricingSystem,
-				null,
-				"test price list",
-				true,
-				country,
-				EURO);
+						null,
+						"test price list",
+						true,
+						country,
+						EURO);
 
 		final I_M_PriceList pl2 = createPriceList(pricingSystem,
-				null,
-				"test price list",
-				true,
-				null,
-				EURO);
+												  null,
+												  "test price list",
+												  true,
+												  null,
+												  EURO);
 
 		final I_C_Country otherCountry = createCountry();
 		final I_C_Location location = newInstance(I_C_Location.class);
@@ -126,7 +128,7 @@ public class PriceListDAOTest
 
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
-				toBPartnerLocationId(bpl),
+				BPartnerLocationAndCaptureId.ofRecord(bpl),
 				SOTrx.SALES);
 
 		assertThat(plId).isNotNull();
@@ -137,18 +139,18 @@ public class PriceListDAOTest
 	public void test_retrievePriceListByPricingSyst_WithCountryNull()
 	{
 		final I_M_PriceList pl1 = createPriceList(pricingSystem,
-				null,
-				"test price list",
-				true,
-				country,
-				EURO);
+												  null,
+												  "test price list",
+												  true,
+												  country,
+												  EURO);
 
 		createPriceList(pricingSystem,
-				null,
-				"test price list",
-				true,
-				country,
-				EURO);
+						null,
+						"test price list",
+						true,
+						country,
+						EURO);
 
 		final I_C_Location location = newInstance(I_C_Location.class);
 		location.setAddress1("Address1");
@@ -165,18 +167,11 @@ public class PriceListDAOTest
 
 		final PriceListId plId = priceListDAO.retrievePriceListIdByPricingSyst(
 				PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID()),
-				toBPartnerLocationId(bpl),
+				BPartnerLocationAndCaptureId.ofRecord(bpl),
 				SOTrx.SALES);
 
 		assertThat(plId).isNotNull();
 		assertThat(plId.getRepoId()).isEqualByComparingTo(pl1.getM_PriceList_ID());
-	}
-
-	private BPartnerLocationId toBPartnerLocationId(@NonNull final I_C_BPartner_Location bplRecord)
-	{
-		return BPartnerLocationId.ofRepoId(
-				bplRecord.getC_BPartner_ID(),
-				bplRecord.getC_BPartner_Location_ID());
 	}
 
 	@Test
@@ -219,9 +214,9 @@ public class PriceListDAOTest
 		createSchemaLine(baseSchema, -1, product3.getM_Product_ID(), baseSurcharge3);
 
 		final I_M_PriceList_Version originalBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				baseSchema.getM_DiscountSchema_ID(),
-				-1);
+																oldValidFrom,
+																baseSchema.getM_DiscountSchema_ID(),
+																-1);
 
 		final BigDecimal basePriceProduct1 = new BigDecimal(111);
 		createProductPrice(product1, basePriceProduct1, originalBasePLV.getM_PriceList_Version_ID());
@@ -240,9 +235,9 @@ public class PriceListDAOTest
 		final boolean isCustomer = true;
 
 		createPartner("Customer1",
-				isAllowPriceMutation,
-				isCustomer,
-				customerPricingSystem.getM_PricingSystem_ID());
+					  isAllowPriceMutation,
+					  isCustomer,
+					  customerPricingSystem.getM_PricingSystem_ID());
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
@@ -264,9 +259,9 @@ public class PriceListDAOTest
 		createSchemaLine(customerSchema, -1, product3.getM_Product_ID(), customerSurcharge3);
 
 		final I_M_PriceList_Version customerOldPLV = createPLV(customerPriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				customerSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+															   oldValidFrom,
+															   customerSchema.getM_DiscountSchema_ID(),
+															   originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal customPriceProduct1 = new BigDecimal(1);
 		createProductPrice(product1, customPriceProduct1, customerOldPLV.getM_PriceList_Version_ID());
@@ -280,9 +275,9 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				de.metas.common.util.time.SystemTime.asDayTimestamp(),
-				baseSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+														   de.metas.common.util.time.SystemTime.asDayTimestamp(),
+														   baseSchema.getM_DiscountSchema_ID(),
+														   originalBasePLV.getM_PriceList_Version_ID());
 
 		createProductPrice(product1, basePriceProduct1.add(baseSurcharge1), newBasePLV.getM_PriceList_Version_ID());
 
@@ -305,7 +300,7 @@ public class PriceListDAOTest
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
-				ImmutableSet.of());
+																								   ImmutableSet.of());
 
 		final ImmutableList<I_M_ProductPrice> newProductPrices = newProductPricesStream.collect(ImmutableList.toImmutableList());
 
@@ -383,9 +378,9 @@ public class PriceListDAOTest
 		createSchemaLine(baseSchema, -1, product3.getM_Product_ID(), baseSurcharge3);
 
 		final I_M_PriceList_Version originalBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				baseSchema.getM_DiscountSchema_ID(),
-				-1);
+																oldValidFrom,
+																baseSchema.getM_DiscountSchema_ID(),
+																-1);
 
 		final BigDecimal basePriceProduct1 = new BigDecimal(111);
 		createProductPrice(product1, basePriceProduct1, originalBasePLV.getM_PriceList_Version_ID());
@@ -405,9 +400,9 @@ public class PriceListDAOTest
 
 		// Customer 1
 		createPartner("Customer1",
-				isAllowPriceMutation,
-				isCustomer,
-				customerPricingSystem.getM_PricingSystem_ID());
+					  isAllowPriceMutation,
+					  isCustomer,
+					  customerPricingSystem.getM_PricingSystem_ID());
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
@@ -418,9 +413,9 @@ public class PriceListDAOTest
 				EURO);
 
 		final I_M_PriceList_Version customerOldPLV = createPLV(customerPriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				baseSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+															   oldValidFrom,
+															   baseSchema.getM_DiscountSchema_ID(),
+															   originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal customPriceProduct1 = new BigDecimal(1);
 		createProductPrice(product1, customPriceProduct1, customerOldPLV.getM_PriceList_Version_ID());
@@ -438,9 +433,9 @@ public class PriceListDAOTest
 				"CUSTOMER 2 PRICING SYSTEM");
 
 		createPartner("Customer2",
-				isAllowPriceMutation,
-				isCustomer,
-				customer2PricingSystem.getM_PricingSystem_ID());
+					  isAllowPriceMutation,
+					  isCustomer,
+					  customer2PricingSystem.getM_PricingSystem_ID());
 
 		final I_M_PriceList customer2PriceList = createPriceList(
 				customer2PricingSystem,
@@ -462,9 +457,9 @@ public class PriceListDAOTest
 		createSchemaLine(customer2Schema, -1, product3.getM_Product_ID(), customer2Surcharge3);
 
 		final I_M_PriceList_Version customer2OldPLV = createPLV(customer2PriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				customer2Schema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+																oldValidFrom,
+																customer2Schema.getM_DiscountSchema_ID(),
+																originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal custom2PriceProduct1 = new BigDecimal(4);
 		createProductPrice(product1, custom2PriceProduct1, customer2OldPLV.getM_PriceList_Version_ID());
@@ -478,9 +473,9 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				de.metas.common.util.time.SystemTime.asDayTimestamp(),
-				baseSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+														   de.metas.common.util.time.SystemTime.asDayTimestamp(),
+														   baseSchema.getM_DiscountSchema_ID(),
+														   originalBasePLV.getM_PriceList_Version_ID());
 
 		createProductPrice(product1, basePriceProduct1.add(baseSurcharge1), newBasePLV.getM_PriceList_Version_ID());
 
@@ -504,7 +499,7 @@ public class PriceListDAOTest
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
-				ImmutableSet.of());
+																								   ImmutableSet.of());
 
 		final ImmutableList<I_M_ProductPrice> newProductPrices = newProductPricesStream.collect(ImmutableList.toImmutableList());
 
@@ -555,7 +550,7 @@ public class PriceListDAOTest
 		assertThat(newestCustomer2PriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newCustomer2ProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestCustomer2PriceListVersion.getM_PriceList_Version_ID()),
-				ImmutableSet.of());
+																											ImmutableSet.of());
 
 		final ImmutableList<I_M_ProductPrice> newCustomer2ProductPrices = newCustomer2ProductPricesStream.collect(ImmutableList.toImmutableList());
 
@@ -632,9 +627,9 @@ public class PriceListDAOTest
 		createSchemaLine(baseSchema, -1, product3.getM_Product_ID(), baseSurcharge3);
 
 		final I_M_PriceList_Version originalBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				baseSchema.getM_DiscountSchema_ID(),
-				-1);
+																oldValidFrom,
+																baseSchema.getM_DiscountSchema_ID(),
+																-1);
 
 		final BigDecimal basePriceProduct1 = new BigDecimal(111);
 		createProductPrice(product1, basePriceProduct1, originalBasePLV.getM_PriceList_Version_ID());
@@ -652,9 +647,9 @@ public class PriceListDAOTest
 		final boolean isAllowPriceMutation = true;
 		final boolean isCustomer = true;
 		createPartner("Customer1",
-				isAllowPriceMutation,
-				isCustomer,
-				customerPricingSystem.getM_PricingSystem_ID());
+					  isAllowPriceMutation,
+					  isCustomer,
+					  customerPricingSystem.getM_PricingSystem_ID());
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
@@ -673,9 +668,9 @@ public class PriceListDAOTest
 		createSchemaLine(customerSchema, -1, product2.getM_Product_ID(), customerSurcharge2);
 
 		final I_M_PriceList_Version customerOldPLV = createPLV(customerPriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				customerSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+															   oldValidFrom,
+															   customerSchema.getM_DiscountSchema_ID(),
+															   originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal customPriceProduct1 = new BigDecimal(1);
 		createProductPrice(product1, customPriceProduct1, customerOldPLV.getM_PriceList_Version_ID());
@@ -683,13 +678,12 @@ public class PriceListDAOTest
 		final BigDecimal customPriceProduct2 = new BigDecimal(2);
 		createProductPrice(product2, customPriceProduct2, customerOldPLV.getM_PriceList_Version_ID());
 
-
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				SystemTime.asDayTimestamp(),
-				baseSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+														   SystemTime.asDayTimestamp(),
+														   baseSchema.getM_DiscountSchema_ID(),
+														   originalBasePLV.getM_PriceList_Version_ID());
 
 		createProductPrice(product1, basePriceProduct1.add(baseSurcharge1), newBasePLV.getM_PriceList_Version_ID());
 
@@ -712,7 +706,7 @@ public class PriceListDAOTest
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
-				ImmutableSet.of());
+																								   ImmutableSet.of());
 
 		final ImmutableList<I_M_ProductPrice> newProductPrices = newProductPricesStream.collect(ImmutableList.toImmutableList());
 
@@ -780,9 +774,9 @@ public class PriceListDAOTest
 		createSchemaLine(baseSchema, -1, product3.getM_Product_ID(), baseSurcharge3);
 
 		final I_M_PriceList_Version originalBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				baseSchema.getM_DiscountSchema_ID(),
-				-1);
+																oldValidFrom,
+																baseSchema.getM_DiscountSchema_ID(),
+																-1);
 
 		final BigDecimal basePriceProduct1 = new BigDecimal(111);
 		createProductPrice(product1, basePriceProduct1, originalBasePLV.getM_PriceList_Version_ID());
@@ -800,9 +794,9 @@ public class PriceListDAOTest
 		final boolean isAllowPriceMutation = true;
 		final boolean isCustomer = true;
 		createPartner("Customer1",
-				isAllowPriceMutation,
-				isCustomer,
-				customerPricingSystem.getM_PricingSystem_ID());
+					  isAllowPriceMutation,
+					  isCustomer,
+					  customerPricingSystem.getM_PricingSystem_ID());
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
@@ -813,9 +807,9 @@ public class PriceListDAOTest
 				EURO);
 
 		final I_M_PriceList_Version customerOldPLV = createPLV(customerPriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				-1,
-				originalBasePLV.getM_PriceList_Version_ID());
+															   oldValidFrom,
+															   -1,
+															   originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal customPriceProduct1 = new BigDecimal(1);
 		createProductPrice(product1, customPriceProduct1, customerOldPLV.getM_PriceList_Version_ID());
@@ -829,9 +823,9 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				de.metas.common.util.time.SystemTime.asDayTimestamp(),
-				baseSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+														   de.metas.common.util.time.SystemTime.asDayTimestamp(),
+														   baseSchema.getM_DiscountSchema_ID(),
+														   originalBasePLV.getM_PriceList_Version_ID());
 
 		createProductPrice(product1, basePriceProduct1.add(baseSurcharge1), newBasePLV.getM_PriceList_Version_ID());
 
@@ -856,7 +850,7 @@ public class PriceListDAOTest
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
-				ImmutableSet.of());
+																								   ImmutableSet.of());
 
 		final ImmutableList<I_M_ProductPrice> newProductPrices = newProductPricesStream.collect(ImmutableList.toImmutableList());
 
@@ -934,9 +928,9 @@ public class PriceListDAOTest
 		createSchemaLine(baseSchema, -1, product3.getM_Product_ID(), baseSurcharge3);
 
 		final I_M_PriceList_Version originalBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				baseSchema.getM_DiscountSchema_ID(),
-				-1);
+																oldValidFrom,
+																baseSchema.getM_DiscountSchema_ID(),
+																-1);
 
 		final BigDecimal basePriceProduct1 = new BigDecimal(111);
 		createProductPrice(product1, basePriceProduct1, originalBasePLV.getM_PriceList_Version_ID());
@@ -954,9 +948,9 @@ public class PriceListDAOTest
 		final boolean isAllowPriceMutation = true;
 		final boolean isCustomer = true;
 		createPartner("Customer1",
-				isAllowPriceMutation,
-				isCustomer,
-				customerPricingSystem.getM_PricingSystem_ID());
+					  isAllowPriceMutation,
+					  isCustomer,
+					  customerPricingSystem.getM_PricingSystem_ID());
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
@@ -978,9 +972,9 @@ public class PriceListDAOTest
 		createSchemaLine(customerSchema, -1, product3.getM_Product_ID(), customerSurcharge3);
 
 		final I_M_PriceList_Version customerOldPLV = createPLV(customerPriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				customerSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+															   oldValidFrom,
+															   customerSchema.getM_DiscountSchema_ID(),
+															   originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal customPriceProduct1 = new BigDecimal(1);
 		createProductPrice(product1, customPriceProduct1, customerOldPLV.getM_PriceList_Version_ID());
@@ -1002,9 +996,9 @@ public class PriceListDAOTest
 		createSchemaLine(customerIntermediateSchema, -1, product3.getM_Product_ID(), customerSurcharge3);
 
 		final I_M_PriceList_Version customerIntermediatePLV = createPLV(customerPriceList.getM_PriceList_ID(),
-				intermediateValidFrom,
-				customerIntermediateSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+																		intermediateValidFrom,
+																		customerIntermediateSchema.getM_DiscountSchema_ID(),
+																		originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal intermediateCustomPriceProduct1 = new BigDecimal(4);
 		createProductPrice(product1, intermediateCustomPriceProduct1, customerIntermediatePLV.getM_PriceList_Version_ID());
@@ -1018,9 +1012,9 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				de.metas.common.util.time.SystemTime.asDayTimestamp(),
-				baseSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+														   de.metas.common.util.time.SystemTime.asDayTimestamp(),
+														   baseSchema.getM_DiscountSchema_ID(),
+														   originalBasePLV.getM_PriceList_Version_ID());
 
 		createProductPrice(product1, basePriceProduct1.add(baseSurcharge1), newBasePLV.getM_PriceList_Version_ID());
 
@@ -1048,7 +1042,7 @@ public class PriceListDAOTest
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
-				ImmutableSet.of());
+																								   ImmutableSet.of());
 
 		final ImmutableList<I_M_ProductPrice> newProductPrices = newProductPricesStream.collect(ImmutableList.toImmutableList());
 
@@ -1137,9 +1131,9 @@ public class PriceListDAOTest
 		createSchemaLine(baseSchema, -1, product3.getM_Product_ID(), baseSurcharge3);
 
 		final I_M_PriceList_Version originalBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				baseSchema.getM_DiscountSchema_ID(),
-				-1);
+																oldValidFrom,
+																baseSchema.getM_DiscountSchema_ID(),
+																-1);
 
 		final BigDecimal basePriceProduct1 = new BigDecimal(111);
 		createProductPrice(product1, basePriceProduct1, originalBasePLV.getM_PriceList_Version_ID());
@@ -1157,9 +1151,9 @@ public class PriceListDAOTest
 		final boolean isAllowPriceMutation = false;
 		final boolean isCustomer = true;
 		createPartner("Customer1",
-				isAllowPriceMutation,
-				isCustomer,
-				customerPricingSystem.getM_PricingSystem_ID());
+					  isAllowPriceMutation,
+					  isCustomer,
+					  customerPricingSystem.getM_PricingSystem_ID());
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
@@ -1181,9 +1175,9 @@ public class PriceListDAOTest
 		createSchemaLine(customerSchema, -1, product3.getM_Product_ID(), customerSurcharge3);
 
 		final I_M_PriceList_Version customerOldPLV = createPLV(customerPriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				customerSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+															   oldValidFrom,
+															   customerSchema.getM_DiscountSchema_ID(),
+															   originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal customPriceProduct1 = new BigDecimal(1);
 		createProductPrice(product1, customPriceProduct1, customerOldPLV.getM_PriceList_Version_ID());
@@ -1197,9 +1191,9 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				de.metas.common.util.time.SystemTime.asDayTimestamp(),
-				baseSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+														   de.metas.common.util.time.SystemTime.asDayTimestamp(),
+														   baseSchema.getM_DiscountSchema_ID(),
+														   originalBasePLV.getM_PriceList_Version_ID());
 
 		createProductPrice(product1, basePriceProduct1.add(baseSurcharge1), newBasePLV.getM_PriceList_Version_ID());
 
@@ -1257,9 +1251,9 @@ public class PriceListDAOTest
 		createSchemaLine(baseSchema, productCategory3.getM_Product_Category_ID(), -1, baseSurcharge3);
 
 		final I_M_PriceList_Version originalBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				baseSchema.getM_DiscountSchema_ID(),
-				-1);
+																oldValidFrom,
+																baseSchema.getM_DiscountSchema_ID(),
+																-1);
 
 		final BigDecimal basePriceProduct1 = new BigDecimal(111);
 		createProductPrice(product1, basePriceProduct1, originalBasePLV.getM_PriceList_Version_ID());
@@ -1277,9 +1271,9 @@ public class PriceListDAOTest
 		final boolean isAllowPriceMutation = true;
 		final boolean isCustomer = true;
 		createPartner("Customer1",
-				isAllowPriceMutation,
-				isCustomer,
-				customerPricingSystem.getM_PricingSystem_ID());
+					  isAllowPriceMutation,
+					  isCustomer,
+					  customerPricingSystem.getM_PricingSystem_ID());
 
 		final I_M_PriceList customerPriceList = createPriceList(
 				customerPricingSystem,
@@ -1301,9 +1295,9 @@ public class PriceListDAOTest
 		createSchemaLine(customerSchema, productCategory3.getM_Product_Category_ID(), -1, customerSurcharge3);
 
 		final I_M_PriceList_Version customerOldPLV = createPLV(customerPriceList.getM_PriceList_ID(),
-				oldValidFrom,
-				customerSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+															   oldValidFrom,
+															   customerSchema.getM_DiscountSchema_ID(),
+															   originalBasePLV.getM_PriceList_Version_ID());
 
 		final BigDecimal customPriceProduct1 = new BigDecimal(1);
 		createProductPrice(product1, customPriceProduct1, customerOldPLV.getM_PriceList_Version_ID());
@@ -1317,9 +1311,9 @@ public class PriceListDAOTest
 		// Here starts the testing of the Price Mutation functionality
 
 		final I_M_PriceList_Version newBasePLV = createPLV(originalBasePriceList.getM_PriceList_ID(),
-				de.metas.common.util.time.SystemTime.asDayTimestamp(),
-				baseSchema.getM_DiscountSchema_ID(),
-				originalBasePLV.getM_PriceList_Version_ID());
+														   de.metas.common.util.time.SystemTime.asDayTimestamp(),
+														   baseSchema.getM_DiscountSchema_ID(),
+														   originalBasePLV.getM_PriceList_Version_ID());
 
 		createProductPrice(product1, basePriceProduct1.add(baseSurcharge1), newBasePLV.getM_PriceList_Version_ID());
 
@@ -1342,7 +1336,7 @@ public class PriceListDAOTest
 		assertThat(newestPriceListVersion.getValidFrom()).isEqualTo(de.metas.common.util.time.SystemTime.asDayTimestamp());
 
 		final Stream<I_M_ProductPrice> newProductPricesStream = priceListDAO.retrieveProductPrices(PriceListVersionId.ofRepoId(newestPriceListVersion.getM_PriceList_Version_ID()),
-				ImmutableSet.of());
+																								   ImmutableSet.of());
 
 		final ImmutableList<I_M_ProductPrice> newProductPrices = newProductPricesStream.collect(ImmutableList.toImmutableList());
 

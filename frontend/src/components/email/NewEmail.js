@@ -2,7 +2,6 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { List } from 'immutable';
 
 import { patchRequest } from '../../api';
 import { addNotification } from '../../actions/AppActions';
@@ -28,7 +27,7 @@ class NewEmail extends Component {
     this.state = {
       init: false,
       cached: {},
-      templates: List(),
+      templates: [],
       template: {},
       listFocused: true,
       listToggled: false,
@@ -80,7 +79,7 @@ class NewEmail extends Component {
   getTemplates = () => {
     getTemplates().then((res) => {
       this.setState({
-        templates: List(res.data.values),
+        templates: res.data.values,
       });
     });
   };
@@ -236,7 +235,7 @@ class NewEmail extends Component {
               <span className="email-headline">
                 {counterpart.translate('window.email.new')}
               </span>
-              {templates.size > 0 && (
+              {templates.length > 0 && (
                 <div className="email-templates">
                   <RawList
                     rank="primary"

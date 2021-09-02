@@ -1,5 +1,23 @@
 package org.adempiere.ad.expression.api.impl;
 
+import ch.qos.logback.core.joran.conditional.Condition;
+import com.google.common.base.Joiner;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.collect.ImmutableList;
+import de.metas.i18n.TranslatableParameterizedString;
+import de.metas.util.Check;
+import de.metas.util.GuavaCollectors;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.IStringExpressionWrapper;
+import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
+import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
+import org.compiere.util.CtxName;
+import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,26 +31,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-
-import javax.annotation.concurrent.Immutable;
-
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.IStringExpressionWrapper;
-import org.adempiere.ad.expression.api.TranslatableParameterizedStringExpression;
-import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.compiere.util.CtxName;
-import org.compiere.util.Evaluatee;
-
-import com.google.common.base.Joiner;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.core.joran.conditional.Condition;
-import de.metas.i18n.TranslatableParameterizedString;
-import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 
 /*
  * #%L
@@ -67,12 +65,12 @@ import de.metas.util.GuavaCollectors;
 @Immutable
 public final class CompositeStringExpression implements IStringExpression
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	private static final Collector<IStringExpression, ?, IStringExpression> toCompositeExpression()
+	private static Collector<IStringExpression, ?, IStringExpression> toCompositeExpression()
 	{
 		final Supplier<Builder> supplier = Builder::new;
 		final BiConsumer<Builder, IStringExpression> accumulator = (builder, expr) -> builder.append(expr);
@@ -175,6 +173,7 @@ public final class CompositeStringExpression implements IStringExpression
 		for (final IStringExpression expression : expressions)
 		{
 			final String value = expression.evaluate(ctx, onVariableNotFound);
+			//noinspection StringEquality
 			if (value == null || value == EMPTY_RESULT)
 			{
 				if (onVariableNotFound == OnVariableNotFound.ReturnNoResult)
@@ -224,7 +223,7 @@ public final class CompositeStringExpression implements IStringExpression
 	{
 		private final ArrayDeque<IStringExpression> expressions = new ArrayDeque<>();
 
-		private StringBuilder _lastConstantBuffer = null;
+		@Nullable private StringBuilder _lastConstantBuffer = null;
 
 		private Map<String, ConstantStringExpression> _constantsCache = null;
 
@@ -302,12 +301,9 @@ public final class CompositeStringExpression implements IStringExpression
 		}
 
 		/**
-		 *
-		 * @param lastExpression
-		 * @param expr
 		 * @return reduced expression or <code>null</code> if the expressions could not be reduced
 		 */
-		private final void reduceAndAppend(final IStringExpression expr)
+		private void reduceAndAppend(final IStringExpression expr)
 		{
 			if (expr instanceof ConstantStringExpression)
 			{
@@ -320,9 +316,9 @@ public final class CompositeStringExpression implements IStringExpression
 			expressions.add(expr);
 		}
 
-		public Builder append(final String constant)
+		public Builder append(@Nullable final String constant)
 		{
-			if (Check.isEmpty(constant))
+			if (constant == null || Check.isEmpty(constant))
 			{
 				return this;
 			}
@@ -332,7 +328,7 @@ public final class CompositeStringExpression implements IStringExpression
 			return this;
 		}
 
-		private final void appendToLastConstantBuffer(final String constant)
+		private void appendToLastConstantBuffer(final String constant)
 		{
 			if (_lastConstantBuffer == null)
 			{
@@ -341,7 +337,7 @@ public final class CompositeStringExpression implements IStringExpression
 			_lastConstantBuffer.append(constant);
 		}
 
-		private final void appendLastConstantIfPresent()
+		private void appendLastConstantIfPresent()
 		{
 			if (_lastConstantBuffer == null)
 			{
@@ -357,7 +353,7 @@ public final class CompositeStringExpression implements IStringExpression
 			_lastConstantBuffer = null;
 		}
 
-		private final ConstantStringExpression createConstantExpression(final String constant)
+		private ConstantStringExpression createConstantExpression(final String constant)
 		{
 			if (_constantsCache == null)
 			{
@@ -416,7 +412,7 @@ public final class CompositeStringExpression implements IStringExpression
 			return this;
 		}
 
-		public Builder appendIfNotEmpty(final String string)
+		public Builder appendIfNotEmpty(@Nullable final String string)
 		{
 			if (isEmpty())
 			{
@@ -461,8 +457,6 @@ public final class CompositeStringExpression implements IStringExpression
 		/**
 		 * Wraps the entire content of this builder using given wrapper.
 		 * After this method invocation the builder will contain only the wrapped expression.
-		 *
-		 * @param wrapper
 		 */
 		public Builder wrap(final IStringExpressionWrapper wrapper)
 		{
@@ -480,9 +474,6 @@ public final class CompositeStringExpression implements IStringExpression
 		/**
 		 * If the {@link Condition} is <code>true</code> then it wraps the entire content of this builder using given wrapper.
 		 * After this method invocation the builder will contain only the wrapped expression.
-		 *
-		 * @param condition
-		 * @param wrapper
 		 */
 		public Builder wrapIfTrue(final boolean condition, final IStringExpressionWrapper wrapper)
 		{

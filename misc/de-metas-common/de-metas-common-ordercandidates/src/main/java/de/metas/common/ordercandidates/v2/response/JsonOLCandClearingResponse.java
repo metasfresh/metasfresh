@@ -23,6 +23,7 @@
 package de.metas.common.ordercandidates.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Value;
 
@@ -30,6 +31,7 @@ import java.util.Map;
 
 @Value
 @Builder
+@JsonDeserialize(builder = JsonOLCandClearingResponse.JsonOLCandClearingResponseBuilder.class)
 public class JsonOLCandClearingResponse
 {
 	@JsonProperty("successfullyCleared")
