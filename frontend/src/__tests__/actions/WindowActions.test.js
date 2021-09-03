@@ -28,6 +28,7 @@ import {
   setPrintingOptions,
   resetPrintingOptions,
   togglePrintingOption,
+  setPendingAdvSearch,
 } from '../../actions/WindowActions';
 
 const createState = function (state = {}) {
@@ -445,6 +446,20 @@ describe('WindowActions thunks', () => {
       ];
 
       store.dispatch(togglePrintingOption('PRINTER_OPTS_IsPrintLogo'));
+      expect(store.getActions()).toEqual(expectedAction);
+    });
+
+    it('triggers action to set the pendingAdvSearch option', () => {
+      const state = createState();
+      const store = mockStore(state);
+      const expectedAction = [
+        {
+          type: ACTION_TYPES.SET_PENDING_ADV_SEARCH,
+          payload: true,
+        },
+      ];
+
+      store.dispatch(setPendingAdvSearch(true));
       expect(store.getActions()).toEqual(expectedAction);
     });
   });
