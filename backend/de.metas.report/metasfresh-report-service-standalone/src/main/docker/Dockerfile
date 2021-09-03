@@ -1,6 +1,6 @@
 
 #Note: I played with openjdk:8-jdk-alpine, but wasn't able to get even the entrypoint shell script to actually run
-FROM docker.metasfresh.com:6000/ubuntu:16.04
+FROM docker.metasfresh.com:6000/ubuntu:21.04
 
 # to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
 # that way we should get the latest updates since the release of our base image 
@@ -19,7 +19,7 @@ RUN apt update \
     && apt -y install netcat \
     && apt -y install postgresql-client-9.5 \
     && apt -y install curl \
-    && apt -y install openjdk-14-jdk-headless \
+    && apt -y install openjdk-17-jdk-headless \
     && apt -y install dos2unix \
     && apt -y install unzip \
     && apt -y autoremove \
