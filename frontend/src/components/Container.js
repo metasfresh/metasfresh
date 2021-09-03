@@ -33,7 +33,7 @@ class Container extends PureComponent {
       actions,
       showSidelist,
       siteName,
-      pendingAdvSearch, // indicator flag to show spinner while fetching data for the advanced search
+      showSpinner, // indicator flag to show spinner while fetching data for the advanced search
       connectionError,
       noMargin,
       entity,
@@ -110,9 +110,7 @@ class Container extends PureComponent {
 
         {connectionError && <ErrorScreen />}
 
-        {pendingAdvSearch && (
-          <SpinnerOverlay iconSize={100} spinnerType="modal" />
-        )}
+        {showSpinner && <SpinnerOverlay iconSize={100} spinnerType="modal" />}
 
         <div
           className={
@@ -296,7 +294,7 @@ Container.propTypes = {
   setRawModalTitle: PropTypes.any,
   windowId: PropTypes.string,
   hasComments: PropTypes.bool,
-  pendingAdvSearch: PropTypes.bool,
+  showSpinner: PropTypes.bool,
 };
 
 /**
@@ -314,7 +312,7 @@ const mapStateToProps = (state, { windowId }) => {
   return {
     notFound: master.notFound,
     connectionError: state.windowHandler.connectionError || false,
-    pendingAdvSearch: state.windowHandler.pendingAdvSearch || false,
+    showSpinner: state.windowHandler.showSpinner || false,
     pluginComponents: state.pluginsHandler.components,
     pluginModal: state.windowHandler.pluginModal,
     breadcrumb: state.menuHandler.breadcrumb,

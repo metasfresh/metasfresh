@@ -57,7 +57,7 @@ import {
   SET_INLINE_TAB_ADD_NEW,
   SET_INLINE_TAB_SHOW_MORE,
   SET_INLINE_TAB_ITEM_PROP,
-  SET_PENDING_ADV_SEARCH,
+  SET_SPINNER,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
@@ -109,7 +109,7 @@ const initialModalState = {
  */
 export const initialState = {
   connectionError: false,
-  pendingAdvSearch: false,
+  showSpinner: false,
   printingOptions: {},
   // TODO: this should be moved to a separate `modalHandler`
   modal: initialModalState,
@@ -750,10 +750,10 @@ export default function windowHandler(state = initialState, action) {
         },
       };
     }
-    case SET_PENDING_ADV_SEARCH: {
+    case SET_SPINNER: {
       return {
         ...state,
-        pendingAdvSearch: action.payload,
+        showSpinner: action.payload,
       };
     }
 

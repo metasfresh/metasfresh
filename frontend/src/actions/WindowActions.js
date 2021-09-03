@@ -44,7 +44,7 @@ import {
   SET_PRINTING_OPTIONS,
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
-  SET_PENDING_ADV_SEARCH,
+  SET_SPINNER,
 } from '../constants/ActionTypes';
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
@@ -535,7 +535,7 @@ export function createSearchWindow({
       dispatch(openRawModal({ windowId, viewId, title }));
     })
     .finally(() => {
-      dispatch(setPendingAdvSearch(false));
+      dispatch(setSpinner(false));
     });
 }
 
@@ -556,8 +556,8 @@ export function createWindow({
   let documentId = docId || 'NEW';
   return (dispatch) => {
     if (documentId === 'SEARCH') {
-      // set the pendingAdvSearch flag to true to show the spinner while data is fetched
-      dispatch(setPendingAdvSearch(true));
+      // set the `showSpinner` flag to true to show the spinner while data is fetched
+      dispatch(setSpinner(true));
 
       // use specific function for search window creation
       createSearchWindow({
@@ -1443,13 +1443,13 @@ export function togglePrintingOption(target) {
 }
 
 /**
- * @method setPendingAdvSearch
- * @summary - action. It sets the `pendingAdvSearch` in the store to the boolean value passed in the action
+ * @method setSpinner
+ * @summary - action. It sets the `showSpinner` in the store to the boolean value passed in the action
  * @param {boolean} data
  */
-export function setPendingAdvSearch(data) {
+export function setSpinner(data) {
   return {
-    type: SET_PENDING_ADV_SEARCH,
+    type: SET_SPINNER,
     payload: data,
   };
 }

@@ -28,7 +28,7 @@ import {
   setPrintingOptions,
   resetPrintingOptions,
   togglePrintingOption,
-  setPendingAdvSearch,
+  setSpinner,
 } from '../../actions/WindowActions';
 
 const createState = function (state = {}) {
@@ -449,17 +449,17 @@ describe('WindowActions thunks', () => {
       expect(store.getActions()).toEqual(expectedAction);
     });
 
-    it('triggers action to set the pendingAdvSearch option', () => {
+    it('triggers action to set the showSpinner option', () => {
       const state = createState();
       const store = mockStore(state);
       const expectedAction = [
         {
-          type: ACTION_TYPES.SET_PENDING_ADV_SEARCH,
+          type: ACTION_TYPES.SET_SPINNER,
           payload: true,
         },
       ];
 
-      store.dispatch(setPendingAdvSearch(true));
+      store.dispatch(setSpinner(true));
       expect(store.getActions()).toEqual(expectedAction);
     });
   });

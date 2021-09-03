@@ -410,6 +410,6 @@ export const TOGGLE_PRINTING_OPTION = 'TOGGLE_PRINTING_OPTION';
 
 /**
  * @constant
- * @type {string} used to set the boolean flag `pendingAdvSearch` in the store
+ * @type {string} used to set the boolean flag `showSpinner` in the store
  */
-export const SET_PENDING_ADV_SEARCH = 'SET_PENDING_ADV_SEARCH';
+export const SET_SPINNER = 'SET_SPINNER';
