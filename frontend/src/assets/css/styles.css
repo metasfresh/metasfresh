@@ -1648,8 +1648,7 @@ body{
     left:15%;
     top: 15%;
     width: 70%;
-    border: 1px solid lightgray;
-    border-radius: 5px;
+    background-color: transparent !important;
 }
 
 .paypal-reservation-container {
