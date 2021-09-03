@@ -530,10 +530,13 @@ export function createSearchWindow({
       refRowIds: [rowId],
       isModal,
     })
-  ).then(({ windowId, viewId }) => {
-    dispatch(setPendingAdvSearch(false));
-    dispatch(openRawModal({ windowId, viewId, title }));
-  });
+  )
+    .then(({ windowId, viewId }) => {
+      dispatch(openRawModal({ windowId, viewId, title }));
+    })
+    .finally(() => {
+      dispatch(setPendingAdvSearch(false));
+    });
 }
 
 /*
