@@ -60,7 +60,9 @@ import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
 import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
+import de.metas.report.StandardDocumentReportType;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -75,7 +77,6 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
-import de.metas.report.StandardDocumentReportType;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -213,16 +214,16 @@ public class MOrder extends X_C_Order implements IDocument
 		{
 			if (DocSubType == null || DocSubType.length() == 0)
 			{
-				orderBL.setDocTypeTargetId(this, DocSubType_OnCredit);
+				orderBL.setSODocTypeTargetId(this, DocSubType_OnCredit);
 			}
 			else
 			{
-				orderBL.setDocTypeTargetId(this, DocSubType);
+				orderBL.setSODocTypeTargetId(this, DocSubType);
 			}
 		}
 		else
 		{
-			orderBL.setDocTypeTargetId(this);
+			orderBL.setDefaultDocTypeTargetId(this);
 		}
 	}    // MOrder
 
@@ -399,17 +400,6 @@ public class MOrder extends X_C_Order implements IDocument
 	 * Sales Order Sub Type - RM
 	 */
 	public static final String DocSubType_RMA = "RM";
-
-	/**
-	 * Set Target Sales Document Type
-	 *
-	 * @param DocSubType_x SO sub type - see DocSubType_*
-	 */
-	@Deprecated
-	public void setC_DocTypeTarget_ID(final String DocSubType_x)
-	{
-		orderBL.setDocTypeTargetId(this, DocSubType_x);
-	}    // setC_DocTypeTarget_ID
 
 	/**
 	 * Set Business Partner Defaults & Details.
@@ -978,7 +968,8 @@ public class MOrder extends X_C_Order implements IDocument
 		// Default Document Type
 		if (getC_DocTypeTarget_ID() <= 0)
 		{
-			orderBL.setDocTypeTargetId(this, DocSubType_Standard);
+			setIsSOTrx(true);
+			orderBL.setSODocTypeTargetId(this, DocSubType_Standard);
 		}
 
 		// Default Payment Term
@@ -1502,7 +1493,7 @@ public class MOrder extends X_C_Order implements IDocument
 				for (final MTax cTax : cTaxes)
 				{
 					final CurrencyPrecision taxPrecision = orderBL.getTaxPrecision(this);
-					final boolean taxIncluded = orderBL.isTaxIncluded(this, cTax);
+					final boolean taxIncluded = orderBL.isTaxIncluded(this, TaxUtils.from(cTax));
 					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
 					//
 					final MOrderTax newOTax = new MOrderTax(getCtx(), 0, trxName);

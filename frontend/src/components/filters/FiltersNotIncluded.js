@@ -76,6 +76,7 @@ class FiltersNotIncluded extends PureComponent {
       modalVisible,
       activeFiltersCaptions,
       filterId,
+      allChildFiltersCleared,
     } = this.props;
     const { openFilterIdx } = this.state;
 
@@ -116,7 +117,7 @@ class FiltersNotIncluded extends PureComponent {
                   onClick={() => this.toggleFilter(index)}
                   className={cx(mainFilterClasses, {
                     ['btn-select']: openFilterIdx === index,
-                    ['btn-active']: isActive,
+                    ['btn-active']: isActive && !allChildFiltersCleared,
                     ['btn-distance']: !dateStepper,
                   })}
                   tabIndex={modalVisible ? -1 : 0}
@@ -156,6 +157,7 @@ class FiltersNotIncluded extends PureComponent {
                     outsideClick={this.outsideClick}
                     openedFilter={true}
                     filtersWrapper={this.props.filtersWrapper}
+                    allChildFiltersCleared={allChildFiltersCleared}
                   />
                 )}
               </div>
@@ -209,6 +211,7 @@ FiltersNotIncluded.propTypes = {
   widgetShown: PropTypes.any,
   dropdownToggled: PropTypes.any,
   filterId: PropTypes.string,
+  allChildFiltersCleared: PropTypes.bool, // indicator used to know when all the child filters of a filter were cleared
 };
 
 export default onClickOutside(FiltersNotIncluded);

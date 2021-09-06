@@ -13,6 +13,11 @@ CREATE OR REPLACE VIEW "de_metas_acct".accountable_docs_and_lines_v AS
            o.docstatus,
            o.posted,
            o.dateacct                                                                  AS dateacct,
+           o.ad_client_id                                                              AS ad_client_id,
+           o.ad_org_id                                                                 AS ad_org_id,
+           --
+           dt.c_doctype_id                                                             AS c_doctype_id,
+           dt.docbasetype                                                              AS docbasetype,
            --
            ol.m_product_id,
            o.c_currency_id,
@@ -21,6 +26,7 @@ CREATE OR REPLACE VIEW "de_metas_acct".accountable_docs_and_lines_v AS
            ol.qtyordered                                                               AS qty
     FROM c_orderline ol
              INNER JOIN c_order o ON ol.c_order_id = o.c_order_id
+             INNER JOIN c_doctype dt ON dt.c_doctype_id = o.c_doctype_id
 )
 UNION ALL
 (
@@ -34,6 +40,11 @@ UNION ALL
            i.docstatus,
            i.posted,
            i.dateacct                                                                  AS dateacct,
+           i.ad_client_id                                                              AS ad_client_id,
+           i.ad_org_id                                                                 AS ad_org_id,
+           --
+           dt.c_doctype_id                                                             AS c_doctype_id,
+           dt.docbasetype                                                              AS docbasetype,
            --
            il.m_product_id,
            i.c_currency_id,
@@ -42,6 +53,7 @@ UNION ALL
            il.qtyinvoiced                                                              AS qty
     FROM c_invoiceline il
              INNER JOIN c_invoice i ON il.c_invoice_id = i.c_invoice_id
+             INNER JOIN c_doctype dt ON dt.c_doctype_id = i.c_doctype_id
 )
 UNION ALL
 (
@@ -55,6 +67,11 @@ UNION ALL
            io.docstatus,
            io.posted,
            io.dateacct                                                                  AS dateacct,
+           io.ad_client_id                                                              AS ad_client_id,
+           io.ad_org_id                                                                 AS ad_org_id,
+           --
+           dt.c_doctype_id                                                              AS c_doctype_id,
+           dt.docbasetype                                                               AS docbasetype,
            --
            iol.m_product_id,
            NULL                                                                         AS c_currency_id,
@@ -63,6 +80,7 @@ UNION ALL
            iol.movementqty                                                              AS qty
     FROM m_inoutline iol
              INNER JOIN m_inout io ON iol.m_inout_id = io.m_inout_id
+             INNER JOIN c_doctype dt ON dt.c_doctype_id = io.c_doctype_id
 )
 UNION ALL
 (
@@ -76,6 +94,11 @@ UNION ALL
            'CO'                                                                        AS docstatus,
            mpo.posted,
            mpo.dateacct                                                                AS dateacct,
+           mpo.ad_client_id                                                            AS ad_client_id,
+           mpo.ad_org_id                                                               AS ad_org_id,
+           --
+           NULL                                                                        AS c_doctype_id,
+           'MXP'                                                                       AS docbasetype,
            --
            mpo.m_product_id,
            o.c_currency_id,
@@ -98,6 +121,11 @@ UNION ALL
            NULL                                                                        AS docstatus,
            mi.posted,
            mi.dateacct                                                                 AS dateacct,
+           mi.ad_client_id                                                             AS ad_client_id,
+           mi.ad_org_id                                                                AS ad_org_id,
+           --
+           NULL                                                                        AS c_doctype_id,
+           'MXI'                                                                       AS docbasetype,
            --
            mi.m_product_id,
            i.c_currency_id,
@@ -120,18 +148,24 @@ UNION ALL
            inv.docstatus,
            inv.posted,
            inv.movementdate                                                              AS dateacct,
+           inv.ad_client_id                                                              AS ad_client_id,
+           inv.ad_org_id                                                                 AS ad_org_id,
+           --
+           dt.c_doctype_id                                                               AS c_doctype_id,
+           dt.docbasetype                                                                AS docbasetype,
            --
            invl.m_product_id,
            NULL                                                                          AS c_currency_id,
            invl.costprice                                                                AS price,
            (SELECT p.c_uom_id FROM m_product p WHERE p.m_product_id = invl.m_product_id) AS c_uom_id,
            (CASE
-                WHEN coalesce(invl.qtyinternaluse, 0) != 0
+                WHEN COALESCE(invl.qtyinternaluse, 0) != 0
                     THEN invl.qtyinternaluse
                     ELSE invl.qtycount - invl.qtybook
             END)                                                                         AS qty
     FROM m_inventoryline invl
              INNER JOIN m_inventory inv ON invl.m_inventory_id = inv.m_inventory_id
+             INNER JOIN c_doctype dt ON dt.c_doctype_id = inv.c_doctype_id
 )
 UNION ALL
 (
@@ -145,6 +179,11 @@ UNION ALL
            m.docstatus,
            m.posted,
            m.movementdate                                                              AS dateacct,
+           m.ad_client_id                                                              AS ad_client_id,
+           m.ad_org_id                                                                 AS ad_org_id,
+           --
+           dt.c_doctype_id                                                             AS c_doctype_id,
+           dt.docbasetype                                                              AS docbasetype,
            --
            ml.m_product_id,
            NULL                                                                        AS c_currency_id,
@@ -153,6 +192,7 @@ UNION ALL
            ml.movementqty                                                              AS qty
     FROM m_movementline ml
              INNER JOIN m_movement m ON ml.m_movement_id = m.m_movement_id
+             INNER JOIN c_doctype dt ON dt.c_doctype_id = m.c_doctype_id
 )
 UNION ALL
 (
@@ -166,6 +206,11 @@ UNION ALL
            mo.docstatus    AS docstatus,
            mo.posted       AS posted,
            mo.dateordered  AS dateacct,
+           mo.ad_client_id AS ad_client_id,
+           mo.ad_org_id    AS ad_org_id,
+           --
+           dt.c_doctype_id AS c_doctype_id,
+           dt.docbasetype  AS docbasetype,
            --
            mo.m_product_id AS m_product_id,
            NULL            AS c_currency_id,
@@ -173,6 +218,7 @@ UNION ALL
            mo.c_uom_id     AS c_uom_id,
            mo.qtyordered   AS qty
     FROM pp_order mo
+             INNER JOIN c_doctype dt ON dt.c_doctype_id = mo.c_doctype_id
 )
 UNION ALL
 (
@@ -186,6 +232,11 @@ UNION ALL
            cc.docstatus            AS docstatus,
            cc.posted               AS posted,
            cc.dateacct             AS dateacct,
+           cc.ad_client_id         AS ad_client_id,
+           cc.ad_org_id            AS ad_org_id,
+           --
+           dt.c_doctype_id         AS c_doctype_id,
+           dt.docbasetype          AS docbasetype,
            --
            cc.m_product_id         AS m_product_id,
            NULL                    AS c_currency_id,
@@ -193,6 +244,7 @@ UNION ALL
            cc.c_uom_id             AS c_uom_id,
            cc.movementqty          AS qty
     FROM pp_cost_collector cc
+             INNER JOIN c_doctype dt ON dt.c_doctype_id = cc.c_doctype_id
 )
 ;
 

@@ -23,8 +23,8 @@
 package de.metas.camel.externalsystems.alberta.ordercandidate.processor;
 
 import de.metas.camel.externalsystems.alberta.ProcessorHelper;
-import de.metas.camel.externalsystems.alberta.patient.AlbertaConnectionDetails;
-import de.metas.camel.externalsystems.alberta.patient.DataMapper;
+import de.metas.camel.externalsystems.alberta.common.AlbertaConnectionDetails;
+import de.metas.camel.externalsystems.alberta.common.DataMapper;
 import de.metas.camel.externalsystems.alberta.patient.GetPatientsRouteConstants;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
@@ -135,7 +135,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 		{
 			final Doctor doctor = doctorApi.getDoctor(connectionDetails.getApiKey(), connectionDetails.getTenant(), doctorId);
 
-			return DataMapper.mapDoctorToUpsertRequest(doctor, null, orgCode);
+			return DataMapper.mapDoctorToUpsertRequest(doctor, orgCode);
 		}
 		catch (final ApiException e)
 		{
@@ -154,7 +154,7 @@ public class CreateMissingBPartnerProcessor implements Processor
 		{
 			final Pharmacy pharmacy = pharmacyApi.getPharmacy(connectionDetails.getApiKey(), connectionDetails.getTenant(), pharmacyId);
 
-			return DataMapper.mapPharmacyToUpsertRequest(pharmacy, null, orgCode);
+			return DataMapper.mapPharmacyToUpsertRequest(pharmacy, orgCode);
 		}
 		catch (final ApiException e)
 		{

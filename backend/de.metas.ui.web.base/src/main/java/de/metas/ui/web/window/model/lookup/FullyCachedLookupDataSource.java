@@ -1,24 +1,24 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Predicate;
-
-import org.compiere.model.I_AD_SysConfig;
-import org.compiere.util.Evaluatee;
-import org.compiere.util.Evaluatees;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.compiere.model.I_AD_SysConfig;
+import org.compiere.util.Evaluatee;
+import org.compiere.util.Evaluatees;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -44,7 +44,7 @@ import lombok.NonNull;
 
 class FullyCachedLookupDataSource implements LookupDataSource
 {
-	public static final FullyCachedLookupDataSource of(final LookupDataSourceFetcher fetcher)
+	public static FullyCachedLookupDataSource of(final LookupDataSourceFetcher fetcher)
 	{
 		return new FullyCachedLookupDataSource(fetcher);
 	}
@@ -63,7 +63,7 @@ class FullyCachedLookupDataSource implements LookupDataSource
 		Check.assumeNotEmpty(cachePrefix, "cachePrefix is not empty");
 		final int maxSize = 100;
 		final int expireAfterMinutes = 60 * 2;
-		cacheByPartition = CCache.<LookupDataSourceContext, LookupValuesList> builder()
+		cacheByPartition = CCache.<LookupDataSourceContext, LookupValuesList>builder()
 				.cacheName(cachePrefix + "#" + NAME + "#LookupByPartition")
 				.cacheMapType(CacheMapType.LRU)
 				.initialCapacity(maxSize)
@@ -82,36 +82,47 @@ class FullyCachedLookupDataSource implements LookupDataSource
 
 	private LookupValuesList getLookupValuesList(final Evaluatee parentEvaluatee)
 	{
-		final LookupDataSourceContext evalCtx = fetcher.newContextForFetchingList()
+		return cacheByPartition.getOrLoad(
+				createLookupDataSourceContext(parentEvaluatee),
+				evalCtx -> fetcher.retrieveEntities(evalCtx).getValues());
+	}
+
+	@NonNull
+	private LookupDataSourceContext createLookupDataSourceContext(final Evaluatee parentEvaluatee)
+	{
+		return fetcher.newContextForFetchingList()
 				.setParentEvaluatee(parentEvaluatee)
 				.putFilter(LookupDataSourceContext.FILTER_Any, FIRST_ROW, Integer.MAX_VALUE)
 				.build();
-
-		return cacheByPartition.getOrLoad(evalCtx, fetcher::retrieveEntities);
 	}
 
 	@Override
-	public LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
 		final LookupValuesList partition = getLookupValuesList(ctx);
 		if (partition.isEmpty())
 		{
-			return partition;
+			return LookupValuesPage.EMPTY;
 		}
 
 		final Predicate<LookupValue> filterPredicate = LookupValueFilterPredicates.of(filter);
+		final LookupValuesList allMatchingValues;
 		if (filterPredicate == LookupValueFilterPredicates.MATCH_ALL)
 		{
-			return partition.offsetAndLimit(firstRow, pageLength);
+			allMatchingValues = partition;
+		}
+		else
+		{
+			allMatchingValues = partition.filter(filterPredicate);
 		}
 
-		return partition.filter(filterPredicate, firstRow, pageLength);
+		return allMatchingValues.pageByOffsetAndLimit(firstRow, pageLength);
 	}
 
 	@Override
-	public LookupValuesList findEntities(final Evaluatee ctx, final int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final int pageLength)
 	{
-		return getLookupValuesList(ctx).limit(pageLength);
+		return findEntities(ctx, null, 0, pageLength);
 	}
 
 	@Override
@@ -128,10 +139,24 @@ class FullyCachedLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public DocumentZoomIntoInfo getDocumentZoomInto(int id)
+	public @NonNull LookupValuesList findByIdsOrdered(@NonNull final Collection<?> ids)
+	{
+		final ImmutableList<Object> idsNormalized = LookupValue.normalizeIds(ids, fetcher.isNumericKey());
+		if (idsNormalized.isEmpty())
+		{
+			return LookupValuesList.EMPTY;
+		}
+
+		final LookupValuesList partition = getLookupValuesList(Evaluatees.empty());
+		return partition.getByIdsInOrder(idsNormalized);
+	}
+
+
+	@Override
+	public DocumentZoomIntoInfo getDocumentZoomInto(final int id)
 	{
 		final String tableName = fetcher.getLookupTableName()
-				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to " + DocumentZoomIntoInfo.class + " because the fetcher returned null tablename: " + fetcher));
+				.orElseThrow(() -> new IllegalStateException("Failed converting id=" + id + " to " + DocumentZoomIntoInfo.class + " because the fetcher returned null TableName: " + fetcher));
 
 		return DocumentZoomIntoInfo.of(tableName, id);
 	}

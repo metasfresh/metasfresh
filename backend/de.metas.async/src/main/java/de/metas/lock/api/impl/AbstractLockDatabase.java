@@ -24,6 +24,7 @@ package de.metas.lock.api.impl;
 
 import java.util.Iterator;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
@@ -55,23 +56,21 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	protected final transient Logger logger = LogManager.getLogger(getClass());
 
 	/** Asserts given lock owner is a valid owner to be used on for Locks */
-	protected static final void assertValidLockOwner(final LockOwner lockOwner)
+	protected static void assertValidLockOwner(@NonNull final LockOwner lockOwner)
 	{
 		// NOTE: LockOwner.ANY is not tolerated because that's a filter criteria and not a LockOwner that we could use for assigning
-
-		Check.assumeNotNull(lockOwner, "Lock owner shall not be null");
-		Check.assumeNotNull(lockOwner.isRealOwnerOrNoOwner(), "Lock owner shall be real owner or no owner but it was {}", lockOwner);
+		Check.assume(lockOwner.isRealOwnerOrNoOwner(), "Lock owner shall be real owner or no owner but it was {}", lockOwner);
 	}
 
 	@Override
-	public final boolean isLocked(final Class<?> modelClass, final int recordId, LockOwner lockOwner)
+	public final boolean isLocked(final Class<?> modelClass, final int recordId, final LockOwner lockOwner)
 	{
 		final int adTableId = InterfaceWrapperHelper.getTableId(modelClass);
 		return isLocked(adTableId, recordId, lockOwner);
 	}
 
 	@Override
-	public final boolean isLocked(final Object model, LockOwner lockOwner)
+	public final boolean isLocked(final Object model, final LockOwner lockOwner)
 	{
 		Check.assume(model != null, "model not null");
 
@@ -137,7 +136,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	 *
 	 * @return how many records were locked
 	 */
-	private final int lockByIterator(final ILockCommand lockCommand)
+	private int lockByIterator(@NonNull final ILockCommand lockCommand)
 	{
 		final Iterator<TableRecordReference> records = lockCommand.getRecordsToLockIterator();
 		Check.assumeNotNull(records, "records not null");
@@ -184,8 +183,6 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	/**
 	 * Locks a single record.
 	 *
-	 * @param lockCommand
-	 * @param record
 	 * @return
 	 *         <ul>
 	 *         <li><code>true</code> if record was locked
@@ -198,8 +195,6 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	/**
 	 * Change the lock of given record.
 	 *
-	 * @param lockCommand
-	 * @param record
 	 * @return true if lock was changed
 	 */
 	protected abstract boolean changeLockRecord(final ILockCommand lockCommand, final TableRecordReference record);
@@ -242,7 +237,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 
 	protected abstract int unlockByOwner(final IUnlockCommand unlockCommand);
 
-	private final int unlockByIterator(IUnlockCommand unlockCommand)
+	private int unlockByIterator(final IUnlockCommand unlockCommand)
 	{
 		final Iterator<TableRecordReference> records = unlockCommand.getRecordsToUnlockIterator();
 		Check.assumeNotNull(records, "records not null");
@@ -303,7 +298,7 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 		// DB-client before we could lock it. This means that we are either too slow to do anything meaningful at all
 		// or that there are already way too many clients attempting to find work on this table
 		logger.info("Unable to select and lock a record in {} after {} retries."
-				+ ". Giving up, because we are either too slow or there are too many concurent DB clients looking for work.", new Object[] { query.getTableName(), maxLockRetries });
+				+ ". Giving up, because we are either too slow or there are too many concurent DB clients looking for work.", query.getTableName(), maxLockRetries);
 
 		return null;
 	}
@@ -332,11 +327,9 @@ public abstract class AbstractLockDatabase implements ILockDatabase
 	}
 
 	/**
-	 *
-	 * @param allowAdditionalLocks
 	 * @return <code>true</code> if the given <code>allowAdditionalLocks</code> is <code>FOR_DIFFERENT_OWNERS</code>.
 	 */
-	protected static final boolean isAllowMultipleOwners(final AllowAdditionalLocks allowAdditionalLocks)
+	protected static boolean isAllowMultipleOwners(final AllowAdditionalLocks allowAdditionalLocks)
 	{
 		return allowAdditionalLocks == AllowAdditionalLocks.FOR_DIFFERENT_OWNERS;
 	}

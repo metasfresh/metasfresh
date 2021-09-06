@@ -1,13 +1,13 @@
 package de.metas.banking;
 
-import javax.annotation.Nullable;
-
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -41,7 +41,7 @@ public class BankAccount
 	@NonNull
 	BankAccountId id;
 
-	@NonNull
+	@Nullable // C_BP_BankAccount.C_Bank_ID is not mandatory!
 	BankId bankId;
 
 	@Nullable
@@ -67,13 +67,16 @@ public class BankAccount
 
 	@NonNull
 	OrgId orgId;
+
+	@Nullable
+	String routingNo;
 	
 	
 	public boolean isAccountNoMatching(@NonNull final String accountNo) 
 	{
-		final String QR_IBAN = StringUtils.cleanWhitespace(getQR_IBAN());
-		final String IBAN = StringUtils.cleanWhitespace(getIBAN());
-		final String SEPA_CreditorIdentifier = StringUtils.cleanWhitespace(getSEPA_CreditorIdentifier());
+		final String QR_IBAN = StringUtils.trimBlankToNull(getQR_IBAN());
+		final String IBAN = StringUtils.trimBlankToNull(getIBAN());
+		final String SEPA_CreditorIdentifier = StringUtils.trimBlankToNull(getSEPA_CreditorIdentifier());
 		
 		final String postAcctNoCleaned = StringUtils.cleanWhitespace(accountNo);
 		

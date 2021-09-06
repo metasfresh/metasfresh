@@ -4,6 +4,7 @@
     "requestItems": [
       {
         "bpartnerIdentifier": "ext-ALBERTA-doctorId",
+        "externalVersion": null,
         "bpartnerComposite": {
           "orgCode": "001",
           "bpartner": {
@@ -43,6 +44,8 @@
             "globalIdset": false,
             "vatId": null,
             "vatIdSet": false,
+            "memo": null,
+            "memoIsSet": false,
             "syncAdvise": null,
             "syncAdviseSet": false
           },
@@ -50,6 +53,7 @@
             "requestItems": [
               {
                 "locationIdentifier": "ext-ALBERTA-doctorId",
+                "externalVersion": null,
                 "location": {
                   "active": null,
                   "activeSet": false,
@@ -86,9 +90,7 @@
                   "billTo": true,
                   "billToSet": true,
                   "billToDefault": true,
-                  "billToDefaultSet": true,
-                  "syncAdvise": null,
-                  "syncAdviseSet": false
+                  "billToDefaultSet": true
                 }
               }
             ],
@@ -105,8 +107,8 @@
                   "codeSet": false,
                   "active": null,
                   "activeSet": false,
-                  "name": null,
-                  "nameSet": false,
+                  "name": "first name last name",
+                  "nameSet": true,
                   "firstName": "first name",
                   "firstNameSet": true,
                   "lastName": "last name",
@@ -139,8 +141,18 @@
                   "purchaseDefaultSet": false,
                   "subjectMatter": null,
                   "subjectMatterSet": false,
+                  "birthday": null,
+                  "birthdaySet": false,
                   "syncAdvise": null,
                   "syncAdviseSet": false
+                },
+                "jsonAlbertaContact": {
+                  "gender": "2",
+                  "genderSet": true,
+                  "title": null,
+                  "titleSet": true,
+                  "timestamp": null,
+                  "timestampSet": false
                 }
               }
             ],
@@ -148,11 +160,27 @@
               "ifNotExists": "CREATE",
               "ifExists": "UPDATE_MERGE"
             }
+          },
+          "compositeAlbertaBPartner": {
+            "jsonAlbertaBPartner": {
+              "isArchived": null,
+              "archivedSet": false,
+              "title": "Dr. med.",
+              "titleSet": true,
+              "titleShort": "Dr.",
+              "titleShortSet": true,
+              "timestamp": 1574086107.814000000,
+              "timestampSet": true
+            },
+            "role": "PhysicianDoctor",
+            "jsonAlbertaPatient": null,
+            "jsonAlbertaCareGivers": null
           }
         }
       },
       {
         "bpartnerIdentifier": "ext-ALBERTA-pharmacyId",
+        "externalVersion": null,
         "bpartnerComposite": {
           "orgCode": "001",
           "bpartner": {
@@ -181,7 +209,7 @@
             "invoiceRule": null,
             "invoiceRuleSet": false,
             "url": null,
-            "urlSet": false,
+            "urlSet": true,
             "url2": null,
             "url2Set": false,
             "url3": null,
@@ -192,6 +220,8 @@
             "globalIdset": false,
             "vatId": null,
             "vatIdSet": false,
+            "memo": null,
+            "memoIsSet": false,
             "syncAdvise": null,
             "syncAdviseSet": false
           },
@@ -199,6 +229,7 @@
             "requestItems": [
               {
                 "locationIdentifier": "ext-ALBERTA-pharmacyId",
+                "externalVersion": null,
                 "location": {
                   "active": null,
                   "activeSet": false,
@@ -235,13 +266,84 @@
                   "billTo": true,
                   "billToSet": true,
                   "billToDefault": true,
-                  "billToDefaultSet": true,
-                  "syncAdvise": null,
-                  "syncAdviseSet": false
+                  "billToDefaultSet": true
                 }
               }
             ],
             "syncAdvise": null
+          },
+          "contacts": {
+            "requestItems": [
+              {
+                "contactIdentifier": "ext-ALBERTA-pharmacyId",
+                "contact": {
+                  "metasfreshBPartnerId": null,
+                  "metasfreshBPartnerIdSet": false,
+                  "code": null,
+                  "codeSet": false,
+                  "active": null,
+                  "activeSet": false,
+                  "name": "Neue Test-Apotheke",
+                  "nameSet": true,
+                  "firstName": null,
+                  "firstNameSet": false,
+                  "lastName": null,
+                  "lastNameSet": false,
+                  "email": "testapotheke@example.com",
+                  "emailSet": true,
+                  "phone": "1212",
+                  "phoneSet": true,
+                  "fax": null,
+                  "faxSet": true,
+                  "mobilePhone": null,
+                  "mobilePhoneSet": false,
+                  "defaultContact": null,
+                  "defaultContactSet": false,
+                  "shipToDefault": null,
+                  "shipToDefaultSet": false,
+                  "billToDefault": null,
+                  "billToDefaultSet": false,
+                  "newsletter": null,
+                  "newsletterSet": false,
+                  "description": null,
+                  "descriptionSet": false,
+                  "sales": null,
+                  "salesSet": false,
+                  "salesDefault": null,
+                  "salesDefaultSet": false,
+                  "purchase": null,
+                  "purchaseSet": false,
+                  "purchaseDefault": null,
+                  "purchaseDefaultSet": false,
+                  "subjectMatter": null,
+                  "subjectMatterSet": false,
+                  "birthday": null,
+                  "birthdaySet": false,
+                  "syncAdvise": null,
+                  "syncAdviseSet": false
+                },
+                "jsonAlbertaContact": null
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          },
+          "compositeAlbertaBPartner": {
+            "jsonAlbertaBPartner": {
+              "isArchived": null,
+              "archivedSet": false,
+              "title": null,
+              "titleSet": false,
+              "titleShort": null,
+              "titleShortSet": false,
+              "timestamp": 1531302775.235000000,
+              "timestampSet": true
+            },
+            "role": "Pharmacy",
+            "jsonAlbertaPatient": null,
+            "jsonAlbertaCareGivers": null
           }
         }
       }

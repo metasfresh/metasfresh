@@ -131,17 +131,15 @@ public class PaymentAndInvoiceRowsRepo
 			@NonNull final List<PaymentToAllocate> paymentsToAllocate,
 			@NonNull final ZonedDateTime evaluationDate)
 	{
-		final ImmutableList<PaymentRow> rowsMaybeEmpty = paymentsToAllocate
+		final ImmutableList<PaymentRow> rows = paymentsToAllocate
 				.stream()
 				.map(this::toPaymentRow)
 				.collect(ImmutableList.toImmutableList());
 
-		final ImmutableList<PaymentRow> rowsNotEmpty = dontAllowEmptyPaymentRowsWorkaround(rowsMaybeEmpty);
-
 		return PaymentRows.builder()
 				.repository(this)
 				.evaluationDate(evaluationDate)
-				.initialRows(rowsNotEmpty)
+				.initialRows(rows)
 				.build();
 	}
 
@@ -258,6 +256,7 @@ public class PaymentAndInvoiceRowsRepo
 					.orgId(invoiceToAllocate.getClientAndOrgId().getOrgId())
 					.evaluationDate(loadingContext.getEvaluationDate())
 					.customerId(invoiceToAllocate.getBpartnerId())
+					.docTypeId(invoiceToAllocate.getDocTypeId())
 					.invoiceId(invoiceId)
 					.invoiceGrandTotal(invoiceToAllocate.getGrandTotal())
 					.serviceInvoiceWasAlreadyGenerated(OptionalBoolean.ofBoolean(serviceInvoiceAlreadyGenerated))
@@ -320,34 +319,10 @@ public class PaymentAndInvoiceRowsRepo
 				.additionalPaymentIdsToInclude(paymentIds)
 				.build();
 
-		final ImmutableList<PaymentRow> paymentRowsMaybeEmpty = paymentAllocationRepo.retrievePaymentsToAllocate(query)
+		return paymentAllocationRepo.retrievePaymentsToAllocate(query)
 				.stream()
 				.map(this::toPaymentRow)
 				.collect(ImmutableList.toImmutableList());
-
-		return dontAllowEmptyPaymentRowsWorkaround(paymentRowsMaybeEmpty);
-	}
-
-	/**
-	 * Problem: the right table (invoices) is an includedView of the main table row (payments - left table).
-	 * <p>
-	 * If there are no payments, the invoices table is not shown even if we have invoices.
-	 * Solution (workaround): this dummy row is needed because we want to display the right table (invoices) at all times
-	 *
-	 * @see PaymentRow#isSingleColumn()
-	 * @see PaymentRow#getSingleColumnCaption()
-	 */
-	@NonNull
-	private ImmutableList<PaymentRow> dontAllowEmptyPaymentRowsWorkaround(final ImmutableList<PaymentRow> rowsMaybeEmpty)
-	{
-		if (rowsMaybeEmpty.isEmpty())
-		{
-			return ImmutableList.of(PaymentRow.DEFAULT_PAYMENT_ROW);
-		}
-		else
-		{
-			return rowsMaybeEmpty;
-		}
 	}
 
 	public Optional<PaymentRow> getPaymentRowByPaymentId(

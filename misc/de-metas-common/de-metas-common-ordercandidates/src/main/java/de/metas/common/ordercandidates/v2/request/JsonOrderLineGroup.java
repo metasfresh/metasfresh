@@ -30,6 +30,8 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+import java.math.BigDecimal;
+
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 @Value
@@ -38,16 +40,28 @@ public class JsonOrderLineGroup
 	@ApiModelProperty(value = "All JsonOLCandCreateRequests with the same ExternalHeaderId and the same groupId shall belong to the same bundle (compensation-group)")
 	@JsonInclude(NON_NULL)
 	String groupKey;
-	@ApiModelProperty(value = "If true, marks the associated as the \"main\" product")
+	@ApiModelProperty(value = "If true, marks the associated as the \"main\" product. Should only be set to true for non-stocked products.")
 	@JsonInclude(NON_NULL)
 	boolean isGroupMainItem;
 
+	@ApiModelProperty( //
+			value = "Translates to C_OLCand.GroupCompensationDiscountPercentage")
+	@JsonInclude(NON_NULL)
+	BigDecimal discount;
+
 	@Builder
 	public JsonOrderLineGroup(@JsonProperty("groupKey") final @Nullable String groupKey,
-			@JsonProperty("groupMainItem") final boolean isGroupMainItem)
+			@JsonProperty("groupMainItem") final boolean isGroupMainItem,
+			@JsonProperty("discount") final @Nullable BigDecimal discount)
 	{
+
+		if (!isGroupMainItem && discount != null)
+		{
+			throw new RuntimeException("Discount can only be set for the group's main item! (i.e. groupMainItem = true ) ");
+		}
 
 		this.groupKey = groupKey;
 		this.isGroupMainItem = isGroupMainItem;
+		this.discount = discount;
 	}
 }

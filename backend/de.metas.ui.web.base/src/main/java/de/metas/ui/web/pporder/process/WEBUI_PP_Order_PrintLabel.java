@@ -56,6 +56,7 @@ import de.metas.ui.web.pporder.PPOrderLineRow;
 import de.metas.ui.web.pporder.PPOrderLineType;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
+import org.springframework.core.io.ByteArrayResource;
 
 public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implements IProcessPrecondition
 {
@@ -92,7 +93,7 @@ public class WEBUI_PP_Order_PrintLabel extends WEBUI_PP_Order_Template implement
 		final ReportResult label = printLabel();
 
 		// preview
-		getResult().setReportData(label.getReportContent(), buildFilename(), OutputType.PDF.getContentType());
+		getResult().setReportData(new ByteArrayResource(label.getReportContent()), buildFilename(), OutputType.PDF.getContentType());
 
 		return MSG_OK;
 

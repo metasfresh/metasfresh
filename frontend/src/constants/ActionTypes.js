@@ -5,6 +5,7 @@ export * from './actions/TabTypes';
 export * from './actions/FilterTypes';
 export * from './actions/Actions';
 export * from './actions/InlineTabTypes';
+export * from './actions/WindowActions';
 
 /**
  * @constant
@@ -202,6 +203,12 @@ export const DRAGGABLE_CARD = 'DRAGGABLE_CARD';
  * @type {string} ToDo: Description for the constant.
  */
 export const NEW_PROCESS_SUCCESS = 'NEW_PROCESS_SUCCESS';
+
+/**
+ * @constant
+ * @type {string} ToDo: Description for the constant.
+ */
+export const GET_NOTIFICATIONS_REQUEST = 'GET_NOTIFICATIONS_REQUEST';
 
 /**
  * @constant

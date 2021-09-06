@@ -20,6 +20,7 @@ import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
@@ -158,4 +159,6 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	void attachPhoto(I_M_ReceiptSchedule receiptSchedule, String filename, BufferedImage image);
 
 	void generateHUsIfNeeded(I_M_ReceiptSchedule receiptSchedule, Properties context);
+
+	void adjustPlanningHUStorageFromNetWeight(IAttributeSet attributeSet);
 }

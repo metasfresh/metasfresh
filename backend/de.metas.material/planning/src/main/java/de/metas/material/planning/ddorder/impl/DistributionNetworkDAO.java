@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -53,10 +54,8 @@ import de.metas.util.Services;
 public class DistributionNetworkDAO implements IDistributionNetworkDAO
 {
 	@Override
-	public List<I_DD_NetworkDistributionLine> retrieveAllNetworkLines(final I_DD_NetworkDistribution distributionNetwork)
+	public List<I_DD_NetworkDistributionLine> retrieveAllNetworkLines(@NonNull final I_DD_NetworkDistribution distributionNetwork)
 	{
-		Check.assumeNotNull(distributionNetwork, MrpException.class, "distributionNetwork not null");
-
 		final int distributionNetworkId = distributionNetwork.getDD_NetworkDistribution_ID();
 		final Properties ctx = InterfaceWrapperHelper.getCtx(distributionNetwork);
 		final String trxName = InterfaceWrapperHelper.getTrxName(distributionNetwork);

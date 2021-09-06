@@ -37,6 +37,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestContactUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import lombok.Builder;
 import lombok.NonNull;
@@ -47,6 +48,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.BILL_TO_SUFFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.EXTERNAL_ID_PREFIX;
@@ -83,6 +85,9 @@ public class BPartnerUpsertRequestProducer
 	@NonNull
 	BPartnerRequestProducerResult.BPartnerRequestProducerResultBuilder resultBuilder;
 
+	@Nullable
+	JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping;
+
 	@Builder
 	public BPartnerUpsertRequestProducer(
 			@NonNull final String orgCode,
@@ -91,7 +96,8 @@ public class BPartnerUpsertRequestProducer
 			@NonNull final JsonOrderAddressAndCustomId shippingAddress,
 			@NonNull final String billingAddressId,
 			@Nullable final String bPartnerLocationIdentifierCustomPath,
-			@NonNull final String externalBPartnerId)
+			@NonNull final String externalBPartnerId,
+			@Nullable final JsonExternalSystemShopware6ConfigMapping matchingShopware6Mapping)
 	{
 		this.orgCode = orgCode;
 		this.shopwareClient = shopwareClient;
@@ -100,6 +106,7 @@ public class BPartnerUpsertRequestProducer
 		this.billingAddressId = billingAddressId;
 		this.bPartnerLocationIdentifierCustomPath = bPartnerLocationIdentifierCustomPath;
 		this.externalBPartnerId = externalBPartnerId;
+		this.matchingShopware6Mapping = matchingShopware6Mapping;
 		this.countryIdToISOCode = new HashMap<>();
 		this.resultBuilder = BPartnerRequestProducerResult.builder();
 	}
@@ -135,6 +142,12 @@ public class BPartnerUpsertRequestProducer
 		jsonRequestBPartner.setCompanyName(orderCustomer.getCompany());
 		jsonRequestBPartner.setCode(asExternalIdentifier(orderCustomer.getCustomerNumber()));
 		jsonRequestBPartner.setCustomer(true);
+
+		if (matchingShopware6Mapping != null)
+		{
+			jsonRequestBPartner.setSyncAdvise(matchingShopware6Mapping.getBPartnerSyncAdvice());
+		}
+
 		// jsonRequestBPartner.setEmail(orderCustomer.getEmail()) todo
 
 		return jsonRequestBPartner;
@@ -144,15 +157,27 @@ public class BPartnerUpsertRequestProducer
 	private JsonRequestContactUpsert getUpsertContactRequest()
 	{
 		final JsonRequestContact contactRequest = new JsonRequestContact();
+		contactRequest.setName(new StringJoiner(" ").add(orderCustomer.getFirstName()).add(orderCustomer.getLastName()).toString());
 		contactRequest.setFirstName(orderCustomer.getFirstName());
 		contactRequest.setLastName(orderCustomer.getLastName());
 		contactRequest.setEmail(orderCustomer.getEmail());
+
+		final Boolean isInvoiceEmailEnabled = matchingShopware6Mapping != null
+				? matchingShopware6Mapping.getInvoiceEmailEnabled()
+				: null;
+
+		contactRequest.setInvoiceEmailEnabled(isInvoiceEmailEnabled);
+
+		final SyncAdvise customBPartnerSyncAdvice = matchingShopware6Mapping != null
+				? matchingShopware6Mapping.getBPartnerSyncAdvice()
+				: null;
 
 		return JsonRequestContactUpsert.builder()
 				.requestItem(JsonRequestContactUpsertItem.builder()
 									 .contactIdentifier(asExternalIdentifier(externalBPartnerId))
 									 .contact(contactRequest)
 									 .build())
+				.syncAdvise(customBPartnerSyncAdvice)
 				.build();
 	}
 
@@ -165,6 +190,11 @@ public class BPartnerUpsertRequestProducer
 		if (!billingAddressId.equals(shippingAddress.getJsonOrderAddress().getId()))
 		{
 			upsertLocationsRequestBuilder.requestItem(getUpsertLocationItemRequest(shippingAddress, false, true));
+		}
+
+		if (matchingShopware6Mapping != null)
+		{
+			upsertLocationsRequestBuilder.syncAdvise(matchingShopware6Mapping.getBPartnerLocationSyncAdvice());
 		}
 
 		return upsertLocationsRequestBuilder.build();

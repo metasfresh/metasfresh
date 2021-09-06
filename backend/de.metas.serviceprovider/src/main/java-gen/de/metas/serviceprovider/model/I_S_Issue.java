@@ -1,18 +1,20 @@
 package de.metas.serviceprovider.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for S_Issue
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_S_Issue 
 {
 
-    /** TableName=S_Issue */
-    public static final String Table_Name = "S_Issue";
+	String Table_Name = "S_Issue";
 
-    /** AD_Table_ID=541468 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541468 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -23,10 +25,9 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
 	 * Set Organisation.
@@ -36,7 +37,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
 	 * Get Organisation.
@@ -46,10 +47,9 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Contact.
@@ -59,7 +59,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_User_ID (int AD_User_ID);
+	void setAD_User_ID (int AD_User_ID);
 
 	/**
 	 * Get Contact.
@@ -69,10 +69,9 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_User_ID();
+	int getAD_User_ID();
 
-    /** Column name AD_User_ID */
-    public static final String COLUMNNAME_AD_User_ID = "AD_User_ID";
+	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
 	 * Set Aggregated effort (H:mm).
@@ -82,7 +81,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAggregatedEffort (java.lang.String AggregatedEffort);
+	void setAggregatedEffort (@Nullable java.lang.String AggregatedEffort);
 
 	/**
 	 * Get Aggregated effort (H:mm).
@@ -92,12 +91,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getAggregatedEffort();
+	@Nullable java.lang.String getAggregatedEffort();
 
-    /** Column definition for AggregatedEffort */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_AggregatedEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "AggregatedEffort", null);
-    /** Column name AggregatedEffort */
-    public static final String COLUMNNAME_AggregatedEffort = "AggregatedEffort";
+	ModelColumn<I_S_Issue, Object> COLUMN_AggregatedEffort = new ModelColumn<>(I_S_Issue.class, "AggregatedEffort", null);
+	String COLUMNNAME_AggregatedEffort = "AggregatedEffort";
 
 	/**
 	 * Set Budgeted.
@@ -107,7 +104,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setBudgetedEffort (java.math.BigDecimal BudgetedEffort);
+	void setBudgetedEffort (@Nullable BigDecimal BudgetedEffort);
 
 	/**
 	 * Get Budgeted.
@@ -117,12 +114,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getBudgetedEffort();
+	BigDecimal getBudgetedEffort();
 
-    /** Column definition for BudgetedEffort */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_BudgetedEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "BudgetedEffort", null);
-    /** Column name BudgetedEffort */
-    public static final String COLUMNNAME_BudgetedEffort = "BudgetedEffort";
+	ModelColumn<I_S_Issue, Object> COLUMN_BudgetedEffort = new ModelColumn<>(I_S_Issue.class, "BudgetedEffort", null);
+	String COLUMNNAME_BudgetedEffort = "BudgetedEffort";
 
 	/**
 	 * Set Project.
@@ -132,7 +127,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Project_ID (int C_Project_ID);
+	void setC_Project_ID (int C_Project_ID);
 
 	/**
 	 * Get Project.
@@ -142,10 +137,9 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Project_ID();
+	int getC_Project_ID();
 
-    /** Column name C_Project_ID */
-    public static final String COLUMNNAME_C_Project_ID = "C_Project_ID";
+	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
 	 * Get Created.
@@ -155,12 +149,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_S_Issue, Object> COLUMN_Created = new ModelColumn<>(I_S_Issue.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
 	 * Get Created By.
@@ -170,10 +162,9 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Delivered date.
@@ -182,7 +173,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveredDate (java.sql.Timestamp DeliveredDate);
+	void setDeliveredDate (@Nullable java.sql.Timestamp DeliveredDate);
 
 	/**
 	 * Get Delivered date.
@@ -191,12 +182,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDeliveredDate();
+	@Nullable java.sql.Timestamp getDeliveredDate();
 
-    /** Column definition for DeliveredDate */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_DeliveredDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "DeliveredDate", null);
-    /** Column name DeliveredDate */
-    public static final String COLUMNNAME_DeliveredDate = "DeliveredDate";
+	ModelColumn<I_S_Issue, Object> COLUMN_DeliveredDate = new ModelColumn<>(I_S_Issue.class, "DeliveredDate", null);
+	String COLUMNNAME_DeliveredDate = "DeliveredDate";
 
 	/**
 	 * Set Delivery platform.
@@ -206,7 +195,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDeliveryPlatform (java.lang.String DeliveryPlatform);
+	void setDeliveryPlatform (@Nullable java.lang.String DeliveryPlatform);
 
 	/**
 	 * Get Delivery platform.
@@ -216,12 +205,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDeliveryPlatform();
+	@Nullable java.lang.String getDeliveryPlatform();
 
-    /** Column definition for DeliveryPlatform */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_DeliveryPlatform = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "DeliveryPlatform", null);
-    /** Column name DeliveryPlatform */
-    public static final String COLUMNNAME_DeliveryPlatform = "DeliveryPlatform";
+	ModelColumn<I_S_Issue, Object> COLUMN_DeliveryPlatform = new ModelColumn<>(I_S_Issue.class, "DeliveryPlatform", null);
+	String COLUMNNAME_DeliveryPlatform = "DeliveryPlatform";
 
 	/**
 	 * Set Description.
@@ -230,7 +217,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDescription (java.lang.String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -239,33 +226,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDescription();
+	@Nullable java.lang.String getDescription();
 
-    /** Column definition for Description */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Description = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Description", null);
-    /** Column name Description */
-    public static final String COLUMNNAME_Description = "Description";
-
-	/**
-	 * Set Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public void setEffort_UOM_ID (int Effort_UOM_ID);
-
-	/**
-	 * Get Unit.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	public int getEffort_UOM_ID();
-
-    /** Column name Effort_UOM_ID */
-    public static final String COLUMNNAME_Effort_UOM_ID = "Effort_UOM_ID";
+	ModelColumn<I_S_Issue, Object> COLUMN_Description = new ModelColumn<>(I_S_Issue.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Effort delivery platform.
@@ -276,7 +240,7 @@ public interface I_S_Issue
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setEffortDeliveryPlatform (java.lang.String EffortDeliveryPlatform);
+	void setEffortDeliveryPlatform (@Nullable java.lang.String EffortDeliveryPlatform);
 
 	/**
 	 * Get Effort delivery platform.
@@ -285,12 +249,30 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public java.lang.String getEffortDeliveryPlatform();
+	@Nullable java.lang.String getEffortDeliveryPlatform();
 
-    /** Column definition for EffortDeliveryPlatform */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_EffortDeliveryPlatform = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "EffortDeliveryPlatform", null);
-    /** Column name EffortDeliveryPlatform */
-    public static final String COLUMNNAME_EffortDeliveryPlatform = "EffortDeliveryPlatform";
+	ModelColumn<I_S_Issue, Object> COLUMN_EffortDeliveryPlatform = new ModelColumn<>(I_S_Issue.class, "EffortDeliveryPlatform", null);
+	String COLUMNNAME_EffortDeliveryPlatform = "EffortDeliveryPlatform";
+
+	/**
+	 * Set Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setEffort_UOM_ID (int Effort_UOM_ID);
+
+	/**
+	 * Get Unit.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getEffort_UOM_ID();
+
+	String COLUMNNAME_Effort_UOM_ID = "Effort_UOM_ID";
 
 	/**
 	 * Set Estimated effort.
@@ -299,7 +281,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setEstimatedEffort (java.math.BigDecimal EstimatedEffort);
+	void setEstimatedEffort (BigDecimal EstimatedEffort);
 
 	/**
 	 * Get Estimated effort.
@@ -308,12 +290,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getEstimatedEffort();
+	BigDecimal getEstimatedEffort();
 
-    /** Column definition for EstimatedEffort */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_EstimatedEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "EstimatedEffort", null);
-    /** Column name EstimatedEffort */
-    public static final String COLUMNNAME_EstimatedEffort = "EstimatedEffort";
+	ModelColumn<I_S_Issue, Object> COLUMN_EstimatedEffort = new ModelColumn<>(I_S_Issue.class, "EstimatedEffort", null);
+	String COLUMNNAME_EstimatedEffort = "EstimatedEffort";
 
 	/**
 	 * Set External issue no.
@@ -323,7 +303,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setExternalIssueNo (java.math.BigDecimal ExternalIssueNo);
+	void setExternalIssueNo (@Nullable BigDecimal ExternalIssueNo);
 
 	/**
 	 * Get External issue no.
@@ -333,12 +313,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getExternalIssueNo();
+	BigDecimal getExternalIssueNo();
 
-    /** Column definition for ExternalIssueNo */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_ExternalIssueNo = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "ExternalIssueNo", null);
-    /** Column name ExternalIssueNo */
-    public static final String COLUMNNAME_ExternalIssueNo = "ExternalIssueNo";
+	ModelColumn<I_S_Issue, Object> COLUMN_ExternalIssueNo = new ModelColumn<>(I_S_Issue.class, "ExternalIssueNo", null);
+	String COLUMNNAME_ExternalIssueNo = "ExternalIssueNo";
 
 	/**
 	 * Set hasInternalEffortIssue.
@@ -349,7 +327,7 @@ public interface I_S_Issue
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void sethasInternalEffortIssue (boolean hasInternalEffortIssue);
+	void sethasInternalEffortIssue (boolean hasInternalEffortIssue);
 
 	/**
 	 * Get hasInternalEffortIssue.
@@ -358,270 +336,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public boolean ishasInternalEffortIssue();
+	boolean ishasInternalEffortIssue();
 
-    /** Column definition for hasInternalEffortIssue */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_hasInternalEffortIssue = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "hasInternalEffortIssue", null);
-    /** Column name hasInternalEffortIssue */
-    public static final String COLUMNNAME_hasInternalEffortIssue = "hasInternalEffortIssue";
-
-	/**
-	 * Set Internal assignee.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_Assignee_ID (int Internal_Assignee_ID);
-
-	/**
-	 * Get Internal assignee.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getInternal_Assignee_ID();
-
-    /** Column name Internal_Assignee_ID */
-    public static final String COLUMNNAME_Internal_Assignee_ID = "Internal_Assignee_ID";
-
-	/**
-	 * Set Internal budget.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_Budgeted (java.math.BigDecimal Internal_Budgeted);
-
-	/**
-	 * Get Internal budget.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.math.BigDecimal getInternal_Budgeted();
-
-    /** Column definition for Internal_Budgeted */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_Budgeted = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_Budgeted", null);
-    /** Column name Internal_Budgeted */
-    public static final String COLUMNNAME_Internal_Budgeted = "Internal_Budgeted";
-
-	/**
-	 * Set Internal due date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_DueDate (java.sql.Timestamp Internal_DueDate);
-
-	/**
-	 * Get Internal due date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.sql.Timestamp getInternal_DueDate();
-
-    /** Column definition for Internal_DueDate */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_DueDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_DueDate", null);
-    /** Column name Internal_DueDate */
-    public static final String COLUMNNAME_Internal_DueDate = "Internal_DueDate";
-
-	/**
-	 * Set Internal effort issue.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_Effort_S_Issue_ID (int Internal_Effort_S_Issue_ID);
-
-	/**
-	 * Get Internal effort issue.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getInternal_Effort_S_Issue_ID();
-
-	public de.metas.serviceprovider.model.I_S_Issue getInternal_Effort_S_Issue();
-
-	@Deprecated
-	public void setInternal_Effort_S_Issue(de.metas.serviceprovider.model.I_S_Issue Internal_Effort_S_Issue);
-
-    /** Column definition for Internal_Effort_S_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue> COLUMN_Internal_Effort_S_Issue_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue>(I_S_Issue.class, "Internal_Effort_S_Issue_ID", de.metas.serviceprovider.model.I_S_Issue.class);
-    /** Column name Internal_Effort_S_Issue_ID */
-    public static final String COLUMNNAME_Internal_Effort_S_Issue_ID = "Internal_Effort_S_Issue_ID";
-
-	/**
-	 * Set Internal estimated effort.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_EstimatedEffort (java.math.BigDecimal Internal_EstimatedEffort);
-
-	/**
-	 * Get Internal estimated effort.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.math.BigDecimal getInternal_EstimatedEffort();
-
-    /** Column definition for Internal_EstimatedEffort */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_EstimatedEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_EstimatedEffort", null);
-    /** Column name Internal_EstimatedEffort */
-    public static final String COLUMNNAME_Internal_EstimatedEffort = "Internal_EstimatedEffort";
-
-	/**
-	 * Set Internal planned UAT date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_PlannedUATDate (java.sql.Timestamp Internal_PlannedUATDate);
-
-	/**
-	 * Get Internal planned UAT date.
-	 *
-	 * <br>Type: Date
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.sql.Timestamp getInternal_PlannedUATDate();
-
-    /** Column definition for Internal_PlannedUATDate */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_PlannedUATDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_PlannedUATDate", null);
-    /** Column name Internal_PlannedUATDate */
-    public static final String COLUMNNAME_Internal_PlannedUATDate = "Internal_PlannedUATDate";
-
-	/**
-	 * Set Internal processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_processed (boolean Internal_processed);
-
-	/**
-	 * Get Internal processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public boolean isInternal_processed();
-
-    /** Column definition for Internal_processed */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_processed = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_processed", null);
-    /** Column name Internal_processed */
-    public static final String COLUMNNAME_Internal_processed = "Internal_processed";
-
-	/**
-	 * Set Internal rough estimation.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_RoughEstimation (java.math.BigDecimal Internal_RoughEstimation);
-
-	/**
-	 * Get Internal rough estimation.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.math.BigDecimal getInternal_RoughEstimation();
-
-    /** Column definition for Internal_RoughEstimation */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_RoughEstimation = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_RoughEstimation", null);
-    /** Column name Internal_RoughEstimation */
-    public static final String COLUMNNAME_Internal_RoughEstimation = "Internal_RoughEstimation";
-
-	/**
-	 * Set Internal milestone.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_S_Milestone_ID (int Internal_S_Milestone_ID);
-
-	/**
-	 * Get Internal milestone.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public int getInternal_S_Milestone_ID();
-
-	public de.metas.serviceprovider.model.I_S_Milestone getInternal_S_Milestone();
-
-	@Deprecated
-	public void setInternal_S_Milestone(de.metas.serviceprovider.model.I_S_Milestone Internal_S_Milestone);
-
-    /** Column definition for Internal_S_Milestone_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Milestone> COLUMN_Internal_S_Milestone_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Milestone>(I_S_Issue.class, "Internal_S_Milestone_ID", de.metas.serviceprovider.model.I_S_Milestone.class);
-    /** Column name Internal_S_Milestone_ID */
-    public static final String COLUMNNAME_Internal_S_Milestone_ID = "Internal_S_Milestone_ID";
-
-	/**
-	 * Set Internal status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setInternal_status (java.lang.String Internal_status);
-
-	/**
-	 * Get Internal status.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public java.lang.String getInternal_status();
-
-    /** Column definition for Internal_status */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Internal_status = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Internal_status", null);
-    /** Column name Internal_status */
-    public static final String COLUMNNAME_Internal_status = "Internal_status";
+	ModelColumn<I_S_Issue, Object> COLUMN_hasInternalEffortIssue = new ModelColumn<>(I_S_Issue.class, "hasInternalEffortIssue", null);
+	String COLUMNNAME_hasInternalEffortIssue = "hasInternalEffortIssue";
 
 	/**
 	 * Set Internal-Approved.
@@ -632,7 +350,7 @@ public interface I_S_Issue
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setInternalApproved (boolean InternalApproved);
+	void setInternalApproved (boolean InternalApproved);
 
 	/**
 	 * Get Internal-Approved.
@@ -641,12 +359,295 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public boolean isInternalApproved();
+	boolean isInternalApproved();
 
-    /** Column definition for InternalApproved */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_InternalApproved = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "InternalApproved", null);
-    /** Column name InternalApproved */
-    public static final String COLUMNNAME_InternalApproved = "InternalApproved";
+	ModelColumn<I_S_Issue, Object> COLUMN_InternalApproved = new ModelColumn<>(I_S_Issue.class, "InternalApproved", null);
+	String COLUMNNAME_InternalApproved = "InternalApproved";
+
+	/**
+	 * Set Internal assignee.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_Assignee_ID (int Internal_Assignee_ID);
+
+	/**
+	 * Get Internal assignee.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getInternal_Assignee_ID();
+
+	String COLUMNNAME_Internal_Assignee_ID = "Internal_Assignee_ID";
+
+	/**
+	 * Set Internal budget.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_Budgeted (@Nullable BigDecimal Internal_Budgeted);
+
+	/**
+	 * Get Internal budget.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getInternal_Budgeted();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_Internal_Budgeted = new ModelColumn<>(I_S_Issue.class, "Internal_Budgeted", null);
+	String COLUMNNAME_Internal_Budgeted = "Internal_Budgeted";
+
+	/**
+	 * Set Internal delivered date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternalDeliveredDate (@Nullable java.sql.Timestamp InternalDeliveredDate);
+
+	/**
+	 * Get Internal delivered date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.sql.Timestamp getInternalDeliveredDate();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_InternalDeliveredDate = new ModelColumn<>(I_S_Issue.class, "InternalDeliveredDate", null);
+	String COLUMNNAME_InternalDeliveredDate = "InternalDeliveredDate";
+
+	/**
+	 * Set Internal due date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_DueDate (@Nullable java.sql.Timestamp Internal_DueDate);
+
+	/**
+	 * Get Internal due date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.sql.Timestamp getInternal_DueDate();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_Internal_DueDate = new ModelColumn<>(I_S_Issue.class, "Internal_DueDate", null);
+	String COLUMNNAME_Internal_DueDate = "Internal_DueDate";
+
+	/**
+	 * Set Internal effort issue.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_Effort_S_Issue_ID (int Internal_Effort_S_Issue_ID);
+
+	/**
+	 * Get Internal effort issue.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getInternal_Effort_S_Issue_ID();
+
+	@Nullable de.metas.serviceprovider.model.I_S_Issue getInternal_Effort_S_Issue();
+
+	@Deprecated
+	void setInternal_Effort_S_Issue(@Nullable de.metas.serviceprovider.model.I_S_Issue Internal_Effort_S_Issue);
+
+	ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue> COLUMN_Internal_Effort_S_Issue_ID = new ModelColumn<>(I_S_Issue.class, "Internal_Effort_S_Issue_ID", de.metas.serviceprovider.model.I_S_Issue.class);
+	String COLUMNNAME_Internal_Effort_S_Issue_ID = "Internal_Effort_S_Issue_ID";
+
+	/**
+	 * Set Internal estimated effort.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_EstimatedEffort (@Nullable BigDecimal Internal_EstimatedEffort);
+
+	/**
+	 * Get Internal estimated effort.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getInternal_EstimatedEffort();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_Internal_EstimatedEffort = new ModelColumn<>(I_S_Issue.class, "Internal_EstimatedEffort", null);
+	String COLUMNNAME_Internal_EstimatedEffort = "Internal_EstimatedEffort";
+
+	/**
+	 * Set Internal planned UAT date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_PlannedUATDate (@Nullable java.sql.Timestamp Internal_PlannedUATDate);
+
+	/**
+	 * Get Internal planned UAT date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.sql.Timestamp getInternal_PlannedUATDate();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_Internal_PlannedUATDate = new ModelColumn<>(I_S_Issue.class, "Internal_PlannedUATDate", null);
+	String COLUMNNAME_Internal_PlannedUATDate = "Internal_PlannedUATDate";
+
+	/**
+	 * Set Internal processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_processed (boolean Internal_processed);
+
+	/**
+	 * Get Internal processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isInternal_processed();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_Internal_processed = new ModelColumn<>(I_S_Issue.class, "Internal_processed", null);
+	String COLUMNNAME_Internal_processed = "Internal_processed";
+
+	/**
+	 * Set Internal rough estimation.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_RoughEstimation (@Nullable BigDecimal Internal_RoughEstimation);
+
+	/**
+	 * Get Internal rough estimation.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	BigDecimal getInternal_RoughEstimation();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_Internal_RoughEstimation = new ModelColumn<>(I_S_Issue.class, "Internal_RoughEstimation", null);
+	String COLUMNNAME_Internal_RoughEstimation = "Internal_RoughEstimation";
+
+	/**
+	 * Set Internal milestone.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_S_Milestone_ID (int Internal_S_Milestone_ID);
+
+	/**
+	 * Get Internal milestone.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getInternal_S_Milestone_ID();
+
+	@Nullable de.metas.serviceprovider.model.I_S_Milestone getInternal_S_Milestone();
+
+	@Deprecated
+	void setInternal_S_Milestone(@Nullable de.metas.serviceprovider.model.I_S_Milestone Internal_S_Milestone);
+
+	ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Milestone> COLUMN_Internal_S_Milestone_ID = new ModelColumn<>(I_S_Issue.class, "Internal_S_Milestone_ID", de.metas.serviceprovider.model.I_S_Milestone.class);
+	String COLUMNNAME_Internal_S_Milestone_ID = "Internal_S_Milestone_ID";
+
+	/**
+	 * Set Internal status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInternal_status (@Nullable java.lang.String Internal_status);
+
+	/**
+	 * Get Internal status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getInternal_status();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_Internal_status = new ModelColumn<>(I_S_Issue.class, "Internal_status", null);
+	String COLUMNNAME_Internal_status = "Internal_status";
+
+	/**
+	 * Set Invoiceable child efforts.
+	 * Sum of invoicable efforts of all child issues
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceableChildEffort (@Nullable BigDecimal InvoiceableChildEffort);
+
+	/**
+	 * Get Invoiceable child efforts.
+	 * Sum of invoicable efforts of all child issues
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getInvoiceableChildEffort();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_InvoiceableChildEffort = new ModelColumn<>(I_S_Issue.class, "InvoiceableChildEffort", null);
+	String COLUMNNAME_InvoiceableChildEffort = "InvoiceableChildEffort";
 
 	/**
 	 * Set Invoiceable effort.
@@ -655,7 +656,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setInvoiceableEffort (java.math.BigDecimal InvoiceableEffort);
+	void setInvoiceableEffort (@Nullable BigDecimal InvoiceableEffort);
 
 	/**
 	 * Get Invoiceable effort.
@@ -664,12 +665,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getInvoiceableEffort();
+	BigDecimal getInvoiceableEffort();
 
-    /** Column definition for InvoiceableEffort */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_InvoiceableEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "InvoiceableEffort", null);
-    /** Column name InvoiceableEffort */
-    public static final String COLUMNNAME_InvoiceableEffort = "InvoiceableEffort";
+	ModelColumn<I_S_Issue, Object> COLUMN_InvoiceableEffort = new ModelColumn<>(I_S_Issue.class, "InvoiceableEffort", null);
+	String COLUMNNAME_InvoiceableEffort = "InvoiceableEffort";
 
 	/**
 	 * Set Invoice date.
@@ -678,7 +677,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setInvoicedDate (java.sql.Timestamp InvoicedDate);
+	void setInvoicedDate (@Nullable java.sql.Timestamp InvoicedDate);
 
 	/**
 	 * Get Invoice date.
@@ -687,12 +686,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getInvoicedDate();
+	@Nullable java.sql.Timestamp getInvoicedDate();
 
-    /** Column definition for InvoicedDate */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_InvoicedDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "InvoicedDate", null);
-    /** Column name InvoicedDate */
-    public static final String COLUMNNAME_InvoicedDate = "InvoicedDate";
+	ModelColumn<I_S_Issue, Object> COLUMN_InvoicedDate = new ModelColumn<>(I_S_Issue.class, "InvoicedDate", null);
+	String COLUMNNAME_InvoicedDate = "InvoicedDate";
 
 	/**
 	 * Set Active.
@@ -702,7 +699,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
 	 * Get Active.
@@ -712,12 +709,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_S_Issue, Object> COLUMN_IsActive = new ModelColumn<>(I_S_Issue.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Approved.
@@ -727,7 +722,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsApproved (boolean IsApproved);
+	void setIsApproved (boolean IsApproved);
 
 	/**
 	 * Get Approved.
@@ -737,12 +732,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isApproved();
+	boolean isApproved();
 
-    /** Column definition for IsApproved */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_IsApproved = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "IsApproved", null);
-    /** Column name IsApproved */
-    public static final String COLUMNNAME_IsApproved = "IsApproved";
+	ModelColumn<I_S_Issue, Object> COLUMN_IsApproved = new ModelColumn<>(I_S_Issue.class, "IsApproved", null);
+	String COLUMNNAME_IsApproved = "IsApproved";
 
 	/**
 	 * Set Effort issue.
@@ -751,7 +744,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsEffortIssue (boolean IsEffortIssue);
+	void setIsEffortIssue (boolean IsEffortIssue);
 
 	/**
 	 * Get Effort issue.
@@ -760,12 +753,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isEffortIssue();
+	boolean isEffortIssue();
 
-    /** Column definition for IsEffortIssue */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_IsEffortIssue = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "IsEffortIssue", null);
-    /** Column name IsEffortIssue */
-    public static final String COLUMNNAME_IsEffortIssue = "IsEffortIssue";
+	ModelColumn<I_S_Issue, Object> COLUMN_IsEffortIssue = new ModelColumn<>(I_S_Issue.class, "IsEffortIssue", null);
+	String COLUMNNAME_IsEffortIssue = "IsEffortIssue";
 
 	/**
 	 * Set Issue effort (H:mm).
@@ -775,7 +766,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIssueEffort (java.lang.String IssueEffort);
+	void setIssueEffort (@Nullable java.lang.String IssueEffort);
 
 	/**
 	 * Get Issue effort (H:mm).
@@ -785,12 +776,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIssueEffort();
+	@Nullable java.lang.String getIssueEffort();
 
-    /** Column definition for IssueEffort */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_IssueEffort = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "IssueEffort", null);
-    /** Column name IssueEffort */
-    public static final String COLUMNNAME_IssueEffort = "IssueEffort";
+	ModelColumn<I_S_Issue, Object> COLUMN_IssueEffort = new ModelColumn<>(I_S_Issue.class, "IssueEffort", null);
+	String COLUMNNAME_IssueEffort = "IssueEffort";
 
 	/**
 	 * Set Type.
@@ -799,7 +788,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIssueType (java.lang.String IssueType);
+	void setIssueType (java.lang.String IssueType);
 
 	/**
 	 * Get Type.
@@ -808,12 +797,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIssueType();
+	java.lang.String getIssueType();
 
-    /** Column definition for IssueType */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_IssueType = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "IssueType", null);
-    /** Column name IssueType */
-    public static final String COLUMNNAME_IssueType = "IssueType";
+	ModelColumn<I_S_Issue, Object> COLUMN_IssueType = new ModelColumn<>(I_S_Issue.class, "IssueType", null);
+	String COLUMNNAME_IssueType = "IssueType";
 
 	/**
 	 * Set Issue-URL.
@@ -823,7 +810,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIssueURL (java.lang.String IssueURL);
+	void setIssueURL (@Nullable java.lang.String IssueURL);
 
 	/**
 	 * Get Issue-URL.
@@ -833,12 +820,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getIssueURL();
+	@Nullable java.lang.String getIssueURL();
 
-    /** Column definition for IssueURL */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_IssueURL = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "IssueURL", null);
-    /** Column name IssueURL */
-    public static final String COLUMNNAME_IssueURL = "IssueURL";
+	ModelColumn<I_S_Issue, Object> COLUMN_IssueURL = new ModelColumn<>(I_S_Issue.class, "IssueURL", null);
+	String COLUMNNAME_IssueURL = "IssueURL";
 
 	/**
 	 * Set Latest activity.
@@ -847,7 +832,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLatestActivity (java.sql.Timestamp LatestActivity);
+	void setLatestActivity (@Nullable java.sql.Timestamp LatestActivity);
 
 	/**
 	 * Get Latest activity.
@@ -856,12 +841,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getLatestActivity();
+	@Nullable java.sql.Timestamp getLatestActivity();
 
-    /** Column definition for LatestActivity */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_LatestActivity = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "LatestActivity", null);
-    /** Column name LatestActivity */
-    public static final String COLUMNNAME_LatestActivity = "LatestActivity";
+	ModelColumn<I_S_Issue, Object> COLUMN_LatestActivity = new ModelColumn<>(I_S_Issue.class, "LatestActivity", null);
+	String COLUMNNAME_LatestActivity = "LatestActivity";
 
 	/**
 	 * Set Latest activity on sub issues.
@@ -870,7 +853,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setLatestActivityOnSubIssues (java.sql.Timestamp LatestActivityOnSubIssues);
+	void setLatestActivityOnSubIssues (@Nullable java.sql.Timestamp LatestActivityOnSubIssues);
 
 	/**
 	 * Get Latest activity on sub issues.
@@ -879,12 +862,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getLatestActivityOnSubIssues();
+	@Nullable java.sql.Timestamp getLatestActivityOnSubIssues();
 
-    /** Column definition for LatestActivityOnSubIssues */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_LatestActivityOnSubIssues = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "LatestActivityOnSubIssues", null);
-    /** Column name LatestActivityOnSubIssues */
-    public static final String COLUMNNAME_LatestActivityOnSubIssues = "LatestActivityOnSubIssues";
+	ModelColumn<I_S_Issue, Object> COLUMN_LatestActivityOnSubIssues = new ModelColumn<>(I_S_Issue.class, "LatestActivityOnSubIssues", null);
+	String COLUMNNAME_LatestActivityOnSubIssues = "LatestActivityOnSubIssues";
 
 	/**
 	 * Set Due date.
@@ -895,7 +876,7 @@ public interface I_S_Issue
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setMilestone_DueDate (java.sql.Timestamp Milestone_DueDate);
+	void setMilestone_DueDate (@Nullable java.sql.Timestamp Milestone_DueDate);
 
 	/**
 	 * Get Due date.
@@ -904,12 +885,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true
 	 */
-	public java.sql.Timestamp getMilestone_DueDate();
+	@Nullable java.sql.Timestamp getMilestone_DueDate();
 
-    /** Column definition for Milestone_DueDate */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Milestone_DueDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Milestone_DueDate", null);
-    /** Column name Milestone_DueDate */
-    public static final String COLUMNNAME_Milestone_DueDate = "Milestone_DueDate";
+	ModelColumn<I_S_Issue, Object> COLUMN_Milestone_DueDate = new ModelColumn<>(I_S_Issue.class, "Milestone_DueDate", null);
+	String COLUMNNAME_Milestone_DueDate = "Milestone_DueDate";
 
 	/**
 	 * Set Name.
@@ -918,7 +897,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setName (java.lang.String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -927,12 +906,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getName();
+	java.lang.String getName();
 
-    /** Column definition for Name */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Name = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Name", null);
-    /** Column name Name */
-    public static final String COLUMNNAME_Name = "Name";
+	ModelColumn<I_S_Issue, Object> COLUMN_Name = new ModelColumn<>(I_S_Issue.class, "Name", null);
+	String COLUMNNAME_Name = "Name";
 
 	/**
 	 * Set Planned UAT date.
@@ -941,7 +918,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPlannedUATDate (java.sql.Timestamp PlannedUATDate);
+	void setPlannedUATDate (@Nullable java.sql.Timestamp PlannedUATDate);
 
 	/**
 	 * Get Planned UAT date.
@@ -950,12 +927,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getPlannedUATDate();
+	@Nullable java.sql.Timestamp getPlannedUATDate();
 
-    /** Column definition for PlannedUATDate */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_PlannedUATDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "PlannedUATDate", null);
-    /** Column name PlannedUATDate */
-    public static final String COLUMNNAME_PlannedUATDate = "PlannedUATDate";
+	ModelColumn<I_S_Issue, Object> COLUMN_PlannedUATDate = new ModelColumn<>(I_S_Issue.class, "PlannedUATDate", null);
+	String COLUMNNAME_PlannedUATDate = "PlannedUATDate";
 
 	/**
 	 * Set Processed.
@@ -964,7 +939,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessed (boolean Processed);
+	void setProcessed (boolean Processed);
 
 	/**
 	 * Get Processed.
@@ -973,12 +948,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isProcessed();
+	boolean isProcessed();
 
-    /** Column definition for Processed */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Processed = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Processed", null);
-    /** Column name Processed */
-    public static final String COLUMNNAME_Processed = "Processed";
+	ModelColumn<I_S_Issue, Object> COLUMN_Processed = new ModelColumn<>(I_S_Issue.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Processed date.
@@ -987,7 +960,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setProcessedDate (java.sql.Timestamp ProcessedDate);
+	void setProcessedDate (@Nullable java.sql.Timestamp ProcessedDate);
 
 	/**
 	 * Get Processed date.
@@ -996,12 +969,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getProcessedDate();
+	@Nullable java.sql.Timestamp getProcessedDate();
 
-    /** Column definition for ProcessedDate */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_ProcessedDate = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "ProcessedDate", null);
-    /** Column name ProcessedDate */
-    public static final String COLUMNNAME_ProcessedDate = "ProcessedDate";
+	ModelColumn<I_S_Issue, Object> COLUMN_ProcessedDate = new ModelColumn<>(I_S_Issue.class, "ProcessedDate", null);
+	String COLUMNNAME_ProcessedDate = "ProcessedDate";
 
 	/**
 	 * Set Rough estimation.
@@ -1010,7 +981,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRoughEstimation (java.math.BigDecimal RoughEstimation);
+	void setRoughEstimation (@Nullable BigDecimal RoughEstimation);
 
 	/**
 	 * Get Rough estimation.
@@ -1019,12 +990,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.math.BigDecimal getRoughEstimation();
+	BigDecimal getRoughEstimation();
 
-    /** Column definition for RoughEstimation */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_RoughEstimation = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "RoughEstimation", null);
-    /** Column name RoughEstimation */
-    public static final String COLUMNNAME_RoughEstimation = "RoughEstimation";
+	ModelColumn<I_S_Issue, Object> COLUMN_RoughEstimation = new ModelColumn<>(I_S_Issue.class, "RoughEstimation", null);
+	String COLUMNNAME_RoughEstimation = "RoughEstimation";
 
 	/**
 	 * Set External project reference ID.
@@ -1033,7 +1002,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID);
+	void setS_ExternalProjectReference_ID (int S_ExternalProjectReference_ID);
 
 	/**
 	 * Get External project reference ID.
@@ -1042,16 +1011,14 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getS_ExternalProjectReference_ID();
+	int getS_ExternalProjectReference_ID();
 
-	public de.metas.serviceprovider.model.I_S_ExternalProjectReference getS_ExternalProjectReference();
+	@Nullable de.metas.serviceprovider.model.I_S_ExternalProjectReference getS_ExternalProjectReference();
 
-	public void setS_ExternalProjectReference(de.metas.serviceprovider.model.I_S_ExternalProjectReference S_ExternalProjectReference);
+	void setS_ExternalProjectReference(@Nullable de.metas.serviceprovider.model.I_S_ExternalProjectReference S_ExternalProjectReference);
 
-    /** Column definition for S_ExternalProjectReference_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_ExternalProjectReference> COLUMN_S_ExternalProjectReference_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_ExternalProjectReference>(I_S_Issue.class, "S_ExternalProjectReference_ID", de.metas.serviceprovider.model.I_S_ExternalProjectReference.class);
-    /** Column name S_ExternalProjectReference_ID */
-    public static final String COLUMNNAME_S_ExternalProjectReference_ID = "S_ExternalProjectReference_ID";
+	ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_ExternalProjectReference> COLUMN_S_ExternalProjectReference_ID = new ModelColumn<>(I_S_Issue.class, "S_ExternalProjectReference_ID", de.metas.serviceprovider.model.I_S_ExternalProjectReference.class);
+	String COLUMNNAME_S_ExternalProjectReference_ID = "S_ExternalProjectReference_ID";
 
 	/**
 	 * Set Issue.
@@ -1060,7 +1027,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setS_Issue_ID (int S_Issue_ID);
+	void setS_Issue_ID (int S_Issue_ID);
 
 	/**
 	 * Get Issue.
@@ -1069,12 +1036,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getS_Issue_ID();
+	int getS_Issue_ID();
 
-    /** Column definition for S_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_S_Issue_ID = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "S_Issue_ID", null);
-    /** Column name S_Issue_ID */
-    public static final String COLUMNNAME_S_Issue_ID = "S_Issue_ID";
+	ModelColumn<I_S_Issue, Object> COLUMN_S_Issue_ID = new ModelColumn<>(I_S_Issue.class, "S_Issue_ID", null);
+	String COLUMNNAME_S_Issue_ID = "S_Issue_ID";
 
 	/**
 	 * Set Milestone.
@@ -1083,7 +1048,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setS_Milestone_ID (int S_Milestone_ID);
+	void setS_Milestone_ID (int S_Milestone_ID);
 
 	/**
 	 * Get Milestone.
@@ -1092,16 +1057,14 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getS_Milestone_ID();
+	int getS_Milestone_ID();
 
-	public de.metas.serviceprovider.model.I_S_Milestone getS_Milestone();
+	@Nullable de.metas.serviceprovider.model.I_S_Milestone getS_Milestone();
 
-	public void setS_Milestone(de.metas.serviceprovider.model.I_S_Milestone S_Milestone);
+	void setS_Milestone(@Nullable de.metas.serviceprovider.model.I_S_Milestone S_Milestone);
 
-    /** Column definition for S_Milestone_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Milestone> COLUMN_S_Milestone_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Milestone>(I_S_Issue.class, "S_Milestone_ID", de.metas.serviceprovider.model.I_S_Milestone.class);
-    /** Column name S_Milestone_ID */
-    public static final String COLUMNNAME_S_Milestone_ID = "S_Milestone_ID";
+	ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Milestone> COLUMN_S_Milestone_ID = new ModelColumn<>(I_S_Issue.class, "S_Milestone_ID", de.metas.serviceprovider.model.I_S_Milestone.class);
+	String COLUMNNAME_S_Milestone_ID = "S_Milestone_ID";
 
 	/**
 	 * Set Parent issue ID.
@@ -1110,7 +1073,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setS_Parent_Issue_ID (int S_Parent_Issue_ID);
+	void setS_Parent_Issue_ID (int S_Parent_Issue_ID);
 
 	/**
 	 * Get Parent issue ID.
@@ -1119,16 +1082,14 @@ public interface I_S_Issue
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getS_Parent_Issue_ID();
+	int getS_Parent_Issue_ID();
 
-	public de.metas.serviceprovider.model.I_S_Issue getS_Parent_Issue();
+	@Nullable de.metas.serviceprovider.model.I_S_Issue getS_Parent_Issue();
 
-	public void setS_Parent_Issue(de.metas.serviceprovider.model.I_S_Issue S_Parent_Issue);
+	void setS_Parent_Issue(@Nullable de.metas.serviceprovider.model.I_S_Issue S_Parent_Issue);
 
-    /** Column definition for S_Parent_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue> COLUMN_S_Parent_Issue_ID = new org.adempiere.model.ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue>(I_S_Issue.class, "S_Parent_Issue_ID", de.metas.serviceprovider.model.I_S_Issue.class);
-    /** Column name S_Parent_Issue_ID */
-    public static final String COLUMNNAME_S_Parent_Issue_ID = "S_Parent_Issue_ID";
+	ModelColumn<I_S_Issue, de.metas.serviceprovider.model.I_S_Issue> COLUMN_S_Parent_Issue_ID = new ModelColumn<>(I_S_Issue.class, "S_Parent_Issue_ID", de.metas.serviceprovider.model.I_S_Issue.class);
+	String COLUMNNAME_S_Parent_Issue_ID = "S_Parent_Issue_ID";
 
 	/**
 	 * Set Status.
@@ -1137,7 +1098,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setStatus (java.lang.String Status);
+	void setStatus (java.lang.String Status);
 
 	/**
 	 * Get Status.
@@ -1146,12 +1107,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getStatus();
+	java.lang.String getStatus();
 
-    /** Column definition for Status */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Status = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Status", null);
-    /** Column name Status */
-    public static final String COLUMNNAME_Status = "Status";
+	ModelColumn<I_S_Issue, Object> COLUMN_Status = new ModelColumn<>(I_S_Issue.class, "Status", null);
+	String COLUMNNAME_Status = "Status";
 
 	/**
 	 * Get Updated.
@@ -1161,12 +1120,10 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_S_Issue, Object> COLUMN_Updated = new ModelColumn<>(I_S_Issue.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
 	 * Get Updated By.
@@ -1176,10 +1133,9 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
 	 * Set Search Key.
@@ -1189,7 +1145,7 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setValue (java.lang.String Value);
+	void setValue (java.lang.String Value);
 
 	/**
 	 * Get Search Key.
@@ -1199,10 +1155,8 @@ public interface I_S_Issue
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getValue();
+	java.lang.String getValue();
 
-    /** Column definition for Value */
-    public static final org.adempiere.model.ModelColumn<I_S_Issue, Object> COLUMN_Value = new org.adempiere.model.ModelColumn<I_S_Issue, Object>(I_S_Issue.class, "Value", null);
-    /** Column name Value */
-    public static final String COLUMNNAME_Value = "Value";
+	ModelColumn<I_S_Issue, Object> COLUMN_Value = new ModelColumn<>(I_S_Issue.class, "Value", null);
+	String COLUMNNAME_Value = "Value";
 }

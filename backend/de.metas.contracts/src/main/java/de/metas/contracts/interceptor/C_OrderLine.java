@@ -1,17 +1,23 @@
 package de.metas.contracts.interceptor;
 
 import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.contracts.subscription.ISubscriptionBL;
+import de.metas.lang.SOTrx;
+import de.metas.order.IOrderLineBL;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -20,7 +26,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class C_OrderLine
 {
 	private static final ModelDynAttributeAccessor<I_C_OrderLine, Boolean> DYNATTR_SkipUpdatingGroupFlatrateConditions = new ModelDynAttributeAccessor<>("SkipUpdatingGroupFlatrateConditions", Boolean.class);
-
+	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final ISubscriptionBL subscriptionBL = Services.get(ISubscriptionBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 
 	public C_OrderLine(@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler)
@@ -67,17 +74,18 @@ public class C_OrderLine
 		}
 
 		final GroupId groupId = OrderGroupRepository.extractGroupIdOrNull(orderLine);
-		final GroupTemplateId groupTemplateId = groupChangesHandler.getGroupTemplateId(groupId);
-
-		if (groupChangesHandler.isProductExcludedFromFlatrateConditions(groupTemplateId, ProductId.ofRepoId(orderLine.getM_Product_ID())))
+		if (groupId != null)
 		{
-			return;
+			final GroupTemplateId groupTemplateId = groupChangesHandler.getGroupTemplateId(groupId);
+
+			if (groupChangesHandler.isProductExcludedFromFlatrateConditions(groupTemplateId, ProductId.ofRepoId(orderLine.getM_Product_ID())))
+			{
+				return;
+			}
+			final int flatrateConditionsId = orderLine.getC_Flatrate_Conditions_ID();
+			final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
+			setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
 		}
-
-		final int flatrateConditionsId = orderLine.getC_Flatrate_Conditions_ID();
-		final int excludeOrderLineId = orderLine.getC_OrderLine_ID();
-		setFlatrateConditionsIdToCompensationGroup(flatrateConditionsId, groupId, groupTemplateId, excludeOrderLineId);
-
 		groupChangesHandler.recreateGroupOnOrderLineChanged(orderLine);
 	}
 
@@ -109,5 +117,36 @@ public class C_OrderLine
 					DYNATTR_SkipUpdatingGroupFlatrateConditions.setValue(otherOrderLine, Boolean.TRUE);
 					save(otherOrderLine);
 				});
+	}
+
+	/**
+	 * Set QtyOrderedInPriceUOM, just to make sure is up2date.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = { de.metas.interfaces.I_C_OrderLine.COLUMNNAME_QtyEntered,
+			de.metas.interfaces.I_C_OrderLine.COLUMNNAME_Price_UOM_ID,
+			de.metas.interfaces.I_C_OrderLine.COLUMNNAME_C_UOM_ID,
+			de.metas.interfaces.I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
+	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getC_Flatrate_Conditions_ID() <= 0)
+		{
+			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
+			orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+		}
+		else
+		{
+			final org.compiere.model.I_C_Order order = orderLine.getC_Order();
+			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+
+			if (soTrx.isPurchase())
+			{
+				return; // leave this job to the adempiere standard callouts
+			}
+
+			subscriptionBL.updateQtysAndPrices(orderLine, soTrx, true);
+		}
 	}
 }

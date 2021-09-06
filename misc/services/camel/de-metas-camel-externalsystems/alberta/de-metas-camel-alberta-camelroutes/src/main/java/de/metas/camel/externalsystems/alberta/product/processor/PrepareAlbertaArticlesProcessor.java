@@ -42,6 +42,8 @@ import java.util.Optional;
 
 public class PrepareAlbertaArticlesProcessor implements Processor
 {
+	private static final String ARTICLE_PCN_PREFIX = "PZN-";
+
 	@Override
 	public void process(final Exchange exchange)
 	{
@@ -65,19 +67,20 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 			return Optional.empty();
 		}
 
-		final String manufacturerId = product.getManufacturerId() != null
-				? String.valueOf(product.getManufacturerId().getValue())
-				: null;
-
 		final Article article = new Article();
-		article.customerNumber(product.getProductNo())
+		
+		final String productNo = product.getProductNo();
+		final String pcn = productNo.startsWith(ARTICLE_PCN_PREFIX) ? productNo.substring(ARTICLE_PCN_PREFIX.length()) : null;
+		
+		article.customerNumber(productNo)
 				.name(product.getName())
 				.description(product.getDescription())
-				.manufacturer(manufacturerId)
+				.manufacturer(product.getManufacturerName())
 				.manufacturerNumber(product.getManufacturerNumber());
 
 		final JsonAlbertaProductInfo albertaProductInfo = product.getAlbertaProductInfo();
-
+	
+		
 		article.additionalDescription(albertaProductInfo.getAdditionalDescription())
 				.size(albertaProductInfo.getSize())
 				.purchaseRating(PurchaseRatingEnum.getValueByCodeOrNull(albertaProductInfo.getPurchaseRating()))
@@ -90,9 +93,8 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 				.fixedPrice(albertaProductInfo.getFixedPrice() != null ? String.valueOf(albertaProductInfo.getFixedPrice()) : null)
 				.therapyIds(albertaProductInfo.getTherapyIds())
 				.billableTherapies(albertaProductInfo.getBillableTherapies())
-				.packagingUnits(toPackageUnitList(albertaProductInfo.getPackagingUnits()))
-				.productGroupId("82d3d688-4035-48fa-90cb-d9d39b8975bd") // TODO
-		;
+				.packagingUnits(toPackageUnitList(albertaProductInfo.getPackagingUnits(), pcn))
+				.productGroupId(albertaProductInfo.getProductGroupId());
 
 		return Optional.of(UpsertArticleRequest.builder()
 								   .article(article)
@@ -102,7 +104,9 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 	}
 
 	@Nullable
-	private List<PackagingUnit> toPackageUnitList(@NonNull final List<JsonAlbertaPackagingUnit> albertaPackagingUnits)
+	private List<PackagingUnit> toPackageUnitList(
+			@NonNull final List<JsonAlbertaPackagingUnit> albertaPackagingUnits,
+			@Nullable final String pcn)
 	{
 		if (CollectionUtils.isEmpty(albertaPackagingUnits))
 		{
@@ -111,12 +115,10 @@ public class PrepareAlbertaArticlesProcessor implements Processor
 
 		return albertaPackagingUnits
 				.stream()
-				.map(mfPackageUnit -> {
-					final PackagingUnit packagingUnit = new PackagingUnit();
-
-					return packagingUnit.quantity(mfPackageUnit.getQuantity())
-							.unit(mfPackageUnit.getUnit());
-				})
+				.map(mfPackageUnit -> new PackagingUnit()
+					.pcn(pcn)
+					.quantity(mfPackageUnit.getQuantity())
+					.unit(mfPackageUnit.getUnit()))
 				.collect(ImmutableList.toImmutableList());
 	}
 }

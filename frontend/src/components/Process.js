@@ -22,6 +22,7 @@ class Process extends PureComponent {
   renderElements = () => {
     const { layout, type, disabled } = this.props;
     const elements = layout.elements;
+    const { layoutType } = layout;
 
     return elements.map((elem, idx) => {
       const element = omit(elem, ['fields']);
@@ -39,6 +40,7 @@ class Process extends PureComponent {
             isModal={true}
             disabled={disabled}
             autoFocus={idx === 0}
+            layoutType={layoutType}
             {...element}
           />
         </div>

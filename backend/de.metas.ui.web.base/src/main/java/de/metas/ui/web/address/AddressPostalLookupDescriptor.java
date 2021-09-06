@@ -1,5 +1,28 @@
 package de.metas.ui.web.address;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache.CCacheStats;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.model.lookup.IdsToFilter;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Postal;
+import org.compiere.util.DB;
+
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -7,30 +30,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_Postal;
-import org.compiere.util.DB;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.CCache.CCacheStats;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
-import de.metas.util.Check;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -54,6 +53,7 @@ import lombok.NonNull;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
 	private static final Optional<String> LookupTableName = Optional.of(I_C_Postal.Table_Name);
@@ -143,18 +143,13 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 	@Override
 	public Builder newContextForFetchingById(final Object id)
 	{
-		return LookupDataSourceContext.builder(CONTEXT_LookupTableName).putFilterById(id);
+		return LookupDataSourceContext.builder(CONTEXT_LookupTableName)
+				.putFilterById(IdsToFilter.ofSingleValue(id));
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		final int id = evalCtx.getIdToFilterAsInt(-1);
-		if (id <= 0)
-		{
-			throw new IllegalStateException("No ID provided in " + evalCtx);
-		}
-
 		// TODO Auto-generated method stub
 		throw new UnsupportedOperationException();
 	}
@@ -166,22 +161,22 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		//
 		// Determine what we will filter
 		final String filter = evalCtx.getFilter();
 		String filterUC;
-		final int limit;
+		final int pageLength;
 		final int offset = evalCtx.getOffset(0);
 		if (filter == LookupDataSourceContext.FILTER_Any)
 		{
 			filterUC = "%"; // N/A
-			limit = evalCtx.getLimit(Integer.MAX_VALUE);
+			pageLength = evalCtx.getLimit(9999); // kind of infinite
 		}
-		else if (Check.isEmpty(filter, true))
+		else if (Check.isBlank(filter))
 		{
-			return LookupValuesList.EMPTY;
+			return LookupValuesPage.EMPTY;
 		}
 		else
 		{
@@ -194,9 +189,10 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 			{
 				filterUC = filterUC + "%";
 			}
-			limit = evalCtx.getLimit(100);
+			pageLength = evalCtx.getLimit(100);
 		}
 
+		final int sqlQueryLimit = pageLength < Integer.MAX_VALUE ? pageLength + 1 : pageLength; // retrieving one more to recognize when we have more records
 		final String sql = "SELECT "
 				+ "\n " + I_C_Postal.COLUMNNAME_C_Postal_ID
 				+ "\n, " + I_C_Postal.COLUMNNAME_Postal
@@ -210,7 +206,7 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 				+ "\n ORDER BY " + I_C_Postal.COLUMNNAME_City + ", " + I_C_Postal.COLUMNNAME_Postal + ", " + I_C_Postal.COLUMNNAME_C_Postal_ID
 				+ "\n LIMIT ? OFFSET ?";
 
-		final Object[] sqlParams = new Object[] { filterUC, filterUC, limit, offset };
+		final Object[] sqlParams = new Object[] { filterUC, filterUC, sqlQueryLimit, offset };
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -220,21 +216,23 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
-			final List<LookupValue> lookupValues = new ArrayList<>();
+			boolean hasMoreResults = false;
+			final ArrayList<LookupValue> lookupValues = new ArrayList<>();
 			while (rs.next())
 			{
-				final int postalId = rs.getInt(I_C_Postal.COLUMNNAME_C_Postal_ID);
-				final String postal = rs.getString(I_C_Postal.COLUMNNAME_Postal);
-				final String city = rs.getString(I_C_Postal.COLUMNNAME_City);
-				final String township = rs.getString(I_C_Postal.COLUMNNAME_Township);
-				final int countryId = rs.getInt(I_C_Postal.COLUMNNAME_C_Country_ID);
-
-				final LookupValue countryLookupValue = countryLookup.getLookupValueById(countryId);
-
-				lookupValues.add(buildPostalLookupValue(postalId, postal, city, township, countryLookupValue.getDisplayNameTrl()));
+				if (lookupValues.size() >= pageLength)
+				{
+					hasMoreResults = true;
+					break;
+				}
+				else
+				{
+					final IntegerLookupValue lookupValue = retrievePostalLookupValue(rs);
+					lookupValues.add(lookupValue);
+				}
 			}
 
-			return LookupValuesList.fromCollection(lookupValues);
+			return LookupValuesPage.ofValuesAndHasMoreFlag(lookupValues, hasMoreResults);
 		}
 		catch (final SQLException ex)
 		{
@@ -244,6 +242,18 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 		{
 			DB.close(rs, pstmt);
 		}
+	}
+
+	@NonNull
+	private IntegerLookupValue retrievePostalLookupValue(final ResultSet rs) throws SQLException
+	{
+		final int postalId = rs.getInt(I_C_Postal.COLUMNNAME_C_Postal_ID);
+		final String postal = rs.getString(I_C_Postal.COLUMNNAME_Postal);
+		final String city = rs.getString(I_C_Postal.COLUMNNAME_City);
+		final String township = rs.getString(I_C_Postal.COLUMNNAME_Township);
+		final int countryId = rs.getInt(I_C_Postal.COLUMNNAME_C_Country_ID);
+		final LookupValue countryLookupValue = countryLookup.getLookupValueById(countryId);
+		return buildPostalLookupValue(postalId, postal, city, township, countryLookupValue.getDisplayNameTrl());
 	}
 
 	public IntegerLookupValue getLookupValueFromLocation(final I_C_Location locationRecord)
@@ -264,7 +274,7 @@ public class AddressPostalLookupDescriptor implements LookupDescriptor, LookupDa
 				countryLookupValue.getDisplayNameTrl());
 	}
 
-	private static final IntegerLookupValue buildPostalLookupValue(
+	private static IntegerLookupValue buildPostalLookupValue(
 			final int postalId,
 			final String postal,
 			final String city,

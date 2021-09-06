@@ -1,22 +1,13 @@
 package de.metas.ui.web.quickinput.forecastline;
 
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.expression.api.ConstantLogicExpression;
-import org.compiere.model.I_M_Forecast;
-import org.compiere.util.DisplayType;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.order.api.IHUOrderBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.lang.SOTrx;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.product.ProductId;
+import de.metas.ui.web.material.adapter.AvailableForSaleAdapter;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInput;
@@ -38,6 +29,15 @@ import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.ProductAndA
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.expression.api.ConstantLogicExpression;
+import org.compiere.model.I_M_Forecast;
+import org.compiere.util.DisplayType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -66,6 +66,10 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 {
 	@Autowired
 	private AvailableToPromiseAdapter availableToPromiseAdapter;
+	@Autowired
+	private AvailableForSaleAdapter availableForSaleAdapter;
+	@Autowired
+	private AvailableForSalesConfigRepo availableForSalesConfigRepo;
 
 	@Override
 	public Set<MatchingKey> getMatchingKeys()
@@ -86,49 +90,46 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 		return QuickInputDescriptor.of(entityDescriptor, layout, ForecastLineQuickInputProcessor.class);
 	}
 
-	private DocumentEntityDescriptor createEntityDescriptor(
-			final DocumentId documentTypeId,
-			final DetailId detailId,
-			@NonNull final Optional<SOTrx> soTrx)
-	{
-		return createDescriptorBuilder(documentTypeId, detailId)
-				.addField(createProductFieldBuilder())
-				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), () -> createPackingInstructionFieldBuilder())
-				.addField(createQuantityFieldBuilder())
-				.setIsSOTrx(soTrx)
-				.build();
-	}
-
 	private static DocumentEntityDescriptor.Builder createDescriptorBuilder(final DocumentId documentTypeId, final DetailId detailId)
 	{
-		final DocumentEntityDescriptor.Builder entityDescriptor = DocumentEntityDescriptor.builder()
+		return DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.QuickInput, documentTypeId)
 				.disableDefaultTableCallouts()
 				// Defaults:
 				.setDetailId(detailId)
 				.setTableName(I_M_ForecastLine.Table_Name);
-		return entityDescriptor;
 	}
 
-	private Builder createProductFieldBuilder()
+	private static Builder createPackingInstructionFieldBuilder()
 	{
-		final Builder productFieldBuilder = DocumentFieldDescriptor.builder(IForecastLineQuickInput.COLUMNNAME_M_Product_ID)
-				.setCaption(Services.get(IMsgBL.class).translatable(IForecastLineQuickInput.COLUMNNAME_M_Product_ID))
+		return DocumentFieldDescriptor.builder(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.setCaption(Services.get(IMsgBL.class).translatable(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(ProductLookupDescriptor.builderWithStockInfo()
-						.bpartnerParamName(I_M_Forecast.COLUMNNAME_C_BPartner_ID)
-						.pricingDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
-						.availableStockDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
-						.availableToPromiseAdapter(availableToPromiseAdapter)
-						.build())
+				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
+						.setCtxTableName(null) // ctxTableName
+						.setCtxColumnName(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
+						.setDisplayType(DisplayType.TableDir)
+						.setAD_Val_Rule_ID(540365) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
+						.buildProvider())
+				.setValueClass(IntegerLookupValue.class)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.FALSE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField);
+	}
+
+	private static Builder createQuantityFieldBuilder()
+	{
+		return DocumentFieldDescriptor.builder(IForecastLineQuickInput.COLUMNNAME_Qty)
+				.setCaption(Services.get(IMsgBL.class).translatable(IForecastLineQuickInput.COLUMNNAME_Qty))
+				.setWidgetType(DocumentFieldWidgetType.Quantity)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
-				.addCallout(ForecastLineQuickInputDescriptorFactory::onProductChangedCallout)
 				.addCharacteristic(Characteristic.PublicField);
-		return productFieldBuilder;
 	}
 
 	private static void onProductChangedCallout(final ICalloutField calloutField)
@@ -153,38 +154,39 @@ public class ForecastLineQuickInputDescriptorFactory implements IQuickInputDescr
 		Services.get(IHUOrderBL.class).findM_HU_PI_Item_ProductForForecast(forecast, quickInputProduct, quickInputModel::setM_HU_PI_Item_Product);
 	}
 
-	private static Builder createPackingInstructionFieldBuilder()
+	private DocumentEntityDescriptor createEntityDescriptor(
+			final DocumentId documentTypeId,
+			final DetailId detailId,
+			@NonNull final Optional<SOTrx> soTrx)
 	{
-		final Builder packingInstructionFieldBuilder = DocumentFieldDescriptor.builder(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
-				.setCaption(Services.get(IMsgBL.class).translatable(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID))
-				//
-				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(SqlLookupDescriptor.builder()
-						.setCtxTableName(null) // ctxTableName
-						.setCtxColumnName(IForecastLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID)
-						.setDisplayType(DisplayType.TableDir)
-						.setAD_Val_Rule_ID(540365) // FIXME: hardcoded "M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised"
-						.buildProvider())
-				.setValueClass(IntegerLookupValue.class)
-				.setReadonlyLogic(ConstantLogicExpression.FALSE)
-				.setAlwaysUpdateable(true)
-				.setMandatoryLogic(ConstantLogicExpression.FALSE)
-				.setDisplayLogic(ConstantLogicExpression.TRUE)
-				.addCharacteristic(Characteristic.PublicField);
-		return packingInstructionFieldBuilder;
+		return createDescriptorBuilder(documentTypeId, detailId)
+				.addField(createProductFieldBuilder())
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), ForecastLineQuickInputDescriptorFactory::createPackingInstructionFieldBuilder)
+				.addField(createQuantityFieldBuilder())
+				.setIsSOTrx(soTrx)
+				.build();
 	}
 
-	private static Builder createQuantityFieldBuilder()
+	private Builder createProductFieldBuilder()
 	{
-		final Builder qtyFieldBuilder = DocumentFieldDescriptor.builder(IForecastLineQuickInput.COLUMNNAME_Qty)
-				.setCaption(Services.get(IMsgBL.class).translatable(IForecastLineQuickInput.COLUMNNAME_Qty))
-				.setWidgetType(DocumentFieldWidgetType.Quantity)
+		return DocumentFieldDescriptor.builder(IForecastLineQuickInput.COLUMNNAME_M_Product_ID)
+				.setCaption(Services.get(IMsgBL.class).translatable(IForecastLineQuickInput.COLUMNNAME_M_Product_ID))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(ProductLookupDescriptor.builderWithStockInfo()
+						.bpartnerParamName(I_M_Forecast.COLUMNNAME_C_BPartner_ID)
+						.pricingDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
+						.availableStockDateParamName(I_M_Forecast.COLUMNNAME_DatePromised)
+						.availableToPromiseAdapter(availableToPromiseAdapter)
+						.availableForSaleAdapter(availableForSaleAdapter)
+						.availableForSalesConfigRepo(availableForSalesConfigRepo)
+						.build())
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
+				.addCallout(ForecastLineQuickInputDescriptorFactory::onProductChangedCallout)
 				.addCharacteristic(Characteristic.PublicField);
-		return qtyFieldBuilder;
 	}
 
 	private static QuickInputLayoutDescriptor createLayout(final DocumentEntityDescriptor entityDescriptor)

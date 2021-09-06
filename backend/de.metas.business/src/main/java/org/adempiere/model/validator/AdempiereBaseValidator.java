@@ -17,6 +17,7 @@ import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;
 import de.metas.notification.NotificationGroupName;
+import de.metas.organization.interceptors.C_Fiscal_Representation;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
 import de.metas.util.Services;
 import de.metas.workflow.interceptors.AD_Workflow;
@@ -194,6 +195,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(new org.adempiere.ad.column.model.interceptor.AD_SQLColumn_SourceTableColumn());
 
 		engine.addModelValidator(new AD_Element());
+
+		engine.addModelValidator(new C_Fiscal_Representation());
 	}
 
 	@Override

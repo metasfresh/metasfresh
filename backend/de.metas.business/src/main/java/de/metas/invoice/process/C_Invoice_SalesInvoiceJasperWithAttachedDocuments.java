@@ -3,6 +3,7 @@ package de.metas.invoice.process;
 import lombok.NonNull;
 
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 
 import de.metas.process.IProcessPrecondition;
@@ -46,7 +47,7 @@ public class C_Invoice_SalesInvoiceJasperWithAttachedDocuments extends ReportSta
 	@Override
 	protected ExecuteReportStrategy getExecuteReportStrategy()
 	{
-		return Adempiere.getBean(C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy.class);
+		return SpringContextHolder.instance.getBean(C_Invoice_SalesInvoiceJasperWithAttachedDocumentsStrategy.class);
 	}
 
 }

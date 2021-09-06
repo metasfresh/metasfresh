@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -308,15 +309,15 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
-	public String buildContactName(final String firstName, final String lastName)
+	public String buildContactName(@Nullable final String firstName, @Nullable final String lastName)
 	{
 		final StringBuilder contactName = new StringBuilder();
-		if (!Check.isEmpty(lastName, true))
+		if (lastName != null && !Check.isBlank(lastName))
 		{
 			contactName.append(lastName.trim());
 		}
 
-		if (!Check.isEmpty(firstName, true))
+		if (firstName != null && !Check.isBlank(firstName))
 		{
 			if (contactName.length() > 0)
 			{

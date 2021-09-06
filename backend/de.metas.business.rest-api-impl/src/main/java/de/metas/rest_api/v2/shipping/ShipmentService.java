@@ -33,7 +33,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentInfo;
 import de.metas.common.shipping.v2.shipment.JsonCreateShipmentRequest;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
@@ -97,7 +96,6 @@ public class ShipmentService
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final ICountryCodeFactory countryCodeFactory = Services.get(ICountryCodeFactory.class);
@@ -128,7 +126,7 @@ public class ShipmentService
 		validateRequest(request, cache);
 		updateShipmentSchedules(request.getCreateShipmentInfoList(), cache);
 
-		return generateShipments(toGenerateShipmentsRequest(request, cache));
+		return generateShipments(toGenerateShipmentsRequest(request));
 	}
 
 	private ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final JsonCreateShipmentRequest request)
@@ -232,7 +230,6 @@ public class ShipmentService
 	{
 		return ApplyShipmentScheduleChangesRequest.builder()
 				.shipmentScheduleId(request.getShipmentScheduleId())
-				.qtyToDeliverStockingUOM(request.getQtyToDeliverInStockingUOM())
 				.deliveryDate(request.getDeliveryDate())
 				.deliveryRule(request.getDeliveryRule())
 				.attributes(request.getAttributes())
@@ -267,7 +264,6 @@ public class ShipmentService
 			@NonNull final ShipmentService.ShippingInfoCache cache)
 	{
 		final LocalDateTime deliveryDate = createShipmentInfo.getMovementDate();
-		final BigDecimal qtyToDeliverInStockingUOM = createShipmentInfo.getMovementQuantity();
 		final LocationBasicInfo bPartnerLocation = LocationBasicInfo.ofNullable(createShipmentInfo.getShipToLocation(), countryCodeFactory)
 				.orElse(null);
 		final String bpartnerCode = createShipmentInfo.getBusinessPartnerSearchKey();
@@ -276,7 +272,6 @@ public class ShipmentService
 		final ShipperId shipperId = cache.getShipperId(createShipmentInfo.getShipperInternalName());
 
 		if (deliveryDate == null
-				&& qtyToDeliverInStockingUOM == null
 				&& bPartnerLocation == null
 				&& Check.isBlank(bpartnerCode)
 				&& Check.isEmpty(attributes)
@@ -300,21 +295,21 @@ public class ShipmentService
 				.bPartnerLocation(bPartnerLocation)
 				.attributes(attributeInstanceRequestList)
 				.deliveryDate(TimeUtil.asZonedDateTime(deliveryDate, timeZoneId))
-				.qtyToDeliverInStockingUOM(qtyToDeliverInStockingUOM)
 				.deliveryRule(deliveryRule)
 				.shipperId(shipperId)
 				.build();
 	}
 
-	private GenerateShipmentsRequest toGenerateShipmentsRequest(@NonNull final JsonCreateShipmentRequest request, @NonNull final ShipmentService.ShippingInfoCache cache)
+	private GenerateShipmentsRequest toGenerateShipmentsRequest(@NonNull final JsonCreateShipmentRequest request)
 	{
-		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfoBuilder = new ImmutableMap.Builder<>();
+		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new ImmutableMap.Builder<>();
+		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliver = new ImmutableMap.Builder<>();
 
 		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIdsBuilder = new ImmutableSet.Builder<>();
 
-		request.getCreateShipmentInfoList().forEach(createShipmentInfo -> {
+		for (final JsonCreateShipmentInfo createShipmentInfo : request.getCreateShipmentInfoList())
+		{
 			final ShipmentScheduleId shipmentScheduleId = extractShipmentScheduleId(createShipmentInfo);
-
 			shipmentScheduleIdsBuilder.add(shipmentScheduleId);
 
 			if (Check.isNotBlank(createShipmentInfo.getDocumentNo()))
@@ -323,14 +318,20 @@ public class ShipmentService
 						.builder()
 						.documentNo(createShipmentInfo.getDocumentNo())
 						.build();
-
-				scheduleId2ExternalInfoBuilder.put(shipmentScheduleId, externalInfo);
+				scheduleId2ExternalInfo.put(shipmentScheduleId, externalInfo);
 			}
-		});
+
+			final BigDecimal qtyToDeliverInStockingUOM = createShipmentInfo.getMovementQuantity();
+			if (qtyToDeliverInStockingUOM != null)
+			{
+				scheduleToQuantityToDeliver.put(shipmentScheduleId, qtyToDeliverInStockingUOM);
+			}
+		}
 
 		final GenerateShipmentsRequest.GenerateShipmentsRequestBuilder generateShipmentsRequestBuilder = GenerateShipmentsRequest.builder()
 				.scheduleIds(shipmentScheduleIdsBuilder.build())
-				.scheduleToExternalInfo(scheduleId2ExternalInfoBuilder.build())
+				.scheduleToExternalInfo(scheduleId2ExternalInfo.build())
+				.scheduleToQuantityToDeliverOverride(scheduleToQuantityToDeliver.build())
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
 
 		return generateShipmentsRequestBuilder.build();
@@ -342,13 +343,19 @@ public class ShipmentService
 				.createCompositeQueryFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.class)
 				.addInArrayFilter(de.metas.handlingunits.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, request.getScheduleIds());
 
+		// Wait until processed because the next call might contain the same shipment schedules as the current one.
+		// In this case enqueing the same shipmentschedule will fail, because it requires a an exclusive lock and the sched is still enqueued from the current lock
+		// See ShipmentScheduleEnqueuer.acquireLock(...)
+		final boolean waitUtilProcessed = true;
+
 		final ShipmentScheduleWorkPackageParameters workPackageParameters = ShipmentScheduleWorkPackageParameters.builder()
 				.adPInstanceId(adPInstanceDAO.createSelectionId())
 				.queryFilters(queryFilters)
 				.quantityType(request.getQuantityTypeToUse())
 				.completeShipments(true)
-				//.waitUtilProcessed(true) // return directly when the workpackage is enqueued
+				.waitUtilProcessed(waitUtilProcessed)
 				.advisedShipmentDocumentNos(request.extractShipmentDocumentNos())
+				.qtysToDeliverOverride(request.getScheduleToQuantityToDeliverOverride())
 				.build();
 
 		return new ShipmentScheduleEnqueuer()
@@ -365,8 +372,8 @@ public class ShipmentService
 		else
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-					.bpartnerValue(bPartnerValue)
-					.build());
+															.bpartnerValue(bPartnerValue)
+															.build());
 		}
 	}
 

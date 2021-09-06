@@ -22,9 +22,12 @@ package de.metas.util;
  * #L%
  */
 
+import lombok.NonNull;
+import org.adempiere.util.lang.ITableRecordReference;
+
 /**
  * Interface implementations can be passed to business logic to perform high-level logging. Use {@link Loggables} to get an instance.
- *
+ * <p>
  * NOTE: The signature of this interface {@link #addLog(String, Object...)} method is chosen so that all classes like de.metas.process.JavaProcess subclasses can implement it without further code changes.
  *
  * @author metas-dev <dev@metasfresh.com>
@@ -36,8 +39,21 @@ public interface ILoggable
 	 */
 	ILoggable addLog(String msg, Object... msgParameters);
 
-	/** Flush any buffered logs */
+	/**
+	 * Flush any buffered logs
+	 */
 	default void flush()
 	{
+	}
+
+	/**
+	 * Do nothing by default.
+	 */
+	default ILoggable addTableRecordReferenceLog(final ITableRecordReference recordRef, final String type, final String trxName)
+	{
+		// Adding a log message turned out to be *really* expensive for e.g. some workpackages with a very noticable performance impact 
+		// this.addLog("addTableRecordReferenceLog called on {} with args: ad_table_id: {}, record_id: {}, type: {}. trxName: {}",
+		// 			this.getClass().getSimpleName(), recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), type, trxName);
+		return this;
 	}
 }

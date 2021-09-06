@@ -119,7 +119,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 	private Quantity catchQty = null;
 
 	/* Used to collect the candidates' QtyTU for the case that we need to create the shipment line without actually picked HUs. */
-	private HashMap<HUPIItemProductId, QuantityTU> piipId2TuQtyFromShipmentSchedule = new HashMap<>();
+	private final HashMap<HUPIItemProductId, QuantityTU> piipId2TuQtyFromShipmentSchedule = new HashMap<>();
 
 	/**
 	 * Candidates which were added to this builder
@@ -550,10 +550,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 	/**
 	 * Assign collected LU/TU pairs.
-	 *
-	 * @param shipmentLine
 	 */
-	private final void createShipmentLineHUAssignments(final I_M_InOutLine shipmentLine)
+	private void createShipmentLineHUAssignments(final I_M_InOutLine shipmentLine)
 	{
 		// Assign Handling Units to shipment line
 		boolean haveHUAssigments = false;
@@ -576,7 +574,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		}
 	}
 
-	private final void transferAttributesToShipmentLine(
+	private void transferAttributesToShipmentLine(
 			@NonNull final I_M_InOutLine shipmentLine,
 			@NonNull final I_M_HU hu)
 	{
@@ -637,8 +635,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 	 * This set will be updated by this builder when TUs are assigned.
 	 * <p>
 	 * When this shipment line will try to assign an TU which is on this list, it will set the {@link I_M_HU_Assignment#setIsTransferPackingMaterials(boolean)} to <code>false</code>.
-	 *
-	 * @param alreadyAssignedTUIds
 	 */
 	public void setAlreadyAssignedTUIds(final Set<HuId> alreadyAssignedTUIds)
 	{

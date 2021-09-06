@@ -81,7 +81,9 @@ try {
                     } // configFileProvider
 
             cucumber failedFeaturesNumber: -1, failedScenariosNumber: -1, failedStepsNumber: -1, fileIncludePattern: '**/target/cucumber.json', pendingStepsNumber: -1, skippedStepsNumber: -1, sortingMethod: 'ALPHABETICAL', undefinedStepsNumber: -1
-            cleanWs cleanWhenAborted: false, cleanWhenFailure: false // clean up the workspace after (successfull) builds
+
+            // always clean up the workspace. otherwise, if e.g. github or docker-hub acts up all out jenkins nodes' disk might run full
+            cleanWs cleanWhenAborted: true, cleanWhenFailure: true
         } // node
     } // timestamps
 } catch (all) {

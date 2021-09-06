@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs;
 
-import de.metas.procurement.base.IWebuiPush;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -32,7 +31,6 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
@@ -64,15 +62,10 @@ public class AD_User_StepDef
 	@Given("metasfresh contains AD_Users:")
 	public void metasfresh_contains_ad_users(@NonNull final DataTable dataTable)
 	{
-		final IWebuiPush webuiPush = Services.get(IWebuiPush.class);
-
-		try (final IAutoCloseable ignore = webuiPush.disable()) // don't fire a message towards the procurement webui, because we don't want the queue be messed up with and unexpected message
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
 		{
-			final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-			for (final Map<String, String> tableRow : tableRows)
-			{
-				createUser(tableRow);
-			}
+			createUser(tableRow);
 		}
 	}
 

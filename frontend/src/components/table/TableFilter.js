@@ -262,9 +262,12 @@ class TableFilter extends PureComponent {
               </button>
             )}
             {!isBatchEntry && this.actionButtons}
-            {!isBatchEntry && (
-              <TableFilterContextShortcuts shortcutActions={shortcutActions} />
-            )}
+            {!isBatchEntry &&
+              (shortcutActions.length ? (
+                <TableFilterContextShortcuts
+                  shortcutActions={shortcutActions}
+                />
+              ) : null)}
           </div>
           {supportQuickInput &&
             (isBatchEntry || fullScreen) &&
@@ -316,7 +319,9 @@ const mapStateToProps = ({ windowHandler }) => ({
   modalVisible: windowHandler.modal.visible,
 });
 
-export default connect(
-  mapStateToProps,
-  { fetchTopActions, deleteTopActions, openModal, addNotification }
-)(TableFilter);
+export default connect(mapStateToProps, {
+  fetchTopActions,
+  deleteTopActions,
+  openModal,
+  addNotification,
+})(TableFilter);

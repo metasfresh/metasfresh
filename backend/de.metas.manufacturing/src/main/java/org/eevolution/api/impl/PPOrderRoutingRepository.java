@@ -174,6 +174,10 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 			InterfaceWrapperHelper.delete(orderNodeNext);
 		}
 
+		for (final I_PP_Order_Node_Product products: retrieveOrderNodeProducts(orderId))
+		{
+			InterfaceWrapperHelper.delete(products);
+		}
 		//
 		// Delete PP_Order_Node
 		for (final I_PP_Order_Node orderNode : retrieveOrderNodes(orderId))

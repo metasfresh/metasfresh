@@ -1,45 +1,5 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
-import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiFunction;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.text.annotation.ToStringBuilder;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Tax;
-import org.compiere.model.I_M_InventoryLine;
-
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -56,12 +16,29 @@ import de.metas.money.MoneyService;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.text.annotation.ToStringBuilder;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InventoryLine;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
+
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 /**
  * Aggregates {@link InvoiceCandidateWithInOutLine}s and creates one {@link IInvoiceCandAggregate}.
@@ -596,7 +573,7 @@ import lombok.ToString;
 	}
 
 	/** @return effective tax to use in invoice line */
-	private final I_C_Tax getC_Tax()
+	private final Tax getC_Tax()
 	{
 		final I_C_Invoice_Candidate firstCand = getFirstInvoiceCandidate();
 		return invoiceCandBL.getTaxEffective(firstCand);

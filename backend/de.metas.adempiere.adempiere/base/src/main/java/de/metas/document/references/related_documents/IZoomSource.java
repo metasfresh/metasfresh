@@ -22,14 +22,18 @@
 
 package de.metas.document.references.related_documents;
 
-import java.util.Properties;
-
+import de.metas.document.references.related_documents.generic.GenericRelatedDocumentsProvider;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.compiere.model.I_AD_Column;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 
+import java.util.Properties;
+
+/**
+ * The document for which we shall find out the related documents.
+ */
 public interface IZoomSource
 {
 	Properties getCtx();
@@ -46,19 +50,19 @@ public interface IZoomSource
 
 	/**
 	 * The name of the column from which the zoom originates.<br>
-	 * In other words, the name of the column for which the system tries to load {@link IZoomProvider}s.
-	 *
+	 * In other words, the name of the column for which the system tries to load {@link IRelatedDocumentsProvider}s.
+	 * <p>
 	 * Example: when looking for zoom-targets from a {@code C_Order} window, then this is {@code C_Order_ID}.
 	 *
 	 * @return The name of the single ID column which has {@link I_AD_Column#COLUMN_IsGenericZoomOrigin} {@code ='Y'}.
-	 *         May also return {@code null}. In this case, expect no exception, but also no zoom providers to be created.
+	 * May also return {@code null}. In this case, expect no exception, but also no zoom providers to be created.
 	 */
 	String getKeyColumnNameOrNull();
 
 	/**
-	 * @return {@code true} if the zoom source shall be considered by {@link GenericZoomProvider}.
-	 *         We have dedicated flag because the generic zoom provide can be very nice<br>
-	 *         (no need to set up relation types) but also very performance intensive.
+	 * @return {@code true} if the zoom source shall be considered by {@link GenericRelatedDocumentsProvider}.
+	 * We have dedicated flag because the generic zoom provide can be very nice<br>
+	 * (no need to set up relation types) but also very performance intensive.
 	 */
 	boolean isGenericZoomOrigin();
 

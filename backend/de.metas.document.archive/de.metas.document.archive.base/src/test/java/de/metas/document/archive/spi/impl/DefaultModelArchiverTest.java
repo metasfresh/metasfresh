@@ -39,11 +39,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.model.I_C_Invoice;
+import de.metas.invoicecandidate.model.I_C_Invoice;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static de.metas.document.archive.spi.impl.MockedDocumentReportService.MOCKED_REPORT_FILENAME;
 
 class DefaultModelArchiverTest
 {
@@ -97,16 +99,18 @@ class DefaultModelArchiverTest
 		invoice.setDocumentNo("ExpectedDocumentNo");
 		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
 		invoice.setC_DocType_ID(docTypeId.getRepoId());
+		invoice.setC_Async_Batch_ID(1);
 		InterfaceWrapperHelper.save(invoice);
 
 		final ArchiveResult archiveResult = archive(invoice);
 		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
-		//Assertions.assertThat(archiveRecord.getName()).isEqualTo("ExpectedDocumentNo");
 		Assertions.assertThat(archiveRecord.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_C_Invoice.class));
 		Assertions.assertThat(archiveRecord.getRecord_ID()).isEqualTo(invoice.getC_Invoice_ID());
 		Assertions.assertThat(archiveRecord.getC_BPartner_ID()).isEqualTo(invoice.getC_BPartner_ID());
 		Assertions.assertThat(archiveRecord.getAD_Language()).isEqualTo("ro_RO");
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
+		Assertions.assertThat(archiveRecord.getC_Async_Batch_ID()).isEqualTo(invoice.getC_Async_Batch_ID());
+		Assertions.assertThat(archiveRecord.getC_Async_Batch_ID()).isEqualTo(invoice.getC_Async_Batch_ID());
 	}
 
 	@Test
@@ -121,17 +125,18 @@ class DefaultModelArchiverTest
 				.build();
 
 		final I_Test record = InterfaceWrapperHelper.newInstance(I_Test.class);
-		record.setName("ExpectedDocumentNo");
 		record.setC_BPartner_ID(bpartnerId.getRepoId());
+		record.setC_Async_Batch_ID(1);
 		InterfaceWrapperHelper.save(record);
 
 		final ArchiveResult archiveResult = archive(record);
 		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
-		//Assertions.assertThat(archiveRecord.getName()).isEqualTo("ExpectedDocumentNo");
 		Assertions.assertThat(archiveRecord.getAD_Table_ID()).isEqualTo(InterfaceWrapperHelper.getTableId(I_Test.class));
 		Assertions.assertThat(archiveRecord.getRecord_ID()).isEqualTo(record.getTest_ID());
 		Assertions.assertThat(archiveRecord.getC_BPartner_ID()).isEqualTo(record.getC_BPartner_ID());
 		Assertions.assertThat(archiveRecord.getAD_Language()).isEqualTo("ro_RO");
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
+		Assertions.assertThat(archiveRecord.getName()).isEqualTo(MOCKED_REPORT_FILENAME);
+		Assertions.assertThat(archiveRecord.getC_Async_Batch_ID()).isEqualTo(record.getC_Async_Batch_ID());
 	}
 }

@@ -39,27 +39,10 @@ export default class SelectionDropdown extends Component {
     window.removeEventListener('keyup', this.handleKeyUp);
   }
 
-  /**
-   * @method UNSAFE_componentWillReceiveProps
-   * @summary ToDo: Describe the method.
-   */
   UNSAFE_componentWillReceiveProps(propsNext) {
-    if (propsNext.options !== this.props.options) {
+    if (propsNext.listHash !== this.props.listHash) {
       this.optionToRef.clear();
     }
-  }
-
-  /**
-   * @method size
-   * @summary ToDo: Describe the method.
-   * @param {*} options
-   */
-  size(options) {
-    if (Array.isArray(options)) {
-      return options.length;
-    }
-
-    return options.size;
   }
 
   /**
@@ -83,10 +66,8 @@ export default class SelectionDropdown extends Component {
    * @param {*} up
    */
   scrollIntoView(element, up) {
-    const {
-      top: topMax,
-      bottom: bottomMax,
-    } = this.wrapper.getBoundingClientRect();
+    const { top: topMax, bottom: bottomMax } =
+      this.wrapper.getBoundingClientRect();
     const { top, bottom } = element.getBoundingClientRect();
 
     if (top < topMax || bottom > bottomMax) {
@@ -104,7 +85,7 @@ export default class SelectionDropdown extends Component {
     this.ignoreNextMouseEnter = true;
 
     const { selected, options, onChange } = this.props;
-    const size = this.size(options);
+    const size = options.length;
     let index = options.indexOf(selected);
 
     if (up) {
@@ -306,7 +287,7 @@ export default class SelectionDropdown extends Component {
 
   render() {
     const { options, width, height, loading, forceEmpty } = this.props;
-    const empty = this.size(options) === 0;
+    const empty = options.length === 0;
     const style = {
       width,
       height: height ? height : '200px',
@@ -338,18 +319,11 @@ export default class SelectionDropdown extends Component {
  * @prop {func} onSelect
  * @prop {bool} allowShortcut
  * @prop {func} onCancel
+ * @prop {string} listHash,
  */
 SelectionDropdown.propTypes = {
-  options: PropTypes.oneOfType([
-    PropTypes.array,
-    PropTypes.shape({
-      map: PropTypes.func.isRequired,
-      includes: PropTypes.func.isRequired,
-      indexOf: PropTypes.func.isRequired,
-      get: PropTypes.func.isRequired,
-      size: PropTypes.number.isRequired,
-    }),
-  ]).isRequired,
+  options: PropTypes.array.isRequired,
+  listHash: PropTypes.string,
   selected: PropTypes.object,
   empty: PropTypes.node,
   forceEmpty: PropTypes.bool,

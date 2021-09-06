@@ -189,17 +189,6 @@ function filterViewSuccess(id, data, isModal) {
 }
 
 /**
- * @method filterViewError
- * @summary
- */
-function filterViewError(id, error, isModal) {
-  return {
-    type: FILTER_VIEW_ERROR,
-    payload: { id, error, isModal },
-  };
-}
-
-/**
  * @method fetchLocationConfigSuccess
  * @summary
  */
@@ -385,10 +374,8 @@ export function fetchDocument({
           response.data.result &&
           response.data.result.length
         ) {
-          const {
-            includedView,
-            supportIncludedViews,
-          } = response.data.result[0];
+          const { includedView, supportIncludedViews } =
+            response.data.result[0];
           const includedWindowId = supportIncludedViews
             ? state.viewHandler.includedView.windowId ||
               includedView.windowType ||
@@ -519,6 +506,17 @@ export function fetchLayout(
 
         return Promise.reject(error);
       });
+  };
+}
+
+/**
+ * @method filterViewError
+ * @summary
+ */
+function filterViewError(id, error, isModal) {
+  return {
+    type: FILTER_VIEW_ERROR,
+    payload: { id, error, isModal },
   };
 }
 
