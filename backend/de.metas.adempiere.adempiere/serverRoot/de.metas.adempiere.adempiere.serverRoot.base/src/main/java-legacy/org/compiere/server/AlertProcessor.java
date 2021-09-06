@@ -46,9 +46,9 @@ import com.google.common.collect.ImmutableList;
 
 import de.metas.event.Topic;
 import de.metas.i18n.Msg;
-import de.metas.impexp.excel.ExcelFormats;
-import de.metas.impexp.excel.JdbcExcelExporter;
-import de.metas.impexp.excel.service.ExcelExporterService;
+import de.metas.impexp.spreadsheet.excel.ExcelFormats;
+import de.metas.impexp.spreadsheet.excel.JdbcExcelExporter;
+import de.metas.impexp.spreadsheet.service.SpreadsheetExporterService;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -347,7 +347,7 @@ public class AlertProcessor extends AdempiereServer
 	 */
 	private String getExcelReport(final MAlertRule rule, final String sql, final Collection<File> attachments) throws Exception
 	{
-		final ExcelExporterService excelExporterService = SpringContextHolder.instance.getBean(ExcelExporterService.class);
+		final SpreadsheetExporterService spreadsheetExporterService = SpringContextHolder.instance.getBean(SpreadsheetExporterService.class);
 
 		final File file = rule.createReportFile(ExcelFormats.getDefaultFileExtension());
 
@@ -356,7 +356,7 @@ public class AlertProcessor extends AdempiereServer
 				.resultFile(file)
 				.build();
 
-		excelExporterService.processDataFromSQL(sql, jdbcExcelExporter);
+		spreadsheetExporterService.processDataFromSQL(sql, jdbcExcelExporter);
 
 		if(jdbcExcelExporter.isNoDataAddedYet())
 		{

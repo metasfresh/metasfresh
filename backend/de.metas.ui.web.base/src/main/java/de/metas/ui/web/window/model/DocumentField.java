@@ -1,27 +1,14 @@
 package de.metas.ui.web.window.model;
 
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import de.metas.util.lang.RepoIdAware;
-import org.adempiere.ad.callout.api.ICalloutField;
-import org.adempiere.ad.expression.api.LogicExpressionResult;
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
@@ -32,7 +19,17 @@ import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.util.NumberUtils;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.callout.api.ICalloutField;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -466,7 +463,7 @@ class DocumentField implements IDocumentField
 	private DocumentValidStatus computeValidStatus()
 	{
 		// Consider virtual fields as valid because there is nothing we can do about them
-		if (isVirtualField())
+		if (isReadonlyVirtualField())
 		{
 			return DocumentValidStatus.validField(getFieldName(), isInitialValue());
 		}
@@ -499,7 +496,7 @@ class DocumentField implements IDocumentField
 	@Override
 	public boolean hasChangesToSave()
 	{
-		if (isVirtualField())
+		if (isReadonlyVirtualField())
 		{
 			return false;
 		}

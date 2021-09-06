@@ -1476,6 +1476,27 @@ public interface I_M_Product
 	String COLUMNNAME_RawMaterialOrigin_ID = "RawMaterialOrigin_ID";
 
 	/**
+	 * Set Requires Supplier Approval.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRequiresSupplierApproval (boolean RequiresSupplierApproval);
+
+	/**
+	 * Get Requires Supplier Approval.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRequiresSupplierApproval();
+
+	ModelColumn<I_M_Product, Object> COLUMN_RequiresSupplierApproval = new ModelColumn<>(I_M_Product.class, "RequiresSupplierApproval", null);
+	String COLUMNNAME_RequiresSupplierApproval = "RequiresSupplierApproval";
+
+	/**
 	 * Set EMail-Vorlage.
 	 * Text templates for mailings
 	 *

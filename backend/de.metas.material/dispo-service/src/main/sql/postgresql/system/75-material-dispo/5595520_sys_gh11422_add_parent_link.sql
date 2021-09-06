@@ -1,0 +1,5 @@
+-- 2021-06-29T07:48:44.732Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET AD_Column_ID=574594, Parent_Column_ID=556473,Updated=TO_TIMESTAMP('2021-06-29 10:48:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=544108
+;
+

@@ -13,6 +13,7 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IAsyncBatchListener;
 import de.metas.letters.spi.INotifyAsyncBatch;
 import de.metas.util.Check;
+import lombok.NonNull;
 
 /**
  * @author cg
@@ -39,10 +40,13 @@ public class AsyncBatchListeners implements IAsyncBatchListeners
 	}
 
 	@Override
-	public void applyListener(final I_C_Async_Batch asyncBatch)
+	public void applyListener(@NonNull final I_C_Async_Batch asyncBatch)
 	{
-		final IAsyncBatchListener l = getListener(asyncBatch.getC_Async_Batch_Type().getInternalName());
-		l.createNotice(asyncBatch);
+		if(asyncBatch.getC_Async_Batch_Type_ID() > 0)
+		{
+			final IAsyncBatchListener l = getListener(asyncBatch.getC_Async_Batch_Type().getInternalName());
+			l.createNotice(asyncBatch);
+		}
 	}
 
 	private IAsyncBatchListener getListener(final String ascyncBatchType)

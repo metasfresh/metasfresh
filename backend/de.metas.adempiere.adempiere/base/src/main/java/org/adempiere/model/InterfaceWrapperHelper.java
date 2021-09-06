@@ -809,7 +809,7 @@ public class InterfaceWrapperHelper
 		return helpers.getPO(model, strict);
 	}
 
-	public static int getId(final Object model)
+	public static int getId(@Nullable final Object model)
 	{
 		if (model == null)
 		{
@@ -1242,11 +1242,18 @@ public class InterfaceWrapperHelper
 		return Optional.ofNullable(value);
 	}
 
+	@NonNull
+	public static <T> Optional<T> getValueOptional(final Object model, final String columnName)
+	{
+		final boolean throwExIfColumnNotFound = false;
+		final boolean useOverrideColumnIfAvailable = false;
+		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
+		return Optional.ofNullable(value);
+	}
+
 	/**
 	 * Gets [columnName]_Override if the override column is available and not null, else column name value is returned.
 	 *
-	 * @param model
-	 * @param columnName
 	 * @return value of [columnName]_Override or [columnName]; <b>might return null</b>, so don't blindly use as int.
 	 * @throws AdempiereException if neither the "normal" value nor the override value is available.
 	 *

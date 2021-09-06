@@ -185,7 +185,9 @@ public class MailRestController
 						.roleId(userSession.getLoggedRoleId())
 						.build());
 
-				attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, contextDocumentPrint.getReportFilename(), contextDocumentPrint.getReportData()));
+				attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, 
+																			   contextDocumentPrint.getReportFilename(), 
+																			   contextDocumentPrint.getReportData()));
 			}
 			catch (final Exception ex)
 			{

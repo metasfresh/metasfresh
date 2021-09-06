@@ -15,8 +15,6 @@
  * 
  */
 const getLanguageSpecific = (data, key) => {
-  getLanguageSpecificWorkaround();
-
   // noinspection JSUnresolvedVariable
   const checkArray = Array.isArray(Cypress.reduxStore.getState().appHandler.me.language);
   const lang = checkArray ? 'en_EN' : Cypress.reduxStore.getState().appHandler.me.language.key;

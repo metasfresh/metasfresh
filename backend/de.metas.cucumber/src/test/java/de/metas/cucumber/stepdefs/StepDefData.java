@@ -30,7 +30,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class StepDefData<T>
 {
@@ -51,6 +51,18 @@ public class StepDefData<T>
 		{
 			put(entry.getKey(), entry.getValue());
 		}
+	}
+
+	public void putIfMissing(@NonNull final String identifier, @NonNull final T record)
+	{
+		final T oldRecord = records.get(identifier);
+
+		if (oldRecord != null)
+		{
+			return;
+		}
+
+		put(identifier, record);
 	}
 
 	@NonNull
