@@ -89,7 +89,7 @@ const createInitialState = function(state = {}) {
   return res;
 };
 
-describe('MasterWindowContainer', () => {
+describe.skip('MasterWindowContainer', () => {
   const menuResponse = menuFixtures.menu1;
 
   let mockServer;
