@@ -40,14 +40,14 @@ class Label extends PureComponent {
    * @todo Write the documentation
    */
   render() {
-    const { label } = this.props;
+    const { label, hideCloseIcon } = this.props;
 
     return (
       <span className="labels-label" onClick={this.handleClick}>
         {label.caption}
         <span className="labels-label-remove" onClick={this.handleRemove}>
           {' '}
-          ✕
+          {!hideCloseIcon ? '✕' : ''}
         </span>
       </span>
     );
@@ -68,6 +68,7 @@ Label.propTypes = {
   onClick: PropTypes.func,
   onRemove: PropTypes.func,
   readonly: PropTypes.bool,
+  hideCloseIcon: PropTypes.bool,
 };
 
 Label.defaultProps = {

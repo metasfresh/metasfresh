@@ -1,8 +1,11 @@
 package de.metas.document.archive.spi.impl;
 
+import de.metas.async.AsyncBatchId;
+import de.metas.async.model.I_C_Async_Batch;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import org.compiere.model.I_AD_User;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
@@ -14,7 +17,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.IArchiveEventManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_Invoice;
+import de.metas.invoicecandidate.model.I_C_Invoice;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.Assertions;
@@ -57,6 +60,7 @@ public class DocOutboundArchiveEventListenerTest
 		invoice.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		invoice.setAD_User_ID(user.getAD_User_ID());
 		invoice.setDocStatus(DocStatus.Reversed.getCode());
+		invoice.setC_Async_Batch_ID(1);
 		InterfaceWrapperHelper.save(invoice);
 
 		final I_AD_Archive archive = createArchive(invoice);
@@ -64,6 +68,9 @@ public class DocOutboundArchiveEventListenerTest
 		final I_C_Doc_Outbound_Log_Line docExchangeLine = archiveBL.createLogLine(archive);
 
 		Assertions.assertEquals(documentNoExpected, docExchangeLine.getDocumentNo(), "Invalid DocumentNo");
+
+		final I_C_Doc_Outbound_Log docOutboundLog = docExchangeLine.getC_Doc_Outbound_Log();
+		Assertions.assertEquals(docOutboundLog.getC_Async_Batch_ID(),invoice.getC_Async_Batch_ID());
 	}
 
 	/**
@@ -101,6 +108,10 @@ public class DocOutboundArchiveEventListenerTest
 		archive.setName("Dummy_" + model);
 		archive.setIsActive(true);
 		archive.setIsReport(false);
+
+		InterfaceWrapperHelper.getValueOptional(model, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID)
+				.map(asyncBatchId -> (Integer)asyncBatchId)
+				.ifPresent(archive::setC_Async_Batch_ID);
 
 		InterfaceWrapperHelper.save(archive);
 		return archive;

@@ -6,9 +6,10 @@ import de.metas.security.UserRolePermissionsKey;
 import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
 import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
@@ -37,9 +38,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -93,26 +94,28 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 	public static final CtxName PARAM_Filter = CtxNames.parse("Filter");
 	public static final CtxName PARAM_FilterSql = CtxNames.parse("FilterSql");
+	public static final CtxName PARAM_FilterSqlWithoutWildcards = CtxNames.parse("FilterSqlWithoutWildcards");
 	public static final CtxName PARAM_ViewId = CtxNames.parse("ViewId");
 	public static final CtxName PARAM_ViewSize = CtxNames.parse("ViewSize");
 
-	private final String lookupTableName;
-	private final ImmutableMap<String, Object> parameterValues;
-	private final Object idToFilter;
-	private final INamePairPredicate postQueryPredicate;
+	@Nullable private final String lookupTableName;
+	@NonNull private final ImmutableMap<String, Object> parameterValues;
+	@NonNull private final IdsToFilter idsToFilter;
+	@Nullable private final INamePairPredicate postQueryPredicate;
 
 	private LookupDataSourceContext(
-			final String lookupTableName,
+			@Nullable final String lookupTableName,
 			@NonNull final ImmutableMap<String, Object> parameterValues,
-			@Nullable final Object idToFilter,
+			@NonNull final IdsToFilter idToFilter,
 			@Nullable final INamePairPredicate postQueryPredicate)
 	{
 		this.lookupTableName = lookupTableName;
 		this.parameterValues = parameterValues;
-		this.idToFilter = idToFilter;
+		this.idsToFilter = idToFilter;
 		this.postQueryPredicate = postQueryPredicate;
 	}
 
+	@Nullable
 	public String getFilter()
 	{
 		return get_ValueAsString(PARAM_Filter.getName());
@@ -168,6 +171,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return withParameter(SqlForFetchingLookups.PARAM_Offset.getName(), offsetEffective);
 	}
 
+	@Nullable
 	public String getAD_Language()
 	{
 		return get_ValueAsString(PARAM_AD_Language.getName());
@@ -182,12 +186,12 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	@Override
 	public <T> T get_ValueAsObject(final String variableName)
 	{
-		@SuppressWarnings("unchecked")
-		final T valueCasted = (T)parameterValues.get(variableName);
+		@SuppressWarnings("unchecked") final T valueCasted = (T)parameterValues.get(variableName);
 		return valueCasted;
 	}
 
 	@Override
+	@Nullable
 	public String get_ValueAsString(final String variableName)
 	{
 		final Object value = parameterValues.get(variableName);
@@ -217,13 +221,15 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	}
 
 	@Override
-	public Integer get_ValueAsInt(final String variableName, final Integer defaultValue)
+	@Nullable
+	public Integer get_ValueAsInt(final String variableName, @Nullable final Integer defaultValue)
 	{
 		final Object value = parameterValues.get(variableName);
 		return convertValueToInteger(value, defaultValue);
 	}
 
-	private static Integer convertValueToInteger(final Object value, final Integer defaultValue)
+	@Nullable
+	private static Integer convertValueToInteger(final Object value, @Nullable final Integer defaultValue)
 	{
 		if (value == null)
 		{
@@ -259,6 +265,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return convertValueToDate(value, defaultValue);
 	}
 
+	@Nullable
 	private static Date convertValueToDate(final Object value, final Date defaultValue)
 	{
 		if (value == null)
@@ -287,6 +294,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	}
 
 	@Override
+	@Nullable
 	public String get_ValueOldAsString(final String variableName)
 	{
 		// TODO implement get_ValueOldAsString
@@ -309,36 +317,25 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return postQueryPredicate == null || NamePairPredicates.ACCEPT_ALL.equals(postQueryPredicate);
 	}
 
+	@NonNull
+	public IdsToFilter getIdsToFilter() { return idsToFilter; }
 
-	public Object getIdToFilter()
+	@Nullable
+	public Object getSingleIdToFilterAsObject()
 	{
-		return idToFilter;
+		return idsToFilter.getSingleValueAsObject();
 	}
 
-	public Integer getIdToFilterAsInt(final Integer defaultValue)
+	@Nullable
+	public Integer getIdToFilterAsInt(@Nullable final Integer defaultValue)
 	{
-		if (idToFilter == null)
-		{
-			return defaultValue;
-		}
-		else if (idToFilter instanceof Number)
-		{
-			return ((Number)idToFilter).intValue();
-		}
-		else
-		{
-			final String idToFilterStr = idToFilter.toString();
-			if (idToFilterStr.isEmpty())
-			{
-				return defaultValue;
-			}
-			return Integer.parseInt(idToFilterStr);
-		}
+		return idsToFilter.getSingleValueAsInteger(defaultValue);
 	}
 
+	@Nullable
 	public String getIdToFilterAsString()
 	{
-		return idToFilter != null ? idToFilter.toString() : null;
+		return idsToFilter.getSingleValueAsString();
 	}
 
 	public ViewId getViewId()
@@ -374,8 +371,55 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		return new LookupDataSourceContext(
 				lookupTableName,
 				ImmutableMap.copyOf(newParameterValues),
-				idToFilter,
+				idsToFilter,
 				postQueryPredicate);
+	}
+
+	public LookupDataSourceContext withIdToFilter(@NonNull final IdsToFilter idsToFilter)
+	{
+		if (IdsToFilter.equals(this.idsToFilter, idsToFilter))
+		{
+			return this;
+		}
+
+		return new LookupDataSourceContext(
+				lookupTableName,
+				parameterValues,
+				idsToFilter,
+				postQueryPredicate);
+	}
+
+	public Stream<LookupDataSourceContext> streamSingleIdContexts()
+	{
+		return idsToFilter.streamSingleValues().map(this::withIdToFilter);
+	}
+
+	public static LookupDataSourceContext mergeToMultipleIds(@NonNull final Collection<LookupDataSourceContext> contexts)
+	{
+		Check.assumeNotEmpty(contexts, "empty contexts not allowed");
+
+		LookupDataSourceContext templateContext = null;
+		IdsToFilter idsToFilter = null;
+		for (final LookupDataSourceContext context : contexts)
+		{
+			if (templateContext == null)
+			{
+				templateContext = context.withIdToFilter(IdsToFilter.NO_VALUE);
+				idsToFilter = context.getIdsToFilter();
+			}
+			else
+			{
+				Check.assumeEquals(templateContext, context.withIdToFilter(IdsToFilter.NO_VALUE));
+				idsToFilter = idsToFilter.mergeWith(context.getIdsToFilter());
+			}
+		}
+
+		if (templateContext == null || idsToFilter == null)
+		{
+			throw new AdempiereException("At least one context shall be provided");
+		}
+
+		return templateContext.withIdToFilter(idsToFilter);
 	}
 
 	//
@@ -388,17 +432,17 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 
 	public static final class Builder
 	{
-		private Evaluatee parentEvaluatee;
-		private final String lookupTableName;
+		@Nullable private Evaluatee parentEvaluatee;
+		@Nullable private final String lookupTableName;
 		private INamePairPredicate postQueryPredicate = NamePairPredicates.ACCEPT_ALL;
-		private final Map<String, Object> name2value = new HashMap<>();
-		private Object idToFilter;
+		private final HashMap<String, Object> name2value = new HashMap<>();
+		@Nullable private IdsToFilter idsToFilter = IdsToFilter.NO_VALUE;
 		private Collection<CtxName> _requiredParameters;
 		private boolean _requiredParameters_copyOnAdd = false;
 
 		private final LinkedHashMap<String, Object> valuesCollected = new LinkedHashMap<>();
 
-		private Builder(final String lookupTableName)
+		private Builder(@Nullable final String lookupTableName)
 		{
 			this.lookupTableName = lookupTableName;
 
@@ -436,7 +480,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return new LookupDataSourceContext(
 					lookupTableName,
 					ImmutableMap.copyOf(valuesCollected),
-					idToFilter,
+					idsToFilter,
 					postQueryPredicate);
 		}
 
@@ -508,6 +552,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		{
 			requiresParameter(PARAM_Filter);
 			requiresParameter(PARAM_FilterSql);
+			requiresParameter(PARAM_FilterSqlWithoutWildcards);
 			requiresParameter(SqlForFetchingLookups.PARAM_Limit);
 			requiresParameter(SqlForFetchingLookups.PARAM_Offset);
 			return this;
@@ -534,7 +579,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return this;
 		}
 
-		private Builder putValue(final CtxName name, final Object value)
+		private Builder putValue(final CtxName name, @Nullable final Object value)
 		{
 			name2value.put(name.getName(), value);
 			return this;
@@ -544,6 +589,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		{
 			putValue(PARAM_Filter, filter);
 			putValue(PARAM_FilterSql, convertFilterToSql(filter));
+			putValue(PARAM_FilterSqlWithoutWildcards, convertFilterToSqlWithoutWildcards(filter));
 			putValue(SqlForFetchingLookups.PARAM_Offset, offset);
 			putValue(SqlForFetchingLookups.PARAM_Limit, limit);
 
@@ -570,22 +616,29 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			return DB.TO_STRING(searchSql);
 		}
 
-		protected Builder putFilterByIdParameterName(final String sqlId)
+		private static String convertFilterToSqlWithoutWildcards(final String filter)
 		{
-			putValue(SqlForFetchingLookupById.SQL_PARAM_KeyId, sqlId);
-			return this;
+			if (filter == FILTER_Any
+					|| filter == null
+					|| Check.isBlank(filter))
+			{
+				return "''";
+			}
+
+			final String searchSql = filter.replace("%", "").trim();
+			return DB.TO_STRING(searchSql);
 		}
 
-		public Builder putFilterById(@NonNull final Object id)
+		public Builder putFilterById(@NonNull final IdsToFilter idsToFilter)
 		{
-			idToFilter = id;
+			this.idsToFilter = idsToFilter;
 			return this;
 		}
 
 		public Builder putShowInactive(final boolean showInactive)
 		{
-			final String sqlShowInactive = showInactive ? SqlForFetchingLookupById.SQL_PARAM_VALUE_ShowInactive_Yes : SqlForFetchingLookupById.SQL_PARAM_VALUE_ShowInactive_No;
-			putValue(SqlForFetchingLookupById.SQL_PARAM_ShowInactive, sqlShowInactive);
+			final String sqlShowInactive = showInactive ? SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_Yes : SqlLookupDescriptor.SQL_PARAM_VALUE_ShowInactive_No;
+			putValue(SqlLookupDescriptor.SQL_PARAM_ShowInactive, sqlShowInactive);
 			return this;
 		}
 
@@ -628,6 +681,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			}
 		}
 
+		@Nullable
 		private Object findContextValueOrNull(@NonNull final CtxName variableName)
 		{
 			//

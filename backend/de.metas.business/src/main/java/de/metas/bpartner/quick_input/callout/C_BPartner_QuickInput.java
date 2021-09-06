@@ -27,6 +27,7 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.location.PostalId;
 import de.metas.organization.OrgId;
+import de.metas.security.permissions.Access;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -35,6 +36,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -75,7 +77,12 @@ public class C_BPartner_QuickInput
 			return;
 		}
 
-		record.setAD_Org_ID(orgInChangeId.getRepoId());
+		final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(orgInChangeId, Access.WRITE);
+
+		if (userHasOrgPermissions)
+		{
+			record.setAD_Org_ID(orgInChangeId.getRepoId());
+		}
 	}
 
 	@Nullable

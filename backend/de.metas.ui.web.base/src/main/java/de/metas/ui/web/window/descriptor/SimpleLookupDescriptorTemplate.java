@@ -10,6 +10,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -89,6 +90,7 @@ public abstract class SimpleLookupDescriptorTemplate implements LookupDescriptor
 	}
 
 	@Override
+	@Nullable
 	public abstract LookupValue retrieveLookupValueById(@NonNull LookupDataSourceContext evalCtx);
 
 	@Override
@@ -101,6 +103,7 @@ public abstract class SimpleLookupDescriptorTemplate implements LookupDescriptor
 	public abstract LookupValuesPage retrieveEntities(LookupDataSourceContext evalCtx);
 
 	@Override
+	@Nullable
 	public final String getCachePrefix()
 	{
 		// NOTE: method will never be called because isCached() == true

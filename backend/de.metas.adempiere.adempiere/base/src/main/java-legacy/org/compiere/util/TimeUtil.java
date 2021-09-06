@@ -1821,6 +1821,12 @@ public class TimeUtil
 		return timestamp != null ? timestamp.toInstant() : null;
 	}
 
+	@NonNull
+	public static Instant asInstantNonNull(@NonNull final Timestamp timestamp)
+	{
+		return timestamp.toInstant();
+	}
+
 	@Nullable
 	public static Instant asInstant(
 			@Nullable final Object obj,

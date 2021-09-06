@@ -646,7 +646,7 @@ public final class SqlViewSelectionQueryBuilder
 			sqlBuilder
 					.append("\n SELECT ")
 					.append("\n  ?") // newUUID
-					.append("\n, ").append(keyColumnNamesMap.getWebuiSelectionColumnNameForKeyColumnName("sl")) // keys
+					.append("\n, ").append(keyColumnNamesMap.getWebuiSelectionColumnNamesCommaSeparated("sl")) // keys
 					.append("\n, sl.").append(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID) // Line_ID
 					.append("\n FROM ").append(I_T_WEBUI_ViewSelectionLine.Table_Name).append(" sl ")
 					.append("\n WHERE sl.").append(I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID).append("=?") // fromUUID

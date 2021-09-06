@@ -13,6 +13,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
+import de.metas.ui.web.window.model.lookup.IdsToFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
@@ -147,7 +148,8 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	@Override
 	public Builder newContextForFetchingById(final Object id)
 	{
-		return LookupDataSourceContext.builder(CONTEXT_LookupTableName).putFilterById(id);
+		return LookupDataSourceContext.builder(CONTEXT_LookupTableName)
+				.putFilterById(IdsToFilter.ofSingleValue(id));
 	}
 
 	@Override

@@ -27,7 +27,7 @@ public class C_Async_Batch
 	{
 		//
 		// Our batch was processed right now => notify user by sending email
-		if (asyncBatch.isProcessed() && X_C_Async_Batch_Type.NOTIFICATIONTYPE_AsyncBatchProcessed.equals(asyncBatch.getC_Async_Batch_Type().getNotificationType()))
+		if (asyncBatch.isProcessed() && asyncBatch.getC_Async_Batch_Type_ID() > 0 && X_C_Async_Batch_Type.NOTIFICATIONTYPE_AsyncBatchProcessed.equals(asyncBatch.getC_Async_Batch_Type().getNotificationType()))
 		{
 			Services.get(IAsyncBatchListeners.class).notify(asyncBatch);
 		}
@@ -39,7 +39,9 @@ public class C_Async_Batch
 	{
 		//
 		// Our batch was not processed => notify user with note when workpackage processed
-		if (!asyncBatch.isProcessed() && X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatch.getC_Async_Batch_Type().getNotificationType()))
+		if (!asyncBatch.isProcessed() 
+				&& asyncBatch.getC_Async_Batch_Type_ID() > 0
+				&& X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatch.getC_Async_Batch_Type().getNotificationType()))
 		{
 			Services.get(IAsyncBatchListeners.class).notify(asyncBatch);
 		}

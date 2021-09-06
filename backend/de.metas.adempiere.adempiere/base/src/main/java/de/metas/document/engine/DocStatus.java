@@ -63,11 +63,13 @@ public enum DocStatus implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
+	@Nullable
 	public static DocStatus ofNullableCode(@Nullable final String code)
 	{
 		return Check.isNotBlank(code) ? ofCode(code) : null;
 	}
 
+	@NonNull
 	public static DocStatus ofNullableCodeOrUnknown(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : Unknown;

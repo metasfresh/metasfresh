@@ -34,7 +34,6 @@ import de.metas.servicerepair.project.service.ServiceRepairProjectService;
 import de.metas.servicerepair.repository.model.I_C_Project_Repair_Task;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
 import java.util.List;
@@ -98,11 +97,11 @@ abstract class ServiceOrRepairProjectBasedProcess extends JavaProcess
 
 	protected List<ServiceRepairProjectTask> getSelectedTasks(final @NonNull IProcessPreconditionsContext context)
 	{
-		return projectService.getTaskByIds(getSelectedTaskIds(context));
+		return projectService.getTasksByIds(getSelectedTaskIds(context));
 	}
 
 	protected List<ServiceRepairProjectTask> getSelectedTasks()
 	{
-		return projectService.getTaskByIds(getSelectedTaskIds());
+		return projectService.getTasksByIds(getSelectedTaskIds());
 	}
 }

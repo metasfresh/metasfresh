@@ -8,8 +8,8 @@ Feature: API Audit PUT http method
   @from:cucumber
   Scenario: Testcase 100, normal PUT and caller waits for result
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | PUT        | api/v2/test    | Y                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | PUT        | api/v2/test    | Y                       |
 
     When invoke 'PUT' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '200'
 
@@ -34,8 +34,8 @@ Feature: API Audit PUT http method
   @from:cucumber
   Scenario: Testcase 110, normal PUT and caller does not wait for result
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | PUT        | api/v2/test    | N                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | PUT        | api/v2/test    | N                       |
 
     When invoke 'PUT' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '202'
 
@@ -66,8 +66,8 @@ Feature: API Audit PUT http method
   @from:cucumber
   Scenario: Testcase 120, failing PUT and caller waits for result
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | PUT        | api/v2/test    | Y                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | PUT        | api/v2/test    | Y                       |
 
     When invoke 'PUT' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
     And the actual response body is
@@ -92,8 +92,8 @@ Feature: API Audit PUT http method
   @from:cucumber
   Scenario: Testcase 130, failing PUT and caller does not wait for result
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | PUT        | api/v2/test    | N                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | PUT        | api/v2/test    | N                       |
 
     When invoke 'PUT' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '202'
 
@@ -125,8 +125,8 @@ Feature: API Audit PUT http method
   @from:cucumber
   Scenario: Testcase 140, failing PUT and replay
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | PUT        | api/v2/test    | Y                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1                            | 10    | PUT        | api/v2/test    | Y                       |
 
     And invoke 'PUT' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
 
@@ -162,5 +162,5 @@ Feature: API Audit PUT http method
   Scenario: Testcase 200, reset to initial default data
     And all the API audit data is reset
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 100                 | 9980  | null       | null           | Y                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_100      | 9980  | null       | null           | Y                       |

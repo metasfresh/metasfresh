@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.MaterialDescriptorQuery;
 import de.metas.product.ProductId;
@@ -84,6 +85,10 @@ public class MD_Candidate_StepDefTable
 		{
 			final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery.builder()
 					.productId(productId.getRepoId())
+					.timeRangeEnd(DateAndSeqNo.builder()
+										  .date(time)
+										  .operator(DateAndSeqNo.Operator.INCLUSIVE)
+										  .build())
 					.build();
 
 			return CandidatesQuery.builder()

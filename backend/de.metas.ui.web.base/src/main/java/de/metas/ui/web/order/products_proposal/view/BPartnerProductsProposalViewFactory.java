@@ -1,20 +1,11 @@
 package de.metas.ui.web.order.products_proposal.view;
 
-import java.time.ZonedDateTime;
-import java.util.List;
-import java.util.Set;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.product.stats.BPartnerProductStatsService;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -33,6 +24,13 @@ import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -84,6 +82,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 				.addElementsFromViewRowClass(ProductsProposalRow.class, key.getViewDataType())
 				.removeElementByFieldName(ProductsProposalRow.FIELD_Qty)
 				.allowViewCloseAction(ViewCloseAction.DONE)
+				.setAllowOpeningRowDetails(false)
 				.build();
 	}
 

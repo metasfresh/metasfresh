@@ -101,7 +101,7 @@ public class WebuiDocumentPrintService
 																					   //.setJRDesiredOutputType(OutputType.PDF)
 																					   .build());
 
-		return result.getData();
+		return result.getReportResultData();
 	}
 
 	public JSONDocumentPrintingOptions getPrintingOptions(
