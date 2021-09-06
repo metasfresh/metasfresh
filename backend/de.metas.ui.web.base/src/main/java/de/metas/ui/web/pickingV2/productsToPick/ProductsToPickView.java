@@ -18,6 +18,7 @@ import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.Builder;
 import lombok.NonNull;
@@ -139,7 +140,7 @@ public class ProductsToPickView extends AbstractCustomView<ProductsToPickRow> im
 	}
 
 	@Override
-	public LookupValuesList getFieldTypeahead(RowEditingContext ctx, String fieldName, String query)
+	public LookupValuesPage getFieldTypeahead(RowEditingContext ctx, String fieldName, String query)
 	{
 		throw new UnsupportedOperationException();
 	}

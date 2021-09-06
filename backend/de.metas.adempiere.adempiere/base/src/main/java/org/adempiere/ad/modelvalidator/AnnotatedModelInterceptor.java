@@ -257,8 +257,8 @@ import lombok.NonNull;
 		}
 	}
 
-	@VisibleForTesting
-	private final void executeNow(
+
+	private void executeNow(
 			@NonNull final Object po,
 			@NonNull final Pointcut pointcut,
 			final int timing)

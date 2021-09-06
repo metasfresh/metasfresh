@@ -138,7 +138,10 @@ export class BPartner {
         },
       })
       .then(newResponse => {
-        bPartner.id = newResponse.body[0].id;
+        if (!newResponse.body.documents) {
+          newResponse.body.documents = newResponse.response.body;
+        }
+        bPartner.id = newResponse.body.documents[0].id;
 
         const basicDataObject = [
           {

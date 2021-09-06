@@ -23,6 +23,7 @@ package de.metas.invoice.service;
  */
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
@@ -88,6 +89,8 @@ public interface IInvoiceDAO extends ISingletonService
 	I_C_LandedCost createLandedCost(String trxName);
 
 	I_C_InvoiceLine createInvoiceLine(String trxName);
+
+	ImmutableSet<InvoiceId> retainIfHasCompletedInvoicesReferencing(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
 
@@ -176,4 +179,8 @@ public interface IInvoiceDAO extends ISingletonService
 	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
+
+	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
+
+	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
 }

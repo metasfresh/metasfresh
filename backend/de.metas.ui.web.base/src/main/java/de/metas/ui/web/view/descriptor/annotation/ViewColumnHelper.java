@@ -147,7 +147,8 @@ public final class ViewColumnHelper
 
 		@NonNull String fieldName;
 		WidgetSize widgetSize;
-		@Singular ImmutableSet<MediaType> restrictToMediaTypes;
+		@Singular
+		ImmutableSet<MediaType> restrictToMediaTypes;
 		boolean hideIfConfiguredSysConfig;
 	}
 
@@ -175,7 +176,7 @@ public final class ViewColumnHelper
 			@NonNull final ClassViewColumnOverrides overrides,
 			@NonNull final JSONViewDataType viewDataType)
 	{
-		if(overrides.isHideIfConfiguredSysConfig()
+		if (overrides.isHideIfConfiguredSysConfig()
 				&& column.getDisplayMode(viewDataType) == DisplayMode.HIDDEN_BY_SYSCONFIG)
 		{
 			return null;
@@ -197,7 +198,8 @@ public final class ViewColumnHelper
 
 	private static ClassViewDescriptor createClassViewDescriptor(@NonNull final Class<?> dataType)
 	{
-		@SuppressWarnings("unchecked") final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotation(ViewColumn.class));
+		@SuppressWarnings("unchecked")
+		final Set<Field> fields = ReflectionUtils.getAllFields(dataType, ReflectionUtils.withAnnotation(ViewColumn.class));
 
 		final ImmutableList<ClassViewColumnDescriptor> columns = fields.stream()
 				.map(ViewColumnHelper::createClassViewColumnDescriptor)
@@ -224,6 +226,7 @@ public final class ViewColumnHelper
 		return ClassViewColumnDescriptor.builder()
 				.fieldName(fieldName)
 				.caption(extractCaption(field))
+				.description(extractDescription(field))
 				.widgetType(viewColumnAnn.widgetType())
 				.listReferenceId(ReferenceId.ofRepoIdOrNull(viewColumnAnn.listReferenceId()))
 				.editorRenderMode(viewColumnAnn.editor())
@@ -233,6 +236,33 @@ public final class ViewColumnHelper
 				.widgetSize(viewColumnAnn.widgetSize())
 				.restrictToMediaTypes(ImmutableSet.copyOf(viewColumnAnn.restrictToMediaTypes()))
 				.build();
+	}
+
+	private static ITranslatableString extractDescription(final Field field)
+	{
+		final ViewColumn viewColumnAnn = field.getAnnotation(ViewColumn.class);
+
+		final String captionKey = !Check.isEmpty(viewColumnAnn.captionKey())
+				? viewColumnAnn.captionKey()
+				: extractFieldName(field);
+
+		final TranslationSource captionTranslationSource = viewColumnAnn.captionTranslationSource();
+		if (captionTranslationSource == TranslationSource.DEFAULT)
+		{
+			final IMsgBL msgBL = Services.get(IMsgBL.class);
+			return msgBL.translatable(captionKey + "/Description");
+		}
+		else if (captionTranslationSource == TranslationSource.ATTRIBUTE_NAME)
+		{
+			final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+			return attributesRepo.getAttributeDescriptionByValue(captionKey)
+					.orElseGet(() -> TranslatableStrings.anyLanguage(captionKey));
+		}
+		else
+		{
+			logger.warn("Unknown TranslationSource={} for {}. Returning the captionKey={}", captionTranslationSource, field, captionKey);
+			return TranslatableStrings.anyLanguage(captionKey);
+		}
 	}
 
 	private static ITranslatableString extractCaption(@NonNull final Field field)
@@ -305,9 +335,9 @@ public final class ViewColumnHelper
 			@NonNull final ViewColumn viewColumn)
 	{
 		return extractDisplayMode(fieldName,
-				viewColumn.displayed(),
-				viewColumn.displayedSysConfigPrefix(),
-				viewColumn.defaultDisplaySysConfig());
+								  viewColumn.displayed(),
+								  viewColumn.displayedSysConfigPrefix(),
+								  viewColumn.defaultDisplaySysConfig());
 	}
 
 	private static DisplayMode extractDisplayMode(
@@ -315,9 +345,9 @@ public final class ViewColumnHelper
 			@NonNull final ViewColumnLayout viewColumnLayout)
 	{
 		return extractDisplayMode(fieldName,
-				viewColumnLayout.displayed(),
-				viewColumnLayout.displayedSysConfigPrefix(),
-				viewColumnLayout.defaultDisplaySysConfig());
+								  viewColumnLayout.displayed(),
+								  viewColumnLayout.displayedSysConfigPrefix(),
+								  viewColumnLayout.defaultDisplaySysConfig());
 	}
 
 	private static DisplayMode extractDisplayMode(
@@ -367,6 +397,7 @@ public final class ViewColumnHelper
 				.setViewEditorRenderMode(column.getEditorRenderMode())
 				.setViewAllowSorting(column.isAllowSorting())
 				.restrictToMediaTypes(column.getRestrictToMediaTypes())
+				.setDescription(column.getDescription())
 				.addField(DocumentLayoutElementFieldDescriptor.builder(column.getFieldName()));
 	}
 
@@ -549,14 +580,19 @@ public final class ViewColumnHelper
 	{
 		@NonNull String fieldName;
 		@NonNull
-		@Getter(AccessLevel.NONE) FieldReference fieldReference;
+		@Getter(AccessLevel.NONE)
+		FieldReference fieldReference;
 
 		@NonNull ITranslatableString caption;
+		@Nullable
+		ITranslatableString description;
 		@NonNull DocumentFieldWidgetType widgetType;
 
-		@Nullable ReferenceId listReferenceId;
+		@Nullable
+		ReferenceId listReferenceId;
 
-		@Nullable WidgetSize widgetSize;
+		@Nullable
+		WidgetSize widgetSize;
 		@NonNull ViewEditorRenderMode editorRenderMode;
 		boolean allowSorting;
 		@NonNull ImmutableMap<JSONViewDataType, ClassViewColumnLayoutDescriptor> layoutsByViewType;

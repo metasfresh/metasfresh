@@ -1,36 +1,9 @@
 package de.metas.acct.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.IClientDAO;
-import org.compiere.model.I_AD_ClientInfo;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_CostElement;
-import org.compiere.model.I_C_AcctSchema_Default;
-import org.compiere.model.I_C_AcctSchema_Element;
-import org.compiere.model.I_C_AcctSchema_GL;
-import org.compiere.model.MColumn;
-import org.compiere.report.MReportTree;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaCosting;
@@ -60,6 +33,30 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_AD_ClientInfo;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_AcctSchema;
+import org.compiere.model.I_C_AcctSchema_CostElement;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_AcctSchema_Element;
+import org.compiere.model.I_C_AcctSchema_GL;
+import org.compiere.model.MColumn;
+import org.compiere.report.MReportTree;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class AcctSchemaDAO implements IAcctSchemaDAO
 {
@@ -81,30 +78,46 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
-	public AcctSchema getByCliendAndOrg(final Properties ctx)
+	public AcctSchema getByClientAndOrg(final Properties ctx)
 	{
 		final ClientId clientId = ClientId.ofRepoId(Env.getAD_Client_ID(ctx));
 		final OrgId orgId = OrgId.ofRepoId(Env.getAD_Org_ID(ctx));
 
-		return getByCliendAndOrg(clientId, orgId);
+		return getByClientAndOrg(clientId, orgId);
 	}
 
 	@Override
-	public final AcctSchema getByCliendAndOrg(final ClientId clientId, final OrgId orgId)
+	public final AcctSchema getByClientAndOrg(final ClientId clientId, final OrgId orgId)
 	{
 		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrg(clientId, orgId);
 		return getById(acctSchemaId);
 	}
 
-	@Override
-	public AcctSchemaId getAcctSchemaIdByClientAndOrg(final ClientId clientId, final OrgId orgId)
+	@Nullable
+	public final AcctSchema getByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
+		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
 		if (acctSchemaId == null)
 		{
-			throw new AdempiereException("No accounting schema found for " + clientId + " and " + orgId);
+			return null;
+		}
+		return getById(acctSchemaId);
+	}
+	
+	@Override
+	public AcctSchemaId getAcctSchemaIdByClientAndOrg(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		final AcctSchemaId acctSchemaId = getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
+		if (acctSchemaId == null)
+		{
+			throw new AdempiereException("No accounting schema found for AD_Client_ID=" + clientId + " and AD_Org_ID=" + orgId);
 		}
 		return acctSchemaId;
+	}
+
+	protected AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
 	}
 
 	@Override
@@ -121,12 +134,12 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
+	@Nullable
 	public AcctSchemaId getPrimaryAcctSchemaId(final ClientId clientId)
 	{
 		final IClientDAO clientDAO = Services.get(IClientDAO.class);
 		final I_AD_ClientInfo clientInfo = clientDAO.retrieveClientInfo(Env.getCtx(), clientId.getRepoId());
-		final AcctSchemaId primaryAcctSchemaId = AcctSchemaId.ofRepoIdOrNull(clientInfo.getC_AcctSchema1_ID());
-		return primaryAcctSchemaId;
+		return AcctSchemaId.ofRepoIdOrNull(clientInfo.getC_AcctSchema1_ID());
 	}
 
 	private AcctSchemasMap getAcctSchemasMap()
@@ -185,6 +198,9 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.postTradeDiscount(acctSchemaRecord.isTradeDiscountPosted())
 				.postServices(acctSchemaRecord.isPostServices())
 				.postIfSameClearingAccounts(acctSchemaRecord.isPostIfClearingEqual())
+				.isAutoSetDebtoridAndCreditorid(acctSchemaRecord.isAutoSetDebtoridAndCreditorid())
+				.debtorIdPrefix(acctSchemaRecord.getDebtorIdPrefix())
+				.creditorIdPrefix(acctSchemaRecord.getCreditorIdPrefix())
 				//
 				.generalLedger(toAcctSchemaGeneralLedger(acctSchemaGL))
 				//
@@ -275,6 +291,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_AcctSchema_Default retrieveAcctSchemaDefaultsRecordOrNull(final AcctSchemaId acctSchemaId)
 	{
 		return Services.get(IQueryBL.class)
@@ -312,7 +329,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 				.addEqualsFilter(I_C_AcctSchema_Element.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.create()
 				.stream()
-				.map(record -> toAcctSchemaElement(record))
+				.map(AcctSchemaDAO::toAcctSchemaElement)
 				.collect(ImmutableList.toImmutableList());
 
 		return AcctSchemaElementsMap.of(elements);
@@ -429,6 +446,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 	}
 
 	@Override
+	@Nullable
 	public I_C_AcctSchema_GL retrieveAcctSchemaGLRecordOrNull(@NonNull final AcctSchemaId acctSchemaId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -495,7 +513,7 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 
 			for (final AcctSchema acctSchema : acctSchemas.values())
 			{
-				if (primaryAcctSchemaId != null && primaryAcctSchemaId.equals(acctSchema.getId()))
+				if (acctSchema.getId().equals(primaryAcctSchemaId))
 				{
 					continue;
 				}

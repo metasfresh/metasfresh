@@ -2,7 +2,7 @@
      "productName1" : "StockControlPurchase1",
      "productName2" : "StockControlPurchase2",
      "productName3" : "StockControlPurchase3",
-     "productCategoryName" : "ProductCategory",
+     "productCategoryName" : "ProductCategoryName",
      "priceListName" : "PriceList",
      "priceSystemName" : "PriceSystem",
      "priceListVersionName" : "PriceListVersion"

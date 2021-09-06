@@ -1,17 +1,7 @@
 package de.metas.ui.web.order.sales.purchasePlanning.view;
 
-import java.math.BigDecimal;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.api.AttributesKeys;
-import org.compiere.model.I_C_UOM;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Service;
-
 import de.metas.logging.LogManager;
-import de.metas.material.commons.attributes.AttributesKeyPatterns;
+import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseQuery;
 import de.metas.material.dispo.commons.repository.atp.AvailableToPromiseRepository;
 import de.metas.material.event.commons.AttributesKey;
@@ -28,6 +18,14 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.compiere.model.I_C_UOM;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.List;
 
 /*
  * #%L
@@ -137,7 +135,7 @@ public class PurchaseRowFactory
 		final AvailableToPromiseQuery query = AvailableToPromiseQuery.builder()
 				.productId(productId.getRepoId())
 				.date(demand.getSalesPreparationDate())
-				.storageAttributesKeyPattern(AttributesKeyPatterns.ofAttributeKey(attributesKey))
+				.storageAttributesKeyPattern(AttributesKeyPatternsUtil.ofAttributeKey(attributesKey))
 				.build();
 
 		final BigDecimal qtyAvailableToPromise = availableToPromiseRepository.retrieveAvailableStockQtySum(query);

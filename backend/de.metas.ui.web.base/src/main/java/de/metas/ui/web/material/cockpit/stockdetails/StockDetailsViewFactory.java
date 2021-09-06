@@ -98,7 +98,7 @@ public class StockDetailsViewFactory implements IViewFactory, IViewsIndexStorage
 
 	@Nullable
 	@Override
-	public StockDetailsView getByIdOrNull(ViewId viewId)
+	public StockDetailsView getByIdOrNull(final ViewId viewId)
 	{
 		return views.getIfPresent(viewId);
 	}
@@ -117,7 +117,7 @@ public class StockDetailsViewFactory implements IViewFactory, IViewsIndexStorage
 	}
 
 	@Override
-	public void invalidateView(ViewId viewId)
+	public void invalidateView(final ViewId viewId)
 	{
 		final StockDetailsView view = getByIdOrNull(viewId);
 		if (view == null)
@@ -180,11 +180,12 @@ public class StockDetailsViewFactory implements IViewFactory, IViewsIndexStorage
 	@Override
 	public ViewLayout getViewLayout(
 			@NonNull final WindowId windowId,
-			@NonNull final JSONViewDataType viewDataType, ViewProfileId profileId)
+			@NonNull final JSONViewDataType viewDataType,
+			final ViewProfileId profileId)
 	{
 		return ViewLayout.builder()
 				.setWindowId(windowId)
-				// .setCaption(caption)
+				// .caption(caption)
 				.setFilters(ImmutableList.of(createEmptyFilterDescriptor()))
 				.addElementsFromViewRowClass(StockDetailsRow.class, viewDataType)
 				.build();

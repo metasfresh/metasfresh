@@ -102,7 +102,7 @@ public class InventoryValue extends JavaProcess
 		final I_M_Warehouse wh = Services.get(IWarehouseDAO.class).getById(WarehouseId.ofRepoId(p_M_Warehouse_ID));
 		ClientId clientId = ClientId.ofRepoId(wh.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(wh.getAD_Org_ID());
-		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getByCliendAndOrg(clientId, orgId); 
+		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getByClientAndOrg(clientId, orgId); 
 		
 		//  Delete (just to be sure)
 		StringBuffer sql = new StringBuffer ("DELETE FROM T_InventoryValue WHERE AD_PInstance_ID=");

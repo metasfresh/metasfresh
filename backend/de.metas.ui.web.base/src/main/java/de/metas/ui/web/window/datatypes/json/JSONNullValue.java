@@ -1,10 +1,10 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import javax.annotation.Nullable;
-
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
 import io.swagger.annotations.ApiModel;
+import org.compiere.model.Null;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -38,14 +38,14 @@ import io.swagger.annotations.ApiModel;
 @JsonSerialize(using = JSONNullValueSerializer.class)
 public final class JSONNullValue
 {
-	public static final Object wrapIfNull(final Object value)
+	public static Object wrapIfNull(@Nullable final Object value)
 	{
-		return value == null ? instance : value;
+		return value != null && !isNull(value) ? value : instance;
 	}
 
-	public static boolean isNull(final Object value)
+	public static boolean isNull(@Nullable final Object value)
 	{
-		return value == null || value instanceof JSONNullValue;
+		return value == null || value instanceof JSONNullValue || value instanceof Null;
 	}
 
 	public static final transient JSONNullValue instance = new JSONNullValue();
@@ -60,12 +60,9 @@ public final class JSONNullValue
 		return "null";
 	}
 
+	@Nullable
 	public static Object toNullIfInstance(@Nullable final Object jsonValueObj)
 	{
-		if (jsonValueObj instanceof JSONNullValue)
-		{
-			return null;
-		}
-		return jsonValueObj;
+		return !isNull(jsonValueObj) ? jsonValueObj : null;
 	}
 }

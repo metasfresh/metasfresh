@@ -798,3 +798,15 @@ $indent-collapsible-offset-lg: 24px;
     height: 6px;
     border-left: 1px solid #afbfca;
 }
+/* Note: this has to be in sync with Constants.TBL_CELL_LABEL_MAX */
+.table-cell-label-container {
+    width: 120px;
+}
+
+.table-cell-label-wrapper {
+    float: left;
+}
+.table-cell-label-show-more {
+    float: left;
+    width: 10%;
+}

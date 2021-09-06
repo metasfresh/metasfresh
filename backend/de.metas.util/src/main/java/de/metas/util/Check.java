@@ -440,6 +440,15 @@ public final class Check
 		return valueInt;
 	}
 
+	public static long assumeGreaterOrEqualToZero(final long valueLong, final String valueName)
+	{
+		if (valueLong < 0)
+		{
+			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " >= 0 but it was " + valueLong);
+		}
+		return valueLong;
+	}
+
 	public static BigDecimal assumeGreaterOrEqualToZero(final BigDecimal valueBD, final String valueName)
 	{
 		assumeNotNull(valueName, "" + valueName + " is not null");
@@ -450,7 +459,7 @@ public final class Check
 		return valueBD;
 	}
 
-	public static <T> void assumeEquals(final T value1, final T value2)
+	public static <T> void assumeEquals(@Nullable final T value1, @Nullable final T value2)
 	{
 		if (Objects.equals(value1, value2))
 		{

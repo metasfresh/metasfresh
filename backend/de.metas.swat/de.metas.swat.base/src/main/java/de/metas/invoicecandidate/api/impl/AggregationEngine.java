@@ -1,57 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
-import java.time.LocalDate;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import ch.qos.logback.classic.Level;
-import de.metas.order.IOrderDAO;
-import de.metas.order.OrderId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
 import com.google.common.base.MoreObjects;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
@@ -70,6 +19,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
@@ -86,6 +36,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IAggregator;
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -417,19 +369,19 @@ public final class AggregationEngine
 			final BPartnerLocationId billBPLocationId = getBillLocationId(icRecord);
 			final BPartnerContactId billContactId = getBillContactId(icRecord, billBPLocationId);
 
+			invoiceHeader.setC_Async_Batch_ID(icRecord.getC_Async_Batch_ID());
 			invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
 			invoiceHeader.setBill_BPartner_ID(billBPLocationId.getBpartnerId().getRepoId());
 			invoiceHeader.setBill_Location_ID(billBPLocationId.getRepoId());
 			invoiceHeader.setBill_User_ID(BPartnerContactId.toRepoId(billContactId));
 			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
-			invoiceHeader.setC_BPartner_SalesRep_ID(icRecord.getC_BPartner_SalesRep_ID());
 			invoiceHeader.setC_Order_ID(icRecord.getC_Order_ID());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
-		final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
-		if (orderId != null)
-		{
-			invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
-		}
+			final OrderId orderId = OrderId.ofRepoIdOrNull(icRecord.getC_Order_ID());
+			if (orderId != null)
+			{
+				invoiceHeader.setExternalId(orderDAO.getById(orderId).getExternalId());
+			}
 
 			// why not using DateToInvoice[_Override] if available?
 			// ts: DateToInvoice[_Override] is "just" the field saying from which date onwards this icRecord may be invoiced
@@ -681,7 +633,7 @@ public final class AggregationEngine
 	private/* static */void setDocBaseType(final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
-		final String docBaseType;
+		final InvoiceDocBaseType docBaseType;
 
 		//
 		// Case: Invoice DocType was preset
@@ -690,7 +642,7 @@ public final class AggregationEngine
 			final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
 			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, invoiceDocType);
 
-			docBaseType = invoiceDocType.getDocBaseType();
+			docBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
 		}
 		//
 		// Case: no invoice DocType was set
@@ -704,30 +656,30 @@ public final class AggregationEngine
 				if (totalAmt.signum() < 0)
 				{
 					// AR Credit Memo Invoice (sales)
-					docBaseType = X_C_DocType.DOCBASETYPE_ARCreditMemo;
+					docBaseType = InvoiceDocBaseType.CustomerCreditMemo;
 				}
 				else
 				{
 					// Regular AR Invoice (sales)
-					docBaseType = X_C_DocType.DOCBASETYPE_ARInvoice;
+					docBaseType = InvoiceDocBaseType.CustomerInvoice;
 				}
 			}
 			else
 			{
 				if (totalAmt.signum() < 0)
 				{
-					docBaseType = X_C_DocType.DOCBASETYPE_APCreditMemo;
+					docBaseType = InvoiceDocBaseType.VendorCreditMemo;
 				}
 				else
 				{
-					docBaseType = X_C_DocType.DOCBASETYPE_APInvoice;
+					docBaseType = InvoiceDocBaseType.VendorInvoice;
 				}
 			}
 		}
 
 		//
 		// NOTE: in credit memos, amount are positive but the invoice effect is reversed
-		if (invoiceBL.isCreditMemo(docBaseType))
+		if (docBaseType.isCreditMemo())
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}

@@ -2,6 +2,8 @@ package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for ExternalSystem_Config_Shopware6
  *  @author metasfresh (generated)
  */
@@ -71,7 +73,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_BaseURL = "BaseURL";
 
 	/**
-	 * Set Client Id.
+	 * Set Access key ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -80,7 +82,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	void setClient_Id (java.lang.String Client_Id);
 
 	/**
-	 * Get Client Id.
+	 * Get Access key ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -92,7 +94,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_Client_Id = "Client_Id";
 
 	/**
-	 * Set Client Secret.
+	 * Set Secret access key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -101,7 +103,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	void setClient_Secret (java.lang.String Client_Secret);
 
 	/**
-	 * Get Client Secret.
+	 * Get Secret access key.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -187,22 +189,68 @@ public interface I_ExternalSystem_Config_Shopware6
 	 * Set Value.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystemValue (java.lang.String ExternalSystemValue);
+	void setExternalSystemValue (@Nullable java.lang.String ExternalSystemValue);
 
 	/**
 	 * Get Value.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getExternalSystemValue();
+	@Nullable java.lang.String getExternalSystemValue();
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ExternalSystemValue", null);
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
+
+	/**
+	 * Set Normal VAT rates.
+	 * Comma delimited list of freightcost tax rates for which the "Freight cost product (normal VAT)" shall be used. Example: "0, 7.7, 19"
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFreightCost_NormalVAT_Rates (@Nullable java.lang.String FreightCost_NormalVAT_Rates);
+
+	/**
+	 * Get Normal VAT rates.
+	 * Comma delimited list of freightcost tax rates for which the "Freight cost product (normal VAT)" shall be used. Example: "0, 7.7, 19"
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFreightCost_NormalVAT_Rates();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_FreightCost_NormalVAT_Rates = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "FreightCost_NormalVAT_Rates", null);
+	String COLUMNNAME_FreightCost_NormalVAT_Rates = "FreightCost_NormalVAT_Rates";
+
+	/**
+	 * Set Reduced VAT rates.
+	 * Comma delimited list of freightcost tax rates for which the "Freight cost product (reduced VAT)" shall be used. Example: "0, 7.7, 19"
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFreightCost_Reduced_VAT_Rates (@Nullable java.lang.String FreightCost_Reduced_VAT_Rates);
+
+	/**
+	 * Get Reduced VAT rates.
+	 * Comma delimited list of freightcost tax rates for which the "Freight cost product (reduced VAT)" shall be used. Example: "0, 7.7, 19"
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFreightCost_Reduced_VAT_Rates();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_FreightCost_Reduced_VAT_Rates = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "FreightCost_Reduced_VAT_Rates", null);
+	String COLUMNNAME_FreightCost_Reduced_VAT_Rates = "FreightCost_Reduced_VAT_Rates";
 
 	/**
 	 * Set Active.
@@ -226,6 +274,119 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Customer JSON-path.
+	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setJSONPathConstantBPartnerID (@Nullable java.lang.String JSONPathConstantBPartnerID);
+
+	/**
+	 * Get Customer JSON-path.
+	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getJSONPathConstantBPartnerID();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathConstantBPartnerID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathConstantBPartnerID", null);
+	String COLUMNNAME_JSONPathConstantBPartnerID = "JSONPathConstantBPartnerID";
+
+	/**
+	 * Set Address JSON-path.
+	 * JSON-Path expression that specifies where within a customized Shopware address the permanent address-ID can be found. IMPORTANT: if set, then addresses without a respective value are ignored!
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setJSONPathConstantBPartnerLocationID (@Nullable java.lang.String JSONPathConstantBPartnerLocationID);
+
+	/**
+	 * Get Address JSON-path.
+	 * JSON-Path expression that specifies where within a customized Shopware address the permanent address-ID can be found. IMPORTANT: if set, then addresses without a respective value are ignored!
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getJSONPathConstantBPartnerLocationID();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathConstantBPartnerLocationID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathConstantBPartnerLocationID", null);
+	String COLUMNNAME_JSONPathConstantBPartnerLocationID = "JSONPathConstantBPartnerLocationID";
+
+	/**
+	 * Set Sales rep JSON-path.
+	 * JSON-Path expression that specifies where within a customized Shopware order the sales rep's search-key can be found.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setJSONPathSalesRepID (@Nullable java.lang.String JSONPathSalesRepID);
+
+	/**
+	 * Get Sales rep JSON-path.
+	 * JSON-Path expression that specifies where within a customized Shopware order the sales rep's search-key can be found.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getJSONPathSalesRepID();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathSalesRepID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathSalesRepID", null);
+	String COLUMNNAME_JSONPathSalesRepID = "JSONPathSalesRepID";
+
+	/**
+	 * Set Freight cost product (normal VAT).
+	 * If a shopware order's freight costs have the normal VAT rate, then a line with this product is created. The product's tax category needs to have a tax with a matching rate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_FreightCost_NormalVAT_Product_ID (int M_FreightCost_NormalVAT_Product_ID);
+
+	/**
+	 * Get Freight cost product (normal VAT).
+	 * If a shopware order's freight costs have the normal VAT rate, then a line with this product is created. The product's tax category needs to have a tax with a matching rate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_FreightCost_NormalVAT_Product_ID();
+
+	String COLUMNNAME_M_FreightCost_NormalVAT_Product_ID = "M_FreightCost_NormalVAT_Product_ID";
+
+	/**
+	 * Set Freight cost product (reduced VAT).
+	 * If a shopware order's freight costs have the reduced VAT rate, then a line with this product is created. The product's tax category needs to have a tax with a matching rate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_FreightCost_ReducedVAT_Product_ID (int M_FreightCost_ReducedVAT_Product_ID);
+
+	/**
+	 * Get Freight cost product (reduced VAT).
+	 * If a shopware order's freight costs have the reduced VAT rate, then a line with this product is created. The product's tax category needs to have a tax with a matching rate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_FreightCost_ReducedVAT_Product_ID();
+
+	String COLUMNNAME_M_FreightCost_ReducedVAT_Product_ID = "M_FreightCost_ReducedVAT_Product_ID";
 
 	/**
 	 * Get Updated.

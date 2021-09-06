@@ -22,23 +22,7 @@
 
 package de.metas.bpartner.service;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BP_Relation;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -46,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -59,6 +44,19 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public interface IBPartnerDAO extends ISingletonService
 {
@@ -109,13 +107,15 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<UserId> getDefaultContactId(BPartnerId bpartnerId);
 
+	Stream<UserId> getUserIdsForBpartnerLocation(BPartnerLocationId bpartnerId);
+
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, GLN gln);
 
 	@NonNull
 	BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId);
-	
+
 	/**
 	 * @deprecated in all cases i can imagine, if the caller has a {@code bpartnerLocationId}, they need the actual record, even if it is inactive.
 	 * Think e.g. of a completed shipment. Therefore, please consider using {@link #getBPartnerLocationByIdEvenInactive(BPartnerLocationId)} instead.
@@ -125,7 +125,7 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner_Location getBPartnerLocationById(BPartnerLocationId bpartnerLocationId);
 
 	@Nullable
-	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(BPartnerLocationId bpartnerLocationId);
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
 
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
@@ -201,7 +201,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * <p>
 	 * Use case: why have BPartner-Values such as "G01234", but on ESR-payment documents, there is only "01234", because there it may only contain digits.
 	 *
-	 * @param bpValue an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
+	 * @param bpValue                 an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
 	 * @param bpValueSuffixToFallback the suffix of a bpartner value. Only use if retrieval by <code>bpValue</code> produced no results. If <code>null</code> or empty, return <code>null</code>.
 	 * @return a single bPartner or <code>null</code>
 	 * @throws org.adempiere.exceptions.DBMoreThanOneRecordsFoundException if there is more than one matching partner.
@@ -260,12 +260,12 @@ public interface IBPartnerDAO extends ISingletonService
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 
 	CountryId getBPartnerLocationCountryId(BPartnerLocationId bpartnerLocationId);
-	
+
 	/**
 	 * Retrieve default/first bill to location.
 	 *
 	 * @param alsoTryBilltoRelation if <code>true</code> and the given partner has no billTo location, then the method also checks if there is a billTo-<code>C_BP_Relation</code> and if so, returns
-	 *            that relation's bPartner location.
+	 *                              that relation's bPartner location.
 	 * @return bill to location or null
 	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
@@ -309,6 +309,12 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
+
+	Optional<BPartnerId> getCounterpartBPartnerId(
+			@NonNull OrgMappingId orgMappingId,
+			@NonNull OrgId targetOrgId);
+
+	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
 
 	@Value
 	@Builder
@@ -370,4 +376,8 @@ public interface IBPartnerDAO extends ISingletonService
 	List<GeographicalCoordinatesWithBPartnerLocationId> getGeoCoordinatesByBPartnerLocationIds(Collection<Integer> bpartnerLocationRepoIds);
 
 	BPartnerLocationId retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
+
+	BPartnerLocationId retrieveLastUpdatedLocation(BPartnerId bpartnerId);
+	
+	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
 }

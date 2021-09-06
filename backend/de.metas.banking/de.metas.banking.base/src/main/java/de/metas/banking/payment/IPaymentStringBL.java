@@ -30,6 +30,7 @@ import org.compiere.model.I_AD_SysConfig;
 import de.metas.banking.payment.spi.IPaymentStringParser;
 import de.metas.banking.payment.spi.exception.PaymentStringParseException;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /**
  * @author al
@@ -54,4 +55,7 @@ public interface IPaymentStringBL extends ISingletonService
 	 * @throws PaymentStringParseException
 	 */
 	IPaymentStringDataProvider getDataProvider(Properties ctx, IPaymentStringParser paymentStringParser, String paymentStringText) throws PaymentStringParseException;
+	
+	
+	IPaymentStringDataProvider getQRDataProvider(@NonNull final String qrCode) throws PaymentStringParseException;
 }

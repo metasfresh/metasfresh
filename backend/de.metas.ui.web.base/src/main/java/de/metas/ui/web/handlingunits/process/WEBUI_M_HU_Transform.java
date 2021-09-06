@@ -26,6 +26,7 @@ import de.metas.ui.web.handlingunits.process.WebuiHUTransformCommand.ActionType;
 import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -161,7 +162,7 @@ public class WEBUI_M_HU_Transform
 				.build();
 	}
 
-	@ProcessParamLookupValuesProvider(parameterName = PARAM_Action, dependsOn = {}, numericKey = false)
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_Action, numericKey = false)
 	private LookupValuesList getActions()
 	{
 		return newParametersFiller().getActions(getProcessInfo().getAdProcessId());
@@ -173,7 +174,7 @@ public class WEBUI_M_HU_Transform
 	 * @return existing TUs that are available in the current HU editor context, sorted by ID.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_TU_HU_ID, dependsOn = PARAM_Action, numericKey = true, lookupSource = LookupSource.lookup, lookupTableName = I_M_HU.Table_Name)
-	private LookupValuesList getTULookupValues(final LookupDataSourceContext context)
+	private LookupValuesPage getTULookupValues(final LookupDataSourceContext context)
 	{
 		return newParametersFiller().getTUsLookupValues(context);
 	}
@@ -184,7 +185,7 @@ public class WEBUI_M_HU_Transform
 	 * @return existing LUs that are available in the current HU editor context, sorted by ID.
 	 */
 	@ProcessParamLookupValuesProvider(parameterName = PARAM_M_LU_HU_ID, dependsOn = PARAM_Action, numericKey = true, lookupSource = LookupSource.lookup, lookupTableName = I_M_HU.Table_Name)
-	private LookupValuesList getLULookupValues(final LookupDataSourceContext context)
+	private LookupValuesPage getLULookupValues(final LookupDataSourceContext context)
 	{
 		return newParametersFiller().getLUsLookupValues(context);
 	}
@@ -282,7 +283,7 @@ public class WEBUI_M_HU_Transform
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private final void updateViewFromResult(final WebuiHUTransformCommandResult result)
+	private void updateViewFromResult(final WebuiHUTransformCommandResult result)
 	{
 		final HUEditorView view = getView();
 
@@ -314,7 +315,7 @@ public class WEBUI_M_HU_Transform
 	/**
 	 * @return true if view was changed and needs invalidation
 	 */
-	private final boolean removeSelectedRowsIfHUDestoyed()
+	private boolean removeSelectedRowsIfHUDestoyed()
 	{
 		final DocumentIdsSelection selectedRowIds = getSelectedRowIds();
 		if (selectedRowIds.isEmpty())
@@ -328,7 +329,7 @@ public class WEBUI_M_HU_Transform
 
 		final HUEditorView view = getView();
 		final ImmutableSet<HuId> selectedHUIds = view.streamByIds(selectedRowIds)
-				.map(row -> row.getHuId())
+				.map(HUEditorRow::getHuId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
@@ -353,8 +354,7 @@ public class WEBUI_M_HU_Transform
 		}
 
 		final HUEditorView view = getView();
-		final boolean changes = view.removeHUIds(destroyedHUIds);
-		return changes;
+		return view.removeHUIds(destroyedHUIds);
 	}
 
 	@Override

@@ -1,0 +1,13 @@
+de.metas.rest_api.v2.attachment.AttachmentRestControllerTest.createAttachment=[
+  {
+    "target" : [
+      {
+        "externalReferenceType" : "BPartner",
+        "externalReferenceIdentifier" : "111111"
+      }
+    ],
+    "attachmentId" : "100001",
+    "filename" : "test.txt",
+    "mimeType" : "text/plain"
+  }
+]

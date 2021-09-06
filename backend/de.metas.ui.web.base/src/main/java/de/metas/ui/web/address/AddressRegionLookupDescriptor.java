@@ -1,9 +1,25 @@
 package de.metas.ui.web.address;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.cache.CCache;
+import de.metas.cache.CCache.CCacheStats;
+import de.metas.location.ICountryDAO;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
+import de.metas.ui.web.window.model.lookup.IdsToFilter;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Location;
@@ -12,24 +28,10 @@ import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import de.metas.cache.CCache;
-import de.metas.cache.CCache.CCacheStats;
-import de.metas.location.ICountryDAO;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookups;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
-import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -53,9 +55,10 @@ import de.metas.util.Services;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	public static final AddressRegionLookupDescriptor newInstance()
+	public static AddressRegionLookupDescriptor newInstance()
 	{
 		return new AddressRegionLookupDescriptor();
 	}
@@ -93,7 +96,7 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	{
 		return true;
 	}
-	
+
 	@Override
 	public void cacheInvalidate()
 	{
@@ -145,11 +148,12 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	@Override
 	public Builder newContextForFetchingById(final Object id)
 	{
-		return LookupDataSourceContext.builder(CONTEXT_LookupTableName).putFilterById(id);
+		return LookupDataSourceContext.builder(CONTEXT_LookupTableName)
+				.putFilterById(IdsToFilter.ofSingleValue(id));
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		final int id = evalCtx.getIdToFilterAsInt(-1);
 		if (id <= 0)
@@ -160,7 +164,7 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 		final LookupValue region = regionsByCountryId.values()
 				.stream()
 				.map(regions -> regions.getById(id))
-				.filter(r -> r != null)
+				.filter(Objects::nonNull)
 				.findFirst()
 				.orElse(null);
 		if (region != null)
@@ -185,12 +189,12 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		final int countryId = evalCtx.get_ValueAsInt(I_C_Location.COLUMNNAME_C_Country_ID, -1);
 		if (countryId <= 0)
 		{
-			return LookupValuesList.EMPTY;
+			return LookupValuesPage.EMPTY;
 		}
 
 		//
@@ -208,7 +212,7 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 		}
 		else if (Check.isEmpty(filter, true))
 		{
-			return LookupValuesList.EMPTY;
+			return LookupValuesPage.EMPTY;
 		}
 		else
 		{
@@ -223,12 +227,11 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 				.getValues()
 				.stream()
 				.filter(region -> matchAll || matchesFilter(region, filterUC))
-				.skip(offset)
-				.limit(limit)
-				.collect(LookupValuesList.collect());
+				.collect(LookupValuesList.collect())
+				.pageByOffsetAndLimit(offset, limit);
 	}
 
-	private final boolean matchesFilter(final LookupValue region, final String filterUC)
+	private boolean matchesFilter(final LookupValue region, final String filterUC)
 	{
 		final String displayName = region.getDisplayName();
 		if (Check.isEmpty(displayName))
@@ -251,7 +254,7 @@ public class AddressRegionLookupDescriptor implements LookupDescriptor, LookupDa
 		return Services.get(ICountryDAO.class)
 				.retrieveRegions(Env.getCtx(), countryId)
 				.stream()
-				.map(regionRecord -> createLookupValue(regionRecord))
+				.map(this::createLookupValue)
 				.collect(LookupValuesList.collect());
 	}
 

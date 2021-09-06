@@ -1,6 +1,5 @@
 package de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem;
 
-import com.google.common.base.Objects;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.mforecast.impl.ForecastLineId;
@@ -13,6 +12,8 @@ import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
+import de.metas.util.lang.ExternalId;
+import de.metas.util.lang.Percent;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +23,9 @@ import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /*
  * #%L
@@ -87,7 +90,7 @@ public class PurchaseOrderItem implements PurchaseItem
 	private OrderAndLineId purchaseOrderAndLineId;
 
 	@Getter
-	private Dimension dimension;
+	private final Dimension dimension;
 
 	@Builder(toBuilder = true)
 	private PurchaseOrderItem(
@@ -98,7 +101,7 @@ public class PurchaseOrderItem implements PurchaseItem
 			@NonNull final String remotePurchaseOrderId,
 			@Nullable final ITableRecordReference transactionReference,
 			final OrderAndLineId purchaseOrderAndLineId,
-			@Nullable Dimension dimension)
+			@Nullable final Dimension dimension)
 	{
 		this.purchaseItemId = purchaseItemId;
 
@@ -110,7 +113,7 @@ public class PurchaseOrderItem implements PurchaseItem
 
 		this.purchaseOrderAndLineId = purchaseOrderAndLineId;
 
-		final boolean remotePurchaseExists = !Objects.equal(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
+		final boolean remotePurchaseExists = !Objects.equals(remotePurchaseOrderId, NullVendorGatewayInvoker.NO_REMOTE_PURCHASE_ID);
 		Check.errorIf(remotePurchaseExists && transactionReference == null,
 					  "If there is a remote purchase order, then the given transactionReference may not be null; remotePurchaseOrderId={}",
 					  remotePurchaseOrderId);
@@ -229,5 +232,25 @@ public class PurchaseOrderItem implements PurchaseItem
 		{
 			purchaseCandidate.setReqCreated(true);
 		}
+	}
+
+	public BigDecimal getPrice()
+	{
+		return purchaseCandidate.getPriceEnteredEff();
+	}
+
+	public Percent getDiscount()
+	{
+		return purchaseCandidate.getDiscountEff();
+	}
+
+	public String getExternalPurchaseOrderUrl()
+	{
+		return purchaseCandidate.getExternalPurchaseOrderUrl();
+	}
+
+	public ExternalId getExternalHeaderId()
+	{
+		return purchaseCandidate.getExternalHeaderId();
 	}
 }

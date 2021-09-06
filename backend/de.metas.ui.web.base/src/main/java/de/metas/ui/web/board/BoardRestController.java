@@ -22,33 +22,8 @@
 
 package de.metas.ui.web.board;
 
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Predicate;
-
-import de.metas.ui.web.comments.CommentsService;
-import de.metas.ui.web.comments.ViewRowCommentsSummary;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.comparator.FixedOrderByKeyComparator;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
-
 import de.metas.ui.web.board.BoardCardChangeRequest.BoardCardChangeRequestBuilder;
 import de.metas.ui.web.board.json.JSONBoard;
 import de.metas.ui.web.board.json.JSONBoard.JSONBoardBuilder;
@@ -57,6 +32,7 @@ import de.metas.ui.web.board.json.JSONBoardCardAddRequest;
 import de.metas.ui.web.board.json.JSONBoardCardOrderBy;
 import de.metas.ui.web.board.json.JSONBoardLane;
 import de.metas.ui.web.board.json.JSONNewCardsViewLayout;
+import de.metas.ui.web.comments.ViewRowCommentsSummary;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterDescriptor;
 import de.metas.ui.web.session.UserSession;
@@ -76,14 +52,34 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.view.json.JSONViewResult;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.comparator.FixedOrderByKeyComparator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 @RestController
 @RequestMapping(BoardRestController.ENDPOINT)
@@ -222,7 +218,7 @@ public class BoardRestController
 		return JSONBoardCard.of(card, userSession.getAD_Language());
 	}
 
-	private static final BoardCardChangeRequest createBoardCardChangeRequest(final List<JSONDocumentChangedEvent> changes)
+	private static BoardCardChangeRequest createBoardCardChangeRequest(final List<JSONDocumentChangedEvent> changes)
 	{
 		if (changes.isEmpty())
 		{
@@ -332,24 +328,19 @@ public class BoardRestController
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
-	public JSONLookupValuesList getFilterParameterTypeahead(
+	public JSONLookupValuesPage getFilterParameterTypeahead(
 			@PathVariable("boardId") final int boardId,
 			@PathVariable("viewId") final String viewIdStr,
 			@PathVariable("filterId") final String filterId,
 			@PathVariable("parameterName") final String parameterName,
-			@RequestParam(name = "query", required = true) final String query)
+			@RequestParam(name = "query") final String query)
 	{
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterTypeahead(filterId, parameterName, query, userSession.toEvaluatee())
-				.transform(this::toJSONLookupValuesList);
-	}
-
-	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
-	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
@@ -364,10 +355,10 @@ public class BoardRestController
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
 		return viewsRepo.getView(viewId)
 				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
-				.transform(this::toJSONLookupValuesList);
+				.transform(list -> JSONLookupValuesList.ofLookupValuesList(list, userSession.getAD_Language()));
 	}
 
-	private final JSONViewResult toJSONCardsViewResult(
+	private JSONViewResult toJSONCardsViewResult(
 			final int boardId,
 			final ViewResult viewResult,
 			final JSONOptions jsonOpts,
@@ -390,7 +381,7 @@ public class BoardRestController
 		return JSONViewResult.of(viewResult, jsonCards, jsonOpts);
 	}
 
-	private final JSONViewResult toJSONCardsViewResult(final int boardId, final IView view, final JSONOptions jsonOpts)
+	private JSONViewResult toJSONCardsViewResult(final int boardId, final IView view, final JSONOptions jsonOpts)
 	{
 		final ViewResult viewResult = ViewResult.ofView(view);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);

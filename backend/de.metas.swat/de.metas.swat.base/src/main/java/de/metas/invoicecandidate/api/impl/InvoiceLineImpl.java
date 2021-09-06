@@ -22,29 +22,27 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.compiere.model.I_C_Tax;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
 import de.metas.invoicecandidate.api.IInvoiceLineRW;
 import de.metas.invoicecandidate.api.InvoiceCandidateInOutLineToUpdate;
 import de.metas.money.Money;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.Tax;
 import de.metas.util.lang.Percent;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Default (bean) implementation for {@link IInvoiceLineRW}.
@@ -87,7 +85,7 @@ import lombok.ToString;
 	private String description;
 	private Collection<Integer> iciolIds = new TreeSet<>();
 	private int activityID;
-	private I_C_Tax tax;
+	private Tax tax;
 	private boolean printed = true;
 	private int lineNo = 0;
 	private Set<IInvoiceLineAttribute> invoiceLineAttributes = Collections.emptySet();
@@ -183,19 +181,19 @@ import lombok.ToString;
 	}
 
 	@Override
-	public void setC_Activity_ID(int activityID)
+	public void setC_Activity_ID(final int activityID)
 	{
 		this.activityID = activityID;
 	}
 
 	@Override
-	public I_C_Tax getC_Tax()
+	public Tax getC_Tax()
 	{
 		return tax;
 	}
 
 	@Override
-	public void setC_Tax(I_C_Tax tax)
+	public void setC_Tax(final Tax tax)
 	{
 		this.tax = tax;
 	}
@@ -207,7 +205,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public void setPrinted(boolean printed)
+	public void setPrinted(final boolean printed)
 	{
 		this.printed = printed;
 	}
@@ -249,7 +247,7 @@ import lombok.ToString;
 	}
 
 	@Override
-	public void setC_PaymentTerm_ID(int paymentTermId)
+	public void setC_PaymentTerm_ID(final int paymentTermId)
 	{
 		C_PaymentTerm_ID = paymentTermId;
 	}

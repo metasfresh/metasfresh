@@ -3,10 +3,15 @@ package de.metas.bpartner.composite;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.OrgMappingId;
+import de.metas.marketing.base.model.CampaignId;
+import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.InvoiceRule;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -62,8 +67,18 @@ public class BPartner
 	public static final String CUSTOMER = "customer";
 	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
+	public static final String GREETING_ID = "greetingId";
+	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
+	public static final String CUSTOMER_PRICING_SYSTEM_ID = "customerPricingSystemId";
+	public static final String VENDOR_PAYMENTTERM_ID = "vendorPaymentTermId";
+	public static final String VENDOR_PRICING_SYSTEM_ID = "vendorPricingSystemId";
+	public static final String EXCLUDE_FROM_PROMOTIONS = "excludeFromPromotions";
+	public static final String REFERRER = "referrer";
+	public static final String CAMPAIGN_ID = "campaignId";
 
-	/** May be null if the bpartner was not yet saved. */
+	/**
+	 * May be null if the bpartner was not yet saved.
+	 */
 	private BPartnerId id;
 
 	private ExternalId externalId;
@@ -72,14 +87,21 @@ public class BPartner
 	private String name;
 	private String name2;
 	private String name3;
+	private final GreetingId greetingId;
 
-	/** non-empty value implies that the bpartner is also a company */
+	/**
+	 * non-empty value implies that the bpartner is also a company
+	 */
 	private String companyName;
 
-	/** This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company. */
+	/**
+	 * This translates to `C_BPartner.BPartner_Parent_ID`. It's a this bpartner's central/parent company.
+	 */
 	private BPartnerId parentId;
 
-	/** This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number. */
+	/**
+	 * This translates to `C_BPartner.Phone2`. It's this bpartner's central phone number.
+	 */
 	private String phone;
 
 	private Language language;
@@ -102,12 +124,36 @@ public class BPartner
 
 	private String vatId;
 
+	private OrgMappingId orgMappingId;
+
 	private final RecordChangeLog changeLog;
 
-	/** Can be {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First} or {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First}. */
+	private String memo;
+
+	/**
+	 * Can be {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Newest_First} or {@link org.compiere.model.X_C_BPartner#SHIPMENTALLOCATION_BESTBEFORE_POLICY_Expiring_First}.
+	 */
 	private final String shipmentAllocationBestBeforePolicy;
 
-	/** They are all nullable because we can create a completely empty instance which we then fill. */
+	/**
+	 * If true, it means that the BPartner is valid without having a code, metasfresh or gln.
+	 * It's identifier is an external reference that is provided outside of this bpartner's composite.
+	 */
+	private boolean identifiedByExternalReference;
+
+	private final PaymentTermId customerPaymentTermId;
+	private final PricingSystemId customerPricingSystemId;
+
+	private final PaymentTermId vendorPaymentTermId;
+	private final PricingSystemId vendorPricingSystemId;
+
+	private final boolean excludeFromPromotions;
+	private final String referrer;
+	@Nullable private final CampaignId campaignId;
+
+	/**
+	 * They are all nullable because we can create a completely empty instance which we then fill.
+	 */
 	@Builder(toBuilder = true)
 	private BPartner(
 			@Nullable final BPartnerId id,
@@ -118,6 +164,7 @@ public class BPartner
 			@Nullable final String name,
 			@Nullable final String name2,
 			@Nullable final String name3,
+			@Nullable final GreetingId greetingId,
 			@Nullable final String companyName,
 			@Nullable final BPartnerId parentId,
 			@Nullable final String phone,
@@ -132,7 +179,17 @@ public class BPartner
 			@Nullable final Boolean company,
 			@Nullable final String vatId,
 			@Nullable final RecordChangeLog changeLog,
-			@Nullable final String shipmentAllocationBestBeforePolicy)
+			@Nullable final String shipmentAllocationBestBeforePolicy,
+			@Nullable final Boolean identifiedByExternalReference,
+			@Nullable final OrgMappingId orgMappingId,
+			@Nullable final String memo,
+			@Nullable final PaymentTermId customerPaymentTermId,
+			@Nullable final PricingSystemId customerPricingSystemId,
+			@Nullable final PaymentTermId vendorPaymentTermId,
+			@Nullable final PricingSystemId vendorPricingSystemId,
+			final boolean excludeFromPromotions,
+			@Nullable final String referrer,
+			@Nullable final CampaignId campaignId)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -142,6 +199,7 @@ public class BPartner
 		this.name = name;
 		this.name2 = name2;
 		this.name3 = name3;
+		this.greetingId = greetingId;
 		this.companyName = companyName;
 		this.parentId = parentId;
 		this.phone = phone;
@@ -158,6 +216,18 @@ public class BPartner
 
 		this.changeLog = changeLog;
 		this.shipmentAllocationBestBeforePolicy = shipmentAllocationBestBeforePolicy;
+		this.orgMappingId = orgMappingId;
+		this.identifiedByExternalReference = coalesce(identifiedByExternalReference, false);
+		this.memo = memo;
+
+		this.customerPaymentTermId = customerPaymentTermId;
+		this.customerPricingSystemId = customerPricingSystemId;
+
+		this.vendorPaymentTermId = vendorPaymentTermId;
+		this.vendorPricingSystemId = vendorPricingSystemId;
+		this.excludeFromPromotions = excludeFromPromotions;
+		this.referrer = referrer;
+		this.campaignId = campaignId;
 	}
 
 	/**

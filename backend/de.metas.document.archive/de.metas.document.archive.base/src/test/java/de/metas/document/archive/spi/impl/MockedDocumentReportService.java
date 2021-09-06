@@ -33,6 +33,7 @@ import de.metas.report.ReportResultData;
 import lombok.NonNull;
 import lombok.Setter;
 import org.compiere.util.MimeType;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.util.List;
 
@@ -40,6 +41,8 @@ public class MockedDocumentReportService extends DocumentReportService
 {
 	@Setter
 	private PInstanceId pinstanceIdToReturn = PInstanceId.ofRepoId(12345);
+
+	public static final String MOCKED_REPORT_FILENAME = "report.pdf";
 
 	public MockedDocumentReportService(
 			final @NonNull List<DocumentReportAdvisor> advisors,
@@ -59,9 +62,9 @@ public class MockedDocumentReportService extends DocumentReportService
 	{
 		return ExecuteReportProcessResult.builder()
 				.reportData(ReportResultData.builder()
-						.reportFilename("report.pdf")
+						.reportFilename(MOCKED_REPORT_FILENAME)
 						.reportContentType(MimeType.TYPE_PDF)
-						.reportData(new byte[] { 1, 2, 3 })
+						.reportData(new ByteArrayResource(new byte[] { 1, 2, 3 }))
 						.build())
 				.reportPInstanceId(pinstanceIdToReturn)
 				.build();

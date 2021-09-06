@@ -33,7 +33,7 @@ import de.metas.common.bprelation.JsonBPRelationRole;
 import de.metas.common.bprelation.request.JsonRequestBPRelationTarget;
 import de.metas.common.bprelation.response.JsonResponseBPRelationComposite;
 import de.metas.common.bprelation.response.JsonResponseBPRelationItem;
-import de.metas.common.rest_api.v1.JsonExternalId;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.utils.IdentifierString;

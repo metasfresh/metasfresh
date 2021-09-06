@@ -386,7 +386,7 @@ public class WFProcessRepository
 		if (userId != null)
 		{
 			final IUserDAO userDAO = Services.get(IUserDAO.class);
-			final String userFullname = userDAO.retrieveUserFullname(userId);
+			final String userFullname = userDAO.retrieveUserFullName(userId);
 			sb.append(" (").append(userFullname).append(")");
 		}
 

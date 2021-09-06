@@ -54,4 +54,6 @@ public class CopyDiscountSchemaBreaksRequest
 	
 	@NonNull 
 	Direction direction;
+	
+	@Nullable Boolean makeTargetAsSource;
 }

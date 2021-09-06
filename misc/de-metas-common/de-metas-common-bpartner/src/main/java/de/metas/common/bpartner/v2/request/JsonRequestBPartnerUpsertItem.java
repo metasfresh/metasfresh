@@ -30,21 +30,32 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_DOC;
 
 @Value
 @Builder(toBuilder = true)
 @ApiModel(description = "Contains an external id and the actual bpartner to insert or update. The response will contain the given external id.")
 public class JsonRequestBPartnerUpsertItem
 {
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 10,
+	@ApiModelProperty(position = 10,
 			value = BPARTNER_IDENTIFIER_DOC) //
 	@NonNull
 	String bpartnerIdentifier;
 
-	@ApiModelProperty(allowEmptyValue = false, //
-			position = 20,
+	@ApiModelProperty(position = 20, //
+			value = "The version of the business partner." + EXTERNAL_VERSION_DOC)
+	String externalVersion;
+
+
+	@ApiModelProperty(position = 25, //
+			value = "URL of the resource in the target external system.")
+	@Nullable
+	String externalReferenceUrl;
+
+	@ApiModelProperty(position = 30,
 			value = "The business partner to upsert. Note that its `externalId` is ignored in favor of this upsertRequest's `externalId`")
 	@NonNull
 	JsonRequestComposite bpartnerComposite;
@@ -52,9 +63,13 @@ public class JsonRequestBPartnerUpsertItem
 	@JsonCreator
 	public JsonRequestBPartnerUpsertItem(
 			@NonNull @JsonProperty("bpartnerIdentifier") final String bpartnerIdentifier,
+			@Nullable @JsonProperty("externalVersion") final String externalVersion,
+			@Nullable @JsonProperty("externalReferenceUrl") final String externalReferenceUrl,
 			@NonNull @JsonProperty("bpartnerComposite") final JsonRequestComposite bpartnerComposite)
 	{
 		this.bpartnerIdentifier = bpartnerIdentifier;
+		this.externalVersion = externalVersion;
 		this.bpartnerComposite = bpartnerComposite;
+		this.externalReferenceUrl = externalReferenceUrl;
 	}
 }

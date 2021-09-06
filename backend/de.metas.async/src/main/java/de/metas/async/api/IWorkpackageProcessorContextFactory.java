@@ -20,16 +20,12 @@ public interface IWorkpackageProcessorContextFactory extends ISingletonService
 
 	/**
 	 * Get the priority associated with the current thread
-	 *
-	 * @return
 	 */
 	String getThreadInheritedPriority();
 
 	/**
 	 * Associate the given <code>priority</code> with the current thread. Method is called before a workpackage is processed. If the WP-processor itself creawtes a follow-up workpackage, then the
 	 * framework will assign this priority to the new workpackage, so that the follow-up package inherit the original package's priority.
-	 *
-	 * @param priority
 	 */
 	void setThreadInheritedPriority(String priority);
 

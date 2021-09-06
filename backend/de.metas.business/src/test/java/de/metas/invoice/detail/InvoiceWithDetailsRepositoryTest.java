@@ -22,7 +22,6 @@
 
 package de.metas.invoice.detail;
 
-import de.metas.business.BusinessTestHelper;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.organization.OrgId;
@@ -33,8 +32,8 @@ import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,7 +41,7 @@ import static org.assertj.core.api.Assertions.tuple;
 
 public class InvoiceWithDetailsRepositoryTest
 {
-
+	private final ZoneId timeZone = ZoneId.of("Europe/Berlin");
 	private OrgId orgId;
 
 	@BeforeEach
@@ -50,14 +49,13 @@ public class InvoiceWithDetailsRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		orgId = BusinessTestHelper.createOrgWithTimeZone();
+		orgId = AdempiereTestHelper.createOrgWithTimeZone("org", timeZone);
 	}
 
 	@Test
 	void save()
 	{
-		final Timestamp expectedTimestamp = TimeUtil.parseTimestamp("2020-06-17");
-		final LocalDate localDate = TimeUtil.asLocalDate(expectedTimestamp);
+		final LocalDate localDate = TimeUtil.asLocalDate("2020-06-17");
 
 		// given
 		final InvoiceWithDetails invoiceWithDetails = InvoiceWithDetails.builder()
@@ -88,11 +86,11 @@ public class InvoiceWithDetailsRepositoryTest
 				.extracting("AD_Org_ID", "C_Invoice_ID", "C_InvoiceLine_ID", "Description", "Date")
 				.containsExactlyInAnyOrder(
 						tuple(orgId, 10, 0, "descr1", null),
-						tuple(orgId, 10, 0, null, expectedTimestamp),
+						tuple(orgId, 10, 0, null, TimeUtil.asTimestamp(localDate, timeZone)),
 						tuple(orgId, 10, 10, "descr1", null),
-						tuple(orgId, 10, 10, null, expectedTimestamp),
+						tuple(orgId, 10, 10, null, TimeUtil.asTimestamp(localDate, timeZone)),
 						tuple(orgId, 10, 20, "descr1", null),
-						tuple(orgId, 10, 20, null, expectedTimestamp)
+						tuple(orgId, 10, 20, null, TimeUtil.asTimestamp(localDate, timeZone))
 				);
 	}
 }

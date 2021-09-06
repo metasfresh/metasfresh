@@ -1,30 +1,16 @@
 package de.metas.ordercandidate.api;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.time.LocalTime;
-import java.time.ZoneId;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -33,7 +19,24 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Repository;
+
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -82,6 +85,20 @@ public class OLCandRepository
 				.map(olCandFactory::toOLCand)
 				.collect(ImmutableList.toImmutableList()));
 	}
+
+	public OLCand create(@NonNull final OLCandCreateRequest request)
+	{
+		Check.assumeNotNull(request, "request is not null");
+
+		final OLCandFactory olCandFactory = new OLCandFactory();
+
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		return trxManager.callInThreadInheritedTrx(() -> {
+			final I_C_OLCand olCandRecord = createAndSaveOLCandRecord(request);
+			return olCandFactory.toOLCand(olCandRecord);
+		});
+	}
+
 
 	private I_C_OLCand createAndSaveOLCandRecord(@NonNull final OLCandCreateRequest request)
 	{
@@ -138,7 +155,7 @@ public class OLCandRepository
 			olCandPO.setPOReference(request.getPoReference());
 		}
 
-		olCandPO.setDateCandidate(SystemTime.asDayTimestamp());
+		olCandPO.setDateCandidate(CoalesceUtil.coalesce(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
 				.atTime(LocalTime.MAX)
@@ -206,7 +223,7 @@ public class OLCandRepository
 		}
 
 		final BPartnerId salesRepId = request.getSalesRepId();
-		if (salesRepId != null)
+		if (salesRepId != null && !salesRepId.equals(BPartnerId.ofRepoId(olCandPO.getC_BPartner_ID())))
 		{
 			olCandPO.setC_BPartner_SalesRep_ID(salesRepId.getRepoId());
 		}
@@ -216,16 +233,46 @@ public class OLCandRepository
 		{
 			olCandPO.setPaymentRule(paymentRule.getCode());
 		}
-		
-		final PaymentTermId paymentTermId= request.getPaymentTermId();
-		if(paymentTermId != null)
+
+		final PaymentTermId paymentTermId = request.getPaymentTermId();
+		if (paymentTermId != null)
 		{
 			olCandPO.setC_PaymentTerm_ID(paymentTermId.getRepoId());
 		}
+		final OrderLineGroup orderLineGroup = request.getOrderLineGroup();
+		if (orderLineGroup != null)
+		{
+			olCandPO.setCompensationGroupKey(orderLineGroup.getGroupKey());
+			olCandPO.setIsGroupCompensationLine(orderLineGroup.isGroupMainItem());
 
-		saveRecord(olCandPO);
+			Optional.ofNullable(orderLineGroup.getDiscount())
+					.map(Percent::toBigDecimal)
+					.ifPresent(olCandPO::setGroupCompensationDiscountPercentage);
+		}
 
-		return olCandPO;
+		olCandPO.setDescription(request.getDescription());
+		olCandPO.setDeliveryRule(request.getDeliveryRule());
+		olCandPO.setDeliveryViaRule(request.getDeliveryViaRule());
+		olCandPO.setImportWarningMessage(request.getImportWarningMessage());
+		if (request.getPrice() == null)
+		{
+			olCandPO.setIsManualPrice(Boolean.TRUE.equals(request.getIsManualPrice()));
+		}
+
+		if (request.getLine() != null)
+		{
+			olCandPO.setLine(request.getLine());
+		}
+
+		final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssuesInterface = InterfaceWrapperHelper.create(olCandPO, org.adempiere.process.rpl.model.I_C_OLCand.class);
+		if (request.getIsImportedWithIssues() != null)
+		{
+			olCandWithIssuesInterface.setIsImportedWithIssues(request.getIsImportedWithIssues());
+		}
+
+		saveRecord(olCandWithIssuesInterface);
+
+		return olCandWithIssuesInterface;
 	}
 
 	public List<OLCand> getByQuery(@NonNull final OLCandQuery olCandQuery)

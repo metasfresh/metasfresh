@@ -20,8 +20,8 @@
           "bpartnerIdentifier": "gln-kundeGLN",
           "invoiceBaseDocType": "ARI",
           "invoiceGrossAmount": 21.4,
-          "paymentDiscountAmount": 0,
-          "serviceFeeAmount": 5,
+          "paymentDiscountAmount": 2.00,
+          "serviceFeeAmount": 3,
           "serviceFeeVatRate": 7
         }
       ]

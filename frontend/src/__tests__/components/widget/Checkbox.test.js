@@ -20,13 +20,10 @@ describe('Checkbox component', () => {
       const props = createDummyProps({
         ...fixtures.data1.widgetProps,
         widgetData: [
-          {
-            ...fixtures.data1.widgetProps.widgetData,
-            value: false,
-          }
+            ...fixtures.data1.widgetProps.widgetData
         ]
       });
-
+      props.widgetData[0].value = false;
       const wrapper = shallow(<Checkbox {...props} />);
       const html = wrapper.html();
 
@@ -41,7 +38,7 @@ describe('Checkbox component', () => {
         ...fixtures.data1.widgetProps,
         disabled: true,
       });
-
+      props.widgetData[0].value = true;
       const wrapper = shallow(<Checkbox {...props} />);
       const html = wrapper.html();
 
@@ -49,16 +46,18 @@ describe('Checkbox component', () => {
       expect(wrapper.find('input').length).toBe(1);
       expect(wrapper.find('input').html()).toContain('checkbox');
       expect(wrapper.find('input').html()).toContain('disabled');
-      expect(wrapper.find('.input-checkbox-tick').html()).toContain('checked'); 
+      expect(html).toContain('input-checkbox-tick');
     });
   });
 
   describe('functional tests', () => {
     it('renders without errors with props set', () => {
       const handlePatchSpy = jest.fn();
+      const updateItemsSpy = jest.fn();
       const props = createDummyProps({
         ...fixtures.data1.widgetProps,
-        handlePatch: handlePatchSpy
+        handlePatch: handlePatchSpy,
+        updateItems: updateItemsSpy,
       });
 
       const updatedWidgetData = [
@@ -69,14 +68,17 @@ describe('Checkbox component', () => {
       ];
       const wrapper = mount(<Checkbox {...props} />);
 
-      expect(wrapper.find('.input-checkbox-tick').html()).toContain('checked');
-      wrapper.find('input[type="checkbox"]').simulate('change', { target: { checked: false } })
+      const html = wrapper.html();
+
+      expect(html).toContain('input-checkbox-tick');
+      expect(wrapper.find('.input-checkbox-tick').html()).not.toContain('checked');
+      
+      wrapper.find('input[type="checkbox"]').simulate('change', { target: { checked: true } })
 
       expect(handlePatchSpy).toHaveBeenCalled();
 
       wrapper.setProps({ widgetData: updatedWidgetData });
-
-      expect(wrapper.find('.input-checkbox-tick').html()).not.toContain('checked');
+      expect(wrapper.find('.input-checkbox-tick').html()).toContain('checked');
     });
   });
 });

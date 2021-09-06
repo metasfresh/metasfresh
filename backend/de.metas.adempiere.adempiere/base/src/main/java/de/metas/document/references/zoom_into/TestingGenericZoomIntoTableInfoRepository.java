@@ -23,6 +23,7 @@
 package de.metas.document.references.zoom_into;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -31,7 +32,9 @@ import org.compiere.Adempiere;
 public class TestingGenericZoomIntoTableInfoRepository implements GenericZoomIntoTableInfoRepository
 {
 	@Override
-	public GenericZoomIntoTableInfo retrieveTableInfo(@NonNull final String tableName)
+	public GenericZoomIntoTableInfo retrieveTableInfo(
+			@NonNull final String tableName,
+			final boolean ignoreExcludeFromZoomTargetsFlag)
 	{
 		if (!Adempiere.isUnitTestMode())
 		{
@@ -40,7 +43,7 @@ public class TestingGenericZoomIntoTableInfoRepository implements GenericZoomInt
 
 		return GenericZoomIntoTableInfo.builder()
 				.tableName(tableName)
-				.keyColumnName(InterfaceWrapperHelper.getKeyColumnName(tableName))
+				.keyColumnNames(ImmutableSet.of(InterfaceWrapperHelper.getKeyColumnName(tableName)))
 				.windows(ImmutableList.of())
 				.build();
 	}

@@ -3,13 +3,9 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import DebounceInput from 'react-debounce-input';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 
-import {
-  nodePathsRequest,
-  queryPathsRequest,
-  rootRequest,
-} from '../actions/MenuActions';
+import history from '../services/History';
+import { nodePathsRequest, queryPathsRequest, rootRequest } from '../api';
 import { openModal } from '../actions/WindowActions';
 import Container from '../components/Container';
 import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
@@ -267,13 +263,11 @@ class NavigationTree extends Component {
   }
 
   handleRedirect = (elementId, isNew, type) => {
-    const { dispatch } = this.props;
-    dispatch(push('/' + (type ? type : 'window') + '/' + elementId));
+    history.push('/' + (type ? type : 'window') + '/' + elementId);
   };
 
   handleNewRedirect = (elementId) => {
-    const { dispatch } = this.props;
-    dispatch(push('/window/' + elementId + '/new'));
+    history.push('/window/' + elementId + '/new');
   };
 
   handleDeeper = (e, nodeId) => {
@@ -297,9 +291,41 @@ class NavigationTree extends Component {
     );
   };
 
+  /**
+   * @method renderMenuOverlayContainer
+   * @summary - renders the menu items for the right and left columns within the sitemap
+   * @param {object} subitem
+   * @param {number} subindex
+   * @returns MenuOverlayContainer
+   */
+  renderMenuOverlayContainer = (subitem, subindex) => {
+    return (
+      <MenuOverlayContainer
+        key={subindex}
+        printChildren={true}
+        showBookmarks={true}
+        openModal={this.openModal}
+        onUpdateData={this.updateData}
+        onKeyDown={this.handleKeyDown}
+        handleClickOnFolder={this.handleDeeper}
+        handleRedirect={this.handleRedirect}
+        handleNewRedirect={this.handleNewRedirect}
+        menuType="sitemap"
+        levelType="navigationTree"
+        {...subitem}
+      />
+    );
+  };
+
   renderTree = () => {
     const { queriedResults, query } = this.state;
-    let indexOrder = 0;
+
+    let sitemapLeftColItems = queriedResults.filter(
+      (colItem, i) => i % 2 === 0
+    );
+    let sitemapRightColItems = queriedResults.filter(
+      (colItem, i) => i % 2 === 1
+    );
 
     return (
       <div className="sitemap">
@@ -326,30 +352,20 @@ class NavigationTree extends Component {
           </div>
         </div>
 
-        <p className="menu-overlay-header menu-overlay-header-main menu-overlay-header-spaced">
-          {/* {rootResults.caption} */}
-        </p>
-
+        {/* sitemap items are listed using this */}
         <div className="column-wrapper">
-          {queriedResults &&
-            queriedResults.map((subitem, subindex) => {
-              indexOrder = indexOrder + 1;
-              return (
-                <MenuOverlayContainer
-                  key={subindex}
-                  printChildren={true}
-                  showBookmarks={true}
-                  indexOrder={indexOrder}
-                  openModal={this.openModal}
-                  onUpdateData={this.updateData}
-                  onKeyDown={this.handleKeyDown}
-                  handleClickOnFolder={this.handleDeeper}
-                  handleRedirect={this.handleRedirect}
-                  handleNewRedirect={this.handleNewRedirect}
-                  {...subitem}
-                />
-              );
-            })}
+          <div className="sitemap-column-left">
+            {sitemapLeftColItems &&
+              sitemapLeftColItems.map((subitem, subindex) =>
+                this.renderMenuOverlayContainer(subitem, subindex)
+              )}
+          </div>
+          <div className="sitemap-column-right">
+            {sitemapRightColItems &&
+              sitemapRightColItems.map((subitem, subindex) =>
+                this.renderMenuOverlayContainer(subitem, subindex)
+              )}
+          </div>
 
           {queriedResults.length === 0 && query !== '' && (
             <span>There are no results</span>

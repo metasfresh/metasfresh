@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1988553137L;
+	private static final long serialVersionUID = -271576557L;
 
     /** Standard Constructor */
     public X_M_InOutLine (final Properties ctx, final int M_InOutLine_ID, @Nullable final String trxName)
@@ -66,6 +66,21 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
+	public void setCatch_UOM_ID (final int Catch_UOM_ID)
+	{
+		if (Catch_UOM_ID < 1) 
+			set_Value (COLUMNNAME_Catch_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
+	}
+
+	@Override
+	public int getCatch_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Campaign getC_Campaign()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Campaign_ID, org.compiere.model.I_C_Campaign.class);
@@ -105,6 +120,19 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	public int getC_Charge_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Charge_ID);
+	}
+
+	@Override
+	public void setConfirmedQty (final BigDecimal ConfirmedQty)
+	{
+		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
+	}
+
+	@Override
+	public BigDecimal getConfirmedQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ConfirmedQty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -219,35 +247,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setCatch_UOM_ID (final int Catch_UOM_ID)
-	{
-		if (Catch_UOM_ID < 1) 
-			set_Value (COLUMNNAME_Catch_UOM_ID, null);
-		else 
-			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
-	}
-
-	@Override
-	public int getCatch_UOM_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
-	}
-
-	@Override
-	public void setConfirmedQty (final @Nullable BigDecimal ConfirmedQty)
-	{
-		set_Value (COLUMNNAME_ConfirmedQty, ConfirmedQty);
-	}
-
-	@Override
-	public BigDecimal getConfirmedQty() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ConfirmedQty);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setDescription (final @Nullable java.lang.String Description)
+	public void setDescription (final java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -391,6 +391,19 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
+	public void setMovementQty (final BigDecimal MovementQty)
+	{
+		set_Value (COLUMNNAME_MovementQty, MovementQty);
+	}
+
+	@Override
+	public BigDecimal getMovementQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -433,20 +446,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setMovementQty (final BigDecimal MovementQty)
-	{
-		set_Value (COLUMNNAME_MovementQty, MovementQty);
-	}
-
-	@Override
-	public BigDecimal getMovementQty() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setPickedQty (final @Nullable BigDecimal PickedQty)
+	public void setPickedQty (final BigDecimal PickedQty)
 	{
 		set_Value (COLUMNNAME_PickedQty, PickedQty);
 	}
@@ -471,7 +471,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
+	public void setProductDescription (final java.lang.String ProductDescription)
 	{
 		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
 	}
@@ -483,7 +483,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setQtyDeliveredCatch (final @Nullable BigDecimal QtyDeliveredCatch)
+	public void setQtyDeliveredCatch (final BigDecimal QtyDeliveredCatch)
 	{
 		set_Value (COLUMNNAME_QtyDeliveredCatch, QtyDeliveredCatch);
 	}
@@ -551,7 +551,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setScrappedQty (final @Nullable BigDecimal ScrappedQty)
+	public void setScrappedQty (final BigDecimal ScrappedQty)
 	{
 		set_Value (COLUMNNAME_ScrappedQty, ScrappedQty);
 	}
@@ -564,7 +564,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setTargetQty (final @Nullable BigDecimal TargetQty)
+	public void setTargetQty (final BigDecimal TargetQty)
 	{
 		set_Value (COLUMNNAME_TargetQty, TargetQty);
 	}
@@ -631,7 +631,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
+	public void setUserElementString1 (final java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}
@@ -643,7 +643,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString2 (final @Nullable java.lang.String UserElementString2)
+	public void setUserElementString2 (final java.lang.String UserElementString2)
 	{
 		set_Value (COLUMNNAME_UserElementString2, UserElementString2);
 	}
@@ -655,7 +655,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString3 (final @Nullable java.lang.String UserElementString3)
+	public void setUserElementString3 (final java.lang.String UserElementString3)
 	{
 		set_Value (COLUMNNAME_UserElementString3, UserElementString3);
 	}
@@ -667,7 +667,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString4 (final @Nullable java.lang.String UserElementString4)
+	public void setUserElementString4 (final java.lang.String UserElementString4)
 	{
 		set_Value (COLUMNNAME_UserElementString4, UserElementString4);
 	}
@@ -679,7 +679,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString5 (final @Nullable java.lang.String UserElementString5)
+	public void setUserElementString5 (final java.lang.String UserElementString5)
 	{
 		set_Value (COLUMNNAME_UserElementString5, UserElementString5);
 	}
@@ -691,7 +691,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString6 (final @Nullable java.lang.String UserElementString6)
+	public void setUserElementString6 (final java.lang.String UserElementString6)
 	{
 		set_Value (COLUMNNAME_UserElementString6, UserElementString6);
 	}
@@ -703,7 +703,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public void setUserElementString7 (final @Nullable java.lang.String UserElementString7)
+	public void setUserElementString7 (final java.lang.String UserElementString7)
 	{
 		set_Value (COLUMNNAME_UserElementString7, UserElementString7);
 	}

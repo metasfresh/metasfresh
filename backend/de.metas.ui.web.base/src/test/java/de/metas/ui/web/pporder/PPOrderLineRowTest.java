@@ -7,6 +7,7 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.IViewRowAttributesProvider;
+import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import org.adempiere.test.AdempiereTestHelper;
@@ -16,6 +17,7 @@ import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -172,4 +174,60 @@ public class PPOrderLineRowTest
 		assertThat(result.isTopLevelHU()).isTrue();
 		assertThat(result.isHUStatusActive()).isTrue();
 	}
+
+	@Nested
+	class computeLineStatusColor
+	{
+		@Nested
+		class positiveQtyPlan
+		{
+			@Test
+			void issuedLessThanRequired()
+			{
+				assertThat(PPOrderLineRow.computeLineStatusColor(Quantity.of(10, uom), Quantity.of(2, uom)))
+						.isEqualTo(ColorValue.RED);
+			}
+
+			@Test
+			void issuedAsRequired()
+			{
+				assertThat(PPOrderLineRow.computeLineStatusColor(Quantity.of(10, uom), Quantity.of(10, uom)))
+						.isEqualTo(ColorValue.GREEN);
+			}
+
+			@Test
+			void issuedMoreThanRequired()
+			{
+				assertThat(PPOrderLineRow.computeLineStatusColor(Quantity.of(10, uom), Quantity.of(12, uom)))
+						.isEqualTo(ColorValue.GREEN);
+			}
+		}
+
+		@Nested
+		class negativeQtyPlan
+		{
+			@Test
+			void issuedLessThanRequired()
+			{
+				assertThat(PPOrderLineRow.computeLineStatusColor(Quantity.of(-10, uom), Quantity.of(-2, uom)))
+						.isEqualTo(ColorValue.RED);
+			}
+
+			@Test
+			void issuedAsRequired()
+			{
+				assertThat(PPOrderLineRow.computeLineStatusColor(Quantity.of(-10, uom), Quantity.of(-10, uom)))
+						.isEqualTo(ColorValue.GREEN);
+			}
+
+			@Test
+			void issuedMoreThanRequired()
+			{
+				assertThat(PPOrderLineRow.computeLineStatusColor(Quantity.of(-10, uom), Quantity.of(-12, uom)))
+						.isEqualTo(ColorValue.GREEN);
+			}
+		}
+
+	}
+
 }

@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BP_BankAccount
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_BankAccount, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1873200297L;
+	private static final long serialVersionUID = -1222779174L;
 
     /** Standard Constructor */
-    public X_C_BP_BankAccount (final Properties ctx, final int C_BP_BankAccount_ID, final String trxName)
+    public X_C_BP_BankAccount (final Properties ctx, final int C_BP_BankAccount_ID, @Nullable final String trxName)
     {
       super (ctx, C_BP_BankAccount_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_BP_BankAccount (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_BP_BankAccount (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -34,7 +35,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setAccountNo (final java.lang.String AccountNo)
+	public void setAccountNo (final @Nullable java.lang.String AccountNo)
 	{
 		set_Value (COLUMNNAME_AccountNo, AccountNo);
 	}
@@ -46,7 +47,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setA_City (final java.lang.String A_City)
+	public void setA_City (final @Nullable java.lang.String A_City)
 	{
 		set_Value (COLUMNNAME_A_City, A_City);
 	}
@@ -58,7 +59,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setA_Country (final java.lang.String A_Country)
+	public void setA_Country (final @Nullable java.lang.String A_Country)
 	{
 		set_Value (COLUMNNAME_A_Country, A_Country);
 	}
@@ -67,6 +68,33 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	public java.lang.String getA_Country() 
 	{
 		return get_ValueAsString(COLUMNNAME_A_Country);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Org_Mapping getAD_Org_Mapping()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_Org_Mapping_ID, org.compiere.model.I_AD_Org_Mapping.class);
+	}
+
+	@Override
+	public void setAD_Org_Mapping(final org.compiere.model.I_AD_Org_Mapping AD_Org_Mapping)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_Org_Mapping_ID, org.compiere.model.I_AD_Org_Mapping.class, AD_Org_Mapping);
+	}
+
+	@Override
+	public void setAD_Org_Mapping_ID (final int AD_Org_Mapping_ID)
+	{
+		if (AD_Org_Mapping_ID < 1) 
+			set_Value (COLUMNNAME_AD_Org_Mapping_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_Org_Mapping_ID, AD_Org_Mapping_ID);
+	}
+
+	@Override
+	public int getAD_Org_Mapping_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_Org_Mapping_ID);
 	}
 
 	@Override
@@ -85,7 +113,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setA_EMail (final java.lang.String A_EMail)
+	public void setA_EMail (final @Nullable java.lang.String A_EMail)
 	{
 		set_Value (COLUMNNAME_A_EMail, A_EMail);
 	}
@@ -97,7 +125,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setA_Ident_DL (final java.lang.String A_Ident_DL)
+	public void setA_Ident_DL (final @Nullable java.lang.String A_Ident_DL)
 	{
 		set_Value (COLUMNNAME_A_Ident_DL, A_Ident_DL);
 	}
@@ -109,7 +137,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setA_Ident_SSN (final java.lang.String A_Ident_SSN)
+	public void setA_Ident_SSN (final @Nullable java.lang.String A_Ident_SSN)
 	{
 		set_Value (COLUMNNAME_A_Ident_SSN, A_Ident_SSN);
 	}
@@ -121,7 +149,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setA_Name (final java.lang.String A_Name)
+	public void setA_Name (final @Nullable java.lang.String A_Name)
 	{
 		set_Value (COLUMNNAME_A_Name, A_Name);
 	}
@@ -133,7 +161,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setA_State (final java.lang.String A_State)
+	public void setA_State (final @Nullable java.lang.String A_State)
 	{
 		set_Value (COLUMNNAME_A_State, A_State);
 	}
@@ -145,7 +173,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setA_Street (final java.lang.String A_Street)
+	public void setA_Street (final @Nullable java.lang.String A_Street)
 	{
 		set_Value (COLUMNNAME_A_Street, A_Street);
 	}
@@ -157,7 +185,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setA_Zip (final java.lang.String A_Zip)
+	public void setA_Zip (final @Nullable java.lang.String A_Zip)
 	{
 		set_Value (COLUMNNAME_A_Zip, A_Zip);
 	}
@@ -178,7 +206,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Sparkonto = S */
 	public static final String BANKACCOUNTTYPE_Sparkonto = "S";
 	@Override
-	public void setBankAccountType (final java.lang.String BankAccountType)
+	public void setBankAccountType (final @Nullable java.lang.String BankAccountType)
 	{
 		set_Value (COLUMNNAME_BankAccountType, BankAccountType);
 	}
@@ -205,7 +233,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Provision = P */
 	public static final String BPBANKACCTUSE_Provision = "P";
 	@Override
-	public void setBPBankAcctUse (final java.lang.String BPBankAcctUse)
+	public void setBPBankAcctUse (final @Nullable java.lang.String BPBankAcctUse)
 	{
 		set_Value (COLUMNNAME_BPBankAcctUse, BPBankAcctUse);
 	}
@@ -301,7 +329,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setCreditCardNumber (final java.lang.String CreditCardNumber)
+	public void setCreditCardNumber (final @Nullable java.lang.String CreditCardNumber)
 	{
 		set_Value (COLUMNNAME_CreditCardNumber, CreditCardNumber);
 	}
@@ -332,7 +360,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Purchase Card = P */
 	public static final String CREDITCARDTYPE_PurchaseCard = "P";
 	@Override
-	public void setCreditCardType (final java.lang.String CreditCardType)
+	public void setCreditCardType (final @Nullable java.lang.String CreditCardType)
 	{
 		set_Value (COLUMNNAME_CreditCardType, CreditCardType);
 	}
@@ -344,7 +372,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setCreditCardVV (final java.lang.String CreditCardVV)
+	public void setCreditCardVV (final @Nullable java.lang.String CreditCardVV)
 	{
 		set_Value (COLUMNNAME_CreditCardVV, CreditCardVV);
 	}
@@ -356,7 +384,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setDescription (final java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
@@ -368,7 +396,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setESR_RenderedAccountNo (final java.lang.String ESR_RenderedAccountNo)
+	public void setESR_RenderedAccountNo (final @Nullable java.lang.String ESR_RenderedAccountNo)
 	{
 		set_Value (COLUMNNAME_ESR_RenderedAccountNo, ESR_RenderedAccountNo);
 	}
@@ -380,7 +408,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setESR_RenderedReceiver (final java.lang.String ESR_RenderedReceiver)
+	public void setESR_RenderedReceiver (final @Nullable java.lang.String ESR_RenderedReceiver)
 	{
 		set_Value (COLUMNNAME_ESR_RenderedReceiver, ESR_RenderedReceiver);
 	}
@@ -392,7 +420,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setIBAN (final java.lang.String IBAN)
+	public void setIBAN (final @Nullable java.lang.String IBAN)
 	{
 		set_Value (COLUMNNAME_IBAN, IBAN);
 	}
@@ -452,7 +480,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setName (final @Nullable java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
@@ -464,7 +492,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setQR_IBAN (final java.lang.String QR_IBAN)
+	public void setQR_IBAN (final @Nullable java.lang.String QR_IBAN)
 	{
 		set_Value (COLUMNNAME_QR_IBAN, QR_IBAN);
 	}
@@ -487,7 +515,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Unavailable = X */
 	public static final String R_AVSADDR_Unavailable = "X";
 	@Override
-	public void setR_AvsAddr (final java.lang.String R_AvsAddr)
+	public void setR_AvsAddr (final @Nullable java.lang.String R_AvsAddr)
 	{
 		set_ValueNoCheck (COLUMNNAME_R_AvsAddr, R_AvsAddr);
 	}
@@ -510,7 +538,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	/** Unavailable = X */
 	public static final String R_AVSZIP_Unavailable = "X";
 	@Override
-	public void setR_AvsZip (final java.lang.String R_AvsZip)
+	public void setR_AvsZip (final @Nullable java.lang.String R_AvsZip)
 	{
 		set_ValueNoCheck (COLUMNNAME_R_AvsZip, R_AvsZip);
 	}
@@ -522,7 +550,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setRoutingNo (final java.lang.String RoutingNo)
+	public void setRoutingNo (final @Nullable java.lang.String RoutingNo)
 	{
 		set_Value (COLUMNNAME_RoutingNo, RoutingNo);
 	}
@@ -534,7 +562,7 @@ public class X_C_BP_BankAccount extends org.compiere.model.PO implements I_C_BP_
 	}
 
 	@Override
-	public void setSEPA_CreditorIdentifier (final java.lang.String SEPA_CreditorIdentifier)
+	public void setSEPA_CreditorIdentifier (final @Nullable java.lang.String SEPA_CreditorIdentifier)
 	{
 		set_Value (COLUMNNAME_SEPA_CreditorIdentifier, SEPA_CreditorIdentifier);
 	}

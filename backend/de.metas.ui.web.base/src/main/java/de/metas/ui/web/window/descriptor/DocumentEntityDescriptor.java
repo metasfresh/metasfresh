@@ -90,7 +90,7 @@ import lombok.NonNull;
 
 public class DocumentEntityDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}

@@ -1,17 +1,17 @@
 package de.metas.event.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-
-import org.compiere.Adempiere;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.compiere.Adempiere;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /*
  * #%L
@@ -69,8 +69,10 @@ public class PlainEventBusFactory implements IEventBusFactory
 
 	private EventBus createEventBus(final Topic topic)
 	{
+		final MicrometerEventBusStatsCollector micrometerEventBusStatsCollector = EventBusFactory.createMicrometerEventBusStatsCollector(topic, new SimpleMeterRegistry());
+
 		final ExecutorService executor = null;
-		return new EventBus(topic.getName(), executor);
+		return new EventBus(topic.getName(), executor, micrometerEventBusStatsCollector);
 	}
 
 	@Override

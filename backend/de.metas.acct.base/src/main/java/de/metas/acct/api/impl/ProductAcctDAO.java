@@ -147,7 +147,7 @@ public class ProductAcctDAO implements IProductAcctDAO
 	public ActivityId getProductActivityId(@NonNull final ProductId productId)
 	{
 		final Properties ctx = Env.getCtx();
-		final AcctSchema schema = acctSchemaDAO.getByCliendAndOrg(ctx);
+		final AcctSchema schema = acctSchemaDAO.getByClientAndOrg(ctx);
 		final I_M_Product_Acct productAcct = getProductAcctRecord(schema.getId(), productId).orElse(null);
 		if (productAcct == null)
 		{

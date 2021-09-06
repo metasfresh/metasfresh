@@ -24,6 +24,8 @@ package de.metas.common.externalreference;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -42,5 +44,17 @@ public class JsonExternalReferenceLookupResponse
 			@JsonProperty("items") @NonNull @Singular final List<JsonExternalReferenceItem> items)
 	{
 		this.items = items;
+	}
+
+	public String toString()
+	{
+		try
+		{
+			return new ObjectMapper().writeValueAsString(this);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException("toString() failed for JsonExternalReferenceLookupRequest", e);
+		}
 	}
 }

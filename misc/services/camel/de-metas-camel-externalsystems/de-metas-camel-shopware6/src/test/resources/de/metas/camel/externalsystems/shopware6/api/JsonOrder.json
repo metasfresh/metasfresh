@@ -1,0 +1,31 @@
+{
+  "orderNumber": "orderNumber",
+  "currencyId": "currencyId",
+  "billingAddressId": "billingAddressId",
+  "orderCustomer": {
+    "email": "email@metasfresh.com",
+    "orderId": "orderId",
+    "salutationId": "salutationId",
+    "firstName": "firstName",
+    "lastName": "lastName",
+    "title": null,
+    "company": "company",
+    "customerNumber": "customerNumber",
+    "customerId": "customerId",
+    "customFields": {
+      "metasfreshId": "customBPartnerId",
+      "customUserId": "customSalesRepId"
+    },
+    "translated": [],
+    "id": "id",
+    "orderVersionId": "orderVersionId"
+  },
+  "stateMachineState": {
+    "technicalName": "open"
+  },
+  "createdAt": "2021-04-29T07:40:31.676+00:00",
+  "updatedAt": "2021-04-29T07:40:31.906+00:00",
+  "id": "id",
+  "billingAddressVersionId": "billingAddressVersionId",
+  "apiAlias": "order"
+}

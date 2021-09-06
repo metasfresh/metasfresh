@@ -1,16 +1,5 @@
 package de.metas.material.event.commons;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeValueId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -20,11 +9,20 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueId;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -50,7 +48,7 @@ import lombok.NonNull;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-public final class AttributesKey
+public final class AttributesKey implements Comparable<AttributesKey>
 {
 	// first, declare the "static" constants that might be used within the "factory-method" constants
 
@@ -70,7 +68,8 @@ public final class AttributesKey
 	public static final AttributesKey NONE = AttributesKey.ofAttributeValueIds(-1002);
 
 	@JsonCreator
-	public static AttributesKey ofString(final String attributesKeyString)
+	@NonNull
+	public static AttributesKey ofString(@Nullable final String attributesKeyString)
 	{
 		if (attributesKeyString == null || attributesKeyString.trim().isEmpty())
 		{
@@ -215,6 +214,8 @@ public final class AttributesKey
 			return ATTRIBUTEVALUEIDS_SPLITTER.splitToList(attributesKeyString.trim())
 					.stream()
 					.map(AttributesKeyPart::parseString)
+					.filter(Optional::isPresent)
+					.map(Optional::get)
 					.collect(ImmutableSet.toImmutableSet());
 		}
 		catch (final Exception ex)
@@ -255,5 +256,15 @@ public final class AttributesKey
 	public static boolean equals(@Nullable final AttributesKey k1, @Nullable final AttributesKey k2)
 	{
 		return Objects.equals(k1, k2);
+	}
+
+	@Override
+	public int compareTo(@Nullable final AttributesKey o)
+	{
+		if (o == null)
+		{
+			return 1; // we assume that null is less than not-null
+		}
+		return this.getAsString().compareTo(o.getAsString());
 	}
 }

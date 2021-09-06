@@ -55,10 +55,13 @@ Map build(final MvnConf mvnConf,
     withEnv(["BRANCH_NAME_DOCKERIZED=${misc.mkDockerTag(env.BRANCH_NAME)}", "MF_VERSION_DOCKERIZED=${misc.mkDockerTag(env.MF_VERSION)}"]) {
 
         withCredentials([usernamePassword(credentialsId: 'nexus.metasfresh.com_jenkins', passwordVariable: 'DOCKER_PUSH_REGISTRY_PASSWORD', usernameVariable: 'DOCKER_PUSH_REGISTRY_USERNAME')]) {
-            // do the actual building and deployment
-            // maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
-            sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -DtrimStackTrace=false ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+            withCredentials([usernamePassword(credentialsId: 'dockerhub_metasfresh', passwordVariable: 'DOCKERHUB_REGISTRY_PASSWORD', usernameVariable: 'DOCKERHUB_REGISTRY_USERNAME')]) { /* pull without rate limit */
+                // do the actual building and deployment
+                // maven.test.failure.ignore=true: continue if tests fail, because we want a full report.
+                sh "mvn --settings ${mvnConf.settingsFile} --file ${mvnConf.pomFile} --batch-mode -Dmaven.test.failure.ignore=true -DtrimStackTrace=false ${mvnConf.resolveParams} ${mvnConf.deployParam} clean deploy"
+            }
         }
+        
     }
     final def dockerInfo = readJSON file: 'target/jib-image.json'
 

@@ -13,11 +13,13 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehousePickingGroup;
 import org.adempiere.warehouse.WarehousePickingGroupId;
@@ -25,6 +27,7 @@ import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_PickingGroup;
@@ -34,6 +37,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_M_Warehouse_Routing;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +45,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import static de.metas.util.Check.isEmpty;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByIdsOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
@@ -127,7 +132,7 @@ public class WarehouseDAO implements IWarehouseDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_M_Warehouse_Routing.class)
-				.map(record -> toWarehouseRouting(record))
+				.map(WarehouseDAO::toWarehouseRouting)
 				.collect(ImmutableList.toImmutableList());
 
 		return WarehouseRoutingsIndex.of(routings);
@@ -398,7 +403,7 @@ public class WarehouseDAO implements IWarehouseDAO
 		return getByIds(warehouseIds);
 	}
 
-	private Set<WarehouseId> getAllWarehouseIds()
+	public Set<WarehouseId> getAllWarehouseIds()
 	{
 		final Set<WarehouseId> warehouseIds = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
@@ -613,5 +618,68 @@ public class WarehouseDAO implements IWarehouseDAO
 				.orderBy(I_M_Warehouse.COLUMNNAME_M_Warehouse_ID)
 				.create()
 				.first();
+	}
+
+	@Nullable
+	@Override
+	public WarehouseId retrieveWarehouseIdBy(@NonNull final WarehouseQuery query)
+	{
+		final IQueryBuilder<I_M_Warehouse> queryBuilder;
+		if (query.isOutOfTrx())
+		{
+			queryBuilder = Services
+					.get(IQueryBL.class)
+					.createQueryBuilderOutOfTrx(I_M_Warehouse.class)
+					.setOption(IQuery.OPTION_ReturnReadOnlyRecords, true);
+		}
+		else
+		{
+			queryBuilder = Services
+					.get(IQueryBL.class)
+					.createQueryBuilder(I_M_Warehouse.class);
+		}
+
+		if (query.isIncludeAnyOrg())
+		{
+			queryBuilder
+					.addInArrayFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+					.orderByDescending(I_M_Warehouse.COLUMNNAME_AD_Org_ID);
+		}
+		else
+		{
+			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_AD_Org_ID, query.getOrgId());
+		}
+
+		if (!isEmpty(query.getValue(), true))
+		{
+			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_Value, query.getValue().trim());
+		}
+		if (query.getExternalId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Warehouse.COLUMNNAME_ExternalId, query.getExternalId().getValue().trim());
+		}
+
+		final int productRepoId = queryBuilder
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstId();
+
+		return WarehouseId.ofRepoIdOrNull(productRepoId);
+	}
+
+	@Override
+	public WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(final int locatorRepoId)
+	{
+		Check.assumeGreaterThanZero(locatorRepoId, "locatorRepoId");
+
+		final I_M_Locator locator = getLocatorByRepoId(locatorRepoId);
+		final String locatorValue = locator.getValue();
+		final I_M_Warehouse warehouse = getById(WarehouseId.ofRepoId(locator.getM_Warehouse_ID()));
+		final String warehouseValue = warehouse.getValue();
+
+		return WarehouseAndLocatorValue.builder()
+				.warehouseValue(warehouseValue)
+				.locatorValue(locatorValue)
+				.build();
 	}
 }

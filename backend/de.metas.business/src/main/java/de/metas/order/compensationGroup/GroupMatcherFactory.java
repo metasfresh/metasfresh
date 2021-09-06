@@ -28,7 +28,7 @@ import de.metas.order.model.I_C_CompensationGroup_SchemaLine;
 
 public interface GroupMatcherFactory
 {
-	String getAppliesToLineType();
+	GroupTemplateCompensationLineType getAppliesToLineType();
 
 	GroupMatcher createPredicate(final I_C_CompensationGroup_SchemaLine schemaLine, final List<I_C_CompensationGroup_SchemaLine> allSchemaLines);
 }

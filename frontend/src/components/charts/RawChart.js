@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { getKPIData, getTargetIndicatorsData } from '../../actions/AppActions';
 import Loader from '../app/Loader';
 import BarChart from './BarChartComponent';
 import Indicator from './Indicator';
@@ -12,9 +11,7 @@ class RawChart extends Component {
     super(props);
 
     this.state = {
-      chartData: null,
-      intervalId: null,
-      err: null,
+      forceChartReRender: false,
     };
   }
 
@@ -24,10 +21,7 @@ class RawChart extends Component {
       prevProps.index !== this.props.index ||
       prevProps.id !== this.props.id
     ) {
-      if (this.props.chartType === 'Indicator') {
-        if (this.props.noData) return;
-        this.fetchData();
-      } else {
+      if (this.props.chartType !== 'Indicator') {
         this.mounted &&
           this.setState(
             {
@@ -44,78 +38,17 @@ class RawChart extends Component {
   }
 
   componentDidMount() {
-    const { noData } = this.props;
     this.mounted = true;
-
-    if (noData) return;
-    this.init();
   }
 
   componentWillUnmount() {
-    const { intervalId } = this.state;
-
     this.mounted = false;
-
-    if (intervalId) {
-      clearInterval(intervalId);
-
-      this.mounted &&
-        this.setState({
-          intervalId: null,
-        });
-    }
   }
 
-  init = () => {
-    const { pollInterval } = this.props;
-    this.fetchData();
-
-    if (pollInterval) {
-      this.mounted &&
-        this.setState({
-          intervalId: setInterval(() => {
-            this.fetchData();
-          }, pollInterval * 1000),
-        });
-    }
-  };
-
-  getData() {
-    const { id, chartType } = this.props;
-
-    if (chartType === 'Indicator') {
-      return getTargetIndicatorsData(id)
-        .then((response) => {
-          return response.data.datasets;
-        })
-        .catch((err) => {
-          throw err;
-        });
-    }
-
-    return getKPIData(id)
-      .then((response) => {
-        return response.data.datasets;
-      })
-      .catch((err) => {
-        throw err;
-      });
-  }
-
-  fetchData() {
-    this.getData()
-      .then((chartData) => {
-        this.mounted && this.setState({ chartData: chartData, err: null });
-      })
-      .catch((err) => {
-        this.mounted && this.setState({ err });
-      });
-  }
-
-  renderError() {
+  renderError(errorMessage) {
     return (
       <div className="error-load-data">
-        <h6 className="error-load-text">Error loading data...</h6>
+        <h6 className="error-load-text">{errorMessage}</h6>
         <div className="error-loading" />
       </div>
     );
@@ -132,18 +65,23 @@ class RawChart extends Component {
       isMaximized,
       chartTitle,
       editmode,
+      data,
       noData,
       handleChartOptions,
+      zoomToDetailsAvailable,
     } = this.props;
-    const { chartData, forceChartReRender } = this.state;
-    const data = chartData[0] && chartData[0].values;
+    const { forceChartReRender } = this.state;
+    const dataset0 =
+      data && data.datasets && data.datasets[0] && data.datasets[0].values;
+    const dataset0_unit =
+      data && data.datasets && data.datasets[0] && data.datasets[0].unit;
 
     switch (chartType) {
       case 'BarChart':
         return (
           <BarChart
             {...{
-              data,
+              data: dataset0,
               groupBy,
               caption,
               chartType,
@@ -173,7 +111,7 @@ class RawChart extends Component {
         return (
           <PieChart
             {...{
-              data,
+              data: dataset0,
               fields,
               groupBy,
               height,
@@ -213,13 +151,15 @@ class RawChart extends Component {
             )}
 
             <Indicator
-              value={
-                noData
-                  ? ''
-                  : data[0][fields[0].fieldName] +
-                    (fields[0].unit ? ' ' + fields[0].unit : '')
-              }
-              {...{ caption, editmode }}
+              id={id}
+              zoomToDetailsAvailable={zoomToDetailsAvailable}
+              amount={noData ? '0' : dataset0[0][fields[0].fieldName]}
+              unit={dataset0_unit ? dataset0_unit : fields[0].unit}
+              {...{
+                caption,
+                editmode,
+                data,
+              }}
             />
           </div>
         );
@@ -228,25 +168,36 @@ class RawChart extends Component {
     }
   }
 
-  renderNoData(data) {
-    const { chartType } = this.props;
+  renderNoData(showLoader) {
+    const { chartType, data, zoomToDetailsAvailable, caption } = this.props;
 
     switch (chartType) {
       case 'Indicator':
-        return <Indicator value={'No data'} loader={data === null} />;
+        return (
+          <Indicator
+            value={'No data'}
+            data={data}
+            loader={showLoader}
+            {...{ caption, zoomToDetailsAvailable }}
+          />
+        );
       default:
-        return <div>{data === null ? <Loader /> : 'No data'}</div>;
+        return <div>{showLoader ? <Loader /> : 'No data'}</div>;
     }
   }
 
   render() {
-    const { chartData, err } = this.state;
+    const { data, chartType } = this.props;
 
-    return err
-      ? this.renderError()
-      : chartData && chartData.length > 0
-      ? this.renderChart()
-      : this.renderNoData(chartData);
+    if (!data) {
+      return this.renderNoData(true); // loading
+    } else if (data.error && chartType !== 'Indicator') {
+      return this.renderError(data.error.message);
+    } else if (data.datasets && data.datasets.length > 0) {
+      return this.renderChart();
+    } else {
+      return this.renderNoData(false); // no data
+    }
   }
 }
 
@@ -255,15 +206,16 @@ RawChart.propTypes = {
   index: PropTypes.number,
   id: PropTypes.number,
   chartType: PropTypes.string,
-  noData: PropTypes.any,
-  pollInterval: PropTypes.any,
+  data: PropTypes.object,
+  noData: PropTypes.bool,
   caption: PropTypes.string,
-  fields: PropTypes.any,
-  groupBy: PropTypes.string,
-  height: PropTypes.string,
+  fields: PropTypes.arrayOf(PropTypes.object),
+  groupBy: PropTypes.object,
+  height: PropTypes.number,
   handleChartOptions: PropTypes.func,
-  editmode: PropTypes.any,
+  editmode: PropTypes.bool,
   chartTitle: PropTypes.string,
+  zoomToDetailsAvailable: PropTypes.bool,
 };
 
 export default connect()(RawChart);

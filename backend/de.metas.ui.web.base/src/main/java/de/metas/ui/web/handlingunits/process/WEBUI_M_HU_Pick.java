@@ -27,6 +27,7 @@ import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
@@ -168,7 +169,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 			parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, //
 			numericKey = true, //
 			lookupSource = LookupSource.lookup)
-	private LookupValuesList getShipmentScheduleValues(final LookupDataSourceContext context)
+	private LookupValuesPage getShipmentScheduleValues(final LookupDataSourceContext context)
 	{
 		return createNewDefaultParametersFiller().getShipmentScheduleValues(context);
 	}

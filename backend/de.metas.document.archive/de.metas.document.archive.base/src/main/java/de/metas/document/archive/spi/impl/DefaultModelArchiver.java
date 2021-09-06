@@ -1,12 +1,29 @@
 package de.metas.document.archive.spi.impl;
 
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.model.I_C_Async_Batch;
+import de.metas.document.archive.api.IDocOutboundDAO;
+import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
+import de.metas.document.archive.model.I_AD_Archive;
+import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
+import de.metas.document.sequence.IDocumentNoBL;
+import de.metas.document.sequence.spi.IDocumentNoAware;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.report.DocumentReportFlavor;
+import de.metas.report.DocumentReportRequest;
+import de.metas.report.DocumentReportResult;
+import de.metas.report.DocumentReportService;
+import de.metas.report.PrintFormatId;
+import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
@@ -19,26 +36,11 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-
-import de.metas.async.Async_Constants;
-import de.metas.async.model.I_C_Async_Batch;
-import de.metas.document.archive.api.IDocOutboundDAO;
-import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
-import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
-import de.metas.document.archive.storage.cc.api.ICCAbleDocumentFactoryService;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.report.DocumentReportRequest;
-import de.metas.report.DocumentReportResult;
-import de.metas.report.DocumentReportService;
-import de.metas.report.PrintFormatId;
-import de.metas.user.UserId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /*
  * #%L
@@ -79,18 +81,22 @@ public class DefaultModelArchiver
 	// services
 	private static final Logger logger = LogManager.getLogger(DefaultModelArchiver.class);
 	private final transient IArchiveBL archiveBL = Services.get(org.adempiere.archive.api.IArchiveBL.class);
+	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final transient IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 	private final transient ICCAbleDocumentFactoryService ccAbleDocumentFactoryService = Services.get(ICCAbleDocumentFactoryService.class);
+	private final transient IDocumentNoBL documentNoBL = Services.get(IDocumentNoBL.class);
 	private DocumentReportService _documentReportService; // lazy
 
 	//
 	// Parameters
 	private final Object record;
 	private final PrintFormatId printFormatId;
+	private DocumentReportFlavor flavor = DocumentReportFlavor.PRINT;
 
 	//
 	// Status & cached values
 	private final AtomicBoolean _processed = new AtomicBoolean(false);
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private Optional<I_C_Doc_Outbound_Config> _docOutboundConfig;
 
 	private DefaultModelArchiver(@NonNull final Object record, @Nullable final PrintFormatId printFormatId)
@@ -110,6 +116,12 @@ public class DefaultModelArchiver
 				.toString();
 	}
 
+	public DefaultModelArchiver flavor(@NonNull final DocumentReportFlavor flavor)
+	{
+		this.flavor = flavor;
+		return this;
+	}
+
 	public ArchiveResult archive()
 	{
 		// Mark as processed
@@ -118,18 +130,24 @@ public class DefaultModelArchiver
 		final Object record = getRecord();
 		final TableRecordReference recordRef = TableRecordReference.of(record);
 
+		final Integer asyncBatchId = asyncBatchBL.getAsyncBatchId(record)
+				.map(AsyncBatchId::getRepoId)
+				.orElse(null);
+
 		final DocumentReportResult report = getDocumentReportService()
 				.createReport(DocumentReportRequest.builder()
-						.documentRef(recordRef)
-						.printFormatIdToUse(getPrintFormatId().orElse(null))
-						.printPreview(true)
-						//
-						.clientId(InterfaceWrapperHelper.getClientId(record).orElse(ClientId.SYSTEM))
-						.orgId(InterfaceWrapperHelper.getOrgId(record).orElse(OrgId.ANY))
-						.userId(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM))
-						.roleId(Env.getLoggedRoleId())
-						//
-						.build());
+									  .flavor(flavor)
+									  .documentRef(recordRef)
+									  .printFormatIdToUse(getPrintFormatId().orElse(null))
+									  .printPreview(true)
+									  .asyncBatchId(asyncBatchId)
+									  //
+									  .clientId(InterfaceWrapperHelper.getClientId(record).orElse(ClientId.SYSTEM))
+									  .orgId(InterfaceWrapperHelper.getOrgId(record).orElse(OrgId.ANY))
+									  .userId(Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM))
+									  .roleId(Env.getLoggedRoleId())
+									  //
+									  .build());
 
 		final ArchiveResult lastArchive = report.getLastArchive();
 
@@ -179,19 +197,23 @@ public class DefaultModelArchiver
 			throw new AdempiereException("Cannot create PDF data for " + this);
 		}
 
+		final String documentNo = documentNoBL.asDocumentNoAware(getRecord()).map(IDocumentNoAware::getDocumentNo).orElse(null);
+
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
-				.flavor(report.getFlavor())
-				.data(report.getDataAsByteArray())
-				.force(true)
-				.save(true)
-				.trxName(ITrx.TRXNAME_ThreadInherited)
-				.recordRef(report.getDocumentRef())
-				.processId(report.getReportProcessId())
-				.pinstanceId(report.getReportPInstanceId())
-				.archiveName(report.getFilename())
-				.bpartnerId(report.getBpartnerId())
-				.language(report.getLanguage())
-				.build());
+																	  .flavor(report.getFlavor())
+																	  .data(report.getReportData().orElse(null))
+																	  .force(true)
+																	  .save(true)
+																	  .asyncBatchId(report.getAsyncBatchId())
+																	  .trxName(ITrx.TRXNAME_ThreadInherited)
+																	  .documentNo(documentNo)
+																	  .recordRef(report.getDocumentRef())
+																	  .processId(report.getReportProcessId())
+																	  .pinstanceId(report.getReportPInstanceId())
+																	  .archiveName(report.getFilename())
+																	  .bpartnerId(report.getBpartnerId())
+																	  .language(report.getLanguage())
+																	  .build());
 
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
 				Objects.requireNonNull(archiveResult.getArchiveRecord()),
@@ -249,6 +271,7 @@ public class DefaultModelArchiver
 		return InterfaceWrapperHelper.getCtx(getRecord());
 	}
 
+	@SuppressWarnings("OptionalAssignedToNull")
 	private Optional<I_C_Doc_Outbound_Config> getDocOutboundConfig()
 	{
 		if (_docOutboundConfig == null)

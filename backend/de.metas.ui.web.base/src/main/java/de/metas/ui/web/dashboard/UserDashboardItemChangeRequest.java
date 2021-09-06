@@ -1,10 +1,5 @@
 package de.metas.ui.web.dashboard;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardItemPatchPath;
 import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
@@ -14,6 +9,11 @@ import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
 
 /*
  * #%L
@@ -38,16 +38,19 @@ import lombok.Value;
  */
 
 /**
- * Dashboad item change request
- * 
- * @author metas-dev <dev@metasfresh.com>
+ * Dashboard item change request
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 @Builder
 @Value
-final class UserDashboardItemChangeRequest
+class UserDashboardItemChangeRequest
 {
-	public static final UserDashboardItemChangeRequest of(final DashboardWidgetType widgetType, final int itemId, final String adLanguage, @NonNull final List<JSONPatchEvent<DashboardItemPatchPath>> events)
+	public static UserDashboardItemChangeRequest of(
+			final DashboardWidgetType widgetType,
+			final UserDashboardItemId itemId,
+			final String adLanguage,
+			@NonNull final List<JSONPatchEvent<DashboardItemPatchPath>> events)
 	{
 		if (events.isEmpty())
 		{
@@ -102,18 +105,16 @@ final class UserDashboardItemChangeRequest
 		}
 		return changeRequest;
 	}
-	
-	private final int itemId;
-	@NonNull
-	private final DashboardWidgetType widgetType;
-	@NonNull
-	private final String adLanguage;
+
+	@Nullable UserDashboardItemId itemId;
+	@NonNull DashboardWidgetType widgetType;
+	@NonNull String adLanguage;
 
 	// Changes
-	private final String caption;
-	private final JSONInterval interval;
-	private final JSONWhen when;
-	private final int position;
+	String caption;
+	JSONInterval interval;
+	JSONWhen when;
+	int position;
 
 	public boolean isEmpty()
 	{

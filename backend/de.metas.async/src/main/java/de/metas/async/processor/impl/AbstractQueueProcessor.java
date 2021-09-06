@@ -262,7 +262,7 @@ public abstract class AbstractQueueProcessor implements IQueueProcessor
 				// workpackageProcessorStatistics.decrementQueueSize();
 			}
 		}
-
+	
 		// Notify event listeners
 		getEventDispatcher().fireWorkpackageProcessed(workPackage, workPackageProcessor);
 	}

@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
@@ -82,6 +83,15 @@ public class ProcurementWebToMetasfresh_StepDef
 		procurementWebuiFactory.setPassword(commandLineOptions.getRabbitPassword());
 	}
 
+	@Given("RabbitMQ's message queues are purged")
+	public void rabbitMQs_message_queues_are_empty() throws IOException, TimeoutException
+	{
+		final Connection connection = procurementWebuiFactory.newConnection();
+		final Channel channel = connection.createChannel();
+		channel.queuePurge(Constants.QUEUE_NAME_MF_TO_PW);
+		channel.queuePurge(Constants.QUEUE_NAME_PW_TO_MF);
+	}
+	
 	@When("metasfresh receives a GetAllBPartnersRequest via RabbitMQ")
 	public void metasfresh_receives_a_get_all_b_partners_request() throws IOException, TimeoutException
 	{
@@ -110,7 +120,7 @@ public class ProcurementWebToMetasfresh_StepDef
 		for (final Map<String, String> tableRow : dataTable.<String, String>asMaps(String.class, String.class))
 		{
 			final String name = tableRow.get("Name");
-			assertThat(name2bpartner).as("Missing syncBPartner with name=%s", name).containsKey(name);
+			assertThat(name2bpartner).as("Missing syncBPartner with name=%s in %s", name, name2bpartner).containsKey(name);
 			final SyncBPartner syncBPartner = name2bpartner.get(name);
 
 			final boolean deleted = DataTableUtil.extractBooleanForColumnName(tableRow, "Deleted");

@@ -51,6 +51,28 @@ public interface I_C_Order_CompensationGroup
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Activity_ID();
+
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
 	 * Set Compensation Group Schema.
 	 *
 	 * <br>Type: Search
@@ -170,6 +192,27 @@ public interface I_C_Order_CompensationGroup
 
 	ModelColumn<I_C_Order_CompensationGroup, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Order_CompensationGroup.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Name Printed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNamePrinted (boolean IsNamePrinted);
+
+	/**
+	 * Get Name Printed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNamePrinted();
+
+	ModelColumn<I_C_Order_CompensationGroup, Object> COLUMN_IsNamePrinted = new ModelColumn<>(I_C_Order_CompensationGroup.class, "IsNamePrinted", null);
+	String COLUMNNAME_IsNamePrinted = "IsNamePrinted";
 
 	/**
 	 * Set Product Category.

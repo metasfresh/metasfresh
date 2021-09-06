@@ -94,7 +94,10 @@ import java.util.Set;
 				.orgId(orderAggregationKey.getOrgId())
 				.warehouseId(orderAggregationKey.getWarehouseId())
 				.shipBPartner(vendorId)
-				.datePromised(orderAggregationKey.getDatePromised());
+				.datePromised(orderAggregationKey.getDatePromised())
+				.externalPurchaseOrderUrl(orderAggregationKey.getExternalPurchaseOrderUrl())
+				.externalHeaderId(orderAggregationKey.getExternalId());
+
 		if (docType != null)
 		{
 			orderFactory.docType(docType);
@@ -110,11 +113,16 @@ import java.util.Set;
 						purchaseOrderItem.getProductId(),
 						UomId.ofRepoId(purchaseOrderItem.getUomId()))
 				.orElseGet(orderFactory::newOrderLine)
-						.productId(purchaseOrderItem.getProductId());
+				.productId(purchaseOrderItem.getProductId());
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
+		if (purchaseOrderItem.getDiscount() != null)
+		{
+			orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
+		}
+		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}

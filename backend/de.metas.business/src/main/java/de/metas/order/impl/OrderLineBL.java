@@ -21,8 +21,8 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
-import de.metas.order.PriceAndDiscount;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -38,6 +38,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
@@ -77,7 +78,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import static de.metas.util.Check.assume;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
@@ -258,7 +258,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public BigDecimal calculatePriceEnteredFromPriceActualAndDiscount(final BigDecimal priceActual, final BigDecimal discount, final int precision)
 	{
-		return PriceAndDiscount.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, precision);
+		return OrderLinePriceAndDiscount.calculatePriceEnteredFromPriceActualAndDiscount(priceActual, discount, precision);
 	}
 
 	@Override
@@ -455,7 +455,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updatePriceActual(final I_C_OrderLine orderLine, final CurrencyPrecision precision)
 	{
-		final BigDecimal priceActual = PriceAndDiscount.of(orderLine, precision)
+		final BigDecimal priceActual = OrderLinePriceAndDiscount.of(orderLine, precision)
 				.updatePriceActual()
 				.getPriceActual();
 		orderLine.setPriceActual(priceActual);
@@ -639,7 +639,7 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final I_C_Tax tax = taxBL.getTaxById(TaxId.ofRepoId(orderLine.getC_Tax_ID()));
+		final Tax tax = taxBL.getTaxById(TaxId.ofRepoId(orderLine.getC_Tax_ID()));
 
 		final I_C_Order order = orderLine.getC_Order();
 		return orderBL().isTaxIncluded(order, tax);
@@ -876,5 +876,11 @@ public class OrderLineBL implements IOrderLineBL
 		lineNetAmt = netPrecision.roundIfNeeded(lineNetAmt);
 
 		return lineNetAmt;
+	}
+
+	@Override
+	public void save(final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		orderDAO.save(orderLine);
 	}
 }

@@ -1,23 +1,10 @@
 package de.metas.ui.web.view.descriptor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.view.ViewEvaluationCtx;
@@ -31,6 +18,16 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -56,7 +53,7 @@ import lombok.NonNull;
 
 /**
  * Helper class to build the SQLs to query the view data.
- * 
+ *
  * @author metas-dev <dev@metasfresh.com>
  */
 public class SqlViewSelectData
@@ -110,13 +107,13 @@ public class SqlViewSelectData
 				ImmutableList.of(), // displayFieldNames
 				extractKeyFields(allFields, keyColumnNamesMap), // allFields
 				groupingBinding)
-						//
-						.toComposer()
-						.append("\n WHERE ")
-						// NOTE: already filtered by UUID
-						.append("\n " + COLUMNNAME_Paging_SeqNo_OneBased + " BETWEEN ? AND ?")
-						.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo_OneBased)
-						.build();
+				//
+				.toComposer()
+				.append("\n WHERE ")
+				// NOTE: already filtered by UUID
+				.append("\n " + COLUMNNAME_Paging_SeqNo_OneBased + " BETWEEN ? AND ?")
+				.append("\n ORDER BY " + COLUMNNAME_Paging_SeqNo_OneBased)
+				.build();
 
 		sqlSelectById = sqlSelect.toComposer()
 				.append("\n WHERE ")
@@ -304,11 +301,11 @@ public class SqlViewSelectData
 				.append("\n   INNER JOIN " + I_T_WEBUI_ViewSelectionLine.Table_Name + " sl on ("
 						+ " sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_UUID + "=sel." + I_T_WEBUI_ViewSelection.COLUMNNAME_UUID
 						+ " and " + keyColumnNamesMap.prepareSqlJoinCondition()
-								.tableAlias1("sl")
-								.useKeyColumnNames1(false)
-								.tableAlias2("sel")
-								.useKeyColumnNames2(false)
-								.build()
+										.tableAlias1("sl")
+										.mappingType1(SqlViewKeyColumnNamesMap.MappingType.WEBUI_SELECTION_TABLE)
+										.tableAlias2("sel")
+										.mappingType2(SqlViewKeyColumnNamesMap.MappingType.WEBUI_SELECTION_TABLE)
+										.build()
 						+ ")")
 				.append("\n   LEFT OUTER JOIN " + sqlTableName + " ON (" + sqlTableName + "." + sqlKeyColumnName + " = sl." + I_T_WEBUI_ViewSelectionLine.COLUMNNAME_Line_ID + ")")
 				//
@@ -439,6 +436,7 @@ public class SqlViewSelectData
 
 		final SqlAndParams sqlFilterByRowIds = keyColumnNamesMap.prepareSqlFilterByRowIds()
 				.sqlColumnPrefix(COLUMNNAME_Paging_Prefix)
+				.mappingType(SqlViewKeyColumnNamesMap.MappingType.WEBUI_SELECTION_TABLE)
 				.rowIds(rowIds)
 				.build();
 		final String sql = new StringBuilder()

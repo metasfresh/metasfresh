@@ -70,7 +70,8 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				.create()
 				.list();
 	}
-
+	
+	
 	/**
 	 * Explode the given {@code esrString} into a number of syntactically equivalent strings that can be matched against {@code C_BP_BankAccount.ESR_RenderedAccountNo}.
 	 * <p>
@@ -185,4 +186,29 @@ public class ESRBPBankAccountDAO implements IESRBPBankAccountDAO
 				});
 		throw new AdempiereException(msg);
 	}
+	
+	@Override
+	public final List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(@NonNull final String IBAN)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+
+		final IQueryFilter<I_C_BP_BankAccount> esrAccountmatichingIBANorQR_IBAN = queryBL.createCompositeQueryFilter(I_C_BP_BankAccount.class)
+				.setJoinOr()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, IBAN)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, IBAN);
+			
+				
+
+		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IsEsrAccount, true)
+				.filter(esrAccountmatichingIBANorQR_IBAN)
+				.addOnlyActiveRecordsFilter()
+				.addOnlyContextClient()
+				.create()
+				.list();
+	}
+	
 }

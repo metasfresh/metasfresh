@@ -21,10 +21,7 @@ class Roles extends Metasfresh {
   }
 
   verifyElements() {
-    cy.get(this.tableRows)
-      .find(this.rowSelector)
-      .eq(0)
-      .should('exist');
+    cy.get(this.tableRows).find(this.rowSelector).eq(0).should('exist');
   }
 
   getRows() {
@@ -45,11 +42,11 @@ class Roles extends Metasfresh {
 
   // This function shows how you can check if element containing text exists
   valueExists(val) {
-    return this.getRows().then(rows => {
+    return this.getRows().then((rows) => {
       let exists = false;
 
       for (let i = 0; i < rows.length; i += 1) {
-        if (rows[i].textContent.includes(val)) {
+        if (rows[i] && rows[i].textContent.includes(val)) {
           exists = true;
           break;
         }

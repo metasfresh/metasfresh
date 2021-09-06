@@ -1,6 +1,9 @@
 package de.metas.contracts.commission;
 
+import de.metas.contracts.ConditionsId;
 import lombok.experimental.UtilityClass;
+
+import java.time.Duration;
 
 /*
  * #%L
@@ -34,4 +37,6 @@ public class CommissionConstants
 	 * Please keep in sysnc with {@code AD_Ref_List_ID=542010} and various display logic expressions.
 	 */
 	public static final String TYPE_CONDITIONS_COMMISSION = "Commission";
+	public static final ConditionsId FLATRATE_CONDITION_0_COMMISSION_ID = ConditionsId.ofRepoId(540047);
+	public static final Duration NO_COMMISSION_AGREEMENT_DEFAULT_CONTRACT_DURATION = Duration.ofDays(365);
 }

@@ -577,7 +577,10 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 		}
 		catch (final AdempiereException e)
 		{
-			throw new AdempiereException("Error invoking method=\"" + method.getName() + "\"; proxy=" + proxy + "; args=" + args, e);
+			e.printStackTrace();
+			throw new AdempiereException("Error invoking method=\"" + method.getName() + "\""
+												 //+ "; proxy=" + proxy // commented out because in some cases this causes StackOverflow
+												 + "; args=" + args, e);
 		}
 	}
 
@@ -777,7 +780,7 @@ public class POJOWrapper implements InvocationHandler, IInterfaceWrapper
 			sb.append(", OLD VALUES");
 		}
 
-		final boolean printReferencedModels = !useOldValues && isPrintReferencedModels();
+		final boolean printReferencedModels = !useOldValues && isPrintReferencedModels() && false;
 
 		final Map<String, Object> values = getInnerValues();
 		if (values != null && !values.isEmpty())

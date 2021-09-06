@@ -60,10 +60,8 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	 * Schedule given model (document or table record) to be evaluated and {@link I_C_Invoice_Candidate}s records to be generated for it, asynchronously.
 	 *
 	 * NOTE: the workpackages are not created right away, but the models are collected per database transaction and a workpackage is enqueued when the transaction is committed.
-	 *
-	 * @param model
 	 */
-	public static final void schedule(final Object model)
+	public static void schedule(final Object model)
 	{
 		SCHEDULER.schedule(model);
 	}
@@ -88,13 +86,8 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 				}
 			}
 
-			if (!isCreateCandidates)
-			{
-				return false;
-			}
-
-			return true;
-		};
+			return isCreateCandidates;
+		}
 
 		@Override
 		protected Properties extractCtxFromItem(final Object model)
@@ -119,7 +112,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 		{
 			final Properties ctx = extractCtxFromItem(model);
 			return Env.getLoggedUserIdIfExists(ctx).orElse(null);
-		};
+		}
 	};
 
 	// services
@@ -130,12 +123,12 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 			for (final Object model : models)
 			{
-				try (final MDCCloseable c = TableRecordMDC.putTableRecordReference(model))
+				try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(model))
 				{
 					final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(model);
 					Loggables.addLog("Created {} invoice candidate for {}", invoiceCandidates.size(), model);

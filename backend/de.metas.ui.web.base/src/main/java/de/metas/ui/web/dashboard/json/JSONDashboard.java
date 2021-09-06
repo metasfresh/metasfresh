@@ -1,18 +1,16 @@
 package de.metas.ui.web.dashboard.json;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.slf4j.Logger;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.dashboard.UserDashboardItem;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.util.GuavaCollectors;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.collect.ImmutableList;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L
@@ -40,35 +38,29 @@ import lombok.Value;
 @Value
 public class JSONDashboard
 {
-	public static final JSONDashboard of(final Collection<UserDashboardItem> items, final String websocketEndpoint, final JSONDocumentLayoutOptions jsonOpts)
+	public static final JSONDashboard EMPTY = new JSONDashboard();
+
+	List<JSONDashboardItem> items;
+	@Nullable String websocketEndpoint;
+
+	@With
+	@JsonInclude(JsonInclude.Include.NON_EMPTY) String noDashboardReason;
+
+	@Builder
+	private JSONDashboard(
+			@NonNull final List<JSONDashboardItem> items,
+			@Nullable final String websocketEndpoint,
+			@Nullable final String noDashboardReason)
 	{
-		return new JSONDashboard(items, websocketEndpoint, jsonOpts);
+		this.items = ImmutableList.copyOf(items);
+		this.websocketEndpoint = websocketEndpoint;
+		this.noDashboardReason = noDashboardReason;
 	}
 
-	private static final Logger logger = LogManager.getLogger(JSONDashboard.class);
-
-	private final List<JSONDashboardItem> items;
-	private final String websocketEndpoint;
-
-	private JSONDashboard(final Collection<UserDashboardItem> items, final String websocketEndpoint, final JSONDocumentLayoutOptions jsonOpts)
+	private JSONDashboard()
 	{
-		super();
-
-		this.items = items.stream()
-				.map(item -> {
-					try
-					{
-						return JSONDashboardItem.of(item, jsonOpts);
-					}
-					catch (final Exception ex)
-					{
-						logger.warn("Failed converting {} to JSON. Skipped", item, ex);
-						return null;
-					}
-				})
-				.filter(item -> item != null)
-				.collect(GuavaCollectors.toImmutableList());
-		
-		this.websocketEndpoint = websocketEndpoint;
+		this.items = ImmutableList.of();
+		this.websocketEndpoint = null;
+		this.noDashboardReason = null;
 	}
 }

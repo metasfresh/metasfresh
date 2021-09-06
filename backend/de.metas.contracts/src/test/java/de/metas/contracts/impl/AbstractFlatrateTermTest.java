@@ -14,9 +14,13 @@ import de.metas.contracts.order.model.I_C_Order;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.document.dimension.DimensionFactory;
+import de.metas.document.dimension.DimensionService;
+import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleUpdater;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.location.ICountryAreaBL;
 import de.metas.money.CurrencyId;
@@ -29,6 +33,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -51,6 +56,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -130,6 +136,13 @@ public abstract class AbstractFlatrateTermTest
 		initialize();
 
 		Services.registerService(IShipmentScheduleUpdater.class, ShipmentScheduleUpdater.newInstanceForUnitTesting());
+
+		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
+		dimensionFactories.add(new InvoiceCandidateDimensionFactory());
+		dimensionFactories.add(new OrderLineDimensionFactory());
+		final DimensionService dimensionService = new DimensionService(dimensionFactories);
+		SpringContextHolder.registerJUnitBean(dimensionService);
+
 	}
 
 	protected void initialize()
@@ -233,7 +246,7 @@ public abstract class AbstractFlatrateTermTest
 	{
 		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
 		warehouse.setName("WH");
-		warehouse.setAD_Org(helper.getOrg());
+		warehouse.setAD_Org_ID(helper.getOrg().getAD_Org_ID());
 		save(warehouse);
 	}
 
@@ -273,6 +286,7 @@ public abstract class AbstractFlatrateTermTest
 		tax.setValidFrom(TimeUtil.asTimestamp(LocalDate.of(1970, Month.JANUARY, 1).atStartOfDay().atZone(ZoneId.systemDefault())));
 		tax.setC_Country_ID(country.getC_Country_ID());
 		tax.setTo_Country_ID(country.getC_Country_ID());
+		tax.setTypeOfDestCountry(X_C_Tax.TYPEOFDESTCOUNTRY_Domestic);
 		tax.setSOPOType(X_C_Tax.SOPOTYPE_SalesTax);
 		saveRecord(tax);
 	}
@@ -362,11 +376,11 @@ public abstract class AbstractFlatrateTermTest
 		final I_C_BPartner_Location bpLocation = getBpLocation();
 		final I_AD_User user = getUser();
 
-		contract.setBill_Location(bpLocation);
-		contract.setBill_User(user);
-		contract.setDropShip_BPartner(getBpartner());
-		contract.setDropShip_Location(bpLocation);
-		contract.setDropShip_User(user);
+		contract.setBill_Location_ID(bpLocation.getC_BPartner_Location_ID());
+		contract.setBill_User_ID(user.getAD_User_ID());
+		contract.setDropShip_BPartner_ID(getBpartner().getC_BPartner_ID());
+		contract.setDropShip_Location_ID(bpLocation.getC_BPartner_Location_ID());
+		contract.setDropShip_User_ID(user.getAD_User_ID());
 		contract.setPriceActual(PRICE_TEN);
 		contract.setPlannedQtyPerUnit(QTY_ONE);
 		contract.setMasterStartDate(startDate);

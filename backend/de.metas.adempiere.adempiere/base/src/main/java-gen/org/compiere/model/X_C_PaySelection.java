@@ -1,4 +1,4 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
 import java.math.BigDecimal;
@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for C_PaySelection
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
 public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySelection, org.compiere.model.I_Persistent 
@@ -64,7 +64,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	}
 
 	/** Set Bankverbindung.
-		@param C_BP_BankAccount_ID 
+		@param C_BP_BankAccount_ID
 		Bankverbindung des Geschäftspartners
 	  */
 	@Override
@@ -80,7 +80,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		@return Bankverbindung des Geschäftspartners
 	  */
 	@Override
-	public int getC_BP_BankAccount_ID () 
+	public int getC_BP_BankAccount_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BP_BankAccount_ID);
 		if (ii == null)
@@ -89,7 +89,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	}
 
 	/** Set Zahlung Anweisen.
-		@param C_PaySelection_ID 
+		@param C_PaySelection_ID
 		Zahlung Anweisen
 	  */
 	@Override
@@ -105,7 +105,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		@return Zahlung Anweisen
 	  */
 	@Override
-	public int getC_PaySelection_ID () 
+	public int getC_PaySelection_ID ()
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaySelection_ID);
 		if (ii == null)
@@ -114,7 +114,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	}
 
 	/** Set Position(en) kopieren von.
-		@param CreateFrom 
+		@param CreateFrom
 		Process which will generate a new document lines based on an existing document
 	  */
 	@Override
@@ -127,7 +127,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		@return Process which will generate a new document lines based on an existing document
 	  */
 	@Override
-	public java.lang.String getCreateFrom () 
+	public java.lang.String getCreateFrom ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_CreateFrom);
 	}
@@ -143,7 +143,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/** Get Beschreibung.
 		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription () 
+	public java.lang.String getDescription ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Description);
 	}
@@ -184,7 +184,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/** UnClose = UC */
 	public static final String DOCACTION_UnClose = "UC";
 	/** Set Belegverarbeitung.
-		@param DocAction 
+		@param DocAction
 		Der zukünftige Status des Belegs
 	  */
 	@Override
@@ -198,7 +198,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		@return Der zukünftige Status des Belegs
 	  */
 	@Override
-	public java.lang.String getDocAction () 
+	public java.lang.String getDocAction ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocAction);
 	}
@@ -233,7 +233,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/** WaitingConfirmation = WC */
 	public static final String DOCSTATUS_WaitingConfirmation = "WC";
 	/** Set Belegstatus.
-		@param DocStatus 
+		@param DocStatus
 		The current status of the document
 	  */
 	@Override
@@ -247,13 +247,13 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		@return The current status of the document
 	  */
 	@Override
-	public java.lang.String getDocStatus () 
+	public java.lang.String getDocStatus ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_DocStatus);
 	}
 
 	/** Set Freigegeben.
-		@param IsApproved 
+		@param IsApproved
 		Indicates if this document requires approval
 	  */
 	@Override
@@ -266,22 +266,34 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		@return Indicates if this document requires approval
 	  */
 	@Override
-	public boolean isApproved () 
+	public boolean isApproved ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsApproved);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			if (oo instanceof Boolean)
+				return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
+	@Override
+	public void setIsExportBatchBookings (boolean IsExportBatchBookings)
+	{
+		set_Value (COLUMNNAME_IsExportBatchBookings, IsExportBatchBookings);
+	}
+
+	@Override
+	public boolean isExportBatchBookings() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsExportBatchBookings);
+	}
+
 	/** Set Abgeglichen.
-		@param IsReconciled 
-		Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
-	  */
+	 @param IsReconciled
+	 Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
+	 */
 	@Override
 	public void setIsReconciled (boolean IsReconciled)
 	{
@@ -292,20 +304,74 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		@return Zeigt an ob eine Zahlung bereits mit einem Kontoauszug abgeglichen wurde
 	  */
 	@Override
-	public boolean isReconciled () 
+	public boolean isReconciled ()
 	{
 		Object oo = get_Value(COLUMNNAME_IsReconciled);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
 	}
 
+	@Override
+	public void setLastRevolutExport (java.sql.Timestamp LastRevolutExport)
+	{
+		set_Value (COLUMNNAME_LastRevolutExport, LastRevolutExport);
+	}
+
+	@Override
+	public java.sql.Timestamp getLastRevolutExport() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_LastRevolutExport);
+	}
+
+	@Override
+	public void setLastRevolutExportBy_ID (int LastRevolutExportBy_ID)
+	{
+		if (LastRevolutExportBy_ID < 1) 
+			set_Value (COLUMNNAME_LastRevolutExportBy_ID, null);
+		else 
+			set_Value (COLUMNNAME_LastRevolutExportBy_ID, LastRevolutExportBy_ID);
+	}
+
+	@Override
+	public int getLastRevolutExportBy_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LastRevolutExportBy_ID);
+	}
+
+	@Override
+	public void setLastSepaExport (java.sql.Timestamp LastSepaExport)
+	{
+		set_Value (COLUMNNAME_LastSepaExport, LastSepaExport);
+	}
+
+	@Override
+	public java.sql.Timestamp getLastSepaExport() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_LastSepaExport);
+	}
+
+	@Override
+	public void setLastSepaExportBy_ID (int LastSepaExportBy_ID)
+	{
+		if (LastSepaExportBy_ID < 1) 
+			set_Value (COLUMNNAME_LastSepaExportBy_ID, null);
+		else 
+			set_Value (COLUMNNAME_LastSepaExportBy_ID, LastSepaExportBy_ID);
+	}
+
+	@Override
+	public int getLastSepaExportBy_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_LastSepaExportBy_ID);
+	}
+
 	/** Set Name.
-		@param Name Name	  */
+	 @param Name Name	  */
 	@Override
 	public void setName (java.lang.String Name)
 	{
@@ -315,13 +381,13 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/** Get Name.
 		@return Name	  */
 	@Override
-	public java.lang.String getName () 
+	public java.lang.String getName ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_Name);
 	}
 
 	/** Set Zahldatum.
-		@param PayDate 
+		@param PayDate
 		Date Payment made
 	  */
 	@Override
@@ -334,7 +400,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 		@return Date Payment made
 	  */
 	@Override
-	public java.sql.Timestamp getPayDate () 
+	public java.sql.Timestamp getPayDate ()
 	{
 		return (java.sql.Timestamp)get_Value(COLUMNNAME_PayDate);
 	}
@@ -350,7 +416,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/** Get PaySelection_includedTab.
 		@return PaySelection_includedTab	  */
 	@Override
-	public java.lang.String getPaySelection_includedTab () 
+	public java.lang.String getPaySelection_includedTab ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PaySelection_includedTab);
 	}
@@ -376,14 +442,14 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/** Get Transaktionsart.
 		@return Transaktionsart	  */
 	@Override
-	public java.lang.String getPaySelectionTrxType () 
+	public java.lang.String getPaySelectionTrxType ()
 	{
 		return (java.lang.String)get_Value(COLUMNNAME_PaySelectionTrxType);
 	}
 
 	/** Set Verarbeitet.
-		@param Processed 
-		Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
+		@param Processed
+		Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	  */
 	@Override
 	public void setProcessed (boolean Processed)
@@ -392,16 +458,16 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	}
 
 	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde. 
+		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
 	  */
 	@Override
-	public boolean isProcessed () 
+	public boolean isProcessed ()
 	{
 		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null) 
+		if (oo != null)
 		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
+			 if (oo instanceof Boolean)
+				 return ((Boolean)oo).booleanValue();
 			return "Y".equals(oo);
 		}
 		return false;
@@ -418,7 +484,7 @@ public class X_C_PaySelection extends org.compiere.model.PO implements I_C_PaySe
 	/** Get Gesamtbetrag.
 		@return Gesamtbetrag	  */
 	@Override
-	public java.math.BigDecimal getTotalAmt () 
+	public java.math.BigDecimal getTotalAmt ()
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_TotalAmt);
 		if (bd == null)

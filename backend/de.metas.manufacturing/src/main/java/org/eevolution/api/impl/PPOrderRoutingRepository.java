@@ -174,6 +174,10 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 			InterfaceWrapperHelper.delete(orderNodeNext);
 		}
 
+		for (final I_PP_Order_Node_Product products: retrieveOrderNodeProducts(orderId))
+		{
+			InterfaceWrapperHelper.delete(products);
+		}
 		//
 		// Delete PP_Order_Node
 		for (final I_PP_Order_Node orderNode : retrieveOrderNodes(orderId))
@@ -531,6 +535,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		}
 		record.setSeqNo(product.getSeqNo());
 		record.setIsSubcontracting(product.isSubcontracting());
+		record.setSpecification(product.getSpecification());
 	}
 
 	private I_PP_Order_Node_Product toNewOrderNodeProductRecord(final PPOrderRoutingProduct product, final PPOrderId orderId, final int ppOrderWorkflowId, final Map<Integer, PPOrderRoutingActivityId> wfNodeToActivityId)

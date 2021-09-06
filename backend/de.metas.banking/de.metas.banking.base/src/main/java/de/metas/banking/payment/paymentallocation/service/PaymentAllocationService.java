@@ -123,7 +123,7 @@ public class PaymentAllocationService
 
 		final Money openAmt = extractPayAmt(payment).negateIf(paymentDirection.isOutboundPayment());
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(payment.getAD_Org_ID()));
-		
+
 		return PaymentDocument.builder()
 				.paymentId(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.bpartnerId(BPartnerId.ofRepoId(payment.getC_BPartner_ID()))
@@ -201,11 +201,11 @@ public class PaymentAllocationService
 				.soTrx(soTrx)
 				.openAmt(openAmt.negateIf(soTrx.isPurchase()))
 				.amountsToAllocate(AllocationAmounts.builder()
-						.payAmt(payAmt)
-						.discountAmt(discountAmt)
-						.invoiceProcessingFee(invoiceProcessingFee)
-						.build()
-						.negateIf(soTrx.isPurchase()))
+										   .payAmt(payAmt)
+										   .discountAmt(discountAmt)
+										   .invoiceProcessingFee(invoiceProcessingFee)
+										   .build()
+										   .negateIf(soTrx.isPurchase()))
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
