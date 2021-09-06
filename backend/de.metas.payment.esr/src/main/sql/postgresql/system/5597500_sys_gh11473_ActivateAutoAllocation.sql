@@ -1,0 +1,1 @@
+UPDATE ad_ref_list SET updated = '2021-07-07 16:29:29.000000 +02:00', updatedby = 100, description = 'Allocate payment with next invoice', isActive='Y' where  ad_ref_list_id = 540536;

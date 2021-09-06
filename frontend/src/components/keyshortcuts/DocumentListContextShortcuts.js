@@ -75,8 +75,8 @@ export default class DocumentListContextShortcuts extends PureComponent {
   };
 
   handleOpenNewTab = () => {
-    const { selected, windowId, onOpenNewTab } = this.props;
-
+    const { selected, windowId, onOpenNewTab, supportOpenRecord } = this.props;
+    if (supportOpenRecord === false) return false;
     onOpenNewTab({ rowIds: selected, windowId });
   };
 
@@ -140,4 +140,5 @@ DocumentListContextShortcuts.propTypes = {
   tabId: PropTypes.string,
   selected: PropTypes.array,
   onFastInlineEdit: PropTypes.func,
+  supportOpenRecord: PropTypes.bool,
 };

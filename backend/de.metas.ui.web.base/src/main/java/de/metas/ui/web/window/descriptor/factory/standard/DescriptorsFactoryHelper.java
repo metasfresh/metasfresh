@@ -1,14 +1,6 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -20,6 +12,13 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -61,6 +60,7 @@ public final class DescriptorsFactoryHelper
 		super();
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static Class<?> getValueClass(
 			@NonNull final DocumentFieldWidgetType widgetType,
 			@NonNull final Optional<LookupDescriptor> lookupDescriptor)
@@ -284,6 +284,7 @@ public final class DescriptorsFactoryHelper
 		}
 	}
 
+	@Nullable
 	public static DocumentLayoutElementFieldDescriptor.LookupSource extractLookupSource(final int displayType, final int adReferenceValueId)
 	{
 		if (DisplayType.Search == displayType)

@@ -109,7 +109,7 @@ public class Percent
 	 * <li>{@code Percent.of(BigDecimal.ONE, new BigDecimal("3"), 2)} returns an instance of "33.33%".
 	 * <li>{@code Percent.of(new BigDecimal("2"), new BigDecimal("100"), 2)} returns an instance of "2%".
 	 *
-	 * @param denominator if zero, then {@link #ZERO} percent is returned.
+	 * @param denominator if zero, then ZERO percent is returned.
 	 * @return a percent instance with max. two digits after the decimal point.
 	 */
 	public static Percent of(
@@ -279,7 +279,7 @@ public class Percent
 	{
 		return addToBase(base,precision,RoundingMode.HALF_UP);
 	}
-	
+
 	public BigDecimal addToBase(@NonNull final BigDecimal base, final int precision, final RoundingMode roundingMode)
 	{
 		Check.assumeGreaterOrEqualToZero(precision, "precision");

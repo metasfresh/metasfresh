@@ -1168,19 +1168,70 @@ public class HUTransformService
 
 			final int numberOfTUsToExtract = 1; // we extract only one TU at a time because we don't know how many CUs we will get out of each TU.
 			final boolean keepLuAsParent = true; // we need a "dedicated" TU, but it shall remain with sourceLU.
-			final I_M_HU extractedTU = CollectionUtils.singleElement(luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds));
 
-			final HUsToNewCUsRequest singleSourceTuRequest = singleSourceLuRequest.toBuilder()
-					.clearSourceHUs()
-					.sourceHU(extractedTU)
-					.qtyCU(qtyCUsRemaining).build();
+			final List<I_M_HU> extractedTUs = luExtractTUs(sourceLU, numberOfTUsToExtract, keepLuAsParent, alreadyExtractedTUIds);
 
-			final List<I_M_HU> cusFromTU = tuExtractCUs(singleSourceTuRequest);
+			// There are no real TUs in the LU. Extract the virtual HUs (CUs) directly, if found
+			if (extractedTUs.isEmpty())
+			{
+				extractedCUs.addAll(extractCUsDirectlyFromLU(sourceLU, qtyCUsRemaining));
+			}
 
-			extractedCUs.addAll(cusFromTU);
+			else
+			{
+				final I_M_HU extractedTU = CollectionUtils.singleElement(extractedTUs);
+				final HUsToNewCUsRequest singleSourceTuRequest = singleSourceLuRequest.toBuilder()
+						.clearSourceHUs()
+						.sourceHU(extractedTU)
+						.qtyCU(qtyCUsRemaining).build();
 
-			qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCUsRemaining.getUOM()));
+				final List<I_M_HU> cusFromTU = tuExtractCUs(singleSourceTuRequest);
+
+				extractedCUs.addAll(cusFromTU);
+
+				qtyCUsRemaining = qtyCUsRemaining.subtract(calculateTotalQtyOfCUs(cusFromTU, qtyCUsRemaining.getUOM()));
+			}
+
 		}
+		return extractedCUs.build();
+	}
+
+	private ImmutableList<I_M_HU> extractCUsDirectlyFromLU(@NonNull final I_M_HU sourceLU, @NonNull Quantity qtyCUsRemaining)
+	{
+		if (qtyCUsRemaining.signum() <= 0)
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableList.Builder<I_M_HU> extractedCUs = new ImmutableList.Builder<>();
+		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(sourceLU);
+
+		for (final I_M_HU hu : includedHUs)
+		{
+			if (qtyCUsRemaining.signum() <= 0)
+			{
+				break;
+			}
+
+			if (!handlingUnitsBL.isVirtual(hu))
+			{
+				// Skip all that is not a VHU
+				continue;
+			}
+
+			final Quantity qtyCUsAvailable = getMaximumQtyCU(hu, qtyCUsRemaining.getUOM());
+			if (qtyCUsAvailable.signum() <= 0)
+			{
+				continue;
+			}
+			final Quantity qtyToExtract = qtyCUsAvailable.min(qtyCUsRemaining);
+
+			final List<I_M_HU> newCUs = cuToNewCU(hu, qtyToExtract);
+
+			extractedCUs.addAll(newCUs);
+			qtyCUsRemaining = qtyCUsRemaining.subtract(qtyToExtract);
+		}
+
 		return extractedCUs.build();
 	}
 

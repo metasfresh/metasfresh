@@ -185,13 +185,13 @@ public class LUTUProducerDestinationTestSupport
 			// helper.createHU_PI_Item_PackingMaterial(huDefTruck, null); // in this case there is no truck M_Product
 
 			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(helper.attr_CountryMadeIn)
-					.setM_HU_PI(piTruckUnlimitedCapacity));
+												   .setM_HU_PI(piTruckUnlimitedCapacity));
 			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(helper.attr_FragileSticker)
-					.setM_HU_PI(piTruckUnlimitedCapacity));
+												   .setM_HU_PI(piTruckUnlimitedCapacity));
 			helper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(helper.attr_Volume)
-					.setM_HU_PI(piTruckUnlimitedCapacity)
-					.setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
-					.setAggregationStrategyClass(SumAggregationStrategy.class));
+												   .setM_HU_PI(piTruckUnlimitedCapacity)
+												   .setPropagationType(X_M_HU_PI_Attribute.PROPAGATIONTYPE_BottomUp)
+												   .setAggregationStrategyClass(SumAggregationStrategy.class));
 		}
 	}
 
@@ -366,6 +366,57 @@ public class LUTUProducerDestinationTestSupport
 		final I_M_HU cuToSplit = createdAggregateHUs.get(0);
 		assertThat(handlingUnitsBL.isAggregateHU(cuToSplit), is(true));
 		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID(), is(piLU_Item_IFCO.getM_HU_PI_Item_ID()));
+		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+
+		return cuToSplit;
+	}
+
+	public I_M_HU makeLU_CU(final String totalQtyCUStr, final int customQtyCUsPerTU)
+	{
+		final ProductId cuProductId = helper.pTomatoProductId;
+		final I_C_UOM cuUOM = helper.uomKg;
+		final BigDecimal totalQtyCU = new BigDecimal(totalQtyCUStr);
+
+		final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
+		lutuProducer.setLocatorId(defaultLocatorId);
+		lutuProducer.setLUItemPI(piLU_Item_Virtual);
+		lutuProducer.setLUPI(piLU);
+		lutuProducer.setTUPI(helper.huDefVirtual);
+		lutuProducer.setMaxTUsPerLU(1);
+
+		if (customQtyCUsPerTU > 0)
+		{
+			lutuProducer.addCUPerTU(cuProductId, BigDecimal.valueOf(customQtyCUsPerTU), cuUOM);
+		}
+
+		final TestHelperLoadRequest loadRequest = HUTestHelper.TestHelperLoadRequest.builder()
+				.producer(lutuProducer)
+				.cuProductId(cuProductId)
+				.loadCuQty(totalQtyCU)
+				.loadCuUOM(cuUOM)
+				.build();
+
+		helper.load(loadRequest);
+		final List<I_M_HU> createdLUs = lutuProducer.getCreatedHUs();
+
+		assertThat(createdLUs.size(), is(totalQtyCU.intValueExact() / customQtyCUsPerTU));
+
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
+		final I_M_HU createdLU = createdLUs.get(0);
+		final IMutableHUContext huContext = helper.createMutableHUContextOutOfTransaction();
+		huStatusBL.setHUStatus(huContext, createdLU, X_M_HU.HUSTATUS_Active);
+		assertThat(createdLU.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
+
+		M_HU.INSTANCE.updateChildren(createdLU);
+		save(createdLU);
+
+		final List<I_M_HU> createdAggregateHUs = handlingUnitsDAO.retrieveIncludedHUs(createdLUs.get(0));
+
+		final I_M_HU cuToSplit = createdAggregateHUs.get(0);
+
+		assertThat(cuToSplit.getM_HU_Item_Parent().getM_HU_PI_Item_ID(), is(piLU_Item_Virtual.getM_HU_PI_Item_ID()));
 		assertThat(cuToSplit.getHUStatus(), is(X_M_HU.HUSTATUS_Active));
 
 		return cuToSplit;

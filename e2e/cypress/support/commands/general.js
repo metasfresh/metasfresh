@@ -27,7 +27,7 @@
 // import 'cypress-plugin-snapshots/commands';
 
 import { List } from 'immutable';
-import { goBack, push } from 'react-router-redux';
+import 'cypress-localstorage-commands';
 
 import { loginSuccess } from '../../../src/actions/AppActions';
 import Auth from '../../../src/services/Auth';
@@ -35,8 +35,6 @@ import config from '../../config';
 import nextTabbable from './nextTabbable';
 import { humanReadableNow } from '../utils/utils';
 import { RewriteURL } from '../utils/constants';
-
-context('Reusable "login" custom command using API', function () {});
 
 Cypress.Commands.add('loginViaForm', (username, password) => {
   let user = username;
@@ -75,90 +73,105 @@ Cypress.Commands.add('loginViaForm', (username, password) => {
   });
 });
 
-Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
-  let user = username;
-  let pass = password;
+context('Reusable "login" custom command using API', function () {
+  Cypress.Commands.add('loginViaAPI', (username, password, redirect) => {
+    let user = username;
+    let pass = password;
 
-  if (!username || !password) {
-    user = config.username;
-    pass = config.password;
-  }
-
-  Cypress.log({
-    name: 'loginViaAPI',
-    message: user + ' | ' + '****' /*pass*/,
-  });
-
-  const handleSuccess = function () {
-    if (redirect) {
-      Cypress.reduxStore.dispatch(goBack());
-    } else {
-      Cypress.reduxStore.dispatch(push('/'));
+    if (!username || !password) {
+      user = config.username;
+      pass = config.password;
     }
-  };
 
-  const checkIfAlreadyLogged = function () {
-    const error = new Error('Error when checking if user logged in');
+    Cypress.log({
+      name: 'loginViaAPI',
+      message: user + ' | ' + '****' /*pass*/,
+    });
 
-    return cy
-      .request({
-        method: 'GET',
-        url: config.API_URL + '/login/isLoggedIn',
-        failOnStatusCode: false,
-        followRedirect: false,
-      })
-      .then((response) => {
-        if (!response.body.error) {
-          return Cypress.reduxStore.dispatch(push('/'));
+    const handleSuccess = function () {
+      return cy.window().then((win) => {
+        win.loggedIn = true;
+        if (redirect) {
+          win.history.back();
+        } else {
+          win.history.pushState({}, '', '/');
         }
 
-        cy.log(`Login failed because ${error}`);
-        return Promise.reject(error);
+        return cy.wrap(null);
       });
-  };
+    };
 
-  const auth = new Auth();
-
-  cy.on('emit:reduxStore', (store) => {
-    Cypress.reduxStore = store;
-  });
-
-  cy.visit('/login');
-
-  return cy
-    .request({
-      method: 'POST',
-      url: config.API_URL + '/login/authenticate',
-      failOnStatusCode: false,
-      followRedirect: false,
-      body: {
-        username: user,
-        password: pass,
-      },
-    })
-    .then((response) => {
-      if (!response.isOkStatusCode) {
-        return checkIfAlreadyLogged();
-      }
-
-      if (response.body.loginComplete) {
-        return handleSuccess();
-      }
-      const roles = List(response.body.roles);
+    const checkIfAlreadyLogged = function () {
+      const error = new Error('Error when checking if user logged in');
 
       return cy
         .request({
-          method: 'POST',
-          url: config.API_URL + '/login/loginComplete',
-          body: roles.get(0),
+          method: 'GET',
+          url: config.API_URL + '/login/isLoggedIn',
           failOnStatusCode: false,
+          followRedirect: false,
         })
-        .then(() => {
-          Cypress.reduxStore.dispatch(loginSuccess(auth));
+        .then((response) => {
+          if (!response.body.error) {
+            return handleSuccess();
+          }
 
-          handleSuccess();
+          cy.log(`Login failed because ${error}`);
+
+          return cy.wrap(error);
         });
+    };
+
+    const auth = new Auth();
+
+    cy.on('emit:reduxStore', (store) => {
+      Cypress.reduxStore = store;
     });
+
+    cy.visit('/login');
+
+    return cy
+      .request({
+        method: 'POST',
+        url: config.API_URL + '/login/authenticate',
+        failOnStatusCode: false,
+        followRedirect: false,
+        body: {
+          username: user,
+          password: pass,
+        },
+      })
+      .then((response) => {
+        if (!response.isOkStatusCode) {
+          if (response.body.message === 'User already logged in') {
+            return cy.wrap(true);
+          }
+          return checkIfAlreadyLogged();
+        }
+
+        if (response.body.loginComplete) {
+          cy.setLocalStorage('isLogged', true);
+          cy.saveLocalStorage();
+          return handleSuccess();
+        }
+        const roles = List(response.body.roles);
+
+        return cy
+          .request({
+            method: 'POST',
+            url: config.API_URL + '/login/loginComplete',
+            body: roles.get(0),
+            failOnStatusCode: false,
+          })
+          .then(() => {
+            cy.setLocalStorage('isLogged', true);
+            cy.saveLocalStorage();
+            Cypress.reduxStore.dispatch(loginSuccess(auth));
+
+            return handleSuccess();
+          });
+      });
+  });
 });
 
 /**
@@ -242,8 +255,7 @@ Cypress.Commands.add('waitForHeader', (pageName, breadcrumbNr) => {
 
 function visitTableWindow(windowId) {
   const quickActionsAlias = 'quickActions_' + humanReadableNow();
-  cy.server();
-  cy.route('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
+  cy.intercept('GET', new RegExp(RewriteURL.QuickActions)).as(quickActionsAlias);
 
   cy.visit(`/window/${windowId}`);
 
@@ -263,13 +275,12 @@ Cypress.Commands.add('performDocumentViewAction', (windowId, documentViewAction)
 });
 
 function performDocumentViewAction(windowId, documentViewAction) {
-  cy.server();
   const layoutAliasName = `visitWindow-layout-${new Date().getTime()}`;
-  cy.route('GET', new RegExp(`/rest/api/window/${windowId}/layout`)).as(layoutAliasName);
+  cy.intercept('GET', new RegExp(`/rest/api/window/${windowId}/layout`)).as(layoutAliasName);
 
   // - removed below lines because is redundant code.. that GET call is actually done by documentViewAction ..
   // const dataAliasName = `visitWindow-data-${new Date().getTime()}`;
-  // cy.route('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
+  // cy.intercept('GET', new RegExp(`/rest/api/window/${windowId}/[0-9]+$`)).as(dataAliasName);
 
   documentViewAction();
 
@@ -399,7 +410,7 @@ Cypress.Commands.add('openInboxNotificationWithText', (text) => {
 // thx to https://github.com/cypress-io/cypress/issues/387#issuecomment-458944112
 Cypress.Commands.add('waitForFieldValue', (alias, fieldName, expectedFieldValue, expectEmptyRequest = false) => {
   cy.wait(alias).then(function (xhr) {
-    const responseBody = xhr.responseBody;
+    const responseBody = xhr.response.body;
 
     if (!responseBody.documents) {
       responseBody.documents = responseBody;

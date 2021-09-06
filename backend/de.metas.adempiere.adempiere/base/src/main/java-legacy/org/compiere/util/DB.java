@@ -2761,11 +2761,12 @@ public class DB
 	@FunctionalInterface
 	public interface ResultSetRowLoader<T>
 	{
+		@Nullable
 		T retrieveRowOrNull(ResultSet rs) throws SQLException;
 	}
 
 	@NonNull
-	public static <T> List<T> retrieveRowsOutOfTrx(
+	public static <T> ImmutableList<T> retrieveRowsOutOfTrx(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2774,7 +2775,7 @@ public class DB
 	}
 
 	@NonNull
-	public static <T> List<T> retrieveRows(
+	public static <T> ImmutableList<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2783,7 +2784,7 @@ public class DB
 	}
 
 	@NonNull
-	private static <T> List<T> retrieveRows(
+	private static <T> ImmutableList<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@Nullable final String trxName,
@@ -2797,7 +2798,7 @@ public class DB
 			setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
-			final ArrayList<T> rows = new ArrayList<>();
+			final ImmutableList.Builder<T> rows = ImmutableList.builder();
 			while (rs.next())
 			{
 				final T row = loader.retrieveRowOrNull(rs);
@@ -2807,7 +2808,7 @@ public class DB
 				}
 			}
 
-			return rows;
+			return rows.build();
 		}
 		catch (final SQLException ex)
 		{

@@ -22,8 +22,9 @@
 
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.product.ProductId;
@@ -34,8 +35,11 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+
+import static de.metas.common.util.Check.isEmpty;
 
 @Value
 @Builder
@@ -54,21 +58,41 @@ public class InvoiceProcessingServiceCompanyConfig
 	ZonedDateTime validFrom;
 
 	@Getter(AccessLevel.NONE)
-	@NonNull ImmutableMap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetails;
+	@NonNull ImmutableMultimap<BPartnerId, InvoiceProcessingServiceCompanyConfigBPartnerDetails> bpartnerDetails;
 
 	public ImmutableList<BPartnerId> getBPartnerIds()
 	{
 		return bpartnerDetails.keySet().asList();
 	}
 
-	public Optional<Percent> getFeePercentageOfGrandTotalByBpartner(@NonNull final BPartnerId bpartnerId)
+	@NonNull
+	public Optional<Percent> getFeePercentageOfGrandTotalByBpartner(@NonNull final BPartnerId bpartnerId, @Nullable final DocTypeId invoiceDocTypeId)
 	{
-		final InvoiceProcessingServiceCompanyConfigBPartnerDetails details = bpartnerDetails.get(bpartnerId);
-		if (details == null)
+
+		final ImmutableCollection<InvoiceProcessingServiceCompanyConfigBPartnerDetails> detailsList = bpartnerDetails.get(bpartnerId);
+
+		if (isEmpty(detailsList))
 		{
 			return Optional.empty();
 		}
-		return Optional.of(details.getPercent());
+
+		if (invoiceDocTypeId != null)
+		{
+			final Optional<Percent> matchingDocTypePercent = detailsList.stream()
+					.filter(details -> invoiceDocTypeId.equals(details.getDocTypeId()))
+					.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
+					.findFirst();
+
+			if (matchingDocTypePercent.isPresent())
+			{
+				return matchingDocTypePercent;
+			}
+		}
+
+		return detailsList.stream()
+				.filter(details -> details.getDocTypeId() == null)
+				.map(InvoiceProcessingServiceCompanyConfigBPartnerDetails::getPercent)
+				.findFirst();
 	}
 }
 
@@ -81,4 +105,7 @@ public class InvoiceProcessingServiceCompanyConfig
 
 	@NonNull
 	Percent percent;
+
+	@Nullable
+	DocTypeId docTypeId;
 }

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1276513594L;
+	private static final long serialVersionUID = 1522330060L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -211,6 +211,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
+	public void setCSVFieldDelimiter (final @Nullable java.lang.String CSVFieldDelimiter)
+	{
+		set_Value (COLUMNNAME_CSVFieldDelimiter, CSVFieldDelimiter);
+	}
+
+	@Override
+	public java.lang.String getCSVFieldDelimiter() 
+	{
+		return get_ValueAsString(COLUMNNAME_CSVFieldDelimiter);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -285,18 +297,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isDirectPrint() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDirectPrint);
-	}
-
-	@Override
-	public void setIsFormatExcelFile (final boolean IsFormatExcelFile)
-	{
-		set_Value (COLUMNNAME_IsFormatExcelFile, IsFormatExcelFile);
-	}
-
-	@Override
-	public boolean isFormatExcelFile() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsFormatExcelFile);
 	}
 
 	@Override
@@ -497,6 +497,27 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public java.lang.String getShowHelp() 
 	{
 		return get_ValueAsString(COLUMNNAME_ShowHelp);
+	}
+
+	/** 
+	 * SpreadsheetFormat AD_Reference_ID=541369
+	 * Reference name: SpreadsheetFormat
+	 */
+	public static final int SPREADSHEETFORMAT_AD_Reference_ID=541369;
+	/** Excel = xls */
+	public static final String SPREADSHEETFORMAT_Excel = "xls";
+	/** CSV = csv */
+	public static final String SPREADSHEETFORMAT_CSV = "csv";
+	@Override
+	public void setSpreadsheetFormat (final @Nullable java.lang.String SpreadsheetFormat)
+	{
+		set_Value (COLUMNNAME_SpreadsheetFormat, SpreadsheetFormat);
+	}
+
+	@Override
+	public java.lang.String getSpreadsheetFormat() 
+	{
+		return get_ValueAsString(COLUMNNAME_SpreadsheetFormat);
 	}
 
 	@Override

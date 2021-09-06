@@ -1,9 +1,11 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
+import queryString from 'query-string';
 import classnames from 'classnames';
 
-import { updateUri } from '../actions/AppActions';
+import { updateUri } from '../utils';
 import { getWindowBreadcrumb } from '../actions/MenuActions';
 import Container from '../components/Container';
 import DocumentList from './DocumentList';
@@ -50,9 +52,13 @@ class DocList extends PureComponent {
    * @summary Update the url with query params if needed (ie add viewId, page etc)
    */
   updateUriCallback = (updatedQuery) => {
-    const { updateUri, query, pathname } = this.props;
+    const { location } = this.props;
+    const query = queryString.parse(location.search, {
+      ignoreQueryPrefix: true,
+    });
+
     const { viewId } = updatedQuery;
-    viewId && updateUri(pathname, query, updatedQuery);
+    viewId && updateUri(location.pathname, query, updatedQuery);
   };
 
   render() {
@@ -159,27 +165,24 @@ class DocList extends PureComponent {
  * @prop {object} query - routing query
  * @prop {object} rawModal
  * @prop {string} windowId
+ * @prop {object} location
  */
 DocList.propTypes = {
   includedView: PropTypes.object,
   modal: PropTypes.object.isRequired,
   overlay: PropTypes.object,
   processStatus: PropTypes.string.isRequired,
-  query: PropTypes.object.isRequired,
-  pathname: PropTypes.string.isRequired,
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
   getWindowBreadcrumb: PropTypes.func.isRequired,
-  updateUri: PropTypes.func.isRequired,
+  location: PropTypes.object.isRequired,
+  query: PropTypes.object.isRequired,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, { location }) => {
+  const query = queryString.parse(location.search);
   return {
+    query,
     modal: state.windowHandler.modal,
     rawModal: state.windowHandler.rawModal,
     overlay: state.windowHandler.overlay,
@@ -187,11 +190,11 @@ const mapStateToProps = (state) => {
       ? state.viewHandler.includedView
       : null,
     processStatus: state.appHandler.processStatus,
-    pathname: state.routing.locationBeforeTransitions.pathname,
   };
 };
 
-export default connect(mapStateToProps, {
-  getWindowBreadcrumb,
-  updateUri,
-})(DocList);
+export default withRouter(
+  connect(mapStateToProps, {
+    getWindowBreadcrumb,
+  })(DocList)
+);

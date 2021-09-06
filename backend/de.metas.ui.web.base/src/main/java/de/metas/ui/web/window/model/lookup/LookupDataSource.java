@@ -10,9 +10,7 @@ import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 /*
@@ -67,21 +65,7 @@ public interface LookupDataSource extends LookupValueByIdSupplier
 	 * @return lookup values in the same order as the collection order
 	 */
 	@NonNull
-	default LookupValuesList findByIdsOrdered(@NonNull final Collection<?> ids)
-	{
-		if (ids.isEmpty())
-		{
-			return LookupValuesList.EMPTY;
-		}
-
-		// TODO @teo: avoid SQL N+1 problem and also return the data ordered in the input collection order
-
-		return new LinkedHashSet<>(ids)
-				.stream()
-				.map(this::findById)
-				.filter(Objects::nonNull)
-				.collect(LookupValuesList.collect());
-	}
+	LookupValuesList findByIdsOrdered(@NonNull final Collection<?> ids);
 
 	List<CCacheStats> getCacheStats();
 

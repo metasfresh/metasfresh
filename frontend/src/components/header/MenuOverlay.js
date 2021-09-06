@@ -3,16 +3,15 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+
 import { debounce } from 'lodash';
 
+import history from '../../services/History';
+import { pathRequest, queryPathsRequest, breadcrumbRequest } from '../../api';
 import {
-  breadcrumbRequest,
   flattenLastElem,
   getRootBreadcrumb,
   getWindowBreadcrumb,
-  pathRequest,
-  queryPathsRequest,
   setBreadcrumb,
 } from '../../actions/MenuActions';
 import { clearMasterData, closeModal } from '../../actions/WindowActions';
@@ -155,14 +154,8 @@ class MenuOverlay extends Component {
     dispatch(closeModal());
     dispatch(clearMasterData());
 
-    this.props.dispatch(
-      push(
-        '/' +
-          (entity ? entity : 'window') +
-          '/' +
-          elementId +
-          (isNew ? '/new' : '')
-      )
+    history.push(
+      `/${entity ? entity : 'window'}/${elementId}${isNew ? '/new' : ''}`
     );
   };
 
@@ -246,7 +239,7 @@ class MenuOverlay extends Component {
               dispatch(closeModal());
               dispatch(clearMasterData());
               dispatch(setBreadcrumb([]));
-              dispatch(push('/'));
+              history.push('/');
             }}
             tabIndex={0}
           >
@@ -266,7 +259,7 @@ class MenuOverlay extends Component {
                 dispatch(closeModal());
                 dispatch(clearMasterData());
 
-                dispatch(push('/sitemap'));
+                history.push('/sitemap');
               }}
               tabIndex={0}
             >

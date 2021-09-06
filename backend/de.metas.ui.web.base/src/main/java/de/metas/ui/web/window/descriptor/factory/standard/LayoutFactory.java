@@ -594,7 +594,7 @@ public class LayoutFactory
 		}
 		else if (LayoutElementType.Labels.equals(uiElementType))
 		{
-			final String labelsFieldName = GridTabVOBasedDocumentEntityDescriptorFactory.getLabelsFieldName(uiElement);
+			final String labelsFieldName = GridTabVOBasedDocumentEntityDescriptorFactory.extractLabelsFieldName(uiElement);
 			final DocumentFieldDescriptor.Builder field = descriptorsFactory.documentField(labelsFieldName);
 			if (field == null)
 			{
