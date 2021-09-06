@@ -45,6 +45,7 @@ const PrivateRoute = (props) => {
         auth.checkAuthentication().then((authenticated) => {
           if (!authenticated) {
             auth.setRedirectRoute(url);
+            setFirstRender(true);
             history.push('/login');
           } else {
             dispatch(getNotificationsEndpoint(auth));
