@@ -26,7 +26,6 @@ import org.compiere.apps.search.IUserQueryRestriction.Join;
 import org.compiere.apps.search.UserQueryRepository;
 import org.compiere.model.I_AD_UserQuery;
 import org.compiere.model.MQuery;
-import org.compiere.model.X_AD_Find;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -147,25 +146,25 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 				final Optional<LookupDescriptor> lookupDescriptor = searchField.getLookupDescriptor();
 
 				filter.addParameter(DocumentFilterParamDescriptor.builder()
-						.setJoinAnd(join == Join.AND)
-						.setDisplayName(computeParameterDisplayName(queryRestriction))
-						.setFieldName(fieldName)
-						.setWidgetType(widgetType)
-						.setOperator(operator)
-						.setDefaultValue(value)
-						.setDefaultValueTo(valueTo)
-						.setMandatory(queryRestriction.isMandatory())
-						.setLookupDescriptor(lookupDescriptor));
+											.setJoinAnd(join == Join.AND)
+											.setDisplayName(computeParameterDisplayName(queryRestriction))
+											.setFieldName(fieldName)
+											.setWidgetType(widgetType)
+											.setOperator(operator)
+											.setDefaultValue(value)
+											.setDefaultValueTo(valueTo)
+											.setMandatory(queryRestriction.isMandatory())
+											.setLookupDescriptor(lookupDescriptor));
 			}
 			else
 			{
 				filter.addInternalParameter(DocumentFilterParam.builder()
-						.setJoinAnd(join == Join.AND)
-						.setFieldName(fieldName)
-						.setOperator(operator)
-						.setValue(value)
-						.setValueTo(valueTo)
-						.build());
+													.setJoinAnd(join == Join.AND)
+													.setFieldName(fieldName)
+													.setOperator(operator)
+													.setValue(value)
+													.setValueTo(valueTo)
+													.build());
 			}
 		}
 
@@ -176,48 +175,23 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 	{
 		final TranslatableStringBuilder displayName = TranslatableStrings.builder();
 
-		//
-		// AND/OR
-		displayName.append(computeJoinClause(queryRestriction.getJoin()));
-
-		//
-		// Field Name
-		if (!displayName.isEmpty())
-		{
-			displayName.append(" ");
-		}
-		displayName.append(queryRestriction.getSearchField().getDisplayName());
-
-		//
-		// Operator
-		final ITranslatableString operatorStr = computeOperatorDisplayName(queryRestriction.getOperator());
-		if (!TranslatableStrings.isEmpty(operatorStr))
-		{
-			if (!displayName.isEmpty())
-			{
-				displayName.append(" ");
-			}
-			displayName.append(operatorStr);
-		}
-
-		return displayName.build();
-	}
-
-	private ITranslatableString computeJoinClause(@NonNull final Join join)
-	{
-		switch (join)
-		{
-			case AND:
-				return adReferenceDAO.retrieveListNameTranslatableString(X_AD_Find.ANDOR_AD_Reference_ID, X_AD_Find.ANDOR_And);
-			case OR:
-				return adReferenceDAO.retrieveListNameTranslatableString(X_AD_Find.ANDOR_AD_Reference_ID, X_AD_Find.ANDOR_Or);
-			default:
-				return TranslatableStrings.empty();
-		}
+		return TranslatableStrings.join(
+				" ",
+				queryRestriction.getSearchField().getDisplayName(),
+				computeOperatorDisplayName(queryRestriction.getOperator()));
 	}
 
 	private ITranslatableString computeOperatorDisplayName(@NonNull final MQuery.Operator operator)
 	{
-		return TranslatableStrings.anyLanguage(operator.getCaption());
+		if (operator == MQuery.Operator.NOT_EQUAL
+				|| operator == MQuery.Operator.NOT_LIKE
+				|| operator == MQuery.Operator.NOT_LIKE_I)
+		{
+			return TranslatableStrings.anyLanguage("\u26D4");
+		}
+		else
+		{
+			return TranslatableStrings.empty();
+		}
 	}
 }
