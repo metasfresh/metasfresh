@@ -89,6 +89,7 @@ final class PricingResult implements IPricingResult
 	private TaxCategoryId taxCategoryId;
 	private boolean taxIncluded = false;
 
+	@Nullable
 	private PricingConditionsResult pricingConditions;
 
 	private BigDecimal priceList = BigDecimal.ZERO;
