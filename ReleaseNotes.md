@@ -9,6 +9,52 @@ Additional notes:
 
 Here come the actual release notes:
 
+# metasfresh 5.172
+## Features
+* metasfresh
+  * https://github.com/metasfresh/metasfresh/pull/11006
+  * https://github.com/metasfresh/metasfresh/pull/11476
+  * https://github.com/metasfresh/metasfresh/issues/11525
+  * https://github.com/metasfresh/metasfresh/issues/11547
+  * https://github.com/metasfresh/metasfresh/pull/11578
+  * https://github.com/metasfresh/metasfresh/issues/11587
+  * https://github.com/metasfresh/metasfresh/issues/11600
+  * https://github.com/metasfresh/metasfresh/issues/11605
+  * https://github.com/metasfresh/metasfresh/issues/11611
+  * https://github.com/metasfresh/metasfresh/pull/11616
+  * https://github.com/metasfresh/metasfresh/issues/11617
+  * https://github.com/metasfresh/metasfresh/pull/11620
+  * https://github.com/metasfresh/metasfresh/issues/11622
+  * https://github.com/metasfresh/metasfresh/issues/11625
+  * https://github.com/metasfresh/metasfresh/issues/11630
+  * https://github.com/metasfresh/metasfresh/issues/11631
+  * https://github.com/metasfresh/metasfresh/issues/11636
+  * https://github.com/metasfresh/metasfresh/issues/11640
+  * https://github.com/metasfresh/metasfresh/issues/11643
+  * https://github.com/metasfresh/metasfresh/issues/11647 
+  * https://github.com/metasfresh/metasfresh/issues/11657
+  * https://github.com/metasfresh/metasfresh/issues/11651
+  * https://github.com/metasfresh/metasfresh/issues/11662
+  * https://github.com/metasfresh/metasfresh/issues/11670
+  * https://github.com/metasfresh/metasfresh/pull/11681
+  * https://github.com/metasfresh/metasfresh/issues/11685
+
+
+## Fixes
+  * https://github.com/metasfresh/metasfresh/issues/11573
+  * https://github.com/metasfresh/metasfresh/issues/11588
+  * https://github.com/metasfresh/metasfresh/issues/11615
+  * https://github.com/metasfresh/metasfresh/issues/11627
+  * https://github.com/metasfresh/metasfresh/pull/11638
+  * https://github.com/metasfresh/metasfresh/pull/11649
+  * https://github.com/metasfresh/metasfresh/pull/11656
+  * https://github.com/metasfresh/metasfresh/pull/11659
+  * https://github.com/metasfresh/metasfresh/pull/11661
+  * https://github.com/metasfresh/metasfresh/issues/11667
+  * https://github.com/metasfresh/metasfresh/issues/11674
+  * https://github.com/metasfresh/metasfresh/issues/11675
+  * https://github.com/metasfresh/metasfresh/pull/11684
+
 # metasfresh 5.171
 ## Features
 * metasfresh
