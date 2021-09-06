@@ -23,6 +23,7 @@ package de.metas.inoutcandidate.api;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -45,7 +46,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -73,12 +73,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 */
 	IAutoCloseable postponeMissingSchedsCreationUntilClose();
 
-	/**
-	 * Updates the given shipment schedule's {@link I_M_ShipmentSchedule#COLUMNNAME_BPartnerAddress_Override} field
-	 *
-	 * @param sched
-	 */
-	void updateBPartnerAddressOverrideIfNotYetSet(I_M_ShipmentSchedule sched);
+	void updateCapturedLocationsAndRenderedAddresses(I_M_ShipmentSchedule sched);
 
 	/**
 	 * Returns the UOM of QtyOrdered, QtyToDeliver, QtyPicked etc (i.e. the stock UOM)
@@ -91,9 +86,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Evaluates if the given shipment schedule's order and effective bPartner allow that different orders' schedules to go into one and the same shipment.
 	 * <p>
 	 * <b>IMPORTANT</b> this column does not evaluate the actual schedule's own {@link I_M_ShipmentSchedule#isAllowConsolidateInOut()} value. As of now, that flag is only for the user's information.
-	 *
-	 * @param sched
-	 * @return
 	 */
 	boolean isSchedAllowsConsolidate(I_M_ShipmentSchedule sched);
 
@@ -108,11 +100,10 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * If the given <code>shipmentSchedule</code> has its {@link I_M_ShipmentSchedule#COLUMN_QtyOrdered_Override QtyOrdered_Override} set, then override its <code>QtyOrdered</code> value with it. If
 	 * QtyOrdered_Override is <code>null</code>, then reset <code>QtyOrdered</code> to the value of <code>QtyOrdered_Calculated</code>.
 	 *
-	 * @return the previous <code>QtyOrdered</code> value of the schedule
-	 *         <li>NOTE: This returned value is never used. Maybe we shall change this method to return void.
-	 * @task 08255
+	 * Task 08255
+	 *
 	 */
-	BigDecimal updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
+	void updateQtyOrdered(I_M_ShipmentSchedule shipmentSchedule);
 
 	/**
 	 * Close the given Shipment Schedule.
@@ -194,4 +185,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	Quantity getQtyDelivered(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId);
+
+	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
 }

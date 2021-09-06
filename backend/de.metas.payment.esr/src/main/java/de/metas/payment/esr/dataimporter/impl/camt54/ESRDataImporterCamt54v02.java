@@ -1,24 +1,6 @@
 package de.metas.payment.esr.dataimporter.impl.camt54;
 
-import java.io.ByteArrayOutputStream;
-import java.io.UnsupportedEncodingException;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXB;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
@@ -43,9 +25,24 @@ import de.metas.payment.esr.dataimporter.ESRStatement.ESRStatementBuilder;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
 import de.metas.payment.esr.dataimporter.ESRTransaction.ESRTransactionBuilder;
 import de.metas.payment.esr.dataimporter.ESRType;
-import de.metas.payment.esr.model.I_ESR_Import;
+import de.metas.payment.esr.model.I_ESR_ImportFile;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXB;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -100,11 +97,11 @@ public class ESRDataImporterCamt54v02
 {
 	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
 
-	private final I_ESR_Import header;
+	private final I_ESR_ImportFile header;
 	private final MultiVersionStreamReaderDelegate xsr;
 	
 
-	public ESRDataImporterCamt54v02(@NonNull final I_ESR_Import header, @NonNull final MultiVersionStreamReaderDelegate xsr)
+	public ESRDataImporterCamt54v02(@NonNull final I_ESR_ImportFile header, @NonNull final MultiVersionStreamReaderDelegate xsr)
 	{
 		this.header = header;
 		this.xsr = xsr;

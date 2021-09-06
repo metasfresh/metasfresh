@@ -1,26 +1,27 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ReceiptSchedule_ExportAudit
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_M_ReceiptSchedule_ExportAudit extends org.compiere.model.PO implements I_M_ReceiptSchedule_ExportAudit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -734261740L;
+	private static final long serialVersionUID = -1350257874L;
 
     /** Standard Constructor */
-    public X_M_ReceiptSchedule_ExportAudit (Properties ctx, int M_ReceiptSchedule_ExportAudit_ID, String trxName)
+    public X_M_ReceiptSchedule_ExportAudit (final Properties ctx, final int M_ReceiptSchedule_ExportAudit_ID, @Nullable final String trxName)
     {
       super (ctx, M_ReceiptSchedule_ExportAudit_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_M_ReceiptSchedule_ExportAudit (Properties ctx, ResultSet rs, String trxName)
+    public X_M_ReceiptSchedule_ExportAudit (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -28,30 +29,18 @@ public class X_M_ReceiptSchedule_ExportAudit extends org.compiere.model.PO imple
 
 	/** Load Meta Data */
 	@Override
-	protected org.compiere.model.POInfo initPO(Properties ctx)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
 	@Override
-	public org.compiere.model.I_AD_Issue getAD_Issue()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class);
-	}
-
-	@Override
-	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_Issue_ID, org.compiere.model.I_AD_Issue.class, AD_Issue);
-	}
-
-	@Override
-	public void setAD_Issue_ID (int AD_Issue_ID)
+	public void setAD_Issue_ID (final int AD_Issue_ID)
 	{
 		if (AD_Issue_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, Integer.valueOf(AD_Issue_ID));
+			set_ValueNoCheck (COLUMNNAME_AD_Issue_ID, AD_Issue_ID);
 	}
 
 	@Override
@@ -78,25 +67,24 @@ public class X_M_ReceiptSchedule_ExportAudit extends org.compiere.model.PO imple
 	/** DONT_EXPORT = DONT_EXPORT */
 	public static final String EXPORTSTATUS_DONT_EXPORT = "DONT_EXPORT";
 	@Override
-	public void setExportStatus (java.lang.String ExportStatus)
+	public void setExportStatus (final java.lang.String ExportStatus)
 	{
-
 		set_Value (COLUMNNAME_ExportStatus, ExportStatus);
 	}
 
 	@Override
 	public java.lang.String getExportStatus() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ExportStatus);
+		return get_ValueAsString(COLUMNNAME_ExportStatus);
 	}
 
 	@Override
-	public void setM_ReceiptSchedule_ExportAudit_ID (int M_ReceiptSchedule_ExportAudit_ID)
+	public void setM_ReceiptSchedule_ExportAudit_ID (final int M_ReceiptSchedule_ExportAudit_ID)
 	{
 		if (M_ReceiptSchedule_ExportAudit_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_ReceiptSchedule_ExportAudit_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_ReceiptSchedule_ExportAudit_ID, Integer.valueOf(M_ReceiptSchedule_ExportAudit_ID));
+			set_ValueNoCheck (COLUMNNAME_M_ReceiptSchedule_ExportAudit_ID, M_ReceiptSchedule_ExportAudit_ID);
 	}
 
 	@Override
@@ -112,18 +100,18 @@ public class X_M_ReceiptSchedule_ExportAudit extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setM_ReceiptSchedule(de.metas.inoutcandidate.model.I_M_ReceiptSchedule M_ReceiptSchedule)
+	public void setM_ReceiptSchedule(final de.metas.inoutcandidate.model.I_M_ReceiptSchedule M_ReceiptSchedule)
 	{
 		set_ValueFromPO(COLUMNNAME_M_ReceiptSchedule_ID, de.metas.inoutcandidate.model.I_M_ReceiptSchedule.class, M_ReceiptSchedule);
 	}
 
 	@Override
-	public void setM_ReceiptSchedule_ID (int M_ReceiptSchedule_ID)
+	public void setM_ReceiptSchedule_ID (final int M_ReceiptSchedule_ID)
 	{
 		if (M_ReceiptSchedule_ID < 1) 
 			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, Integer.valueOf(M_ReceiptSchedule_ID));
+			set_Value (COLUMNNAME_M_ReceiptSchedule_ID, M_ReceiptSchedule_ID);
 	}
 
 	@Override
@@ -133,7 +121,7 @@ public class X_M_ReceiptSchedule_ExportAudit extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setTransactionIdAPI (java.lang.String TransactionIdAPI)
+	public void setTransactionIdAPI (final @Nullable java.lang.String TransactionIdAPI)
 	{
 		set_Value (COLUMNNAME_TransactionIdAPI, TransactionIdAPI);
 	}
@@ -141,6 +129,6 @@ public class X_M_ReceiptSchedule_ExportAudit extends org.compiere.model.PO imple
 	@Override
 	public java.lang.String getTransactionIdAPI() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TransactionIdAPI);
+		return get_ValueAsString(COLUMNNAME_TransactionIdAPI);
 	}
 }

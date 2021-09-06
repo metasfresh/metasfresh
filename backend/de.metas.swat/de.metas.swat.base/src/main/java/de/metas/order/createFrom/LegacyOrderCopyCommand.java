@@ -24,6 +24,7 @@ package de.metas.order.createFrom;
 
 import de.metas.document.ICopyHandlerBL;
 import de.metas.logging.LogManager;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -69,13 +70,11 @@ public class LegacyOrderCopyCommand
 		newOrder.setDateOrdered(Env.getContextAsDate(Env.getCtx(), "#Date"));
 
 		newOrder.setAD_OrgTrx_ID(originalOrder.getAD_OrgTrx_ID());
-		newOrder.setAD_User_ID(originalOrder.getAD_User_ID());
 		newOrder.setC_Activity_ID(originalOrder.getC_Activity_ID());
-		newOrder.setC_BPartner_ID(originalOrder.getC_BPartner_ID());
-		newOrder.setC_BPartner_Location_ID(originalOrder.getC_BPartner_Location_ID());
-		newOrder.setBill_BPartner_ID(originalOrder.getBill_BPartner_ID());
-		newOrder.setBill_Location_ID(originalOrder.getBill_Location_ID());
-		newOrder.setBill_User_ID(originalOrder.getBill_User_ID());
+
+		OrderDocumentLocationAdapterFactory.locationAdapter(newOrder).setFrom(originalOrder);
+		OrderDocumentLocationAdapterFactory.billLocationAdapter(newOrder).setFromBillLocation(originalOrder);
+
 		newOrder.setC_Campaign_ID(originalOrder.getC_Campaign_ID());
 		newOrder.setC_CashLine_ID(originalOrder.getC_CashLine_ID());
 		newOrder.setC_Charge_ID(originalOrder.getC_Charge_ID());

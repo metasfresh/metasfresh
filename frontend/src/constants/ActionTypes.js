@@ -407,3 +407,9 @@ export const RESET_PRINTING_OPTIONS = 'RESET_PRINTING_OPTIONS';
  * @type {string} toggles specific printing option
  */
 export const TOGGLE_PRINTING_OPTION = 'TOGGLE_PRINTING_OPTION';
+
+/**
+ * @constant
+ * @type {string} used to set the boolean flag `showSpinner` in the store
+ */
+export const SET_SPINNER = 'SET_SPINNER';

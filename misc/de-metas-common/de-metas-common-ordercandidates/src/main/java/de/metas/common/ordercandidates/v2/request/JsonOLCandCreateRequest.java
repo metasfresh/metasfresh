@@ -264,6 +264,11 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String importWarningMessage;
 
+	@ApiModelProperty( //
+			value = "Translates to C_OLCand.qtyShipped")
+	@JsonInclude(Include.NON_NULL)
+	BigDecimal qtyShipped;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -308,7 +313,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("isImportedWithIssues") final @Nullable Boolean isImportedWithIssues,
 			@JsonProperty("deliveryViaRule") final @Nullable String deliveryViaRule,
 			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
-			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage)
+			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
+			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -354,6 +360,7 @@ public class JsonOLCandCreateRequest
 		this.deliveryViaRule = deliveryViaRule;
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;
+		this.qtyShipped = qtyShipped;
 	}
 
 	/**

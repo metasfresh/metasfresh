@@ -8,9 +8,11 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.location.DocumentLocation;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -304,18 +306,14 @@ public class OrderFactory
 	{
 		assertNotBuilt();
 
-		if (bpartnerLocationId != null && !BPartnerId.equals(bpartnerId, bpartnerLocationId.getBpartnerId()))
-		{
-			throw new AdempiereException("BPartner not matching: " + bpartnerLocationId + ", " + bpartnerId);
-		}
-		if (contactId != null && !BPartnerId.equals(bpartnerId, contactId.getBpartnerId()))
-		{
-			throw new AdempiereException("BPartner not matching: " + contactId + ", " + bpartnerId);
-		}
+		OrderDocumentLocationAdapterFactory
+				.locationAdapter(order)
+				.setFrom(DocumentLocation.builder()
+								 .bpartnerId(bpartnerId)
+								 .bpartnerLocationId(bpartnerLocationId)
+								 .contactId(contactId)
+								 .build());
 
-		order.setC_BPartner_ID(bpartnerId.getRepoId());
-		order.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
-		order.setAD_User_ID(BPartnerContactId.toRepoId(contactId));
 		return this;
 	}
 
