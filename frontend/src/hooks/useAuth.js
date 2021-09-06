@@ -109,17 +109,25 @@ function useProvideAuth() {
   const _loginSuccess = () => {
     localStorage.setItem('isLogged', true);
     setLoggedIn(true);
+
+    return;
   };
 
-  const login = () => {
-    setAuthRequestPending(true);
+  const login = (skipLogin = false) => {
+    if (!skipLogin) {
+      setAuthRequestPending(true);
 
-    return dispatch(loginAction(auth))
-      .then(() => {
-        setAuthRequestPending(false);
-        _loginSuccess();
-      })
-      .catch(() => setAuthRequestPending(false));
+      return dispatch(loginAction(auth))
+        .then(() => {
+          setAuthRequestPending(false);
+          _loginSuccess();
+        })
+        .catch(() => setAuthRequestPending(false));
+    }
+
+    return Promise.resolve(() => {
+      _loginSuccess();
+    });
   };
 
   const _logoutSuccess = () => {

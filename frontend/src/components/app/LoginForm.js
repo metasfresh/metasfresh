@@ -87,6 +87,7 @@ class LoginForm extends Component {
       //GET language shall always return a result
       Moment.locale(response.data['key']);
 
+      // get user session and so on
       dispatch(loginSuccess(auth));
 
       const redirect = auth.redirectRoute;

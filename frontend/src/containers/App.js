@@ -93,9 +93,16 @@ const App = () => {
             dispatch(setProcessSaved());
 
             auth.setRedirectRoute(location.pathname);
-            auth.logout().finally(() => {
+
+            // we got not authenticated error, but locally still have the authenticated flag truthy
+            // (ie user logged out in another window, or session timed out)
+            if (auth.isLoggedIn) {
+              auth.logout().finally(() => {
+                history.push('/login');
+              });
+            } else {
               history.push('/login');
-            });
+            }
           }
         } else if (
           error.response.status === 500 &&

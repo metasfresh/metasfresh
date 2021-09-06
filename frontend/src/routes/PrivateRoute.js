@@ -5,12 +5,7 @@ import PropTypes from 'prop-types';
 import _ from 'lodash';
 import queryString from 'query-string';
 
-import {
-  clearNotifications,
-  enableTutorial,
-  getNotifications,
-  getNotificationsEndpoint,
-} from '../actions/AppActions';
+import { clearNotifications, enableTutorial } from '../actions/AppActions';
 import { setBreadcrumb } from '../actions/MenuActions';
 import { useAuth } from '../hooks/useAuth';
 import ChildRoutes from './ChildRoutes';
@@ -39,6 +34,7 @@ const PrivateRoute = (props) => {
       setFirstRender(false);
       dispatch(clearNotifications());
 
+      // check if user is not already authenticated via another session
       if (!isLoggedIn && !authRequestPending()) {
         const url = location.pathname;
 
@@ -48,8 +44,7 @@ const PrivateRoute = (props) => {
             setFirstRender(true);
             history.push('/login');
           } else {
-            dispatch(getNotificationsEndpoint(auth));
-            dispatch(getNotifications());
+            auth.login();
           }
         });
       } else if (isLoggedIn && !authRequestPending()) {
