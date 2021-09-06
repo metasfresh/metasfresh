@@ -54,7 +54,6 @@ public class HUPackingInfoFormatter
 	 *
 	 * If you want to quickly create some {@link IHUPackingInfo} instances from other objects, please check the {@link HUPackingInfos} facade.
 	 *
-	 * @param huPackingInfo
 	 * @return formatted packing info string
 	 */
 	@Nullable
