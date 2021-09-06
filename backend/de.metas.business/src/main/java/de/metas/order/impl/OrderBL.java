@@ -124,7 +124,7 @@ public class OrderBL implements IOrderBL
 
 	private static final transient Logger logger = LogManager.getLogger(OrderBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	
+
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -284,7 +284,7 @@ public class OrderBL implements IOrderBL
 	public boolean setBill_User_ID(final org.compiere.model.I_C_Order order)
 	{
 		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
-		if(billBPartnerId == null)
+		if (billBPartnerId == null)
 		{
 			return false;
 		}
@@ -382,9 +382,9 @@ public class OrderBL implements IOrderBL
 		if (!order.isSOTrx())
 		{
 			throw new AdempiereException("Expecting C_Order to have isSOTrx equal to true!")
-				.appendParametersToMessage()
-				.setParameter("C_Order_ID", order.getC_Order_ID())
-				.setParameter("C_Order.isSOTrx", order.isSOTrx());
+					.appendParametersToMessage()
+					.setParameter("C_Order_ID", order.getC_Order_ID())
+					.setParameter("C_Order.isSOTrx", order.isSOTrx());
 		}
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
@@ -492,7 +492,7 @@ public class OrderBL implements IOrderBL
 
 			InterfaceWrapperHelper.save(line);
 		}
-	} 
+	}
 
 	@Override
 	public DeliveryViaRule evaluateOrderDeliveryViaRule(@NonNull final I_C_Order order)
@@ -746,7 +746,7 @@ public class OrderBL implements IOrderBL
 		{
 			return false; // nothing to be done
 		}
-		
+
 		final BPartnerLocationQuery query = BPartnerLocationQuery
 				.builder()
 				.type(Type.BILL_TO)
@@ -926,7 +926,7 @@ public class OrderBL implements IOrderBL
 				orderRecord.getBill_BPartner_ID(),
 				orderRecord.getC_BPartner_ID()));
 	}
-	
+
 	@Override
 	@NonNull
 	public BPartnerContactId getBillToContactId(@NonNull final I_C_Order order)
@@ -1002,7 +1002,7 @@ public class OrderBL implements IOrderBL
 
 	@Override
 	public boolean isSalesProposalOrQuotation(@NonNull final I_C_Order order)
-		{
+	{
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 		if (!soTrx.isSales())
 		{

@@ -1,17 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { getWindowBreadcrumb } from '../../actions/MenuActions';
-import MenuOverlayItem from './MenuOverlayItem';
 import classnames from 'classnames';
 
-class MenuOverlayContainer extends Component {
-  constructor(props) {
-    super(props);
-  }
+import { getWindowBreadcrumb } from '../../actions/MenuActions';
+import MenuOverlayItem from './MenuOverlayItem';
 
+class MenuOverlayContainer extends Component {
   handleClick = () => {
     const { dispatch, handleRedirect, elementId } = this.props;
+
     handleRedirect(elementId);
     dispatch(getWindowBreadcrumb(elementId));
   };

@@ -15,7 +15,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -219979776L;
+	private static final long serialVersionUID = 259252226L;
 
 	/** Standard Constructor */
 	public X_C_OLCand(final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -736,6 +736,19 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public void setGroupingErrorMessage(final @Nullable java.lang.String GroupingErrorMessage)
 	{
 		set_Value(COLUMNNAME_GroupingErrorMessage, GroupingErrorMessage);
+	}
+
+	@Override
+	public void setGroupCompensationDiscountPercentage (final @Nullable BigDecimal GroupCompensationDiscountPercentage)
+	{
+		set_Value (COLUMNNAME_GroupCompensationDiscountPercentage, GroupCompensationDiscountPercentage);
+	}
+
+	@Override
+	public BigDecimal getGroupCompensationDiscountPercentage()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationDiscountPercentage);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

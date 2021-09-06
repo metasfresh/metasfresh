@@ -39,6 +39,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -220,7 +221,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		final org.adempiere.archive.api.IArchiveBL archiveService = Services.get(org.adempiere.archive.api.IArchiveBL.class);
 		final ArchiveResult archiveResult = archiveService.archive(ArchiveRequest.builder()
 				.flavor(DocumentReportFlavor.PRINT)
-				.data(data)
+				.data(new ByteArrayResource(data))
 				.trxName(ITrx.TRXNAME_ThreadInherited)
 				.archiveName(printPackage.getTransactionID() + "_" + printPackage.getBinaryFormat())
 				.recordRef(printPackageRef)

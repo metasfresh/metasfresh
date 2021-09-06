@@ -14,6 +14,7 @@ import lombok.NonNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 import static java.math.BigDecimal.ZERO;
@@ -134,12 +135,15 @@ public class SupplyCandidateHandler implements CandidateHandler
 		final DeleteResult stockDeleteResult = candidateRepositoryWriteService.deleteCandidatebyId(candidate.getParentId());
 
 		final DateAndSeqNo timeOfDeletedStock = stockDeleteResult.getPreviousTime();
+
+		final BigDecimal previousQty = candidate.getQuantity();
+
 		final SaveResult applyDeltaRequest = SaveResult.builder()
 				.candidate(candidate
 						.withQuantity(ZERO)
 						.withDate(timeOfDeletedStock.getDate())
 						.withSeqNo(timeOfDeletedStock.getSeqNo()))
-				.previousQty(stockDeleteResult.getPreviousQty())
+				.previousQty(previousQty)
 				.build();
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(applyDeltaRequest);
 	}

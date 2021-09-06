@@ -290,8 +290,13 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public WorkPackageBuilder setC_Async_Batch(final I_C_Async_Batch asyncBatch)
+	public WorkPackageBuilder setC_Async_Batch(@Nullable final I_C_Async_Batch asyncBatch)
 	{
+		if (asyncBatch == null)
+		{
+			return this;
+		}
+
 		assertNotBuilt();
 		this.asyncBatch = asyncBatch;
 		this.asyncBatchSet = true;

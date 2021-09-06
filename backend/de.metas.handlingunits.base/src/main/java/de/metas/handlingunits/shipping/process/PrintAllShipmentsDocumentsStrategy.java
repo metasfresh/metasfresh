@@ -12,6 +12,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.springframework.core.io.Resource;
 
 import static de.metas.report.ExecuteReportStrategyUtil.PdfDataProvider;
 import static de.metas.report.ExecuteReportStrategyUtil.concatenatePDFs;
@@ -24,7 +25,7 @@ public class PrintAllShipmentsDocumentsStrategy implements ExecuteReportStrategy
 		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(processInfo.getRecord_ID());
 
 		final ImmutableList<PdfDataProvider> pdfDataToConcat = retrievePdfDataToConcat(shipperTransportationId);
-		final byte[] data = concatenatePDFs(pdfDataToConcat);
+		final Resource data = concatenatePDFs(pdfDataToConcat);
 
 		return ExecuteReportResult.of(outputType, data);
 	}

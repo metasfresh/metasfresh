@@ -1,10 +1,11 @@
 import axios from 'axios';
 import Moment from 'moment';
 
-import LOCAL_LANG from '../constants/Constants';
+import { LOCAL_LANG } from '../constants/Constants';
 
 export function initCurrentActiveLocale() {
   const lang = getCurrentActiveLocale();
+
   if (lang) {
     // calling it because that method will set the language in all other places
     setCurrentActiveLocale(lang);
@@ -21,6 +22,7 @@ export function getCurrentActiveLocale() {
 
 export function setCurrentActiveLocale(lang) {
   localStorage.setItem(LOCAL_LANG, lang);
+
   Moment.locale(lang);
   axios.defaults.headers.common['Accept-Language'] = lang;
 }

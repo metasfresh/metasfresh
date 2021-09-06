@@ -35,6 +35,9 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+import org.springframework.core.io.Resource;
+
+import java.util.Optional;
 
 @Value
 @Builder
@@ -45,7 +48,7 @@ public class DocumentReportResult
 	DocumentReportFlavor flavor = DocumentReportFlavor.PRINT;
 
 	@Nullable
-	ReportResultData data;
+	ReportResultData reportResultData;
 
 	@Nullable
 	TableRecordReference documentRef;
@@ -65,24 +68,31 @@ public class DocumentReportResult
 	@NonNull
 	@Builder.Default
 	PrintCopies copies = PrintCopies.ONE;
-	
+
 	@Nullable
 	ArchiveResult lastArchive;
 
 	@Nullable
+	Integer asyncBatchId;
+
+	@Nullable
 	public String getFilename()
 	{
-		return data != null ? data.getReportFilename() : null;
+		return reportResultData != null ? reportResultData.getReportFilename() : null;
 	}
 
 	public boolean isNoData()
 	{
-		return data == null || data.isEmpty();
+		return reportResultData == null || reportResultData.isEmpty();
 	}
 
 	@Nullable
-	public byte[] getDataAsByteArray()
+	public Optional<Resource> getReportData()
 	{
-		return data != null ? data.getReportData() : null;
+		if (reportResultData == null)
+		{
+			return Optional.empty();
+		}
+		return Optional.of(reportResultData.getReportData());
 	}
 }

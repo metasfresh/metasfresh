@@ -47,6 +47,12 @@ class Lookup extends Component {
 
   componentDidMount() {
     this.checkIfDefaultValue();
+
+    this.mounted = true;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -209,34 +215,38 @@ class Lookup extends Component {
 
   // TODO: Rewrite per widget if needed
   handleClear = () => {
-    const { updateItems, widgetData, onChange, properties, onSelectBarcode } =
-      this.props;
-    const propsWithoutTooltips = properties.filter(
-      (prop) => prop.type !== 'Tooltip'
-    );
-    const onChangeResp =
-      onChange && onChange(propsWithoutTooltips, null, false);
+    if (this.mounted) {
+      const { updateItems, widgetData, onChange, properties, onSelectBarcode } =
+        this.props;
+      const propsWithoutTooltips = properties.filter(
+        (prop) => prop.type !== 'Tooltip'
+      );
+      const onChangeResp =
+        onChange && onChange(propsWithoutTooltips, null, false);
 
-    if (onChangeResp && onChangeResp.then) {
-      onChangeResp.then((resp) => {
-        if (resp) {
-          onSelectBarcode && onSelectBarcode(null);
+      if (onChangeResp && onChangeResp.then) {
+        onChangeResp.then((resp) => {
+          if (resp) {
+            updateItems &&
+              updateItems({
+                widgetField: widgetData[0].field,
+                value: '',
+              });
 
-          updateItems &&
-            updateItems({
-              widgetField: widgetData[0].field,
-              value: '',
-            });
+            if (this.mounted) {
+              onSelectBarcode && onSelectBarcode(null);
 
-          this.setState({
-            isInputEmpty: true,
-            property: '',
-            initialFocus: true,
-            localClearing: true,
-            autofocusDisabled: false,
-          });
-        }
-      });
+              this.setState({
+                isInputEmpty: true,
+                property: '',
+                initialFocus: true,
+                localClearing: true,
+                autofocusDisabled: false,
+              });
+            }
+          }
+        });
+      }
     }
   };
 
@@ -467,7 +477,6 @@ class Lookup extends Component {
                   }}
                   forcedWidth={width}
                   forceHeight={forceHeight}
-                  parentElement={forceFullWidth && this.dropdown}
                   isComposed={this.props.properties.length > 1 ? true : false}
                   {...{
                     placeholder,

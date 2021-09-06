@@ -46,6 +46,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
@@ -87,6 +88,7 @@ public class RepairCustomerReturnsService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final IHUInOutBL huInoutBL = Services.get(IHUInOutBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
@@ -112,6 +114,11 @@ public class RepairCustomerReturnsService
 				.orElse(null);
 
 		return DOCBASEANDSUBTYPE_ServiceRepair.equals(docBaseAndSubType);
+	}
+
+	public boolean isValidHuForInOut(@NonNull final InOutId inOutId, final HuId huId)
+	{
+		return isRepairCustomerReturns(inoutDAO.getById(inOutId)) && huInoutBL.isValidHuForReturn(inOutId, huId);
 	}
 
 	@Builder(builderMethodName = "prepareAddSparePartsToCustomerReturn", builderClassName = "$AddSparePartsToCustomerReturnBuilder")

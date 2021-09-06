@@ -83,7 +83,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -92,7 +92,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Description = new ModelColumn<>(I_ExternalSystem_Config.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -148,7 +148,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setName (String Name);
+	void setName (java.lang.String Name);
 
 	/**
 	 * Get Name.
@@ -157,7 +157,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getName();
+	java.lang.String getName();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Config.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
@@ -170,7 +170,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setType (String Type);
+	void setType (java.lang.String Type);
 
 	/**
 	 * Get Type.
@@ -180,7 +180,7 @@ public interface I_ExternalSystem_Config
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getType();
+	java.lang.String getType();
 
 	ModelColumn<I_ExternalSystem_Config, Object> COLUMN_Type = new ModelColumn<>(I_ExternalSystem_Config.class, "Type", null);
 	String COLUMNNAME_Type = "Type";

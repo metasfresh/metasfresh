@@ -156,7 +156,12 @@ public class JsonConverters
 		final JsonOrderLineGroup jsonOrderLineGroup = request.getOrderLineGroup();
 		final OrderLineGroup orderLineGroup = jsonOrderLineGroup == null
 				? null
-				: OrderLineGroup.ofOrNull(jsonOrderLineGroup.getGroupKey(), jsonOrderLineGroup.isGroupMainItem());
+				: OrderLineGroup.builder()
+				.groupKey(jsonOrderLineGroup.getGroupKey())
+				.isGroupMainItem(jsonOrderLineGroup.isGroupMainItem())
+				.discount(Percent.of(jsonOrderLineGroup.getDiscount()))
+				.build();
+
 		if (orderLineGroup != null && orderLineGroup.isGroupMainItem() && productBL.isStocked(productInfo.getProductId()))
 		{
 			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
