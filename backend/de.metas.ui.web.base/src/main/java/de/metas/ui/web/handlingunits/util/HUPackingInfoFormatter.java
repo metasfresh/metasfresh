@@ -10,6 +10,8 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.util.Services;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -40,7 +42,7 @@ import de.metas.util.Services;
  */
 public class HUPackingInfoFormatter
 {
-	public static final HUPackingInfoFormatter newInstance()
+	public static HUPackingInfoFormatter newInstance()
 	{
 		return new HUPackingInfoFormatter();
 	}
@@ -55,6 +57,7 @@ public class HUPackingInfoFormatter
 	 * @param huPackingInfo
 	 * @return formatted packing info string
 	 */
+	@Nullable
 	public String format(final IHUPackingInfo huPackingInfo)
 	{
 		final StringBuilder packingInfo = new StringBuilder();
