@@ -226,7 +226,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 				continue;
 			}
 
-			final List<I_M_HU> husToUnassign = new ArrayList<>(2);
+			final List<HuId> husToUnassign = new ArrayList<>(2);
 
 			final I_M_HU tuHU = rsa.getM_TU_HU();
 			if (tuHU != null && tuHU.isActive()
@@ -234,7 +234,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 					&& X_M_HU.HUSTATUS_Planning.equals(tuHU.getHUStatus()))
 			{
 				handlingUnitsBL.markDestroyed(huContext, tuHU);
-				husToUnassign.add(tuHU);
+				husToUnassign.add(HuId.ofRepoId(tuHU.getM_HU_ID()));
 			}
 
 			final I_M_HU luHU = rsa.getM_LU_HU();
@@ -243,7 +243,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 					&& X_M_HU.HUSTATUS_Planning.equals(luHU.getHUStatus()))
 			{
 				handlingUnitsBL.markDestroyed(huContext, luHU);
-				husToUnassign.add(luHU);
+				husToUnassign.add(HuId.ofRepoId(luHU.getM_HU_ID()));
 			}
 
 			//

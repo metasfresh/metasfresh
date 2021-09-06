@@ -6,10 +6,10 @@
 @Library('misc')
 import de.metas.jenkins.MvnConf
 
-
 def build(
         final MvnConf mvnConf,
         final Map scmVars) {
+
     final String VERSIONS_PLUGIN = 'org.codehaus.mojo:versions-maven-plugin:2.7'
 
     // set the root-pom's parent pom. Although the parent pom is available via relativePath, we need it to be this build's version when the root pom is deployed to our maven-repo

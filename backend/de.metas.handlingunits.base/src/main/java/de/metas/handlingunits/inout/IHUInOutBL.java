@@ -121,4 +121,6 @@ public interface IHUInOutBL extends ISingletonService
 	void copyAssignmentsToReversal(I_M_InOut inoutRecord);
 
 	ImmutableSetMultimap<InOutLineId, HuId> getHUIdsByInOutLineIds(@NonNull Set<InOutLineId> inoutLineIds);
+
+	boolean isValidHuForReturn(InOutId inOutId, HuId huId);
 }
