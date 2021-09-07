@@ -1738,12 +1738,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		ic.setProcessed_Calc(processedCalc);
 		ic.setProcessed(processed);
 
-		// 08459
-		// If the IC is processed, the qtyToInvoice must turn 0
 		if (processed)
 		{
+			// 08459
+			// If the IC is processed, the qtyToInvoice must turn 0
 			ic.setQtyToInvoiceInPriceUOM(ZERO);
 			ic.setQtyToInvoice(ZERO);
+
+			ic.setApprovalForInvoicing(false);
 		}
 	}
 
