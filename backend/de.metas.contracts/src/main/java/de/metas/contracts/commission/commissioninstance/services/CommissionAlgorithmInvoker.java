@@ -1,20 +1,18 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionAlgorithm;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
@@ -41,7 +39,8 @@ import lombok.NonNull;
 @Service
 public class CommissionAlgorithmInvoker
 {
-	public ImmutableList<SalesCommissionShare> createCommissionShares(@NonNull final CreateCommissionSharesRequest request)
+	@NonNull
+	public ImmutableList<CommissionShare> createCommissionShares(@NonNull final CreateCommissionSharesRequest request)
 	{
 		try
 		{
@@ -49,7 +48,7 @@ public class CommissionAlgorithmInvoker
 					request.getConfigs(),
 					CommissionConfig::getCommissionType);
 
-			final ImmutableList.Builder<SalesCommissionShare> result = ImmutableList.builder();
+			final ImmutableList.Builder<CommissionShare> result = ImmutableList.builder();
 			for (final CommissionType commissionType : commissionTypes)
 			{
 				try (final MDCCloseable ignore = MDC.putCloseable("commissionType", commissionType.name()))
@@ -58,7 +57,7 @@ public class CommissionAlgorithmInvoker
 					algorithm = createAlgorithmInstance(commissionType);
 
 					// invoke the algorithm
-					final ImmutableList<SalesCommissionShare> sharesFromAlgorithm = algorithm.createCommissionShares(request);
+					final ImmutableList<CommissionShare> sharesFromAlgorithm = algorithm.createCommissionShares(request);
 					result.addAll(sharesFromAlgorithm);
 				}
 			}
@@ -95,6 +94,7 @@ public class CommissionAlgorithmInvoker
 		}
 	}
 
+	@NonNull
 	private CommissionAlgorithm createAlgorithmInstance(@NonNull final CommissionType commissionType)
 	{
 		final Class<? extends CommissionAlgorithm> algorithmClass = commissionType.getAlgorithmClass();

@@ -25,7 +25,28 @@ package de.metas.contracts.commission.model;
 public interface I_C_Flatrate_Conditions extends de.metas.contracts.model.I_C_Flatrate_Conditions
 {
 	String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
+
 	int getC_HierarchyCommissionSettings_ID();
+
 	void setC_HierarchyCommissionSettings_ID(int C_HierarchyCommissionSettings_ID);
 
+	/**
+	 * Set Mediated commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_MediatedCommissionSettings_ID(int C_MediatedCommissionSettings_ID);
+
+	/**
+	 * Get Mediated commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_MediatedCommissionSettings_ID();
+
+	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
 }
