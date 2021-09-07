@@ -1,4 +1,4 @@
-FROM docker.metasfresh.com:6000/ubuntu:21.04
+FROM docker.metasfresh.com:6000/ubuntu:20.04
 
 # to make sure that the cache is only used during one day, run docker build --build-arg CACHEBUST=$(date "+%Y-%m-%d")
 # that way we should get the latest updates since the release of our base image 
