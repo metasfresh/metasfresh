@@ -1,20 +1,16 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
-import java.time.Instant;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import lombok.Builder;
-import lombok.NonNull;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 /*
  * #%L
- * de.metas.commission
+ * de.metas.contracts
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2018 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -33,24 +29,30 @@ import lombok.Value;
  */
 
 @Value
-public class SalesCommissionFact
+public class CommissionShareId implements RepoIdAware
 {
-	/** This fact's timestamp; note that we need chronology, but don't care for a particular timezone. */
-	Instant timestamp;
-
-	SalesCommissionState state;
-
-	CommissionPoints points;
+	int repoId;
 
 	@JsonCreator
-	@Builder
-	private SalesCommissionFact(
-			@JsonProperty("timestamp") @NonNull final Instant timestamp,
-			@JsonProperty("state") @NonNull final SalesCommissionState state,
-			@JsonProperty("points") @NonNull final CommissionPoints points)
+	public static CommissionShareId ofRepoId(final int repoId)
 	{
-		this.timestamp = timestamp;
-		this.state = state;
-		this.points = points;
+		return new CommissionShareId(repoId);
+	}
+
+	public static CommissionShareId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
+
+	private CommissionShareId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

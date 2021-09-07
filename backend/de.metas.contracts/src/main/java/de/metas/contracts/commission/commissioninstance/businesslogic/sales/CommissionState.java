@@ -1,17 +1,15 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
-import java.util.Arrays;
-import java.util.Collection;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.contracts.commission.model.X_C_Commission_Fact;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Arrays;
+import java.util.Collection;
 
 /*
  * #%L
@@ -36,7 +34,7 @@ import lombok.NonNull;
  */
 
 /** Please keep in sync with the respective values of {@code AD_Reference_ID=541042}. */
-public enum SalesCommissionState implements ReferenceListAwareEnum
+public enum CommissionState implements ReferenceListAwareEnum
 {
 	/** Related to an invoice candidate's open (i.e. not-yet-invoiced) QtyOrdered. */
 	FORECASTED(X_C_Commission_Fact.COMMISSION_FACT_STATE_FORECASTED),
@@ -47,7 +45,7 @@ public enum SalesCommissionState implements ReferenceListAwareEnum
 	/** Related to an invoice candidate's QtyInvoiced. */
 	INVOICED(X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED);
 
-	private static ImmutableMap<String, SalesCommissionState> recordCode2State = ImmutableMap.of(
+	private static ImmutableMap<String, CommissionState> recordCode2State = ImmutableMap.of(
 			FORECASTED.getCode(), FORECASTED,
 			INVOICEABLE.getCode(), INVOICEABLE,
 			INVOICED.getCode(), INVOICED);
@@ -55,30 +53,30 @@ public enum SalesCommissionState implements ReferenceListAwareEnum
 	@Getter
 	private final String code;
 
-	private SalesCommissionState(String code)
+	private CommissionState(String code)
 	{
 		this.code = code;
 	}
 
-	public static SalesCommissionState forRecordCode(@NonNull final String recordCode)
+	public static CommissionState forRecordCode(@NonNull final String recordCode)
 	{
 		return recordCode2State.get(recordCode);
 	}
 
 	public static Collection<String> allRecordCodes()
 	{
-		return Arrays.asList(SalesCommissionState.values())
+		return Arrays.asList(CommissionState.values())
 				.stream()
-				.map(SalesCommissionState::getCode)
+				.map(CommissionState::getCode)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public static SalesCommissionState ofCode(@NonNull final String code)
+	public static CommissionState ofCode(@NonNull final String code)
 	{
-		SalesCommissionState type = recordCode2State.get(code);
+		CommissionState type = recordCode2State.get(code);
 		if (type == null)
 		{
-			throw new AdempiereException("No " + SalesCommissionState.class + " found for code: " + code);
+			throw new AdempiereException("No " + CommissionState.class + " found for code: " + code);
 		}
 		return type;
 	}
