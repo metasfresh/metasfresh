@@ -99,6 +99,11 @@ public class CommissionConfigFactory implements ICommissionConfigFactory
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
+	private final ImmutableSet<CommissionTriggerType> SUPPORTED_TRIGGER_TYPES = ImmutableSet.of(CommissionTriggerType.SalesInvoice,
+																								CommissionTriggerType.InvoiceCandidate,
+																								CommissionTriggerType.SalesCreditmemo,
+																								CommissionTriggerType.Plain);
+
 	public CommissionConfigFactory(
 			@NonNull final CommissionConfigStagingDataService commissionConfigStagingDataService,
 			@NonNull final CommissionProductService commissionProductService)
@@ -149,14 +154,9 @@ public class CommissionConfigFactory implements ICommissionConfigFactory
 	}
 
 	@Override
-	public boolean appliesFor(final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest)
+	public boolean appliesFor(@NonNull final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest)
 	{
-		final ImmutableSet<CommissionTriggerType> supportedTriggerTypes = ImmutableSet.of(CommissionTriggerType.SalesInvoice,
-																						  CommissionTriggerType.InvoiceCandidate,
-																						  CommissionTriggerType.SalesCreditmemo,
-																						  CommissionTriggerType.Plain);
-
-		return supportedTriggerTypes.contains(contractRequest.getCommissionTriggerType());
+		return SUPPORTED_TRIGGER_TYPES.contains(contractRequest.getCommissionTriggerType());
 	}
 
 	@NonNull

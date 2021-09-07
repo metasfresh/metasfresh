@@ -28,7 +28,6 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC;
@@ -40,11 +39,16 @@ public class C_Order
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
+	private final C_OrderFacadeService orderFacadeService;
+
+	public C_Order(@NonNull final C_OrderFacadeService orderFacadeService)
+	{
+		this.orderFacadeService = orderFacadeService;
+	}
+
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_CLOSE })
 	public void createCommissionInstanceForMediatedOrder(@NonNull final I_C_Order order)
 	{
-		final C_OrderFacadeService orderFacadeService = SpringContextHolder.instance.getBean(C_OrderFacadeService.class);
-
 		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 				.runAfterCommit(() -> trxManager.runInNewTrx(() -> {
 					try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))

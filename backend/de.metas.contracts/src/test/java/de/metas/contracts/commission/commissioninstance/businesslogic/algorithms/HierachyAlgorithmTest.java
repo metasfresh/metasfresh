@@ -28,6 +28,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
@@ -187,7 +188,7 @@ class HierachyAlgorithmTest
 				.share(CommissionShare.builder()
 						.beneficiary(salesRep)
 						.config(config)
-						.isSOTrx(false)
+						.soTrx(SOTrx.PURCHASE)
 						.payer(Payer.of(payerId))
 						.fact(CommissionFact.builder()
 								.points(CommissionPoints.of("30.00"))

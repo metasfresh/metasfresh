@@ -22,8 +22,6 @@
 
 package de.metas.contracts.interceptor;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
@@ -53,7 +51,6 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -80,10 +77,8 @@ import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -100,6 +95,7 @@ public class C_Flatrate_Term
 	private static final String MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P = "Term_Error_PeriodStartDate_After_TermStartDate";
 
 	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 
 	private final ContractOrderService contractOrderService;
 
@@ -643,44 +639,6 @@ public class C_Flatrate_Term
 			})
 	public void ensureOneMediatedContract(@NonNull final I_C_Flatrate_Term term)
 	{
-		if (!TypeConditions.MEDIATED_COMMISSION.getCode().equals(term.getType_Conditions()))
-		{
-			return;
-		}
-
-		final IFlatrateDAO contractDAO = Services.get(IFlatrateDAO.class);
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(term.getAD_Org_ID()));
-		final BPartnerId billPartnerId = BPartnerId.ofRepoId(term.getBill_BPartner_ID());
-
-		final IFlatrateDAO.TermsQuery termsQuery = IFlatrateDAO.TermsQuery.builder()
-				.billPartnerId(billPartnerId)
-				.orgId(OrgId.ofRepoId(term.getAD_Org_ID()))
-				.dateOrdered(Objects.requireNonNull(TimeUtil.asLocalDate(term.getStartDate(), timeZone)))
-				.build();
-
-		final List<I_C_Flatrate_Term> contractTerms = contractDAO.retrieveTerms(termsQuery);
-
-		if (Check.isEmpty(contractTerms))
-		{
-			return;
-		}
-
-		final List<Integer> existingMediatedCommissionContracts = contractTerms.stream()
-				.filter(contract -> TypeConditions.MEDIATED_COMMISSION.getCode().equals(contract.getType_Conditions()))
-				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
-				.collect(ImmutableList.toImmutableList());
-
-		if (Check.isEmpty(existingMediatedCommissionContracts))
-		{
-			return;
-		}
-
-		throw new AdempiereException("There are existing Mediated commission contracts for the given org, bpartner and period!")
-				.appendParametersToMessage()
-				.setParameter("startDate", term.getStartDate())
-				.setParameter("bpartnerId", billPartnerId)
-				.setParameter("existingContractIds", existingMediatedCommissionContracts);
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
 	}
 }

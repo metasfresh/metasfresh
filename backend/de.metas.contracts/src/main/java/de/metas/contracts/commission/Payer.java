@@ -29,14 +29,9 @@ import lombok.Value;
 /**
  * Pays money to {@link Beneficiary}
  */
-@Value
+@Value(staticConstructor = "of")
 public class Payer
 {
 	@NonNull
 	BPartnerId bPartnerId;
-
-	public static Payer of(@NonNull final BPartnerId bPartnerId)
-	{
-		return new Payer(bPartnerId);
-	}
 }

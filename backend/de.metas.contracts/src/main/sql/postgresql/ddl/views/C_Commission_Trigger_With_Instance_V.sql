@@ -28,7 +28,7 @@ FROM (
                 ci.C_Commission_Instance_ID
          FROM C_Invoice_Candidate ic_rev
                   LEFT JOIN C_Commission_Instance ci ON ic_rev.C_Invoice_Candidate_ID = ci.C_Invoice_Candidate_ID AND ic_rev.isactive = 'Y' AND ic_rev.AD_Client_ID = ci.AD_Client_ID
-         UNION
+         UNION ALL
          SELECT NULL                    AS C_Invoice_Candidate_ID,
                 il_rev.C_InvoiceLine_ID AS C_InvoiceLine_ID,
                 il_rev.AD_Client_ID,
@@ -58,7 +58,7 @@ FROM (
                   LEFT JOIN C_DocType dt ON dt.C_DocType_ID = i_rev.C_DocType_ID
                   LEFT JOIN C_Commission_Instance ci ON il_rev.C_InvoiceLine_ID = ci.C_InvoiceLine_ID AND il_rev.isactive = 'Y' AND il_rev.AD_Client_ID = ci.AD_Client_ID
          WHERE il_rev.C_OrderLine_ID IS NULL
-         UNION
+         UNION ALL
          SELECT NULL                  AS C_Invoice_Candidate_ID,
                 NULL                  AS C_InvoiceLine_ID,
                 ol_rev.AD_Client_ID,
