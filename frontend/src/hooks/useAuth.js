@@ -50,6 +50,11 @@ function useProvideAuth() {
     setRedirectRoute(null);
   };
 
+  /**
+   * checkAuthentication
+   * @summary check if user is authenticated on the backend and set the `isLoggedIn`
+   * flag accordingly
+   */
   const checkAuthentication = () => {
     const state = store.getState();
 
@@ -78,6 +83,12 @@ function useProvideAuth() {
     return Promise.reject(null);
   };
 
+  /**
+   * tokenLogin
+   * @summary login user via token. In case of an error, redirect to login. (any actual
+   * logout will be performed by the main error handler in the App container)
+   * @param {string} token
+   */
   const tokenLogin = (token) => {
     if (!authRequestPending() && !store.getState().appHandler.isLogged) {
       setAuthRequestPending(true);
@@ -106,6 +117,10 @@ function useProvideAuth() {
     return Promise.resolve(false);
   };
 
+  /**
+   * getDerivedStateFromProps lifecycle - hold in the state of the component the last page
+   * @summary set the flags indicating user is authenticated, and store it in the localStorage
+   */
   const _loginSuccess = () => {
     localStorage.setItem('isLogged', true);
     setLoggedIn(true);
@@ -113,23 +128,26 @@ function useProvideAuth() {
     return;
   };
 
-  const login = (skipLogin = false) => {
-    if (!skipLogin) {
-      setAuthRequestPending(true);
+  /**
+   * login
+   * @summary dispatch the action running helper requests, for user's session,
+   * setting language etc
+   */
+  const login = () => {
+    setAuthRequestPending(true);
 
-      return dispatch(loginAction(auth))
-        .then(() => {
-          setAuthRequestPending(false);
-          _loginSuccess();
-        })
-        .catch(() => setAuthRequestPending(false));
-    }
-
-    return Promise.resolve(() => {
-      _loginSuccess();
-    });
+    return dispatch(loginAction(auth))
+      .then(() => {
+        setAuthRequestPending(false);
+        _loginSuccess();
+      })
+      .catch(() => setAuthRequestPending(false));
   };
 
+  /**
+   * _logoutSuccess internal function
+   * @summary reset the authentication flags
+   */
   const _logoutSuccess = () => {
     auth.close();
     setLoggedIn(false);
@@ -137,6 +155,10 @@ function useProvideAuth() {
     setAuthRequestPending(false);
   };
 
+  /**
+   * logout
+   * @summary run the logout request on the backend
+   */
   const logout = () => {
     if (isLoggedIn) {
       setAuthRequestPending(true);
