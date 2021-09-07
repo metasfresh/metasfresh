@@ -87,8 +87,7 @@ public class HierarchyConfig implements CommissionConfig
 		final ImmutableMap.Builder<Integer, HierarchyContract> builder = ImmutableMap.<Integer, HierarchyContract> builder();
 		for (final Entry<Beneficiary, HierarchyContractBuilder> entry : beneficiary2HierarchyContracts.entrySet())
 		{
-			final HierarchyContract contract = entry.getValue()
-					.config(this).build();
+			final HierarchyContract contract = entry.getValue().build();
 			builder.put(entry.getKey().getBPartnerId().getRepoId(), contract);
 		}
 		this.bpartnerId2HierarchyContracts = builder.build();

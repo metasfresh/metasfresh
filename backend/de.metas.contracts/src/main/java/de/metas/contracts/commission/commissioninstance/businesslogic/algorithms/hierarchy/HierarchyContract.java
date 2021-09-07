@@ -41,13 +41,11 @@ import java.util.Optional;
 import static de.metas.util.Check.assumeGreaterOrEqualToZero;
 
 @Value
-@ToString(exclude = "config" /* avoid StackOverflowError */)
-@EqualsAndHashCode(exclude = "config")
+@ToString()
+@EqualsAndHashCode()
 public class HierarchyContract implements CommissionContract
 {
 	FlatrateTermId id;
-
-	HierarchyConfig config;
 
 	Percent commissionPercent;
 
@@ -95,14 +93,12 @@ public class HierarchyContract implements CommissionContract
 	@Builder
 	public HierarchyContract(
 			@JsonProperty("id") @NonNull final FlatrateTermId id,
-			@JsonProperty("config") @NonNull final HierarchyConfig config,
 			@JsonProperty("percent") @NonNull final Percent commissionPercent,
 			@JsonProperty("pointsPrecision") final int pointsPrecision,
 			@JsonProperty("commissionSettingsLineId") @Nullable final CommissionSettingsLineId commissionSettingsLineId,
 			@JsonProperty("isSimulation") final boolean isSimulation)
 	{
 		this.id = id;
-		this.config = config;
 		this.commissionPercent = commissionPercent;
 		this.pointsPrecision = assumeGreaterOrEqualToZero(pointsPrecision, "pointsPrecision");
 		this.commissionSettingsLineId = commissionSettingsLineId;

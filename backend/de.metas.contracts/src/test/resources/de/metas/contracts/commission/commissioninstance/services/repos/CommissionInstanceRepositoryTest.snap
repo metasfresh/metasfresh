@@ -66,10 +66,11 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "payer" : {
       "bpartnerId" : 1001
     },
-    "isSOTrx" : false,
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 1,
     "invoiceablePointsSum" : 1.1,
     "invoicedPointsSum" : 1.2,
+    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
       "id" : 100009,
@@ -77,8 +78,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       "commissionSettingsLineId" : 100006,
       "commissionPercent" : 10,
       "simulation" : false
-    },
-    "commissionProductId" : 100003
+    }
   }, {
     "id" : 100025,
     "config" : {
@@ -130,10 +130,11 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "payer" : {
       "bpartnerId" : 1001
     },
-    "isSOTrx" : false,
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 2,
     "invoiceablePointsSum" : 2.1,
     "invoicedPointsSum" : 2.2,
+    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
       "id" : 100012,
@@ -141,8 +142,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       "commissionSettingsLineId" : 100006,
       "commissionPercent" : 10,
       "simulation" : false
-    },
-    "commissionProductId" : 100003
+    }
   } ]
 } ]
 
@@ -197,10 +197,11 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "payer" : {
       "bpartnerId" : 1001
     },
-    "isSOTrx" : false,
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 0,
     "invoiceablePointsSum" : 0,
     "invoicedPointsSum" : 0,
+    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
       "id" : 100009,
@@ -208,8 +209,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       "commissionSettingsLineId" : 100006,
       "commissionPercent" : 10,
       "simulation" : false
-    },
-    "commissionProductId" : 100003
+    }
   } ]
 } ]
 
@@ -282,10 +282,11 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "payer" : {
       "bpartnerId" : 1001
     },
-    "isSOTrx" : false,
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 1,
     "invoiceablePointsSum" : 1.1,
     "invoicedPointsSum" : 1.2,
+    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
       "id" : 100009,
@@ -293,8 +294,7 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       "commissionSettingsLineId" : 100006,
       "commissionPercent" : 10,
       "simulation" : false
-    },
-    "commissionProductId" : 100003
+    }
   }, {
     "id" : 100018,
     "config" : {
@@ -346,10 +346,11 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
     "payer" : {
       "bpartnerId" : 1001
     },
-    "isSOTrx" : false,
+    "soTrx" : "PURCHASE",
     "forecastedPointsSum" : 2,
     "invoiceablePointsSum" : 2.1,
     "invoicedPointsSum" : 2.2,
+    "commissionProductId" : 100003,
     "contract" : {
       "@type" : "HierarchyContract",
       "id" : 100012,
@@ -357,7 +358,6 @@ de.metas.contracts.commission.commissioninstance.services.repos.CommissionInstan
       "commissionSettingsLineId" : 100006,
       "commissionPercent" : 10,
       "simulation" : false
-    },
-    "commissionProductId" : 100003
+    }
   } ]
 } ]
