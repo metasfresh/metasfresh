@@ -465,7 +465,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				final String permissionsKey = UserRolePermissionsKey.toPermissionsKeyString(ctx);
 				putValue(PARAM_AD_Language, adLanguage);
 				putValue(PARAM_UserRolePermissionsKey, permissionsKey);
-				if (!Check.isBlank(lookupTableName))
+				if (!Check.isBlank(lookupTableName) && UserRolePermissionsKey.fromContextOrNull(ctx) != null)
 				{
 					putValue(PARAM_OrgAccessSql, Env.getUserRolePermissions(ctx).getOrgWhere(lookupTableName, Access.READ));
 				}
