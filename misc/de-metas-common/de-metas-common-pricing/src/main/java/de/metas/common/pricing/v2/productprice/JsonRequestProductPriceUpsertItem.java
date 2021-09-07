@@ -43,8 +43,8 @@ public class JsonRequestProductPriceUpsertItem
 	@NonNull
 	String productPriceIdentifier;
 
-	@ApiModelProperty(position = 20, value = "jsonUpsertProductPriceRequest object")
-	@JsonProperty("jsonRequestProductPrice")
+	@ApiModelProperty(position = 20)
+	@JsonProperty("productPrice")
 	@NonNull
 	JsonRequestProductPrice jsonRequestProductPrice;
 
@@ -52,7 +52,7 @@ public class JsonRequestProductPriceUpsertItem
 	@Builder
 	public JsonRequestProductPriceUpsertItem(
 			@NonNull @JsonProperty("productPriceIdentifier") final String productPriceIdentifier,
-			@NonNull @JsonProperty("jsonRequestProductPrice") final JsonRequestProductPrice jsonRequestProductPrice)
+			@NonNull @JsonProperty("productPrice") final JsonRequestProductPrice jsonRequestProductPrice)
 	{
 		this.productPriceIdentifier = productPriceIdentifier;
 		this.jsonRequestProductPrice = jsonRequestProductPrice;

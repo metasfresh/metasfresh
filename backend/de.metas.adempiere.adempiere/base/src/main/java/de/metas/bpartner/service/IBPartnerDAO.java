@@ -47,6 +47,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -123,12 +124,16 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<UserId> getDefaultContactId(BPartnerId bpartnerId);
 
+	Stream<UserId> getUserIdsForBpartnerLocation(BPartnerLocationId bpartnerId);
+
 	Optional<BPartnerLocationId> getBPartnerLocationIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
 	Optional<BPartnerLocationId> getBPartnerLocationIdByGln(BPartnerId bpartnerId, GLN gln);
 
 	@NonNull
 	BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId);
+
+	ImmutableSet<BPartnerLocationId> getBPartnerLocationIdsByRepoIds(@NonNull Set<Integer> repoIds);
 
 	/**
 	 * @deprecated in all cases i can imagine, if the caller has a {@code bpartnerLocationId}, they need the actual record, even if it is inactive.
@@ -176,6 +181,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
 
+	ImmutableSet<BPartnerContactId> getContactIdsByRepoIds(@NonNull Set<Integer> repoIds);
+
 	@Nullable
 	I_AD_User getContactById(BPartnerContactId contactId);
 
@@ -217,7 +224,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * <p>
 	 * Use case: why have BPartner-Values such as "G01234", but on ESR-payment documents, there is only "01234", because there it may only contain digits.
 	 *
-	 * @param bpValue an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
+	 * @param bpValue                 an exact bpartner value. Try to retrieve by that value first, if <code>null</code> or empty, directly try the fallback
 	 * @param bpValueSuffixToFallback the suffix of a bpartner value. Only use if retrieval by <code>bpValue</code> produced no results. If <code>null</code> or empty, return <code>null</code>.
 	 * @return a single bPartner or <code>null</code>
 	 * @throws org.adempiere.exceptions.DBMoreThanOneRecordsFoundException if there is more than one matching partner.
@@ -280,7 +287,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * Retrieve default/first bill to location.
 	 *
 	 * @param alsoTryBilltoRelation if <code>true</code> and the given partner has no billTo location, then the method also checks if there is a billTo-<code>C_BP_Relation</code> and if so, returns
-	 *            that relation's bPartner location.
+	 *                              that relation's bPartner location.
 	 * @return bill to location or null
 	 * @deprecated please consider using {@link #retrieveBPartnerLocation(BPartnerLocationQuery)} instead
 	 */
@@ -324,6 +331,12 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
+
+	Optional<BPartnerId> getCounterpartBPartnerId(
+			@NonNull OrgMappingId orgMappingId,
+			@NonNull OrgId targetOrgId);
+
+	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
 
 	@Value
 	@Builder
@@ -386,5 +399,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	I_C_BPartner_Location retrieveCurrentBillLocationOrNull(BPartnerId partnerId);
 
+	BPartnerLocationId retrieveLastUpdatedLocation(BPartnerId bpartnerId);
+	
 	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
 }

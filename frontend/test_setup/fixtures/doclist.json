@@ -1,21 +1,40 @@
 {
-  "props1": {
-    "query": {
-      "page": "1",
-      "viewId": "540371-3"
+    "props1":
+    {
+        "query":
+        {
+            "page": "1",
+            "viewId": "540371-3"
+        },
+        "windowId": "540371"
     },
-    "windowId": "540371"
-  },
-  "state1": {
-    "routing": {
-      "locationBeforeTransitions": {
-        "pathname": "/window/540371",
-        "search": "",
-        "hash": "",
-        "action": "POP",
-        "key": null,
-        "query": {}
-      }
+    "menu1":
+    {
+        "nodeId": "1000007",
+        "caption": "webUI",
+        "captionBreadcrumb": "webUI",
+        "type": "group",
+        "children":
+        [
+            {
+                "nodeId": "1000019",
+                "caption": "Shipment",
+                "captionBreadcrumb": "Shipment",
+                "type": "group",
+                "children":
+                [
+                    {
+                        "nodeId": "540971",
+                        "caption": "Picking Tray Clearing (Prototype)",
+                        "captionBreadcrumb": "Picking Tray Clearing (Prototype)",
+                        "type": "window",
+                        "elementId": "540371",
+                        "favorite": false
+                    }
+                ],
+                "favorite": false
+            }
+        ],
+        "favorite": false
     }
-  }
 }

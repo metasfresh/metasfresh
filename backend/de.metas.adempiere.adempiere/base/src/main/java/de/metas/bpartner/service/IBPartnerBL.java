@@ -20,7 +20,6 @@ import lombok.Value;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
@@ -130,14 +129,6 @@ public interface IBPartnerBL extends ISingletonService
 	Optional<Language> getLanguage(@NonNull I_C_BPartner bpartner);
 
 	/**
-	 * Creates BPartner, Location and contact from given template.
-	 *
-	 * @return created bpartner
-	 * Task https://github.com/metasfresh/metasfresh/issues/1090
-	 */
-	I_C_BPartner createFromTemplate(I_C_BPartner_QuickInput template);
-
-	/**
 	 * Retrieves the discount schema for the given BPartner. If the BPartner has none, it falls back to the partner's C_BP_Group.
 	 * If the partner has no group or that group hasn't a discount schema either, it returns <code>-1</code>.
 	 *
@@ -161,8 +152,10 @@ public interface IBPartnerBL extends ISingletonService
 
 	String getAddressStringByBPartnerLocationId(BPartnerLocationId bpartnerLocationId);
 
+	@Nullable
 	UserId getSalesRepIdOrNull(BPartnerId bpartnerId);
 
+	@Nullable
 	BPartnerId getBPartnerSalesRepId(BPartnerId bpartnerId);
 
 	void setBPartnerSalesRepIdOutOfTrx(BPartnerId bPartnerId, BPartnerId salesRepBPartnerId);
@@ -170,9 +163,12 @@ public interface IBPartnerBL extends ISingletonService
 	/**
 	 * @return previous sales rep or null
 	 */
+	@Nullable
 	UserId setSalesRepId(BPartnerId bpartnerId, final UserId salesRepId);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
+
+	void updateNameAndGreetingFromContacts(@NonNull BPartnerId bpartnerId);
 
 	@Value
 	@Builder

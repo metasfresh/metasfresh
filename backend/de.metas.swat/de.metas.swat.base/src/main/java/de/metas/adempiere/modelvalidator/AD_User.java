@@ -1,10 +1,16 @@
 package de.metas.adempiere.modelvalidator;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.i18n.Language;
 import de.metas.title.Title;
 import de.metas.title.TitleId;
 import de.metas.title.TitleRepository;
+import de.metas.user.UserPOCopyRecordSupport;
+import de.metas.user.api.IUserBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -16,11 +22,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
 
-import de.metas.user.UserPOCopyRecordSupport;
-import de.metas.user.api.IUserBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 import java.util.Optional;
 
 /**
@@ -29,7 +30,6 @@ import java.util.Optional;
  * <li>sets AD_User.Name from AD_User.FirstName and AD_User.LastName</li>
  * <li>Checks if the password contains no spaces and has at least a length of <code>org.compiere.util.Login.MinPasswordLength</code> (AD_AsyConfig) characters</li>
  * </ul>
- *
  */
 @Interceptor(I_AD_User.class)
 @Callout(I_AD_User.class)
@@ -62,13 +62,13 @@ public class AD_User
 		user.setName(contactName);
 	}
 
-	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE},
-			ifColumnsChanged = { org.compiere.model.I_AD_User.COLUMNNAME_C_Title_ID})
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { org.compiere.model.I_AD_User.COLUMNNAME_C_Title_ID })
 	public void setTitle(final org.compiere.model.I_AD_User user)
 	{
 		if (user.getC_Title_ID() > 0)
 		{
-			String title = extractTitle(user);
+			final String title = extractTitle(user);
 			user.setTitle(title);
 		}
 		else
@@ -88,5 +88,33 @@ public class AD_User
 		}
 
 		return userTitle;
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifUIAction = true)
+	public void afterSave(@NonNull final I_AD_User userRecord)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
+
+		if (bPartnerId == null)
+		{
+			//nothing to do
+			return;
+		}
+		bpPartnerService.updateNameAndGreetingFromContacts(bPartnerId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE },
+			ifUIAction = true)
+	public void afterDelete(@NonNull final I_AD_User userRecord)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(userRecord.getC_BPartner_ID());
+
+		if (bPartnerId == null)
+		{
+			//nothing to do
+			return;
+		}
+		bpPartnerService.updateNameAndGreetingFromContacts(bPartnerId);
 	}
 }

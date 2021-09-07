@@ -29,6 +29,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.time.LocalDate;
+
 import javax.annotation.Nullable;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
@@ -180,11 +182,19 @@ public class JsonRequestContact
 	@ApiModelProperty(hidden = true)
 	private boolean subjectMatterSet;
 
+
 	@ApiModelProperty(position = 220)
 	private Boolean invoiceEmailEnabled;
 
 	@ApiModelProperty(hidden = true)
 	private boolean invoiceEmailEnabledSet;
+
+	@ApiModelProperty(position = 230,  //
+			value = "This translates to `AD_User.Birthday`.")
+	private LocalDate birthday;
+
+	@ApiModelProperty(hidden = true)
+	private boolean birthdaySet;
 
 	@ApiModelProperty(position = 230, // shall be last
 			value = "Sync advise about this contact's individual properties.\n"
@@ -318,6 +328,12 @@ public class JsonRequestContact
 	{
 		this.metasfreshBPartnerId = metasfreshBPartnerId;
 		this.metasfreshBPartnerIdSet = true;
+	}
+
+	public void setBirthday(final LocalDate birthday)
+	{
+		this.birthday = birthday;
+		this.birthdaySet = true;
 	}
 
 	public void setInvoiceEmailEnabled(@Nullable final Boolean invoiceEmailEnabled)

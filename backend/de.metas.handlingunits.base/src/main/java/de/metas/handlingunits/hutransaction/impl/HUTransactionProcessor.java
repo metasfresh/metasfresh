@@ -197,7 +197,7 @@ public class HUTransactionProcessor implements IHUTransactionProcessor
 		getTrxListeners().afterTrxProcessed(trxHdrRef, trxLines);
 	}
 
-	private void processTrxLine(final I_M_HU_Trx_Line trxLine)
+	private void processTrxLine(@NonNull final I_M_HU_Trx_Line trxLine)
 	{
 		// Skip if already processed
 		if (trxLine.isProcessed())

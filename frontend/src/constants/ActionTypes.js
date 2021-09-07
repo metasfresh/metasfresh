@@ -5,6 +5,7 @@ export * from './actions/TabTypes';
 export * from './actions/FilterTypes';
 export * from './actions/Actions';
 export * from './actions/InlineTabTypes';
+export * from './actions/WindowActions';
 
 /**
  * @constant
@@ -207,6 +208,12 @@ export const NEW_PROCESS_SUCCESS = 'NEW_PROCESS_SUCCESS';
  * @constant
  * @type {string} ToDo: Description for the constant.
  */
+export const GET_NOTIFICATIONS_REQUEST = 'GET_NOTIFICATIONS_REQUEST';
+
+/**
+ * @constant
+ * @type {string} ToDo: Description for the constant.
+ */
 export const GET_NOTIFICATIONS_SUCCESS = 'GET_NOTIFICATIONS_SUCCESS';
 
 /**
@@ -400,3 +407,9 @@ export const RESET_PRINTING_OPTIONS = 'RESET_PRINTING_OPTIONS';
  * @type {string} toggles specific printing option
  */
 export const TOGGLE_PRINTING_OPTION = 'TOGGLE_PRINTING_OPTION';
+
+/**
+ * @constant
+ * @type {string} used to set the boolean flag `showSpinner` in the store
+ */
+export const SET_SPINNER = 'SET_SPINNER';

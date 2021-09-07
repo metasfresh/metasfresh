@@ -1,3 +1,4 @@
+@from:cucumber
 Feature: create or update BPartner v1
   As a user
   I want create or update a BPartner record
@@ -5,6 +6,7 @@ Feature: create or update BPartner v1
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
+  @from:cucumber
   Scenario: create BPartner request
     Given the user adds bpartner
       | ExternalId | OPT.Code  | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId |

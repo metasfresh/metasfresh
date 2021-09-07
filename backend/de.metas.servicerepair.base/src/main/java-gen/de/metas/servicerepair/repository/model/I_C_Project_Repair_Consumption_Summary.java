@@ -94,28 +94,6 @@ public interface I_C_Project_Repair_Consumption_Summary
 	String COLUMNNAME_C_Project_Repair_Consumption_Summary_ID = "C_Project_Repair_Consumption_Summary_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -139,6 +117,28 @@ public interface I_C_Project_Repair_Consumption_Summary
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Active.

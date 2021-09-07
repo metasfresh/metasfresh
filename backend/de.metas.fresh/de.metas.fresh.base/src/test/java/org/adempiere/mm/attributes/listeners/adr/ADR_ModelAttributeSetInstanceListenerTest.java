@@ -22,13 +22,20 @@ package org.adempiere.mm.attributes.listeners.adr;
  * #L%
  */
 
-
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.edi.api.IEDIOLCandBL;
+import de.metas.edi.api.impl.EDIOLCandBL;
+import de.metas.fresh.model.I_C_BPartner;
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
 import org.adempiere.mm.attributes.api.impl.ADRAttributeDAO;
 import org.adempiere.mm.attributes.api.impl.ModelAttributeSetInstanceListenerTestHelper;
 import org.adempiere.mm.attributes.spi.impl.ADRAttributeGenerator;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Country;
@@ -39,15 +46,9 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.edi.api.IEDIOLCandBL;
-import de.metas.edi.api.impl.EDIOLCandBL;
-import de.metas.fresh.model.I_C_BPartner;
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.ordercandidate.model.I_C_Order_Line_Alloc;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /**
  * Tests:
@@ -57,7 +58,7 @@ import de.metas.util.Services;
  * <li> {@link InOutLineADRModelAttributeSetInstanceListener}
  * <li> {@link OrderLineAllocADRModelAttributeSetInstanceListener}
  * </ul>
- *
+ * <p>
  * Test case:
  * <ul>
  * <li>have a product which has the ADR attribute in it's AttributeSet
@@ -69,21 +70,28 @@ import de.metas.util.Services;
  * </ul>
  *
  * @author tsa
- *
  */
 public class ADR_ModelAttributeSetInstanceListenerTest
 {
-	/** Marker used when we expect no value to be set for ADR attribute instance */
+	/**
+	 * Marker used when we expect no value to be set for ADR attribute instance
+	 */
 	private static final String EXPECT_NoAttributeValue = null;
-	/** NULL / does not matter */
+	/**
+	 * NULL / does not matter
+	 */
 	private final I_C_Country country_NULL = null;
 
 	private ModelAttributeSetInstanceListenerTestHelper helper;
 	private I_M_Attribute attr_ADR;
 
-	/** Document's BPartner */
+	/**
+	 * Document's BPartner
+	 */
 	private I_C_BPartner bpartner;
-	/** {@link IEDIOLCandBL#isEDIInput(I_C_OLCand)} return value */
+	/**
+	 * {@link IEDIOLCandBL#isEDIInput(I_C_OLCand)} return value
+	 */
 	private Boolean isEDIInput_ReturnValue = null;
 
 	@Before
@@ -92,7 +100,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 		AdempiereTestHelper.get().init();
 
 		helper = new ModelAttributeSetInstanceListenerTestHelper();
-		bpartner = InterfaceWrapperHelper.create(helper.bpartner, I_C_BPartner.class);
+		bpartner = create(helper.bpartner, I_C_BPartner.class);
 
 		helper.setAttributeAction(AttributeAction.GenerateNew);
 
@@ -101,8 +109,8 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 		{
 			attr_ADR = helper.createM_Attribute_TypeList("ADR");
 			attr_ADR.setAD_JavaClass_ID(helper.createAD_JavaClass(ADRAttributeGenerator.class).getAD_JavaClass_ID());
-			InterfaceWrapperHelper.save(attr_ADR);
-			helper.createM_AttributeUse(helper.product_attributeSet, attr_ADR);
+			save(attr_ADR);
+			helper.createM_AttributeUse(helper.productCategoryAttributeSet, attr_ADR);
 
 			helper.sysConfigBL.setValue(ADRAttributeDAO.SYSCONFIG_ADRAttribute, attr_ADR.getM_Attribute_ID(), ClientId.SYSTEM, OrgId.ANY);
 
@@ -112,8 +120,8 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 					, I_C_BPartner.ADRZertifizierung_L_GMAA_GMNF_GMVD
 					, I_C_BPartner.ADRZertifizierung_L_GMNF
 					, I_C_BPartner.ADRZertifizierung_L_GMVD
-					//
-					);
+										   //
+			);
 		}
 
 		//
@@ -134,27 +142,27 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 	{
 		bpartner.setIsADRVendor(true);
 		bpartner.setFresh_AdRVendorRegion(adrValue);
-		InterfaceWrapperHelper.save(bpartner);
+		save(bpartner);
 	}
 
 	private void setADR_Customer(final String adrValue)
 	{
 		bpartner.setIsADRCustomer(true);
 		bpartner.setFresh_AdRRegion(adrValue);
-		InterfaceWrapperHelper.save(bpartner);
+		save(bpartner);
 	}
 
 	private final I_C_Order_Line_Alloc createC_Order_Line_Alloc(final boolean isSOTrx)
 	{
 		final I_C_OrderLine orderLine = helper.createOrderLine(isSOTrx, country_NULL);
 
-		final I_C_OLCand olCand = InterfaceWrapperHelper.newInstance(I_C_OLCand.class, orderLine);
-		InterfaceWrapperHelper.save(olCand);
+		final I_C_OLCand olCand = newInstance(I_C_OLCand.class, orderLine);
+		save(olCand);
 
-		final I_C_Order_Line_Alloc alloc = InterfaceWrapperHelper.newInstance(I_C_Order_Line_Alloc.class, orderLine);
+		final I_C_Order_Line_Alloc alloc = newInstance(I_C_Order_Line_Alloc.class, orderLine);
 		alloc.setC_OrderLine(orderLine);
 		alloc.setC_OLCand(olCand);
-		InterfaceWrapperHelper.save(alloc);
+		save(alloc);
 
 		return alloc;
 	}
@@ -353,7 +361,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Test for Material Receipt.
-	 *
+	 * <p>
 	 * Expectation: ADR attribute is copied
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29
@@ -376,7 +384,7 @@ public class ADR_ModelAttributeSetInstanceListenerTest
 
 	/**
 	 * Test for Material Shipment.
-	 *
+	 * <p>
 	 * Expectation: ADR attribute not copied even if it's a document relevant
 	 *
 	 * @task http://dewiki908/mediawiki/index.php/08642_ASI_on_shipment%2C_but_not_in_Invoice_%28109350210928%29

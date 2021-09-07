@@ -3,6 +3,7 @@ package de.metas.util.lang;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.invoice.InvoiceVerificationRunId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectTaskId;
@@ -79,6 +80,9 @@ public class All_RepoIdAware_Classes_Test
 			.skip(ServiceRepairProjectTaskId.class)
 			.skip(InvoiceVerificationRunId.class)
 			//
+			.skip(ExternalSystemOtherConfigId.class)
+			//
+			.skip(de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId.class)
 			;
 
 	private static ObjectMapper jsonMapper;

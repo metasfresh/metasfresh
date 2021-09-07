@@ -23,9 +23,11 @@
 package de.metas.order.model.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
@@ -40,6 +42,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.organization.IOrgDAO;
 import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -47,6 +50,8 @@ import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.reservation.PaymentReservationService;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -67,8 +72,10 @@ import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
@@ -86,8 +93,11 @@ public class C_Order
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerBL bpartnerBL;
 	private final OrderLineDetailRepository orderLineDetailRepository;
+	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
 
 	@VisibleForTesting
@@ -97,10 +107,12 @@ public class C_Order
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
-			@NonNull final IDocumentLocationBL documentLocationBL)
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
+		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
@@ -446,5 +458,53 @@ public class C_Order
 	private void validateHaddex(final I_C_Order order)
 	{
 		orderBL.validateHaddexOrder(order);
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateSupplierApprovalOnComplete(final I_C_Order order)
+	{
+		// validate on order completion to prevent cases when a partner or product became supplier approval relevant after the order was created but before it was completed
+		validateSupplierApprovals(order);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_BPartner_ID,
+			I_C_Order.COLUMNNAME_DatePromised })
+	public void validateSupplierApprovalsOnChange(final I_C_Order order)
+	{
+		validateSupplierApprovals(order);
+	}
+
+	private void validateSupplierApprovals(final I_C_Order order)
+	{
+		if (order.isSOTrx())
+		{
+			// Only purchase orders are relevant
+			return;
+		}
+
+		final ImmutableList<ProductId> productIds = orderDAO.retrieveOrderLines(order)
+				.stream()
+				.map(line -> ProductId.ofRepoId(line.getM_Product_ID()))
+				.collect(ImmutableList.toImmutableList());
+
+		for (final ProductId productId : productIds)
+		{
+			final ImmutableList<String> supplierApprovalNorms = productBL.retrieveSupplierApprovalNorms(productId);
+
+			if (Check.isEmpty(supplierApprovalNorms))
+			{
+				// nothing to validate
+				continue;
+			}
+
+			final BPartnerId partnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+
+			partnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
+		}
 	}
 }

@@ -7,6 +7,9 @@ import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -42,6 +45,8 @@ import java.util.Optional;
 @Value
 public class SqlAndParams
 {
+	public static SqlAndParams EMPTY = builder().build();
+
 	public static Builder builder()
 	{
 		return new Builder();
@@ -63,7 +68,7 @@ public class SqlAndParams
 		return of(sql, sqlParams != null ? sqlParams.toLiveList() : null);
 	}
 
-	public static SqlAndParams of(final CharSequence sql, final Object... sqlParamsArray)
+	public static SqlAndParams of(final CharSequence sql, @Nullable final Object... sqlParamsArray)
 	{
 		return new SqlAndParams(sql, sqlParamsArray);
 	}
@@ -137,6 +142,12 @@ public class SqlAndParams
 		}
 	}
 
+	@Nullable
+	public static SqlAndParams emptyToNull(@Nullable final SqlAndParams sqlAndParams)
+	{
+		return sqlAndParams != null && !sqlAndParams.isEmpty() ? sqlAndParams : null;
+	}
+
 	private static final SqlParamsInliner sqlParamsInliner = SqlParamsInliner.builder().failOnError(true).build();
 
 	String sql;
@@ -172,6 +183,14 @@ public class SqlAndParams
 	public String toSqlStringInlineParams()
 	{
 		return sqlParamsInliner.inline(sql, sqlParams);
+	}
+
+	public <T> IQueryFilter<T> toQueryFilterOrAllowAll()
+	{
+		return !isEmpty()
+				? TypedSqlQueryFilter.of(sql, sqlParams)
+				: ConstantQueryFilter.of(true);
+
 	}
 
 	//
@@ -211,8 +230,12 @@ public class SqlAndParams
 
 		public boolean isEmpty()
 		{
-			return (sql == null || sql.length() == 0)
-					&& !hasParameters();
+			return length() <= 0 && !hasParameters();
+		}
+
+		public int length()
+		{
+			return sql != null ? sql.length() : 0;
 		}
 
 		public boolean hasParameters()
@@ -268,6 +291,11 @@ public class SqlAndParams
 		}
 
 		public Builder append(@NonNull final SqlAndParams other)
+		{
+			return append(other.sql, other.sqlParams);
+		}
+
+		public Builder append(@NonNull final SqlAndParams.Builder other)
 		{
 			return append(other.sql, other.sqlParams);
 		}

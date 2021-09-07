@@ -1,13 +1,15 @@
+@from:cucumber
 Feature: API Audit GET http method
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And all the API audit data is reset
 
+  @from:cucumber
   Scenario: Testcase 100, normal GET and caller waits for result
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | GET        | api/v2/test    | Y                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | GET        | api/v2/test    | Y                       |
 
     When invoke 'GET' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '200'
 
@@ -29,10 +31,11 @@ Feature: API Audit GET http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+  @from:cucumber
   Scenario: Testcase 110, normal GET and caller does not wait for result
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | GET        | api/v2/test    | N                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | GET        | api/v2/test    | N                       |
 
     When invoke 'GET' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=200' with response code '202'
 
@@ -60,10 +63,11 @@ Feature: API Audit GET http method
       | HttpCode | Body                                           |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+  @from:cucumber
   Scenario: Testcase 120, failing GET and caller waits for result
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | GET        | api/v2/test    | Y                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | GET        | api/v2/test    | Y                       |
 
     When invoke 'GET' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
     And the actual response body is
@@ -85,10 +89,11 @@ Feature: API Audit GET http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+  @from:cucumber
   Scenario: Testcase 130, failing GET and caller does not wait for result
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | GET        | api/v2/test    | N                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | GET        | api/v2/test    | N                       |
 
     When invoke 'GET' '/api/v2/test?delaymillis=1000&responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '202'
 
@@ -117,10 +122,11 @@ Feature: API Audit GET http method
       | HttpCode | Body                                           |
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
 
+  @from:cucumber
   Scenario: Testcase 140, failing GET and replay
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 1                   | 10    | GET        | api/v2/test    | Y                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 10    | GET        | api/v2/test    | Y                       |
 
     And invoke 'GET' 'api/v2/test?responseBody=%22test-endpoint%20was%20called%22&responseCode=404' with response code '404'
 
@@ -152,8 +158,9 @@ Feature: API Audit GET http method
       | 404      | {"messageBody":"\"test-endpoint was called\""} |
       | 200      | {"messageBody":"\"test-endpoint was called\""} |
 
+  @from:cucumber
   Scenario: Testcase 200, reset to initial default data
     And all the API audit data is reset
     And the following API_Audit_Config record is set
-      | API_Audit_Config_ID | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
-      | 100                 | 9980  | null       | null           | Y                       |
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix | IsInvokerWaitsForResult |
+      | c_1        | 9980  | null       | null           | Y                       |

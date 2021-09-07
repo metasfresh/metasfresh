@@ -65,6 +65,7 @@ import org.compiere.db.Database;
 import org.compiere.dbPort.Convert;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.MSequence;
+import org.compiere.model.Null;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
@@ -1834,7 +1835,7 @@ public class DB
 	public String TO_SQL(@Nullable final Object param)
 	{
 		// TODO: check and refactor together with buildSqlList(...)
-		if (param == null)
+		if (param == null || param instanceof Null)
 		{
 			return "NULL";
 		}
@@ -1879,6 +1880,11 @@ public class DB
 	public String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
 		return Database.TO_DATE(zdt);
+	}
+
+	public String TO_DATE(@NonNull final Instant instant)
+	{
+		return Database.TO_DATE(instant);
 	}
 
 	/**
@@ -2029,7 +2035,7 @@ public class DB
 		return out.toString();
 	}    // TO_STRING
 
-	public String TO_BOOLEAN(final Boolean value)
+	public String TO_BOOLEAN(@Nullable final Boolean value)
 	{
 		final String valueStr = DisplayType.toBooleanString(value);
 		return TO_STRING(valueStr);
@@ -2423,7 +2429,7 @@ public class DB
 			}
 
 			// TODO: check and refactor together with TO_SQL(..)
-			if (paramIn == null)
+			if (paramIn == null || paramIn instanceof Null)
 			{
 				sql.append("NULL");
 			}

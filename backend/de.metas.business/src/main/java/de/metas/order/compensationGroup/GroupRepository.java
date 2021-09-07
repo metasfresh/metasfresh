@@ -2,10 +2,16 @@ package de.metas.order.compensationGroup;
 
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.contracts.ConditionsId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -35,7 +41,7 @@ public interface GroupRepository
 
 	void saveGroup(Group group);
 
-	GroupCreator prepareNewGroup();
+	GroupCreator.GroupCreatorBuilder prepareNewGroup();
 
 	Group retrieveOrCreateGroup(RetrieveOrCreateGroupRequest request);
 	
@@ -43,7 +49,9 @@ public interface GroupRepository
 	@Builder
 	class RetrieveOrCreateGroupRequest
 	{
-		@NonNull Set<OrderLineId> orderLineIds;
+		@Nullable OrderId orderId;
+		@NonNull @Singular ImmutableSet<OrderLineId> orderLineIds;
 		@NonNull GroupTemplate newGroupTemplate;
+		@Nullable ConditionsId newContractConditionsId;
 	}
 }

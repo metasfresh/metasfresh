@@ -29,7 +29,7 @@ public interface IOrgDAO extends ISingletonService
 		return retrieveOrg(Env.getCtx(), orgId.getRepoId());
 	}
 
-	default I_AD_Org getById(int adOrgId)
+	default I_AD_Org getById(final int adOrgId)
 	{
 		return retrieveOrg(Env.getCtx(), adOrgId);
 	}

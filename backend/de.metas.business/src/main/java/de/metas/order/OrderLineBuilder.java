@@ -8,6 +8,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.money.Money;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -18,6 +19,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -25,7 +27,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -60,6 +61,7 @@ public class OrderLineBuilder
 {
 	private static final Logger logger = LogManager.getLogger(OrderLineBuilder.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final OrderLineDetailRepository orderLineDetailRepository = SpringContextHolder.instance.getBean(OrderLineDetailRepository.class);
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
@@ -73,6 +75,10 @@ public class OrderLineBuilder
 
 	@Nullable private BigDecimal manualPrice;
 	private BigDecimal manualDiscount;
+
+	@Nullable private String description;
+
+	private boolean hideWhenPrinting;
 
 	private final ArrayList<OrderLineDetailCreateRequest> detailCreateRequests = new ArrayList<>();
 
@@ -116,12 +122,20 @@ public class OrderLineBuilder
 			orderLine.setDiscount(manualDiscount);
 		}
 
-		if(dimension != null)
+		if (dimension != null)
 		{
 			dimensionService.updateRecord(orderLine, dimension);
 		}
 
 		orderLineBL.updatePrices(orderLine);
+
+		if (!Check.isBlank(description))
+		{
+			orderLine.setDescription(description);
+		}
+
+		orderLine.setIsHideWhenPrinting(hideWhenPrinting);
+
 		saveRecord(orderLine);
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(orderLine))
@@ -152,7 +166,7 @@ public class OrderLineBuilder
 		}
 	}
 
-	public OrderFactory getParent() { return parent; }
+	private OrderFactory getParent() { return parent; }
 
 	public OrderFactory endOrderLine() { return getParent(); }
 
@@ -188,9 +202,18 @@ public class OrderLineBuilder
 	public OrderLineBuilder addQty(@NonNull final Quantity qtyToAdd)
 	{
 		assertNotBuilt();
+		return qty(Quantity.addNullables(this.qty, qtyToAdd));
+	}
 
-		this.qty = Quantity.addNullables(this.qty, qtyToAdd);
-		return this;
+	public OrderLineBuilder qty(@NonNull final BigDecimal qty)
+	{
+		if (productId == null)
+		{
+			throw new AdempiereException("Setting BigDecimal Qty not allowed if the product was not already set");
+		}
+
+		final I_C_UOM uom = productBL.getStockUOM(productId);
+		return qty(Quantity.of(qty, uom));
 	}
 
 	@Nullable
@@ -229,8 +252,20 @@ public class OrderLineBuilder
 
 	public boolean isProductAndUomMatching(@Nullable final ProductId productId, @Nullable final UomId uomId)
 	{
-		return Objects.equals(getProductId(), productId)
-				&& Objects.equals(getUomId(), uomId);
+		return ProductId.equals(getProductId(), productId)
+				&& UomId.equals(getUomId(), uomId);
+	}
+
+	public OrderLineBuilder description(@Nullable final String description)
+	{
+		this.description = description;
+		return this;
+	}
+
+	public OrderLineBuilder hideWhenPrinting(final boolean hideWhenPrinting)
+	{
+		this.hideWhenPrinting = hideWhenPrinting;
+		return this;
 	}
 
 	public OrderLineBuilder details(@NonNull final Collection<OrderLineDetailCreateRequest> details)

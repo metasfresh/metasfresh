@@ -431,6 +431,29 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_EMailCount = "EMailCount";
 
 	/**
+	 * Set File Name.
+	 * Name of the local file or URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFileName (@Nullable java.lang.String FileName);
+
+	/**
+	 * Get File Name.
+	 * Name of the local file or URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFileName();
+
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_FileName = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "FileName", null);
+	String COLUMNNAME_FileName = "FileName";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

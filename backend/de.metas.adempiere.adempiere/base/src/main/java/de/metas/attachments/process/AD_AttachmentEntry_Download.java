@@ -1,12 +1,11 @@
 package de.metas.attachments.process;
 
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_AttachmentEntry;
-
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.process.JavaProcess;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_AttachmentEntry;
 import org.springframework.core.io.ByteArrayResource;
 
 /*

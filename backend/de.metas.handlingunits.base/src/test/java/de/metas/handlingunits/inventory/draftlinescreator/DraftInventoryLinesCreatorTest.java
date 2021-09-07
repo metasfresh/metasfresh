@@ -72,6 +72,9 @@ import static org.assertj.core.api.Assertions.*;
 @ExtendWith(AdempiereTestWatcher.class)
 class DraftInventoryLinesCreatorTest
 {
+	private final ProductId PRODUCT_ID_40 = ProductId.ofRepoId(40);
+	private final ProductId PRODUCT_ID_2 = ProductId.ofRepoId(2);
+
 	private static final ZoneId orgTimeZone = ZoneId.of("UTC-8");
 	private OrgId orgId;
 
@@ -207,14 +210,14 @@ class DraftInventoryLinesCreatorTest
 	{
 		final HuForInventoryLineBuilder builder = HuForInventoryLine.builder()
 				.orgId(OrgId.ofRepoId(5))
-				.locatorId(locatorId)
-				.productId(ProductId.ofRepoId(40));
+				.locatorId(locatorId);
 
-		final HuForInventoryLine hu1 = builder.huId(HuId.ofRepoId(100)).quantityBooked(qtyTen).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
-		final HuForInventoryLine hu2 = builder.huId(HuId.ofRepoId(200)).quantityBooked(qtyOne).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
-		final HuForInventoryLine hu3 = builder.huId(HuId.ofRepoId(300)).quantityBooked(qtyTwo).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID, AV3_ID)).build();
+		final HuForInventoryLine hu1 = builder.productId(PRODUCT_ID_40).huId(HuId.ofRepoId(100)).quantityBooked(qtyTen).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
+		final HuForInventoryLine hu2_l1 = builder.productId(PRODUCT_ID_40).huId(HuId.ofRepoId(200)).quantityBooked(qtyOne).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
+		final HuForInventoryLine hu2_l2 = builder.productId(PRODUCT_ID_2).huId(HuId.ofRepoId(200)).quantityBooked(qtyOne).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
+		final HuForInventoryLine hu3 = builder.productId(PRODUCT_ID_40).huId(HuId.ofRepoId(300)).quantityBooked(qtyTwo).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID, AV3_ID)).build();
 
-		final ImmutableList<HuForInventoryLine> inventoryLines = ImmutableList.of(hu1, hu2, hu3);
+		final ImmutableList<HuForInventoryLine> inventoryLines = ImmutableList.of(hu1, hu2_l1, hu2_l2, hu3);
 		inventoryLines.forEach(huInvLine -> createStorageFor(
 				huInvLine.getProductId(),
 				huInvLine.getQuantityBooked(),
@@ -228,7 +231,7 @@ class DraftInventoryLinesCreatorTest
 		final HuForInventoryLineBuilder builder = HuForInventoryLine.builder()
 				.orgId(OrgId.ofRepoId(5))
 				.locatorId(locatorId)
-				.productId(ProductId.ofRepoId(40));
+				.productId(PRODUCT_ID_40);
 
 		final HuForInventoryLine hu1 = builder.huId(HuId.ofRepoId(100)).quantityBooked(qtyTen).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();
 		final HuForInventoryLine hu2 = builder.huId(HuId.ofRepoId(200)).quantityBooked(qtyOne).storageAttributesKey(AttributesKey.ofAttributeValueIds(AV1_ID, AV2_ID)).build();

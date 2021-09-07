@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -79,7 +80,9 @@ public interface IProductBL extends ISingletonService
 	boolean isDiverse(ProductId productId);
 
 	/**
-	 * If the product has an Attribute Set take it from there; If not, take it from the product category of the product
+	 * Take the Attribute Set Id from the product category of the product.
+	 * !! Do **not** take the from the product itself !!
+	 * The product's Attribute Set Id is there for the product's dedicated ASI and is not to be used anywhere else.
 	 *
 	 * @return {@link AttributeSetId}; never returns null
 	 */
@@ -196,4 +199,7 @@ public interface IProductBL extends ISingletonService
 
 	boolean isHaddexProduct(ProductId productId);
 
+	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+
+	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 }

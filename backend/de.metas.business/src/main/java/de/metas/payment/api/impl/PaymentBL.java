@@ -41,6 +41,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -113,6 +114,7 @@ public class PaymentBL implements IPaymentBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -859,5 +861,51 @@ public class PaymentBL implements IPaymentBL
 		}
 
 		return conversionCtx;
+	}
+
+	@Override
+	public void validateDocTypeIsInSync(@NonNull final I_C_Payment payment)
+	{
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(payment.getC_DocType_ID());
+
+		if (docTypeId == null)
+		{
+			return;
+		}
+
+		final I_C_DocType docType = docTypeBL.getById(docTypeId);
+
+		// Invoice
+		final I_C_Invoice invoice = InvoiceId.ofRepoIdOptional(payment.getC_Invoice_ID())
+				.map(invoiceBL::getById)
+				.orElse(null);
+
+		if (invoice != null && invoice.isSOTrx() != docType.isSOTrx())
+		{
+			// task: 07564 the SOtrx flags don't match, but that's OK *if* the invoice i a credit memo (either for the vendor or customer side)
+			if (!invoiceBL.isCreditMemo(invoice))
+			{
+				throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
+			}
+		}
+
+		// globalqss - Allow prepayment to Purchase Orders
+		// Order Waiting Payment (can only be SO)
+		// if (C_Order_ID != 0 && dt != null && !dt.isSOTrx())
+		// return "PaymentDocTypeInvoiceInconsistent";
+		// Order
+		final OrderId orderId = OrderId.ofRepoIdOrNull(payment.getC_Order_ID());
+
+		if (orderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order order = orderDAO.getById(orderId);
+
+		if (order.isSOTrx() != docType.isSOTrx())
+		{
+			throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
+		}
 	}
 }

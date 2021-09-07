@@ -115,6 +115,18 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
 	}
 
+	public ImmutableRowsIndex<T> addingRowIfEmpty(@NonNull final T rowToAdd)
+	{
+		if (rowsById.isEmpty())
+		{
+			return addingRow(rowToAdd);
+		}
+		else
+		{
+			return this;
+		}
+	}
+
 	public ImmutableRowsIndex<T> addingRow(@NonNull final T rowToAdd)
 	{
 		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
@@ -208,6 +220,25 @@ public final class ImmutableRowsIndex<T extends IViewRow>
 		if (!changed)
 		{
 			return this;
+		}
+
+		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);
+	}
+
+	public ImmutableRowsIndex<T> removingRowId(@NonNull final DocumentId rowIdToRemove)
+	{
+		if (!rowsById.containsKey(rowIdToRemove))
+		{
+			return this;
+		}
+
+		final ArrayList<T> resultRows = new ArrayList<>(rowIds.size());
+		for (final DocumentId rowId : this.rowIds)
+		{
+			if (!rowId.equals(rowIdToRemove))
+			{
+				resultRows.add(rowsById.get(rowId));
+			}
 		}
 
 		return new ImmutableRowsIndex<>(this.initialRowIds, resultRows);

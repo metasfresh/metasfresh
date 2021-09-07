@@ -36,7 +36,6 @@ import java.time.LocalDate;
 @Value
 public class JsonAttributeInstance
 {
-	String attributeName;
 	String attributeCode;
 
 	String valueStr;
@@ -46,13 +45,11 @@ public class JsonAttributeInstance
 	@JsonCreator
 	@Builder
 	private JsonAttributeInstance(
-			@JsonProperty("attributeName") @NonNull final String attributeName,
 			@JsonProperty("attributeCode") @NonNull final String attributeCode,
 			@JsonProperty("valueStr") @Nullable final String valueStr,
 			@JsonProperty("valueNumber") @Nullable final BigDecimal valueNumber,
 			@JsonProperty("valueDate") @Nullable final LocalDate valueDate)
 	{
-		this.attributeName = attributeName;
 		this.attributeCode = attributeCode;
 		this.valueStr = valueStr;
 		this.valueNumber = valueNumber;

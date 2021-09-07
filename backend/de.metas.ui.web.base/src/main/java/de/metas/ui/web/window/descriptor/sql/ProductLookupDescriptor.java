@@ -600,7 +600,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return true;
 		}
-
+		
 		if (EmptyUtil.isBlank(filter))
 		{
 			return false;

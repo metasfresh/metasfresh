@@ -1,9 +1,10 @@
-import { Hints, Steps } from 'intro.js-react';
+// import { Hints, Steps } from 'intro.js-react';
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 
 import { discardNewRequest } from '../../api';
 import { getTableId } from '../../reducers/tables';
+import history from '../../services/History';
 
 import BlankPage from '../BlankPage';
 import Container from '../Container';
@@ -102,9 +103,8 @@ export default class MasterWindow extends PureComponent {
   componentWillUnmount() {
     const {
       master,
-      push,
       location: { pathname },
-      params: { windowType, docId: documentId },
+      params: { windowId, docId: documentId },
     } = this.props;
     const { isDeleted } = this.state;
     const isDocumentNotSaved =
@@ -116,9 +116,10 @@ export default class MasterWindow extends PureComponent {
       const result = window.confirm('Do you really want to leave?');
 
       if (result) {
-        discardNewRequest({ windowType, documentId });
+        // discardNewRequest({ windowType, documentId });
+        discardNewRequest({ windowType: windowId, documentId });
       } else {
-        push(pathname);
+        history.push(pathname);
       }
     }
   }
@@ -283,7 +284,7 @@ export default class MasterWindow extends PureComponent {
       allowShortcut,
       includedView,
       processStatus,
-      enableTutorial,
+      // enableTutorial,
       onRefreshTab,
       onSortTable,
     } = this.props;
@@ -291,10 +292,10 @@ export default class MasterWindow extends PureComponent {
       dropzoneFocused,
       newRow,
       modalTitle,
-      introEnabled,
-      hintsEnabled,
-      introSteps,
-      introHints,
+      // introEnabled,
+      // hintsEnabled,
+      // introSteps,
+      // introHints,
     } = this.state;
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
@@ -327,7 +328,7 @@ export default class MasterWindow extends PureComponent {
         processStatus={processStatus}
         closeModalCallback={this.closeModalCallback}
         setModalTitle={this.setModalTitle}
-        windowId={params.windowType}
+        windowId={params.windowId}
         docId={params.docId}
         showSidelist
         modalHidden={!modal.visible}
@@ -356,7 +357,12 @@ export default class MasterWindow extends PureComponent {
           />
         )}
 
-        {enableTutorial && introSteps && introSteps.length > 0 && (
+        {/* 
+          Temporarly disabled the tutorial components. Activating this back implies adding the intro.js and intro.js-react deps 
+          the package.json file. Note: Another usage is also in the Dashboard component.
+        */}
+
+        {/* {enableTutorial && introSteps && introSteps.length > 0 && (
           <Steps
             enabled={introEnabled}
             steps={introSteps}
@@ -367,7 +373,7 @@ export default class MasterWindow extends PureComponent {
 
         {enableTutorial && introHints && introHints.length > 0 && (
           <Hints enabled={hintsEnabled} hints={introHints} />
-        )}
+        )} */}
       </Container>
     );
   }
@@ -397,6 +403,5 @@ MasterWindow.propTypes = {
   attachFileAction: PropTypes.func,
   sortTab: PropTypes.func,
   onSortTable: PropTypes.func,
-  push: PropTypes.func,
   updateTabRowsData: PropTypes.func.isRequired,
 };

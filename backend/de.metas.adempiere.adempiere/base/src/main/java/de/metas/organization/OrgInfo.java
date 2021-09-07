@@ -60,7 +60,9 @@ public class OrgInfo
 	@NonNull
 	StoreCreditCardNumberMode storeCreditCardNumberMode;
 
-	int logoImageId;
+	@NonNull
+	OrgImagesMap imagesMap;
+
 	@Nullable
 	WFResponsibleId workflowResponsibleId;
 	BPartnerLocationId orgBPartnerLocationId;

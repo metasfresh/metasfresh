@@ -16,9 +16,11 @@ import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.DistributionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.candidate.businesscase.PurchaseDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.StockChangeDetail;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.repohelpers.PurchaseDetailRepoHelper;
 import de.metas.material.dispo.commons.repository.repohelpers.RepositoryCommons;
+import de.metas.material.dispo.commons.repository.repohelpers.StockChangeDetailRepo;
 import de.metas.material.dispo.model.I_MD_Candidate;
 import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_Dist_Detail;
@@ -40,7 +42,6 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -85,10 +86,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 public class CandidateRepositoryWriteService
 {
 	private final DimensionService dimensionService;
+	private final StockChangeDetailRepo stockChangeDetailRepo;
 
-	public CandidateRepositoryWriteService(final DimensionService dimensionService)
+	public CandidateRepositoryWriteService(
+			@NonNull final DimensionService dimensionService,
+			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
 	{
 		this.dimensionService = dimensionService;
+		this.stockChangeDetailRepo = stockChangeDetailRepo;
 	}
 
 	/**
@@ -295,6 +300,8 @@ public class CandidateRepositoryWriteService
 		addOrReplacePurchaseDetail(candidate, synchedRecord);
 
 		addOrReplaceTransactionDetail(candidate, synchedRecord);
+
+		addOrReplaceStockChangeDetail(candidate, synchedRecord);
 
 		final Candidate savedCandidate = createNewCandidateWithIdsFromRecord(candidate, synchedRecord);
 
@@ -688,6 +695,14 @@ public class CandidateRepositoryWriteService
 			detailRecordToUpdate.setMovementQty(transactionDetail.getQuantity());
 			save(detailRecordToUpdate);
 		}
+	}
+
+	private void addOrReplaceStockChangeDetail(
+			@NonNull final Candidate candidate,
+			@NonNull final I_MD_Candidate synchedRecord)
+	{
+		final StockChangeDetail stockChangeDetail = StockChangeDetail.castOrNull(candidate.getBusinessCaseDetail());
+		stockChangeDetailRepo.saveOrUpdate(stockChangeDetail, synchedRecord);
 	}
 
 	private Candidate createNewCandidateWithIdsFromRecord(

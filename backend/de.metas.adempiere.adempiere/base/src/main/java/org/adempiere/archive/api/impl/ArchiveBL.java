@@ -32,6 +32,7 @@ import de.metas.process.ProcessInfo;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.lang.SpringResourceUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.api.ArchiveInfo;
@@ -45,7 +46,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.IClientDAO;
-import de.metas.util.lang.SpringResourceUtils;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_AD_Archive;
@@ -131,6 +131,7 @@ public class ArchiveBL implements IArchiveBL
 		final String language = getLanguageFromReport(ctxToUse, request);
 		archive.setAD_Language(language);
 
+		archive.setDocumentNo(request.getDocumentNo());
 		archive.setName(request.getArchiveName());
 		archive.setC_Async_Batch_ID(NumberUtils.asInt(request.getAsyncBatchId(), -1));
 		archive.setIsReport(request.isReport());

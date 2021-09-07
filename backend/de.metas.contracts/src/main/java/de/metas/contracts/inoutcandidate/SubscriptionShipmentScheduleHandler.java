@@ -96,13 +96,13 @@ public class SubscriptionShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private void updateNewSchedWithValuesFromReferencedLine(@NonNull final I_M_ShipmentSchedule newSched)
 	{
-		final ShipmentScheduleReferencedLine subscriptionFromgressInfos = SpringContextHolder.instance
+		final ShipmentScheduleReferencedLine subscriptionFromProgressInfos = SpringContextHolder.instance
 				.getBean(ShipmentScheduleSubscriptionReferenceProvider.class)
 				.provideFor(newSched);
 
-		newSched.setM_Warehouse_ID(subscriptionFromgressInfos.getWarehouseId().getRepoId());
-		newSched.setPreparationDate(TimeUtil.asTimestamp(subscriptionFromgressInfos.getPreparationDate()));
-		newSched.setDeliveryDate(TimeUtil.asTimestamp(subscriptionFromgressInfos.getDeliveryDate()));
+		newSched.setM_Warehouse_ID(subscriptionFromProgressInfos.getWarehouseId().getRepoId());
+		newSched.setPreparationDate(TimeUtil.asTimestamp(subscriptionFromProgressInfos.getPreparationDate()));
+		newSched.setDeliveryDate(TimeUtil.asTimestamp(subscriptionFromProgressInfos.getDeliveryDate()));
 	}
 
 	@Override

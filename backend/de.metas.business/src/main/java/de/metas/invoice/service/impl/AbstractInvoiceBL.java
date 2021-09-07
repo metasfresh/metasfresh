@@ -1473,6 +1473,20 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public final boolean isInvoice(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());
+		final String docBaseType = docType.getDocBaseType();
+		return isInvoice(docBaseType);
+	}
+
+	private final boolean isInvoice(final String docBaseType)
+	{
+		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofNullableCode(docBaseType);
+		return invoiceDocBaseType != null && (invoiceDocBaseType.equals(InvoiceDocBaseType.CustomerInvoice) || invoiceDocBaseType.equals(InvoiceDocBaseType.VendorInvoice));
+	}
+
+	@Override
 	public final boolean isCreditMemo(@NonNull final org.compiere.model.I_C_Invoice invoice)
 	{
 		final I_C_DocType docType = assumeNotNull(getC_DocType(invoice), "The given C_Invoice_ID={} needs to have a C_DocType", invoice.getC_Invoice_ID());

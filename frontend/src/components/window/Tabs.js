@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
-import { Set } from 'immutable';
+import { last, uniqueId } from 'lodash';
 
 import { activateTab, unselectTab } from '../../actions/WindowActions';
 import Tab from './Tab';
@@ -17,21 +17,23 @@ class Tabs extends PureComponent {
     super(props);
 
     const firstTab = props.tabsByIds[props.children[0].key];
-    const selected = this.getSelected(firstTab, Set());
+    const selected = this.getSelected(firstTab, []);
 
     this.state = {
       selected,
+      tabsVersionId: uniqueId(),
     };
   }
 
   componentDidMount = () => {
-    this.props.dispatch(activateTab('master', this.state.selected.last()));
+    this.props.dispatch(activateTab('master', last(this.state.selected)));
   };
 
   componentDidUpdate = (prevProps, prevState) => {
     const { dispatch } = this.props;
-    if (prevState.selected !== this.state.selected) {
-      dispatch(activateTab('master', this.state.selected.last()));
+
+    if (prevState.tabsVersionId !== this.state.tabsVersionId) {
+      dispatch(activateTab('master', last(this.state.selected)));
     }
   };
 
@@ -41,7 +43,7 @@ class Tabs extends PureComponent {
 
   getSelected = (tab, selected, reverse) => {
     const { tabsByIds } = this.props;
-    selected = selected.add(tab.tabId);
+    selected.push(tab.tabId);
 
     if (!reverse) {
       if (tab.tabs) {
@@ -65,7 +67,7 @@ class Tabs extends PureComponent {
     if (firstTab.parentTab) {
       reverse = true;
     }
-    let selected = this.getSelected(firstTab, Set(), reverse);
+    let selected = this.getSelected(firstTab, [], reverse);
 
     if (firstTab.parentTab) {
       selected = selected.reverse();
@@ -73,6 +75,7 @@ class Tabs extends PureComponent {
 
     this.setState({
       selected,
+      tabsVersionId: uniqueId(),
     });
   };
 
@@ -118,7 +121,7 @@ class Tabs extends PureComponent {
       >
         <a
           className={classnames('nav-link', {
-            active: selected.has(item.tabId),
+            active: selected.indexOf(item.tabId) > -1,
           })}
         >
           {item.caption}
@@ -133,7 +136,7 @@ class Tabs extends PureComponent {
     const nestedPills = [];
 
     const pillsArray = pills.map((item) => {
-      if (item.tabs && selected.has(item.tabId)) {
+      if (item.tabs && selected.indexOf(item.tabId) > -1) {
         this.renderNestedPills(item, maxWidth, 0, nestedPills);
       }
 
@@ -153,14 +156,9 @@ class Tabs extends PureComponent {
     const { selected } = this.state;
 
     return tabs.map((item) => {
-      if (selected.last() === item.key) {
-        const {
-          tabId,
-          queryOnActivate,
-          docId,
-          orderBy,
-          singleRowView,
-        } = item.props;
+      if (last(selected) === item.key) {
+        const { tabId, queryOnActivate, docId, orderBy, singleRowView } =
+          item.props;
 
         return (
           <div key={'pane-' + item.key} className="tab-pane active">

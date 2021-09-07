@@ -8,7 +8,7 @@
           "orgCode": "orgCode",
           "bpartner": {
             "code": "ext-Shopware6-customerNumber",
-            "name": "firstName lastName",
+            "name":"firstName lastName",
             "companyName": "company",
             "customer": true,
             "syncAdvise": {

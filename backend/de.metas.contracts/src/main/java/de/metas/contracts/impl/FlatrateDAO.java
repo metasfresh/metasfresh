@@ -46,7 +46,6 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
-import org.compiere.model.I_C_Customs_Invoice;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Period;
@@ -59,7 +58,6 @@ import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -976,5 +974,11 @@ public class FlatrateDAO implements IFlatrateDAO
 	public I_C_Flatrate_Conditions getConditionsById (final ConditionsId flatrateConditionsId )
 	{
 		return  load(flatrateConditionsId, I_C_Flatrate_Conditions.class);
+	}
+
+	@Override
+	public void save(@NonNull I_C_Flatrate_Term flatrateTerm)
+	{
+		InterfaceWrapperHelper.save(flatrateTerm);
 	}
 }

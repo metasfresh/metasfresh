@@ -26,7 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
+import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
@@ -69,6 +69,13 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIG
 
 public class GetOrdersProcessor implements Processor
 {
+	private final ProcessLogger processLogger;
+
+	public GetOrdersProcessor(final ProcessLogger processLogger)
+	{
+		this.processLogger = processLogger;
+	}
+
 	@Override
 	public void process(final Exchange exchange)
 	{
@@ -79,7 +86,7 @@ public class GetOrdersProcessor implements Processor
 		{
 			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
 
-			ProcessorHelper.logProcessMessage(exchange, "Shopware6:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
+			processLogger.logMessage("Shopware6:GetOrders process started!" + Instant.now(), request.getAdPInstanceId().getValue());
 		}
 
 		final String clientId = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_ID);
@@ -107,7 +114,7 @@ public class GetOrdersProcessor implements Processor
 				.clientSecret(clientSecret)
 				.build();
 
-		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider) exchange.getContext().createProducerTemplate()
+		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider)exchange.getContext().createProducerTemplate()
 				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
 
 		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider);
@@ -184,7 +191,7 @@ public class GetOrdersProcessor implements Processor
 	private TaxProductIdProvider getTaxProductIdProvider(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		final ImmutableMap.Builder<JsonMetasfreshId, List<BigDecimal>> productId2VatRatesBuilder = ImmutableMap.builder();
-		final Map<String,String> parameters = externalSystemRequest.getParameters();
+		final Map<String, String> parameters = externalSystemRequest.getParameters();
 
 		final String normalVatRates = parameters.get(PARAM_FREIGHT_COST_NORMAL_VAT_RATES);
 		final String normalVatProductId = parameters.get(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID);

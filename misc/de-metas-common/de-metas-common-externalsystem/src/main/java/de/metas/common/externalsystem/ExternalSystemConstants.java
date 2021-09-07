@@ -30,7 +30,10 @@ public class ExternalSystemConstants
 	public static final String PARAM_API_KEY = "APIKey";
 	public static final String PARAM_BASE_PATH = "BasePath";
 	public static final String PARAM_TENANT = "Tenant";
+	public static final String PARAM_BPARTNER_GROUP = "BPartnerGroup";
 	public static final String PARAM_UPDATED_AFTER = "UpdatedAfter";
+	public static final String PARAM_UPDATE_AFTER_DOCUMENT = "UpdatedAfterDocument";
+	public static final String PARAM_UPDATE_AFTER_ATTACHMENT = "UpdatedAfterAttachment";
 	public static final String PARAM_CLIENT_ID = "ClientId";
 	public static final String PARAM_CLIENT_SECRET = "ClientSecret";
 	public static final String PARAM_CHILD_CONFIG_VALUE = "ChildConfigValue";
@@ -46,5 +49,12 @@ public class ExternalSystemConstants
 	public static final String PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID = "M_FreightCost_ReducedVAT_Product_ID";
 
 	public static final String PARAM_UPDATED_AFTER_OVERRIDE = "UpdatedAfterOverride";
+	public static final String PARAM_ROOT_BPARTNER_ID_FOR_USERS = "RootBPartnerID";
+
+	public static final String PARAM_ALBERTA_ID = "Alberta_Id";
+	public static final String PARAM_ALBERTA_ROLE = "Alberta_Role";
+
+	public static final String PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY = "CamelHttpResourceAuthKey";
+
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 }

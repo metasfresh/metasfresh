@@ -1,9 +1,12 @@
 package de.metas.inout.invoicecandidate;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -13,6 +16,8 @@ import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
@@ -21,7 +26,9 @@ import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.inout.InOutId;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
@@ -53,7 +60,9 @@ import de.metas.tax.api.TaxId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
+import de.metas.util.ILoggable;
 import de.metas.util.ImmutableMapEntry;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -67,6 +76,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
@@ -115,8 +125,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private static final Logger logger = LogManager.getLogger(M_InOutLine_Handler.class);
 
 	// Services
+	private final transient IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -131,7 +143,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
 	 */
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	public boolean isCreateMissingCandidatesAutomatically(final Object model)
 	{
 		return false;
 	}
@@ -145,8 +157,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Retrieve inout
 		final I_M_InOutLine inoutLine = create(model, I_M_InOutLine.class);
-		final org.compiere.model.I_M_InOut inout = inoutLine.getM_InOut();
-		return inout;
+		return inoutLine.getM_InOut();
 	}
 
 	@Override
@@ -283,7 +294,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private I_C_Invoice_Candidate createInvoiceCandidateForInOutLineOrNull(
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@Nullable final PaymentTermId paymentTermId,
-			@Nullable BigDecimal forcedQtyToAllocate)
+			@Nullable final BigDecimal forcedQtyToAllocate)
 	{
 
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -353,7 +364,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set invoice rule form linked order (if exists)
 		if (inOut.getC_Order_ID() > 0)
 		{
-			icRecord.setInvoiceRule(inOut.getC_Order().getInvoiceRule()); // the rule set in order
+			final I_C_Order order = inOut.getC_Order();
+			icRecord.setInvoiceRule(order.getInvoiceRule()); // the rule set in order
 		}
 		// Set Invoice Rule from BPartner
 		else
@@ -404,6 +416,14 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				SOTrx.ofBoolean(isSOTrx));
 		icRecord.setC_Tax_ID(taxId.getRepoId());
 
+		//DocType
+		final DocTypeId invoiceDocTypeId = extractDocTypeId(inOutLineRecord);
+		if (invoiceDocTypeId != null)
+		{
+			icRecord.setC_DocTypeInvoice_ID(invoiceDocTypeId.getRepoId());
+		}
+
+		icRecord.setC_Async_Batch_ID(inOut.getC_Async_Batch_ID());
 		//
 		// Save the Invoice Candidate, so that we can use it's ID further down
 		saveRecord(icRecord);
@@ -448,6 +468,60 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return icRecord;
 	}
 
+	private DocTypeId extractDocTypeId(final I_M_InOutLine inOutLineRecord)
+	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
+		final org.compiere.model.I_M_InOut inOutRecord = inOutLineRecord.getM_InOut();
+
+		if (inOutRecord.getC_DocType_ID() > 0)
+		{
+			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoIdOrNull(inOutRecord.getC_DocType_ID());
+			final I_C_DocType inOutDocType = docTypeBL.getById(inoutDocTypeId);
+			if (inOutDocType.getC_DocTypeInvoice_ID() > 0)
+			{
+				loggable.addLog("extractDocTypeId - M_InOutLine_ID={} has M_InOut_ID={} => C_DocType_ID={} => C_DocTypeInvoice_ID={}; -> return that as DocTypeId",
+								inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getM_InOut_ID(), inOutRecord.getC_DocType_ID(), inOutDocType.getC_DocTypeInvoice_ID());
+				return DocTypeId.ofRepoId(inOutDocType.getC_DocTypeInvoice_ID());
+			}
+		}
+		if (inOutLineRecord.getC_OrderLine_ID() > 0)
+		{
+			final I_C_Order order = inOutLineRecord.getC_OrderLine().getC_Order();
+			final I_C_DocType orderDocType = extractOrderDocTypeRecord(order);
+			if (orderDocType.getC_DocTypeInvoice_ID() > 0)
+			{
+				loggable.addLog("extractDocTypeId - M_InOutLine_ID={} has C_OrderLine_ID={} => C_Order_ID={} => doctype-ID={} => C_DocTypeInvoice_ID={}; -> return that as DocTypeId",
+								inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getC_OrderLine_ID(), order.getC_Order_ID(),
+								orderDocType.getC_DocType_ID(), orderDocType.getC_DocTypeInvoice_ID());
+				return DocTypeId.ofRepoId(orderDocType.getC_DocTypeInvoice_ID());
+			}
+		}
+		if (inOutRecord.getC_Order_ID() > 0)
+		{
+			final I_C_Order order = inOutRecord.getC_Order();
+			final I_C_DocType orderDocType = extractOrderDocTypeRecord(order);
+			if (orderDocType.getC_DocTypeInvoice_ID() > 0)
+			{
+				loggable.addLog("extractDocTypeId - M_InOutLine_ID={} has M_InOut_ID={} => C_Order_ID={} => doctype-ID={} => C_DocTypeInvoice_ID={}; -> return that as DocTypeId",
+								inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getC_OrderLine_ID(), order.getC_Order_ID(),
+								orderDocType.getC_DocType_ID(), orderDocType.getC_DocTypeInvoice_ID());
+				return DocTypeId.ofRepoId(orderDocType.getC_DocTypeInvoice_ID());
+			}
+		}
+		loggable.addLog("extractDocTypeId - Unable to determine invoice doctype for M_InOutLine_ID={}; -> return null", inOutLineRecord.getM_InOutLine_ID());
+		return null;
+	}
+
+	private I_C_DocType extractOrderDocTypeRecord(final I_C_Order order)
+	{
+		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
+				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
+				() -> DocTypeId.ofRepoId(order.getC_DocTypeTarget_ID()));
+		final I_C_DocType orderDocType = docTypeBL.getById(orderDocTypeId);
+		return orderDocType;
+	}
+
 	@Override
 	public void invalidateCandidatesFor(final Object model)
 	{
@@ -459,7 +533,26 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
+		final org.compiere.model.I_M_InOut shipment = inOutBL.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
+
 		final IQueryBuilder<I_C_Invoice_Candidate> icQueryBuilder = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLineQuery(inoutLine);
+
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipment.getC_Async_Batch_ID());
+
+		if (asyncBatchId != null)
+		{
+			final ImmutableSet<InvoiceCandidateId> invoiceCandidateIds = icQueryBuilder.create()
+					.listIds()
+					.stream()
+					.map(InvoiceCandidateId::ofRepoId)
+					.collect(ImmutableSet.toImmutableSet());
+
+
+			invoiceCandidateIds.forEach(invoiceCandidateId -> invoiceCandBL.setAsyncBatch(invoiceCandidateId, asyncBatchId));
+
+			invoiceCandDAO.invalidateCandsFor(invoiceCandidateIds);
+			return;
+		}
 
 		invoiceCandDAO.invalidateCandsFor(icQueryBuilder);
 	}

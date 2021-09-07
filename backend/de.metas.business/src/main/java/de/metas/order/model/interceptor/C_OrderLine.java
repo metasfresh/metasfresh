@@ -1,6 +1,8 @@
 package de.metas.order.model.interceptor;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
@@ -14,6 +16,8 @@ import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
 import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -32,9 +36,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 
 import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 
@@ -65,24 +71,27 @@ import static org.adempiere.model.InterfaceWrapperHelper.isCopy;
 public class C_OrderLine
 {
 	public static final AdMessageKey ERR_NEGATIVE_QTY_RESERVED = AdMessageKey.of("MSG_NegativeQtyReserved");
-
 	private static final Logger logger = LogManager.getLogger(C_OrderLine.class);
 	private final IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
+	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService;
 
 	C_OrderLine(
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
-			@NonNull final OrderLineDetailRepository orderLineDetailRepository)
+			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
+			@NonNull final BPartnerSupplierApprovalService bPartnerSupplierApprovalService)
 	{
 		this.groupChangesHandler = groupChangesHandler;
 		this.orderLineDetailRepository = orderLineDetailRepository;
+		this.bPartnerSupplierApprovalService = bPartnerSupplierApprovalService;
 
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
@@ -125,22 +134,6 @@ public class C_OrderLine
 
 	}
 
-	/**
-	 * Set QtyOrderedInPriceUOM, just to make sure is up2date.
-	 */
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
-			ModelValidator.TYPE_BEFORE_CHANGE
-	}, ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_QtyEntered,
-			I_C_OrderLine.COLUMNNAME_Price_UOM_ID,
-			I_C_OrderLine.COLUMNNAME_C_UOM_ID,
-			I_C_OrderLine.COLUMNNAME_M_Product_ID
-	})
-	public void setQtyEnteredInPriceUOM(final I_C_OrderLine orderLine)
-	{
-		final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
-		orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
-	}
-
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
@@ -162,6 +155,44 @@ public class C_OrderLine
 		{
 			orderBL.validateHaddexDate(order);
 		}
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
+	public void validateSupplierApproval(final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		if (order.isSOTrx())
+		{
+			// Only purchase orders are relevant
+			return;
+		}
+
+		if (orderLine.getM_Product_ID() <= 0)
+		{
+			//nothing to do
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+
+		final ImmutableList<String> supplierApprovalNorms = productBL.retrieveSupplierApprovalNorms(productId);
+
+		if (Check.isEmpty(supplierApprovalNorms))
+		{
+			// nothing to validate
+			return;
+		}
+
+		final BPartnerId partnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+
+		bPartnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
@@ -222,7 +253,7 @@ public class C_OrderLine
 		if (developerModeBL.isEnabled())
 		{
 			final AdempiereException ex = new AdempiereException("@" + ERR_NEGATIVE_QTY_RESERVED + "@. Setting QtyReserved to ZERO."
-					+ "\nStorage: " + ol);
+																		 + "\nStorage: " + ol);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
 	}
@@ -238,8 +269,8 @@ public class C_OrderLine
 		final boolean qtyOrderedLessThanZero = ol.getQtyOrdered().signum() < 0;
 
 		Check.errorIf(qtyOrderedLessThanZero,
-				"QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
-				ol.getQtyOrdered(), ol, ol.getC_Order_ID());
+					  "QtyOrdered needs to be >= 0, but the given ol has QtyOrdered={}; ol={}; C_Order_ID={}",
+					  ol.getQtyOrdered(), ol, ol.getC_Order_ID());
 	}
 
 	// task 06727
@@ -340,11 +371,11 @@ public class C_OrderLine
 		orderLine.setM_DiscountSchemaBreak(null);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(orderLine)
-				.resultUOM(ResultUOM.PRICE_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(orderLine)
+										 .resultUOM(ResultUOM.PRICE_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(false) // i.e. always update them
+										 .updateLineNetAmt(true)
+										 .build());
 
 		logger.debug("Setting TaxAmtInfo for {}", orderLine);
 		orderLineBL.setTaxAmtInfo(orderLine);

@@ -35,14 +35,8 @@ class TableContextMenu extends Component {
   }
 
   componentDidMount() {
-    const {
-      x,
-      y,
-      fieldName,
-      supportZoomInto,
-      supportFieldEdit,
-      docId,
-    } = this.props;
+    const { x, y, fieldName, supportZoomInto, supportFieldEdit, docId } =
+      this.props;
 
     this.updateContextMenuState(
       x,
@@ -165,10 +159,11 @@ class TableContextMenu extends Component {
       handleDelete,
       handleFieldEdit,
       handleZoomInto,
+      supportOpenRecord,
       docId,
     } = this.props;
 
-    const { contextMenu, display } = this.state;
+    const { contextMenu } = this.state;
     const positionY =
       contextMenu.y > TBL_CONTEXT_MENU_Y_MAX
         ? contextMenu.y - TBL_CONTEXT_Y_OFFSET
@@ -195,7 +190,14 @@ class TableContextMenu extends Component {
         style={{
           left: positionX,
           top: positionY,
-          display,
+          display:
+            supportOpenRecord === false &&
+            (!contextMenu.supportZoomInto ||
+              !showFieldEdit ||
+              !isSelectedOne ||
+              !handleDelete)
+              ? 'none'
+              : 'block',
           height: docId ? TBL_CONTEXT_POPUP_HEIGHT : '',
         }}
         className={
@@ -310,6 +312,7 @@ TableContextMenu.propTypes = {
   handleFieldEdit: PropTypes.func,
   handleZoomInto: PropTypes.func,
   updateTableHeight: PropTypes.func,
+  supportOpenRecord: PropTypes.bool,
 };
 
 export default connect()(TableContextMenu);

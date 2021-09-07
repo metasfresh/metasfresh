@@ -108,7 +108,6 @@ public class RestApiUtilsV2
 			final AttributeCode attributeCode = attributeSet.getAttributeCode(attributeId);
 
 			final JsonAttributeInstance.JsonAttributeInstanceBuilder instanceBuilder = JsonAttributeInstance.builder()
-					.attributeName(attributeSet.getAttributeName(attributeId))
 					.attributeCode(attributeCode.getCode());
 			final String attributeValueType = attributeSet.getAttributeValueType(attributeId);
 			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Date.equals(attributeValueType))

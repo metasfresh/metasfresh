@@ -52,8 +52,8 @@ import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
 		this.qtyToAllocate = qtyToAllocate;
 		this.qtyAllocated = qtyAllocated;
 		this.completed = qtyToAllocate.compareTo(qtyAllocated) == 0;
-		this.attributeTransactions = Collections.unmodifiableList(new ArrayList<IHUTransactionAttribute>(attributeTrxs));
-		this.transactions = Collections.unmodifiableList(new ArrayList<IHUTransactionCandidate>(trxs));
+		this.attributeTransactions = Collections.unmodifiableList(new ArrayList<>(attributeTrxs));
+		this.transactions = Collections.unmodifiableList(new ArrayList<>(trxs));
 	}
 
 	@Override

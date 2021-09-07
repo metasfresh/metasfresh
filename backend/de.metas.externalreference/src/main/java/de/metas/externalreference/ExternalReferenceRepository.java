@@ -96,6 +96,7 @@ public class ExternalReferenceRepository
 		record.setType(externalReference.getExternalReferenceType().getCode());
 		record.setRecord_ID(externalReference.getRecordId());
 		record.setVersion(externalReference.getVersion());
+		record.setExternalReferenceURL(externalReference.getExternalReferenceUrl());
 
 		InterfaceWrapperHelper.saveRecord(record);
 
@@ -232,6 +233,7 @@ public class ExternalReferenceRepository
 				.externalSystem(externalSystem)
 				.recordId(record.getRecord_ID())
 				.version(record.getVersion())
+				.externalReferenceUrl(record.getExternalReferenceURL())
 				.build();
 	}
 

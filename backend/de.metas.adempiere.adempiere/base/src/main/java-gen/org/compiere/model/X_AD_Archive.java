@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_Archive
  *  @author metasfresh (generated) 
@@ -218,6 +218,18 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	public java.lang.String getDocumentFlavor() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentFlavor);
+	}
+
+	@Override
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
+	{
+		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
+	}
+
+	@Override
+	public java.lang.String getDocumentNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
 
 	@Override

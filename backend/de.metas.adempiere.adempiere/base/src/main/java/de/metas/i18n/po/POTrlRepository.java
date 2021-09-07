@@ -139,9 +139,9 @@ public class POTrlRepository
 		final String tableName = trlInfo.getTableName();
 		final String keyColumn = trlInfo.getKeyColumnName();
 		final StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append("_Trl (AD_Language,").append(keyColumn).append(", ").append(iColumns)
-				.append(" IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) ")
+				.append(" IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) ")
 				.append("SELECT l.").append(I_AD_Language.COLUMNNAME_AD_Language).append(", t.").append(keyColumn).append(", ").append(sColumns)
-				.append(" 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy ")
+				.append(" 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' ")
 				.append("FROM AD_Language l, ").append(tableName).append(" t ")
 				.append("WHERE l."
 						+ I_AD_Language.COLUMNNAME_IsActive

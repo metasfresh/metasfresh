@@ -73,13 +73,14 @@ public class HUDescriptorService
 					attributesKey,
 					asiId.getRepoId());
 
-			final BigDecimal quantity = productStorage.getQtyInStockingUOM().toBigDecimal();
+			final BigDecimal quantity = productStorage.getQtyInStockingUOM()
+					.toBigDecimal()
+					.max(BigDecimal.ZERO); // guard against the quantity being e.g. -0.001 for whatever reason
 
 			final HUDescriptor descriptor = HUDescriptor.builder()
 					.huId(huRecord.getM_HU_ID())
 					.productDescriptor(productDescriptor)
 					.quantity(deleted ? BigDecimal.ZERO : quantity)
-					.quantityDelta(deleted ? quantity.negate() : quantity)
 					.build();
 			descriptors.add(descriptor);
 		}

@@ -1,18 +1,5 @@
 package de.metas.acct.aggregation.impl;
 
-import java.math.BigDecimal;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.agg.key.IAggregationKeyBuilder;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.TrxRunnableAdapter;
-
 import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.aggregation.IFactAcctLogDAO;
 import de.metas.acct.aggregation.IFactAcctLogIterable;
@@ -25,6 +12,20 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.MapReduceAggregator;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.agg.key.IAggregationKeyBuilder;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -50,24 +51,27 @@ import de.metas.util.collections.MapReduceAggregator;
 
 public class FactAcctLogBL implements IFactAcctLogBL
 {
+	private final IFactAcctLogDAO factAcctLogDAO = Services.get(IFactAcctLogDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	@Override
+	public boolean hasLogsToProcess()
+	{
+		return factAcctLogDAO.hasLogs(Env.getCtx(), IFactAcctLogDAO.PROCESSINGTAG_NULL);
+	}
+
 	@Override
 	public void processAll(final Properties ctx, final int limit)
 	{
-		final IFactAcctLogDAO factAcctLogDAO = Services.get(IFactAcctLogDAO.class);
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.runInNewTrx(() -> processAllInTrx(ctx, limit));
+	}
 
-		trxManager.runInNewTrx(new TrxRunnableAdapter()
+	private void processAllInTrx(final Properties ctx, final int limit)
+	{
+		try (final IFactAcctLogIterable logs = factAcctLogDAO.tagAndRetrieve(ctx, limit))
 		{
-
-			@Override
-			public void run(final String localTrxName) throws Exception
-			{
-				try (final IFactAcctLogIterable logs = factAcctLogDAO.tagAndRetrieve(ctx, limit))
-				{
-					process(logs);
-				}
-			}
-		});
+			process(logs);
+		}
 	}
 
 	public void process(final IFactAcctLogIterable logs)
@@ -76,7 +80,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 		//
 		// Update Fact_Acct_Summary
-		final FactAcctSummaryUpdater factAcctSummaryUpdater = new FactAcctSummaryUpdater();
+		final FactAcctSummaryUpdater factAcctSummaryUpdater = new FactAcctSummaryUpdater(factAcctLogDAO);
 		for (final I_Fact_Acct_Log log : logs)
 		{
 			factAcctSummaryUpdater.add(log);
@@ -85,7 +89,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 		//
 		// Update Fact_Acct_EndingBalance
-		Services.get(IFactAcctLogDAO.class).updateFactAcctEndingBalanceForTag(logs.getProcessingTag());
+		factAcctLogDAO.updateFactAcctEndingBalanceForTag(logs.getProcessingTag());
 
 		//
 		// Delete all processed logs
@@ -97,9 +101,12 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 	private static class FactAcctSummaryUpdater extends MapReduceAggregator<FactAcctGroup, I_Fact_Acct_Log>
 	{
-		public FactAcctSummaryUpdater()
+		private final IFactAcctLogDAO factAcctLogDAO;
+
+		private FactAcctSummaryUpdater(
+				@NonNull final IFactAcctLogDAO factAcctLogDAO)
 		{
-			super();
+			this.factAcctLogDAO = factAcctLogDAO;
 			setGroupsBufferSize(1); // IMPORTANT: keep only one group in memory because we are also updating next groups when a current group is updated
 			setItemAggregationKeyBuilder(FactAcctSummaryKeyBuilder.instance);
 		}
@@ -107,7 +114,10 @@ public class FactAcctLogBL implements IFactAcctLogBL
 		@Override
 		protected FactAcctGroup createGroup(final Object itemHashKey, final I_Fact_Acct_Log log)
 		{
-			return FactAcctGroup.getCreatedForLog(log);
+			return FactAcctGroup.builder()
+					.factAcctLogDAO(factAcctLogDAO)
+					.log(log)
+					.build();
 		}
 
 		@Override
@@ -125,12 +135,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 
 	private static final class FactAcctGroup
 	{
-		private final transient IFactAcctLogDAO factAcctLogDAO = Services.get(IFactAcctLogDAO.class);
-
-		public static final FactAcctGroup getCreatedForLog(final I_Fact_Acct_Log log)
-		{
-			return new FactAcctGroup(log);
-		}
+		private final IFactAcctLogDAO factAcctLogDAO;
 
 		private final Object contextProvider;
 		private final Properties ctx;
@@ -139,10 +144,12 @@ public class FactAcctLogBL implements IFactAcctLogBL
 		private BigDecimal amtAcctCr_ToAdd;
 		private BigDecimal qty_ToAdd;
 
-		private FactAcctGroup(final I_Fact_Acct_Log log)
+		@Builder
+		private FactAcctGroup(
+				@NonNull final IFactAcctLogDAO factAcctLogDAO,
+				@NonNull final I_Fact_Acct_Log log)
 		{
-			super();
-
+			this.factAcctLogDAO = factAcctLogDAO;
 			contextProvider = log;
 			ctx = InterfaceWrapperHelper.getCtx(log);
 			key = FactAcctSummaryKey.of(log);
@@ -150,7 +157,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 			resetAmounts();
 		}
 
-		private final I_Fact_Acct_Summary getCreateFactAcctSummary()
+		private I_Fact_Acct_Summary getCreateFactAcctSummary()
 		{
 			final Date dateAcct = key.getDateAcct();
 
@@ -208,7 +215,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 			}
 		}
 
-		private final void resetAmounts()
+		private void resetAmounts()
 		{
 			amtAcctDr_ToAdd = BigDecimal.ZERO;
 			amtAcctCr_ToAdd = BigDecimal.ZERO;
@@ -245,7 +252,7 @@ public class FactAcctLogBL implements IFactAcctLogBL
 			qty_ToAdd = qty_ToAdd.add(qty_Diff);
 		}
 
-		private final boolean hasChanges()
+		private boolean hasChanges()
 		{
 			return amtAcctDr_ToAdd.signum() != 0 || amtAcctCr_ToAdd.signum() != 0 || qty_ToAdd.signum() != 0;
 		}

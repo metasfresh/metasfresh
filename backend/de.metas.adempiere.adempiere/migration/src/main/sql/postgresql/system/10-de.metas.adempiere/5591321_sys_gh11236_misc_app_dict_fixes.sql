@@ -16,3 +16,4 @@ delete from ad_column WHERE columnname = 'Name'  AND ad_table_id = get_table_id(
 
 
 update ad_table set isview='Y' WHERE tablename ='MD_Available_For_Sales_QueryResult';
+

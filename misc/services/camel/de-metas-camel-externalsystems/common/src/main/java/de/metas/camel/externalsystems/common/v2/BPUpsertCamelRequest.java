@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,7 +49,9 @@ public class BPUpsertCamelRequest
 	{
 		try
 		{
-			return new ObjectMapper().writeValueAsString(this);
+			final ObjectMapper objectMapper = new ObjectMapper();
+			objectMapper.registerModule(new JavaTimeModule());
+			return objectMapper.writeValueAsString(this);
 		}
 		catch (final JsonProcessingException e)
 		{

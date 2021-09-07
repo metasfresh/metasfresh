@@ -14,8 +14,37 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.jsx?$/,
+        test: /\.js|\.jsx?$/,
         loader: 'babel-loader',
+      },
+      {
+        test: /\.html$/,
+        loader: 'html-loader',
+      },
+      {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          { loader: 'css-loader', options: { importLoaders: 1 } },
+          {
+            loader: 'postcss-loader',
+            options: {
+              ident: 'postcss',
+              plugins: () => [
+                require('postcss-import')({
+                  addDependencyTo: webpack,
+                  path: ['node_modules', 'src/assets'],
+                }),
+                require('postcss-color-function'),
+                require('postcss-url')(),
+                require('precss')(),
+                require('autoprefixer')({
+                  overrideBrowserslist: ['last 2 versions'],
+                }),
+              ],
+            },
+          },
+        ],
       },
     ],
   },

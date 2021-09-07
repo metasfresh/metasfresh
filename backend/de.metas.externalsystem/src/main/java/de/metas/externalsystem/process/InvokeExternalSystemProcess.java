@@ -35,7 +35,6 @@ import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParameter;
@@ -120,7 +119,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 		final long selectedRecordsCount = getSelectedRecordCount(context);
 		if (selectedRecordsCount > 1)
 		{
-			return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_MULTIPLE_EXTERNAL_SELECTION, getTabName()));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_MULTIPLE_EXTERNAL_SELECTION, getTabName()));
 		}
 		else if (selectedRecordsCount == 0)
 		{
@@ -129,7 +128,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 
 			if (!childConfig.isPresent())
 			{
-				return ProcessPreconditionsResolution.reject(Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName()));
+				return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName()));
 			}
 		}
 

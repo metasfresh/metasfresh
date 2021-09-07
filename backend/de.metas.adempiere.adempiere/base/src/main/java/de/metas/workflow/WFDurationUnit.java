@@ -32,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_Workflow;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
@@ -98,7 +97,7 @@ public enum WFDurationUnit implements ReferenceListAwareEnum
 
 	public Duration toDuration(@NonNull final BigDecimal durationBD)
 	{
-		return DurationUtils.toDuration(durationBD, getTemporalUnit());
+		return DurationUtils.toWorkDurationRoundUp(durationBD, getTemporalUnit());
 	}
 
 }

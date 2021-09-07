@@ -61,9 +61,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
             "value" : 4
           }
         },
-        "baseLanguage" : true,
         "leftToRight" : true,
-        "decimalPoint" : false
+        "decimalPoint" : false,
+        "baseLanguage" : true
       },
       "url" : "bPartner.url",
       "groupId" : 15,
@@ -93,7 +93,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -148,10 +149,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "c1_email@email.net",
@@ -161,10 +158,12 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "userId" : 100021
         },
         "invoiceEmailEnabled" : true,
+        "membershipContact" : false,
         "name" : "c1_name",
         "newsletter" : false,
         "phone" : "c1_phone",
-        "roles" : [ ]
+        "roles" : [ ],
+        "subjectMatterContact" : false
       },
       {
         "active" : true,
@@ -218,10 +217,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "c2_email@email.net",
@@ -231,10 +226,12 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
           "userId" : 100022
         },
         "invoiceEmailEnabled" : true,
+        "membershipContact" : false,
         "name" : "c2_name",
         "newsletter" : false,
         "phone" : "c2_phone",
-        "roles" : [ ]
+        "roles" : [ ],
+        "subjectMatterContact" : false
       }
     ],
     "locations" : [
@@ -266,6 +263,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l1_city",
         "countryCode" : "CH",
+        "existingLocationId" : 100017,
         "gln" : "l1_gln",
         "handles" : [ ],
         "id" : {
@@ -322,6 +320,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         },
         "city" : "l2_city",
         "countryCode" : "DE",
+        "existingLocationId" : 100019,
         "gln" : "l2_gln",
         "handles" : [ ],
         "id" : {
@@ -423,7 +422,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -478,10 +478,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "contactRecord.email",
@@ -493,10 +489,12 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "userId" : 30
         },
         "lastName" : "contactRecord.lastName",
+        "membershipContact" : false,
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "roles" : [ ],
+        "subjectMatterContact" : false,
         "value" : "contactRecord.value"
       },
       {
@@ -551,10 +549,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "newContact_email@email.net",
@@ -564,10 +558,12 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
           "userId" : 100014
         },
         "invoiceEmailEnabled" : true,
+        "membershipContact" : false,
         "name" : "newContact_name",
         "newsletter" : false,
         "phone" : "newContact_phone",
-        "roles" : [ ]
+        "roles" : [ ],
+        "subjectMatterContact" : false
       }
     ],
     "locations" : [
@@ -600,6 +596,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "existingLocationId" : 100010,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
         "id" : {
@@ -701,7 +698,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -756,10 +754,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "contactRecord.email",
@@ -771,10 +765,12 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "userId" : 30
         },
         "lastName" : "contactRecord.lastName",
+        "membershipContact" : false,
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "roles" : [ ],
+        "subjectMatterContact" : false,
         "value" : "contactRecord.value"
       },
       {
@@ -829,10 +825,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "handles" : [ ],
@@ -840,9 +832,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "bpartnerId" : 20,
           "userId" : 100014
         },
+        "membershipContact" : false,
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
-        "roles" : [ ]
+        "roles" : [ ],
+        "subjectMatterContact" : false
       }
     ],
     "locations" : [
@@ -875,6 +869,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "existingLocationId" : 100010,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
         "id" : {
@@ -976,7 +971,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -1031,10 +1027,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "contactRecord.email",
@@ -1046,10 +1038,12 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
           "userId" : 30
         },
         "lastName" : "contactRecord.lastName",
+        "membershipContact" : false,
         "name" : "jsonContact.name-UPDATED",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "roles" : [ ],
+        "subjectMatterContact" : false,
         "value" : "contactRecord.value"
       }
     ],
@@ -1083,6 +1077,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "existingLocationId" : 100010,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
         "id" : {
@@ -1184,7 +1179,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "entries" : [ ]
       },
-      "identifiedByExternalReference" : false
+      "identifiedByExternalReference" : false,
+      "excludeFromPromotions" : false
     },
     "contacts" : [
       {
@@ -1239,10 +1235,6 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "shipToDefault" : {
             "value" : false,
             "present" : true
-          },
-          "subjectMatter" : {
-            "value" : false,
-            "present" : true
           }
         },
         "email" : "contactRecord.email",
@@ -1254,10 +1246,12 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
           "userId" : 30
         },
         "lastName" : "contactRecord.lastName",
+        "membershipContact" : false,
         "name" : "contactRecord.name",
         "newsletter" : false,
         "phone" : "contactRecord.phone",
         "roles" : [ ],
+        "subjectMatterContact" : false,
         "value" : "contactRecord.value"
       }
     ],
@@ -1291,6 +1285,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         "city" : "locationRecord.city",
         "countryCode" : "countryRecord.countryCode",
         "district" : "postalRecord.district",
+        "existingLocationId" : 100010,
         "gln" : "bpartnerLocationRecord.gln",
         "handles" : [ ],
         "id" : {
@@ -1347,6 +1342,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
         },
         "city" : "newLocation_city",
         "countryCode" : "DE",
+        "existingLocationId" : 100015,
         "gln" : "newLocation_gln",
         "handles" : [ ],
         "id" : {

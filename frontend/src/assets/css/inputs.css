@@ -1021,3 +1021,12 @@ table {
     border: 2px solid $brand-mandatory-color;
     border-radius: 3px;
 }
+
+.btn-borderless:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.input-qr-scanner-wrapper {
+    padding: 20px 30px 20px 28px;
+}

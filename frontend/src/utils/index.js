@@ -2,7 +2,24 @@ import Moment from 'moment';
 import queryString from 'query-string';
 import counterpart from 'counterpart';
 
+import history from '../services/History';
 import { DATE_FORMAT } from '../constants/Constants';
+
+/**
+ * @method updateUri
+ * @summary Prepends viewId/page/sorting to the url
+ */
+export function updateUri(pathname, query, updatedQuery) {
+  const fullPath = window.location.href;
+  const queryObject = {
+    ...query,
+    ...updatedQuery,
+  };
+  const queryUrl = queryString.stringify(queryObject);
+  const url = `${pathname}?${queryUrl}`;
+
+  !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
+}
 
 // TODO: Move to api ?
 export const getQueryString = (query) =>
@@ -112,11 +129,19 @@ export function getItemsByProperty(arr, prop, value) {
   return ret;
 }
 
-const cleanupParameter = ({ parameterName, value, valueTo }) => ({
-  parameterName,
-  value,
-  valueTo,
-});
+const cleanupParameter = ({ parameterName, value, valueTo }) => {
+  return {
+    parameterName,
+    value:
+      value &&
+      value.values &&
+      Array.isArray(value.values) &&
+      value.values.length === 0
+        ? [] // case when facets gets cleared
+        : value,
+    valueTo,
+  };
+};
 
 export function cleanupFilter({ filterId, parameters }) {
   if (parameters && parameters.length) {
@@ -124,7 +149,9 @@ export function cleanupFilter({ filterId, parameters }) {
       if (param.widgetType === 'Date' && param.value) {
         param.value = Moment(param.value).format(DATE_FORMAT);
       }
-
+      if (param.widgetType === 'Date' && param.valueTo) {
+        param.valueTo = Moment(param.valueTo).format(DATE_FORMAT);
+      }
       param = cleanupParameter(param);
       parameters[index] = param;
     });
@@ -245,7 +272,7 @@ export function deepUnfreeze(obj) {
     } else if (Array.isArray(obj)) {
       return obj.map((item) => unfreezeProp(item));
     } else if (typeof obj === 'function') {
-      const target = function() {
+      const target = function () {
         obj.call(this, ...arguments);
       };
       target.prototype = Object.create(obj.prototype);

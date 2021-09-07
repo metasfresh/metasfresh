@@ -148,7 +148,7 @@ public final class NumberUtils
 		{
 			return defaultValue;
 		}
-		else if (value instanceof BigDecimal)
+		if (value instanceof BigDecimal)
 		{
 			return (BigDecimal)value;
 		}
@@ -209,7 +209,7 @@ public final class NumberUtils
 		return asInteger(value, defaultValue);
 	}
 
-	public static Integer asIntegerOrNull(final Object value)
+	public static Integer asIntegerOrNull(@Nullable final Object value)
 	{
 		return asInteger(value, null);
 	}

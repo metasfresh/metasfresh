@@ -2,6 +2,7 @@ package de.metas.ordercandidate.api;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.modelvalidator.Order;
@@ -58,6 +59,7 @@ import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -85,12 +87,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
@@ -160,7 +163,7 @@ class OLCandOrderFactory
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
 	private final List<OLCand> candidates = new ArrayList<>();
 	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
-	private final Set<OrderLineId> primaryOrderLines = new HashSet<>();
+	private final Map<OrderLineId, OrderLineGroup> primaryOrderLineToGroup = new HashMap<>();
 
 	@Builder
 	private OLCandOrderFactory(
@@ -278,6 +281,11 @@ class OLCandOrderFactory
 			order.setSalesPartnerCode(salesPartner.getSalesPartnerCode());
 		}
 
+		if (candidateOfGroup.getAsyncBatchId() != null)
+		{
+			order.setC_Async_Batch_ID(candidateOfGroup.getAsyncBatchId().getRepoId());
+		}
+
 		// Save to SO the external header id, so that on completion it can be linked with its payment
 		order.setExternalId(candidateOfGroup.getExternalHeaderId());
 
@@ -308,7 +316,7 @@ class OLCandOrderFactory
 			}
 			catch (final AdempiereException ex)
 			{
-				logger.warn("Caught exception while validating compensation groups for OLCands: {}", ex);
+				logger.warn("Caught exception while validating compensation groups for OLCands", ex);
 				onCompensationGroupFailure(ex);
 				return;
 			}
@@ -359,10 +367,11 @@ class OLCandOrderFactory
 	private void createCompensationGroup(final List<OrderLineId> orderLineIds)
 	{
 		final Collection<I_C_OrderLine> mainOrderLineInGroupOpt = orderLineIds.stream()
-				.filter(primaryOrderLines::contains)
+				.filter(primaryOrderLineToGroup::containsKey)
 				.map(OrderLineId::getRepoId)
 				.map(orderLines::get)
 				.collect(Collectors.toList());
+
 		if (mainOrderLineInGroupOpt.size() != 1)
 		{
 			throw new AdempiereException("@" + MSG_OL_CAND_PROCESSOR_OLCAND_GROUPING_ERROR + "@");
@@ -372,30 +381,49 @@ class OLCandOrderFactory
 		final ProductId productId = ProductId.ofRepoId(mainOrderLineInGroup.getM_Product_ID());
 		final I_M_Product productForMainLine = productDAO.getById(productId);
 
+		final GroupCompensationType groupCompensationType = getGroupCompensationType(productForMainLine);
+		final GroupCompensationAmtType groupCompensationAmtType = getGroupCompensationAmtType(productForMainLine);
+
+		if (groupCompensationType.equals(GroupCompensationType.Discount)
+				&& groupCompensationAmtType.equals(GroupCompensationAmtType.Percent))
+		{
+			final OrderLineGroup orderLineGroup = primaryOrderLineToGroup.get(OrderLineId.ofRepoId(mainOrderLineInGroup.getC_OrderLine_ID()));
+
+			Optional.ofNullable(orderLineGroup.getDiscount())
+					.map(Percent::toBigDecimal)
+					.ifPresent(mainOrderLineInGroup::setGroupCompensationPercentage);
+		}
+
 		mainOrderLineInGroup.setIsGroupCompensationLine(true);
-		mainOrderLineInGroup.setGroupCompensationType(getGroupCompensationType(productForMainLine));
-		mainOrderLineInGroup.setGroupCompensationAmtType(getGroupCompensationAmtType(productForMainLine));
+		mainOrderLineInGroup.setGroupCompensationType(groupCompensationType.getAdRefListValue());
+		mainOrderLineInGroup.setGroupCompensationAmtType(groupCompensationAmtType.getAdRefListValue());
+
 		orderDAO.save(mainOrderLineInGroup);
+
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-				.orderLineIds(new HashSet<>(orderLineIds))
+				.orderLineIds(orderLineIds)
 				.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
 				.build());
 	}
 
-	private String getGroupCompensationAmtType(final I_M_Product productForMainLine)
+	@NonNull
+	private GroupCompensationAmtType getGroupCompensationAmtType(final I_M_Product productForMainLine)
 	{
-		return GroupCompensationAmtType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent)).getAdRefListValue();
+		return GroupCompensationAmtType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
 	}
 
-	private String getGroupCompensationType(final I_M_Product productForMainLine)
+	@NonNull
+	private GroupCompensationType getGroupCompensationType(final I_M_Product productForMainLine)
 	{
-		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount)).getAdRefListValue();
+		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
 	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId, @Nullable final ProductCategoryId productCategoryId)
 	{
 		return GroupTemplate.builder()
 				.name(productBL.getProductName(productId))
+				.regularLinesToAdd(ImmutableList.of())
+				.compensationLines(ImmutableList.of())
 				.productCategoryId(productCategoryId)
 				.build();
 	}
@@ -503,7 +531,7 @@ class OLCandOrderFactory
 			final OrderLineId orderLineId = OrderLineId.ofRepoId(currentOrderLine.getC_OrderLine_ID());
 			if (currentOrderLine.isGroupCompensationLine() || orderLineGroup.isGroupMainItem())
 			{
-				primaryOrderLines.add(orderLineId);
+				primaryOrderLineToGroup.put(orderLineId, orderLineGroup);
 			}
 			groupsToOrderLines.put(orderLineGroup.getGroupKey(), orderLineId);
 		}

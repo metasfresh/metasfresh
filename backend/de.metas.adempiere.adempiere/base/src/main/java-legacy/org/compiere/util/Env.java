@@ -1172,11 +1172,11 @@ public final class Env
 		final Timestamp timestamp = parseTimestamp(timestampStr);
 		if (timestamp == null)
 		{
-			final Timestamp sysDate = de.metas.common.util.time.SystemTime.asTimestamp();
+			final Timestamp sysDate = SystemTime.asTimestamp();
 			if (!Adempiere.isUnitTestMode())
 			{
 				// metas: tsa: added a dummy exception to be able to track it quickly
-				s_log.error("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate, new Exception("StackTrace"));
+				s_log.warn("No value for '{}' or value '{}' could not be parsed. Returning system date: {}", context, timestampStr, sysDate);
 			}
 			return sysDate;
 		}
@@ -1322,6 +1322,11 @@ public final class Env
 	public static RoleId getLoggedRoleId(final Properties ctx)
 	{
 		return RoleId.ofRepoId(getAD_Role_ID(ctx));
+	}
+
+	public static Optional<RoleId> getLoggedRoleIdIfExists(final Properties ctx)
+	{
+		return Optional.ofNullable(RoleId.ofRepoIdOrNull(Env.getContextAsInt(ctx, CTXNAME_AD_Role_ID, -1)));
 	}
 
 	public static RoleId getLoggedRoleId()
@@ -1557,6 +1562,12 @@ public final class Env
 	public static String getADLanguageOrBaseLanguage()
 	{
 		final String adLanguage = getAD_Language();
+		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
+	}
+
+	public static String getADLanguageOrBaseLanguage(@NonNull final Properties ctx)
+	{
+		final String adLanguage = getAD_Language(ctx);
 		return adLanguage != null ? adLanguage : Language.getBaseAD_Language();
 	}
 

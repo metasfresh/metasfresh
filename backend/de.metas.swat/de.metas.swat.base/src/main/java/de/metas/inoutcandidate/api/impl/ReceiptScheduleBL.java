@@ -461,10 +461,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void close(final I_M_ReceiptSchedule rs)
+	public void close(@NonNull final I_M_ReceiptSchedule rs)
 	{
-		Check.assumeNotNull(rs, "rs not null");
-
 		// Make sure receipt schedule was not already processed
 		if (isClosed(rs))
 		{
@@ -485,10 +483,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public void reopen(final I_M_ReceiptSchedule receiptSchedule)
+	public void reopen(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		Check.assumeNotNull(receiptSchedule, "rs not null");
-
 		//
 		// Make sure receipt schedule is closed/processed
 		if (!isClosed(receiptSchedule))
@@ -511,7 +507,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public boolean isClosed(final I_M_ReceiptSchedule receiptSchedule)
+	public boolean isClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		return receiptSchedule.isProcessed();
 	}

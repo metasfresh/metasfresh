@@ -32,6 +32,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -74,6 +75,24 @@ public class ExternalIdentifier
 			return null;
 		}
 		return of(rawIdentifierString);
+	}
+
+	@NonNull
+	public static Optional<ExternalIdentifier> ofOptional(@Nullable final String identifier)
+	{
+		if (Check.isBlank(identifier))
+		{
+			return Optional.empty();
+		}
+
+		try
+		{
+			return Optional.of(of(identifier));
+		}
+		catch (final Exception exception)
+		{
+			return Optional.empty();
+		}
 	}
 
 	@NonNull

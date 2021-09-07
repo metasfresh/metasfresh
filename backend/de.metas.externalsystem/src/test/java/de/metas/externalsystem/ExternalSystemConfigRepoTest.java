@@ -27,8 +27,13 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
+import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
+import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -38,6 +43,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Optional;
 
 import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
+import static de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.createExternalConfigParameterRecord;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
@@ -54,7 +60,7 @@ class ExternalSystemConfigRepoTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemConfigRepo = new ExternalSystemConfigRepo();
+		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository());
 	}
 
 	@BeforeAll
@@ -147,7 +153,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6,value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -229,7 +235,7 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId,ExternalSystemType.Alberta)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Alberta)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -278,12 +284,202 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId,ExternalSystemType.Shopware6)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Shopware6)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Shopware6_ID());
 		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Other_Config_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Other);
+		saveRecord(parentRecord);
+
+		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
+
+		createExternalConfigParameterRecord(externalSystemParentConfigId, "name1", "value1");
+		createExternalConfigParameterRecord(externalSystemParentConfigId, "name2", "value2");
+
+		final ExternalSystemOtherConfigId otherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(externalSystemParentConfigId);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(otherConfigId);
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Woocommerce_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_WooCommerce);
+		saveRecord(parentRecord);
+
+		final I_ExternalSystem_Config_WooCommerce childRecord = newInstance(I_ExternalSystem_Config_WooCommerce.class);
+		childRecord.setCamelHttpResourceAuthKey("authKey");
+		childRecord.setExternalSystemValue("testWoocommerceValue");
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemWooCommerceConfigId id = ExternalSystemWooCommerceConfigId.ofRepoId(childRecord.getExternalSystem_Config_WooCommerce_ID());
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Woocommerce_getTypeAndValue()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_WooCommerce);
+		saveRecord(parentRecord);
+
+		final String value = "testWoocommerceValue";
+
+		final I_ExternalSystem_Config_WooCommerce childRecord = newInstance(I_ExternalSystem_Config_WooCommerce.class);
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.WOO, value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Woocommerce_getByTypeAndValue_wrongType()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_WooCommerce);
+		saveRecord(parentRecord);
+
+		final String value = "testWoocommerceValue";
+
+		final I_ExternalSystem_Config_WooCommerce childRecord = newInstance(I_ExternalSystem_Config_WooCommerce.class);
+		childRecord.setCamelHttpResourceAuthKey("apiKey");
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
+
+		//then
+		assertThat(externalSystemParentConfig).isEmpty();
+	}
+
+	@Test
+	void externalSystem_Config_Shopware6_getByQuery()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Shopware6);
+		parentRecord.setIsActive(false);
+		saveRecord(parentRecord);
+
+		final I_ExternalSystem_Config_Shopware6 childRecord = newInstance(I_ExternalSystem_Config_Shopware6.class);
+		childRecord.setBaseURL("baseUrl");
+		childRecord.setClient_Secret("secret");
+		childRecord.setClient_Id("id");
+		childRecord.setJSONPathConstantBPartnerID("/test/bp");
+		childRecord.setJSONPathSalesRepID("/test/salesrep");
+		childRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
+		childRecord.setExternalSystemValue("testShopware6Value");
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setIsActive(false);
+		saveRecord(childRecord);
+
+		final ExternalSystemConfigQuery query = ExternalSystemConfigQuery.builder()
+				.parentConfigId(ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID()))
+				.isActive(false)
+				.build();
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByQuery(ExternalSystemType.Shopware6, query)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Shopware6_store()
+	{
+		// given
+		final I_ExternalSystem_Config initialParentRecord = newInstance(I_ExternalSystem_Config.class);
+		initialParentRecord.setName("name");
+		initialParentRecord.setType(X_ExternalSystem_Config.TYPE_Shopware6);
+		initialParentRecord.setIsActive(false);
+		saveRecord(initialParentRecord);
+
+		final I_ExternalSystem_Config_Shopware6 initialChildRecord = newInstance(I_ExternalSystem_Config_Shopware6.class);
+		initialChildRecord.setBaseURL("baseUrl");
+		initialChildRecord.setClient_Secret("secret");
+		initialChildRecord.setClient_Id("id");
+		initialChildRecord.setJSONPathConstantBPartnerID("/test/bp");
+		initialChildRecord.setJSONPathSalesRepID("/test/salesrep");
+		initialChildRecord.setJSONPathConstantBPartnerLocationID("/test/bpl");
+		initialChildRecord.setExternalSystemValue("testShopware6Value");
+		initialChildRecord.setExternalSystem_Config_ID(initialParentRecord.getExternalSystem_Config_ID());
+		initialChildRecord.setIsActive(false);
+		saveRecord(initialChildRecord);
+
+		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
+
+		final String baseURL = "new-baseURL";
+		final String clientId = "new-clientId";
+		final String clientSecret = "new-clientSecret";
+
+		final ExternalSystemShopware6Config childConfig = ExternalSystemShopware6Config.cast(parentConfig.getChildConfig())
+				.toBuilder()
+				.baseUrl(baseURL)
+				.clientId(clientId)
+				.clientSecret(clientSecret)
+				.isActive(true)
+				.build();
+
+		final ExternalSystemParentConfig updatedParentConfig = parentConfig.toBuilder()
+				.isActive(true)
+				.childConfig(childConfig)
+				.build();
+		// when
+		externalSystemConfigRepo.saveConfig(updatedParentConfig);
+
+		// then
+		final ExternalSystemParentConfig updatedChildConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
+		assertThat(updatedChildConfig).isNotNull();
+		expect(updatedChildConfig).toMatchSnapshot();
+
+		assertThat(updatedChildConfig.getIsActive()).isTrue();
+
+		final ExternalSystemShopware6Config shopware6Config = ExternalSystemShopware6Config.cast(updatedChildConfig.getChildConfig());
+		assertThat(shopware6Config.getBaseUrl()).isEqualTo(baseURL);
+		assertThat(shopware6Config.getClientId()).isEqualTo(clientId);
+		assertThat(shopware6Config.getClientSecret()).isEqualTo(clientSecret);
+		assertThat(shopware6Config.getIsActive()).isTrue();
 	}
 }

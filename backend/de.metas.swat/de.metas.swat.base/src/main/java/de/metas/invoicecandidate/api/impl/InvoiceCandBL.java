@@ -29,6 +29,7 @@ import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -1407,18 +1408,18 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final boolean creditMemo = Services.get(IInvoiceBL.class).isCreditMemo(invoice);
 		final boolean creditedInvoiceReinvoicable = invoiceExt.isCreditedInvoiceReinvoicable(); // task 08927: this is only relevant if isCreditMemo, see below
 		final boolean creditedInvoiceIsReversed;
-
-		final Iterator<I_C_Invoice> creditMemosForInvoice = invoiceDAO.retrieveCreditMemosForInvoice(invoiceExt);
-		if (creditMemo && creditMemosForInvoice.hasNext())
+		final boolean creditMemoCreditsInvoice;
+		if (creditMemo)
 		{
-			final org.compiere.model.I_C_Invoice originalInvoice = creditMemosForInvoice.next();
-			final DocStatus originalInvoiceDocStatus = DocStatus.ofCode(originalInvoice.getDocStatus());
-			creditedInvoiceIsReversed = originalInvoiceDocStatus.isReversed();
+			creditedInvoiceIsReversed = invoiceDAO.isReferencedInvoiceReversed(invoiceExt);
+			creditMemoCreditsInvoice = invoiceExt.getRef_Invoice_ID() > 0;
 		}
 		else
 		{
 			creditedInvoiceIsReversed = false;
+			creditMemoCreditsInvoice = false;
 		}
+
 		// if we deal with a credit memo, we need to thread the qtys as negative
 		final BigDecimal factor = creditMemo ? ONE.negate() : ONE;
 
@@ -1472,7 +1473,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					note = "@C_InvoiceLine@  @QtyInvoiced@ = " + il.getQtyInvoiced() + " @IsCreditedInvoiceReinvoicable@='Y'; ignoring overlap, because credit memo";
 				}
 
-				else if (creditMemo && !creditedInvoiceReinvoicable && creditedInvoiceIsReversed)
+				else if (creditMemo && !creditedInvoiceReinvoicable && (creditedInvoiceIsReversed || creditMemoCreditsInvoice))
 				{
 					// the original credit memo's ila also has QtyInvoiced=0
 					qtyInvoicedForIla = StockQtyAndUOMQtys.createZero(productId, uomId);
@@ -1531,7 +1532,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
-	private void setApprovalForInvoicing(final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
+	private void setApprovalForInvoicing(@NonNull final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
 	{
 		if (invoiceCandidates.isEmpty())
 		{
@@ -1596,11 +1597,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
 					// so we need to create them now
 
-					logger.debug("Current C_InvoiceLine {} has a C_OrderLine {} which is not referenced by any C_Invoice_Candidate", new Object[] { il, ol });
+					logger.debug("Current C_InvoiceLine {} has a C_OrderLine {} which is not referenced by any C_Invoice_Candidate",  il, ol);
 					final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
 					final List<I_C_Invoice_Candidate> invoiceCandsNew = creatorBL.createMissingCandidatesFor(ol);
 
-					logger.debug("Created C_Invoice_Candidates for C_OrderLine {}: {}", new Object[] { ol, invoiceCandsNew });
+					logger.debug("Created C_Invoice_Candidates for C_OrderLine {}: {}",  ol, invoiceCandsNew);
 					toLinkAgainstIl.addAll(invoiceCandsNew);
 
 					//
@@ -2442,5 +2443,22 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					return ic;
 				})
 				.collect(Collectors.toSet());
+	}
+
+	@Override
+	public void setAsyncBatch(@NonNull final InvoiceCandidateId invoiceCandidateId, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(invoiceCandidateId);
+
+		if (invoiceCandidate.isProcessed())
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("InvoiceCandBL.setAsyncBatch(): C_Invoice_Candidate already processed,"
+																	+ " nothing to do! InvoiceCandidateId: {}", invoiceCandidate.getC_Invoice_Candidate_ID());
+			return;
+		}
+
+		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+
+		invoiceCandDAO.save(invoiceCandidate);
 	}
 }

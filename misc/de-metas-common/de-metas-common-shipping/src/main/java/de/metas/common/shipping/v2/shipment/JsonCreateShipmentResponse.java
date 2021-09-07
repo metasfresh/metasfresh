@@ -44,6 +44,9 @@ public class JsonCreateShipmentResponse
 	@JsonProperty("createdAsyncWorkpackageIdList")
 	List<JsonMetasfreshId> createdAsyncWorkpackageIdList;
 
+	@JsonProperty("createdShipmentIds")
+	List<JsonMetasfreshId> createdShipmentIds;
+
 	@JsonPOJOBuilder(withPrefix = "")
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	public static class JsonCreateShipmentResponseBuilder
