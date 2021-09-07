@@ -35,6 +35,7 @@ import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.lang.Percent;
@@ -368,7 +369,7 @@ class CommissionInstanceRepositoryTest
 						.build())
 				.share(CommissionShare.builder()
 						.config(config)
-						.isSOTrx(false)
+						.soTrx(SOTrx.PURCHASE)
 						.payer(Payer.of(payerId))
 						.beneficiary(beneficiary1)
 						.level(HierarchyLevel.of(10))
@@ -394,7 +395,7 @@ class CommissionInstanceRepositoryTest
 						.beneficiary(beneficiary2)
 						.level(HierarchyLevel.of(20))
 						.payer(Payer.of(payerId))
-						.isSOTrx(false)
+						.soTrx(SOTrx.PURCHASE)
 						.fact(CommissionFact.builder()
 								.points(CommissionPoints.of("2"))
 								.state(CommissionState.FORECASTED)

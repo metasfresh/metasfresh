@@ -9,6 +9,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
+import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -60,7 +61,7 @@ public class CommissionShare
 
 	private final Payer payer;
 
-	private final Boolean isSOTrx;
+	private final SOTrx soTrx;
 
 	@Setter(AccessLevel.NONE)
 	private CommissionPoints forecastedPointsSum;
@@ -85,14 +86,14 @@ public class CommissionShare
 			@JsonProperty("beneficiary") @NonNull final Beneficiary beneficiary,
 			@JsonProperty("facts") @NonNull @Singular final List<CommissionFact> facts,
 			@JsonProperty("payer") @NonNull final Payer payer,
-			@JsonProperty("isSOTrx")@NonNull final Boolean isSOTrx)
+			@JsonProperty("soTrx") @NonNull final SOTrx soTrx)
 	{
 		this.id = id;
 		this.config = config;
 		this.level = level;
 		this.beneficiary = beneficiary;
 		this.payer = payer;
-		this.isSOTrx = isSOTrx;
+		this.soTrx = soTrx;
 		this.facts = new ArrayList<>();
 
 		this.forecastedPointsSum = CommissionPoints.ZERO;
@@ -135,7 +136,7 @@ public class CommissionShare
 
 	public CommissionContract getContract()
 	{
-		return isSOTrx
+		return soTrx.isSales()
 				? config.getContractFor(payer.getBPartnerId())
 				: config.getContractFor(beneficiary.getBPartnerId());
 	}

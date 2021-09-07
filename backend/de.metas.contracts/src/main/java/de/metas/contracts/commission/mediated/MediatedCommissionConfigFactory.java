@@ -49,10 +49,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -159,10 +159,10 @@ public class MediatedCommissionConfigFactory implements ICommissionConfigFactory
 					.setParameter("C_Flatrate_Term.M_Product_ID", currentContract.getM_Product_ID());
 		}
 
-		final I_M_Product product = productDAO.getById(transactionProductId);
+		final ProductCategoryId productCategoryId = Objects.requireNonNull(productDAO.retrieveProductCategoryByProductId(transactionProductId));
 
 		final Optional<MediatedCommissionSettingsLine> commissionSettingsLineOpt = mediatedCommissionSettings
-				.getLineForProductCategory(ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()));
+				.getLineForProductCategory(productCategoryId);
 
 		if (!commissionSettingsLineOpt.isPresent())
 		{

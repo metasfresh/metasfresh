@@ -41,6 +41,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.lang.Percent;
@@ -124,7 +125,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 							.beneficiary(beneficiary)
 							.level(currentHierarchyLevel)
 							.config(hierarchyConfig)
-							.isSOTrx(false)
+							.soTrx(SOTrx.PURCHASE)
 							.build();
 					shares.add(share);
 

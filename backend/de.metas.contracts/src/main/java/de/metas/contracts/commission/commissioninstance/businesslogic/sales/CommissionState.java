@@ -1,12 +1,11 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.contracts.commission.model.X_C_Commission_Fact;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,39 +44,26 @@ public enum CommissionState implements ReferenceListAwareEnum
 	/** Related to an invoice candidate's QtyInvoiced. */
 	INVOICED(X_C_Commission_Fact.COMMISSION_FACT_STATE_INVOICED);
 
-	private static ImmutableMap<String, CommissionState> recordCode2State = ImmutableMap.of(
-			FORECASTED.getCode(), FORECASTED,
-			INVOICEABLE.getCode(), INVOICEABLE,
-			INVOICED.getCode(), INVOICED);
+	private static final ReferenceListAwareEnums.ValuesIndex<CommissionState> recordCode2State = ReferenceListAwareEnums.index(values());
 
 	@Getter
 	private final String code;
 
-	private CommissionState(String code)
+	CommissionState(final String code)
 	{
 		this.code = code;
 	}
 
-	public static CommissionState forRecordCode(@NonNull final String recordCode)
-	{
-		return recordCode2State.get(recordCode);
-	}
-
 	public static Collection<String> allRecordCodes()
 	{
-		return Arrays.asList(CommissionState.values())
-				.stream()
+		return Arrays.stream(CommissionState.values())
 				.map(CommissionState::getCode)
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	public static CommissionState ofCode(@NonNull final String code)
 	{
-		CommissionState type = recordCode2State.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + CommissionState.class + " found for code: " + code);
-		}
-		return type;
+		return recordCode2State.ofCode(code);
 	}
 }

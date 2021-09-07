@@ -23,9 +23,10 @@
 package de.metas.contracts.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
@@ -39,6 +40,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.event.FlatrateUserNotificationsProducer;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
 import de.metas.contracts.invoicecandidate.FlatrateDataEntryHandler;
 import de.metas.contracts.location.ContractLocationHelper;
@@ -127,6 +129,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -1942,5 +1945,48 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		return ancestor;
+	}
+
+	public void ensureOneContractOfGivenType(@NonNull final I_C_Flatrate_Term term, @NonNull final TypeConditions targetConditions)
+	{
+		if (!targetConditions.getCode().equals(term.getType_Conditions()))
+		{
+			return;
+		}
+
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(term.getAD_Org_ID()));
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(term.getBill_BPartner_ID());
+
+		final IFlatrateDAO.TermsQuery termsQuery = IFlatrateDAO.TermsQuery.builder()
+				.billPartnerId(billPartnerId)
+				.orgId(OrgId.ofRepoId(term.getAD_Org_ID()))
+				.dateOrdered(Objects.requireNonNull(TimeUtil.asLocalDate(term.getStartDate(), timeZone)))
+				.build();
+
+		final List<I_C_Flatrate_Term> contractTerms = flatrateDAO.retrieveTerms(termsQuery);
+
+		if (Check.isEmpty(contractTerms))
+		{
+			return;
+		}
+
+		final List<Integer> existingContractsOfTargetType = contractTerms.stream()
+				.filter(existingContract -> targetConditions.getCode().equals(existingContract.getType_Conditions()))
+				.filter(existingContract -> existingContract.getC_Flatrate_Term_ID() != term.getC_Flatrate_Term_ID())
+				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+				.collect(ImmutableList.toImmutableList());
+
+		if (Check.isEmpty(existingContractsOfTargetType))
+		{
+			return;
+		}
+
+		throw new AdempiereException("There are already identical contracts in place for the given typeConditions, org, bpartner and period!")
+				.appendParametersToMessage()
+				.setParameter("TypeConditions", targetConditions.getCode())
+				.setParameter("startDate", term.getStartDate())
+				.setParameter("bpartnerId", billPartnerId)
+				.setParameter("orgId", term.getAD_Org_ID())
+				.setParameter("existingContractIds", existingContractsOfTargetType);
 	}
 }

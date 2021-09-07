@@ -22,14 +22,10 @@
 
 package de.metas.contracts.flatrate;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-
-import java.util.Arrays;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Commission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee;
@@ -64,13 +60,8 @@ public enum TypeConditions implements ReferenceListAwareEnum
 
 	public static TypeConditions ofCode(@NonNull final String code)
 	{
-		final TypeConditions type = typesByCode.get(code);
-		if (type == null)
-		{
-			throw new AdempiereException("No " + TypeConditions.class + " found for code: " + code);
-		}
-		return type;
+		return typesByCode.ofCode(code);
 	}
 
-	private static final ImmutableMap<String, TypeConditions> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), TypeConditions::getCode);
+	private static final ReferenceListAwareEnums.ValuesIndex<TypeConditions> typesByCode = ReferenceListAwareEnums.index(values());
 }

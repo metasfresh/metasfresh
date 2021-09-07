@@ -31,10 +31,14 @@ import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -83,6 +87,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class CommissionInstanceRepository
 {
 	private static final Logger logger = LogManager.getLogger(CommissionInstanceRepository.class);
+
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final CommissionRecordStagingService commissionRecordStagingService;
 	private final CommissionConfigProvider commissionConfigProvider;
@@ -191,7 +197,7 @@ public class CommissionInstanceRepository
 				.id(CommissionShareId.ofRepoId(shareRecord.getC_Commission_Share_ID()))
 				.beneficiary(Beneficiary.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_SalesRep_ID())))
 				.level(HierarchyLevel.of(shareRecord.getLevelHierarchy()))
-				.isSOTrx(shareRecord.isSOTrx())
+				.soTrx(SOTrx.ofBoolean(shareRecord.isSOTrx()))
 				.payer(Payer.of(BPartnerId.ofRepoId(shareRecord.getC_BPartner_Payer_ID())))
 				;
 
@@ -386,7 +392,7 @@ public class CommissionInstanceRepository
 				});
 
 		shareRecordToUse.setAD_Org_ID(orgId.getRepoId());
-		shareRecordToUse.setIsSOTrx(share.getIsSOTrx());
+		shareRecordToUse.setIsSOTrx(share.getSoTrx().isSales());
 
 		shareRecordToUse.setC_BPartner_Payer_ID(share.getPayer().getBPartnerId().getRepoId());
 		shareRecordToUse.setC_BPartner_SalesRep_ID(share.getBeneficiary().getBPartnerId().getRepoId());
@@ -447,8 +453,8 @@ public class CommissionInstanceRepository
 			@NonNull final OrderLineId orderLineId,
 			@NonNull final I_C_Commission_Instance commissionInstanceRecord)
 	{
-		final I_C_OrderLine orderLine = loadOutOfTrx(orderLineId, I_C_OrderLine.class);
-		final I_C_Order order = loadOutOfTrx(orderLine.getC_Order_ID(), I_C_Order.class);
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+		final I_C_Order order =  orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
 		commissionInstanceRecord.setPOReference(order.getPOReference());
 		commissionInstanceRecord.setBill_BPartner_ID(orderLine.getC_BPartner_ID());
