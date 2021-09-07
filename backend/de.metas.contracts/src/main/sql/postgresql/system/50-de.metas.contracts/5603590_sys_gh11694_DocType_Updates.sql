@@ -33,3 +33,23 @@ UPDATE AD_Sequence SET IsAutoSequence='Y',Updated=TO_TIMESTAMP('2021-09-07 06:56
 UPDATE C_DocType SET DocNoSequence_ID=555524,Updated=TO_TIMESTAMP('2021-09-07 06:57:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541018
 ;
 
+
+-- 2021-09-07T15:14:38.787Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType SET Name='Vermittlungsprovision',Updated=TO_TIMESTAMP('2021-09-07 18:14:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541018
+;
+
+-- 2021-09-07T15:14:38.839Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType_Trl trl SET Description=NULL, DocumentNote=NULL, Name='Vermittlungsprovision', PrintName='Brokerage commission'  WHERE C_DocType_ID=541018 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
+
+-- 2021-09-07T15:14:40.654Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType SET PrintName='Vermittlungsprovision',Updated=TO_TIMESTAMP('2021-09-07 18:14:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_DocType_ID=541018
+;
+
+-- 2021-09-07T15:14:40.656Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE C_DocType_Trl trl SET Description=NULL, DocumentNote=NULL, Name='Vermittlungsprovision', PrintName='Vermittlungsprovision'  WHERE C_DocType_ID=541018 AND ( trl.isTranslated = 'N'  OR  exists(select 1 from ad_language lang where lang.ad_language = trl.ad_language and lang.isBaseLanguage = 'Y') )
+;
