@@ -90,6 +90,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 	private static final String FILTER_Any_SQL = "'%'";
 
 	public static final CtxName PARAM_AD_Language = CtxNames.parse(Env.CTXNAME_AD_Language);
+	public static final CtxName PARAM_AD_User_ID = CtxNames.parse(Env.DYNATTR_AD_User_ID);
 	public static final CtxName PARAM_UserRolePermissionsKey = AccessSqlStringExpression.PARAM_UserRolePermissionsKey;
 
 	public static final CtxName PARAM_Filter = CtxNames.parse("Filter");
@@ -463,6 +464,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				final String permissionsKey = UserRolePermissionsKey.toPermissionsKeyString(ctx);
 				putValue(PARAM_AD_Language, adLanguage);
 				putValue(PARAM_UserRolePermissionsKey, permissionsKey);
+				putValue(PARAM_AD_User_ID, Env.getAD_User_ID(ctx));
 			}
 
 			//
@@ -564,6 +566,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		public Builder requiresUserRolePermissionsKey()
 		{
 			requiresParameter(PARAM_UserRolePermissionsKey);
+			requiresParameter(PARAM_AD_User_ID);
 			return this;
 		}
 
