@@ -95,7 +95,6 @@ describe('Change warehouse in material receipt candidate #153', function () {
 
     cy.openReferencedDocuments('M_ReceiptSchedule');
     cy.get('.spinner').should('not.exist');
-    // cy.expectNumberOfRows(1);
     cy.selectNthRow(0).dblclick();
   });
 
