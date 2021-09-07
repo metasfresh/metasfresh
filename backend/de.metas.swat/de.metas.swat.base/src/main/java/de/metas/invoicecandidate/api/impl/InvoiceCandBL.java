@@ -1532,7 +1532,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
-	private void setApprovalForInvoicing(final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
+	private void setApprovalForInvoicing(@NonNull final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
 	{
 		if (invoiceCandidates.isEmpty())
 		{
@@ -1597,11 +1597,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					// NOTE: in case 'invoice' was not created from invoice candidates, it's a big chance here to get zero existing ICs
 					// so we need to create them now
 
-					logger.debug("Current C_InvoiceLine {} has a C_OrderLine {} which is not referenced by any C_Invoice_Candidate", new Object[] { il, ol });
+					logger.debug("Current C_InvoiceLine {} has a C_OrderLine {} which is not referenced by any C_Invoice_Candidate",  il, ol);
 					final IInvoiceCandidateHandlerBL creatorBL = Services.get(IInvoiceCandidateHandlerBL.class);
 					final List<I_C_Invoice_Candidate> invoiceCandsNew = creatorBL.createMissingCandidatesFor(ol);
 
-					logger.debug("Created C_Invoice_Candidates for C_OrderLine {}: {}", new Object[] { ol, invoiceCandsNew });
+					logger.debug("Created C_Invoice_Candidates for C_OrderLine {}: {}",  ol, invoiceCandsNew);
 					toLinkAgainstIl.addAll(invoiceCandsNew);
 
 					//
