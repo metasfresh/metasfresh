@@ -46,7 +46,7 @@ public class C_Order
 		this.orderFacadeService = orderFacadeService;
 	}
 
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_CLOSE })
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void createCommissionInstanceForMediatedOrder(@NonNull final I_C_Order order)
 	{
 		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
