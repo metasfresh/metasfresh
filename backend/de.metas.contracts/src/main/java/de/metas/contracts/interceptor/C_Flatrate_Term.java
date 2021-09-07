@@ -22,6 +22,8 @@
 
 package de.metas.contracts.interceptor;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
@@ -29,6 +31,7 @@ import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
 import de.metas.contracts.flatrate.interfaces.I_C_OLCand;
 import de.metas.contracts.impl.FlatrateBL;
@@ -50,6 +53,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -76,8 +80,10 @@ import org.compiere.util.Ini;
 import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -622,5 +628,59 @@ public class C_Flatrate_Term
 		updateContractStatus.updateStatusIfNeededWhenExtendind(term, orderIds);
 		updateContractStatus.updateStatusIfNeededWhenCancelling(term, orderIds);
 		updateContractStatus.updateStausIfNeededWhenVoiding(term);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	},
+			ifColumnsChanged = {
+					I_C_Flatrate_Term.COLUMNNAME_Type_Conditions,
+					I_C_Flatrate_Term.COLUMNNAME_StartDate,
+					I_C_Flatrate_Term.COLUMNNAME_EndDate,
+					I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID,
+					I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID
+			})
+	public void ensureOneMediatedContract(@NonNull final I_C_Flatrate_Term term)
+	{
+		if (!TypeConditions.MEDIATED_COMMISSION.getCode().equals(term.getType_Conditions()))
+		{
+			return;
+		}
+
+		final IFlatrateDAO contractDAO = Services.get(IFlatrateDAO.class);
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(term.getAD_Org_ID()));
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(term.getBill_BPartner_ID());
+
+		final IFlatrateDAO.TermsQuery termsQuery = IFlatrateDAO.TermsQuery.builder()
+				.billPartnerId(billPartnerId)
+				.orgId(OrgId.ofRepoId(term.getAD_Org_ID()))
+				.dateOrdered(Objects.requireNonNull(TimeUtil.asLocalDate(term.getStartDate(), timeZone)))
+				.build();
+
+		final List<I_C_Flatrate_Term> contractTerms = contractDAO.retrieveTerms(termsQuery);
+
+		if (Check.isEmpty(contractTerms))
+		{
+			return;
+		}
+
+		final List<Integer> existingMediatedCommissionContracts = contractTerms.stream()
+				.filter(contract -> TypeConditions.MEDIATED_COMMISSION.getCode().equals(contract.getType_Conditions()))
+				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
+				.collect(ImmutableList.toImmutableList());
+
+		if (Check.isEmpty(existingMediatedCommissionContracts))
+		{
+			return;
+		}
+
+		throw new AdempiereException("There are existing Mediated commission contracts for the given org, bpartner and period!")
+				.appendParametersToMessage()
+				.setParameter("startDate", term.getStartDate())
+				.setParameter("bpartnerId", billPartnerId)
+				.setParameter("existingContractIds", existingMediatedCommissionContracts);
 	}
 }

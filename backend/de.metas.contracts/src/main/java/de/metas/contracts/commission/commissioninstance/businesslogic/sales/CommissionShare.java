@@ -1,17 +1,10 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.Payer;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
@@ -23,6 +16,11 @@ import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * #%L
@@ -47,16 +45,22 @@ import lombok.Singular;
  */
 
 @Data
-public class SalesCommissionShare
+public class CommissionShare
 {
-	/** can be null if this share was not yet persisted. */
-	private final SalesCommissionShareId id;
+	/**
+	 * can be null if this share was not yet persisted.
+	 */
+	private final CommissionShareId id;
 
 	private final CommissionConfig config;
 
 	private final HierarchyLevel level;
 
 	private final Beneficiary beneficiary;
+
+	private final Payer payer;
+
+	private final Boolean isSOTrx;
 
 	@Setter(AccessLevel.NONE)
 	private CommissionPoints forecastedPointsSum;
@@ -67,35 +71,41 @@ public class SalesCommissionShare
 	@Setter(AccessLevel.NONE)
 	private CommissionPoints invoicedPointsSum;
 
-	/** Chronological list of facts that make it clear what happened when */
-	private final ArrayList<SalesCommissionFact> facts;
+	/**
+	 * Chronological list of facts that make it clear what happened when
+	 */
+	private final ArrayList<CommissionFact> facts;
 
 	@JsonCreator
 	@Builder
-	private SalesCommissionShare(
-			@JsonProperty("id") @Nullable final SalesCommissionShareId id,
+	private CommissionShare(
+			@JsonProperty("id") @Nullable final CommissionShareId id,
 			@JsonProperty("config") @NonNull final CommissionConfig config,
 			@JsonProperty("level") @NonNull final HierarchyLevel level,
 			@JsonProperty("beneficiary") @NonNull final Beneficiary beneficiary,
-			@JsonProperty("facts") @NonNull @Singular final List<SalesCommissionFact> facts)
+			@JsonProperty("facts") @NonNull @Singular final List<CommissionFact> facts,
+			@JsonProperty("payer") @NonNull final Payer payer,
+			@JsonProperty("isSOTrx")@NonNull final Boolean isSOTrx)
 	{
 		this.id = id;
 		this.config = config;
 		this.level = level;
 		this.beneficiary = beneficiary;
+		this.payer = payer;
+		this.isSOTrx = isSOTrx;
 		this.facts = new ArrayList<>();
 
 		this.forecastedPointsSum = CommissionPoints.ZERO;
 		this.invoiceablePointsSum = CommissionPoints.ZERO;
 		this.invoicedPointsSum = CommissionPoints.ZERO;
 
-		for (final SalesCommissionFact fact : facts)
+		for (final CommissionFact fact : facts)
 		{
 			addFact(fact);
 		}
 	}
 
-	public final SalesCommissionShare addFact(@NonNull final SalesCommissionFact fact)
+	public final CommissionShare addFact(@NonNull final CommissionFact fact)
 	{
 		facts.add(fact);
 
@@ -118,14 +128,16 @@ public class SalesCommissionShare
 		return this;
 	}
 
-	public ImmutableList<SalesCommissionFact> getFacts()
+	public ImmutableList<CommissionFact> getFacts()
 	{
 		return ImmutableList.copyOf(facts);
 	}
 
 	public CommissionContract getContract()
 	{
-		return config.getContractFor(beneficiary);
+		return isSOTrx
+				? config.getContractFor(payer.getBPartnerId())
+				: config.getContractFor(beneficiary.getBPartnerId());
 	}
 
 	public ProductId getCommissionProductId()
