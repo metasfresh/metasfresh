@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.core.to_mf;
+package de.metas.camel.externalsystems.core;
 
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -38,6 +38,9 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class StoreRawDataRouteBuilder extends RouteBuilder
 {
+
+	private static final String PROPERTY_ORIGINAL_BODY = "OriginalBody";
+
 	@Override
 	public void configure()
 	{
@@ -57,7 +60,7 @@ public class StoreRawDataRouteBuilder extends RouteBuilder
 	private void prepareExchange(@NonNull final Exchange exchange)
 	{
 		final Object body = exchange.getIn().getBody();
-		exchange.setProperty("OriginalBody", body);
+		exchange.setProperty(PROPERTY_ORIGINAL_BODY, body);
 		exchange.getIn().setBody(exchange.getProperty(ROUTE_PROPERTY_RAW_DATA));
 	}
 
@@ -66,7 +69,7 @@ public class StoreRawDataRouteBuilder extends RouteBuilder
 		final Object rawData = exchange.getIn().getBody(String.class);
 		exchange.setProperty(ROUTE_PROPERTY_RAW_DATA, rawData);
 
-		final Object originalBody = exchange.removeProperty("OriginalBody");
+		final Object originalBody = exchange.removeProperty(PROPERTY_ORIGINAL_BODY);
 		exchange.getIn().setBody(originalBody);
 	}
 }
