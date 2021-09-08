@@ -136,7 +136,7 @@
     "deep-unfreeze": "0.1.1",
     "deepmerge": "^4.2.2",
     "detect-browser": "5.2.0",
-    "google-map-react": "1.1.5",
+    "google-map-react": "2.1.10",
     "history": "4.10.1",
     "immer": "9.0.5",
     "immutability-helper": "3.1.1",
