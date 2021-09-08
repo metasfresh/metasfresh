@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.processor;
 
-import de.metas.async.AsyncBatchId;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.OLCandProcessorRepository;
@@ -39,7 +38,7 @@ public class OLCandProcessorDescriptor_StepDef
 	public void call_ol_cands_process()
 	{
 		final OLCandProcessorDescriptor olCandProcessor = olCandProcessorRepo.getById(1000003);
-		olCandBL.process(olCandProcessor, AsyncBatchId.NONE_ASYNC_BATCH_ID);
+		olCandBL.process(olCandProcessor, null);
 	}
 
 }
