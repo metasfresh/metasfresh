@@ -442,6 +442,7 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 		private Collection<CtxName> _requiredParameters;
 		private boolean _requiredParameters_copyOnAdd = false;
 
+		private final Properties ctx = Env.getCtx();
 		private final LinkedHashMap<String, Object> valuesCollected = new LinkedHashMap<>();
 
 		private Builder(@Nullable final String lookupTableName)
@@ -460,15 +461,10 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 			{
 				//
 				// Standard values, needed by each query
-				final Properties ctx = Env.getCtx();
 				final String adLanguage = Env.getAD_Language(ctx);
 				final String permissionsKey = UserRolePermissionsKey.toPermissionsKeyString(ctx);
 				putValue(PARAM_AD_Language, adLanguage);
 				putValue(PARAM_UserRolePermissionsKey, permissionsKey);
-				if (!Check.isBlank(lookupTableName) && UserRolePermissionsKey.fromContextOrNull(ctx) != null)
-				{
-					putValue(PARAM_OrgAccessSql, Env.getUserRolePermissions(ctx).getOrgWhere(lookupTableName, Access.READ));
-				}
 			}
 
 			//
@@ -700,6 +696,13 @@ public final class LookupDataSourceContext implements Evaluatee2, IValidationCon
 				{
 					return valueObj;
 				}
+			}
+
+			if (variableName.getName().equals(PARAM_OrgAccessSql.getName())
+					&& !Check.isBlank(lookupTableName)
+					&& UserRolePermissionsKey.fromContextOrNull(ctx) != null)
+			{
+				return Env.getUserRolePermissions(ctx).getOrgWhere(lookupTableName, Access.READ);
 			}
 
 			// Fallback to document evaluatee
