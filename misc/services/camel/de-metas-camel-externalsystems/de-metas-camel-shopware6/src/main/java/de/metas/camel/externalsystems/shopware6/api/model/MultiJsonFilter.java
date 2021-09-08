@@ -22,54 +22,62 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.util.Map;
+import java.util.List;
 
 @Value
-@Builder
-@JsonDeserialize(builder = JsonQuery.JsonQueryBuilder.class)
-@JsonPropertyOrder({ "field", "type", "parameters", "value" })
-public class JsonQuery
+@JsonDeserialize(builder = MultiJsonFilter.MultiJsonFilterBuilder.class)
+@JsonPropertyOrder({ "type", "operator", "queries" })
+public class MultiJsonFilter
 {
 	@NonNull
-	@JsonProperty("field")
-	String field;
+	@JsonProperty("type")
+	MultiJsonFilter.MultiFilterType filterType = MultiFilterType.MULTI;
 
 	@NonNull
-	@JsonProperty("type")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	QueryType queryType;
+	@JsonProperty("operator")
+	OperatorType operatorType;
 
-	@ApiModelProperty("Depending on the query-type, you can have either a `value` or `parameters`.")
-	@Nullable
-	@JsonProperty("parameters")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	Map<String, String> parameters;
+	@NonNull
+	@JsonProperty("queries")
+	List<JsonQuery> jsonQueryList;
 
-	@ApiModelProperty("Depending on the query-type, you can have either a `value` or `parameters`.")
-	@Nullable
-	@JsonProperty("value")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	String value;
+	@Builder
+	public MultiJsonFilter(
+			@NonNull @JsonProperty("operator") final OperatorType operatorType,
+			@NonNull @JsonProperty("queries") @Singular final List<JsonQuery> jsonQueries
+	)
+	{
+		this.operatorType = operatorType;
+		this.jsonQueryList = jsonQueries;
+	}
 
 	@AllArgsConstructor
 	@Getter
-	public enum QueryType
+	public enum MultiFilterType
 	{
-		RANGE("range"),
-		EQUALS("equals");
+		MULTI("multi");
+
+		@JsonValue
+		private final String value;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	public enum OperatorType
+	{
+		OR("or"),
+		AND("and");
 
 		@JsonValue
 		private final String value;

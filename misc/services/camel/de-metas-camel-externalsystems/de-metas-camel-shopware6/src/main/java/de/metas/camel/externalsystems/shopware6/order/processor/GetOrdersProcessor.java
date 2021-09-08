@@ -28,9 +28,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
-import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
@@ -86,17 +86,19 @@ public class GetOrdersProcessor implements Processor
 		final String clientSecret = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_SECRET);
 
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
-		final String updatedAfter = CoalesceUtil.coalesce(
+		
+		final String updatedAfter = CoalesceUtil.coalesceNotNull(
 				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
 				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
 				Instant.ofEpochSecond(0).toString());
 
+		final MultiQueryRequest getOrdersRequest = buildQueryOrdersRequest(updatedAfter);
+		
 		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
 		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
-		final QueryRequest getOrdersRequest = buildQueryOrdersRequest(updatedAfter);
-
+		
 		final List<OrderCandidate> ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath, salesRepJSONPath);
 
 		exchange.getIn().setBody(ordersToProcess);
@@ -157,15 +159,14 @@ public class GetOrdersProcessor implements Processor
 
 	@NonNull
 	@VisibleForTesting
-	public static QueryRequest buildQueryOrdersRequest(@NonNull final String updatedAfter)
+	public static MultiQueryRequest buildQueryOrdersRequest(@NonNull final String updatedAfter)
 	{
 		final HashMap<String, String> parameters = new HashMap<>();
 		parameters.put(PARAMETERS_DATE_GTE, updatedAfter);
 
-		return QueryRequest.builder()
-				.filter(JsonFilter.builder()
-								.filterType(JsonFilter.FilterType.MULTI)
-								.operatorType(JsonFilter.OperatorType.OR)
+		return MultiQueryRequest.builder()
+				.filter(MultiJsonFilter.builder()
+								.operatorType(MultiJsonFilter.OperatorType.OR)
 								.jsonQuery(JsonQuery.builder()
 												   .field(FIELD_UPDATED_AT)
 												   .queryType(JsonQuery.QueryType.RANGE)

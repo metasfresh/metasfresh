@@ -29,9 +29,9 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.model.GetBearerRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.IShopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonOauthResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
-import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.currency.JsonCurrencies;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
@@ -102,7 +102,7 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public List<OrderCandidate> getOrders(@NonNull final QueryRequest queryRequest,
+	public List<OrderCandidate> getOrders(@NonNull final IShopware6QueryRequest queryRequest,
 			@Nullable final String customIdentifierJSONPath,
 			@Nullable final String salesRepJSONPath)
 	{
@@ -450,7 +450,8 @@ public class ShopwareClient
 				return Optional.empty();
 			}
 
-			if (Check.isNotBlank(salesRepJSONPath)){
+			if (Check.isNotBlank(salesRepJSONPath))
+			{
 				final String salesRepId = orderJson.at(salesRepJSONPath).asText();
 				orderCandidateBuilder.salesRepId(salesRepId.isEmpty() ? null : salesRepId);
 			}
@@ -462,7 +463,6 @@ public class ShopwareClient
 		{
 			throw new RuntimeException(e);
 		}
-
 	}
 
 	@NonNull
