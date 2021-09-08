@@ -49,7 +49,7 @@ public class C_OrderFacadeService
 		this.mediatedOrderFactory = mediatedOrderFactory;
 	}
 
-	public void syncOrderToCommissionInstance(@NonNull final I_C_Order order)
+	public void syncOrderToCommissionInstance(@NonNull final I_C_Order order, final boolean isReactivated)
 	{
 		final Optional<MediatedOrder> mediatedOrder = mediatedOrderFactory.forRecord(order);
 		if (!mediatedOrder.isPresent())
@@ -59,6 +59,6 @@ public class C_OrderFacadeService
 		}
 
 		mediatedOrder.get().asCommissionTriggerDocuments()
-				.forEach(mediatedOrderTrigger -> commissionTriggerDocumentService.syncTriggerDocumentToCommissionInstance(mediatedOrderTrigger, false));
+				.forEach(mediatedOrderTrigger -> commissionTriggerDocumentService.syncTriggerDocumentToCommissionInstance(mediatedOrderTrigger, isReactivated));
 	}
 }

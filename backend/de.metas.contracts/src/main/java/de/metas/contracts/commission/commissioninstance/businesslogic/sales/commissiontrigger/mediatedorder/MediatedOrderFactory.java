@@ -1,24 +1,24 @@
  /*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+  * #%L
+  * de.metas.contracts
+  * %%
+  * Copyright (C) 2021 metas GmbH
+  * %%
+  * This program is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as
+  * published by the Free Software Foundation, either version 2 of the
+  * License, or (at your option) any later version.
+  *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public
+  * License along with this program. If not, see
+  * <http://www.gnu.org/licenses/gpl-2.0.html>.
+  * #L%
+  */
 
  package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder;
 
@@ -28,15 +28,19 @@
  import de.metas.bpartner.service.IBPartnerOrgBL;
  import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
  import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+ import de.metas.currency.CurrencyPrecision;
  import de.metas.document.engine.DocStatus;
  import de.metas.logging.LogManager;
  import de.metas.order.IOrderBL;
  import de.metas.order.IOrderDAO;
+ import de.metas.order.IOrderLineBL;
  import de.metas.order.OrderId;
  import de.metas.order.OrderLineId;
  import de.metas.organization.IOrgDAO;
  import de.metas.organization.OrgId;
  import de.metas.product.ProductId;
+ import de.metas.tax.api.ITaxDAO;
+ import de.metas.tax.api.Tax;
  import de.metas.util.Check;
  import de.metas.util.Loggables;
  import de.metas.util.Services;
@@ -47,6 +51,7 @@
  import org.slf4j.Logger;
  import org.springframework.stereotype.Service;
 
+ import java.math.BigDecimal;
  import java.time.ZoneId;
  import java.util.List;
  import java.util.Objects;
@@ -58,6 +63,8 @@
 	 private static final Logger logger = LogManager.getLogger(MediatedOrderFactory.class);
 
 	 private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	 private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	 private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	 private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	 private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	 private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -74,9 +81,9 @@
 	 {
 		 final DocStatus orderDocStatus = DocStatus.ofCode(mediatedOrder.getDocStatus());
 
-		 if (!orderDocStatus.isCompleted())
+		 if (!hasTheRightStatus(orderDocStatus))
 		 {
-			 Loggables.withLogger(logger, Level.DEBUG).addLog("C_Order is not completed! C_OrderId: {}", mediatedOrder.getC_Order_ID());
+			 Loggables.withLogger(logger, Level.DEBUG).addLog("C_Order.DocStatus is not supported: {}! C_OrderId: {}", orderDocStatus, mediatedOrder.getC_Order_ID());
 			 return Optional.empty();
 		 }
 
@@ -106,7 +113,7 @@
 		 }
 
 		 final ImmutableList<MediatedOrderLine> mediatedOrderLines = orderLines.stream()
-				 .map(this::toMediatedOrderLine)
+				 .map(orderLine -> toMediatedOrderLine(orderLine, mediatedOrder.isTaxIncluded()))
 				 .filter(Optional::isPresent)
 				 .map(Optional::get)
 				 .collect(ImmutableList.toImmutableList());
@@ -131,7 +138,7 @@
 	 }
 
 	 @NonNull
-	 private Optional<MediatedOrderLine> toMediatedOrderLine(@NonNull final I_C_OrderLine orderLine)
+	 private Optional<MediatedOrderLine> toMediatedOrderLine(@NonNull final I_C_OrderLine orderLine,final boolean isTaxIncluded)
 	 {
 		 if (commissionProductService.productPreventsCommissioning(ProductId.ofRepoId(orderLine.getM_Product_ID())))
 		 {
@@ -143,18 +150,35 @@
 									.id(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 									.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 									.updated(Objects.requireNonNull(TimeUtil.asInstant(orderLine.getUpdated())))
-									.invoicedCommissionPoints(getCommissionPoints(orderLine))
+									.invoicedCommissionPoints(getCommissionPoints(orderLine, isTaxIncluded))
 									.build());
 	 }
 
 	 @NonNull
-	 private CommissionPoints getCommissionPoints(@NonNull final I_C_OrderLine orderLine)
+	 private CommissionPoints getCommissionPoints(@NonNull final I_C_OrderLine orderLine, final boolean isTaxIncluded)
 	 {
-		 if (orderLine.getLineNetAmt().signum() == 0)
+		 if (orderLine.getQtyOrdered().signum() == 0)
 		 {
 			 return CommissionPoints.ZERO;
 		 }
 
-		 return CommissionPoints.of(orderLine.getLineNetAmt());
+		 final Tax taxRecord = taxDAO.getTaxById(orderLine.getC_Tax_ID());
+		 final CurrencyPrecision precision = orderLineBL.extractPricePrecision(orderLine);
+
+		 final BigDecimal priceForOrderedQty = orderLine.getQtyOrdered().multiply(orderLine.getPriceActual());
+
+		 final BigDecimal taxAdjustedAmount = taxRecord.calculateBaseAmt(
+				 priceForOrderedQty,
+				 isTaxIncluded,
+				 precision.toInt());
+
+		 return CommissionPoints.of(taxAdjustedAmount);
+	 }
+
+	 private boolean hasTheRightStatus(@NonNull final DocStatus orderDocStatus)
+	 {
+		 return orderDocStatus.isCompleted()
+				 || orderDocStatus.isInProgress()
+				 || orderDocStatus.isClosed();
 	 }
  }
