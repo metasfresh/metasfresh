@@ -25,7 +25,6 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import de.metas.camel.externalsystems.shopware6.Shopware6Constants;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -41,7 +40,7 @@ class TestPOJOs
 	@Test
 	void jsonQuery_multi() throws IOException
 	{
-		final MultiQueryRequest queryRequest = GetOrdersProcessor.buildQueryOrdersRequest("2020-10-26T06:32:45Z");
+		final MultiQueryRequest queryRequest = GetOrdersProcessor.buildUpdatedAfterQueryRequest("2020-10-26T06:32:45Z");
 		final String json = objectMapper.writeValueAsString(queryRequest);
 
 		Assertions.assertThat(json).isEqualToIgnoringWhitespace("{\n"
@@ -73,13 +72,7 @@ class TestPOJOs
 	@Test
 	void jsonQuery_single() throws IOException
 	{
-		final QueryRequest queryRequest = QueryRequest.builder()
-				.query(JsonQuery.builder()
-							   .field(Shopware6Constants.FIELD_ORDER_NUMBER)
-							   .queryType(JsonQuery.QueryType.EQUALS)
-							   .value("1234")
-							   .build())
-				.build();
+		final QueryRequest queryRequest = GetOrdersProcessor.buildOrderNoQueryRequest("1234");
 		final String json = objectMapper.writeValueAsString(queryRequest);
 
 		Assertions.assertThat(json).isEqualToIgnoringWhitespace("{\n"

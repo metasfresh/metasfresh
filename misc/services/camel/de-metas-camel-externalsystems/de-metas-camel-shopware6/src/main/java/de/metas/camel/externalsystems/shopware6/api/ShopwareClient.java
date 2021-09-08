@@ -186,7 +186,6 @@ public class ShopwareClient
 		{
 			throw new RuntimeException(e);
 		}
-
 	}
 
 	@NonNull

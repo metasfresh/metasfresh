@@ -27,10 +27,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
+import de.metas.camel.externalsystems.shopware6.Shopware6Constants;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.model.IShopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
@@ -86,14 +89,23 @@ public class GetOrdersProcessor implements Processor
 		final String clientSecret = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_SECRET);
 
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
-		
-		final String updatedAfter = CoalesceUtil.coalesceNotNull(
-				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
-				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
-				Instant.ofEpochSecond(0).toString());
 
-		final MultiQueryRequest getOrdersRequest = buildQueryOrdersRequest(updatedAfter);
-		
+		final IShopware6QueryRequest getOrdersRequest;
+		final String orderNo = request.getParameters().get(ExternalSystemConstants.PARAM_ORDER_NO);
+		if (Check.isNotBlank(orderNo))
+		{
+			getOrdersRequest = buildOrderNoQueryRequest(orderNo);
+		}
+		else
+		{
+			final String updatedAfter = CoalesceUtil.coalesceNotNull(
+					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
+					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+					Instant.ofEpochSecond(0).toString());
+
+			getOrdersRequest = buildUpdatedAfterQueryRequest(updatedAfter);
+		}
+
 		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
 		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
@@ -159,7 +171,20 @@ public class GetOrdersProcessor implements Processor
 
 	@NonNull
 	@VisibleForTesting
-	public static MultiQueryRequest buildQueryOrdersRequest(@NonNull final String updatedAfter)
+	public static  QueryRequest buildOrderNoQueryRequest(@NonNull final String orderNo)
+	{
+		return QueryRequest.builder()
+				.query(JsonQuery.builder()
+							   .field(Shopware6Constants.FIELD_ORDER_NUMBER)
+							   .queryType(JsonQuery.QueryType.EQUALS)
+							   .value(orderNo)
+							   .build())
+				.build();
+	}
+	
+	@NonNull
+	@VisibleForTesting
+	public static MultiQueryRequest buildUpdatedAfterQueryRequest(@NonNull final String updatedAfter)
 	{
 		final HashMap<String, String> parameters = new HashMap<>();
 		parameters.put(PARAMETERS_DATE_GTE, updatedAfter);
