@@ -52,7 +52,7 @@ public class StoreRawDataRouteBuilder extends RouteBuilder
 				.log("Route invoked")
 				.streamCaching()
 				.process(this::prepareExchange)
-				.toD("{{" + STORE_RAW_DATA_URI + "}}")
+				.to("{{" + STORE_RAW_DATA_URI + "}}")
 				.process(this::restoreExchange);
 		//@formatter:on
 	}
