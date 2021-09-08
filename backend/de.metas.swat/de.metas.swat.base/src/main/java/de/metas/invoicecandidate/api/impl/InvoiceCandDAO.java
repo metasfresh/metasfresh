@@ -1681,6 +1681,18 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			DB.close(rs, pstmt);
 		}
 	}
+	@Override
+	public int deleteAllICByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_Invoice_Candidate.class)
+				//.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, orderId)
+				//.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsFreightCost, false)
+				//.orderBy(I_C_Invoice_Candidate.COLUMNNAME_DeliveryDate)
+				.create()
+				.delete();
+	}
 
 	@Override
 	public InvoiceableInvoiceCandIdResult getFirstInvoiceableInvoiceCandId(@NonNull final OrderId orderId)

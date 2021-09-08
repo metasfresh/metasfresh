@@ -390,4 +390,11 @@ public interface IInvoiceCandDAO extends ISingletonService
 	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	/**
+	 * Delete all invoice candidates (active or not) that reference the given {@code orderId}.
+	 *
+	 * @return number of deleted invoice candidates.
+	 */
+	int deleteAllICByOrderId(OrderId orderId);
 }

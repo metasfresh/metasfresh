@@ -1,6 +1,6 @@
 package de.metas.inoutcandidate.modelvalidator;
 
-import de.metas.adempiere.model.I_C_Invoice;
+import com.google.common.collect.ImmutableList;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -18,7 +18,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -49,14 +48,12 @@ public class C_Order
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final  IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 	private static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("salesorder.shipmentschedule.exported");
 	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
-	private static final AdMessageKey MSG_SO_REACTIVATION_NOT_ALLOWED = AdMessageKey.of("salesorder.invoice.completed"); //TODO msg should be defined and TRL
-	private static final AdMessageKey MSG_PO_REACTIVATION_NOT_ALLOWED = AdMessageKey.of("purchaseorder.invoice.completed"); //TODO msg should be defined and TRL
+	private static final AdMessageKey MSG_REACTIVATION_NOT_ALLOWED = AdMessageKey.of("salesorder.invoice.completed");
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertNotDeliveryStopped(final I_C_Order order)
@@ -94,14 +91,15 @@ public class C_Order
 					.markAsUserValidationError();
 		}
 
-		if (orderCanBeReactivated(order))
+		OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		if (canOrderBeReactivated(orderId))
 		{
 			//delete Invoice candidates for the order
-			deleteInvoiceCandidatesForReactivatedOrder(order);
+			invoiceCandDAO.deleteAllICByOrderId(orderId);
 		}
 		else
 		{
-			throw new AdempiereException(MSG_SO_REACTIVATION_NOT_ALLOWED)
+			throw new AdempiereException(MSG_REACTIVATION_NOT_ALLOWED)
 					.markAsUserValidationError();
 		}
 	}
@@ -123,25 +121,22 @@ public class C_Order
 					.markAsUserValidationError();
 		}
 
-		if (orderCanBeReactivated(order))
+		OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		if (canOrderBeReactivated(orderId))
 		{
 			//delete Invoice candidates for the order
-			deleteInvoiceCandidatesForReactivatedOrder(order);
+			invoiceCandDAO.deleteAllICByOrderId(orderId);
 		}
 		else
 		{
-			throw new AdempiereException(MSG_PO_REACTIVATION_NOT_ALLOWED)
+			throw new AdempiereException(MSG_REACTIVATION_NOT_ALLOWED)
 					.markAsUserValidationError();
 		}
 	}
 
-	private boolean orderCanBeReactivated(final I_C_Order order)
+	private boolean canOrderBeReactivated(final OrderId orderId)
 	{
-		final List<OrderId> orders = new ArrayList<>();
-		orders.add(OrderId.ofRepoIdOrNull(order.getC_Order_ID()));
-		List<I_C_Invoice> invoices = invoiceDAO
-				.getInvoicesForOrderIds(orders);
-
+		final List<OrderId> orders = ImmutableList.of(orderId);
 		final boolean hasCompletedInvoices = invoiceDAO
 				.getInvoicesForOrderIds(orders)
 				.stream()
@@ -150,12 +145,5 @@ public class C_Order
 
 		return !hasCompletedInvoices;
 	}
-	private void deleteInvoiceCandidatesForReactivatedOrder(final I_C_Order order)
-	{
-		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
-		for (I_C_OrderLine ol : orderLines)
-		{
-			invoiceCandDAO.deleteAllReferencingInvoiceCandidates(ol);
-		}
-	}
+
 }
