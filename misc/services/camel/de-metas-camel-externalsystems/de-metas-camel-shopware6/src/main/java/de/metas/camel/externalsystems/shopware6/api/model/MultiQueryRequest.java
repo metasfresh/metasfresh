@@ -33,7 +33,7 @@ import java.util.List;
 
 @Value
 @JsonDeserialize(builder = MultiQueryRequest.MultiQueryRequestBuilder.class)
-public class MultiQueryRequest implements IShopware6QueryRequest
+public class MultiQueryRequest implements Shopware6QueryRequest
 {
 	@NonNull
 	@JsonProperty("filter")

@@ -29,12 +29,12 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.Shopware6Constants;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.IShopware6QueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
+import de.metas.camel.externalsystems.shopware6.api.ShopwareClient.GetOrdersResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
+import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
@@ -60,6 +60,7 @@ import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ROUTE_PROPERTY_RAW_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
@@ -90,7 +91,7 @@ public class GetOrdersProcessor implements Processor
 
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 
-		final IShopware6QueryRequest getOrdersRequest;
+		final Shopware6QueryRequest getOrdersRequest;
 		final String orderNo = request.getParameters().get(ExternalSystemConstants.PARAM_ORDER_NO);
 		if (Check.isNotBlank(orderNo))
 		{
@@ -111,10 +112,11 @@ public class GetOrdersProcessor implements Processor
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
 		
-		final List<OrderCandidate> ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath, salesRepJSONPath);
+		final GetOrdersResponse ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath, salesRepJSONPath);
 
-		exchange.getIn().setBody(ordersToProcess);
-
+		exchange.getIn().setBody(ordersToProcess.getOrderCandidates());
+		exchange.setProperty(ROUTE_PROPERTY_RAW_DATA, ordersToProcess.getRawData());
+		
 		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
 				.baseUrl(basePath)
 				.clientId(clientId)

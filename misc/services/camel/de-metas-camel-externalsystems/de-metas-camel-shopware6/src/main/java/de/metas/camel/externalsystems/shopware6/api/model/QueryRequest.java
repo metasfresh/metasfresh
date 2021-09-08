@@ -33,7 +33,7 @@ import java.util.List;
 
 @Value
 @JsonDeserialize(builder = QueryRequest.QueryRequestBuilder.class)
-public class QueryRequest implements IShopware6QueryRequest
+public class QueryRequest implements Shopware6QueryRequest
 {
 	@NonNull
 	@JsonProperty("filter")

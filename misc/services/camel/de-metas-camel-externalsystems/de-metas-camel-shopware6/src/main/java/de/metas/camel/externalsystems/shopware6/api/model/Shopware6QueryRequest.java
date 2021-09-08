@@ -22,6 +22,6 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model;
 
-public interface IShopware6QueryRequest
+public interface Shopware6QueryRequest
 {
 }
