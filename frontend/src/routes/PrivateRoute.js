@@ -35,7 +35,7 @@ const PrivateRoute = (props) => {
       dispatch(clearNotifications());
 
       // check if user is not already authenticated via another session
-      if (!isLoggedIn && !authRequestPending()) {
+      if (!authRequestPending()) {
         const url = location.pathname;
 
         auth.checkAuthentication().then((authenticated) => {
@@ -47,8 +47,6 @@ const PrivateRoute = (props) => {
             auth.login();
           }
         });
-      } else if (isLoggedIn && !authRequestPending()) {
-        auth.login();
       }
 
       if (hasTutorial) {

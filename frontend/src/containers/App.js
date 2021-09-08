@@ -96,7 +96,7 @@ const App = () => {
 
             // we got not authenticated error, but locally still have the authenticated flag truthy
             // (ie user logged out in another window, or session timed out)
-            if (auth.isLoggedIn) {
+            if (auth.isLoggedIn || store.getState().appHandler.isLogged) {
               auth.logout().finally(() => {
                 history.push('/login');
               });
