@@ -929,7 +929,8 @@ public class OrderLineBL implements IOrderLineBL
 			return Optional.ofNullable(result);
 		}
 
-		final PricingSystemId orderPricingSystemId = PricingSystemId.ofRepoIdOrNull(olRecord.getBase_PricingSystem_ID());
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(olRecord.getC_Order_ID()));
+		final PricingSystemId orderPricingSystemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
 
 		if (orderPricingSystemId != null)
 		{
@@ -946,7 +947,6 @@ public class OrderLineBL implements IOrderLineBL
 			final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
 			final ZonedDateTime orderDate = Objects.requireNonNull(TimeUtil.asZonedDateTime(olRecord.getDateOrdered(), orgZoneId));
 
-			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(olRecord.getC_Order_ID()));
 			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
 			final I_C_Location location = locationDAO.getById(LocationId.ofRepoId(partnerLocation.getC_Location_ID()));
