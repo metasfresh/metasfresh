@@ -38,6 +38,11 @@ import org.compiere.util.TimeUtil;
 import java.time.Instant;
 import java.time.LocalDate;
 
+/**
+ * Represents a purchase order that is forwarded to completely handled by an external vendor.
+ * There is no material receipt or purchase invoice in metasfresh.
+ * Instead, metasfresh creates a purchase commission instance such that in the end, the vendor can pay a commission for the mediated order.
+ */
 @Value
 @Builder
 public class MediatedOrder

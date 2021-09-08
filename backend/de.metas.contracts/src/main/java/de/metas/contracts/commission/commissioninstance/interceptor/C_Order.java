@@ -46,14 +46,26 @@ public class C_Order
 		this.orderFacadeService = orderFacadeService;
 	}
 
-	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	@DocValidate(timings = {ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_CLOSE})
 	public void createCommissionInstanceForMediatedOrder(@NonNull final I_C_Order order)
 	{
 		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
 				.runAfterCommit(() -> trxManager.runInNewTrx(() -> {
 					try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
 					{
-						orderFacadeService.syncOrderToCommissionInstance(order);
+						orderFacadeService.syncOrderToCommissionInstance(order, false /*isReactivated*/);
+					}
+				}));
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
+	public void syncMediatedOrderWithCommissionInstance(@NonNull final I_C_Order order)
+	{
+		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
+				.runAfterCommit(() -> trxManager.runInNewTrx(() -> {
+					try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(order))
+					{
+						orderFacadeService.syncOrderToCommissionInstance(order, true /*isReactivated*/);
 					}
 				}));
 	}
