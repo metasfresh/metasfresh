@@ -191,7 +191,7 @@ public class GetOrdersProcessor implements Processor
 		final String normalVatProductId = parameters.get(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID);
 		if (Check.isNotBlank(normalVatProductId) && Check.isNotBlank(normalVatRates))
 		{
-			final List<BigDecimal> rates = NumberUtils.asBigDecimalListOrNull(normalVatRates, ",");
+			final List<BigDecimal> rates = NumberUtils.asBigDecimalList(normalVatRates, ",");
 			final JsonMetasfreshId productId = JsonMetasfreshId.of(Integer.parseInt(normalVatProductId));
 
 			productId2VatRatesBuilder.put(productId, rates);
@@ -201,7 +201,7 @@ public class GetOrdersProcessor implements Processor
 		final String reducedVatProductId = parameters.get(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID);
 		if (Check.isNotBlank(reducedVatProductId) && Check.isNotBlank(reducedVatRates))
 		{
-			final List<BigDecimal> rates = NumberUtils.asBigDecimalListOrNull(reducedVatRates, ",");
+			final List<BigDecimal> rates = NumberUtils.asBigDecimalList(reducedVatRates, ",");
 			final JsonMetasfreshId productId = JsonMetasfreshId.of(Integer.parseInt(reducedVatProductId));
 
 			productId2VatRatesBuilder.put(productId, rates);
