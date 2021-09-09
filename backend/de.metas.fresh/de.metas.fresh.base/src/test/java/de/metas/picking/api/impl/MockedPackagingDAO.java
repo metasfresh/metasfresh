@@ -1,13 +1,12 @@
-package de.metas.inoutcandidate.api.impl;
+package de.metas.picking.api.impl;
+
+import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableQuery;
+import de.metas.util.Check;
+import org.junit.Ignore;
 
 import java.util.List;
 import java.util.stream.Stream;
-
-import org.junit.Ignore;
-
-import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.api.PackageableQuery;
-import de.metas.util.Check;
 
 @Ignore
 public class MockedPackagingDAO extends PackagingDAO
