@@ -22,6 +22,7 @@
 
 package de.metas.contracts.commission.mediated;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
@@ -42,6 +43,7 @@ import de.metas.contracts.commission.mediated.repository.MediatedCommissionSetti
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -51,6 +53,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -81,17 +84,7 @@ public class MediatedCommissionConfigFactory implements ICommissionConfigFactory
 		//dev-note: in case of MediatedCommission the customer is in fact a vendor and the sales-rep is the org's bpartner
 		final BPartnerId vendorId = contractRequest.getCustomerBPartnerId();
 
-		final IFlatrateDAO.TermsQuery termsQuery = IFlatrateDAO.TermsQuery.builder()
-				.billPartnerId(vendorId)
-				.orgId(contractRequest.getOrgId())
-				.dateOrdered(contractRequest.getCommissionDate())
-				.build();
-
-		final List<I_C_Flatrate_Term> contractList = flatrateDAO
-				.retrieveTerms(termsQuery)
-				.stream()
-				.filter(termRecord -> TypeConditions.MEDIATED_COMMISSION.getCode().equals(termRecord.getType_Conditions()))
-				.collect(ImmutableList.toImmutableList());
+		final List<I_C_Flatrate_Term> contractList = retrieveContracts(vendorId, contractRequest.getOrgId(), contractRequest.getCommissionDate());
 
 		if (contractList.isEmpty())
 		{
@@ -190,5 +183,24 @@ public class MediatedCommissionConfigFactory implements ICommissionConfigFactory
 		Check.assume(mediatedCommissionContracts.size() == 1, "There should always be only one mediated contract at this point!");
 
 		return mediatedCommissionContracts.get(0);
+	}
+
+	@VisibleForTesting
+	List<I_C_Flatrate_Term> retrieveContracts(
+			@NonNull final BPartnerId vendorId,
+			@NonNull final OrgId orgId,
+			@NonNull final LocalDate commissionDate)
+	{
+		final IFlatrateDAO.TermsQuery termsQuery = IFlatrateDAO.TermsQuery.builder()
+				.billPartnerId(vendorId)
+				.orgId(orgId)
+				.dateOrdered(commissionDate)
+				.build();
+
+		return flatrateDAO
+				.retrieveTerms(termsQuery)
+				.stream()
+				.filter(termRecord -> TypeConditions.MEDIATED_COMMISSION.getCode().equals(termRecord.getType_Conditions()))
+				.collect(ImmutableList.toImmutableList());
 	}
 }
