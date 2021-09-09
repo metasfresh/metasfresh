@@ -3,6 +3,7 @@ package de.metas.picking.api.impl;
 import de.metas.picking.api.Packageable;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.util.Check;
+import lombok.NonNull;
 import org.junit.Ignore;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class MockedPackagingDAO extends PackagingDAO
 	}
 
 	@Override
-	public Stream<Packageable> stream(final PackageableQuery query)
+	public Stream<Packageable> stream(final @NonNull PackageableQuery query)
 	{
 		Check.assumeNotNull(packageables, "packageables were set before calling this method");
 		return packageables.stream();
