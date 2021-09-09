@@ -32,35 +32,42 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_PINSTANCE_ID = "pInstanceId";
 	public static final String HEADER_TARGET_URL = "targetUrl";
 
-	public static String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
+	public static final String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
-	public static String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";
+	public static final String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";
+
+	public static final String MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI = "metasfresh.upsert-bpartnerlocation-v2.camel.uri";
 
 	public static String MF_RETRIEVE_BPARTNER_V2_CAMEL_URI = "metasfresh.retrieve-bpartner-v2.camel.uri";
 
 	public static String MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI = "metasfresh.upsert-bpartnerlocation-v2.camel.uri";
 
-	public static String MF_UPSERT_BPRELATION_CAMEL_URI = "metasfresh.upsert-bprelation.camel.uri";
+	public static final String MF_UPSERT_BPRELATION_CAMEL_URI = "metasfresh.upsert-bprelation.camel.uri";
 
-	public static String MF_CREATE_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.create-externalreference.camel.uri";
+	public static final String MF_CREATE_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.create-externalreference.camel.uri";
 
-	public static String MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.lookup-externalreference.camel.uri";
+	public static final String MF_LOOKUP_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.lookup-externalreference.camel.uri";
 
-	public static String MF_EXTERNAL_SYSTEM_URI = "metasfresh.externalsystem.api.uri";
+	public static final String MF_EXTERNAL_SYSTEM_URI = "metasfresh.externalsystem.api.uri";
 
-	public static String MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.upsert-externalreference.camel.uri";
+	public static final String MF_UPSERT_EXTERNALREFERENCE_CAMEL_URI = "metasfresh.upsert-externalreference.camel.uri";
 
-	public final String MF_ERROR_ROUTE_ID = "Error-Route";
+	public static final String ROUTE_PROPERTY_RAW_DATA = "GetOrdersRawData";
+	public static final String STORE_RAW_DATA_URI = "externalSystem.raw-data.uri";
 
-	public final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";
+	public static final String MF_ERROR_ROUTE_ID = "Error-Route";
 
-	public static String MF_GET_PRODUCTS_ROUTE_ID = "To-MF_GetProducts-Route";
+	public static final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";
 
-	public static String MF_PUSH_OL_CANDIDATES_ROUTE_ID = "To-MF_PushOLCandidates-Route";
+	public static final String MF_GET_PRODUCTS_ROUTE_ID = "To-MF_GetProducts-Route";
 
-	public static String MF_CLEAR_OL_CANDIDATES_ROUTE_ID = "To-MF_ClearOLCandidates-Route";
+	public static final String MF_PUSH_OL_CANDIDATES_ROUTE_ID = "To-MF_PushOLCandidates-Route";
 
-	public static String MF_CREATE_ORDER_PAYMENT_ROUTE_ID = "To-MF_CreateOrderPayment-Route";
+	public static final String MF_CLEAR_OL_CANDIDATES_ROUTE_ID = "To-MF_ClearOLCandidates-Route";
 
-	public static String MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID = "To-MF_UpsertRuntimeParameters-Route";
+	public static final String MF_CREATE_ORDER_PAYMENT_ROUTE_ID = "To-MF_CreateOrderPayment-Route";
+
+	public static final String MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID = "To-MF_UpsertRuntimeParameters-Route";
+
+	public static final String STORE_RAW_DATA_ROUTE = "Store-Raw-Data-Route";
 }

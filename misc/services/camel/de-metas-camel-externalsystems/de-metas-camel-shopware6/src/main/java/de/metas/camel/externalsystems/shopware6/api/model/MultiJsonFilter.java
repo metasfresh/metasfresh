@@ -23,8 +23,12 @@
 package de.metas.camel.externalsystems.shopware6.api.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
@@ -32,16 +36,50 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-@JsonDeserialize(builder = QueryRequest.QueryRequestBuilder.class)
-public class QueryRequest implements Shopware6QueryRequest
+@JsonDeserialize(builder = MultiJsonFilter.MultiJsonFilterBuilder.class)
+@JsonPropertyOrder({ "type", "operator", "queries" })
+public class MultiJsonFilter
 {
 	@NonNull
-	@JsonProperty("filter")
-	List<JsonQuery> queries;
+	@JsonProperty("type")
+	MultiJsonFilter.MultiFilterType filterType = MultiFilterType.MULTI;
+
+	@NonNull
+	@JsonProperty("operator")
+	OperatorType operatorType;
+
+	@NonNull
+	@JsonProperty("queries")
+	List<JsonQuery> jsonQueryList;
 
 	@Builder
-	public QueryRequest(@NonNull @Singular @JsonProperty("filter") final List<JsonQuery> queries)
+	public MultiJsonFilter(
+			@NonNull @JsonProperty("operator") final OperatorType operatorType,
+			@NonNull @JsonProperty("queries") @Singular final List<JsonQuery> jsonQueries
+	)
 	{
-		this.queries = queries;
+		this.operatorType = operatorType;
+		this.jsonQueryList = jsonQueries;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	public enum MultiFilterType
+	{
+		MULTI("multi");
+
+		@JsonValue
+		private final String value;
+	}
+
+	@AllArgsConstructor
+	@Getter
+	public enum OperatorType
+	{
+		OR("or"),
+		AND("and");
+
+		@JsonValue
+		private final String value;
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-common-util
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,28 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.shopware6.api.model;
+package de.metas.common.util;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
+import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.math.BigDecimal;
 
-@Value
-@JsonDeserialize(builder = QueryRequest.QueryRequestBuilder.class)
-public class QueryRequest implements Shopware6QueryRequest
+import static org.assertj.core.api.Assertions.*;
+
+class NumberUtilsTest
 {
-	@NonNull
-	@JsonProperty("filter")
-	List<JsonQuery> queries;
-
-	@Builder
-	public QueryRequest(@NonNull @Singular @JsonProperty("filter") final List<JsonQuery> queries)
+	@Test
+	void asBigDecimalList()
 	{
-		this.queries = queries;
+		assertThat(NumberUtils.asBigDecimalList(",", ",")).isEmpty();
+		assertThat(NumberUtils.asBigDecimalList("1,2", ",")).containsExactly(new BigDecimal("1"), new BigDecimal("2"));
+		assertThat(NumberUtils.asBigDecimalList("1, 2", ",")).containsExactly(new BigDecimal("1"), new BigDecimal("2"));
+		assertThat(NumberUtils.asBigDecimalList("1, 2, ", ",")).containsExactly(new BigDecimal("1"), new BigDecimal("2"));
 	}
 }
