@@ -1,6 +1,5 @@
 package de.metas.ui.web.pickingV2.packageable;
 
-import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
@@ -32,10 +31,12 @@ import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -125,13 +126,14 @@ final class PackageableRowsRepository
 				packageable.getLockedBy());
 	}
 
+	@Nullable
 	private PackageableRow createPackageableRowNoFail(final Collection<Packageable> packageables)
 	{
 		try
 		{
 			return createPackageableRow(packageables);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed creating row from {}. Skip.", packageables, ex);
 			return null;
