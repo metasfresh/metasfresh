@@ -1,10 +1,28 @@
-package de.metas.inoutcandidate.api.impl;
+package de.metas.picking.api.impl;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.freighcost.FreightCostRule;
+import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_Packageable_V;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.DeliveryViaRule;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.Packageable;
+import de.metas.picking.api.Packageable.PackageableBuilder;
+import de.metas.picking.api.PackageableQuery;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
+import de.metas.uom.IUOMDAO;
+import de.metas.user.UserId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
@@ -16,32 +34,12 @@ import org.adempiere.warehouse.WarehouseTypeId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.freighcost.FreightCostRule;
-import de.metas.inoutcandidate.api.IPackagingDAO;
-import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.api.Packageable.PackageableBuilder;
-import de.metas.inoutcandidate.api.PackageableQuery;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import org.eevolution.api.PPOrderId;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
-import de.metas.order.DeliveryViaRule;
-import de.metas.order.OrderId;
-import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.shipping.ShipperId;
-import de.metas.uom.IUOMDAO;
-import de.metas.user.UserId;
-import de.metas.util.Services;
-import lombok.NonNull;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class PackagingDAO implements IPackagingDAO
 {
