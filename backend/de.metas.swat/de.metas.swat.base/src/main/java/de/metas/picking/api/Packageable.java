@@ -2,7 +2,7 @@
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,14 @@
  * #L%
  */
 
-package de.metas.inoutcandidate.api;
+package de.metas.picking.api;
 
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.WarehouseTypeId;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.freighcost.FreightCostRule;
-import org.eevolution.api.PPOrderId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.money.Money;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.OrderId;
@@ -55,6 +40,18 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseTypeId;
+import org.eevolution.api.PPOrderId;
+
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
 
 /** Lines which have to be picked and delivered */
 @Value
