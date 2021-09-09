@@ -48,7 +48,7 @@ public class PackagingDAO implements IPackagingDAO
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	@Override
-	public Stream<Packageable> stream(final PackageableQuery query)
+	public Stream<Packageable> stream(@NonNull final PackageableQuery query)
 	{
 		return createQuery(query)
 				.stream(I_M_Packageable_V.class)
