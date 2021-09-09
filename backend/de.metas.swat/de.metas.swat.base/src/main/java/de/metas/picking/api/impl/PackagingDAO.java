@@ -36,6 +36,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderId;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +44,7 @@ import java.util.stream.Stream;
 
 public class PackagingDAO implements IPackagingDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 
 	@Override
@@ -55,7 +57,7 @@ public class PackagingDAO implements IPackagingDAO
 
 	private IQuery<I_M_Packageable_V> createQuery(@NonNull final PackageableQuery query)
 	{
-		final IQueryBuilder<I_M_Packageable_V> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_M_Packageable_V> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Packageable_V.class)
 				.orderBy()
 				.addColumn(I_M_Packageable_V.COLUMN_ProductName)
@@ -223,7 +225,7 @@ public class PackagingDAO implements IPackagingDAO
 			return Optional.empty();
 		}
 
-		final I_C_UOM uom = Services.get(IUOMDAO.class).getById(record.getC_UOM_ID());
+		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 		final Quantity qtyPickedPlanned = Quantity.of(record.getQtyPickedPlanned(), uom);
 		return Optional.of(qtyPickedPlanned);
 	}
@@ -235,16 +237,17 @@ public class PackagingDAO implements IPackagingDAO
 			return ImmutableList.of();
 		}
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Packageable_V.class)
 				.addInArrayFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleIds)
 				.create()
 				.list(I_M_Packageable_V.class);
 	}
 
+	@Nullable
 	private I_M_Packageable_V retrievePackageableRecordByShipmentScheduleId(final ShipmentScheduleId shipmentScheduleId)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_M_Packageable_V.class)
 				.addEqualsFilter(I_M_Packageable_V.COLUMN_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
