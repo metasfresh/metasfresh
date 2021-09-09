@@ -527,6 +527,17 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@NonNull
+	public List<I_C_BPartner_Location> getBPartnerLocationsByLocationId(@NonNull final LocationId locationId)
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner_Location.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_C_Location_ID, locationId)
+				.create()
+				.listImmutable(I_C_BPartner_Location.class);
+	}
+
+	@Override
 	public Set<CountryId> retrieveBPartnerLocationCountryIds(@NonNull final BPartnerId bpartnerId)
 	{
 		final Set<LocationId> locationIds = retrieveBPartnerLocations(bpartnerId)

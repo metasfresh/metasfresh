@@ -1,0 +1,13 @@
+{
+  "orgCode": "orgCode",
+  "externalSystemName": "RabbitMQRESTAPI",
+  "command": "exportBPartner",
+  "adPInstanceId": 3,
+  "externalSystemConfigId": 1,
+  "parameters": {
+    "RemoteURL": "https://test",
+    "Routing_Key": "key",
+    "BPartnerId": "1000000",
+    "RabbitMQAuthToken": "authToken"
+  }
+}

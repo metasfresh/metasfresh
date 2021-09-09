@@ -39,7 +39,7 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 public class RabbitMQExportBPartnerRouteBuilder extends RouteBuilder
 {
 	@VisibleForTesting
-	static final String EXPORT_BPARTNER_ROUTE_ID = "RabbitMQ-exportBPartner";
+	static final String EXPORT_BPARTNER_ROUTE_ID = "RabbitMQRESTAPI-exportBPartner";
 
 	@Override
 	public void configure()

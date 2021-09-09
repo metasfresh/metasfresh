@@ -272,6 +272,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	I_C_BPartner_Location getDefaultShipToLocation(BPartnerId bpartnerId);
 
+	List<I_C_BPartner_Location> getBPartnerLocationsByLocationId(LocationId locationId);
+
 	@Nullable
 	CountryId getDefaultShipToLocationCountryIdOrNull(BPartnerId bpartnerId);
 

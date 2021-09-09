@@ -35,4 +35,8 @@ public class ExportBPartnerRouteContext
 
 	@NonNull
 	String routingKey;
+
+	@NonNull
+	String authToken;
+
 }

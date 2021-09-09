@@ -25,9 +25,11 @@ package de.metas.externalsystem;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
+import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
@@ -125,6 +127,34 @@ class ExternalSystemConfigRepoTest
 	}
 
 	@Test
+	void externalSystem_Config_RabbitMQ_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI);
+		parentRecord.setIsActive(true);
+		saveRecord(parentRecord);
+
+		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
+		childRecord.setExternalSystemValue("testRabbitMQValue");
+		childRecord.setRemoteURL("remoteURL");
+		childRecord.setRouting_Key("routingKey");
+		childRecord.setAuthToken("authToken");
+		childRecord.setIsSyncBPartnersToRabbitMQ(true);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemRabbitMQConfigId id = ExternalSystemRabbitMQConfigId.ofRepoId(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
 	void externalSystem_Config_Shopware6_getTypeAndValue()
 	{
 		// given
@@ -147,7 +177,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6,value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -229,7 +259,7 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId,ExternalSystemType.Alberta)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Alberta)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -278,12 +308,41 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId,ExternalSystemType.Shopware6)
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Shopware6)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Shopware6_ID());
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_RabbitMQ_getByTypeAndParent()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI);
+		parentRecord.setIsActive(true);
+		saveRecord(parentRecord);
+
+		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
+		childRecord.setExternalSystemValue("testRabbitMQValue");
+		childRecord.setRemoteURL("remoteURL");
+		childRecord.setRouting_Key("routingKey");
+		childRecord.setAuthToken("authToken");
+		childRecord.setIsSyncBPartnersToRabbitMQ(true);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
+		// when
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.RabbitMQ).get();
+
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
 		expect(result).toMatchSnapshot();
 	}
 }

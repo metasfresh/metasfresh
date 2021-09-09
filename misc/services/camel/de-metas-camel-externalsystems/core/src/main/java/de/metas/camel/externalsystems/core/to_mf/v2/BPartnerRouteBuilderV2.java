@@ -36,9 +36,9 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_BPARTNER_IDENTIFIER;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 

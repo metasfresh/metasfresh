@@ -38,6 +38,10 @@ public class DispatchMessageRequest
 	String url;
 
 	@NonNull
+	@JsonProperty("authToken")
+	String authToken;
+
+	@NonNull
 	@JsonProperty("message")
 	JsonRabbitMQHttpMessage message;
 }

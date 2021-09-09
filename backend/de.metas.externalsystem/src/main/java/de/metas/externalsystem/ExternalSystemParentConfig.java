@@ -36,18 +36,21 @@ public class ExternalSystemParentConfig
 	ExternalSystemType type;
 	String name;
 	IExternalSystemChildConfig childConfig;
+	Boolean isActive;
 
 	@Builder
 	public ExternalSystemParentConfig(
 			@NonNull final ExternalSystemParentConfigId id,
 			@NonNull final ExternalSystemType type,
 			@NonNull final String name,
-			@NonNull final IExternalSystemChildConfig childConfig)
+			@NonNull final IExternalSystemChildConfig childConfig,
+			@NonNull final Boolean isActive)
 	{
 		this.id = id;
 		this.type = type;
 		this.name = name;
 		this.childConfig = childConfig;
+		this.isActive = isActive;
 	}
 
 	public ITableRecordReference getTableRecordReference()

@@ -32,6 +32,9 @@ import de.metas.audit.common.HttpHeadersWrapper;
 import de.metas.audit.config.ApiAuditConfig;
 import de.metas.audit.config.ApiAuditConfigId;
 import de.metas.audit.config.ApiAuditConfigRepository;
+import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.audit.data.service.GenericDataExportAuditRequest;
+import de.metas.audit.data.IMasterDataExportAuditService;
 import de.metas.audit.request.ApiRequestAudit;
 import de.metas.audit.request.ApiRequestAuditId;
 import de.metas.audit.request.ApiRequestAuditRepository;
@@ -45,6 +48,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserGroupUserAssignment;
@@ -53,6 +57,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -86,6 +91,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
+import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_PINSTANCE_ID;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Service
@@ -107,7 +114,7 @@ public class ApiAuditService
 
 	public static final String CFG_INTERNAL_PORT = "de.metas.util.web.audit.AppServerInternalPort";
 	private static final int CFG_INTERNAL_PORT_DEFAULT = 8282;
-	
+
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private final ApiAuditConfigRepository apiAuditConfigRepository;
@@ -115,6 +122,7 @@ public class ApiAuditService
 	private final ApiResponseAuditRepository apiResponseAuditRepository;
 	private final ApiAuditRequestLogDAO apiAuditRequestLogDAO;
 	private final UserGroupRepository userGroupRepository;
+	private final List<IMasterDataExportAuditService> masterDataExportAuditServices;
 
 	private final WebClient webClient;
 	private final ConcurrentHashMap<UserId, HttpCallScheduler> callerId2Scheduler;
@@ -127,13 +135,15 @@ public class ApiAuditService
 			@NonNull final ApiRequestAuditRepository apiRequestAuditRepository,
 			@NonNull final ApiResponseAuditRepository apiResponseAuditRepository,
 			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO,
-			@NonNull final UserGroupRepository userGroupRepository)
+			@NonNull final UserGroupRepository userGroupRepository,
+			@NonNull final List<IMasterDataExportAuditService> masterDataExportAuditServices)
 	{
 		this.apiAuditConfigRepository = apiAuditConfigRepository;
 		this.apiRequestAuditRepository = apiRequestAuditRepository;
 		this.apiResponseAuditRepository = apiResponseAuditRepository;
 		this.apiAuditRequestLogDAO = apiAuditRequestLogDAO;
 		this.userGroupRepository = userGroupRepository;
+		this.masterDataExportAuditServices = masterDataExportAuditServices;
 
 		this.webClient = WebClient.create();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
@@ -279,11 +289,15 @@ public class ApiAuditService
 
 		try
 		{
-			return bodySpec.exchangeToMono(cr -> cr
+			final ApiResponse apiResponse = bodySpec.exchangeToMono(cr -> cr
 					.bodyToMono(String.class)
 					.map(body -> ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), body))
 					.defaultIfEmpty(ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
 					.block();
+
+			CompletableFuture.runAsync(() -> performDataExportAudit(apiRequestAudit, apiResponse));
+
+			return apiResponse;
 		}
 		catch (final RuntimeException rte)
 		{
@@ -463,7 +477,7 @@ public class ApiAuditService
 			{
 				logResponse(apiResponse, completionContext.getApiRequestAudit().getIdNotNull(), completionContext.getOrgId());
 
-				final Status requestStatus = apiResponse.getStatusCode() / 100 > HttpStatus.OK.series().value()
+				final Status requestStatus = !apiResponse.hasStatus2xx()
 						? Status.ERROR
 						: Status.PROCESSED;
 
@@ -544,6 +558,45 @@ public class ApiAuditService
 						values.forEach(value -> servletResponse.addHeader(key, value));
 					}
 				});
+	}
+
+	private void performDataExportAudit(@NonNull final ApiRequestAudit apiRequestAudit, @NonNull final ApiResponse apiResponse)
+	{
+		if (!apiResponse.hasStatus2xx()
+				|| apiRequestAudit.getRequestURI() == null
+				|| apiResponse.getBody() == null)
+		{
+			return;
+		}
+
+		final GenericDataExportAuditRequest.GenericDataExportAuditRequestBuilder genericRequestBuilder = GenericDataExportAuditRequest
+				.builder()
+				.exportedObject(apiResponse.getBody())
+				.requestURI(apiRequestAudit.getRequestURI());
+
+		final Optional<HttpHeadersWrapper> requestHeaders = apiRequestAudit.getRequestHeaders(objectMapper);
+
+		requestHeaders
+				.map(HttpHeadersWrapper::getKeyValueHeaders)
+				.map(headersMap -> headersMap.get(HEADER_EXTERNALSYSTEM_CONFIG_ID))
+				.map(CollectionUtils::singleElement)
+				.map(Integer::parseInt)
+				.map(ExternalSystemParentConfigId::ofRepoId)
+				.ifPresent(genericRequestBuilder::externalSystemParentConfigId);
+
+		requestHeaders
+				.map(HttpHeadersWrapper::getKeyValueHeaders)
+				.map(headersMap -> headersMap.get(HEADER_PINSTANCE_ID))
+				.map(CollectionUtils::singleElement)
+				.map(Integer::parseInt)
+				.map(PInstanceId::ofRepoId)
+				.ifPresent(genericRequestBuilder::pInstanceId);
+
+		final GenericDataExportAuditRequest auditRequest = genericRequestBuilder.build();
+
+		masterDataExportAuditServices.stream()
+				.filter(masterDataAuditService -> masterDataAuditService.matches(auditRequest))
+				.forEach(masterDataAuditService -> masterDataAuditService.performDataAuditForRequest(auditRequest));
 	}
 
 	@Value

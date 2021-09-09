@@ -60,6 +60,7 @@ public class BPartnerDispatchMessageProcessor implements Processor
 
 		final DispatchMessageRequest dispatchMessageRequest = DispatchMessageRequest.builder()
 				.url(routeContext.getRemoteUrl())
+				.authToken(routeContext.getAuthToken())
 				.message(jsonRabbitMQHttpMessage)
 				.build();
 

@@ -54,9 +54,17 @@ public class ExportBPartnerProcessor implements Processor
 			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_RABBITMQ_HTTP_ROUTING_KEY);
 		}
 
+		final String authToken = request.getParameters().get(ExternalSystemConstants.PARAM_RABBIT_MQ_AUTH_TOKEN);
+
+		if (Check.isBlank(authToken))
+		{
+			throw new RuntimeException("Missing mandatory param: " + ExternalSystemConstants.PARAM_RABBIT_MQ_AUTH_TOKEN);
+		}
+
 		final ExportBPartnerRouteContext exportBPartnerRouteContext = ExportBPartnerRouteContext.builder()
 				.remoteUrl(remoteUrl)
 				.routingKey(routingKey)
+				.authToken(authToken)
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_EXPORT_BPARTNER_CONTEXT, exportBPartnerRouteContext);

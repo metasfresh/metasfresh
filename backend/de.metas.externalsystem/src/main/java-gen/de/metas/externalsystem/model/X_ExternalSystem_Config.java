@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_ExternalSystem_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -526552002L;
+	private static final long serialVersionUID = -732016738L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config (final Properties ctx, final int ExternalSystem_Config_ID, @Nullable final String trxName)
@@ -84,6 +84,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Shopware6 = "S6";
 	/** Other = Other */
 	public static final String TYPE_Other = "Other";
+	/** RabbitMQ REST API = RabbitMQ */
+	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	@Override
 	public void setType (final String Type)
 	{

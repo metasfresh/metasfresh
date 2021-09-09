@@ -32,9 +32,10 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TARGET_URL;
+import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -77,10 +78,10 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 				.routeId(RABBITMQ_MESSAGE_SENDER)
 				//dev-note: we need the whole route to be replayed in case of redelivery
 				.errorHandler(noErrorHandler())
-
+				.log("invoked")
 				.marshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonRabbitMQHttpMessage.class))
-				.removeHeaders("CamelHttp*")
-				.toD("${header." + HEADER_TARGET_URL + "}").id(RABBITMQ_ENDPOINT_ID)
+				//dev-note: the actual path is computed in this.extractAndAttachRabbitHttpRequest()
+				.to("https://placeholder").id(RABBITMQ_ENDPOINT_ID)
 
 				.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonRabbitMQHttpResponse.class))
 				.process(this::validateMessageRouted).id(RABBIT_MQ_RESPONSE_PROCESSOR_ID);
@@ -102,7 +103,10 @@ public class RabbitMQDispatcherRouteBuilder extends RouteBuilder
 
 		final DispatchMessageRequest dispatchMessageRequest = (DispatchMessageRequest)dispatchMessageRequestCandidate;
 
-		exchange.getIn().setHeader(HEADER_TARGET_URL, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
+		exchange.getIn().removeHeaders("CamelHttp*");
+		exchange.getIn().setHeader(AUTHORIZATION, dispatchMessageRequest.getAuthToken());
+		exchange.getIn().setHeader(Exchange.HTTP_URI, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpEndpointBuilderFactory.HttpMethods.POST);
 		exchange.getIn().setBody(dispatchMessageRequest.getMessage());
 	}
 

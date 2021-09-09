@@ -51,4 +51,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";
 	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "Routing_Key";
 	public static final String PARAM_BPARTNER_ID = "BPartnerId";
+	public static final String PARAM_RABBIT_MQ_AUTH_TOKEN = "RabbitMQAuthToken";
+
+	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
+	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
 }

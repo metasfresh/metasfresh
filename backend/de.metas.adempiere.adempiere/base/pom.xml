@@ -16,6 +16,7 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <dependencies>
@@ -45,6 +46,12 @@
             <artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
             <version>${metasfresh.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.common.bpartner</groupId>
+            <artifactId>de-metas-common-bpartner</artifactId>
+            <version>${metasfresh-common.version}</version>
         </dependency>
 
         <dependency>
