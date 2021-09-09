@@ -1,16 +1,15 @@
 package de.metas.ui.web.order.sales.hu.reservation;
 
-import org.springframework.stereotype.Service;
-
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.inoutcandidate.api.Packageable;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
+import de.metas.picking.api.Packageable;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.handlingunits.HUIdsFilterHelper;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 /*
  * #%L
