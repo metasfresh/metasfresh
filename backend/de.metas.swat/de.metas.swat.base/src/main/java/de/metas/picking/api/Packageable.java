@@ -54,6 +54,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 /** Lines which have to be picked and delivered */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @Value
 @Builder
 public class Packageable

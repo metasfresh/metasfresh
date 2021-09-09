@@ -181,8 +181,6 @@ public class AddQtyToHUCommand
 
 	/**
 	 * Source - take the preselected sourceHUs
-	 *
-	 * @return
 	 */
 	private HUListAllocationSourceDestination createFromSourceHUsAllocationSource()
 	{
@@ -202,9 +200,8 @@ public class AddQtyToHUCommand
 		{
 			throw new AdempiereException("not an active HU").setParameter("hu", hu);
 		}
-		final IAllocationDestination destination = HUListAllocationSourceDestination.of(hu);
 
-		return destination;
+		return HUListAllocationSourceDestination.of(hu);
 	}
 
 	private void addQtyToCandidate(
