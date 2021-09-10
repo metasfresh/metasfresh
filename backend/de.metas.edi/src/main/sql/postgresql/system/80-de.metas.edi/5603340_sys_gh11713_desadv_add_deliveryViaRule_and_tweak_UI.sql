@@ -269,3 +269,20 @@ INSERT INTO EXP_FormatLine (AD_Client_ID,AD_Column_ID,AD_Org_ID,Created,CreatedB
 UPDATE EXP_FormatLine SET IsActive='Y',Updated=TO_TIMESTAMP('2021-09-10 07:18:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=550324
 ;
 
+--
+-- a bit of cleanup among old export formats
+-- 2021-09-10T05:22:50.055Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE EXP_Format SET IsActive='N',Updated=TO_TIMESTAMP('2021-09-10 07:22:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_Format_ID=540387
+;
+
+-- 2021-09-10T05:22:53.895Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE EXP_Format SET IsActive='N',Updated=TO_TIMESTAMP('2021-09-10 07:22:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_Format_ID=540388
+;
+
+-- 2021-09-10T05:23:34.054Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE EXP_Format SET IsActive='N',Updated=TO_TIMESTAMP('2021-09-10 07:23:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_Format_ID=540397
+;
+
