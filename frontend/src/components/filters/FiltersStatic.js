@@ -1,17 +1,18 @@
 import React, { PureComponent } from 'react';
 import PropTypes from 'prop-types';
-import { clearStaticFilters } from '../../actions/FiltersActions';
 import { connect } from 'react-redux';
+
 import { deleteStaticFilter } from '../../api';
-import { push } from 'react-router-redux';
+import { clearStaticFilters } from '../../actions/FiltersActions';
+import history from '../../services/History';
 
 export class FiltersStatic extends PureComponent {
   clearItemOfStaticFilters = (staticFilterId) => {
-    const { filterId, clearStaticFilters, windowId, viewId, push } = this.props;
+    const { filterId, clearStaticFilters, windowId, viewId } = this.props;
 
     if (filterId) {
       deleteStaticFilter(windowId, viewId, staticFilterId).then((response) => {
-        push(`/window/${windowId}?viewId=${response.data.viewId}`);
+        history.push(`/window/${windowId}?viewId=${response.data.viewId}`);
 
         clearStaticFilters({
           filterId,
@@ -50,13 +51,6 @@ FiltersStatic.propTypes = {
   clearStaticFilters: PropTypes.func,
   windowId: PropTypes.string,
   viewId: PropTypes.string,
-  push: PropTypes.func,
 };
 
-export default connect(
-  null,
-  {
-    clearStaticFilters,
-    push,
-  }
-)(FiltersStatic);
+export default connect(null, { clearStaticFilters })(FiltersStatic);

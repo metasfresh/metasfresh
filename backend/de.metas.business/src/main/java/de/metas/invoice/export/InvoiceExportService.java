@@ -131,7 +131,7 @@ public class InvoiceExportService
 		{
 			byteArrayData = ByteStreams.toByteArray(exportResult.getData());
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
 		}

@@ -36,8 +36,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD_Candidate_StepDefTable>
 {
 	@DataTableType
@@ -58,7 +56,13 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 			final int productId = DataTableUtil.extractIntForColumnName(dataTableRow, "M_Product_ID");
 
 			final Instant time = DataTableUtil.extractInstantForColumnName(dataTableRow, "Time");
-			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "Qty");
+			BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "DisplayQty");
+
+			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN))
+			{
+				qty = qty.negate();
+			}
+
 			final BigDecimal atp = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "ATP");
 
 			final MD_Candidate_StepDefTable.MaterialDispoTableRow tableRow = MD_Candidate_StepDefTable.MaterialDispoTableRow.builder()

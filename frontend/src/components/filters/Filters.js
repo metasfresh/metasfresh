@@ -147,7 +147,6 @@ class Filters extends PureComponent {
     const {
       windowType,
       viewId,
-      resetInitialValues,
       allowOutsideClick,
       modalVisible,
       filters,
@@ -208,7 +207,6 @@ class Filters extends PureComponent {
                     notValidFields,
                     viewId,
                     widgetShown,
-                    resetInitialValues,
                     allowOutsideClick,
                     modalVisible,
                   }}
@@ -263,12 +261,10 @@ class Filters extends PureComponent {
 
 Filters.propTypes = {
   windowType: PropTypes.string.isRequired,
-  resetInitialValues: PropTypes.func.isRequired,
   viewId: PropTypes.string,
   updateDocList: PropTypes.any,
   filtersActive: PropTypes.any,
   filterData: PropTypes.any,
-  initialValuesNulled: PropTypes.any,
   allowOutsideClick: PropTypes.bool,
   modalVisible: PropTypes.bool,
   filterId: PropTypes.string,
@@ -312,12 +308,9 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
-export default connect(
-  mapStateToProps,
-  {
-    updateFilterWidgetShown,
-    updateActiveFilters,
-    clearAllFilters,
-    updateNotValidFields,
-  }
-)(Filters);
+export default connect(mapStateToProps, {
+  updateFilterWidgetShown,
+  updateActiveFilters,
+  clearAllFilters,
+  updateNotValidFields,
+})(Filters);

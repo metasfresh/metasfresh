@@ -1,7 +1,7 @@
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import nock from 'nock';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import actionsHandler, {
   initialSingleActionsState,
@@ -29,8 +29,7 @@ const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createState = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       viewHandler: initialViewsState,
       actionsHandler: { ...actionsHandler(undefined, {}) },
@@ -145,7 +144,7 @@ describe('QuickActions', () => {
     expect(store.getActions()).toEqual([]);
   });
 
-  it(`fetch included parent's quick actions`, async (done) => {
+  it(`fetch included parent's quick actions`, async () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const childLayoutResponse = gridLayoutFixtures.layout2_child;
     const parentRowResponse = gridRowFixtures.data3_parent;
@@ -246,11 +245,10 @@ describe('QuickActions', () => {
           expect.arrayContaining(expectedActions)
         );
 
-        done();
       });
   });
 
-  it(`fetch included parent and child quick actions`, async (done) => {
+  it(`fetch included parent and child quick actions`, async () => {
     const parentLayoutResponse = gridLayoutFixtures.layout2_parent;
     const childLayoutResponse = gridLayoutFixtures.layout2_child;
     const parentRowResponse = gridRowFixtures.data3_parent;
@@ -358,11 +356,10 @@ describe('QuickActions', () => {
           expect.arrayContaining(expectedActions)
         );
 
-        done();
       });
   });
 
-  it(`fetch underlying view's actions when modal with included view is visible`, async (done) => {
+  it(`fetch underlying view's actions when modal with included view is visible`, async () => {
     const layoutResponse = gridLayoutFixtures.layout3_payments;
     const rowResponse = gridRowFixtures.data4_payments;
     const { windowId, viewId, result } = rowResponse;
@@ -430,7 +427,6 @@ describe('QuickActions', () => {
           expect.arrayContaining(expectedActions)
         );
 
-        done();
       });
   });
 });

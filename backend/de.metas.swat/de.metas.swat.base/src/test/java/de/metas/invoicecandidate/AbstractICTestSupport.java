@@ -1,47 +1,69 @@
 package de.metas.invoicecandidate;
 
-import static de.metas.util.Check.assumeGreaterThanZero;
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.aggregation.api.IAggregationFactory;
+import de.metas.aggregation.api.IAggregationKeyBuilder;
+import de.metas.aggregation.model.C_Aggregation_Attribute_Builder;
+import de.metas.aggregation.model.C_Aggregation_Builder;
+import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.aggregation.model.X_C_Aggregation;
+import de.metas.aggregation.model.X_C_AggregationItem;
+import de.metas.aggregation.model.X_C_Aggregation_Attribute;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyBL;
+import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
+import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
+import de.metas.invoicecandidate.api.IAggregationDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
+import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
+import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
+import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
+import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
+import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
+import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
+import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.IAggregator;
+import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
+import de.metas.location.CountryId;
+import de.metas.notification.INotificationRepository;
+import de.metas.notification.impl.NotificationRepository;
+import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
+import de.metas.organization.OrgId;
+import de.metas.organization.StoreCreditCardNumberMode;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.testsupport.AbstractTestSupport;
+import de.metas.uom.UomId;
+import de.metas.user.UserRepository;
+import de.metas.util.Services;
+import lombok.Getter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -76,63 +98,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-import de.metas.aggregation.api.IAggregationFactory;
-import de.metas.aggregation.api.IAggregationKeyBuilder;
-import de.metas.aggregation.model.C_Aggregation_Attribute_Builder;
-import de.metas.aggregation.model.C_Aggregation_Builder;
-import de.metas.aggregation.model.I_C_Aggregation;
-import de.metas.aggregation.model.X_C_Aggregation;
-import de.metas.aggregation.model.X_C_AggregationItem;
-import de.metas.aggregation.model.X_C_Aggregation_Attribute;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.business.BusinessTestHelper;
-import de.metas.currency.Currency;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
-import de.metas.currency.impl.PlainCurrencyBL;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
-import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
-import de.metas.invoicecandidate.api.IAggregationDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
-import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
-import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
-import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
-import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
-import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
-import de.metas.invoicecandidate.modelvalidator.C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IAggregator;
-import de.metas.invoicecandidate.spi.impl.PlainInvoiceCandidateHandler;
-import de.metas.invoicecandidate.spi.impl.aggregator.standard.DefaultAggregator;
-import de.metas.location.CountryId;
-import de.metas.notification.INotificationRepository;
-import de.metas.notification.impl.NotificationRepository;
-import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
-import de.metas.organization.OrgId;
-import de.metas.organization.StoreCreditCardNumberMode;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.testsupport.AbstractTestSupport;
-import de.metas.uom.UomId;
-import de.metas.user.UserRepository;
-import de.metas.util.Services;
-import lombok.Getter;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+import static de.metas.util.Check.assumeGreaterThanZero;
+import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AbstractICTestSupport extends AbstractTestSupport
 {
@@ -408,7 +385,9 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		tax_NotFound = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
 		tax_NotFound.setC_Tax_ID(100);
-		tax_NotFound.setC_TaxCategory(taxCategory_None);
+		tax_NotFound.setC_TaxCategory_ID(taxCategory_None.getC_TaxCategory_ID());
+		tax_NotFound.setValidFrom(plvDate);
+		tax_NotFound.setC_Country_ID(100);
 		InterfaceWrapperHelper.save(tax_NotFound);
 
 		final I_C_TaxCategory taxCategory_Default = InterfaceWrapperHelper.newInstance(I_C_TaxCategory.class);
@@ -418,7 +397,9 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		tax_Default = InterfaceWrapperHelper.newInstance(I_C_Tax.class);
 		tax_Default.setC_Tax_ID(1000000);
-		tax_Default.setC_TaxCategory(taxCategory_Default);
+		tax_Default.setC_TaxCategory_ID(taxCategory_Default.getC_TaxCategory_ID());
+		tax_Default.setValidFrom(plvDate);
+		tax_Default.setC_Country_ID(100);
 		InterfaceWrapperHelper.save(tax_Default);
 	}
 

@@ -36,10 +36,11 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
@@ -49,6 +50,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -97,6 +99,8 @@ public class CalloutOrder extends CalloutEngine
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
 	private static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
+
+	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -354,7 +358,8 @@ public class CalloutOrder extends CalloutEngine
 				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
 				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
-				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID "
+				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID, "
+				+ " p.AD_Org_ID "
 				+ " FROM C_BPartner p"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
@@ -385,6 +390,18 @@ public class CalloutOrder extends CalloutEngine
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
+				final OrgId bpartnerOrgId = OrgId.ofRepoId(rs.getInt("AD_Org_ID"));
+
+				if (isCopyOrgFromBPartner())
+				{
+					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, Access.WRITE);
+
+					if (userHasOrgPermissions)
+					{
+						order.setAD_Org_ID(bpartnerOrgId.getRepoId());
+					}
+				}
+
 				// metas: Auftragsart aus Kunde
 				if (IsSOTrx)
 				{
@@ -586,6 +603,12 @@ public class CalloutOrder extends CalloutEngine
 		return NO_ERROR;
 	} // bPartner
 
+	private boolean isCopyOrgFromBPartner()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CopyOrgFromBPartner, false);
+	}
+
 	private String getDefaultInvoiceRule()
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -606,22 +629,22 @@ public class CalloutOrder extends CalloutEngine
 		final int adOrgId = order.getAD_Org_ID();
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.defaultDocType(true)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																				   .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																				   .defaultDocType(true)
+																				   .adClientId(adClientId)
+																				   .adOrgId(adOrgId)
+																				   .build());
 		if (defaultDocTypeId != null)
 		{
 			return defaultDocTypeId;
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																						 .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																						 .docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+																						 .adClientId(adClientId)
+																						 .adOrgId(adOrgId)
+																						 .build());
 
 		return standardOrderDocTypeId;
 	}
@@ -1006,11 +1029,11 @@ public class CalloutOrder extends CalloutEngine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.resultUOM(ResultUOM.CONTEXT_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .resultUOM(ResultUOM.CONTEXT_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+										 .updateLineNetAmt(true)
+										 .build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)
@@ -1074,8 +1097,8 @@ public class CalloutOrder extends CalloutEngine
 
 		//
 		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
-				shipDate, AD_Org_ID, M_Warehouse_ID,
-				billC_BPartner_Location_ID, shipC_BPartner_Location_ID, order.isSOTrx());
+									 shipDate, AD_Org_ID, M_Warehouse_ID,
+									 billC_BPartner_Location_ID, shipC_BPartner_Location_ID, order.isSOTrx());
 		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)
@@ -1116,8 +1139,8 @@ public class CalloutOrder extends CalloutEngine
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
-					.applyPriceLimitRestrictions(false)
-					.build());
+											 .applyPriceLimitRestrictions(false)
+											 .build());
 
 			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
@@ -1343,8 +1366,8 @@ public class CalloutOrder extends CalloutEngine
 						C_OrderLine_ID = 0;
 					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
-							M_Warehouse_ID, M_Product_ID,
-							M_AttributeSetInstance_ID, C_OrderLine_ID);
+																	   M_Warehouse_ID, M_Product_ID,
+																	   M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
 					{
 						notReserved = BigDecimal.ZERO;

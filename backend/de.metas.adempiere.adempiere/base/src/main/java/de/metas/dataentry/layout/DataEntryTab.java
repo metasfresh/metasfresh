@@ -66,7 +66,7 @@ public class DataEntryTab
 			@NonNull final ITranslatableString caption,
 			@NonNull final ITranslatableString description,
 			@NonNull final String internalName,
-			@NonNull final boolean availableInApi,
+			final boolean availableInApi,
 			@NonNull final DocumentLinkColumnName documentLinkColumnName,
 			@Singular final List<DataEntrySubTab> subTabs)
 	{

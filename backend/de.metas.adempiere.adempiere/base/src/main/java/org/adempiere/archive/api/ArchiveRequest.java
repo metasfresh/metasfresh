@@ -32,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.util.Properties;
@@ -43,7 +44,7 @@ public class ArchiveRequest
 	@Nullable
 	DocumentReportFlavor flavor;
 
-	byte[] data;
+	Resource data;
 
 	/**
 	 * if true, the document will be archived anyway (even if auto-archive is not activated)
@@ -54,6 +55,9 @@ public class ArchiveRequest
 	 * save I_AD_Archive record
 	 */
 	boolean save;
+
+	@Nullable
+	Integer asyncBatchId;
 
 	@NonNull
 	@Builder.Default
@@ -73,6 +77,8 @@ public class ArchiveRequest
 	String archiveName;
 	@Nullable
 	BPartnerId bpartnerId;
+	@Nullable
+	String documentNo;
 
 	@Nullable
 	Language language;

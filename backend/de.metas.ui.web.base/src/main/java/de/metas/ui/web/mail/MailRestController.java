@@ -28,10 +28,12 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
@@ -183,7 +185,9 @@ public class MailRestController
 						.roleId(userSession.getLoggedRoleId())
 						.build());
 
-				attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, contextDocumentPrint.getReportFilename(), contextDocumentPrint.getReportData()));
+				attachFile(emailId, () -> mailAttachmentsRepo.createAttachment(emailId, 
+																			   contextDocumentPrint.getReportFilename(), 
+																			   contextDocumentPrint.getReportData()));
 			}
 			catch (final Exception ex)
 			{
@@ -394,15 +398,15 @@ public class MailRestController
 
 	@GetMapping("/{emailId}/field/to/typeahead")
 	@ApiOperation("Typeahead endpoint for any To field")
-	public JSONLookupValuesList getToTypeahead(@PathVariable("emailId") final String emailId, @RequestParam("query") final String query)
+	public JSONLookupValuesPage getToTypeahead(@PathVariable("emailId") final String emailId, @RequestParam("query") final String query)
 	{
 		userSession.assertLoggedIn();
-		return toJSONLookupValuesList(mailRepo.getToTypeahead(emailId, query));
+		return toJson(mailRepo.getToTypeahead(emailId, query));
 	}
 
-	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
+	private JSONLookupValuesPage toJson(final LookupValuesPage page)
 	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
+		return JSONLookupValuesPage.of(page, userSession.getAD_Language());
 	}
 
 	@PostMapping("/{emailId}/field/attachments")

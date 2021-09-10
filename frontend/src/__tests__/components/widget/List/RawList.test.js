@@ -1,9 +1,8 @@
 import React from 'react';
-import { List } from 'immutable';
 import { mount, shallow } from 'enzyme';
-import uuid from 'uuid/v4';
+import { v4 as uuidv4 } from 'uuid';
 
-import RawList, { RawList as RawListBare } from '../../../../components/widget/List/RawList';
+import { RawList as RawListBare } from '../../../../components/widget/List/RawList';
 import SelectionDropdown from '../../../../components/widget/SelectionDropdown';
 import fixtures from '../../../../../test_setup/fixtures/raw_list.json';
 
@@ -15,8 +14,8 @@ const createDummyProps = function(props, data) {
     onOpenDropdown: jest.fn(),
     onCloseDropdown: jest.fn(),
     ...props,
-    list: List(data),
-    listHash: uuid(),
+    list: data,
+    listHash: uuidv4(),
   };
 };
 
@@ -31,7 +30,7 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const wrapper = shallow(<RawListBare {...props} />);
+      const wrapper = mount(<RawListBare {...props} />);
 
       expect(wrapper.html()).toContain('focused');
       expect(wrapper.find('input').length).toBe(1);
@@ -73,9 +72,7 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const wrapper = mount(
-        <RawListBare {...props} />
-      );
+      const wrapper = mount(<RawListBare {...props} />);
       expect(wrapper.find('.input-dropdown-container.focused').length).toBe(0);
 
       wrapper.find('.input-dropdown-container').simulate('click');
@@ -108,19 +105,17 @@ describe('RawList component', () => {
         stopPropagation: jest.fn(),
       };
 
-      const wrapper = shallow(<RawListBare {...props} />);
+      const wrapper = mount(<RawListBare {...props} />);
 
-      wrapper.find('.input-dropdown-container').simulate(
-        'keyDown',
-        { ...eventProps, key: 'Tab' }
-      );
+      wrapper
+        .find('.input-dropdown-container')
+        .simulate('keyDown', { ...eventProps, key: 'Tab' });
 
       expect(onSelectSpy).toHaveBeenCalledWith(null);
 
-      wrapper.find('.input-dropdown-container').simulate(
-        'keyDown',
-        { ...eventProps, key: 'ArrowDown' }
-      );
+      wrapper
+        .find('.input-dropdown-container')
+        .simulate('keyDown', { ...eventProps, key: 'ArrowDown' });
       expect(onOpenDropdownSpy).toHaveBeenCalled();
     });
 
@@ -137,9 +132,7 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const wrapper = mount(
-        <RawListBare {...props} />
-      );
+      const wrapper = mount(<RawListBare {...props} />);
       expect(wrapper.find('.input-dropdown-container.focused').length).toBe(0);
 
       wrapper.find('.input-dropdown-container').simulate('click');
@@ -155,7 +148,8 @@ describe('RawList component', () => {
     });
 
     it('list hides dropdown after selecting an option', () => {
-      jest.useFakeTimers();
+      jest.useFakeTimers('legacy'); // used 'legacy' because the latest Jest 27 has breaking changes for fakeTimers. 
+                                    // It seems Jest contributors didn't updated the documentation on time
 
       const onCloseDropdownSpy = jest.fn();
       const onSelectSpy = jest.fn();
@@ -169,11 +163,6 @@ describe('RawList component', () => {
         },
         fixtures.data1.listData
       );
-
-      const eventProps = {
-        preventDefault: jest.fn(),
-        stopPropagation: jest.fn(),
-      };
 
       const focusDropdownSpy = jest.spyOn(RawListBare.prototype, 'focusDropdown');
       RawListBare.prototype.dropdown = { offsetWidth: 100 };
@@ -207,12 +196,9 @@ describe('RawList component', () => {
         fixtures.data1.listData
       );
 
-      const eventProps = {
-        preventDefault: jest.fn(),
-        stopPropagation: jest.fn(),
-      };
-
-      const focusDropdownSpy = jest.spyOn(RawListBare.prototype, 'focusDropdown');
+      const focusDropdownSpy = jest.spyOn(
+        RawListBare.prototype, 'focusDropdown'
+      );
       RawListBare.prototype.dropdown = { offsetWidth: 100 };
 
       const wrapper = mount(<RawListBare {...props} />);
@@ -231,18 +217,18 @@ describe('RawList component', () => {
       expect(focusDropdownSpy).not.toHaveBeenCalled();
     });
 
-    describe('with elements attached to dummy element', function() {
+    describe('with elements attached to dummy element', function () {
       let wrapper;
 
-      beforeAll(function() {
+      beforeAll(function () {
         document.body.innerHTML = '<div></div>';
       });
 
-      beforeEach(function() {
-        document.body.appendChild(document.createElement('div'))
+      beforeEach(function () {
+        document.body.appendChild(document.createElement('div'));
       });
 
-      afterEach(function() {
+      afterEach(function () {
         if (wrapper.detach) {
           wrapper.detach();
         }
@@ -270,12 +256,13 @@ describe('RawList component', () => {
           stopPropagation: jest.fn(),
         };
 
-        wrapper = mount(
-          <RawListBare {...props} />,
-          { attachTo: document.body.firstChild }
-        );
+        wrapper = mount(<RawListBare {...props} />, {
+          attachTo: document.body.firstChild,
+        });
 
-        expect(wrapper.find('.input-dropdown-container.focused').length).toBe(1);
+        expect(wrapper.find('.input-dropdown-container.focused').length).toBe(
+          1
+        );
 
         map.keydown({ ...eventProps, key: 'Tab' });
         wrapper.instance().forceUpdate();

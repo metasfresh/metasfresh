@@ -80,4 +80,7 @@ class PurchaseCandidateImmutableFields
 
 	@Nullable
 	PurchaseCandidateSource source;
+
+	@Nullable
+	String externalPurchaseOrderUrl;
 }

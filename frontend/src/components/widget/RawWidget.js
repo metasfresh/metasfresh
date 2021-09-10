@@ -2,12 +2,11 @@ import React, { createRef, PureComponent } from 'react';
 import { CSSTransition } from 'react-transition-group';
 import Moment from 'moment';
 import classnames from 'classnames';
-import { List as ImmutableList } from 'immutable';
 
 import { shouldPatch, getWidgetField } from '../../utils/widgetHelpers';
 import { RawWidgetPropTypes, RawWidgetDefaultProps } from './PropTypes';
 import { DATE_TIMEZONE_FORMAT } from '../../constants/Constants';
-
+import BarcodeScannerBtn from '../../components/widget/BarcodeScanner/BarcodeScannerBtn';
 import WidgetRenderer from './WidgetRenderer';
 import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
@@ -167,12 +166,8 @@ export class RawWidget extends PureComponent {
    * duplicated focus actions in the parent TableRow
    */
   handleFocus = () => {
-    const {
-      handleFocus,
-      listenOnKeysFalse,
-      disableShortcut,
-      widgetType,
-    } = this.props;
+    const { handleFocus, listenOnKeysFalse, disableShortcut, widgetType } =
+      this.props;
 
     // fix issue in Cypress with cut underscores - false positive failing tests
     // - commented out because if you focus on an item and you disable the shourtcuts
@@ -210,12 +205,10 @@ export class RawWidget extends PureComponent {
       listenOnKeysTrue,
       enableOnClickOutside,
     } = this.props;
+    const { isFocused } = this.state;
 
-    this.setState(
-      {
-        isFocused: false,
-      },
-      () => {
+    if (isFocused) {
+      this.setState({ isFocused: false }, () => {
         enableOnClickOutside && enableOnClickOutside();
         allowShortcut();
         handleBlur && handleBlur();
@@ -224,8 +217,8 @@ export class RawWidget extends PureComponent {
         if (widgetField) {
           this.handlePatch(widgetField, value, id);
         }
-      }
-    );
+      });
+    }
   };
 
   /**
@@ -262,13 +255,8 @@ export class RawWidget extends PureComponent {
    * @param {*} e - DOM event
    */
   handleKeyDown = (e) => {
-    const {
-      lastFormField,
-      widgetType,
-      filterWidget,
-      fields,
-      closeTableField,
-    } = this.props;
+    const { lastFormField, widgetType, filterWidget, fields, closeTableField } =
+      this.props;
     const value = e.target.value;
     const { key } = e;
     const widgetField = getWidgetField({ filterWidget, fields });
@@ -276,13 +264,13 @@ export class RawWidget extends PureComponent {
     this.updateTypedCharacters(e.target.value);
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
-    const NumberWidgets = ImmutableList([
+    const NumberWidgets = [
       'Integer',
       'Amount',
       'Quantity',
       'Number',
       'CostPrice',
-    ]);
+    ];
     if (
       (key === 'ArrowUp' || key === 'ArrowDown') &&
       NumberWidgets.includes(widgetType)
@@ -334,13 +322,8 @@ export class RawWidget extends PureComponent {
    * @param {*} isForce
    */
   handlePatch = (property, value, id, valueTo, isForce) => {
-    const {
-      handlePatch,
-      inProgress,
-      widgetType,
-      maxLength,
-      widgetData,
-    } = this.props;
+    const { handlePatch, inProgress, widgetType, maxLength, widgetData } =
+      this.props;
     const { cachedValue } = this.state;
     const willPatch = shouldPatch({
       property,
@@ -491,6 +474,34 @@ export class RawWidget extends PureComponent {
     );
   };
 
+  /**
+   * @method isScanQRbuttonPanel
+   * @returns boolean value indicating that we care in the case where the widget is rendered within a panel layout and has a barcodeScannerType (qrcode)
+   */
+  isScanQRbuttonPanel = () => {
+    const { barcodeScannerType, layoutType } = this.props;
+    return barcodeScannerType === 'qrCode' && layoutType === 'panel'
+      ? true
+      : false;
+  };
+
+  /**
+   * @method getAdaptedFieldColSize
+   * @returns adaptive size for the case when we have barcodeScannerType and `panel` layout type
+   */
+  getAdaptedFieldColSize = () =>
+    this.isScanQRbuttonPanel() ? 'col-sm-7' : 'col-sm-9';
+
+  /**
+   * @method onDetectedQR
+   * @summary After the QR code is detected the value of the field is updated with the corresponding string
+   * @param {string} qrCode
+   */
+  onDetectedQR = (qrCode) => {
+    const { widgetField, handleChange } = this.props;
+    handleChange(widgetField, qrCode);
+  };
+
   render() {
     const {
       caption,
@@ -512,12 +523,10 @@ export class RawWidget extends PureComponent {
       fieldInputClass,
     } = this.props;
 
-    const {
-      errorPopup,
-      clearedFieldWarning,
-      tooltipToggled,
-      isFocused,
-    } = this.state;
+    const fieldColSize = this.getAdaptedFieldColSize();
+
+    const { errorPopup, clearedFieldWarning, tooltipToggled, isFocused } =
+      this.state;
     const widgetBody = this.renderWidget();
     const { validStatus, warning } = widgetData[0];
     const quickInput = subentity === 'quickInput';
@@ -578,7 +587,8 @@ export class RawWidget extends PureComponent {
             ? 'col-sm-12 '
             : type === 'primaryLongLabels'
             ? 'col-sm-6'
-            : 'col-sm-9 ') + (fields[0].devices ? 'form-group-flex' : '');
+            : fieldColSize + ' ') +
+          (fields[0].devices ? 'form-group-flex' : '');
       }
     }
 
@@ -673,6 +683,10 @@ export class RawWidget extends PureComponent {
               />
             )}
           </div>
+          {/* this is a special case for displaying the scan button on the right side of the field */}
+          {this.isScanQRbuttonPanel() && (
+            <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+          )}
         </div>
       </div>
     );

@@ -1,41 +1,20 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+
 /** Generated Interface for ExternalSystem_Config_Shopware6
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_Shopware6 
+public interface I_ExternalSystem_Config_Shopware6
 {
 
 	String Table_Name = "ExternalSystem_Config_Shopware6";
 
-//	/** AD_Table_ID=541585 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=541585 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -228,6 +207,52 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
 
 	/**
+	 * Set Normal VAT rates.
+	 * Comma delimited list of freightcost tax rates for which the "Freight cost product (normal VAT)" shall be used. Example: "0, 7.7, 19"
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFreightCost_NormalVAT_Rates (@Nullable java.lang.String FreightCost_NormalVAT_Rates);
+
+	/**
+	 * Get Normal VAT rates.
+	 * Comma delimited list of freightcost tax rates for which the "Freight cost product (normal VAT)" shall be used. Example: "0, 7.7, 19"
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFreightCost_NormalVAT_Rates();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_FreightCost_NormalVAT_Rates = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "FreightCost_NormalVAT_Rates", null);
+	String COLUMNNAME_FreightCost_NormalVAT_Rates = "FreightCost_NormalVAT_Rates";
+
+	/**
+	 * Set Reduced VAT rates.
+	 * Comma delimited list of freightcost tax rates for which the "Freight cost product (reduced VAT)" shall be used. Example: "0, 7.7, 19"
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFreightCost_Reduced_VAT_Rates (@Nullable java.lang.String FreightCost_Reduced_VAT_Rates);
+
+	/**
+	 * Get Reduced VAT rates.
+	 * Comma delimited list of freightcost tax rates for which the "Freight cost product (reduced VAT)" shall be used. Example: "0, 7.7, 19"
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFreightCost_Reduced_VAT_Rates();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_FreightCost_Reduced_VAT_Rates = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "FreightCost_Reduced_VAT_Rates", null);
+	String COLUMNNAME_FreightCost_Reduced_VAT_Rates = "FreightCost_Reduced_VAT_Rates";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -298,7 +323,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Set Sales rep JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the sales rep can be found.
+	 * JSON-Path expression that specifies where within a customized Shopware order the sales rep's search-key can be found.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -308,7 +333,7 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	/**
 	 * Get Sales rep JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the sales rep can be found.
+	 * JSON-Path expression that specifies where within a customized Shopware order the sales rep's search-key can be found.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -318,6 +343,50 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathSalesRepID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathSalesRepID", null);
 	String COLUMNNAME_JSONPathSalesRepID = "JSONPathSalesRepID";
+
+	/**
+	 * Set Freight cost product (normal VAT).
+	 * If a shopware order's freight costs have the normal VAT rate, then a line with this product is created. The product's tax category needs to have a tax with a matching rate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_FreightCost_NormalVAT_Product_ID (int M_FreightCost_NormalVAT_Product_ID);
+
+	/**
+	 * Get Freight cost product (normal VAT).
+	 * If a shopware order's freight costs have the normal VAT rate, then a line with this product is created. The product's tax category needs to have a tax with a matching rate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_FreightCost_NormalVAT_Product_ID();
+
+	String COLUMNNAME_M_FreightCost_NormalVAT_Product_ID = "M_FreightCost_NormalVAT_Product_ID";
+
+	/**
+	 * Set Freight cost product (reduced VAT).
+	 * If a shopware order's freight costs have the reduced VAT rate, then a line with this product is created. The product's tax category needs to have a tax with a matching rate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_FreightCost_ReducedVAT_Product_ID (int M_FreightCost_ReducedVAT_Product_ID);
+
+	/**
+	 * Get Freight cost product (reduced VAT).
+	 * If a shopware order's freight costs have the reduced VAT rate, then a line with this product is created. The product's tax category needs to have a tax with a matching rate.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_FreightCost_ReducedVAT_Product_ID();
+
+	String COLUMNNAME_M_FreightCost_ReducedVAT_Product_ID = "M_FreightCost_ReducedVAT_Product_ID";
 
 	/**
 	 * Get Updated.

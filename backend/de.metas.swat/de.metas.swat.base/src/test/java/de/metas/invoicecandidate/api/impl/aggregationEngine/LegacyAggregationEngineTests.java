@@ -32,6 +32,7 @@ import static org.junit.Assert.assertThat;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.invoice.InvoiceDocBaseType;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.X_C_DocType;
@@ -112,7 +113,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		Assert.assertEquals("We are expecting only one invoice: " + invoices, 1, invoices.size());
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		Assert.assertEquals("Invalid DocBaseType", X_C_DocType.DOCBASETYPE_ARInvoice, invoice.getDocBaseType());
+		Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.CustomerInvoice, invoice.getDocBaseType());
 		validateInvoiceHeader("Invoice", invoice, ic1);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
@@ -175,7 +176,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		Assert.assertEquals("We are expecting only one invoice: " + invoices, 1, invoices.size());
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		Assert.assertEquals("Invalid DocBaseType", X_C_DocType.DOCBASETYPE_APInvoice, invoice.getDocBaseType());
+		Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.VendorInvoice, invoice.getDocBaseType());
 		validateInvoiceHeader("Invoice", invoice, ic1);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
@@ -223,7 +224,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		Assert.assertEquals("We are expecting only one invoice: " + invoices, 1, invoices.size());
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		Assert.assertEquals("Invalid DocBaseType", X_C_DocType.DOCBASETYPE_ARCreditMemo, invoice.getDocBaseType());
+		Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.CustomerCreditMemo, invoice.getDocBaseType());
 		validateInvoiceHeader("Invoice", invoice, manualIc1);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);
@@ -274,7 +275,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		Assert.assertEquals("We are expecting only one invoice: " + invoices, 1, invoices.size());
 
 		final IInvoiceHeader invoice = invoices.get(0);
-		Assert.assertEquals("Invalid DocBaseType", X_C_DocType.DOCBASETYPE_APCreditMemo, invoice.getDocBaseType());
+		Assert.assertEquals("Invalid DocBaseType", InvoiceDocBaseType.VendorCreditMemo, invoice.getDocBaseType());
 		validateInvoiceHeader("Invoice", invoice, manualIc1);
 
 		final List<IInvoiceLineRW> invoiceLines = getInvoiceLines(invoice);

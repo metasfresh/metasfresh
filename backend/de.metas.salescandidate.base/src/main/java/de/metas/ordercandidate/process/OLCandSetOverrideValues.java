@@ -22,30 +22,46 @@ package de.metas.ordercandidate.process;
  * #L%
  */
 
-
-import java.util.Iterator;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
-import org.adempiere.util.api.IParams;
-
 import de.metas.ordercandidate.api.IOLCandUpdateBL;
 import de.metas.ordercandidate.api.OLCandUpdateResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.process.ProcessParams;
 import de.metas.security.permissions.Access;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.util.api.IParams;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class OLCandSetOverrideValues extends JavaProcess
 {
+	private final static String PARAM_BPartner = I_C_OLCand.COLUMNNAME_C_BPartner_Override_ID;
+	private final static String PARAM_Location = I_C_OLCand.COLUMNNAME_C_BP_Location_Override_ID;
+
 	private IParams params = null;
 
 	@Override
 	protected void prepare()
 	{
-		this.params = getParameterAsIParams();
+		final List<ProcessInfoParameter> parameterList = new ArrayList<>(getProcessInfo().getParameter());
+		final Map<String, ProcessInfoParameter> parameters = parameterList.stream().collect(Collectors.toMap(ProcessInfoParameter::getParameterName, param -> param));
+
+		if (Check.isNotBlank(parameters.get(PARAM_BPartner).getParameterAsString()) && Check.isBlank(parameters.get(PARAM_Location).getParameterAsString()))
+		{
+			throw new FillMandatoryException(PARAM_Location);
+		}
+		params = new ProcessParams(parameterList);
 	}
 
 	@Override

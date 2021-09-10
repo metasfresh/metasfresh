@@ -46,15 +46,8 @@ export function getFormattedDate(value, FORMAT) {
  * @param {boolean} forcedPrimary
  */
 export function getClassNames({ icon, forcedPrimary } = {}) {
-  const {
-    widgetData,
-    gridAlign,
-    type,
-    updated,
-    rowId,
-    isModal,
-    isFocused,
-  } = this.props;
+  const { widgetData, gridAlign, type, updated, rowId, isModal, isFocused } =
+    this.props;
   const { readonly, value, mandatory, validStatus } = widgetData[0];
 
   const ret = cx(`input-block`, {

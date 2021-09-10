@@ -2,7 +2,24 @@ import Moment from 'moment';
 import queryString from 'query-string';
 import counterpart from 'counterpart';
 
+import history from '../services/History';
 import { DATE_FORMAT } from '../constants/Constants';
+
+/**
+ * @method updateUri
+ * @summary Prepends viewId/page/sorting to the url
+ */
+export function updateUri(pathname, query, updatedQuery) {
+  const fullPath = window.location.href;
+  const queryObject = {
+    ...query,
+    ...updatedQuery,
+  };
+  const queryUrl = queryString.stringify(queryObject);
+  const url = `${pathname}?${queryUrl}`;
+
+  !fullPath.includes('viewId') ? history.replace(url) : history.push(url);
+}
 
 // TODO: Move to api ?
 export const getQueryString = (query) =>
@@ -255,7 +272,7 @@ export function deepUnfreeze(obj) {
     } else if (Array.isArray(obj)) {
       return obj.map((item) => unfreezeProp(item));
     } else if (typeof obj === 'function') {
-      const target = function() {
+      const target = function () {
         obj.call(this, ...arguments);
       };
       target.prototype = Object.create(obj.prototype);

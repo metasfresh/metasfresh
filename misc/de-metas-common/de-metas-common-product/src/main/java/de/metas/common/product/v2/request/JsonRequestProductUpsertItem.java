@@ -30,7 +30,10 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.EXTERNAL_VERSION_DOC;
 
 @Value
 @Builder(toBuilder = true)
@@ -41,16 +44,29 @@ public class JsonRequestProductUpsertItem
 	@NonNull
 	String productIdentifier;
 
-	@ApiModelProperty(position = 10)
+	@ApiModelProperty(position = 20, //
+			value = "The version of the product." + EXTERNAL_VERSION_DOC)
+	String externalVersion;
+
+	@ApiModelProperty(position = 25, //
+			value = "URL of the resource in the target external system.")
+	@Nullable
+	String externalReferenceUrl;
+
+	@ApiModelProperty(position = 30)
 	@NonNull
 	JsonRequestProduct requestProduct;
 
 	@JsonCreator
 	public JsonRequestProductUpsertItem(
 			@NonNull @JsonProperty("productIdentifier") final String productIdentifier,
+			@Nullable @JsonProperty("externalVersion") final String externalVersion,
+			@Nullable @JsonProperty("externalReferenceUrl") final String externalReferenceUrl,
 			@NonNull @JsonProperty("requestProduct") final JsonRequestProduct requestProduct)
 	{
 		this.productIdentifier = productIdentifier;
+		this.externalVersion = externalVersion;
 		this.requestProduct = requestProduct;
+		this.externalReferenceUrl = externalReferenceUrl;
 	}
 }

@@ -3,13 +3,9 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import DebounceInput from 'react-debounce-input';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 
-import {
-  nodePathsRequest,
-  queryPathsRequest,
-  rootRequest,
-} from '../actions/MenuActions';
+import history from '../services/History';
+import { nodePathsRequest, queryPathsRequest, rootRequest } from '../api';
 import { openModal } from '../actions/WindowActions';
 import Container from '../components/Container';
 import MenuOverlayContainer from '../components/header/MenuOverlayContainer';
@@ -267,13 +263,11 @@ class NavigationTree extends Component {
   }
 
   handleRedirect = (elementId, isNew, type) => {
-    const { dispatch } = this.props;
-    dispatch(push('/' + (type ? type : 'window') + '/' + elementId));
+    history.push('/' + (type ? type : 'window') + '/' + elementId);
   };
 
   handleNewRedirect = (elementId) => {
-    const { dispatch } = this.props;
-    dispatch(push('/window/' + elementId + '/new'));
+    history.push('/window/' + elementId + '/new');
   };
 
   handleDeeper = (e, nodeId) => {
@@ -360,13 +354,13 @@ class NavigationTree extends Component {
 
         {/* sitemap items are listed using this */}
         <div className="column-wrapper">
-          <div className="sitemap-column">
+          <div className="sitemap-column-left">
             {sitemapLeftColItems &&
               sitemapLeftColItems.map((subitem, subindex) =>
                 this.renderMenuOverlayContainer(subitem, subindex)
               )}
           </div>
-          <div className="sitemap-column">
+          <div className="sitemap-column-right">
             {sitemapRightColItems &&
               sitemapRightColItems.map((subitem, subindex) =>
                 this.renderMenuOverlayContainer(subitem, subindex)

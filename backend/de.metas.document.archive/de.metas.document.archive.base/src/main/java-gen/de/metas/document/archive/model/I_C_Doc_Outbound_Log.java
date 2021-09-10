@@ -1,120 +1,102 @@
 package de.metas.document.archive.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Doc_Outbound_Log
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_C_Doc_Outbound_Log 
 {
 
-    /** TableName=C_Doc_Outbound_Log */
-    public static final String Table_Name = "C_Doc_Outbound_Log";
+	String Table_Name = "C_Doc_Outbound_Log";
 
-    /** AD_Table_ID=540453 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540453 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 3 - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(3);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column definition for AD_Client_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_Client> COLUMN_AD_Client_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_Client>(I_C_Doc_Outbound_Log.class, "AD_Client_ID", org.compiere.model.I_AD_Client.class);
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column definition for AD_Org_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_Org> COLUMN_AD_Org_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_Org>(I_C_Doc_Outbound_Log.class, "AD_Org_ID", org.compiere.model.I_AD_Org.class);
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set DB-Tabelle.
+	 * Set Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Table_ID (int AD_Table_ID);
+	void setAD_Table_ID (int AD_Table_ID);
 
 	/**
-	 * Get DB-Tabelle.
+	 * Get Table.
 	 * Database Table information
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Table_ID();
+	int getAD_Table_ID();
 
-    /** Column definition for AD_Table_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_Table> COLUMN_AD_Table_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_Table>(I_C_Doc_Outbound_Log.class, "AD_Table_ID", org.compiere.model.I_AD_Table.class);
-    /** Column name AD_Table_ID */
-    public static final String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Set Async Batch.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_BPartner_ID (int C_BPartner_ID);
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
 
 	/**
-	 * Get Geschäftspartner.
-	 * Bezeichnet einen Geschäftspartner
+	 * Get Async Batch.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_BPartner_ID();
+	int getC_Async_Batch_ID();
 
-    /** Column definition for C_BPartner_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BPartner> COLUMN_C_BPartner_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BPartner>(I_C_Doc_Outbound_Log.class, "C_BPartner_ID", org.compiere.model.I_C_BPartner.class);
-    /** Column name C_BPartner_ID */
-    public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
-	 * Set Geschäftspartnergruppe.
-	 * Geschäftspartnergruppe
+	 * Set Business Partner Group.
+	 * Business Partner Group
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -122,11 +104,11 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setC_BP_Group_ID (int C_BP_Group_ID);
+	void setC_BP_Group_ID (int C_BP_Group_ID);
 
 	/**
-	 * Get Geschäftspartnergruppe.
-	 * Geschäftspartnergruppe
+	 * Get Business Partner Group.
+	 * Business Partner Group
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -134,18 +116,36 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public int getC_BP_Group_ID();
+	int getC_BP_Group_ID();
 
 	@Deprecated
-	public org.compiere.model.I_C_BP_Group getC_BP_Group();
+	@Nullable org.compiere.model.I_C_BP_Group getC_BP_Group();
 
 	@Deprecated
-	public void setC_BP_Group(org.compiere.model.I_C_BP_Group C_BP_Group);
+	void setC_BP_Group(@Nullable org.compiere.model.I_C_BP_Group C_BP_Group);
 
-    /** Column definition for C_BP_Group_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BP_Group>(I_C_Doc_Outbound_Log.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
-    /** Column name C_BP_Group_ID */
-    public static final String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
+	ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_BP_Group> COLUMN_C_BP_Group_ID = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "C_BP_Group_ID", org.compiere.model.I_C_BP_Group.class);
+	String COLUMNNAME_C_BP_Group_ID = "C_BP_Group_ID";
+
+	/**
+	 * Set Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_ID (int C_BPartner_ID);
+
+	/**
+	 * Get Business Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_ID();
+
+	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
 	 * Set C_Doc_Outbound_Log.
@@ -154,7 +154,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setC_Doc_Outbound_Log_ID (int C_Doc_Outbound_Log_ID);
+	void setC_Doc_Outbound_Log_ID (int C_Doc_Outbound_Log_ID);
 
 	/**
 	 * Get C_Doc_Outbound_Log.
@@ -163,67 +163,57 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getC_Doc_Outbound_Log_ID();
+	int getC_Doc_Outbound_Log_ID();
 
-    /** Column definition for C_Doc_Outbound_Log_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_C_Doc_Outbound_Log_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "C_Doc_Outbound_Log_ID", null);
-    /** Column name C_Doc_Outbound_Log_ID */
-    public static final String COLUMNNAME_C_Doc_Outbound_Log_ID = "C_Doc_Outbound_Log_ID";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_C_Doc_Outbound_Log_ID = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "C_Doc_Outbound_Log_ID", null);
+	String COLUMNNAME_C_Doc_Outbound_Log_ID = "C_Doc_Outbound_Log_ID";
 
 	/**
-	 * Set Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Set Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setC_DocType_ID (int C_DocType_ID);
+	void setC_DocType_ID (int C_DocType_ID);
 
 	/**
-	 * Get Belegart.
-	 * Belegart oder Verarbeitungsvorgaben
+	 * Get Document Type.
+	 * Document type or rules
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getC_DocType_ID();
+	int getC_DocType_ID();
 
-    /** Column definition for C_DocType_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_DocType> COLUMN_C_DocType_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_C_DocType>(I_C_Doc_Outbound_Log.class, "C_DocType_ID", org.compiere.model.I_C_DocType.class);
-    /** Column name C_DocType_ID */
-    public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
+	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_Created = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column definition for CreatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User> COLUMN_CreatedBy = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User>(I_C_Doc_Outbound_Log.class, "CreatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Derzeitige Mailadresse.
@@ -232,7 +222,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCurrentEMailAddress (java.lang.String CurrentEMailAddress);
+	void setCurrentEMailAddress (@Nullable String CurrentEMailAddress);
 
 	/**
 	 * Get Derzeitige Mailadresse.
@@ -241,12 +231,10 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getCurrentEMailAddress();
+	@Nullable String getCurrentEMailAddress();
 
-    /** Column definition for CurrentEMailAddress */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_CurrentEMailAddress = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "CurrentEMailAddress", null);
-    /** Column name CurrentEMailAddress */
-    public static final String COLUMNNAME_CurrentEMailAddress = "CurrentEMailAddress";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_CurrentEMailAddress = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "CurrentEMailAddress", null);
+	String COLUMNNAME_CurrentEMailAddress = "CurrentEMailAddress";
 
 	/**
 	 * Set Derzeitiger Mailempfänger.
@@ -255,7 +243,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setCurrentEMailRecipient_ID (int CurrentEMailRecipient_ID);
+	void setCurrentEMailRecipient_ID (int CurrentEMailRecipient_ID);
 
 	/**
 	 * Get Derzeitiger Mailempfänger.
@@ -264,37 +252,30 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getCurrentEMailRecipient_ID();
+	int getCurrentEMailRecipient_ID();
 
-    /** Column definition for CurrentEMailRecipient_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User> COLUMN_CurrentEMailRecipient_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User>(I_C_Doc_Outbound_Log.class, "CurrentEMailRecipient_ID", org.compiere.model.I_AD_User.class);
-    /** Column name CurrentEMailRecipient_ID */
-    public static final String COLUMNNAME_CurrentEMailRecipient_ID = "CurrentEMailRecipient_ID";
+	String COLUMNNAME_CurrentEMailRecipient_ID = "CurrentEMailRecipient_ID";
 
 	/**
-	 * Set Belegdatum.
-	 * Datum des Belegs
+	 * Set Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateDoc (java.sql.Timestamp DateDoc);
+	void setDateDoc (@Nullable java.sql.Timestamp DateDoc);
 
 	/**
-	 * Get Belegdatum.
-	 * Datum des Belegs
+	 * Get Document Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateDoc();
+	@Nullable java.sql.Timestamp getDateDoc();
 
-    /** Column definition for DateDoc */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DateDoc = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "DateDoc", null);
-    /** Column name DateDoc */
-    public static final String COLUMNNAME_DateDoc = "DateDoc";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DateDoc = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "DateDoc", null);
+	String COLUMNNAME_DateDoc = "DateDoc";
 
 	/**
 	 * Set Zuletzt gemailt.
@@ -303,7 +284,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateLastEMail (java.sql.Timestamp DateLastEMail);
+	void setDateLastEMail (@Nullable java.sql.Timestamp DateLastEMail);
 
 	/**
 	 * Get Zuletzt gemailt.
@@ -312,12 +293,10 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateLastEMail();
+	@Nullable java.sql.Timestamp getDateLastEMail();
 
-    /** Column definition for DateLastEMail */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DateLastEMail = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "DateLastEMail", null);
-    /** Column name DateLastEMail */
-    public static final String COLUMNNAME_DateLastEMail = "DateLastEMail";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DateLastEMail = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "DateLastEMail", null);
+	String COLUMNNAME_DateLastEMail = "DateLastEMail";
 
 	/**
 	 * Set Zuletzt gedruckt.
@@ -326,7 +305,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateLastPrint (java.sql.Timestamp DateLastPrint);
+	void setDateLastPrint (@Nullable java.sql.Timestamp DateLastPrint);
 
 	/**
 	 * Get Zuletzt gedruckt.
@@ -335,12 +314,10 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateLastPrint();
+	@Nullable java.sql.Timestamp getDateLastPrint();
 
-    /** Column definition for DateLastPrint */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DateLastPrint = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "DateLastPrint", null);
-    /** Column name DateLastPrint */
-    public static final String COLUMNNAME_DateLastPrint = "DateLastPrint";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DateLastPrint = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "DateLastPrint", null);
+	String COLUMNNAME_DateLastPrint = "DateLastPrint";
 
 	/**
 	 * Set Zuletzt gespeichert.
@@ -349,7 +326,7 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDateLastStore (java.sql.Timestamp DateLastStore);
+	void setDateLastStore (@Nullable java.sql.Timestamp DateLastStore);
 
 	/**
 	 * Get Zuletzt gespeichert.
@@ -358,62 +335,75 @@ public interface I_C_Doc_Outbound_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getDateLastStore();
+	@Nullable java.sql.Timestamp getDateLastStore();
 
-    /** Column definition for DateLastStore */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DateLastStore = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "DateLastStore", null);
-    /** Column name DateLastStore */
-    public static final String COLUMNNAME_DateLastStore = "DateLastStore";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DateLastStore = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "DateLastStore", null);
+	String COLUMNNAME_DateLastStore = "DateLastStore";
 
 	/**
-	 * Set Belegstatus.
-	 * The current status of the document
+	 * Set Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocStatus (java.lang.String DocStatus);
+	void setDocStatus (@Nullable String DocStatus);
 
 	/**
-	 * Get Belegstatus.
-	 * The current status of the document
+	 * Get Status.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocStatus();
+	@Nullable String getDocStatus();
 
-    /** Column definition for DocStatus */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DocStatus = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "DocStatus", null);
-    /** Column name DocStatus */
-    public static final String COLUMNNAME_DocStatus = "DocStatus";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "DocStatus", null);
+	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set Nr..
+	 * Set Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDocumentNo (java.lang.String DocumentNo);
+	void setDocumentNo (@Nullable String DocumentNo);
 
 	/**
-	 * Get Nr..
+	 * Get Document No.
 	 * Document sequence number of the document
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getDocumentNo();
+	@Nullable String getDocumentNo();
 
-    /** Column definition for DocumentNo */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DocumentNo = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "DocumentNo", null);
-    /** Column name DocumentNo */
-    public static final String COLUMNNAME_DocumentNo = "DocumentNo";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_DocumentNo = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "DocumentNo", null);
+	String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
+	 * Set EDI Status Exportieren.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEDI_ExportStatus (@Nullable String EDI_ExportStatus);
+
+	/**
+	 * Get EDI Status Exportieren.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getEDI_ExportStatus();
+
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_EDI_ExportStatus = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "EDI_ExportStatus", null);
+	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
 
 	/**
 	 * Set Anz. gemailt.
@@ -424,7 +414,7 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setEMailCount (int EMailCount);
+	void setEMailCount (int EMailCount);
 
 	/**
 	 * Get Anz. gemailt.
@@ -435,37 +425,56 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public int getEMailCount();
+	int getEMailCount();
 
-    /** Column definition for EMailCount */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_EMailCount = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "EMailCount", null);
-    /** Column name EMailCount */
-    public static final String COLUMNNAME_EMailCount = "EMailCount";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_EMailCount = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "EMailCount", null);
+	String COLUMNNAME_EMailCount = "EMailCount";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set File Name.
+	 * Name of the local file or URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFileName (@Nullable java.lang.String FileName);
+
+	/**
+	 * Get File Name.
+	 * Name of the local file or URL
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFileName();
+
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_FileName = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "FileName", null);
+	String COLUMNNAME_FileName = "FileName";
+
+	/**
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
 	 * Set Beleg soll per EDI übermittelt werden.
@@ -476,7 +485,7 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setIsEdiEnabled (boolean IsEdiEnabled);
+	void setIsEdiEnabled (boolean IsEdiEnabled);
 
 	/**
 	 * Get Beleg soll per EDI übermittelt werden.
@@ -487,35 +496,31 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public boolean isEdiEnabled();
+	boolean isEdiEnabled();
 
-    /** Column definition for IsEdiEnabled */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_IsEdiEnabled = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "IsEdiEnabled", null);
-    /** Column name IsEdiEnabled */
-    public static final String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_IsEdiEnabled = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "IsEdiEnabled", null);
+	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
 
 	/**
-	 * Set Rechnung per eMail.
+	 * Set Invoice Email Enabled.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled);
+	void setIsInvoiceEmailEnabled (boolean IsInvoiceEmailEnabled);
 
 	/**
-	 * Get Rechnung per eMail.
+	 * Get Invoice Email Enabled.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public boolean isInvoiceEmailEnabled();
+	boolean isInvoiceEmailEnabled();
 
-    /** Column definition for IsInvoiceEmailEnabled */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_IsInvoiceEmailEnabled = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "IsInvoiceEmailEnabled", null);
-    /** Column name IsInvoiceEmailEnabled */
-    public static final String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_IsInvoiceEmailEnabled = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "IsInvoiceEmailEnabled", null);
+	String COLUMNNAME_IsInvoiceEmailEnabled = "IsInvoiceEmailEnabled";
 
 	/**
 	 * Set Anz. PDF.
@@ -526,7 +531,7 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setPDFCount (int PDFCount);
+	void setPDFCount (int PDFCount);
 
 	/**
 	 * Get Anz. PDF.
@@ -537,16 +542,14 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public int getPDFCount();
+	int getPDFCount();
 
-    /** Column definition for PDFCount */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_PDFCount = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "PDFCount", null);
-    /** Column name PDFCount */
-    public static final String COLUMNNAME_PDFCount = "PDFCount";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_PDFCount = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "PDFCount", null);
+	String COLUMNNAME_PDFCount = "PDFCount";
 
 	/**
-	 * Set Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -554,11 +557,11 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setPOReference (java.lang.String POReference);
+	void setPOReference (@Nullable String POReference);
 
 	/**
-	 * Get Referenz.
-	 * Referenz-Nummer des Kunden
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -566,12 +569,10 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public java.lang.String getPOReference();
+	@Nullable String getPOReference();
 
-    /** Column definition for POReference */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_POReference = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "POReference", null);
-    /** Column name POReference */
-    public static final String COLUMNNAME_POReference = "POReference";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_POReference = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
 
 	/**
 	 * Set Anz. gedruckt.
@@ -582,7 +583,7 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setPrintCount (int PrintCount);
+	void setPrintCount (int PrintCount);
 
 	/**
 	 * Get Anz. gedruckt.
@@ -593,37 +594,33 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public int getPrintCount();
+	int getPrintCount();
 
-    /** Column definition for PrintCount */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_PrintCount = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "PrintCount", null);
-    /** Column name PrintCount */
-    public static final String COLUMNNAME_PrintCount = "PrintCount";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_PrintCount = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "PrintCount", null);
+	String COLUMNNAME_PrintCount = "PrintCount";
 
 	/**
-	 * Set Datensatz-ID.
+	 * Set Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setRecord_ID (int Record_ID);
+	void setRecord_ID (int Record_ID);
 
 	/**
-	 * Get Datensatz-ID.
+	 * Get Record ID.
 	 * Direct internal record ID
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getRecord_ID();
+	int getRecord_ID();
 
-    /** Column definition for Record_ID */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_Record_ID = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "Record_ID", null);
-    /** Column name Record_ID */
-    public static final String COLUMNNAME_Record_ID = "Record_ID";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_Record_ID = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Set Anz. gespeichert.
@@ -634,7 +631,7 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a virtual column
 	 */
 	@Deprecated
-	public void setStoreCount (int StoreCount);
+	void setStoreCount (int StoreCount);
 
 	/**
 	 * Get Anz. gespeichert.
@@ -645,40 +642,33 @@ public interface I_C_Doc_Outbound_Log
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
 	@Deprecated
-	public int getStoreCount();
+	int getStoreCount();
 
-    /** Column definition for StoreCount */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_StoreCount = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "StoreCount", null);
-    /** Column name StoreCount */
-    public static final String COLUMNNAME_StoreCount = "StoreCount";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_StoreCount = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "StoreCount", null);
+	String COLUMNNAME_StoreCount = "StoreCount";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, Object>(I_C_Doc_Outbound_Log.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_Updated = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column definition for UpdatedBy */
-    public static final org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_C_Doc_Outbound_Log, org.compiere.model.I_AD_User>(I_C_Doc_Outbound_Log.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

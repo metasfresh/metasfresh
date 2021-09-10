@@ -21,16 +21,36 @@ class DatetimeRange extends Component {
 
   /**
    * @method componentDidMount
-   * @summary ToDo: Describe the method
-   * @todo Write the documentation
+   * @summary lifecycle hook - We set in the local state the `startDate` and `endDate` after the component is mounted
    */
   componentDidMount() {
-    const { value, valueTo } = this.props;
-    if (value && valueTo) {
+    const {
+      isFilterActive,
+      value,
+      valueTo,
+      defaultValue,
+      defaultValueTo,
+      field,
+      updateItems,
+    } = this.props;
+    if (!isFilterActive && defaultValue && defaultValueTo) {
       this.setState({
-        startDate: Moment(value),
-        endDate: Moment(valueTo),
+        startDate: Moment(defaultValue),
+        endDate: Moment(defaultValueTo),
       });
+      updateItems &&
+        updateItems({
+          widgetField: field,
+          value: defaultValue,
+          valueTo: defaultValueTo,
+        });
+    } else {
+      if (value && valueTo) {
+        this.setState({
+          startDate: Moment(value),
+          endDate: Moment(valueTo),
+        });
+      }
     }
   }
 
@@ -98,12 +118,8 @@ class DatetimeRange extends Component {
       [last30days]: [Moment().subtract(29, 'days'), Moment()],
       [thisMonth]: [Moment().startOf('month'), Moment().endOf('month')],
       [lastMonth]: [
-        Moment()
-          .subtract(1, 'month')
-          .startOf('month'),
-        Moment()
-          .subtract(1, 'month')
-          .endOf('month'),
+        Moment().subtract(1, 'month').startOf('month'),
+        Moment().subtract(1, 'month').endOf('month'),
       ],
     };
     const { startDate, endDate } = this.state;
@@ -205,6 +221,11 @@ DatetimeRange.propTypes = {
   mandatory: PropTypes.any,
   validStatus: PropTypes.any,
   timePicker: PropTypes.any,
+  isFilterActive: PropTypes.bool,
+  defaultValue: PropTypes.string,
+  defaultValueTo: PropTypes.string,
+  field: PropTypes.string,
+  updateItems: PropTypes.func,
 };
 
 export default DatetimeRange;

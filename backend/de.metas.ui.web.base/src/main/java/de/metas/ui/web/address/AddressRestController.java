@@ -1,7 +1,20 @@
 package de.metas.ui.web.address;
 
-import java.util.List;
-
+import de.metas.ui.web.address.json.JSONAddressLayout;
+import de.metas.ui.web.address.json.JSONCreateAddressRequest;
+import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.window.controller.Execution;
+import de.metas.ui.web.window.datatypes.json.JSONDocument;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
+import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
+import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
+import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,22 +24,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.metas.ui.web.address.json.JSONAddressLayout;
-import de.metas.ui.web.address.json.JSONCreateAddressRequest;
-import de.metas.ui.web.config.WebConfig;
-import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.controller.Execution;
-import de.metas.ui.web.window.datatypes.LookupValue;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
-import de.metas.ui.web.window.datatypes.json.JSONDocument;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
-import de.metas.ui.web.window.datatypes.json.JSONDocumentOptions;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
-import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
-import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.IDocumentChangesCollector;
-import io.swagger.annotations.Api;
+import java.util.List;
 
 /*
  * #%L
@@ -88,7 +86,7 @@ public class AddressRestController
 	 * @param docId_NOTUSED not used but we need this parameter to be consistent with all other APIs that we have.
 	 */
 	@RequestMapping(value = "/{docId}/layout", method = RequestMethod.GET)
-	public JSONAddressLayout getLayout(@PathVariable("docId") final int docId_NOTUSED)
+	public JSONAddressLayout getLayout(@SuppressWarnings("unused") @PathVariable("docId") final int docId_NOTUSED)
 	{
 		userSession.assertLoggedIn();
 
@@ -120,27 +118,17 @@ public class AddressRestController
 	}
 
 	@RequestMapping(value = "/{docId}/field/{attributeName}/typeahead", method = RequestMethod.GET)
-	public JSONLookupValuesList getAttributeTypeahead(
+	public JSONLookupValuesPage getAttributeTypeahead(
 			@PathVariable("docId") final int docId //
 			, @PathVariable("attributeName") final String attributeName //
-			, @RequestParam(name = "query", required = true) final String query //
+			, @RequestParam(name = "query") final String query //
 	)
 	{
 		userSession.assertLoggedIn();
 
 		return addressRepo.getAddressDocumentForReading(docId)
 				.getFieldLookupValuesForQuery(attributeName, query)
-				.transform(this::toJSONLookupValuesList);
-	}
-
-	private JSONLookupValuesList toJSONLookupValuesList(final LookupValuesList lookupValuesList)
-	{
-		return JSONLookupValuesList.ofLookupValuesList(lookupValuesList, userSession.getAD_Language());
-	}
-
-	private JSONLookupValue toJSONLookupValue(final LookupValue lookupValue)
-	{
-		return JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language());
+				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
 	}
 
 	@RequestMapping(value = "/{docId}/field/{attributeName}/dropdown", method = RequestMethod.GET)
@@ -153,7 +141,7 @@ public class AddressRestController
 
 		return addressRepo.getAddressDocumentForReading(docId)
 				.getFieldLookupValues(attributeName)
-				.transform(this::toJSONLookupValuesList);
+				.transform(list -> JSONLookupValuesList.ofLookupValuesList(list, userSession.getAD_Language()));
 	}
 
 	@PostMapping(value = "/{docId}/complete")
@@ -163,6 +151,6 @@ public class AddressRestController
 
 		return Execution.callInNewExecution("complete", () -> addressRepo
 				.complete(docId)
-				.transform(this::toJSONLookupValue));
+				.transform(lookupValue -> JSONLookupValue.ofLookupValue(lookupValue, userSession.getAD_Language())));
 	}
 }

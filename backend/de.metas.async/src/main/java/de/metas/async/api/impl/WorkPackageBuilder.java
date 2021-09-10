@@ -168,7 +168,7 @@ import javax.annotation.Nullable;
 		}
 	}
 
-	private final I_C_Queue_Block getC_Queue_Block()
+	private I_C_Queue_Block getC_Queue_Block()
 	{
 		return _blockBuilder.getCreateBlock();
 	}
@@ -182,17 +182,17 @@ import javax.annotation.Nullable;
 		return this;
 	}
 
-	private final IWorkpackagePrioStrategy getPriority()
+	private IWorkpackagePrioStrategy getPriority()
 	{
 		return _priority;
 	}
 
-	private final IWorkPackageQueue getWorkpackageQueue()
+	private IWorkPackageQueue getWorkpackageQueue()
 	{
 		return _blockBuilder.getWorkPackageQueue();
 	}
 
-	private final void assertNotBuilt()
+	private void assertNotBuilt()
 	{
 		Check.assume(!built.get(), "not already built");
 	}
@@ -200,7 +200,7 @@ import javax.annotation.Nullable;
 	/**
 	 * Marks this builder as already executed. Fails if it was already marked before.
 	 */
-	private final void markAsBuilt()
+	private void markAsBuilt()
 	{
 		final boolean wasAlreadyBuilt = built.getAndSet(true);
 		Check.assume(!wasAlreadyBuilt, "not already built");
@@ -270,7 +270,7 @@ import javax.annotation.Nullable;
 		return this;
 	}
 
-	private final ILockCommand getElementsLockerOrNull()
+	private ILockCommand getElementsLockerOrNull()
 	{
 		return _elementsLocker;
 	}
@@ -290,8 +290,13 @@ import javax.annotation.Nullable;
 	}
 
 	@Override
-	public WorkPackageBuilder setC_Async_Batch(final I_C_Async_Batch asyncBatch)
+	public WorkPackageBuilder setC_Async_Batch(@Nullable final I_C_Async_Batch asyncBatch)
 	{
+		if (asyncBatch == null)
+		{
+			return this;
+		}
+
 		assertNotBuilt();
 		this.asyncBatch = asyncBatch;
 		this.asyncBatchSet = true;

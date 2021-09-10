@@ -79,9 +79,7 @@ export function dropdownModalRequest({
   viewId,
 }) {
   return axios.get(`
-    ${
-      config.API_URL
-    }/${entity}/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`);
+    ${config.API_URL}/${entity}/${windowId}/${viewId}/${rowId}/edit/${fieldName}/dropdown`);
 }
 
 export function duplicateRequest(entity, docType, docId) {
@@ -159,9 +157,7 @@ export function processNewRecord(entity, docType, docId) {
 }
 
 export function openFile(entity, docType, docId, fileType, fileId) {
-  const url = `${
-    config.API_URL
-  }/${entity}/${docType}/${docId}/${fileType}/${fileId}`;
+  const url = `${config.API_URL}/${entity}/${docType}/${docId}/${fileType}/${fileId}`;
 
   window.open(url, '_blank');
 }

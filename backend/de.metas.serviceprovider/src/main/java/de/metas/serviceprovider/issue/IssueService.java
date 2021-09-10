@@ -56,7 +56,8 @@ public class IssueService
 			issueHierarchy
 					.getUpStreamForId(request.getCurrentParentId())
 					.forEach(issue -> {
-						issue.addAggregatedEffort(request.getCurrentEffort());
+						issue.addAggregatedEffort(request.getCurrentAggregatedEffort());
+						issue.addInvoiceableChildEffort(request.getCurrentInvoicableEffort());
 						recomputeLatestActivityOnSubIssues(issue);
 
 						issueRepository.save(issue);
@@ -71,9 +72,13 @@ public class IssueService
 			issueHierarchy.getUpStreamForId(request.getOldParentId())
 					.forEach(oldParent -> {
 
-						if (request.getOldEffort() != null)
+						if (request.getOldAggregatedEffort() != null)
 						{
-							oldParent.addAggregatedEffort(request.getOldEffort().negate());
+							oldParent.addAggregatedEffort(request.getOldAggregatedEffort().negate());
+						}
+						if (request.getOldInvoicableEffort() != null)
+						{
+							oldParent.addInvoiceableChildEffort(request.getOldInvoicableEffort().negate());
 						}
 						recomputeLatestActivityOnSubIssues(oldParent);
 

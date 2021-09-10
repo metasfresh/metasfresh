@@ -4,7 +4,7 @@ import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 import tablePaginationProps from '../../../../test_setup/fixtures/table/table_pagination.json';
 import hotkeys from '../../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../../test_setup/fixtures/keymap.json';
@@ -13,8 +13,7 @@ import { ShortcutProvider } from '../../../components/keyshortcuts/ShortcutProvi
 
 const mockStore = configureStore([]);
 const createStore = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,

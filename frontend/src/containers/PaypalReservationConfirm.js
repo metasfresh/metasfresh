@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import axios from 'axios';
 
 import PaypalReservationConfirmForm from '../components/app/PaypalReservationConfirmForm';
@@ -61,4 +60,4 @@ PaypalReservationConfirm.propTypes = {
   token: PropTypes.string,
 };
 
-export default connect()(PaypalReservationConfirm);
+export default PaypalReservationConfirm;

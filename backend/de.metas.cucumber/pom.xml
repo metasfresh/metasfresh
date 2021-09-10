@@ -54,6 +54,13 @@
             <artifactId>metasfresh-dist-serverRoot</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- spring-boot-starter-data-elasticsearch hauls in netty-transport:4.1.49 which lacks the class Duplex ChannelConfig -->
+                <exclusion>
+                    <artifactId>netty-transport</artifactId>
+                    <groupId>io.netty</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>de.metas.migration</groupId>
@@ -69,6 +76,13 @@
             <classifier>tests</classifier>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.util</groupId>
+            <artifactId>de.metas.util.web</artifactId>
+            <version>${metasfresh.version}</version>
+            <scope>test</scope>
+        </dependency>
+        
         <dependency>
             <groupId>com.rabbitmq</groupId>
             <artifactId>amqp-client</artifactId>

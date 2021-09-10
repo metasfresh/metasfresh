@@ -76,4 +76,9 @@ public class CountryId implements RepoIdAware
 	{
 		return Objects.equals(countryId1, countryId2);
 	}
+
+	public boolean equalsToRepoId(final int repoId)
+	{
+		return this.repoId == repoId;
+	}
 }

@@ -22,13 +22,10 @@
 
 package de.metas.ui.web.dashboard;
 
+import de.metas.ui.web.kpi.data.KPIDataContext;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.time.Instant;
 
 @Value
 @Builder
@@ -37,7 +34,5 @@ public class UserDashboardItemDataRequest
 	@NonNull DashboardWidgetType widgetType;
 	@NonNull UserDashboardItemId itemId;
 	boolean prettyValues;
-	@Nullable Instant from;
-	@Nullable Instant to;
-	@NonNull @Builder.Default Duration maxStaleAccepted = Duration.ofSeconds(1);
+	@NonNull KPIDataContext context;
 }

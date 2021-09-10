@@ -40,7 +40,12 @@ public class InvokeOtherAction extends InvokeExternalSystemProcess
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
-		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(getRecord_ID());
+		// dev-note: for "Other" external system there is no "real" ChildConfig, so when `childConfigId` process param is set
+		// (i.e. only from the AD_Scheduler) it is actually referring to an ExternalSystem_Config_ID, aka ParentConfigID
+
+		final int parentConfigRepoId = childConfigId > 0 ? childConfigId : getRecord_ID();
+
+		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(parentConfigRepoId);
 		return ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(parentConfigId);
 	}
 

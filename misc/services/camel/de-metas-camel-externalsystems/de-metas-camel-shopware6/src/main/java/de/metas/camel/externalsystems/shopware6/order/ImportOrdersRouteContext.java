@@ -22,10 +22,13 @@
 
 package de.metas.camel.externalsystems.shopware6.order;
 
+import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
 import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
-import de.metas.camel.externalsystems.shopware6.order.processor.DateAndImportStatus;
+import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import lombok.AccessLevel;
@@ -47,12 +50,19 @@ import java.util.Set;
 public class ImportOrdersRouteContext
 {
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private final String orgCode;
+
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private ShopwareClient shopwareClient;
+
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private CurrencyInfoProvider currencyInfoProvider;
+
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private JsonExternalSystemRequest externalSystemRequest;
 
 	@NonNull
@@ -61,13 +71,25 @@ public class ImportOrdersRouteContext
 	private Set<String> importedExternalHeaderIds = new HashSet<>();
 
 	@Nullable
+	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
+	private DateAndImportStatus nextImportStartingTimestamp;
+
+	@Nullable
+	@Setter(AccessLevel.NONE)
 	private JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings;
 
 	@Nullable
+	@Setter(AccessLevel.NONE)
+	private TaxProductIdProvider taxProductIdProvider;
+
+	@Nullable
+	@Setter(AccessLevel.NONE)
 	@Getter(AccessLevel.NONE)
 	private OrderCompositeInfo order;
 
 	@Nullable
+	@Setter(AccessLevel.NONE)
 	private String bpLocationCustomJsonPath;
 
 	@Nullable
@@ -84,9 +106,14 @@ public class ImportOrdersRouteContext
 	private boolean isMultipleShippingAddresses;
 
 	@Nullable
-	@Setter(AccessLevel.NONE)
 	@Getter(AccessLevel.NONE)
-	private DateAndImportStatus nextImportStartingTimestamp;
+	private JsonShippingCost shippingCost;
+
+	@Nullable
+	private String shippingMethodId;
+
+	@Nullable
+	private JsonCustomerGroup bPartnerCustomerGroup;
 
 	@NonNull
 	public OrderCandidate getOrderNotNull()
@@ -179,5 +206,16 @@ public class ImportOrdersRouteContext
 		}
 
 		return Optional.of(nextImportStartingTimestamp.getTimestamp());
+	}
+
+	@NonNull
+	public JsonShippingCost getShippingCostNotNull()
+	{
+		if (shippingCost == null)
+		{
+			throw new RuntimeException("shippingCost cannot be null at this stage!");
+		}
+
+		return shippingCost;
 	}
 }

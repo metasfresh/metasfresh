@@ -65,6 +65,7 @@ import org.compiere.db.Database;
 import org.compiere.dbPort.Convert;
 import org.compiere.model.I_AD_System;
 import org.compiere.model.MSequence;
+import org.compiere.model.Null;
 import org.compiere.model.POInfo;
 import org.compiere.model.POResultSet;
 import org.compiere.process.SequenceCheck;
@@ -960,7 +961,6 @@ public class DB
 		{
 			// Always close cursor
 			DB.close(cs);
-			cs = null;
 		}
 
 		return no;
@@ -1828,15 +1828,14 @@ public class DB
 	}    // isRemoteProcess
 
 	/**
-	 * Converts given parameter object to SQL code.
+	 * Converts given parameter object to SQL code. Also supports {@link RepoIdAware}.
 	 *
-	 * @param param
 	 * @return parameter as SQL code
 	 */
 	public String TO_SQL(@Nullable final Object param)
 	{
 		// TODO: check and refactor together with buildSqlList(...)
-		if (param == null)
+		if (param == null || param instanceof Null)
 		{
 			return "NULL";
 		}
@@ -1881,6 +1880,11 @@ public class DB
 	public String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
 		return Database.TO_DATE(zdt);
+	}
+
+	public String TO_DATE(@NonNull final Instant instant)
+	{
+		return Database.TO_DATE(instant);
 	}
 
 	/**
@@ -2031,7 +2035,7 @@ public class DB
 		return out.toString();
 	}    // TO_STRING
 
-	public String TO_BOOLEAN(final Boolean value)
+	public String TO_BOOLEAN(@Nullable final Boolean value)
 	{
 		final String valueStr = DisplayType.toBooleanString(value);
 		return TO_STRING(valueStr);
@@ -2425,7 +2429,7 @@ public class DB
 			}
 
 			// TODO: check and refactor together with TO_SQL(..)
-			if (paramIn == null)
+			if (paramIn == null || paramIn instanceof Null)
 			{
 				sql.append("NULL");
 			}
@@ -2757,11 +2761,12 @@ public class DB
 	@FunctionalInterface
 	public interface ResultSetRowLoader<T>
 	{
+		@Nullable
 		T retrieveRowOrNull(ResultSet rs) throws SQLException;
 	}
 
 	@NonNull
-	public static <T> List<T> retrieveRowsOutOfTrx(
+	public static <T> ImmutableList<T> retrieveRowsOutOfTrx(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2770,7 +2775,7 @@ public class DB
 	}
 
 	@NonNull
-	public static <T> List<T> retrieveRows(
+	public static <T> ImmutableList<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetRowLoader<T> loader)
@@ -2779,7 +2784,7 @@ public class DB
 	}
 
 	@NonNull
-	private static <T> List<T> retrieveRows(
+	private static <T> ImmutableList<T> retrieveRows(
 			@NonNull final CharSequence sql,
 			@Nullable final List<Object> sqlParams,
 			@Nullable final String trxName,
@@ -2789,11 +2794,11 @@ public class DB
 		ResultSet rs = null;
 		try
 		{
-			pstmt = prepareStatement(sql.toString(), ITrx.TRXNAME_None);
+			pstmt = prepareStatement(sql.toString(), trxName);
 			setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 
-			final ArrayList<T> rows = new ArrayList<>();
+			final ImmutableList.Builder<T> rows = ImmutableList.builder();
 			while (rs.next())
 			{
 				final T row = loader.retrieveRowOrNull(rs);
@@ -2803,7 +2808,7 @@ public class DB
 				}
 			}
 
-			return rows;
+			return rows.build();
 		}
 		catch (final SQLException ex)
 		{

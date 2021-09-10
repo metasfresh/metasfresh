@@ -39,11 +39,7 @@ export const getYRange = (height, data, fields) => {
     max = 0;
   }
 
-  return d3
-    .scaleLinear()
-    .range([height, 0])
-    .domain([min, max])
-    .nice();
+  return d3.scaleLinear().range([height, 0]).domain([min, max]).nice();
 };
 
 export const getZRange = (colors) => {

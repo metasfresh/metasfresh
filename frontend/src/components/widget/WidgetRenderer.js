@@ -120,6 +120,10 @@ class WidgetRenderer extends PureComponent {
       isFilterActive, // flag used to identify if the component belongs to an active filter
       updateItems,
     } = this.props;
+
+    const filterActiveState =
+      typeof isFilterActive === 'undefined' ? false : isFilterActive; // safety check - do not pass `undefined` further down
+
     const { tabIndex, onFocus } = widgetProperties;
     const widgetValue = get(widgetProperties, ['value'], null);
     widgetProperties.ref = forwardedRef;
@@ -152,6 +156,9 @@ class WidgetRenderer extends PureComponent {
       validStatus: widgetData[0].validStatus,
       onChange: onPatch,
       ref: forwardedRef,
+      isFilterActive: filterActiveState,
+      updateItems,
+      disconnected,
     };
     const dateProps = {
       field: widgetField,
@@ -163,7 +170,11 @@ class WidgetRenderer extends PureComponent {
         disabled: readonly,
         tabIndex: tabIndex,
       },
+      isFilterActive: filterActiveState,
+      updateItems,
+      defaultValue: widgetData[0].defaultValue,
       onChange: this.handleDateChange,
+      disconnected,
     };
     const dateRangeProps = {
       mandatory: widgetData[0].mandatory,
@@ -173,7 +184,14 @@ class WidgetRenderer extends PureComponent {
       tabIndex,
       onShow,
       onHide,
+      isFilterActive: filterActiveState,
+      defaultValue: widgetData[0].defaultValue,
+      defaultValueTo: widgetData[0].defaultValueTo,
+      updateItems,
+      field: widgetData[0].field,
+      disconnected,
     };
+
     const attributesProps = {
       entity,
       fields,
@@ -441,6 +459,8 @@ class WidgetRenderer extends PureComponent {
               subentity,
               widgetProperties,
               onPatch,
+              isFilterActive: filterActiveState,
+              updateItems,
             }}
             getClassNames={this.getClassNames}
           />
@@ -466,8 +486,7 @@ class WidgetRenderer extends PureComponent {
               widgetField,
               id,
               filterWidget,
-              isFilterActive:
-                typeof isFilterActive === 'undefined' ? false : isFilterActive, // safety check - do not pass `undefined` further down
+              isFilterActive: filterActiveState,
               updateItems,
             }}
             handlePatch={onPatch}
@@ -580,7 +599,7 @@ class WidgetRenderer extends PureComponent {
         const entry = widgetData[0];
 
         if (entry && entry.value && Array.isArray(entry.value.values)) {
-          values = entry.value.values;
+          values = [...entry.value.values];
         }
 
         return (
@@ -589,9 +608,10 @@ class WidgetRenderer extends PureComponent {
             entity={entity}
             subentity={subentity}
             subentityId={subentityId}
+            dataId={dataId}
             tabId={tabId}
             rowId={rowId}
-            windowType={windowType}
+            windowId={windowType}
             viewId={viewId}
             selected={values}
             readonly={readonly}
@@ -602,6 +622,7 @@ class WidgetRenderer extends PureComponent {
               })
             }
             tabIndex={tabIndex}
+            disconnected={disconnected}
           />
         );
       }

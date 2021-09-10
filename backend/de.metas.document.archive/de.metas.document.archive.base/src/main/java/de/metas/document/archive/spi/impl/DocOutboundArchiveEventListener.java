@@ -26,6 +26,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.archive.ArchiveId;
@@ -225,6 +226,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		docOutboundLogRecord.setAD_Table_ID(adTableId);
 		docOutboundLogRecord.setRecord_ID(recordId);
 		docOutboundLogRecord.setC_BPartner_ID(archiveRecord.getC_BPartner_ID());
+		docOutboundLogRecord.setC_Async_Batch_ID(archiveRecord.getC_Async_Batch_ID());
 
 		final int doctypeID = docActionBL.getC_DocType_ID(ctx, adTableId, recordId);
 		docOutboundLogRecord.setC_DocType_ID(doctypeID);
@@ -235,7 +237,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
 		docOutboundLogRecord.setDocStatus(DocStatus.toCodeOrNull(docStatus));
 
-		docOutboundLogRecord.setDocumentNo(archiveRecord.getName());
+		docOutboundLogRecord.setDocumentNo(archiveRecord.getDocumentNo());
+		docOutboundLogRecord.setFileName(archiveRecord.getName());
 
 		final LocalDate documentDate = CoalesceUtil.coalesce(
 				docActionBL.getDocumentDate(ctx, adTableId, recordId),

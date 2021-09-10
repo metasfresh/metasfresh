@@ -7,7 +7,6 @@ import de.metas.ui.web.payment_allocation.InvoicesViewFactory;
 import de.metas.ui.web.payment_allocation.PaymentRow;
 import de.metas.ui.web.payment_allocation.PaymentsView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
 import java.util.List;
@@ -66,20 +65,13 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 	//
 	//
 
-	protected final PaymentRow getSingleSelectedPaymentRowOrNull()
+	protected final List<PaymentRow> getPaymentRowsSelectedForAllocation()
 	{
 		final DocumentIdsSelection selectedPaymentRowIds = getSelectedPaymentRowIdsIncludingDefaultRow();
-		if (selectedPaymentRowIds.isSingleDocumentId()
-				&& selectedPaymentRowIds.getSingleDocumentId().toInt() != PaymentRow.DEFAULT_PAYMENT_ROW.getPaymentId().getRepoId()
-		)
-		{
-			final DocumentId rowId = selectedPaymentRowIds.getSingleDocumentId();
-			return getPaymentsView().getById(rowId);
-		}
-		else
-		{
-			return null;
-		}
+
+		return getPaymentsView().streamByIds(selectedPaymentRowIds)
+				.filter(row -> !row.equals(PaymentRow.DEFAULT_PAYMENT_ROW))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	protected final List<InvoiceRow> getInvoiceRowsSelectedForAllocation()

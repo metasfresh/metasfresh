@@ -211,6 +211,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.payment.revolut</groupId>
+			<artifactId>de.metas.payment.revolut</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.handlingunits</groupId>
 			<artifactId>de.metas.handlingunits.base</artifactId>
 			<version>${metasfresh.version}</version>

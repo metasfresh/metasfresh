@@ -1,18 +1,21 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.compiere.util.Evaluatee;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
+import lombok.NonNull;
+import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 /*
  * #%L
@@ -40,10 +43,7 @@ public final class NullLookupDataSource implements LookupDataSource
 {
 	public static final transient NullLookupDataSource instance = new NullLookupDataSource();
 
-	private NullLookupDataSource()
-	{
-		super();
-	}
+	private NullLookupDataSource() { }
 
 	@Override
 	public DocumentZoomIntoInfo getDocumentZoomInto(final int id)
@@ -52,19 +52,25 @@ public final class NullLookupDataSource implements LookupDataSource
 	}
 
 	@Override
-	public LookupValuesList findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final String filter, final int firstRow, final int pageLength)
 	{
-		return LookupValuesList.EMPTY;
+		return LookupValuesPage.EMPTY;
 	}
 
 	@Override
-	public LookupValuesList findEntities(final Evaluatee ctx, final int pageLength)
+	public LookupValuesPage findEntities(final Evaluatee ctx, final int pageLength)
 	{
-		return LookupValuesList.EMPTY;
+		return LookupValuesPage.EMPTY;
 	}
 
 	@Override
 	public LookupValue findById(final Object id)
+	{
+		return toUnknownLookupValue(id);
+	}
+
+	@Nullable
+	private static LookupValue toUnknownLookupValue(final Object id)
 	{
 		if (id == null)
 		{
@@ -79,6 +85,20 @@ public final class NullLookupDataSource implements LookupDataSource
 		{
 			return StringLookupValue.unknown(id.toString());
 		}
+	}
+
+	@Override
+	public @NonNull LookupValuesList findByIdsOrdered(final @NonNull Collection<?> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return LookupValuesList.EMPTY;
+		}
+
+		return ids.stream()
+				.map(NullLookupDataSource::toUnknownLookupValue)
+				.filter(Objects::nonNull)
+				.collect(LookupValuesList.collect());
 	}
 
 	@Override

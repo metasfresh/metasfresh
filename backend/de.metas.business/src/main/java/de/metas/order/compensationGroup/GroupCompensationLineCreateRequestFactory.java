@@ -1,24 +1,22 @@
 package de.metas.order.compensationGroup;
 
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_OrderLine;
-import org.springframework.stereotype.Service;
-
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_OrderLine;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -45,23 +43,31 @@ import lombok.NonNull;
 @Service
 public class GroupCompensationLineCreateRequestFactory
 {
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 
-	public GroupCompensationLineCreateRequest createGroupCompensationLineCreateRequest(@NonNull final GroupTemplateLine templateLine, @NonNull final Group group)
+	public GroupCompensationLineCreateRequest createGroupCompensationLineCreateRequest(
+			@NonNull final GroupTemplateCompensationLine templateLine,
+			@NonNull final Group group)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
-		final IProductDAO productsRepo = Services.get(IProductDAO.class);
-
 		final ProductId productId = templateLine.getProductId();
-		final I_M_Product product = productsRepo.getById(productId);
+		final I_M_Product product = productBL.getById(productId);
 		final I_C_UOM uom = productBL.getStockUOM(product);
 
-		final GroupCompensationType type = extractGroupCompensationType(product);
+		final GroupCompensationType type = templateLine.getCompensationType() != null
+				? templateLine.getCompensationType()
+				: extractGroupCompensationType(product);
+
 		final GroupCompensationAmtType amtType = extractGroupCompensationAmtType(product);
 
-		Percent percentage = Percent.ZERO;
+		final Percent percentage;
 		if (GroupCompensationType.Discount.equals(type) && GroupCompensationAmtType.Percent.equals(amtType))
 		{
 			percentage = calculateDefaultDiscountPercentage(templateLine, group);
+		}
+		else
+		{
+			percentage = Percent.ZERO;
 		}
 
 		return GroupCompensationLineCreateRequest.builder()
@@ -76,17 +82,21 @@ public class GroupCompensationLineCreateRequestFactory
 				.build();
 	}
 
-	private static final GroupCompensationType extractGroupCompensationType(final I_M_Product product)
+	private static GroupCompensationType extractGroupCompensationType(final I_M_Product product)
 	{
-		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(product.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
+		return GroupCompensationType.ofAD_Ref_List_Value(
+				StringUtils.trimBlankToOptional(product.getGroupCompensationType())
+						.orElse(X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
-	private static final GroupCompensationAmtType extractGroupCompensationAmtType(final I_M_Product product)
+	private static GroupCompensationAmtType extractGroupCompensationAmtType(final I_M_Product product)
 	{
-		return GroupCompensationAmtType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(product.getGroupCompensationAmtType(), X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
+		return GroupCompensationAmtType.ofAD_Ref_List_Value(
+				StringUtils.trimBlankToOptional(product.getGroupCompensationAmtType())
+						.orElse(X_C_OrderLine.GROUPCOMPENSATIONAMTTYPE_Percent));
 	}
 
-	private Percent calculateDefaultDiscountPercentage(final GroupTemplateLine templateLine, final Group group)
+	private Percent calculateDefaultDiscountPercentage(final GroupTemplateCompensationLine templateLine, final Group group)
 	{
 		if (templateLine.getPercentage() != null)
 		{
@@ -96,10 +106,8 @@ public class GroupCompensationLineCreateRequestFactory
 		return retrieveDiscountPercentageFromPricing(templateLine, group);
 	}
 
-	private final Percent retrieveDiscountPercentageFromPricing(final GroupTemplateLine templateLine, final Group group)
+	private Percent retrieveDiscountPercentageFromPricing(final GroupTemplateCompensationLine templateLine, final Group group)
 	{
-		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-
 		final IEditablePricingContext pricingCtx = pricingBL.createPricingContext();
 		pricingCtx.setProductId(templateLine.getProductId());
 		pricingCtx.setBPartnerId(group.getBpartnerId());

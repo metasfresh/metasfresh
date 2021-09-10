@@ -19,8 +19,7 @@ export const introHints = {
   default: [
     {
       element: '.user-dropdown-container',
-      hint:
-        'This is your avatar. Click on it and then on Settings. Their you will be able to change your language and your avatar.',
+      hint: 'This is your avatar. Click on it and then on Settings. Their you will be able to change your language and your avatar.',
       hintPosition: 'bottom-middle',
     },
   ],

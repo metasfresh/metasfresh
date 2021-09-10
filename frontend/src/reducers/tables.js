@@ -1,7 +1,7 @@
 import { produce, original } from 'immer';
 import { get, difference, forEach } from 'lodash';
 import { createSelector } from 'reselect';
-import merge from 'merge';
+import { merge } from 'merge-anything';
 
 import * as types from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
@@ -57,10 +57,7 @@ const selectTableHelper = (state, id) => {
  * @method getTable
  * @summary Memoized selector for getting table object by id from the state
  */
-export const getTable = createSelector(
-  selectTableHelper,
-  (table) => table
-);
+export const getTable = createSelector(selectTableHelper, (table) => table);
 
 const getSelectionData = (state, tableId) =>
   selectTableHelper(state, tableId).selected;
@@ -70,10 +67,7 @@ const getSelectionData = (state, tableId) =>
  * @summary Memoized selector for getting selections in a table
  */
 export const getSelection = () => {
-  return createSelector(
-    getSelectionData,
-    (table) => table
-  );
+  return createSelector(getSelectionData, (table) => table);
 };
 
 export const getSupportAttribute = (selected, rows) => {
@@ -198,7 +192,7 @@ const reducer = produce((draftState, action) => {
 
       const newRows = rows.map((row) => {
         if (row[keyProperty] === rowId) {
-          return merge.recursive(true, row, change);
+          return merge(row, change);
         }
         return row;
       });
