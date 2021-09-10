@@ -43,6 +43,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.process.ProcessExecutionResult;
@@ -83,6 +84,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -129,6 +131,7 @@ public class DesadvBL implements IDesadvBL
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	// @VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
@@ -181,9 +184,9 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	private I_EDI_DesadvLine retrieveOrCreateDesadvLine(
-			final I_C_Order orderRecord,
-			final I_EDI_Desadv desadvRecord,
-			final I_C_OrderLine orderLineRecord)
+			@NonNull final I_C_Order orderRecord,
+			@NonNull final I_EDI_Desadv desadvRecord,
+			@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadvRecord, orderLineRecord.getLine());
 		if (existingDesadvLine != null)
@@ -284,17 +287,18 @@ public class DesadvBL implements IDesadvBL
 		{
 			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 			final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 			materialItemProduct = hupiItemProductDAO.retrieveMaterialItemProduct(
 					productId,
 					buyerBPartnerId,
-					TimeUtil.asZonedDateTime(order.getDateOrdered()),
+					TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone),
 					X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
 		}
 		return materialItemProduct;
 	}
 
-	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)
+	private I_EDI_Desadv retrieveOrCreateDesadv(@NonNull final I_C_Order order)
 	{
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(
 				order.getPOReference(),
@@ -304,6 +308,7 @@ public class DesadvBL implements IDesadvBL
 			desadv = InterfaceWrapperHelper.newInstance(I_EDI_Desadv.class, order);
 
 			desadv.setPOReference(order.getPOReference());
+			desadv.setDeliveryViaRule(order.getDeliveryViaRule());
 
 			desadv.setC_BPartner_ID(order.getC_BPartner_ID());
 			desadv.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
