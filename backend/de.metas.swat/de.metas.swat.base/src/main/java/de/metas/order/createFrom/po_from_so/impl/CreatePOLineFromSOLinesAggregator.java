@@ -1,7 +1,24 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
-import de.metas.common.util.CoalesceUtil;
-import de.metas.order.IOrderBL;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_AttributeSetInstance;
+
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
@@ -152,8 +169,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 				() -> salesOrderLine.getC_Order().getDatePromised());
 		purchaseOrderLine.setDatePromised(datePromised);
 
-		purchaseOrderLine.setC_BPartner_ID(purchaseOrder.getC_BPartner_ID());
-		purchaseOrderLine.setC_BPartner_Location_ID(purchaseOrder.getC_BPartner_Location_ID());
+		OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
 
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 
