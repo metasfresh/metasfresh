@@ -22,26 +22,6 @@
 
 package de.metas.camel.externalsystems.shopware6.api.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
-import java.util.List;
-
-@Value
-@JsonDeserialize(builder = QueryRequest.QueryRequestBuilder.class)
-public class QueryRequest implements Shopware6QueryRequest
+public interface Shopware6QueryRequest
 {
-	@NonNull
-	@JsonProperty("filter")
-	List<JsonQuery> queries;
-
-	@Builder
-	public QueryRequest(@NonNull @Singular @JsonProperty("filter") final List<JsonQuery> queries)
-	{
-		this.queries = queries;
-	}
 }

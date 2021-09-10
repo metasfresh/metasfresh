@@ -27,11 +27,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.shopware6.Shopware6Constants;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
+import de.metas.camel.externalsystems.shopware6.api.ShopwareClient.GetOrdersResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
+import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
@@ -57,6 +60,7 @@ import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.ROUTE_PROPERTY_RAW_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_CREATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FIELD_UPDATED_AT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.PARAMETERS_DATE_GTE;
@@ -93,21 +97,33 @@ public class GetOrdersProcessor implements Processor
 		final String clientSecret = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_SECRET);
 
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
-		final String updatedAfter = CoalesceUtil.coalesce(
-				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
-				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
-				Instant.ofEpochSecond(0).toString());
+
+		final Shopware6QueryRequest getOrdersRequest;
+		final String orderNo = request.getParameters().get(ExternalSystemConstants.PARAM_ORDER_NO);
+		if (Check.isNotBlank(orderNo))
+		{
+			getOrdersRequest = buildOrderNoQueryRequest(orderNo);
+		}
+		else
+		{
+			final String updatedAfter = CoalesceUtil.coalesceNotNull(
+					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
+					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
+					Instant.ofEpochSecond(0).toString());
+
+			getOrdersRequest = buildUpdatedAfterQueryRequest(updatedAfter);
+		}
 
 		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
 		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
-		final QueryRequest getOrdersRequest = buildQueryOrdersRequest(updatedAfter);
+		
+		final GetOrdersResponse ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath, salesRepJSONPath);
 
-		final List<OrderCandidate> ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath, salesRepJSONPath);
-
-		exchange.getIn().setBody(ordersToProcess);
-
+		exchange.getIn().setBody(ordersToProcess.getOrderCandidates());
+		exchange.setProperty(ROUTE_PROPERTY_RAW_DATA, ordersToProcess.getRawData());
+		
 		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
 				.baseUrl(basePath)
 				.clientId(clientId)
@@ -164,15 +180,27 @@ public class GetOrdersProcessor implements Processor
 
 	@NonNull
 	@VisibleForTesting
-	public static QueryRequest buildQueryOrdersRequest(@NonNull final String updatedAfter)
+	public static  QueryRequest buildOrderNoQueryRequest(@NonNull final String orderNo)
+	{
+		return QueryRequest.builder()
+				.query(JsonQuery.builder()
+							   .field(Shopware6Constants.FIELD_ORDER_NUMBER)
+							   .queryType(JsonQuery.QueryType.EQUALS)
+							   .value(orderNo)
+							   .build())
+				.build();
+	}
+	
+	@NonNull
+	@VisibleForTesting
+	public static MultiQueryRequest buildUpdatedAfterQueryRequest(@NonNull final String updatedAfter)
 	{
 		final HashMap<String, String> parameters = new HashMap<>();
 		parameters.put(PARAMETERS_DATE_GTE, updatedAfter);
 
-		return QueryRequest.builder()
-				.filter(JsonFilter.builder()
-								.filterType(JsonFilter.FilterType.MULTI)
-								.operatorType(JsonFilter.OperatorType.OR)
+		return MultiQueryRequest.builder()
+				.filter(MultiJsonFilter.builder()
+								.operatorType(MultiJsonFilter.OperatorType.OR)
 								.jsonQuery(JsonQuery.builder()
 												   .field(FIELD_UPDATED_AT)
 												   .queryType(JsonQuery.QueryType.RANGE)
@@ -197,7 +225,7 @@ public class GetOrdersProcessor implements Processor
 		final String normalVatProductId = parameters.get(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID);
 		if (Check.isNotBlank(normalVatProductId) && Check.isNotBlank(normalVatRates))
 		{
-			final List<BigDecimal> rates = NumberUtils.asBigDecimalListOrNull(normalVatRates, ",");
+			final List<BigDecimal> rates = NumberUtils.asBigDecimalList(normalVatRates, ",");
 			final JsonMetasfreshId productId = JsonMetasfreshId.of(Integer.parseInt(normalVatProductId));
 
 			productId2VatRatesBuilder.put(productId, rates);
@@ -207,7 +235,7 @@ public class GetOrdersProcessor implements Processor
 		final String reducedVatProductId = parameters.get(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID);
 		if (Check.isNotBlank(reducedVatProductId) && Check.isNotBlank(reducedVatRates))
 		{
-			final List<BigDecimal> rates = NumberUtils.asBigDecimalListOrNull(reducedVatRates, ",");
+			final List<BigDecimal> rates = NumberUtils.asBigDecimalList(reducedVatRates, ",");
 			final JsonMetasfreshId productId = JsonMetasfreshId.of(Integer.parseInt(reducedVatProductId));
 
 			productId2VatRatesBuilder.put(productId, rates);
