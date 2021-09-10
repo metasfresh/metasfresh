@@ -22,8 +22,10 @@ package de.metas.pricing.modelvalidator;
  * #L%
  */
 
-import java.util.Properties;
-
+import de.metas.i18n.IMsgBL;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -35,11 +37,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.X_M_ProductPrice;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Objects;
+import java.util.Properties;
 
 @Validator(I_M_ProductPrice.class)
 public class M_ProductPrice
@@ -82,12 +83,12 @@ public class M_ProductPrice
 			I_M_ProductPrice.COLUMNNAME_UseScalePrice,
 			I_M_ProductPrice.COLUMNNAME_IsAttributeDependant
 	})
-	public void checkFlags(I_M_ProductPrice productPrice)
+	public void checkFlags(final I_M_ProductPrice productPrice)
 	{
 		// Should never happen.
 		Check.assumeNotNull(productPrice, "Product price not null");
 
-		if (productPrice.isAttributeDependant() && productPrice.isUseScalePrice())
+		if (productPrice.isAttributeDependant() && !Objects.equals(productPrice.getUseScalePrice(), X_M_ProductPrice.USESCALEPRICE_DonTUseScalePrice))
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(productPrice);
 

@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api;
 
 import com.google.common.base.MoreObjects;
+import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeRelatedDocumentsProvidersFactory;
@@ -18,6 +19,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -26,6 +28,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /*
@@ -114,11 +117,16 @@ final class RelationTypeOLCandSource implements OLCandSource
 		final DocTypeId orderDocTypeId = olCandBL.getOrderDocTypeId(orderDefaults, olCandRecord);
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
 
-		final OrderLineGroup orderLineGroup = OrderLineGroup.ofOrNull(
-				olCandRecord.getCompensationGroupKey(),
-				olCandRecord.isGroupCompensationLine(),
-				olCandRecord.isGroupingError(),
-				olCandRecord.getGroupingErrorMessage());
+		final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
+				? null
+				: OrderLineGroup.builder()
+				.groupKey(Objects.requireNonNull(olCandRecord.getCompensationGroupKey()))
+				.isGroupMainItem(olCandRecord.isGroupCompensationLine())
+				.isGroupingError(olCandRecord.isGroupingError())
+				.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
+				.discount(Percent.ofNullable(olCandRecord.getGroupCompensationDiscountPercentage()))
+				.build();
+
 		return OLCand.builder()
 				.olCandEffectiveValuesBL(olCandEffectiveValuesBL)
 				.olCandRecord(olCandRecord)
@@ -134,6 +142,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.orderDocTypeId(orderDocTypeId)
 				.salesRepId(salesRepId)
 				.orderLineGroup(orderLineGroup)
+				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
 				.build();
 	}
 }

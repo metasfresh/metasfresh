@@ -72,20 +72,16 @@ module.exports = {
       {
         test: /\.(jpg|png|svg|eot|woff|woff2|ttf|gif)$/,
         exclude: /\w*(logo)\w*\.(jpg|png)$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[path][name].[hash].[ext]',
-          },
+        type: 'asset/resource',
+        generator: {
+          filename: '[path][name].[hash].[ext]',
         },
       },
       {
         test: /\w*(logo)\w*\.(jpg|png)$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            name: '[path][name].[ext]',
-          },
+        type: 'asset/resource',
+        generator: {
+          filename: '[path][name].[ext]',
         },
       },
       {
@@ -96,19 +92,21 @@ module.exports = {
           {
             loader: 'postcss-loader',
             options: {
-              ident: 'postcss',
-              plugins: () => [
-                require('postcss-import')({
-                  addDependencyTo: webpack,
-                  path: ['node_modules'],
-                }),
-                require('postcss-color-function'),
-                require('postcss-url')(),
-                require('autoprefixer')({
-                  overrideBrowserslist: ['last 2 versions'],
-                }),
-                require('precss')(),
-              ],
+              postcssOptions: {
+                plugins: {
+                  'postcss-import': {
+                    addDependencyTo: webpack,
+                    path: ['node_modules', 'src/assets'],
+                  },
+                  'postcss-color-function': {},
+                  'postcss-url': {},
+                  precss: {},
+                  autoprefixer: {
+                    overrideBrowserslist: ['last 2 versions'],
+                  },
+                },
+                ident: 'postcss',
+              },
             },
           },
         ],
@@ -117,12 +115,9 @@ module.exports = {
         type: 'javascript/auto',
         test: /\.(json)/,
         exclude: /(node_modules)/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: { name: '[name].[ext]' },
-          },
-        ],
+        generator: {
+          filename: '[name].[ext]',
+        },
       },
     ],
   },

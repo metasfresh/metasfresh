@@ -1,20 +1,18 @@
 package de.metas.attachments;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_M_Product;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-import de.metas.adempiere.model.I_M_Product;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -101,7 +99,7 @@ public class AttachmentEntryServiceTest
 	@Test
 	public void deleteEntryForModel()
 	{
-		I_M_Product productRecord2 = newInstance(I_M_Product.class);
+		final I_M_Product productRecord2 = newInstance(I_M_Product.class);
 		saveRecord(productRecord2);
 
 		final AttachmentEntry entry = attachmentEntryService.createNewAttachment(productRecord2, "productRecord2", "productRecord2.data".getBytes());
@@ -167,5 +165,42 @@ public class AttachmentEntryServiceTest
 		assertThat(result.getTags().getTagValueOrNull("tag3Name")).isEqualTo("tag3Value");
 
 		assertThat(attachmentEntryWithAdditionalTag.getLinkedRecords()).isEqualTo(attachmentEntry.getLinkedRecords());
+	}
+
+	@Test
+	public void handleAttachmentLinks()
+	{
+		final AttachmentEntry bPartnerLinkedAttachmentEntry = createNewAttachment_with_tags_performTest();
+
+		final AttachmentTags tagsToAdd = AttachmentTags.builder()
+				.tag("tag3Name", "tag3Value")
+				.tag("tag4Name", "tag4Value")
+				.build();
+
+		final AttachmentTags tagsToRemove = AttachmentTags.builder()
+				.tag("tag1Name", "tag1Value")
+				.tag("tag2Name", "tag2Value")
+				.build();
+
+		final TableRecordReference tableRecordReferenceToRemove = TableRecordReference.of(bpartnerRecord);
+		final TableRecordReference tableRecordReferenceToAdd = TableRecordReference.of(productRecord);
+
+		final AttachmentLinksRequest attachmentLinksRequest = AttachmentLinksRequest.builder()
+				.attachmentEntryId(bPartnerLinkedAttachmentEntry.getId())
+				.tagsToAdd(tagsToAdd)
+				.tagsToRemove(tagsToRemove)
+				.linksToAdd(ImmutableList.of(tableRecordReferenceToAdd))
+				.linksToRemove(ImmutableList.of(tableRecordReferenceToRemove))
+				.build();
+
+		final AttachmentEntry result = attachmentEntryService.handleAttachmentLinks(attachmentLinksRequest);
+
+		assertThat(result.getTags().getTagValueOrNull("tag1Name")).isEqualTo(null);
+		assertThat(result.getTags().getTagValueOrNull("tag2Name")).isEqualTo(null);
+		assertThat(result.getTags().getTagValueOrNull("tag3Name")).isEqualTo("tag3Value");
+		assertThat(result.getTags().getTagValueOrNull("tag4Name")).isEqualTo("tag4Value");
+
+		assertThat(result.getLinkedRecords()).doesNotContain(tableRecordReferenceToRemove);
+		assertThat(result.getLinkedRecords()).contains(tableRecordReferenceToAdd);
 	}
 }

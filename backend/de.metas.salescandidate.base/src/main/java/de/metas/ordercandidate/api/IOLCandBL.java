@@ -22,6 +22,7 @@ package de.metas.ordercandidate.api;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.document.DocTypeId;
@@ -54,7 +55,7 @@ public interface IOLCandBL extends ISingletonService
 	/**
 	 * Creates and updates orders.
 	 */
-	void process(OLCandProcessorDescriptor processor);
+	void process(OLCandProcessorDescriptor processor, AsyncBatchId asyncBatchId);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 

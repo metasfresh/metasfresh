@@ -145,7 +145,6 @@ public class GroupTemplateRepository
 			@NonNull final I_C_CompensationGroup_SchemaLine compensationLineRecord,
 			@NonNull final List<I_C_CompensationGroup_SchemaLine> allCompensationLineRecords)
 	{
-		final BigDecimal percentage = compensationLineRecord.getCompleteOrderDiscount();
 		return GroupTemplateCompensationLine.builder()
 				.id(GroupTemplateLineId.ofRepoIdOrNull(compensationLineRecord.getC_CompensationGroup_SchemaLine_ID()))
 				.groupMatcher(createGroupMatcher(compensationLineRecord, allCompensationLineRecords))

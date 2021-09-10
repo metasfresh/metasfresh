@@ -16,6 +16,26 @@
  *****************************************************************************/
 package de.metas.cache;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
+import com.google.common.cache.CacheStats;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.ExecutionError;
+import com.google.common.util.concurrent.UncheckedExecutionException;
+import de.metas.logging.LogManager;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Singular;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,29 +53,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
-import com.google.common.cache.CacheStats;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.util.concurrent.ExecutionError;
-import com.google.common.util.concurrent.UncheckedExecutionException;
-
-import de.metas.logging.LogManager;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Singular;
 
 /**
  * metasfresh Cache.
@@ -157,7 +154,7 @@ public class CCache<K, V> implements CacheInterface
 	 */
 	private final String debugAquireStacktrace;
 
-	private CacheAdditionListener<K, V> additionListener;
+	private final CacheAdditionListener<K, V> additionListener;
 
 	/**
 	 * Metasfresh Cache - expires after 2 hours

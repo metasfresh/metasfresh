@@ -12,6 +12,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -420,5 +421,25 @@ public class InOutDAO implements IInOutDAO
 	public void save(@NonNull final I_M_InOutLine inoutLine)
 	{
 		InterfaceWrapperHelper.saveRecord(inoutLine);
+	}
+
+	@Override
+	public List<I_M_InOutLine> retrieveShipmentLinesForOrderId(@NonNull final Set<OrderId> orderIds)
+	{
+		final List<Integer> shipmentIds = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, orderIds)
+				.create()
+				.listDistinct(I_M_InOut.COLUMNNAME_M_InOut_ID, Integer.class);
+
+		if (shipmentIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addInArrayFilter(I_M_InOutLine.COLUMN_M_InOut_ID, shipmentIds)
+				.create()
+				.listImmutable(I_M_InOutLine.class);
 	}
 }

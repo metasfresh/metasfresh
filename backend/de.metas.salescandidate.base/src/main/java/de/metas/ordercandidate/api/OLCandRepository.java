@@ -10,6 +10,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
+import de.metas.location.LocationId;
 import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
@@ -19,6 +20,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -97,7 +100,6 @@ public class OLCandRepository
 		});
 	}
 
-
 	private I_C_OLCand createAndSaveOLCandRecord(@NonNull final OLCandCreateRequest request)
 	{
 		final I_C_OLCand olCandPO = newInstance(I_C_OLCand.class);
@@ -121,6 +123,7 @@ public class OLCandRepository
 
 			olCandPO.setC_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 			olCandPO.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
+			olCandPO.setC_BPartner_Location_Value_ID(LocationId.toRepoId(bpartner.getLocationId()));
 			olCandPO.setAD_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
@@ -129,6 +132,7 @@ public class OLCandRepository
 			final BPartnerInfo bpartner = request.getBillBPartner();
 			olCandPO.setBill_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 			olCandPO.setBill_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+			olCandPO.setBill_Location_Value_ID(LocationId.toRepoId(bpartner.getLocationId()));
 			olCandPO.setBill_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
@@ -137,6 +141,7 @@ public class OLCandRepository
 			final BPartnerInfo bpartner = request.getDropShipBPartner();
 			olCandPO.setDropShip_BPartner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 			olCandPO.setDropShip_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+			olCandPO.setDropShip_Location_Value_ID(LocationId.toRepoId(bpartner.getLocationId()));
 			olCandPO.setDropShip_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
@@ -145,6 +150,7 @@ public class OLCandRepository
 			final BPartnerInfo bpartner = request.getHandOverBPartner();
 			olCandPO.setHandOver_Partner_ID(BPartnerId.toRepoId(bpartner.getBpartnerId()));
 			olCandPO.setHandOver_Location_ID(BPartnerLocationId.toRepoId(bpartner.getBpartnerLocationId()));
+			olCandPO.setHandOver_Location_Value_ID(LocationId.toRepoId(bpartner.getLocationId()));
 			olCandPO.setHandOver_User_ID(BPartnerContactId.toRepoId(bpartner.getContactId()));
 		}
 
@@ -156,8 +162,8 @@ public class OLCandRepository
 		olCandPO.setDateCandidate(CoalesceUtil.coalesce(TimeUtil.asTimestamp(request.getDateCandidate()), SystemTime.asDayTimestamp()));
 		olCandPO.setDateOrdered(TimeUtil.asTimestamp(request.getDateOrdered()));
 		olCandPO.setDatePromised(TimeUtil.asTimestamp(request.getDateRequired()
-				.atTime(LocalTime.MAX)
-				.atZone(timeZone)));
+															  .atTime(LocalTime.MAX)
+															  .atZone(timeZone)));
 
 		olCandPO.setPresetDateInvoiced(TimeUtil.asTimestamp(request.getPresetDateInvoiced()));
 		olCandPO.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(request.getDocTypeInvoiceId()));
@@ -242,6 +248,10 @@ public class OLCandRepository
 		{
 			olCandPO.setCompensationGroupKey(orderLineGroup.getGroupKey());
 			olCandPO.setIsGroupCompensationLine(orderLineGroup.isGroupMainItem());
+
+			Optional.ofNullable(orderLineGroup.getDiscount())
+					.map(Percent::toBigDecimal)
+					.ifPresent(olCandPO::setGroupCompensationDiscountPercentage);
 		}
 
 		olCandPO.setDescription(request.getDescription());
@@ -258,10 +268,20 @@ public class OLCandRepository
 			olCandPO.setLine(request.getLine());
 		}
 
+		if (request.getAsyncBatchId() != null)
+		{
+			olCandPO.setC_Async_Batch_ID(request.getAsyncBatchId().getRepoId());
+		}
+
 		final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssuesInterface = InterfaceWrapperHelper.create(olCandPO, org.adempiere.process.rpl.model.I_C_OLCand.class);
 		if (request.getIsImportedWithIssues() != null)
 		{
 			olCandWithIssuesInterface.setIsImportedWithIssues(request.getIsImportedWithIssues());
+		}
+
+		if (request.getQtyShipped() != null)
+		{
+			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());
 		}
 
 		saveRecord(olCandWithIssuesInterface);
@@ -294,6 +314,14 @@ public class OLCandRepository
 		{
 			final InputDataSourceId inputDataSourceId = Services.get(IInputDataSourceDAO.class).retrieveInputDataSourceIdByInternalName(olCandQuery.getInputDataSourceName());
 			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMN_AD_InputDataSource_ID, inputDataSourceId);
+		}
+		if (olCandQuery.getExternalLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_ExternalLineId, olCandQuery.getExternalLineId());
+		}
+		if (olCandQuery.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_OLCand.COLUMNNAME_AD_Org_ID, olCandQuery.getOrgId());
 		}
 
 		return queryBuilder;
