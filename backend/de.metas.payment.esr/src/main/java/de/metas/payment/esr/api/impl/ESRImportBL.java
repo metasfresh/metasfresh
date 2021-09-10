@@ -518,38 +518,6 @@ public class ESRImportBL implements IESRImportBL
 				final boolean lineWasAlreadyHandled = handleEsrImportLine(line);
 				if (!lineWasAlreadyHandled)
 				{
-					continue;
-				}
-
-				// skip lines that have a payment, but are not yet processed (because a user needs to select an action)
-				// 08500: skip the lines with payments
-				refresh(line);
-				if (line.getC_Payment_ID() > 0)
-				{
-					continue;
-				}
-				// Check/Validate
-				if (!line.isValid())
-				{
-					evaluateLine(esrImport, line);
-				}
-				// finally, skip lines that have no bpartner set
-				if (line.getC_BPartner_ID() <= 0)
-				{
-					continue;
-				}
-
-				refresh(line);
-				final PaymentId payemntId = fetchDuplicatePaymentIfExists(line);
-				if (payemntId != null)
-				{
-					line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment);
-					handleUnsuppordedTrxType(esrImport, line);
-					line.setC_Payment_ID(payemntId.getRepoId());
-					esrImportDAO.save(line);
-					continue;
-				}
-
 					linesToProcess.add(line);
 				}
 			}
