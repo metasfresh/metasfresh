@@ -29,6 +29,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.model.GetBearerRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonOauthResponse;
 import de.metas.camel.externalsystems.shopware6.api.model.PathSegmentsEnum;
@@ -422,7 +423,7 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public Optional<JsonProducts> getProducts(@NonNull final QueryRequest queryRequest)
+	public Optional<JsonProducts> getProducts(@NonNull final MultiQueryRequest queryRequest)
 	{
 		final URI resourceURI;
 
