@@ -18,3 +18,28 @@ UPDATE AD_Message_Trl SET MsgText='Order can not be reactivated because already 
 UPDATE AD_Message SET MsgText='Order can not be reactivated because already has Completed Invoice.',Updated=TO_TIMESTAMP('2021-09-08 17:46:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545058
 ;
 
+-- 2021-09-10T06:21:08.405Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message SET MsgText='Order cannot be reactivated because it already has a completed invoice.', Value='order.invoice.completed',Updated=TO_TIMESTAMP('2021-09-10 09:21:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545058
+;
+
+-- 2021-09-10T06:21:27.889Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Order cannot be reactivated because it already has a completed invoice.',Updated=TO_TIMESTAMP('2021-09-10 09:21:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545058
+;
+
+-- 2021-09-10T06:21:43.082Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Auftrag kann nicht reaktiviert werden, weil es bereits eine fertiggestellte Rechnung dazu gibt.',Updated=TO_TIMESTAMP('2021-09-10 09:21:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545058
+;
+
+-- 2021-09-10T06:21:48.804Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Auftrag kann nicht reaktiviert werden, weil es bereits eine fertiggestellte Rechnung dazu gibt.',Updated=TO_TIMESTAMP('2021-09-10 09:21:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545058
+;
+
+-- 2021-09-10T06:21:55.406Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Auftrag kann nicht reaktiviert werden, weil es bereits eine fertiggestellte Rechnung dazu gibt.',Updated=TO_TIMESTAMP('2021-09-10 09:21:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545058
+;
+
