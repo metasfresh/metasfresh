@@ -12,7 +12,7 @@ ARG CACHEBUST=1
 RUN apt update \
     && apt -y full-upgrade \
     && apt -y install netcat \
-    && apt -y install openjdk-17-jdk-headless \
+    && apt -y install openjdk-16-jdk-headless \
     && apt -y install dos2unix \
     && apt -y install unzip \
     && apt -y autoremove \

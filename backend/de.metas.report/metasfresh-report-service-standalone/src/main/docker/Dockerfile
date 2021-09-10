@@ -13,13 +13,13 @@ ARG CACHEBUST=1
 #
 # Note that netcat is used to wait for the DMBS to be available on startup,
 # curl is needed for possible customizations while creating a derive docker image, and also as a possible tool for troubleshooting
-# postgresql-client-9.5 is used in performing the eventual migration script rollout
+# postgresql-client is used in performing the eventual migration script rollout
 RUN apt update \
     && apt -y full-upgrade \
     && apt -y install netcat \
-    && apt -y install postgresql-client-9.5 \
+    && apt -y install postgresql-client \
     && apt -y install curl \
-    && apt -y install openjdk-17-jdk-headless \
+    && apt -y install openjdk-16-jdk-headless \
     && apt -y install dos2unix \
     && apt -y install unzip \
     && apt -y autoremove \
