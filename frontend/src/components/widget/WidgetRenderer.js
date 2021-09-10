@@ -28,6 +28,7 @@ import Switch from './Switch';
 import Amount from './Amount';
 import Password from './Password';
 import CostPrice from './CostPrice';
+import { createDate } from '../../utils/tableHelpers';
 
 class WidgetRenderer extends PureComponent {
   constructor(props) {
@@ -233,13 +234,24 @@ class WidgetRenderer extends PureComponent {
             />
           );
         } else {
+          const dateFromWidget = widgetValue || widgetData[0].value;
+          const dateToday = new Date().toISOString();
+
+          // when the BE does not provide a value, we set the default value to today
+          const dateDatepicker = dateFromWidget
+            ? dateFromWidget
+            : createDate({
+                fieldValue: dateToday,
+                fieldType: widgetData[0].widgetType,
+              });
+
           return (
             <div className={this.getClassNames({ icon: true })}>
               <DatePicker
                 {...dateProps}
                 timeFormat={false}
                 dateFormat={dateFormat || true}
-                value={widgetValue || widgetData[0].value}
+                value={dateDatepicker}
                 patch={(date) =>
                   onPatch(
                     widgetField,
