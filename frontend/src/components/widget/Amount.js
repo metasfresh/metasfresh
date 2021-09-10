@@ -5,6 +5,19 @@ import classnames from 'classnames';
 import DevicesWidget from './Devices/DevicesWidget';
 
 export default class Amount extends PureComponent {
+  componentDidMount() {
+    const { isFilterActive, updateItems, widgetData } = this.props;
+
+    if (widgetData) {
+      !isFilterActive &&
+        updateItems &&
+        updateItems({
+          widgetField: widgetData[0].field,
+          value: widgetData[0].defaultValue,
+        });
+    }
+  }
+
   render() {
     const {
       getClassNames,
@@ -49,4 +62,6 @@ Amount.propTypes = {
   widgetProperties: PropTypes.object.isRequired,
   getClassNames: PropTypes.func.isRequired,
   onPatch: PropTypes.func.isRequired,
+  isFilterActive: PropTypes.bool,
+  updateItems: PropTypes.func,
 };

@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehousePickingGroup;
 import org.adempiere.warehouse.WarehousePickingGroupId;
@@ -116,6 +117,8 @@ public interface IWarehouseDAO extends ISingletonService
 
 	List<I_M_Warehouse> getAllWarehouses();
 
+	Set<WarehouseId> getAllWarehouseIds();
+
 	Set<WarehouseId> getWarehouseIdsOfSamePickingGroup(WarehouseId warehouseId);
 
 	WarehousePickingGroup getWarehousePickingGroupById(WarehousePickingGroupId warehousePickingGroupId);
@@ -188,4 +191,6 @@ public interface IWarehouseDAO extends ISingletonService
 	}
 
 	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
+
+	WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(int locatorRepoId);
 }

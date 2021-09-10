@@ -279,18 +279,6 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 		return (java.lang.String)get_Value(COLUMNNAME_AutoSuche);
 	}
 
-	@Override
-	public org.compiere.model.I_C_Greeting getBPContactGreet() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_BPContactGreeting, org.compiere.model.I_C_Greeting.class);
-	}
-
-	@Override
-	public void setBPContactGreet(final org.compiere.model.I_C_Greeting BPContactGreet)
-	{
-		set_ValueFromPO(COLUMNNAME_BPContactGreeting, org.compiere.model.I_C_Greeting.class, BPContactGreet);
-	}
-
 	/** Set Anrede.
 		@param BPContactGreeting
 		Anrede für den Geschäftspartner-Kontakt
@@ -516,18 +504,6 @@ public class X_V_BPartnerCockpit extends org.compiere.model.PO implements I_V_BP
 			return 0;
 		}
 		return ii.intValue();
-	}
-
-	@Override
-	public org.compiere.model.I_C_Greeting getC_Greeting() throws RuntimeException
-	{
-		return get_ValueAsPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class);
-	}
-
-	@Override
-	public void setC_Greeting(final org.compiere.model.I_C_Greeting C_Greeting)
-	{
-		set_ValueFromPO(COLUMNNAME_C_Greeting_ID, org.compiere.model.I_C_Greeting.class, C_Greeting);
 	}
 
 	/** Set Anrede.

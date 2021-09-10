@@ -1,21 +1,21 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
-import java.util.Optional;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.ui.web.window.datatypes.ColorValue;
 import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.DocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Check;
+import lombok.Getter;
+import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 /*
  * #%L
@@ -41,55 +41,73 @@ import javax.annotation.Nullable;
 
 public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataBindingDescriptor, SqlEntityFieldBinding
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
 	/**
-	 * @param optionalDescriptor
 	 * @return {@link SqlDocumentFieldDataBindingDescriptor} if given <code>optionalDescriptor</code> is present and it's of this type.
 	 */
-	public static final SqlDocumentFieldDataBindingDescriptor castOrNull(final Optional<DocumentFieldDataBindingDescriptor> optionalDescriptor)
+	@Nullable
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+	public static SqlDocumentFieldDataBindingDescriptor castOrNull(@NonNull final Optional<DocumentFieldDataBindingDescriptor> optionalDescriptor)
 	{
-		if (!optionalDescriptor.isPresent())
-		{
-			return null;
-		}
-
-		final DocumentFieldDataBindingDescriptor descriptor = optionalDescriptor.get();
-		return castOrNull(descriptor);
+		return optionalDescriptor.map(SqlDocumentFieldDataBindingDescriptor::castOrNull).orElse(null);
 	}
 
-	public static final SqlDocumentFieldDataBindingDescriptor castOrNull(final DocumentFieldDataBindingDescriptor descriptor)
+	@Nullable
+	public static SqlDocumentFieldDataBindingDescriptor castOrNull(final DocumentFieldDataBindingDescriptor descriptor)
 	{
 		if (descriptor instanceof SqlDocumentFieldDataBindingDescriptor)
 		{
 			return (SqlDocumentFieldDataBindingDescriptor)descriptor;
 		}
-
-		return null;
+		else
+		{
+			return null;
+		}
 	}
 
+	@Getter
 	private final String fieldName;
-
+	@Getter
 	private final String sqlColumnName;
+	@Getter
 	private final Class<?> sqlValueClass;
 
+	/**
+	 * true if this is a virtual SQL column (i.e. it's has an SQL expression to compute the value, instead of having just the field name)
+	 */
+	@Getter
 	private final boolean virtualColumn;
+	@Getter
 	private final boolean mandatory;
+	@Getter
 	private final boolean keyColumn;
 
+	@Getter
 	private final DocumentFieldWidgetType widgetType;
+	@Getter
 	private final Class<?> valueClass;
+	@Getter
+	@Nullable final LookupDescriptor lookupDescriptor;
+	@Getter
 	private final DocumentFieldValueLoader documentFieldValueLoader;
 
 	private final Boolean numericKey;
-	//
+
+	/**
+	 * to be used in SELECT ... 'this field's sql' ... FROM ...
+	 */
+	@Getter
 	private final SqlSelectValue sqlSelectValue;
+	@Getter
 	private final SqlSelectDisplayValue sqlSelectDisplayValue;
 
+	@Getter
 	private final int defaultOrderByPriority;
+	@Getter
 	private final boolean defaultOrderByAscending;
 
 	private SqlDocumentFieldDataBindingDescriptor(final Builder builder)
@@ -104,6 +122,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		widgetType = builder.getWidgetType();
 		valueClass = builder.getValueClass();
+		lookupDescriptor = builder._lookupDescriptor;
 
 		documentFieldValueLoader = builder.getDocumentFieldValueLoader();
 		Check.assumeNotNull(documentFieldValueLoader, "Parameter documentFieldValueLoader is not null");
@@ -129,92 +148,13 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				.toString();
 	}
 
-	public String getFieldName()
-	{
-		return fieldName;
-	}
+	@Override
+	public String getColumnName() { return getSqlColumnName(); }
+
+	public boolean isNumericKey() { return numericKey != null && numericKey; }
 
 	@Override
-	public String getColumnName()
-	{
-		return sqlColumnName;
-	}
-
-	@Override
-	public Class<?> getSqlValueClass()
-	{
-		return sqlValueClass;
-	}
-
-	/** @return SQL to be used in SELECT ... 'this field's sql' ... FROM ... */
-	public SqlSelectValue getSqlSelectValue()
-	{
-		return sqlSelectValue;
-	}
-
-	public SqlSelectDisplayValue getSqlSelectDisplayValue()
-	{
-		return sqlSelectDisplayValue;
-	}
-
-	/**
-	 * @return true if this is a virtual SQL column (i.e. it's has an SQL expression to compute the value, instead of having just the field name)
-	 */
-	@Override
-	public boolean isVirtualColumn()
-	{
-		return virtualColumn;
-	}
-
-	@Override
-	public boolean isMandatory()
-	{
-		return mandatory;
-	}
-
-	@Override
-	public DocumentFieldWidgetType getWidgetType()
-	{
-		return widgetType;
-	}
-
-	public Class<?> getValueClass()
-	{
-		return valueClass;
-	}
-
-	public DocumentFieldValueLoader getDocumentFieldValueLoader()
-	{
-		return documentFieldValueLoader;
-	}
-
-	public boolean isKeyColumn()
-	{
-		return keyColumn;
-	}
-
-	public boolean isNumericKey()
-	{
-		return numericKey != null && numericKey;
-	}
-
-	@Override
-	public boolean isDefaultOrderBy()
-	{
-		return defaultOrderByPriority != 0;
-	}
-
-	@Override
-	public int getDefaultOrderByPriority()
-	{
-		return defaultOrderByPriority;
-	}
-
-	@Override
-	public boolean isDefaultOrderByAscending()
-	{
-		return defaultOrderByAscending;
-	}
+	public boolean isDefaultOrderBy() { return defaultOrderByPriority != 0; }
 
 	@Override
 	public SqlOrderByValue getSqlOrderBy()
@@ -224,6 +164,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				.sqlSelectValue(getSqlSelectValue())
 				.build();
 	}
+
+	//
+	//
+	// ------------------------------------
+	//
+	//
 
 	public static final class Builder
 	{
@@ -239,7 +185,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		private Class<?> _valueClass;
 		private DocumentFieldWidgetType _widgetType;
-		private LookupDescriptor _lookupDescriptor;
+		@Nullable private LookupDescriptor _lookupDescriptor;
 		private boolean keyColumn = false;
 		private boolean encrypted = false;
 
@@ -247,8 +193,8 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		private int orderByPriority = 0;
 
 		// Built values
-		private SqlSelectDisplayValue _sqlSelectDisplayValue;
-		private Boolean _numericKey;
+		@Nullable private SqlSelectDisplayValue _sqlSelectDisplayValue;
+		@Nullable private Boolean _numericKey;
 		private DocumentFieldValueLoader _documentFieldValueLoader;
 
 		private Builder()
@@ -278,9 +224,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		private SqlSelectDisplayValue buildSqlSelectDisplayValue()
 		{
-			final ISqlLookupDescriptor sqlLookupDescriptor = _lookupDescriptor != null
-					? _lookupDescriptor.castOrNull(ISqlLookupDescriptor.class)
-					: null;
+			final ISqlLookupDescriptor sqlLookupDescriptor = _lookupDescriptor.cast(ISqlLookupDescriptor.class);
 
 			return SqlSelectDisplayValue.builder()
 					.joinOnTableNameOrAlias(getTableAlias())
@@ -298,8 +242,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			//
 			// Case: the SQL binding doesn't have any column set.
 			// Usually that's the case when the actual value it's not in the table name but it will be fetched by loader (from other tables).
-			// Check the Labels case for example.
-			if (Check.isEmpty(columnName, true))
+			if (Check.isBlank(columnName))
 			{
 				return SqlSelectValue.builder()
 						.virtualColumnSql("NULL")
@@ -355,15 +298,15 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 		 */
 		private static DocumentFieldValueLoader createDocumentFieldValueLoader(
 				final String sqlColumnName,
-				final String displayColumnName,
+				final String sqlDisplayColumnName,
 				final Class<?> valueClass,
 				final DocumentFieldWidgetType widgetType,
 				final boolean encrypted,
 				final Boolean numericKey)
 		{
-			if (!Check.isEmpty(displayColumnName))
+			if (!Check.isEmpty(sqlDisplayColumnName))
 			{
-				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, displayColumnName, /* descriptionColumnName, */ numericKey);
+				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, sqlDisplayColumnName, /* descriptionColumnName, */ numericKey);
 			}
 			else if (java.lang.String.class == valueClass)
 			{
@@ -550,6 +493,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
+		@Nullable
 		public Boolean getNumericKey()
 		{
 			return _numericKey;

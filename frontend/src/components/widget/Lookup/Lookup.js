@@ -2,16 +2,15 @@ import React, { Component } from 'react';
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import onClickOutside from 'react-onclickoutside';
-import { connect } from 'react-redux';
 import classnames from 'classnames';
 import * as _ from 'lodash';
 
+import { withForwardedRef } from '../../hoc/WithRouterAndRef';
 import { getItemsByProperty } from '../../../utils';
 import BarcodeScanner from '../BarcodeScanner/BarcodeScannerWidget';
 import List from '../List/List';
 import RawLookup from './RawLookup';
 import WidgetTooltip from '../WidgetTooltip';
-
 class Lookup extends Component {
   rawLookupsState = {};
 
@@ -48,6 +47,12 @@ class Lookup extends Component {
 
   componentDidMount() {
     this.checkIfDefaultValue();
+
+    this.mounted = true;
+  }
+
+  componentWillUnmount() {
+    this.mounted = false;
   }
 
   UNSAFE_componentWillReceiveProps(nextProps) {
@@ -97,9 +102,15 @@ class Lookup extends Component {
   };
 
   checkIfDefaultValue = () => {
-    const { widgetData } = this.props;
+    const { isFilterActive, updateItems, widgetData } = this.props;
 
     if (widgetData) {
+      !isFilterActive &&
+        updateItems &&
+        updateItems({
+          widgetField: widgetData[0].field,
+          value: widgetData[0].defaultValue,
+        });
       widgetData.map((item) => {
         if (item.value) {
           this.setState({
@@ -204,27 +215,38 @@ class Lookup extends Component {
 
   // TODO: Rewrite per widget if needed
   handleClear = () => {
-    const { onChange, properties, onSelectBarcode } = this.props;
-    const propsWithoutTooltips = properties.filter(
-      (prop) => prop.type !== 'Tooltip'
-    );
-    const onChangeResp =
-      onChange && onChange(propsWithoutTooltips, null, false);
+    if (this.mounted) {
+      const { updateItems, widgetData, onChange, properties, onSelectBarcode } =
+        this.props;
+      const propsWithoutTooltips = properties.filter(
+        (prop) => prop.type !== 'Tooltip'
+      );
+      const onChangeResp =
+        onChange && onChange(propsWithoutTooltips, null, false);
 
-    if (onChangeResp && onChangeResp.then) {
-      onChangeResp.then((resp) => {
-        if (resp) {
-          onSelectBarcode && onSelectBarcode(null);
+      if (onChangeResp && onChangeResp.then) {
+        onChangeResp.then((resp) => {
+          if (resp) {
+            updateItems &&
+              updateItems({
+                widgetField: widgetData[0].field,
+                value: '',
+              });
 
-          this.setState({
-            isInputEmpty: true,
-            property: '',
-            initialFocus: true,
-            localClearing: true,
-            autofocusDisabled: false,
-          });
-        }
-      });
+            if (this.mounted) {
+              onSelectBarcode && onSelectBarcode(null);
+
+              this.setState({
+                isInputEmpty: true,
+                property: '',
+                initialFocus: true,
+                localClearing: true,
+                autofocusDisabled: false,
+              });
+            }
+          }
+        });
+      }
     }
   };
 
@@ -286,6 +308,10 @@ class Lookup extends Component {
     );
   };
 
+  setRef = (refNode) => {
+    this.dropdown = refNode;
+  };
+
   render() {
     const {
       rank,
@@ -320,6 +346,9 @@ class Lookup extends Component {
       forceHeight,
       advSearchCaption,
       advSearchWindowId,
+      forwardedRef,
+      isFilterActive,
+      updateItems,
     } = this.props;
 
     const {
@@ -337,11 +366,9 @@ class Lookup extends Component {
         (validStatus && validStatus.initialValue && !validStatus.valid));
 
     const errorInputCondition =
-      validStatus && (!validStatus.valid && !validStatus.initialValue);
+      validStatus && !validStatus.valid && !validStatus.initialValue;
     const classRank = rank || 'primary';
     let showBarcodeScannerBtn = false;
-
-    this.linkedList = [];
 
     if (scanning) {
       return (
@@ -351,7 +378,7 @@ class Lookup extends Component {
 
     return (
       <div
-        ref={(c) => (this.dropdown = c)}
+        ref={this.setRef}
         className={classnames(
           'input-dropdown-container lookup-wrapper',
           `input-${classRank}`,
@@ -413,6 +440,11 @@ class Lookup extends Component {
                 defaultValue = { caption: codeSelected };
               }
 
+              defaultValue =
+                !isFilterActive && updateItems
+                  ? item.defaultValue
+                  : defaultValue;
+
               let width = null;
               // for multiple lookup widget we want the dropdown
               // to be full width of the widget component
@@ -422,6 +454,7 @@ class Lookup extends Component {
 
               return (
                 <RawLookup
+                  ref={index === 0 && forwardedRef}
                   key={index}
                   idValue={idValue}
                   defaultValue={defaultValue}
@@ -444,7 +477,6 @@ class Lookup extends Component {
                   }}
                   forcedWidth={width}
                   forceHeight={forceHeight}
-                  parentElement={forceFullWidth && this.dropdown}
                   isComposed={this.props.properties.length > 1 ? true : false}
                   {...{
                     placeholder,
@@ -472,6 +504,7 @@ class Lookup extends Component {
                     localClearing,
                     advSearchCaption,
                     advSearchWindowId,
+                    updateItems,
                   }}
                 />
               );
@@ -499,11 +532,7 @@ class Lookup extends Component {
                   )}
                 >
                   <List
-                    ref={(c) => {
-                      if (c) {
-                        this.linkedList.push(c);
-                      }
-                    }}
+                    ref={forwardedRef}
                     field={item.field}
                     clearable={false}
                     readonly={disabled || widgetData[index].readonly}
@@ -594,6 +623,9 @@ Lookup.propTypes = {
   scannerElement: PropTypes.any,
   advSearchCaption: PropTypes.string,
   advSearchWindowId: PropTypes.string,
+  forwardedRef: PropTypes.any,
+  isFilterActive: PropTypes.bool,
+  updateItems: PropTypes.func,
 };
 
-export default connect()(BarcodeScanner(onClickOutside(Lookup)));
+export default withForwardedRef(BarcodeScanner(onClickOutside(Lookup)));

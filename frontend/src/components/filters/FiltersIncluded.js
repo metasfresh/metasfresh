@@ -12,11 +12,7 @@ import FiltersItem from './FiltersItem';
  * @extends Component
  */
 class FiltersIncluded extends PureComponent {
-  constructor(props) {
-    super(props);
-
-    this.state = { isOpenDropdown: false, openFilterId: null };
-  }
+  state = { isOpenDropdown: false, openFilterId: null };
 
   /**
    * @method handleClickOutside
@@ -90,7 +86,7 @@ class FiltersIncluded extends PureComponent {
       active,
       modalVisible,
       activeFiltersCaptions,
-      resetInitialValues,
+      allChildFiltersCleared,
     } = this.props;
 
     const { isOpenDropdown, openFilterId } = this.state;
@@ -120,14 +116,17 @@ class FiltersIncluded extends PureComponent {
             'btn-distance btn-sm',
             {
               'btn-select': isOpenDropdown,
-              'btn-active': activeFilter ? activeFilter.isActive : false,
+              'btn-active':
+                activeFilter && !allChildFiltersCleared
+                  ? activeFilter.isActive
+                  : false,
             }
           )}
           title={buttonCaption}
           tabIndex={modalVisible ? -1 : 0}
         >
           <i className="meta-icon-preview" />
-          {activeFilter ? (
+          {activeFilter && !allChildFiltersCleared ? (
             activeFilter.parameters &&
             activeFilter.parameters.length === 1 &&
             activeFilter.captionValue ? (
@@ -166,7 +165,6 @@ class FiltersIncluded extends PureComponent {
                   windowType,
                   active,
                   viewId,
-                  resetInitialValues,
                   applyFilters,
                   clearFilters,
                 }}
@@ -184,6 +182,7 @@ class FiltersIncluded extends PureComponent {
                 onHide={this.handleShowFalse}
                 openedFilter={true}
                 filtersWrapper={this.props.filtersWrapper}
+                allChildFiltersCleared={allChildFiltersCleared}
               />
             )}
           </div>
@@ -195,7 +194,6 @@ class FiltersIncluded extends PureComponent {
 
 FiltersIncluded.propTypes = {
   allowOutsideClick: PropTypes.bool.isRequired,
-  resetInitialValues: PropTypes.func.isRequired,
   modalVisible: PropTypes.bool.isRequired,
   filtersWrapper: PropTypes.any,
   activeFiltersCaptions: PropTypes.object,
@@ -209,6 +207,7 @@ FiltersIncluded.propTypes = {
   active: PropTypes.any,
   widgetShown: PropTypes.any,
   dropdownToggled: PropTypes.any,
+  allChildFiltersCleared: PropTypes.bool, // indicator used to know when all the child filters of a filter were cleared
 };
 
 export default onClickOutside(FiltersIncluded);

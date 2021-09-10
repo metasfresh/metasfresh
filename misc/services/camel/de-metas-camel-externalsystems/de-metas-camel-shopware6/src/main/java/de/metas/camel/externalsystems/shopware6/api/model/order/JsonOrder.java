@@ -50,7 +50,7 @@ public class JsonOrder
 	@JsonProperty("orderCustomer")
 	JsonOrderCustomer orderCustomer;
 
-	@Nullable
+	@NonNull
 	@JsonProperty("currencyId")
 	String currencyId;
 
@@ -61,6 +61,18 @@ public class JsonOrder
 	@Nullable
 	@JsonProperty("orderDate")
 	ZonedDateTime orderDate;
+
+	@Nullable
+	@JsonProperty("stateMachineState")
+	JsonStateMachine stateMachine;
+
+	@NonNull
+	@JsonProperty("createdAt")
+	ZonedDateTime createdAt;
+
+	@Nullable
+	@JsonProperty("updatedAt")
+	ZonedDateTime updatedAt;
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")

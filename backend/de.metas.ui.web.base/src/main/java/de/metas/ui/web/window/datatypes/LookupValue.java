@@ -25,6 +25,7 @@ package de.metas.ui.web.window.datatypes;
 import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.impl.TooltipType;
@@ -54,10 +55,8 @@ import java.util.function.IntFunction;
 
 public abstract class LookupValue
 {
-	protected final ValueNamePairValidationInformation validationInformation;
-
 	@Nullable
-	public static Object normalizeId(final Object idObj, final boolean numericKey)
+	public static Object normalizeId(@Nullable final Object idObj, final boolean numericKey)
 	{
 		if (idObj == null)
 		{
@@ -106,6 +105,20 @@ public abstract class LookupValue
 			}
 		}
 	}
+
+	public static ImmutableList<Object> normalizeIds(@NonNull final Collection<?> idObjs, final boolean numericKey)
+	{
+		if(idObjs.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return idObjs.stream()
+				.map(idObj -> normalizeId(idObj, numericKey))
+				.filter(Objects::nonNull)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 
 	@Nullable
 	public static LookupValue fromObject(@Nullable final Object id, final String displayName)
@@ -234,8 +247,8 @@ public abstract class LookupValue
 	protected final ITranslatableString displayName;
 	protected final ITranslatableString description;
 	private final Boolean active;
-
 	private final ImmutableMap<String, Object> additionalAttributes;
+	protected final ValueNamePairValidationInformation validationInformation;
 
 	private LookupValue(
 			@NonNull final Object id,

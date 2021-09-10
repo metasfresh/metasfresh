@@ -23,6 +23,7 @@ import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
@@ -164,6 +165,7 @@ public final class Document
 
 	public interface DocumentValuesSupplier
 	{
+		@SuppressWarnings("StringOperationCanBeSimplified")
 		Object NO_VALUE = new String("NO_VALUE");
 
 		DocumentId getDocumentId();
@@ -171,7 +173,6 @@ public final class Document
 		String getVersion();
 
 		/**
-		 * @param fieldDescriptor
 		 * @return initial value or {@link #NO_VALUE} if it cannot provide a value
 		 */
 		Object getValue(final DocumentFieldDescriptor fieldDescriptor);
@@ -1545,7 +1546,7 @@ public final class Document
 		return getField(fieldName).getLookupValues();
 	}
 
-	public LookupValuesList getFieldLookupValuesForQuery(final String fieldName, final String query)
+	public LookupValuesPage getFieldLookupValuesForQuery(final String fieldName, final String query)
 	{
 		return getField(fieldName).getLookupValuesForQuery(query);
 	}
@@ -1760,7 +1761,7 @@ public final class Document
 		for (final IDocumentField documentField : getFields())
 		{
 			// skip virtual fields, those does not matter
-			if (documentField.isVirtualField())
+			if (documentField.isReadonlyVirtualField())
 			{
 				continue;
 			}

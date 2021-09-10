@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.i18n.IMsgBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -53,7 +54,8 @@ import java.math.BigDecimal;
 
 	public static void updateQtyToDeliver(
 			@NonNull final OlAndSched olAndSched,
-			@NonNull final IShipmentSchedulesDuringUpdate shipmentCandidates)
+			@NonNull final IShipmentSchedulesDuringUpdate shipmentCandidates,
+			@NonNull final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
 		if (sched.isClosed() || sched.isDeliveryStop())
@@ -73,7 +75,7 @@ import java.math.BigDecimal;
 			sched.setStatus(computeShipmentScheduleStatus(lineCandidate, shipmentCandidates));
 		}
 
-		final BigDecimal newQtyToDeliverOverrideFulfilled = computeQtyToDeliverOverrideFulFilled(olAndSched);
+		final BigDecimal newQtyToDeliverOverrideFulfilled = computeQtyToDeliverOverrideFulFilled(olAndSched, shipmentScheduleAllocDAO);
 		if (olAndSched.getQtyOverride() != null)
 		{
 			if (olAndSched.getQtyOverride().signum() == 0)
@@ -185,11 +187,14 @@ import java.math.BigDecimal;
 		return result;
 	}
 
-	public static BigDecimal computeQtyToDeliverOverrideFulFilled(final OlAndSched olAndSched)
+	public static BigDecimal computeQtyToDeliverOverrideFulFilled(
+			@NonNull final OlAndSched olAndSched, 
+			@NonNull final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
-		final BigDecimal deliveredDiff = sched.getQtyDelivered().subtract(olAndSched.getInitialSchedQtyDelivered());
+		final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
+		final BigDecimal deliveredDiff = qtyDelivered.subtract(olAndSched.getInitialSchedQtyDelivered());
 
 		final BigDecimal newQtyToDeliverOverrideFulfilled = sched.getQtyToDeliver_OverrideFulfilled().add(deliveredDiff);
 		if (newQtyToDeliverOverrideFulfilled.signum() < 0)

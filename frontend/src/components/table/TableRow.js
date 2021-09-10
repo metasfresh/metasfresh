@@ -305,21 +305,20 @@ class TableRow extends PureComponent {
         },
         () => {
           if (focus) {
-            const elem = document.activeElement.getElementsByClassName(
-              'js-input-field'
-            )[0];
+            const elem =
+              document.activeElement.getElementsByClassName(
+                'js-input-field'
+              )[0];
 
             if (elem) {
               mark && elem.select();
               elem.focus();
             }
 
-            const disabled = document.activeElement.querySelector(
-              '.input-disabled'
-            );
-            const readonly = document.activeElement.querySelector(
-              '.input-readonly'
-            );
+            const disabled =
+              document.activeElement.querySelector('.input-disabled');
+            const readonly =
+              document.activeElement.querySelector('.input-readonly');
 
             if (disabled || readonly) {
               !listenOnKeys && changeListenOnTrue();
@@ -464,6 +463,7 @@ class TableRow extends PureComponent {
       listenOnKeys,
       changeListenOnTrue,
       changeListenOnFalse,
+      fieldsByName,
     } = this.props;
     const {
       edited,
@@ -486,6 +486,9 @@ class TableRow extends PureComponent {
             const supportFieldEdit =
               mainTable && isEditableOnDemand(item, cells);
             const property = item.fields[0].field;
+            const tableCellData = fieldsByName[property]
+              ? fieldsByName[property]
+              : undefined;
             const isEditable = isCellEditable(item, cells);
             const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
@@ -540,6 +543,7 @@ class TableRow extends PureComponent {
                   tooltipData,
                   tooltipWidget,
                   tdValue,
+                  tableCellData,
                   description,
                   updateHeight,
                 }}
@@ -582,13 +586,8 @@ class TableRow extends PureComponent {
    * @param {string} huType - type of the row (CU/TU etc) no generate proper icon
    */
   renderTree = (huType) => {
-    const {
-      indent,
-      lastChild,
-      includedDocuments,
-      collapsed,
-      collapsible,
-    } = this.props;
+    const { indent, lastChild, includedDocuments, collapsed, collapsible } =
+      this.props;
 
     let indentation = [];
 

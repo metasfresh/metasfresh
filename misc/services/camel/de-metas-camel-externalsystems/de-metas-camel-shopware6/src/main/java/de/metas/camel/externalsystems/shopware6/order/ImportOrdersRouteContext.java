@@ -22,9 +22,15 @@
 
 package de.metas.camel.externalsystems.shopware6.order;
 
+import de.metas.camel.externalsystems.common.DateAndImportStatus;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
+import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroup;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonShippingCost;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
+import de.metas.camel.externalsystems.shopware6.order.processor.TaxProductIdProvider;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMappings;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
@@ -33,8 +39,10 @@ import lombok.NonNull;
 import lombok.Setter;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 @Data
@@ -42,20 +50,46 @@ import java.util.Set;
 public class ImportOrdersRouteContext
 {
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private final String orgCode;
+
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private ShopwareClient shopwareClient;
+
 	@NonNull
+	@Setter(AccessLevel.NONE)
 	private CurrencyInfoProvider currencyInfoProvider;
+
+	@NonNull
+	@Setter(AccessLevel.NONE)
+	private JsonExternalSystemRequest externalSystemRequest;
+
 	@NonNull
 	@Builder.Default
 	@Setter(AccessLevel.NONE)
 	private Set<String> importedExternalHeaderIds = new HashSet<>();
 
 	@Nullable
-	private JsonOrderAndCustomId order;
+	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
+	private DateAndImportStatus nextImportStartingTimestamp;
 
 	@Nullable
+	@Setter(AccessLevel.NONE)
+	private JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings;
+
+	@Nullable
+	@Setter(AccessLevel.NONE)
+	private TaxProductIdProvider taxProductIdProvider;
+
+	@Nullable
+	@Setter(AccessLevel.NONE)
+	@Getter(AccessLevel.NONE)
+	private OrderCompositeInfo order;
+
+	@Nullable
+	@Setter(AccessLevel.NONE)
 	private String bpLocationCustomJsonPath;
 
 	@Nullable
@@ -71,15 +105,25 @@ public class ImportOrdersRouteContext
 
 	private boolean isMultipleShippingAddresses;
 
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private JsonShippingCost shippingCost;
+
+	@Nullable
+	private String shippingMethodId;
+
+	@Nullable
+	private JsonCustomerGroup bPartnerCustomerGroup;
+
 	@NonNull
-	public JsonOrderAndCustomId getOrderNotNull()
+	public OrderCandidate getOrderNotNull()
 	{
 		if (order == null)
 		{
 			throw new RuntimeException("order cannot be null at this stage!");
 		}
 
-		return order;
+		return order.getOrderAndCustomId();
 	}
 
 	@NonNull
@@ -104,9 +148,74 @@ public class ImportOrdersRouteContext
 		return shippingBPLocationExternalId;
 	}
 
-	public void setOrder(@NonNull final JsonOrderAndCustomId order)
+	public void setOrderCompositeInfo(@NonNull final OrderCompositeInfo order)
 	{
 		this.order = order;
-		importedExternalHeaderIds.add(order.getJsonOrder().getId());
+		importedExternalHeaderIds.add(order.getOrderAndCustomId().getJsonOrder().getId());
+	}
+
+	public void setNextImportStartingTimestamp(@NonNull final DateAndImportStatus dateAndImportStatus)
+	{
+		if (this.nextImportStartingTimestamp == null)
+		{
+			this.nextImportStartingTimestamp = dateAndImportStatus;
+			return;
+		}
+
+		if (this.nextImportStartingTimestamp.isOkToImport())
+		{
+			if (dateAndImportStatus.isOkToImport()
+					&& dateAndImportStatus.getTimestamp().isAfter(this.nextImportStartingTimestamp.getTimestamp()))
+			{
+				this.nextImportStartingTimestamp = dateAndImportStatus;
+				return;
+			}
+
+			if (!dateAndImportStatus.isOkToImport())
+			{
+				this.nextImportStartingTimestamp = dateAndImportStatus;
+				return;
+			}
+		}
+
+		if (!this.nextImportStartingTimestamp.isOkToImport()
+				&& !dateAndImportStatus.isOkToImport()
+				&& dateAndImportStatus.getTimestamp().isBefore(this.nextImportStartingTimestamp.getTimestamp()))
+		{
+			this.nextImportStartingTimestamp = dateAndImportStatus;
+		}
+	}
+
+	@NonNull
+	public OrderCompositeInfo getCompositeOrderNotNull()
+	{
+		if (order == null)
+		{
+			throw new RuntimeException("OrderCompositeInfo cannot be null at this stage!");
+		}
+
+		return order;
+	}
+
+	@NonNull
+	public Optional<Instant> getNextImportStartingTimestamp()
+	{
+		if (nextImportStartingTimestamp == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(nextImportStartingTimestamp.getTimestamp());
+	}
+
+	@NonNull
+	public JsonShippingCost getShippingCostNotNull()
+	{
+		if (shippingCost == null)
+		{
+			throw new RuntimeException("shippingCost cannot be null at this stage!");
+		}
+
+		return shippingCost;
 	}
 }

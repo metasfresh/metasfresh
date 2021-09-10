@@ -1,30 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.interceptor;
 
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_Bill_BPartner_ID;
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_InvoiceLine_ID;
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_Invoice_ID;
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_CommissionTrigger_Type;
-import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_M_Product_Order_ID;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.util.List;
-
-import de.metas.organization.OrgId;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
@@ -33,9 +8,9 @@ import de.metas.business.TestInvoiceLine;
 import de.metas.cache.CacheMgt;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentService;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceFactory;
-import de.metas.contracts.commission.commissioninstance.interceptor.C_InvoiceFacadeService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionAlgorithmInvoker;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactory;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigFactoryTest;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceRequestFactory;
@@ -59,8 +34,33 @@ import de.metas.document.IDocTypeDAO.DocTypeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.Env;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.contracts.commission.CommissionConstants.FLATRATE_CONDITION_0_COMMISSION_ID;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_Bill_BPartner_ID;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_InvoiceLine_ID;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_C_Invoice_ID;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_CommissionTrigger_Type;
+import static de.metas.contracts.commission.model.I_C_Commission_Instance.COLUMNNAME_M_Product_Order_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -95,7 +95,7 @@ class C_InvoiceFacadeServiceTest
 	private DocTypeId creditMemoDocTypeId;
 	private ProductId commissionProductId;
 	private I_C_UOM commissionUOMRecord;
-	
+
 	@BeforeEach
 	void beforeEach()
 	{
@@ -107,7 +107,7 @@ class C_InvoiceFacadeServiceTest
 		final SalesInvoiceFactory salesInvoiceFactory = new SalesInvoiceFactory(commissionProductService);
 
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService);
+		final CommissionConfigFactory commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
 		final CommissionRecordStagingService commissionInstanceRecordStagingService = new CommissionRecordStagingService();
 		final CommissionInstanceRepository commissionInstanceRepository = new CommissionInstanceRepository(commissionConfigFactory, commissionInstanceRecordStagingService);
 		final CommissionHierarchyFactory commissionHierarchyFactory = new CommissionHierarchyFactory();
@@ -167,6 +167,16 @@ class C_InvoiceFacadeServiceTest
 						.name("creditmemo")
 						.docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo)
 						.build());
+
+		CommissionConfigFactoryTest.flatrateConditionsBuilder()
+				.name("Default for `Missing commission contract`")
+				.isSubtractLowerLevelCommissionFromBase(true)
+				.noContractCommissionProductId(1)
+				.percentageOfBasePoint(BigDecimal.ZERO)
+				.flatrateConditionsId(FLATRATE_CONDITION_0_COMMISSION_ID.getRepoId())
+				.docStatus("CO")
+				.isActive(false)
+				.build();
 	}
 
 	@Test

@@ -2,36 +2,47 @@ import React from 'react';
 import nock from 'nock';
 import { shallow, mount } from 'enzyme';
 import configureStore from 'redux-mock-store';
-import merge from 'merge';
+import { merge } from 'merge-anything';
+import thunk from 'redux-thunk';
+import { Provider } from 'react-redux';
+
 import viewHandler from '../../../../reducers/viewHandler';
-import InlineTabWrapper from '../../../../components/widget/InlineTabWrapper';
+import
+  InlineTabWrapper,
+  { InlineTabWrapper as DisconnectedInlineTabWrapper }
+from '../../../../components/widget/InlineTabWrapper';
 import hotkeys from '../../../../../test_setup/fixtures/hotkeys.json';
 import keymap from '../../../../../test_setup/fixtures/keymap.json';
 import { ShortcutProvider } from '../../../../components/keyshortcuts/ShortcutProvider';
 import { initialState as appHandlerState } from '../../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../../reducers/windowHandler';
 import tablesHandler from '../../../../reducers/tables';
-import { Provider } from 'react-redux';
+
 import props from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_wrapper.json';
 import tabData from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data.json';
 import inlineTabStoreMore from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_data_more.json';
 import inlineTabStore from '../../../../../test_setup/fixtures/widget/inlinetab/inlineTabStore.json';
 import addNewData from '../../../../../test_setup/fixtures/widget/inlinetab/addNewData.json';
 import inlineTabInvalid from '../../../../../test_setup/fixtures/widget/inlinetab/inline_tab_invalid.json';
-import thunk from 'redux-thunk';
-const middlewares = [thunk];
 
+const middlewares = [thunk];
 const mockStore = configureStore(middlewares);
 
 const createStore = function(state = {}) {
-  const res = merge.recursive(
-    true,
+  const res = merge(
     {
       appHandler: {
         ...appHandlerState,
         me: { timeZone: 'America/Los_Angeles' },
       },
-      windowHandler: { ...windowHandlerState },
+      windowHandler: {
+        ...windowHandlerState,
+        master: {
+          validStatus: {
+            valid: true,
+          },
+        },
+      },
       ...viewHandler,
       tables: { ...tablesHandler(undefined, {}) },
     },
@@ -44,7 +55,15 @@ const createStore = function(state = {}) {
 describe('InlineTabWrapper component', () => {
   describe('rendering tests:', () => {
     it('renders without errors', () => {
-      shallow(<InlineTabWrapper {...props} />);
+      const properties = {
+        ...props,
+        fetchInlineTabWrapperData: jest.fn(),
+        createWindow: jest.fn(),
+        setInlineTabAddNew: jest.fn(),
+        setInlineTabShowMore: jest.fn(),
+        updateDataValidStatus: jest.fn(),
+      };
+      shallow(<DisconnectedInlineTabWrapper {...properties} />);
     });
 
     it('renders a line properly', () => {
@@ -55,6 +74,14 @@ describe('InlineTabWrapper component', () => {
             visible: true,
           },
           inlineTab: inlineTabStore,
+          master: {
+            includedTabsInfo: {
+              "AD_Tab-222": {
+                allowCreateNew: true,
+                allowDelete: true,
+              }
+            }
+          }
         },
       });
       const store = mockStore(initialState);

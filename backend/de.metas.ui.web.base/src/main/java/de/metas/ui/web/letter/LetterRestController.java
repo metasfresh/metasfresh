@@ -248,7 +248,7 @@ public class LetterRestController
 				.body(letter.getContent())
 				.adOrgId(letter.getAdOrgId())
 				.bpartnerId(BPartnerId.ofRepoId(letter.getBpartnerId()))
-				.bpartnerLocationId(BPartnerLocationId.ofRepoId(BPartnerId.ofRepoId(letter.getBpartnerId()), letter.getBpartnerLocationId()))
+				.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(BPartnerId.ofRepoId(letter.getBpartnerId()), letter.getBpartnerLocationId()))
 				.address(letter.getBpartnerAddress())
 				.userId(UserId.ofRepoIdOrNull(letter.getBpartnerContactId()))
 				.build();

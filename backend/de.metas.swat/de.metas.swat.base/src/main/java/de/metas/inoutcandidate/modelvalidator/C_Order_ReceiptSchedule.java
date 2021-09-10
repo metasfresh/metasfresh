@@ -22,16 +22,6 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.List;
-
-import de.metas.order.IOrderBL;
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.ModelValidator;
-
 import de.metas.document.exception.DocumentActionException;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -40,9 +30,18 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.ModelValidator;
+
+import java.util.Collections;
+import java.util.List;
 
 @Validator(I_C_Order.class)
 public class C_Order_ReceiptSchedule
@@ -53,10 +52,14 @@ public class C_Order_ReceiptSchedule
 
 	public static boolean isEligibleForReceiptSchedule(final I_C_Order order)
 	{
+		final IOrderBL orderBL = Services.get(IOrderBL.class);
+
 		Check.assumeNotNull(order, "order not null");
 
 		// Only Purchase Orders are handled
-		if (order.isSOTrx() || Services.get(IOrderBL.class).isRequisition(order))
+		if (order.isSOTrx()
+				|| orderBL.isRequisition(order)
+				|| orderBL.isMediated(order))
 		{
 			return false;
 		}

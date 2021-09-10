@@ -56,7 +56,7 @@ public class LogMessageRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("http://{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/message");
+				.toD("{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/message");
 		//@formatter:on
 	}
 
@@ -66,7 +66,7 @@ public class LogMessageRouteBuilder extends RouteBuilder
 
 		if (!(exchangeBody instanceof LogMessageRequest))
 		{
-			throw new RuntimeException("Wrong exchange boyd class! Expected: " + LogMessageRequest.class.getName() + "!");
+			throw new RuntimeException("Wrong exchange body class! Expected: " + LogMessageRequest.class.getName() + "!");
 		}
 
 		final LogMessageRequest logMessageRequest = (LogMessageRequest)exchangeBody;

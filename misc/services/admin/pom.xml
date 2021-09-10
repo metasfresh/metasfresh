@@ -123,6 +123,12 @@
                     <from>
                         <!-- specify the exact base image for a reproducible build-->
                         <image>adoptopenjdk:14.0.2_8-jdk-hotspot</image>
+                        <auth>
+                            <!-- when running on jenkins, these credentials are set from there; see Jenkinsfile -->
+                            <!-- we authenticate on pulls to avoid the rate limit -->
+                            <username>${env.DOCKERHUB_REGISTRY_USERNAME}</username>
+                            <password>${env.DOCKERHUB_REGISTRY_PASSWORD}</password>
+                        </auth>
                     </from>
                 </configuration>
                 <executions>

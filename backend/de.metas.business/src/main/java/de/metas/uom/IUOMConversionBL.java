@@ -104,9 +104,9 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 	 * @return new Quantity converted to given <code>uom</code>.
 	 */
 	Quantity convertQuantityTo(
-			Quantity quantity,
-			UOMConversionContext conversionCtx,
-			UomId uomToId);
+			@NonNull Quantity quantity,
+			@Nullable UOMConversionContext conversionCtx,
+			@NonNull UomId uomToId);
 
 	@Override
 	default Quantity convertQuantityTo(

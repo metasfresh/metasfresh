@@ -6,10 +6,12 @@ import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.web.exception.MissingResourceException;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -42,13 +44,12 @@ import org.compiere.model.I_M_Product;
 final class ProductMasterDataProvider
 {
 	private final IProductBL productsBL = Services.get(IProductBL.class);
-
-	private final PermissionService permissionService;
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
-	public ProductMasterDataProvider(@NonNull final PermissionService permissionService, final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+	public ProductMasterDataProvider(@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
 	{
-		this.permissionService = permissionService;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 	}
 
@@ -109,6 +110,19 @@ final class ProductMasterDataProvider
 						.orElseThrow(() -> new AdempiereException("Missing product for the given product external reference!")
 								.appendParametersToMessage()
 								.setParameter("external reference", key.getProductExternalIdentifier()));
+				break;
+			case VALUE:
+				final IProductDAO.ProductQuery query = IProductDAO.ProductQuery.builder()
+						.orgId(key.getOrgId())
+						.value(productIdentifier.asValue()).build();
+				productId = productDAO.retrieveProductIdBy(query);
+				if (productId == null)
+				{
+					throw MissingResourceException.builder()
+							.resourceName("productIdentifier")
+							.resourceIdentifier(productIdentifier.getRawValue())
+							.build();
+				}
 				break;
 			default:
 				throw new AdempiereException("Unsupported external reference type!")

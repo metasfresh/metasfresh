@@ -1,0 +1,122 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestBPartnerUpsert": {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-ALBERTA-payerId",
+        "externalVersion": null,
+        "bpartnerComposite": {
+          "orgCode": "orgCode",
+          "bpartner": {
+            "code": "ext-ALBERTA-payerId",
+            "codeSet": true,
+            "active": null,
+            "activeSet": false,
+            "name": "payerName",
+            "nameSet": true,
+            "name2": null,
+            "name2Set": false,
+            "name3": null,
+            "name3Set": false,
+            "companyName": null,
+            "companyNameSet": false,
+            "vendor": null,
+            "vendorSet": false,
+            "customer": true,
+            "customerSet": true,
+            "parentId": null,
+            "parentIdSet": false,
+            "phone": null,
+            "phoneSet": false,
+            "language": null,
+            "languageSet": false,
+            "invoiceRule": null,
+            "invoiceRuleSet": false,
+            "url": null,
+            "urlSet": false,
+            "url2": null,
+            "url2Set": false,
+            "url3": null,
+            "url3Set": false,
+            "group": null,
+            "groupSet": false,
+            "globalId": null,
+            "globalIdset": false,
+            "vatId": null,
+            "vatIdSet": false,
+            "memo": null,
+            "memoIsSet": false,
+            "syncAdvise": null,
+            "syncAdviseSet": false
+          },
+          "locations": {
+            "requestItems": [
+              {
+                "locationIdentifier": "ext-ALBERTA-payerId",
+                "externalVersion": null,
+                "location": {
+                  "active": null,
+                  "activeSet": false,
+                  "name": null,
+                  "nameSet": false,
+                  "bpartnerName": null,
+                  "bpartnerNameSet": false,
+                  "address1": null,
+                  "address1Set": false,
+                  "address2": null,
+                  "address2Set": false,
+                  "address3": null,
+                  "address3Set": false,
+                  "address4": null,
+                  "address4Set": false,
+                  "poBox": null,
+                  "poBoxSet": false,
+                  "postal": null,
+                  "postalSet": false,
+                  "city": null,
+                  "citySet": false,
+                  "district": null,
+                  "districtSet": false,
+                  "region": null,
+                  "regionSet": false,
+                  "countryCode": "DE",
+                  "countryCodeSet": true,
+                  "gln": null,
+                  "glnSet": false,
+                  "shipTo": true,
+                  "shipToSet": true,
+                  "shipToDefault": true,
+                  "shipToDefaultSet": true,
+                  "billTo": true,
+                  "billToSet": true,
+                  "billToDefault": true,
+                  "billToDefaultSet": true
+                }
+              }
+            ],
+            "syncAdvise": null
+          },
+          "compositeAlbertaBPartner": {
+            "jsonAlbertaBPartner": {
+              "isArchived": null,
+              "archivedSet": false,
+              "title": null,
+              "titleSet": false,
+              "titleShort": null,
+              "titleShortSet": false,
+              "timestamp": 1551289949.000000000,
+              "timestampSet": true
+            },
+            "role": "Payer",
+            "jsonAlbertaPatient": null,
+            "jsonAlbertaCareGivers": null
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

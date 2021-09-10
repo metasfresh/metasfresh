@@ -1,22 +1,24 @@
 package de.metas.ui.web.window.model.lookup;
 
-import java.time.ZoneId;
-import java.time.format.TextStyle;
-import java.util.Optional;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.SimpleLookupDescriptorTemplate;
 import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupValueFilterPredicate;
-import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.time.format.TextStyle;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -58,7 +60,7 @@ public final class TimeZoneLookupDescriptor extends SimpleLookupDescriptorTempla
 		{
 			all = this.all = ZoneId.getAvailableZoneIds()
 					.stream()
-					.map(zoneId -> fromZoneIdToLookupValue(zoneId))
+					.map(TimeZoneLookupDescriptor::fromZoneIdToLookupValue)
 					.collect(LookupValuesList.collect());
 		}
 		return all;
@@ -95,24 +97,23 @@ public final class TimeZoneLookupDescriptor extends SimpleLookupDescriptorTempla
 	}
 
 	@Override
-	public LookupValue retrieveLookupValueById(final LookupDataSourceContext evalCtx)
+	@Nullable
+	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
-		final String zoneIdStr = evalCtx.getIdToFilterAsString();
-		if (Check.isEmpty(zoneIdStr, true))
-		{
-			return null;
-		}
-
-		return getAll().getById(zoneIdStr.trim());
+		return StringUtils.trimBlankToOptional(evalCtx.getIdToFilterAsString())
+				.map(zoneId -> getAll().getById(zoneId))
+				.orElse(null);
 	}
 
 	@Override
-	public LookupValuesList retrieveEntities(final LookupDataSourceContext evalCtx)
+	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtx)
 	{
 		final LookupValueFilterPredicate filter = evalCtx.getFilterPredicate();
 		final int offset = evalCtx.getOffset(0);
 		final int limit = evalCtx.getLimit(50);
 
-		return getAll().filter(filter, offset, limit);
+		return getAll()
+				.filter(filter)
+				.pageByOffsetAndLimit(offset, limit);
 	}
 }

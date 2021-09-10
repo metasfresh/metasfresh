@@ -36,10 +36,11 @@ import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
-import de.metas.order.PriceAndDiscount;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
@@ -49,6 +50,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -65,6 +67,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
@@ -95,6 +98,9 @@ public class CalloutOrder extends CalloutEngine
 
 	private static final String MSG_CreditLimitOver = "CreditLimitOver";
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
+	private static final String DEFAULT_INVOICE_RULE = "DEFAULT_INVOICE_RULE";
+
+	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -161,7 +167,7 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else
 		{
-			order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+			order.setInvoiceRule(getDefaultInvoiceRule());
 		}
 
 		// Payment Rule - POS Order
@@ -352,7 +358,8 @@ public class CalloutOrder extends CalloutEngine
 				+ " lship.C_BPartner_Location_ID,c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID,g.PO_PriceList_ID) AS PO_PriceList_ID, p.PaymentRulePO,p.PO_PaymentTerm_ID,"
 				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
-				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID "
+				+ " p.SalesRep_ID, p.SO_DocTypeTarget_ID, "
+				+ " p.AD_Org_ID "
 				+ " FROM C_BPartner p"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
 				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
@@ -383,6 +390,18 @@ public class CalloutOrder extends CalloutEngine
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
+				final OrgId bpartnerOrgId = OrgId.ofRepoId(rs.getInt("AD_Org_ID"));
+
+				if (isCopyOrgFromBPartner())
+				{
+					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, Access.WRITE);
+
+					if (userHasOrgPermissions)
+					{
+						order.setAD_Org_ID(bpartnerOrgId.getRepoId());
+					}
+				}
+
 				// metas: Auftragsart aus Kunde
 				if (IsSOTrx)
 				{
@@ -501,7 +520,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+				order.setInvoiceRule(getDefaultInvoiceRule());
 				// mTab.setValue("DeliveryRule", X_C_Order.DELIVERYRULE_Availability); // nop, shall use standard defaults (see task 09250)
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
@@ -584,6 +603,24 @@ public class CalloutOrder extends CalloutEngine
 		return NO_ERROR;
 	} // bPartner
 
+	private boolean isCopyOrgFromBPartner()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CopyOrgFromBPartner, false);
+	}
+
+	private String getDefaultInvoiceRule()
+	{
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+		final String invoiceRule = sysConfigBL.getValue(DEFAULT_INVOICE_RULE, X_C_Order.INVOICERULE_AfterDelivery);
+		if (!invoiceRule.trim().isEmpty())
+		{
+			return invoiceRule;
+		}
+		return X_C_Order.INVOICERULE_AfterDelivery;
+	}
+
 	private DocTypeId suggestDefaultSalesOrderDocTypeId(final I_C_Order order)
 	{
 		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
@@ -592,22 +629,22 @@ public class CalloutOrder extends CalloutEngine
 		final int adOrgId = order.getAD_Org_ID();
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.defaultDocType(true)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																				   .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																				   .defaultDocType(true)
+																				   .adClientId(adClientId)
+																				   .adOrgId(adOrgId)
+																				   .build());
 		if (defaultDocTypeId != null)
 		{
 			return defaultDocTypeId;
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																						 .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																						 .docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+																						 .adClientId(adClientId)
+																						 .adOrgId(adOrgId)
+																						 .build());
 
 		return standardOrderDocTypeId;
 	}
@@ -806,7 +843,7 @@ public class CalloutOrder extends CalloutEngine
 
 				// Defaults, if not Walkin Receipt or Walkin Invoice
 				final String OrderType = order.getOrderType();
-				order.setInvoiceRule(X_C_Order.INVOICERULE_AfterDelivery);
+				order.setInvoiceRule(getDefaultInvoiceRule());
 				order.setPaymentRule(PaymentRule.OnCredit.getCode());
 				if (MOrder.DocSubType_Prepay.equals(OrderType))
 				{
@@ -992,11 +1029,11 @@ public class CalloutOrder extends CalloutEngine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.resultUOM(ResultUOM.CONTEXT_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .resultUOM(ResultUOM.CONTEXT_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+										 .updateLineNetAmt(true)
+										 .build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)
@@ -1060,8 +1097,8 @@ public class CalloutOrder extends CalloutEngine
 
 		//
 		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
-				shipDate, AD_Org_ID, M_Warehouse_ID,
-				billC_BPartner_Location_ID, shipC_BPartner_Location_ID, order.isSOTrx());
+									 shipDate, AD_Org_ID, M_Warehouse_ID,
+									 billC_BPartner_Location_ID, shipC_BPartner_Location_ID, order.isSOTrx());
 		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)
@@ -1097,22 +1134,22 @@ public class CalloutOrder extends CalloutEngine
 		final CurrencyPrecision pricePrecision = Services.get(IPriceListBL.class).getPricePrecision(PriceListId.ofRepoId(order.getM_PriceList_ID()));
 
 		//
-		PriceAndDiscount priceAndDiscount;
+		OrderLinePriceAndDiscount priceAndDiscount;
 
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
-					.applyPriceLimitRestrictions(false)
-					.build());
+											 .applyPriceLimitRestrictions(false)
+											 .build());
 
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceActual.equals(changedColumnName))
 		{
 			final BigDecimal priceActual = orderLine.getPriceActual();
 			final BigDecimal priceEntered = calculatePriceEnteredFromPriceActual(orderLine);
 
-			priceAndDiscount = PriceAndDiscount.builder()
+			priceAndDiscount = OrderLinePriceAndDiscount.builder()
 					.precision(pricePrecision)
 					.priceEntered(priceEntered)
 					.priceActual(priceActual)
@@ -1121,18 +1158,18 @@ public class CalloutOrder extends CalloutEngine
 		}
 		else if (I_C_OrderLine.COLUMNNAME_PriceEntered.equals(changedColumnName))
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision)
 					.updatePriceActual();
 		}
 		else if (I_C_OrderLine.COLUMNNAME_Discount.equals(changedColumnName))
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision)
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision)
 					.updatePriceActualIfPriceEnteredIsNotZero();
 		}
 		// C_UOM_ID, PriceList, S_ResourceAssignment_ID
 		else
 		{
-			priceAndDiscount = PriceAndDiscount.of(orderLine, pricePrecision);
+			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
 
 		//
@@ -1329,8 +1366,8 @@ public class CalloutOrder extends CalloutEngine
 						C_OrderLine_ID = 0;
 					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
-							M_Warehouse_ID, M_Product_ID,
-							M_AttributeSetInstance_ID, C_OrderLine_ID);
+																	   M_Warehouse_ID, M_Product_ID,
+																	   M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
 					{
 						notReserved = BigDecimal.ZERO;

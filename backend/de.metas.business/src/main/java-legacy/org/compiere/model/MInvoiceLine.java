@@ -16,8 +16,36 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.document.dimension.Dimension;
+import de.metas.document.dimension.DimensionService;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.inout.InOutLineId;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -26,36 +54,8 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Properties;
 
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.project.ProjectId;
-import de.metas.tax.api.TaxId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutId;
-import de.metas.inout.InOutLineId;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvDAO;
-import de.metas.location.CountryId;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.tax.api.TaxNotFoundException;
-import de.metas.util.Services;
+import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 
 /**
  * Invoice Line Model
@@ -291,7 +291,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// Do not change the tax (or tax category) if it was already set
 
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(getC_Tax_ID());
+		final Tax tax = taxDAO.getTaxByIdOrNull(getC_Tax_ID());
 
 		if (tax == null)
 		{
@@ -301,7 +301,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		else
 		{
-			setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+			setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 		}
 		setLineNetAmt(oLine.getLineNetAmt());
 		//
@@ -338,7 +338,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// 07442
 		// get tax and activity. they will be checked in several places in this method
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(getC_Tax_ID());
+		final Tax tax = taxDAO.getTaxByIdOrNull(getC_Tax_ID());
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 		setM_InOutLine_ID(sLine.getM_InOutLine_ID());
@@ -406,7 +406,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 			else
 			{
-				setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+				setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 			}
 			setLineNetAmt(oLine.getLineNetAmt());
 
@@ -435,7 +435,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			}
 			else
 			{
-				setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+				setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 			}
 			setLineNetAmt(rmaLine.getLineNetAmt());
 		}
@@ -680,29 +680,27 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
 
-		final TaxId taxId = Services.get(ITaxBL.class).retrieveTaxIdForCategory(
-				getCtx(),
-				fromCountryId, // countryFromId,
-				fromOrgId,
-				toBPLocation, // should be bill to
-				taxDate,
-				taxCategoryId,
-				isSOTrx,
-				true); // throwEx
+		final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
+				.fromCountryId(fromCountryId)
+				.orgId(fromOrgId)
+				.bPartnerLocationId(taxBPartnerLocationId)
+				.dateOfInterest(taxDate)
+				.taxCategoryId(taxCategoryId)
+				.soTrx(SOTrx.ofBoolean(isSOTrx))
+				.build());
 
-		if (taxId == null)
+		if (tax == null)
 		{
-			final TaxNotFoundException ex = TaxNotFoundException.builder()
+			TaxNotFoundException.builder()
 					.taxCategoryId(taxCategoryId)
 					.isSOTrx(isSOTrx)
 					.billDate(taxDate)
 					.billFromCountryId(fromCountryId)
 					.billToC_Location_ID(toBPLocation.getC_Location_ID())
-					.build();
-			log.error("No Tax found", ex);
-			return false;
+					.build()
+					.throwOrLogWarning(true, log);
 		}
-		setC_Tax_ID(taxId.getRepoId());
+		setC_Tax_ID(tax.getTaxId().getRepoId());
 
 		return true;
 	}    // setTax
@@ -1718,7 +1716,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		// Do not change the tax if it was already set
 
 		final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-		final I_C_Tax tax = taxDAO.getTaxByIdOrNull(getC_Tax_ID());
+		final Tax tax = taxDAO.getTaxByIdOrNull(getC_Tax_ID());
 		if (tax == null)
 		{
 			setC_Tax_ID(rmaLine.getC_Tax_ID());
@@ -1728,7 +1726,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 		else
 		{
-			setC_TaxCategory_ID(tax.getC_TaxCategory_ID());
+			setC_TaxCategory_ID(tax.getTaxCategoryId().getRepoId());
 		}
 
 		setPrice(rmaLine.getAmt());

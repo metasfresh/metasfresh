@@ -1,23 +1,22 @@
 package org.adempiere.mm.attributes.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
+import de.metas.cache.CCache;
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -47,23 +46,22 @@ import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import de.metas.adempiere.util.cache.annotations.CacheSkipIfNotNull;
-import de.metas.cache.CCache;
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.i18n.ITranslatableString;
-import de.metas.lang.SOTrx;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AttributeDAO implements IAttributeDAO
 {
@@ -135,7 +133,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
-	public <T extends I_M_Attribute> T getAttributeById(@NonNull final AttributeId attributeId, @NonNull Class<T> type)
+	public <T extends I_M_Attribute> T getAttributeById(@NonNull final AttributeId attributeId, @NonNull final Class<T> type)
 	{
 		// assume table level caching is enabled
 		return InterfaceWrapperHelper.loadOutOfTrx(attributeId, type);
@@ -203,6 +201,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@Nullable
 	public <T extends I_M_Attribute> T retrieveAttributeByValueOrNull(@NonNull final AttributeCode attributeCode, @NonNull final Class<T> clazz)
 	{
 		final AttributeId attributeId = getAttributesMap().getAttributeIdByCodeOrNull(attributeCode);
@@ -225,12 +224,24 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	public Optional<ITranslatableString> getAttributeDescriptionByValue(@NonNull final String value)
+	{
+		final AttributeCode attributeCode = AttributeCode.ofString(value);
+		final Attribute attribute = getAttributesMap().getAttributeByCodeOrNull(attributeCode);
+		return attribute != null
+				? Optional.ofNullable(attribute.getDescription())
+				: Optional.empty();
+	}
+
+	@Override
+	@NonNull
 	public AttributeId retrieveAttributeIdByValue(final AttributeCode attributeCode)
 	{
 		return getAttributesMap().getAttributeIdByCode(attributeCode);
 	}
 
 	@Override
+	@Nullable
 	public AttributeId retrieveAttributeIdByValueOrNull(final AttributeCode attributeCode)
 	{
 		return getAttributesMap().getAttributeIdByCodeOrNull(attributeCode);
@@ -255,13 +266,18 @@ public class AttributeDAO implements IAttributeDAO
 
 	private static Attribute toAttribute(final I_M_Attribute record)
 	{
-		final ITranslatableString displayName = InterfaceWrapperHelper.getModelTranslationMap(record)
+		final IModelTranslationMap modelTranslationMap = InterfaceWrapperHelper.getModelTranslationMap(record);
+		final ITranslatableString displayName = modelTranslationMap
 				.getColumnTrl(I_M_Attribute.COLUMNNAME_Name, record.getName());
+
+		final ITranslatableString description = modelTranslationMap
+				.getColumnTrl(I_M_Attribute.COLUMNNAME_Description, record.getDescription());
 
 		return Attribute.builder()
 				.attributeId(AttributeId.ofRepoId(record.getM_Attribute_ID()))
 				.attributeCode(AttributeCode.ofString(record.getValue()))
 				.displayName(displayName)
+				.description(description)
 				.build();
 	}
 
@@ -311,6 +327,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@Nullable
 	public AttributeListValue retrieveAttributeValueOrNull(@NonNull final AttributeId attributeId, final String value)
 	{
 		final I_M_Attribute attribute = getAttributeById(attributeId);
@@ -318,6 +335,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@Nullable
 	public AttributeListValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value)
 	{
 		final boolean includeInactive = false;
@@ -325,6 +343,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@Nullable
 	public AttributeListValue retrieveAttributeValueOrNull(@NonNull final I_M_Attribute attribute, final String value, final boolean includeInactive)
 	{
 		//
@@ -351,6 +370,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@Nullable
 	public AttributeListValue retrieveAttributeValueOrNull(
 			@NonNull final AttributeId attributeId,
 			@NonNull final AttributeValueId attributeValueId)
@@ -360,6 +380,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@Nullable
 	public AttributeListValue retrieveAttributeValueOrNull(
 			@NonNull final I_M_Attribute attribute,
 			@NonNull final AttributeValueId attributeValueId)
@@ -480,6 +501,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@Nullable
 	public I_M_AttributeInstance retrieveAttributeInstance(
 			@Nullable final AttributeSetInstanceId attributeSetInstanceId,
 			@NonNull final AttributeId attributeId)
@@ -556,7 +578,7 @@ public class AttributeDAO implements IAttributeDAO
 				.orderBy(I_M_AttributeValue.COLUMNNAME_Name) // task 06897: order attributes by name
 				.create()
 				.stream()
-				.map(record -> toAttributeListValue(record))
+				.map(AttributeDAO::toAttributeListValue)
 				.collect(ImmutableList.toImmutableList());
 
 		return AttributeListValueMap.ofList(list);
@@ -633,7 +655,7 @@ public class AttributeDAO implements IAttributeDAO
 		final I_M_AttributeValue record = loadOutOfTrx(request.getId(), I_M_AttributeValue.class);
 		if (request.getActive() != null)
 		{
-			record.setIsActive(request.getActive().booleanValue());
+			record.setIsActive(request.getActive());
 		}
 		if (request.getValue() != null)
 		{
@@ -691,6 +713,7 @@ public class AttributeDAO implements IAttributeDAO
 	}
 
 	@Override
+	@Nullable
 	public I_M_Attribute retrieveAttribute(final AttributeSetId attributeSetId, final AttributeId attributeId)
 	{
 		if (!containsAttribute(attributeSetId, attributeId))
@@ -871,6 +894,7 @@ public class AttributeDAO implements IAttributeDAO
 					.collect(ImmutableList.toImmutableList());
 		}
 
+		@Nullable
 		public AttributeListValue getByIdOrNull(@NonNull final AttributeValueId id)
 		{
 			return map.values()
@@ -898,6 +922,9 @@ public class AttributeDAO implements IAttributeDAO
 
 		@NonNull
 		ITranslatableString displayName;
+
+		@Nullable
+		ITranslatableString description;
 	}
 
 	@ToString
@@ -917,17 +944,20 @@ public class AttributeDAO implements IAttributeDAO
 			return attributesByCode.get(attributeCode);
 		}
 
+		@Nullable
 		public AttributeId getAttributeIdByCodeOrNull(@NonNull final AttributeCode attributeCode)
 		{
 			final Attribute attribute = getAttributeByCodeOrNull(attributeCode);
 			return attribute != null ? attribute.getAttributeId() : null;
 		}
 
+		@Nullable
 		public AttributeId getAttributeIdByCodeOrNull(@NonNull final String attributeCode)
 		{
 			return getAttributeIdByCodeOrNull(AttributeCode.ofString(attributeCode));
 		}
 
+		@NonNull
 		public AttributeId getAttributeIdByCode(@NonNull final AttributeCode attributeCode)
 		{
 			final AttributeId attributeId = getAttributeIdByCodeOrNull(attributeCode);

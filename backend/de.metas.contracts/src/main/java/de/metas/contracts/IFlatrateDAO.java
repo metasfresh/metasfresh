@@ -137,6 +137,8 @@ public interface IFlatrateDAO extends ISingletonService
 
 	I_C_Flatrate_Conditions getConditionsById (ConditionsId flatrateConditionsId);
 
+	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
+
 	@Value
 	@Builder
 	class TermsQuery

@@ -25,19 +25,26 @@ package de.metas.camel.externalsystems.shopware6.order.processor;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLine;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
+import de.metas.camel.externalsystems.shopware6.api.model.order.JsonTax;
+import de.metas.camel.externalsystems.shopware6.api.model.order.OrderCandidate;
+import de.metas.camel.externalsystems.shopware6.api.model.order.PaymentMethodType;
 import de.metas.camel.externalsystems.shopware6.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
+import de.metas.camel.externalsystems.shopware6.order.OrderCompositeInfo;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
+import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
+import de.metas.common.ordercandidates.v2.request.JSONPaymentRule;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
 import de.metas.common.ordercandidates.v2.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.common.ordercandidates.v2.request.JsonSalesPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
@@ -46,16 +53,21 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.camel.externalsystems.shopware6.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DATA_SOURCE_INT_SHOPWARE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_RULE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_VIA_RULE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_ORDER_LINE_DISCOUNT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
+import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.VALUE_PREFIX;
 
 public class OLCandRequestProcessor implements Processor
 {
@@ -84,18 +96,19 @@ public class OLCandRequestProcessor implements Processor
 	{
 		final JsonOLCandCreateBulkRequest.JsonOLCandCreateBulkRequestBuilder olCandCreateBulkRequestBuilder = JsonOLCandCreateBulkRequest.builder();
 
-		final JsonOrderAndCustomId orderAndCustomId = context.getOrderNotNull();
+		final OrderCandidate orderCandidate = context.getOrderNotNull();
 
 		final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder = JsonOLCandCreateRequest.builder();
 		olCandCreateRequestBuilder
 				.orgCode(context.getOrgCode())
-				.currencyCode(getCurrencyCode(context.getCurrencyInfoProvider(), orderAndCustomId.getJsonOrder().getCurrencyId()))
-				.externalHeaderId(orderAndCustomId.getJsonOrder().getId())
-				.poReference(orderAndCustomId.getJsonOrder().getOrderNumber())
+				.currencyCode(getCurrencyCode(context.getCurrencyInfoProvider(), orderCandidate.getJsonOrder().getCurrencyId()))
+				.externalHeaderId(orderCandidate.getJsonOrder().getId())
+				.poReference(orderCandidate.getJsonOrder().getOrderNumber())
 				.bpartner(getBPartnerInfo(context, bPartnerUpsertResponse))
 				.billBPartner(getBillBPartnerInfo(context, bPartnerUpsertResponse))
-				.dateOrdered(getDateOrdered(orderAndCustomId.getJsonOrder()))
+				.dateOrdered(getDateOrdered(orderCandidate.getJsonOrder()))
 				.dateRequired(context.getDateRequired())
+				.dateCandidate(getDateCandidate(orderCandidate.getJsonOrder()))
 				.dataSource(DATA_SOURCE_INT_SHOPWARE)
 				.isManualPrice(true)
 				.isImportedWithIssues(true)
@@ -104,16 +117,40 @@ public class OLCandRequestProcessor implements Processor
 				.deliveryRule(DEFAULT_DELIVERY_RULE)
 				.importWarningMessage(context.isMultipleShippingAddresses() ? MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE : null);
 
-		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, orderAndCustomId.getJsonOrder().getId());
+		if (Check.isNotBlank(context.getShippingMethodId()))
+		{
+			olCandCreateRequestBuilder.shipper(ExternalIdentifierFormat.formatExternalId(context.getShippingMethodId()));
+		}
+
+		if (Check.isNotBlank(orderCandidate.getSalesRepId()))
+		{
+			olCandCreateRequestBuilder.salesPartner(JsonSalesPartner.builder()
+															.salesPartnerCode(orderCandidate.getSalesRepId())
+															.build());
+		}
+
+		processShopwareConfigs(context, olCandCreateRequestBuilder);
+
+		final List<JsonOrderLine> orderLines = getJsonOrderLines(context, orderCandidate.getJsonOrder().getId());
 
 		if (orderLines.isEmpty())
 		{
-			throw new RuntimeException("Missing order lines! OrderId=" + orderAndCustomId.getJsonOrder().getId());
+			throw new RuntimeException("Missing order lines! OrderId=" + orderCandidate.getJsonOrder().getId());
 		}
 
 		orderLines.stream()
 				.map(orderLine -> processOrderLine(olCandCreateRequestBuilder, orderLine))
 				.forEach(olCandCreateBulkRequestBuilder::request);
+
+		if (context.getShippingCostNotNull().getCalculatedTaxes() != null)
+		{
+			context.getShippingCostNotNull().getCalculatedTaxes()
+					.stream()
+					.map(tax -> processTax(context.getTaxProductIdProvider(), olCandCreateRequestBuilder, tax))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.forEach(olCandCreateBulkRequestBuilder::request);
+		}
 
 		return olCandCreateBulkRequestBuilder.build();
 	}
@@ -123,8 +160,8 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final JsonOrderAndCustomId orderAndCustomId = context.getOrderNotNull();
-		final String bPartnerExternalId = CoalesceUtil.coalesce(orderAndCustomId.getCustomBPartnerId(), orderAndCustomId.getJsonOrder().getOrderCustomer().getCustomerId());
+		final OrderCandidate orderCandidate = context.getOrderNotNull();
+		final String bPartnerExternalId = CoalesceUtil.coalesce(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
 		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
 
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), bPartnerExternalIdentifier);
@@ -143,9 +180,9 @@ public class OLCandRequestProcessor implements Processor
 			@NonNull final ImportOrdersRouteContext context,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse)
 	{
-		final JsonOrderAndCustomId orderAndCustomId = context.getOrderNotNull();
+		final OrderCandidate orderCandidate = context.getOrderNotNull();
 
-		final String bPartnerExternalId = CoalesceUtil.coalesce(orderAndCustomId.getCustomBPartnerId(), orderAndCustomId.getJsonOrder().getOrderCustomer().getCustomerId());
+		final String bPartnerExternalId = CoalesceUtil.coalesce(orderCandidate.getCustomBPartnerId(), orderCandidate.getJsonOrder().getOrderCustomer().getCustomerId());
 		final String bPartnerExternalIdentifier = ExternalIdentifierFormat.formatExternalId(bPartnerExternalId);
 
 		final JsonMetasfreshId bpartnerId = getMetasfreshIdForExternalIdentifier(ImmutableList.of(bPartnerUpsertResponse.getResponseBPartnerItem()), bPartnerExternalIdentifier);
@@ -167,7 +204,7 @@ public class OLCandRequestProcessor implements Processor
 		final ShopwareClient shopwareClient = importOrdersRouteContext.getShopwareClient();
 
 		return shopwareClient.getOrderLines(orderId)
-				.map(JsonOrderLines::getOrderLines)
+				.map(JsonOrderLines::getOrderLinesWithProductId)
 				.orElseThrow(() -> new RuntimeException("Missing order lines! OrderId=" + orderId));
 	}
 
@@ -182,24 +219,19 @@ public class OLCandRequestProcessor implements Processor
 				.qty(orderLine.getQuantity())
 				.description(orderLine.getDescription())
 				.line(orderLine.getPosition())
-				.dateCandidate(getDateCandidate(orderLine))
 				.orderLineGroup(getJsonOrderLineGroup(orderLine))
 				.build();
 	}
 
-	@Nullable
-	private LocalDate getDateCandidate(@NonNull final JsonOrderLine orderLine)
+	@NonNull
+	private LocalDate getDateCandidate(@NonNull final JsonOrder order)
 	{
-		if (orderLine.getUpdatedAt() != null)
+		if (order.getUpdatedAt() != null)
 		{
-			return orderLine.getUpdatedAt().toLocalDate();
-		}
-		else if (orderLine.getCreatedAt() != null)
-		{
-			return orderLine.getCreatedAt().toLocalDate();
+			return order.getUpdatedAt().toLocalDate();
 		}
 
-		return null;
+		return order.getCreatedAt().toLocalDate();
 	}
 
 	@Nullable
@@ -248,5 +280,59 @@ public class OLCandRequestProcessor implements Processor
 		return order.getOrderDate() != null
 				? order.getOrderDate().toLocalDate()
 				: null;
+	}
+
+	private void processShopwareConfigs(
+			@NonNull final ImportOrdersRouteContext routeContext,
+			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder)
+	{
+		if (routeContext.getShopware6ConfigMappings() == null
+				|| routeContext.getShopware6ConfigMappings().getJsonExternalSystemShopware6ConfigMappingList().isEmpty()
+		        || routeContext.getBPartnerCustomerGroup() == null)
+		{
+			return;
+		}
+
+		final OrderCompositeInfo orderCompositeInfo = routeContext.getCompositeOrderNotNull();
+
+		final PaymentMethodType candidatePaymentMethod = PaymentMethodType.ofValue(orderCompositeInfo.getJsonPaymentMethod().getShortName());
+		final String customerGroupValue = routeContext.getBPartnerCustomerGroup().getName();
+
+		final Optional<JsonExternalSystemShopware6ConfigMapping> matchingConfig = routeContext.getShopware6ConfigMappings()
+				.getJsonExternalSystemShopware6ConfigMappingList()
+				.stream()
+				.sorted(Comparator.comparingInt(JsonExternalSystemShopware6ConfigMapping::getSeqNo))
+				.filter(config -> config.isGroupMatching(customerGroupValue) && config.isPaymentMethodMatching(candidatePaymentMethod.getValue()))
+				.findFirst();
+
+		matchingConfig.ifPresent(config -> olCandCreateRequestBuilder.orderDocType(JsonOrderDocType.ofCode(config.getDocTypeOrder()))
+				.paymentRule(JSONPaymentRule.ofCode(config.getPaymentRule()))
+				.paymentTerm(Check.isBlank(config.getPaymentTermValue())
+						? null
+						: VALUE_PREFIX + "-" + config.getPaymentTermValue()));
+	}
+
+	@NonNull
+	private Optional<JsonOLCandCreateRequest> processTax(
+			@Nullable final TaxProductIdProvider taxProductIdProvider,
+			@NonNull final JsonOLCandCreateRequest.JsonOLCandCreateRequestBuilder olCandCreateRequestBuilder,
+			@NonNull final JsonTax tax)
+	{
+		if (taxProductIdProvider == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(
+				olCandCreateRequestBuilder
+						.externalLineId(FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX + tax.getTaxRate())
+						.line(null)
+						.orderLineGroup(null)
+						.description(null)
+						.productIdentifier(String.valueOf(taxProductIdProvider.getProductIdByVatRate(tax.getTaxRate()).getValue()))
+						.price(tax.getPrice())
+						.qty(BigDecimal.ONE)
+						.build()
+		);
 	}
 }

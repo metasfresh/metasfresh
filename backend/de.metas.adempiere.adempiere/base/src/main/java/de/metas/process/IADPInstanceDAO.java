@@ -37,7 +37,6 @@ public interface IADPInstanceDAO extends ISingletonService
 	/**
 	 * Saves {@link ProcessInfo} together with it's parameters.
 	 *
-	 * @param pi
 	 * @see #saveProcessInfoOnly(ProcessInfo)
 	 * @see #saveParameterToDB(PInstanceId, List)
 	 */
@@ -47,8 +46,6 @@ public interface IADPInstanceDAO extends ISingletonService
 	 * Saves {@link ProcessInfo} only, excluding depending records like process parameters.
 	 *
 	 * Also, in case the {@link ProcessInfo#getAdProcessId()} is missing, this method will create it and it will set it to {@link ProcessInfo}.
-	 *
-	 * @param pi
 	 */
 	void saveProcessInfoOnly(ProcessInfo pi);
 
@@ -56,7 +53,6 @@ public interface IADPInstanceDAO extends ISingletonService
 	 * Saves process parameters.
 	 *
 	 * @param pinstanceId existing AD_PInstance_ID (mandatory)
-	 * @param piParams
 	 */
 	void saveParameterToDB(PInstanceId pinstanceId, List<ProcessInfoParameter> piParams);
 
@@ -68,15 +64,11 @@ public interface IADPInstanceDAO extends ISingletonService
 
 	/**
 	 * Locks underlying AD_PInstance.
-	 *
-	 * @param pinstanceId
 	 */
 	void lock(PInstanceId pinstanceId);
 
 	/**
 	 * Unlocks underlying AD_PInstance, saves the result and logs.
-	 *
-	 * @param result
 	 */
 	void unlockAndSaveResult(ProcessExecutionResult result);
 

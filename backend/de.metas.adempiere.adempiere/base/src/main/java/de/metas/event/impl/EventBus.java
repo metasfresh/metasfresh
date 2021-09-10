@@ -1,5 +1,39 @@
 package de.metas.event.impl;
 
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.util.IdentityHashMap;
+
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+
+import javax.annotation.Nullable;
+
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
 import com.google.common.base.MoreObjects;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.Subscribe;
@@ -33,7 +67,9 @@ final class EventBus implements IEventBus
 {
 	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
 
-	/** Log all event bus exceptions */
+	/**
+	 * Log all event bus exceptions
+	 */
 	private static final SubscriberExceptionHandler exceptionHandler = (exception, context) -> {
 		final String errmsg = "Could not dispatch event: " + context.getSubscriber() + " to " + context.getSubscriberMethod()
 				+ "\n Event: " + context.getEvent()
@@ -46,6 +82,7 @@ final class EventBus implements IEventBus
 
 	@Getter
 	private final String topicName;
+
 	private com.google.common.eventbus.EventBus eventBus;
 
 	private final IdentityHashMap<IEventListener, GuavaEventListenerAdapter> subscribedEventListener2GuavaListener = new IdentityHashMap<>();
@@ -132,9 +169,11 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
-	public <T> void subscribeOn(@NonNull final Class<T> type, @NonNull final Consumer<T> eventConsumer)
+	public <T> IEventListener subscribeOn(@NonNull final Class<T> type, @NonNull final Consumer<T> eventConsumer)
 	{
-		subscribe(new TypedConsumerAsEventListener<>(type, eventConsumer));
+		final TypedConsumerAsEventListener<T> listener = new TypedConsumerAsEventListener<>(type, eventConsumer);
+		subscribe(listener);
+		return listener;
 	}
 
 	@Override
@@ -257,7 +296,6 @@ final class EventBus implements IEventBus
 				eventConsumer.accept(obj);
 			}
 		}
-
 	}
 
 	@AllArgsConstructor

@@ -11,12 +11,14 @@ import de.metas.document.IDocCopyHandler;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.invoice.BPartnerInvoicingInfo;
 import de.metas.invoice.InvoiceCreditContext;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.payment.PaymentRule;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -208,11 +210,9 @@ public interface IInvoiceBL extends ISingletonService
 	/**
 	 * Sets Target Document Type and IsSOTrx.
 	 *
-	 * @param invoice
-	 * @param docBaseType
 	 * @return true if document type found and set
 	 */
-	boolean setDocTypeTargetId(I_C_Invoice invoice, String docBaseType);
+	boolean setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice
@@ -345,7 +345,7 @@ public interface IInvoiceBL extends ISingletonService
 			IDocLineCopyHandler<org.compiere.model.I_C_InvoiceLine> copyhandler);
 
 	/**
-	 * Calls {@link #isTaxIncluded(I_C_Invoice, I_C_Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
+	 * Calls {@link #isTaxIncluded(I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
 	 *
 	 * @param invoiceLine
 	 * @return
@@ -359,7 +359,7 @@ public interface IInvoiceBL extends ISingletonService
 	 * @param tax
 	 * @return if the given <code>tax</code> is not <code>null</code> and if is has {@link I_C_Tax#isWholeTax()} equals <code>true</code>, then true is returned. Otherwise, the given invoice's
 	 */
-	boolean isTaxIncluded(I_C_Invoice invoice, I_C_Tax tax);
+	boolean isTaxIncluded(I_C_Invoice invoice, Tax tax);
 
 	/**
 	 * Supposed to be called if an invoice is reversed. Iterate the given invoice's lines, iterate each line's <code>M_MatchInv</code> and create a reversal M_Matchinv that references the respective

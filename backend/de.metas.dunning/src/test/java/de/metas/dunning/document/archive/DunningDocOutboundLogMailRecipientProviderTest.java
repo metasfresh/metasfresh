@@ -1,35 +1,36 @@
 package de.metas.dunning.document.archive;
 
-import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Invoice;
-import org.junit.Before;
-import org.junit.Test;
-
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientRepository;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Invoice;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.getModelTableId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -59,7 +60,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 	private I_C_BPartner bPartnerRecord;
 	private I_C_BPartner_Location bPartnerLocationRecord;
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -100,10 +101,13 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		createDocLineSourceRecord(candidateRecord1, docLineRecord1);
 		createDocLineSourceRecord(candidateRecord2, docLineRecord2);
 
-		final I_C_Doc_Outbound_Log docOutboundLogRecord = createOutBoundLogRecord(dunningDocRecord);
-
 		// invoke the method under test
-		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(docOutboundLogRecord);
+		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+				DocOutboundLogMailRecipientRequest.builder()
+						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
+						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(dunningDocRecord.getAD_Org_ID()))
+						.build());
 
 		assertThat(result).isPresent();
 		assertThat(result.get().getId().getRepoId()).isEqualTo(userRecord.getAD_User_ID());
@@ -135,10 +139,13 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		createDocLineSourceRecord(candidateRecord1, docLineRecord1);
 		createDocLineSourceRecord(candidateRecord2, docLineRecord2);
 
-		final I_C_Doc_Outbound_Log docOutboundLogRecord = createOutBoundLogRecord(dunningDocRecord);
-
 		// invoke the method under test
-		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(docOutboundLogRecord);
+		final Optional<DocOutBoundRecipient> result = dunningDocOutboundLogMailRecipientProvider.provideMailRecipient(
+				DocOutboundLogMailRecipientRequest.builder()
+						.recordRef(TableRecordReference.of(I_C_DunningDoc.Table_Name, dunningDocRecord.getC_DunningDoc_ID()))
+						.clientId(ClientId.ofRepoId(dunningDocRecord.getAD_Client_ID()))
+						.orgId(OrgId.ofRepoId(dunningDocRecord.getAD_Org_ID()))
+						.build());
 
 		assertThat(result).isPresent();
 		assertThat(result.get().getId().getRepoId()).isEqualTo(bPartnerUserRecord.getAD_User_ID());
@@ -200,14 +207,5 @@ public class DunningDocOutboundLogMailRecipientProviderTest
 		docLineSourceRecord2.setC_Dunning_Candidate(candidateRecord);
 		docLineSourceRecord2.setC_DunningDoc_Line(docLineRecord);
 		saveRecord(docLineSourceRecord2);
-	}
-
-	private I_C_Doc_Outbound_Log createOutBoundLogRecord(final I_C_DunningDoc dunningDocRecord)
-	{
-		final I_C_Doc_Outbound_Log docOutboundLogRecord = newInstance(I_C_Doc_Outbound_Log.class);
-		docOutboundLogRecord.setAD_Table_ID(getModelTableId(dunningDocRecord));
-		docOutboundLogRecord.setRecord_ID(dunningDocRecord.getC_DunningDoc_ID());
-		saveRecord(docOutboundLogRecord);
-		return docOutboundLogRecord;
 	}
 }

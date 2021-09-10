@@ -42,6 +42,9 @@ public class AlbertaCompositeProductInfo
 	@Nullable
 	String albertaArticleId;
 
+	@Nullable
+	String productGroupId;
+
 	@NonNull
 	Instant lastUpdated;
 

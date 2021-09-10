@@ -177,14 +177,8 @@ class RawModal extends Component {
    * @param {*} type
    */
   handleClose = async (type) => {
-    const {
-      dispatch,
-      viewId,
-      windowId,
-      requests,
-      rawModal,
-      featureType,
-    } = this.props;
+    const { dispatch, viewId, windowId, requests, rawModal, featureType } =
+      this.props;
 
     featureType === 'SEARCH' &&
       type === 'DONE' &&
@@ -254,12 +248,8 @@ class RawModal extends Component {
    * @summary ToDo: Describe the method.
    */
   renderButtons = () => {
-    const {
-      modalVisible,
-      rawModal,
-      windowId,
-      modalTableSelectedId,
-    } = this.props;
+    const { modalVisible, rawModal, windowId, modalTableSelectedId } =
+      this.props;
     let { allowedCloseActions } = this.props;
 
     // This is hardcoded for the Search Window feature (injecting cancel button)
@@ -333,13 +323,8 @@ class RawModal extends Component {
   };
 
   render() {
-    const {
-      modalTitle,
-      children,
-      modalDescription,
-      rawModal,
-      indicator,
-    } = this.props;
+    const { modalTitle, children, modalDescription, rawModal, indicator } =
+      this.props;
     const { scrolled } = this.state;
 
     if (!children) {

@@ -47,13 +47,15 @@ public interface Shopware6Constants
 
 	//external identifier
 	String EXTERNAL_ID_PREFIX = "ext";
+	String VALUE_PREFIX = "val";
 	String BILL_TO_SUFFIX = "-billTo";
 	String SHIP_TO_SUFFIX = "-shipTo";
 
 	//default values
 	String DATA_SOURCE_INT_SHOPWARE = "int-Shopware";
 	String DEFAULT_DELIVERY_RULE = "A";
-	String DEFAULT_DELIVERY_VIA_RULE = "D";
+	String DEFAULT_DELIVERY_VIA_RULE = "S";
 	BigDecimal DEFAULT_ORDER_LINE_DISCOUNT = BigDecimal.ZERO;
 	String MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE = "The order had multiple shipping addresses, the process picked the last one!";
+	String FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX = "TaxRate_";
 }

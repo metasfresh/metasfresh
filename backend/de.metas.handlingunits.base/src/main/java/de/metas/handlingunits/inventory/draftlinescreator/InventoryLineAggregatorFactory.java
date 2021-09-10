@@ -1,23 +1,21 @@
 package de.metas.handlingunits.inventory.draftlinescreator;
 
-import de.metas.common.util.CoalesceUtil;
-import de.metas.quantity.Quantity;
-import de.metas.uom.UomId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.warehouse.LocatorId;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.inventory.AggregationType;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
@@ -90,13 +88,13 @@ public class InventoryLineAggregatorFactory
 		@Override
 		public InventoryLineAggregationKey createAggregationKey(@NonNull final HuForInventoryLine huForInventoryLine)
 		{
-			return new SingleHUInventoryLineInventoryLineAggregationKey(huForInventoryLine.getHuId());
+			return new SingleHUInventoryLineInventoryLineAggregationKey(huForInventoryLine.getHuId(), huForInventoryLine.getProductId());
 		}
 
 		@Override
 		public InventoryLineAggregationKey createAggregationKey(@NonNull final InventoryLine inventoryLine)
 		{
-			return new SingleHUInventoryLineInventoryLineAggregationKey(inventoryLine.getSingleLineHU().getHuId());
+			return new SingleHUInventoryLineInventoryLineAggregationKey(inventoryLine.getSingleLineHU().getHuIdNotNull(), inventoryLine.getProductId());
 		}
 
 		@Override
@@ -110,6 +108,9 @@ public class InventoryLineAggregatorFactory
 		{
 			@NonNull
 			HuId huId;
+
+			@NonNull
+			ProductId productId;
 		}
 	}
 

@@ -1,12 +1,9 @@
 package de.metas.bpartner.impexp;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_I_BPartner;
-import org.compiere.model.ModelValidationEngine;
-
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankRepository;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.invoice_gateway.spi.model.BPartnerId;
@@ -14,6 +11,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_I_BPartner;
+import org.compiere.model.ModelValidationEngine;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.Null;
 
 /*
  * #%L
@@ -56,11 +60,14 @@ import lombok.NonNull;
 		return this;
 	}
 
+	@Nullable
 	public I_C_BP_BankAccount importRecord(final I_I_BPartner importRecord)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(importRecord.getC_BPartner_ID());
 
-		I_C_BP_BankAccount bankAccount = importRecord.getC_BP_BankAccount();
+		I_C_BP_BankAccount bankAccount = BankAccountId.optionalOfRepoId(importRecord.getC_BP_BankAccount_ID())
+				.map(bankAccountId -> InterfaceWrapperHelper.load(bankAccountId, I_C_BP_BankAccount.class))
+				.orElse(null);
 		if (bankAccount != null)
 		{
 			bankAccount.setIBAN(importRecord.getIBAN());
@@ -83,7 +90,7 @@ import lombok.NonNull;
 			ModelValidationEngine.get().fireImportValidate(process, importRecord, bankAccount, IImportInterceptor.TIMING_AFTER_IMPORT);
 			InterfaceWrapperHelper.save(bankAccount);
 
-			importRecord.setC_BP_BankAccount(bankAccount);
+			importRecord.setC_BP_BankAccount_ID(bankAccount.getC_BP_BankAccount_ID());
 		}
 
 		return bankAccount;

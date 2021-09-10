@@ -26,20 +26,25 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.dashboard.UserDashboardDataProvider;
 import de.metas.ui.web.dashboard.UserDashboardDataRequest;
 import de.metas.ui.web.dashboard.UserDashboardDataResponse;
 import de.metas.ui.web.dashboard.UserDashboardDataService;
 import de.metas.ui.web.dashboard.UserDashboardId;
 import de.metas.ui.web.dashboard.UserDashboardItemDataResponse;
 import de.metas.ui.web.dashboard.UserDashboardItemId;
+import de.metas.ui.web.dashboard.UserDashboardRepository;
 import de.metas.ui.web.dashboard.json.JsonKPIDataResult;
 import de.metas.ui.web.dashboard.json.KPIJsonOptions;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardChangedEventsList;
 import de.metas.ui.web.dashboard.websocket.json.JSONDashboardItemDataChangedEvent;
+import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.websocket.WebSocketProducer;
 import de.metas.ui.web.websocket.WebsocketSubscriptionId;
+import de.metas.ui.web.websocket.WebsocketTopicName;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.util.lang.SynchronizedMutable;
@@ -56,19 +61,36 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 	private static final Logger logger = LogManager.getLogger(UserDashboardWebsocketProducer.class);
 	private final UserDashboardDataService dashboardDataService;
 
+	@Getter
 	@ToString.Include
-	private final UserDashboardId userDashboardId;
+	private final WebsocketTopicName websocketTopicName;
+
+	private final KPIDataContext kpiDataContext;
 
 	private final SynchronizedMutable<Result> lastResultHolder = SynchronizedMutable.of(null);
 
 	@Builder
 	private UserDashboardWebsocketProducer(
 			@NonNull final UserDashboardDataService dashboardDataService,
-			@NonNull final UserDashboardId userDashboardId)
+			@NonNull final WebsocketTopicName websocketTopicName,
+			@NonNull final KPIDataContext kpiDataContext)
 	{
 		this.dashboardDataService = dashboardDataService;
+		this.websocketTopicName = websocketTopicName;
+		this.kpiDataContext = kpiDataContext;
+	}
 
-		this.userDashboardId = userDashboardId;
+	public boolean isMatchingDashboardId(@NonNull final UserDashboardId userDashboardIdToMatch)
+	{
+		return dashboardDataService
+				.getUserDashboardId(getUserDashboardKey())
+				.filter(userDashboardId -> UserDashboardId.equals(userDashboardId, userDashboardIdToMatch))
+				.isPresent();
+	}
+
+	private UserDashboardRepository.UserDashboardKey getUserDashboardKey()
+	{
+		return UserDashboardRepository.UserDashboardKey.of(kpiDataContext.getClientId());
 	}
 
 	@Override
@@ -90,9 +112,9 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 		logger.trace("{}.produceEvents: Old Result: {}", this, oldResult);
 		logger.trace("{}.produceEvents: Returning changes from old version: {}", this, events);
 
-		if(events.isEmpty())
+		if (events.isEmpty())
 		{
-			return  ImmutableList.of();
+			return ImmutableList.of();
 		}
 		else
 		{
@@ -116,14 +138,26 @@ class UserDashboardWebsocketProducer implements WebSocketProducer
 	private JSONDashboardItemDataChangedEvent toJson(final UserDashboardItemDataResponse itemData, final KPIJsonOptions jsonOpts)
 	{
 		final JsonKPIDataResult jsonData = JsonKPIDataResult.of(itemData, jsonOpts);
-		return JSONDashboardItemDataChangedEvent.of(userDashboardId, itemData.getItemId(), jsonData);
+		return JSONDashboardItemDataChangedEvent.of(itemData.getDashboardId(), itemData.getItemId(), jsonData);
 	}
 
 	private Result computeNewResult()
 	{
-		final UserDashboardDataResponse data = dashboardDataService
-				.getData(userDashboardId)
-				.getAllItems(UserDashboardDataRequest.NOW);
+		final UserDashboardDataProvider dataProvider = dashboardDataService
+				.getData(getUserDashboardKey())
+				.orElse(null);
+
+		// no user dashboard was found.
+		// might be that the user dashboard was deactived in meantime.
+		if (dataProvider == null)
+		{
+			return Result.EMPTY;
+		}
+
+		final UserDashboardDataResponse data = dataProvider
+				.getAllItems(UserDashboardDataRequest.builder()
+						.context(kpiDataContext)
+						.build());
 
 		return Result.ofCollection(data.getItems());
 	}

@@ -1,18 +1,17 @@
 package de.metas.event.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import org.compiere.Adempiere;
-
 import com.google.common.collect.ImmutableList;
 
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
 import de.metas.event.Topic;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.compiere.Adempiere;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
 
 /*
  * #%L

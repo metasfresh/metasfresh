@@ -73,6 +73,56 @@ public interface I_M_Product
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set CompensationGroup Schema Category.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_Schema_Category_ID (int C_CompensationGroup_Schema_Category_ID);
+
+	/**
+	 * Get CompensationGroup Schema Category.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_Schema_Category_ID();
+
+	@Nullable org.compiere.model.I_C_CompensationGroup_Schema_Category getC_CompensationGroup_Schema_Category();
+
+	void setC_CompensationGroup_Schema_Category(@Nullable org.compiere.model.I_C_CompensationGroup_Schema_Category C_CompensationGroup_Schema_Category);
+
+	ModelColumn<I_M_Product, org.compiere.model.I_C_CompensationGroup_Schema_Category> COLUMN_C_CompensationGroup_Schema_Category_ID = new ModelColumn<>(I_M_Product.class, "C_CompensationGroup_Schema_Category_ID", org.compiere.model.I_C_CompensationGroup_Schema_Category.class);
+	String COLUMNNAME_C_CompensationGroup_Schema_Category_ID = "C_CompensationGroup_Schema_Category_ID";
+
+	/**
+	 * Set Compensation Group Schema.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CompensationGroup_Schema_ID (int C_CompensationGroup_Schema_ID);
+
+	/**
+	 * Get Compensation Group Schema.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CompensationGroup_Schema_ID();
+
+	@Nullable de.metas.order.model.I_C_CompensationGroup_Schema getC_CompensationGroup_Schema();
+
+	void setC_CompensationGroup_Schema(@Nullable de.metas.order.model.I_C_CompensationGroup_Schema C_CompensationGroup_Schema);
+
+	ModelColumn<I_M_Product, de.metas.order.model.I_C_CompensationGroup_Schema> COLUMN_C_CompensationGroup_Schema_ID = new ModelColumn<>(I_M_Product.class, "C_CompensationGroup_Schema_ID", de.metas.order.model.I_C_CompensationGroup_Schema.class);
+	String COLUMNNAME_C_CompensationGroup_Schema_ID = "C_CompensationGroup_Schema_ID";
+
+	/**
 	 * Set Klassifizierung.
 	 * Classification for grouping
 	 *
@@ -1013,6 +1063,27 @@ public interface I_M_Product
 	String COLUMNNAME_Manufacturer_ID = "Manufacturer_ID";
 
 	/**
+	 * Set Product description of manufacturer.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManufacturerProductDescription (@Nullable java.lang.String ManufacturerProductDescription);
+
+	/**
+	 * Get Product description of manufacturer.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getManufacturerProductDescription();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ManufacturerProductDescription = new ModelColumn<>(I_M_Product.class, "ManufacturerProductDescription", null);
+	String COLUMNNAME_ManufacturerProductDescription = "ManufacturerProductDescription";
+
+	/**
 	 * Set Merkmals-Satz.
 	 * Product Attribute Set
 	 *
@@ -1405,6 +1476,27 @@ public interface I_M_Product
 	String COLUMNNAME_RawMaterialOrigin_ID = "RawMaterialOrigin_ID";
 
 	/**
+	 * Set Requires Supplier Approval.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setRequiresSupplierApproval (boolean RequiresSupplierApproval);
+
+	/**
+	 * Get Requires Supplier Approval.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRequiresSupplierApproval();
+
+	ModelColumn<I_M_Product, Object> COLUMN_RequiresSupplierApproval = new ModelColumn<>(I_M_Product.class, "RequiresSupplierApproval", null);
+	String COLUMNNAME_RequiresSupplierApproval = "RequiresSupplierApproval";
+
+	/**
 	 * Set EMail-Vorlage.
 	 * Text templates for mailings
 	 *
@@ -1430,6 +1522,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, org.compiere.model.I_R_MailText> COLUMN_R_MailText_ID = new ModelColumn<>(I_M_Product.class, "R_MailText_ID", org.compiere.model.I_R_MailText.class);
 	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
+
+	/**
+	 * Set Product safety information.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSafetyInfo (@Nullable java.lang.String SafetyInfo);
+
+	/**
+	 * Get Product safety information.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSafetyInfo();
+
+	ModelColumn<I_M_Product, Object> COLUMN_SafetyInfo = new ModelColumn<>(I_M_Product.class, "SafetyInfo", null);
+	String COLUMNNAME_SafetyInfo = "SafetyInfo";
 
 	/**
 	 * Set Account manager.
@@ -1550,6 +1663,50 @@ public interface I_M_Product
 	String COLUMNNAME_ShelfWidth = "ShelfWidth";
 
 	/**
+	 * Set Shop Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShopDescription (@Nullable java.lang.String ShopDescription);
+
+	/**
+	 * Get Shop Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShopDescription();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ShopDescription = new ModelColumn<>(I_M_Product.class, "ShopDescription", null);
+	String COLUMNNAME_ShopDescription = "ShopDescription";
+
+	/**
+	 * Set Shop inventory.
+	 * Shop invenntory qty
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShopInventoryQty (@Nullable BigDecimal ShopInventoryQty);
+
+	/**
+	 * Get Shop inventory.
+	 * Shop invenntory qty
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getShopInventoryQty();
+
+	ModelColumn<I_M_Product, Object> COLUMN_ShopInventoryQty = new ModelColumn<>(I_M_Product.class, "ShopInventoryQty", null);
+	String COLUMNNAME_ShopInventoryQty = "ShopInventoryQty";
+
+	/**
 	 * Set SKU.
 	 * Stock Keeping Unit
 	 *
@@ -1598,6 +1755,27 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_M_Product.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
+
+	/**
+	 * Set Trademark.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTrademark (@Nullable java.lang.String Trademark);
+
+	/**
+	 * Get Trademark.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTrademark();
+
+	ModelColumn<I_M_Product, Object> COLUMN_Trademark = new ModelColumn<>(I_M_Product.class, "Trademark", null);
+	String COLUMNNAME_Trademark = "Trademark";
 
 	/**
 	 * Set UnitsPerPack.

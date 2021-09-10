@@ -35,6 +35,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.order.DeliveryRule;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
@@ -74,6 +75,7 @@ import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -108,6 +110,8 @@ import java.util.stream.Stream;
 @Service
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@VisibleForTesting
 	public static ShipmentScheduleUpdater newInstanceForUnitTesting()
@@ -280,7 +284,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			}
 		}
 
-		final ShipmentSchedulesDuringUpdate firstRun = generate_FirstRun(ctx, olsAndScheds);
+		final ShipmentSchedulesDuringUpdate firstRun = generate_FirstRun(olsAndScheds);
 		firstRun.updateCompleteStatusAndSetQtyToZeroWhereNeeded();
 
 		applyCandidateProcessors(ctx, firstRun);
@@ -303,7 +307,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 
 		// make the second run
-		final IShipmentSchedulesDuringUpdate secondRun = generate_SecondRun(ctx, olsAndScheds, firstRun);
+		final IShipmentSchedulesDuringUpdate secondRun = generate_SecondRun(olsAndScheds, firstRun);
 
 		// finally update the shipment schedule entries
 		for (final OlAndSched olAndSched : olsAndScheds)
@@ -328,7 +332,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			updateLineNetAmt(olAndSched);
 
-			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, secondRun);
+			ShipmentScheduleQtysHelper.updateQtyToDeliver(olAndSched, secondRun, shipmentScheduleAllocDAO);
 
 			updateProcessedFlag(schedRecord);
 			if (schedRecord.isProcessed())
@@ -390,8 +394,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				final IContextAware contextAwareSched = InterfaceWrapperHelper.getContextAware(schedRecord);
 				final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(schedRecord);
-
-				final ZonedDateTime calculationTime = TimeUtil.asZonedDateTime(schedRecord.getCreated());
+				final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(schedRecord.getAD_Org_ID()));
+				final ZonedDateTime calculationTime = TimeUtil.asZonedDateTime(schedRecord.getCreated(), timeZone);
 				final ImmutablePair<TourId, ZonedDateTime> tourAndDate = deliveryDayBL.calculateTourAndPreparationDate(
 						contextAwareSched,
 						SOTrx.SALES,
@@ -414,30 +418,26 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 	}
 
-	ShipmentSchedulesDuringUpdate generate_FirstRun(
-			@NonNull final Properties ctx,
-			@NonNull final List<OlAndSched> lines)
+	ShipmentSchedulesDuringUpdate generate_FirstRun(@NonNull final List<OlAndSched> lines)
 	{
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(1))
 		{
 			final ShipmentSchedulesDuringUpdate firstRun = new ShipmentSchedulesDuringUpdate();
-			return generate(ctx, lines, firstRun);
+			return generate(lines, firstRun);
 		}
 	}
 
 	ShipmentSchedulesDuringUpdate generate_SecondRun(
-			@NonNull final Properties ctx,
 			@NonNull final List<OlAndSched> lines,
 			@NonNull final ShipmentSchedulesDuringUpdate firstRun)
 	{
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(2))
 		{
-			return generate(ctx, lines, firstRun);
+			return generate(lines, firstRun);
 		}
 	}
 
 	private ShipmentSchedulesDuringUpdate generate(
-			@NonNull final Properties ctx,
 			@NonNull final List<OlAndSched> lines,
 			@NonNull final ShipmentSchedulesDuringUpdate candidates)
 	{
@@ -461,9 +461,19 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final BigDecimal qtyRequired;
 				if (olAndSched.getQtyOverride() != null)
 				{
-					final BigDecimal qtyToDeliverOverrideFulFilled = ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched);
-					qtyRequired = olAndSched.getQtyOverride().subtract(qtyToDeliverOverrideFulFilled);
-					logger.debug("QtyOverride={} is set; QtyToDeliverOverrideFulFilled={}; => QtyRequired={}", olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired);
+					final BigDecimal qtyToDeliverOverrideFulFilled = ShipmentScheduleQtysHelper.computeQtyToDeliverOverrideFulFilled(olAndSched, shipmentScheduleAllocDAO);
+					if (olAndSched.getQtyOverride().compareTo(qtyToDeliverOverrideFulFilled) > 0)
+					{
+						qtyRequired = olAndSched.getQtyOverride().subtract(qtyToDeliverOverrideFulFilled);
+						logger.debug("QtyOverride={} is greater than QtyToDeliverOverrideFulFilled={}; => use the delta as QtyRequired={}", olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired);
+					}
+					else
+					{
+						final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
+						qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
+						logger.debug("QtyOverride={} is less than QtyToDeliverOverrideFulFilled={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
+									 olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
+					}
 				}
 				else if (deliveryRule.isManual())
 				{
@@ -475,7 +485,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				{
 					final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 					qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
-					logger.debug("QtyOrdered={}; QtyDelivered={}; => qtyRequired={}", olAndSched.getQtyOrdered(), qtyDelivered, qtyRequired);
+					logger.debug("DeliveryRule={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}", 
+								 deliveryRule, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
 				}
 
 				//
@@ -560,7 +571,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 						else
 						{
 							logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={} (QtyPickList={}), ToDeliver={}, FullLine={}",
-									qtyOnHandBeforeAllocation, qtyPickedOrOnDraftShipment, qtyToDeliver, completeStatus);
+										 qtyOnHandBeforeAllocation, qtyPickedOrOnDraftShipment, qtyToDeliver, completeStatus);
 						}
 					}
 					//
@@ -795,7 +806,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * Try to get the given <code>ol</code>'s <code>qtyReservedInPriceUOM</code> and update the given <code>sched</code>'s <code>LineNetAmt</code>.
 	 *
 	 * @throws AdempiereException in developer mode, if there the <code>qtyReservedInPriceUOM</code> can't be obtained.
-	 * task https://github.com/metasfresh/metasfresh/issues/298
+	 *                            task https://github.com/metasfresh/metasfresh/issues/298
 	 */
 	private BigDecimal computeLineNetAmt(final OlAndSched olAndSched)
 	{

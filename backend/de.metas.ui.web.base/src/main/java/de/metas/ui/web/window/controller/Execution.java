@@ -1,22 +1,25 @@
 package de.metas.ui.web.window.controller;
 
-import java.util.concurrent.Callable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.ui.web.exceptions.InvalidDocumentVersionException;
+import de.metas.ui.web.window.datatypes.json.JSONTriggerAction;
+import de.metas.ui.web.window.model.DocumentChangesCollector;
+import de.metas.ui.web.window.model.IDocumentChangesCollector;
+import de.metas.ui.web.window.model.NullDocumentChangesCollector;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.base.Stopwatch;
-
-import de.metas.logging.LogManager;
-import de.metas.ui.web.exceptions.InvalidDocumentVersionException;
-import de.metas.ui.web.window.model.DocumentChangesCollector;
-import de.metas.ui.web.window.model.IDocumentChangesCollector;
-import de.metas.ui.web.window.model.NullDocumentChangesCollector;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
 
 /*
  * #%L
@@ -42,7 +45,7 @@ import de.metas.util.Services;
 
 public class Execution implements IAutoCloseable
 {
-	public static final Execution getCurrent()
+	public static Execution getCurrent()
 	{
 		final Execution execution = currentExecutionHolder.get();
 		if (execution == null)
@@ -50,6 +53,11 @@ public class Execution implements IAutoCloseable
 			throw new AdempiereException("No current execution found for thread: " + Thread.currentThread().getName());
 		}
 		return execution;
+	}
+
+	public static boolean isCurrentExecutionAvailable()
+	{
+		return currentExecutionHolder.get() != null;
 	}
 
 	private static Execution startExecution()
@@ -78,7 +86,6 @@ public class Execution implements IAutoCloseable
 	 * </ul>
 	 *
 	 * @param name execution name (for logging purposes only)
-	 * @param callable
 	 * @return callable's return value
 	 */
 	public static <T> T callInNewExecution(final String name, final Callable<T> callable)
@@ -114,10 +121,10 @@ public class Execution implements IAutoCloseable
 	private final String threadName;
 	private volatile boolean closed = false;
 	private volatile IDocumentChangesCollector documentChangesCollector;
+	private final ArrayList<JSONTriggerAction> frontendTriggerActions = new ArrayList<>();
 
 	private Execution()
 	{
-		super();
 		threadName = Thread.currentThread().getName();
 	}
 
@@ -165,6 +172,24 @@ public class Execution implements IAutoCloseable
 			}
 		}
 		return documentChangesCollector;
+	}
+
+	public void requestFrontendToTriggerAction(@NonNull final JSONTriggerAction action)
+	{
+		frontendTriggerActions.add(action);
+	}
+
+	public ImmutableList<JSONTriggerAction> getFrontendTriggerActions()
+	{
+		return ImmutableList.copyOf(frontendTriggerActions);
+	}
+
+	public static ImmutableList<JSONTriggerAction> getCurrentFrontendTriggerActionsOrEmpty()
+	{
+		final Execution execution = currentExecutionHolder.get();
+		return execution != null
+				? execution.getFrontendTriggerActions()
+				: ImmutableList.of();
 	}
 
 	public static final class ExecutionBuilder
@@ -221,6 +246,8 @@ public class Execution implements IAutoCloseable
 						}
 					}
 
+					Check.assumeNotNull(versionException, "VersionException must not be null");
+
 					throw versionException;
 				};
 			}
@@ -255,7 +282,7 @@ public class Execution implements IAutoCloseable
 
 			//
 			// Run the effective callable in a new execution
-			try (final Execution execution = startExecution())
+			try (final Execution ignored = startExecution())
 			{
 				return callableEffective.call();
 			}

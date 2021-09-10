@@ -10,6 +10,8 @@ import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
+import de.metas.ui.web.kpi.data.KPIDataContext;
 import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
@@ -98,6 +100,7 @@ public class LoginRestController
 	private final UserNotificationsService userNotificationsService;
 	private final WebuiImageService imageService;
 	private final UserAuthTokenService userAuthTokenService;
+	private final UserDashboardSessionContextHolder userDashboardContextHolder;
 
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
@@ -106,13 +109,15 @@ public class LoginRestController
 			@NonNull final UserSessionRepository userSessionRepo,
 			@NonNull final UserNotificationsService userNotificationsService,
 			@NonNull final WebuiImageService imageService,
-			@NonNull final UserAuthTokenService userAuthTokenService)
+			@NonNull final UserAuthTokenService userAuthTokenService,
+			@NonNull final UserDashboardSessionContextHolder userDashboardContextHolder)
 	{
 		this.userSession = userSession;
 		this.userSessionRepo = userSessionRepo;
 		this.userNotificationsService = userNotificationsService;
 		this.imageService = imageService;
 		this.userAuthTokenService = userAuthTokenService;
+		this.userDashboardContextHolder = userDashboardContextHolder;
 	}
 
 	private Login getLoginService()
@@ -298,6 +303,8 @@ public class LoginRestController
 
 	private void destroyMFSession(final Login loginService)
 	{
+		userDashboardContextHolder.clearSessionContext(userSession.getSessionId());
+
 		sessionBL.logoutCurrentSession();
 
 		if (loginService != null)
@@ -383,6 +390,10 @@ public class LoginRestController
 				userSession.getSessionId(),
 				userSession.getLoggedUserId(),
 				JSONOptions.of(userSession));
+
+		userDashboardContextHolder.putSessionContext(
+				userSession.getSessionId(),
+				KPIDataContext.ofUserSession(userSession));
 	}
 
 	@GetMapping("/isLoggedIn")

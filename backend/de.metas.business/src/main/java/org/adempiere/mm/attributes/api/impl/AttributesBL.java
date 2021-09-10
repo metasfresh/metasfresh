@@ -29,6 +29,7 @@ import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import de.metas.uom.IUOMDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -76,6 +77,7 @@ public class AttributesBL implements IAttributesBL
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_AttributeAction = "de.metas.swat.AttributeAction";
@@ -204,7 +206,7 @@ public class AttributesBL implements IAttributesBL
 	{
 		Check.assumeNotNull(attribute, "attribute not null");
 
-		final I_C_UOM uom = attribute.getC_UOM();
+		final I_C_UOM uom = uomDAO.getByIdOrNull(attribute.getC_UOM_ID());
 
 		final MathContext mc;
 		if (uom != null)

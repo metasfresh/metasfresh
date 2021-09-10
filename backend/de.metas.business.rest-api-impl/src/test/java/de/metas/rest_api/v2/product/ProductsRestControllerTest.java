@@ -34,10 +34,13 @@ import de.metas.externalreference.ExternalSystems;
 import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
+import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
+import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
-import de.metas.rest_api.externlasystem.dto.ExternalSystemService;
+import de.metas.rest_api.v2.externlasystem.dto.ExternalSystemService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -95,7 +98,7 @@ public class ProductsRestControllerTest
 
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(), new ExternalSystemExportAuditRepo());
+		final ExternalSystemService externalSystemService = new ExternalSystemService(new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository()), new ExternalSystemExportAuditRepo(), new RuntimeParametersRepository());
 		final ProductRepository productRepository = new ProductRepository();
 		final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();
 
@@ -124,6 +127,7 @@ public class ProductsRestControllerTest
 		// Masterdata
 		final I_M_Product product1 = prepareProduct()
 				.value("value1")
+				.categoryId(ProductCategoryId.ofRepoId(3))
 				.name("name1")
 				.description("description1")
 				.ean("ean1")
@@ -159,6 +163,7 @@ public class ProductsRestControllerTest
 
 		final I_M_Product product2 = prepareProduct()
 				.value("value2")
+				.categoryId(ProductCategoryId.ofRepoId(4))
 				.name("name2")
 				.description("description2")
 				.ean("ean2")
@@ -181,6 +186,7 @@ public class ProductsRestControllerTest
 													.description("description1")
 													.ean("ean1")
 													.uom("Ea")
+													.productCategoryId(JsonMetasfreshId.of(3))
 													.bpartner(JsonProductBPartner.builder()
 																	  .bpartnerId(JsonMetasfreshId.of(1))
 																	  .productNo("productNo1-vendor1")
@@ -213,6 +219,7 @@ public class ProductsRestControllerTest
 													.description("description2")
 													.ean("ean2")
 													.uom("Kg")
+													.productCategoryId(JsonMetasfreshId.of(4))
 													.build())
 								   .build());
 
@@ -232,12 +239,14 @@ public class ProductsRestControllerTest
 	private I_M_Product createProduct(
 			@NonNull final String value,
 			@NonNull final String name,
+			@NonNull final ProductCategoryId categoryId,
 			final String description,
 			final String ean,
 			@NonNull final UomId uomId)
 	{
 		final I_M_Product record = newInstance(I_M_Product.class);
 		record.setValue(value);
+		record.setM_Product_Category_ID(categoryId.getRepoId());
 		record.setName(name);
 		record.setDescription(description);
 		record.setUPC(ean);

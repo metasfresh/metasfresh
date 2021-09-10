@@ -140,7 +140,8 @@ class MasterWidget extends PureComponent {
       isModal,
       isAdvanced,
       viewId,
-      isEdit
+      isEdit,
+      disconnected
     );
 
     // flash the row to indicate a change
@@ -254,9 +255,7 @@ class MasterWidget extends PureComponent {
       rowId,
       field
     ).then((res) => {
-      const url = `/${fallBackEntity}/${res.data.documentPath.windowId}/${
-        res.data.documentPath.documentId
-      }`;
+      const url = `/${fallBackEntity}/${res.data.documentPath.windowId}/${res.data.documentPath.documentId}`;
 
       res && res.data && window.open(url, '_blank');
     });

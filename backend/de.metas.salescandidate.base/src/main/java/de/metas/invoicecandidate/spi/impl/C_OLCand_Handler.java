@@ -32,6 +32,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import java.util.Iterator;
 import java.util.Properties;
 
+import de.metas.lang.SOTrx;
 import de.metas.tax.api.TaxId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -229,7 +230,7 @@ public class C_OLCand_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				(WarehouseId)null,
 				BPartnerLocationId.toRepoId(shipToPartnerInfo.getBpartnerLocationId()),
-				true /* isSOTrx */);
+				SOTrx.SALES);
 		ic.setC_Tax_ID(taxId.getRepoId());
 
 		ic.setExternalLineId(olcRecord.getExternalLineId());
