@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 900147432L;
+	private static final long serialVersionUID = -1736482408L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -148,6 +148,33 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BPartner_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value(final org.compiere.model.I_C_Location C_BPartner_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class, C_BPartner_Location_Value);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID (final int C_BPartner_Location_Value_ID)
+	{
+		if (C_BPartner_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
 	}
 
 	@Override
@@ -1115,6 +1142,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setOrder_Min (final @Nullable BigDecimal Order_Min)
+	{
+		set_Value (COLUMNNAME_Order_Min, Order_Min);
+	}
+
+	@Override
+	public BigDecimal getOrder_Min() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Min);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setPaymentDiscount (final @Nullable BigDecimal PaymentDiscount)
 	{
 		set_Value (COLUMNNAME_PaymentDiscount, PaymentDiscount);
@@ -1600,6 +1640,17 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TaxAmtInfo);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setTradeBom_Product_ID (final int TradeBom_Product_ID)
+	{
+		throw new IllegalArgumentException ("TradeBom_Product_ID is virtual column");	}
+
+	@Override
+	public int getTradeBom_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_TradeBom_Product_ID);
 	}
 
 	@Override
