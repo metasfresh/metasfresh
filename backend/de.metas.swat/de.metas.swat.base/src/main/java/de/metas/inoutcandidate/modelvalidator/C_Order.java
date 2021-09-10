@@ -53,7 +53,8 @@ public class C_Order
 	private static final AdMessageKey MSG_CannotCompleteOrder_DeliveryStop = AdMessageKey.of("CannotCompleteOrder_DeliveryStop");
 	private static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("salesorder.shipmentschedule.exported");
 	private static final AdMessageKey MSG_PO_REACTIVATION_VOID_NOT_ALLOWED = AdMessageKey.of("purchaseorder.shipmentschedule.exported");
-	private static final AdMessageKey MSG_REACTIVATION_NOT_ALLOWED = AdMessageKey.of("order.invoice.completed");
+	private static final AdMessageKey MSG_SO_REACTIVATION_NOT_ALLOWED = AdMessageKey.of("salesorder.invoice.completed");
+	private static final AdMessageKey MSG_PO_REACTIVATION_NOT_ALLOWED = AdMessageKey.of("purchaseorder.invoice.completed");
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_PREPARE)
 	public void assertNotDeliveryStopped(final I_C_Order order)
@@ -99,7 +100,7 @@ public class C_Order
 		}
 		else
 		{
-			throw new AdempiereException(MSG_REACTIVATION_NOT_ALLOWED)
+			throw new AdempiereException(MSG_SO_REACTIVATION_NOT_ALLOWED)
 					.markAsUserValidationError();
 		}
 	}
@@ -129,7 +130,7 @@ public class C_Order
 		}
 		else
 		{
-			throw new AdempiereException(MSG_REACTIVATION_NOT_ALLOWED)
+			throw new AdempiereException(MSG_PO_REACTIVATION_NOT_ALLOWED)
 					.markAsUserValidationError();
 		}
 	}
