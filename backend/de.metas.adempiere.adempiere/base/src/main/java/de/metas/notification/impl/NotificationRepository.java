@@ -1,33 +1,13 @@
 package de.metas.notification.impl;
 
-import java.util.List;
-import java.util.Objects;
-
-import de.metas.document.references.zoom_into.CustomizedWindowInfo;
-import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
-import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Note;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Service;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.JsonObjectMapperHolder;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.document.references.zoom_into.CustomizedWindowInfo;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
@@ -44,8 +24,23 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Note;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -278,7 +273,7 @@ public class NotificationRepository implements INotificationRepository
 	}
 
 	@Override
-	public List<UserNotification> getByUserId(final UserId adUserId, final int limit)
+	public List<UserNotification> getByUserId(@NonNull final UserId adUserId, @NonNull final QueryLimit limit)
 	{
 		return retrieveNotesByUserId(adUserId)
 				.orderByDescending(I_AD_Note.COLUMNNAME_AD_Note_ID)
