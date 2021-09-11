@@ -9,6 +9,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.order.IOrderBL;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
