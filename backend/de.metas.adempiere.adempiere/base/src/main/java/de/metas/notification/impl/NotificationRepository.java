@@ -3,6 +3,9 @@ package de.metas.notification.impl;
 import java.util.List;
 import java.util.Objects;
 
+import de.metas.document.references.zoom_into.CustomizedWindowInfo;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -10,6 +13,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -39,6 +44,8 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -73,10 +80,15 @@ public class NotificationRepository implements INotificationRepository
 	private final ObjectMapper jsonMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final AttachmentEntryService attachmentEntryService;
+	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
 
-	public NotificationRepository(@NonNull AttachmentEntryService attachmentEntryService)
+
+	public NotificationRepository(
+			@NonNull final AttachmentEntryService attachmentEntryService,
+			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
 	{
 		this.attachmentEntryService = attachmentEntryService;
+		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
 	}
 
 	@Override
@@ -226,13 +238,13 @@ public class NotificationRepository implements INotificationRepository
 		{
 			builder.targetType(UserNotificationTargetType.Window)
 					.targetRecord(TableRecordReference.of(adTableId, notificationPO.getRecord_ID()))
-					.targetWindowId(notificationPO.getAD_Window_ID());
+					.targetWindowId(extractAdWindowId(notificationPO));
 		}
 		else if (!Check.isEmpty(notificationPO.getViewId(), true))
 		{
 			builder.targetType(UserNotificationTargetType.View)
 					.targetViewId(notificationPO.getViewId())
-					.targetWindowId(notificationPO.getAD_Window_ID());
+					.targetWindowId(extractAdWindowId(notificationPO));
 		}
 		else
 		{
@@ -240,6 +252,21 @@ public class NotificationRepository implements INotificationRepository
 		}
 
 		return builder.build();
+	}
+
+	@Nullable
+	private AdWindowId extractAdWindowId(final I_AD_Note notificationPO)
+	{
+		AdWindowId adWindowId = AdWindowId.ofRepoIdOrNull(notificationPO.getAD_Window_ID());
+		if(adWindowId == null)
+		{
+			return null;
+		}
+
+		return customizedWindowInfoMapRepository.get()
+				.getCustomizedWindowInfo(adWindowId)
+				.map(CustomizedWindowInfo::getCustomizationWindowId)
+				.orElse(adWindowId);
 	}
 
 	private IQueryBuilder<I_AD_Note> retrieveNotesByUserId(@NonNull final UserId adUserId)

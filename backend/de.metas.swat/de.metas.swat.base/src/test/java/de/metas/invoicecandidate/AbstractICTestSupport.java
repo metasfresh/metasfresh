@@ -23,7 +23,7 @@ import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
-import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
@@ -32,7 +32,6 @@ import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IAggregationDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.InvoiceCandidateIdsSelection;
 import de.metas.invoicecandidate.api.impl.AggregationKeyEvaluationContext;
 import de.metas.invoicecandidate.api.impl.HeaderAggregationKeyBuilder;
 import de.metas.invoicecandidate.api.impl.PlainAggregationDAO;
@@ -278,7 +277,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
-		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService, NullCustomizedWindowInfoMapRepository.instance));
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 	}
@@ -287,35 +286,35 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	{
 		//@formatter:off
 		defaultHeaderAggregation = new C_Aggregation_Builder()
-			.setAD_Table_ID(I_C_Invoice_Candidate.Table_Name)
-			.setIsDefault(true)
-			.setAggregationUsageLevel(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
-			.setName("Default")
-			.newItem()
+				.setAD_Table_ID(I_C_Invoice_Candidate.Table_Name)
+				.setIsDefault(true)
+				.setAggregationUsageLevel(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
+				.setName("Default")
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_IsTaxIncluded)
 				.end()
-			.build();
+				.build();
 		//@formatter:on
 
 		new C_Aggregation_Attribute_Builder()
@@ -332,24 +331,24 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		//@formatter:off
 		defaultHeaderAggregation_NotConsolidated = new C_Aggregation_Builder()
-			.setAD_Table_ID(I_C_Invoice_Candidate.Table_Name)
-			.setIsDefault(false)
-			.setAggregationUsageLevel(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
-			.setName("Default_NotConsolidated")
-			.newItem()
+				.setAD_Table_ID(I_C_Invoice_Candidate.Table_Name)
+				.setIsDefault(false)
+				.setAggregationUsageLevel(X_C_Aggregation.AGGREGATIONUSAGELEVEL_Header)
+				.setName("Default_NotConsolidated")
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_IncludedAggregation)
 				.setIncluded_Aggregation(defaultHeaderAggregation)
 				.end()
-			.newItem()
+				.newItem()
 				.setType(X_C_AggregationItem.TYPE_Column)
 				.setAD_Column(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID)
 				.end()
-//			.newItem()
-//				.setType(X_C_AggregationItem.TYPE_Attribute)
-//				.setC_Aggregation_Attribute(attr_AggregatePer_M_InOut_ID)
-//				//.setAD_Column(I_C_Invoice_Candidate.COLUMN_First_Ship_BPLocation_ID)
-//				.end()
-			.build();
+				//			.newItem()
+				//				.setType(X_C_AggregationItem.TYPE_Attribute)
+				//				.setC_Aggregation_Attribute(attr_AggregatePer_M_InOut_ID)
+				//				//.setAD_Column(I_C_Invoice_Candidate.COLUMN_First_Ship_BPLocation_ID)
+				//				.end()
+				.build();
 		//@formatter:on
 	}
 
@@ -689,7 +688,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 				invoiceCandBL.updateInvalid()
 						.setContext(ctx, localTrxName)
 						.setTaggedWithAnyTag()
-						.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCandidates))
+						.setOnlyC_Invoice_Candidates(invoiceCandidates)
 						.update();
 			}
 		});
@@ -718,8 +717,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			invoiceCandidateValidator = new C_Invoice_Candidate(
 					new InvoiceCandidateRecordService(),
 					groupsRepo,
-					attachmentEntryService,
-					new DocumentLocationBL(new BPartnerBL(new UserRepository())));
+					attachmentEntryService);
 		}
 		return invoiceCandidateValidator;
 	}

@@ -1,27 +1,32 @@
 package de.metas.notification;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.document.references.zoom_into.CustomizedWindowInfo;
+import de.metas.document.references.zoom_into.CustomizedWindowInfoMap;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
+import de.metas.event.Topic;
+import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ImmutableTranslatableString;
+import de.metas.notification.UserNotificationRequest.TargetRecordAction;
+import de.metas.notification.impl.NotificationRepository;
+import de.metas.process.MockedCustomizedWindowInfoMapRepository;
+import de.metas.user.UserId;
+import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Message;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.event.Topic;
-import de.metas.event.Type;
-import de.metas.notification.UserNotificationRequest.TargetRecordAction;
-import de.metas.notification.impl.NotificationRepository;
-import de.metas.user.UserId;
-import de.metas.util.collections.CollectionUtils;
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -45,59 +50,83 @@ import de.metas.util.collections.CollectionUtils;
  * #L%
  */
 
-public class NotificationRepositoryTest
-{
-	private NotificationRepository notificationRepo;
+public class NotificationRepositoryTest {
+    @BeforeEach
+    public void init() {
+        AdempiereTestHelper.get().init();
+    }
 
-	@Before
-	public void init()
-	{
-		AdempiereTestHelper.get().init();
+    @Test
+    public void simpleSaveAndLoadTest() {
+        final NotificationRepository notificationRepo = new NotificationRepository(
+                AttachmentEntryService.createInstanceForUnitTesting(),
+                NullCustomizedWindowInfoMapRepository.instance);
 
-		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
-		notificationRepo = new NotificationRepository(attachmentEntryService);
-	}
+        createAD_Message("subjectADMessage");
+        createAD_Message("contentADMessage");
 
-	@Test
-	public void test()
-	{
-		createAD_Message("subjectADMessage");
-		createAD_Message("contentADMessage");
+        final UserNotification notificationSaved = notificationRepo.save(UserNotificationRequest.builder()
+                .topic(Topic.builder().name("topic1").type(Type.REMOTE).build())
+                .recipientUserId(UserId.ofRepoId(123))
+                .important(true)
+                //
+                .subjectPlain("subjectPlain")
+                .subjectADMessage(AdMessageKey.of("subjectADMessage"))
+                .subjectADMessageParam("string")
+                .subjectADMessageParam(TableRecordReference.of("MyTable", 111))
+                .subjectADMessageParam(BigDecimal.valueOf(123.44))
+                //
+                .contentPlain("contentPlain")
+                .contentADMessage(AdMessageKey.of("contentADMessage"))
+                .contentADMessageParam("string")
+                .contentADMessageParam(TableRecordReference.of("MyTable", 111))
+                .contentADMessageParam(BigDecimal.valueOf(123.44))
+                //
+                .targetAction(TargetRecordAction.builder()
+                        .record(TableRecordReference.of("MyTable", 111))
+                        .recordDisplayText("targetRecordDisplayText")
+                        .adWindowId(AdWindowId.optionalOfRepoId(444))
+                        .build())
+                .build());
 
-		final UserNotification notificationSaved = notificationRepo.save(UserNotificationRequest.builder()
-				.topic(Topic.builder().name("topic1").type(Type.REMOTE).build())
-				.recipientUserId(UserId.ofRepoId(123))
-				.important(true)
-				//
-				.subjectPlain("subjectPlain")
-				.subjectADMessage(AdMessageKey.of("subjectADMessage"))
-				.subjectADMessageParam("string")
-				.subjectADMessageParam(TableRecordReference.of("MyTable", 111))
-				.subjectADMessageParam(BigDecimal.valueOf(123.44))
-				//
-				.contentPlain("contentPlain")
-				.contentADMessage(AdMessageKey.of("contentADMessage"))
-				.contentADMessageParam("string")
-				.contentADMessageParam(TableRecordReference.of("MyTable", 111))
-				.contentADMessageParam(BigDecimal.valueOf(123.44))
-				//
-				.targetAction(TargetRecordAction.builder()
-						.record(TableRecordReference.of("MyTable", 111))
-						.recordDisplayText("targetRecordDisplayText")
-						.adWindowId(AdWindowId.optionalOfRepoId(444))
-						.build())
-				.build());
+        final List<UserNotification> userNotifications = notificationRepo.getByUserId(UserId.ofRepoId(123), Integer.MAX_VALUE);
+        final UserNotification userNotification = CollectionUtils.singleElement(userNotifications);
+        assertThat(userNotification).isEqualTo(notificationSaved);
+    }
 
-		final List<UserNotification> userNotifications = notificationRepo.getByUserId(UserId.ofRepoId(123), Integer.MAX_VALUE);
-		final UserNotification userNotification = CollectionUtils.singleElement(userNotifications);
-		assertThat(userNotification).isEqualTo(notificationSaved);
-	}
+    private void createAD_Message(final String adMessage) {
+        final I_AD_Message record = newInstanceOutOfTrx(I_AD_Message.class);
+        record.setValue(adMessage);
+        record.setMsgText(adMessage + "_MsgText");
+        save(record);
+    }
 
-	private void createAD_Message(final String adMessage)
-	{
-		final I_AD_Message record = newInstanceOutOfTrx(I_AD_Message.class);
-		record.setValue(adMessage);
-		record.setMsgText(adMessage + "_MsgText");
-		save(record);
-	}
+    @Test
+    public void testEffectiveWindowIsReturned() {
+        final MockedCustomizedWindowInfoMapRepository mockedCustomizedWindowInfoMapRepository = new MockedCustomizedWindowInfoMapRepository();
+        mockedCustomizedWindowInfoMapRepository.set(CustomizedWindowInfoMap.ofList(
+                ImmutableList.of(
+                        CustomizedWindowInfo.builder()
+                                .customizationWindowCaption(ImmutableTranslatableString.builder().defaultValue("test").build())
+                                .baseWindowId(AdWindowId.ofRepoId(444))
+                                .customizationWindowId(AdWindowId.ofRepoId(555))
+                                .build()
+                )));
+
+        final NotificationRepository notificationRepo = new NotificationRepository(
+                AttachmentEntryService.createInstanceForUnitTesting(),
+                mockedCustomizedWindowInfoMapRepository);
+
+        notificationRepo.save(UserNotificationRequest.builder()
+                .recipientUserId(UserId.ofRepoId(123))
+                .targetAction(TargetRecordAction.builder()
+                        .record(TableRecordReference.of("MyTable", 111))
+                        .adWindowId(AdWindowId.optionalOfRepoId(444))
+                        .build())
+                .build());
+
+        final List<UserNotification> userNotifications = notificationRepo.getByUserId(UserId.ofRepoId(123), Integer.MAX_VALUE);
+        final UserNotification userNotification = CollectionUtils.singleElement(userNotifications);
+        assertThat(userNotification.getTargetWindowId()).isEqualTo(AdWindowId.ofRepoId(555));
+    }
 }
