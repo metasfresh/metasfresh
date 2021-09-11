@@ -137,7 +137,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	/**
 	 * Currently used for both {@link #priceListVersion_SO} and {@link #priceListVersion_PO}.
 	 */
-	public final Timestamp plvDate = TimeUtil.getDay(2015, 01, 15);
+	public final Timestamp plvDate = TimeUtil.getDay(2015, 1, 15);
 
 	protected I_M_PricingSystem pricingSystem_SO;
 	protected I_M_PriceList_Version priceListVersion_SO;
@@ -166,7 +166,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	private boolean modelInterceptorsRegistered = false;
 
 	@BeforeClass
-	public static final void staticInit()
+	public static void staticInit()
 	{
 		AdempiereTestHelper.get().staticInit();
 	}
@@ -264,6 +264,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		uomConversionRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
 		uomConversionRecord.setC_UOM_To_ID(uomRecord.getC_UOM_ID());
 		uomConversionRecord.setMultiplyRate(TEN);
+		//noinspection BigDecimalMethodWithoutRoundingCalled
 		uomConversionRecord.setDivideRate(ONE.divide(TEN));
 		saveRecord(uomConversionRecord);
 
@@ -355,9 +356,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	/**
 	 * Configures {@link DefaultAggregator} to be the aggregator that is returned by invocations of {@link IAggregationDAO#retrieveAggregate(I_C_Invoice_Candidate)} throughout tests. <br>
 	 * Override this method to test different {@link IAggregator}s.
-	 *
-	 * @param ctx
-	 * @param trxName
 	 */
 	protected void config_InvoiceCand_LineAggregation(final Properties ctx, final String trxName)
 	{
@@ -630,7 +628,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		// NOTE: setting this flag to make sure that the model validators behave as they would when the server-side process was run. In particular, make sure
 		// that the ICs are not invalidated (again) when they are changed, because that causes trouble with the "light" PlainInvoiceCandDAO recomputeMap
 		// implementation.
-		try (final IAutoCloseable updateInProgressCloseable = invoiceCandBL.setUpdateProcessInProgress())
+		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
 			invoiceCandBL.updateInvalid()
 					.setContext(ctx, trxName)
@@ -642,7 +640,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 			if (!modelInterceptorsRegistered)
 			{
 				final List<I_C_Invoice_Candidate> allCandidates = POJOLookupMap.get().getRecords(I_C_Invoice_Candidate.class);
-				Collections.sort(allCandidates, PlainInvoiceCandDAO.INVALID_CANDIDATES_ORDERING);
+				allCandidates.sort(PlainInvoiceCandDAO.INVALID_CANDIDATES_ORDERING);
 
 				for (final I_C_Invoice_Candidate ic : allCandidates)
 				{
@@ -661,7 +659,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 					.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
 					.create()
 					.anyMatch();
-			Assert.assertEquals("Existing invalid invoice candidates", false, existingInvalidCandidates);
+			Assert.assertFalse("Existing invalid invoice candidates", existingInvalidCandidates);
 		}
 	}
 
@@ -683,7 +681,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 		Services.get(ITrxManager.class).runInNewTrx(new TrxRunnableAdapter()
 		{
 			@Override
-			public void run(final String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
 				invoiceCandBL.updateInvalid()
 						.setContext(ctx, localTrxName)
@@ -704,8 +702,6 @@ public class AbstractICTestSupport extends AbstractTestSupport
 	/**
 	 * Lazily initializes our {@link C_Invoice_Candidate} model validator/interceptor and returns it. The lazyness is required because the MV might make calls to {@link Services#get(Class)} before the
 	 * actual testing starts and might lead to trouble when then {@link Services#clear()} is called prio to the tests (because then we might have then old reference beeing left in some classes).
-	 *
-	 * @return
 	 */
 	public final C_Invoice_Candidate getInvoiceCandidateValidator()
 	{

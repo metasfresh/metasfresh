@@ -157,7 +157,7 @@ public class UserNotification
 		return adLanguage2message.computeIfAbsent(adLanguage, this::buildMessage);
 	}
 
-	private final String buildMessage(final String adLanguage)
+	private String buildMessage(final String adLanguage)
 	{
 		//
 		// Build detail message
