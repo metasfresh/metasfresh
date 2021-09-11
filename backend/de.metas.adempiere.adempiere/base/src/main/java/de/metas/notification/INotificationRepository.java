@@ -4,6 +4,7 @@ import java.util.List;
 
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.QueryLimit;
 
 /*
  * #%L
@@ -39,7 +40,7 @@ public interface INotificationRepository extends ISingletonService
 
 	void markAllAsReadByUserId(UserId adUserId);
 
-	List<UserNotification> getByUserId(UserId adUserId, int limit);
+	List<UserNotification> getByUserId(UserId adUserId, QueryLimit limit);
 
 	int getTotalCountByUserId(UserId adUserId);
 
