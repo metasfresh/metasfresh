@@ -1,30 +1,12 @@
 package de.metas.order.createFrom.po_from_so.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-
 import de.metas.common.util.CoalesceUtil;
 import de.metas.order.IOrderBL;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_AttributeSetInstance;
-
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
