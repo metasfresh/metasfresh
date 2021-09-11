@@ -56,13 +56,13 @@ public class JSONNotificationTarget implements Serializable
 			case Window:
 				return JSONNotificationTarget.builder()
 						.targetType(UserNotificationTargetType.Window)
-						.windowId(notification.getTargetDocumentType())
+						.windowId(notification.getTargetWindowIdAsString())
 						.documentId(notification.getTargetDocumentId())
 						.build();
 			case View:
 				return JSONNotificationTarget.builder()
 						.targetType(UserNotificationTargetType.View)
-						.windowId(notification.getTargetDocumentType())
+						.windowId(notification.getTargetWindowIdAsString())
 						.viewId(notification.getTargetViewId())
 						.build();
 			case None:

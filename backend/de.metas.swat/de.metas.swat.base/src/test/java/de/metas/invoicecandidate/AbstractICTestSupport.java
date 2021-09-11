@@ -23,6 +23,7 @@ import de.metas.document.dimension.InvoiceLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
+import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
@@ -276,7 +277,7 @@ public class AbstractICTestSupport extends AbstractTestSupport
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
-		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService));
+		Services.registerService(INotificationRepository.class, new NotificationRepository(attachmentEntryService, NullCustomizedWindowInfoMapRepository.instance));
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
 	}
