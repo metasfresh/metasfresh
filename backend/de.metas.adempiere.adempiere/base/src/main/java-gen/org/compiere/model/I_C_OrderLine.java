@@ -1697,29 +1697,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_OrderDiscount = "OrderDiscount";
 
 	/**
-	 * Set Minimum Order Qty.
-	 * Minimum order quantity in UOM
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOrder_Min (@Nullable BigDecimal Order_Min);
-
-	/**
-	 * Get Minimum Order Qty.
-	 * Minimum order quantity in UOM
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getOrder_Min();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_Order_Min = new ModelColumn<>(I_C_OrderLine.class, "Order_Min", null);
-	String COLUMNNAME_Order_Min = "Order_Min";
-
-	/**
 	 * Set Payment Discount %.
 	 *
 	 * <br>Type: Amount
