@@ -56,7 +56,7 @@ public class BPartnerExportFilterDescriptionProviderFactory implements DocumentF
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
 			@Nullable final AdTabId ignored,
 			@Nullable final String tableName,
-			@Nullable final Collection<DocumentFieldDescriptor> fields)
+			final @NonNull Collection<DocumentFieldDescriptor> fields)
 	{
 		if (!isValidTable(tableName))
 		{

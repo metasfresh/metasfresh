@@ -870,7 +870,7 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
-		final POInfo poInfo = POInfo.getPOInfo(ctx, I_C_Flatrate_Term.Table_Name);
+		final POInfo poInfo = POInfo.getPOInfo(I_C_Flatrate_Term.Table_Name);
 		final Lookup columnLookup = poInfo.getColumnLookup(ctx, poInfo.getColumnIndex(I_C_Flatrate_Term.COLUMNNAME_UOMType));
 
 		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,

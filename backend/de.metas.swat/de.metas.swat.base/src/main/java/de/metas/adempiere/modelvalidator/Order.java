@@ -8,20 +8,20 @@ import de.metas.freighcost.FreightCostRule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.OrderFreightCostsService;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.impl.OrderBL;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.MClient;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
-import org.compiere.model.MSysConfig;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
@@ -90,7 +90,7 @@ public class Order implements ModelValidator
 				//
 				final int client_id = Env.getAD_Client_ID(Env.getCtx());
 				final int org_id = Env.getAD_Org_ID(Env.getCtx());
-				final boolean recreate = MSysConfig.getBooleanValue("RECREATE_SEARCHKEY", true, client_id);
+				final boolean recreate = Services.get(ISysConfigBL.class).getBooleanValue("RECREATE_SEARCHKEY", true, client_id);
 				if (recreate)
 				{
 					final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
@@ -175,8 +175,8 @@ public class Order implements ModelValidator
 		// bpartner address
 		if (orderLine.getC_BPartner_Location_ID() > 0)
 		{
-			final String BPartnerAddress = orderLine.getBPartnerAddress();
-			if (Check.isEmpty(BPartnerAddress, true))
+			final String bpartnerAddress = orderLine.getBPartnerAddress();
+			if (Check.isBlank(bpartnerAddress))
 			{
 				documentLocationBL.updateRenderedAddressAndCapturedLocation(OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine));
 			}
@@ -188,11 +188,7 @@ public class Order implements ModelValidator
 		{
 			if (orderLine.getC_BPartner_ID() < 0)
 			{
-				final IDocumentDeliveryLocationAdapter location = OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(order);
-				orderLine.setC_BPartner_ID(location.getDropShip_BPartner_ID());
-				orderLine.setC_BPartner_Location_ID(location.getDropShip_Location_ID());
-				orderLine.setAD_User_ID(location.getDropShip_User_ID());
-				orderLine.setBPartnerAddress(location.getDeliveryToAddress());
+				OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setFromOrderHeader(order);
 			}
 		}
 	}

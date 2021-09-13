@@ -482,7 +482,7 @@ public class ShopwareClient
 				orderCandidateBuilder.salesRepId(salesRepId.isEmpty() ? null : salesRepId);
 			}
 
-			return Optional.ofNullable(orderCandidateBuilder.build());
+			return Optional.of(orderCandidateBuilder.build());
 
 		}
 		catch (final JsonProcessingException e)

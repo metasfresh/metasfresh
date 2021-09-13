@@ -18,6 +18,7 @@ import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -101,7 +102,7 @@ public class PurchaseOrderFromItemFactoryTest
 		final OrderLineBL orderLineBL = new OrderLineBL()
 		{
 			@Override
-			public void updatePrices(final I_C_OrderLine orderLine)
+			public void updatePrices(final @NonNull I_C_OrderLine orderLine)
 			{
 				// do nothing
 			}

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_InOut
  *  @author metasfresh (generated) 
@@ -90,6 +90,21 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
+	{
+		if (C_Async_Batch_ID < 1) 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
+	}
+
+	@Override
+	public int getC_Async_Batch_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
 
 	@Override
@@ -744,6 +759,10 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public static final String INCOTERM_DDU_FreiUnverzollt = "DDU";
 	/** DDP_Verzollt = DDP */
 	public static final String INCOTERM_DDP_Verzollt = "DDP";
+	/** DAP - Delivered at Place = DAP */
+	public static final String INCOTERM_DAP_DeliveredAtPlace = "DAP";
+	/** DPU_geliefertBenannterOrtEntladen = DPU */
+	public static final String INCOTERM_DPU_geliefertBenannterOrtEntladen = "DPU";
 	@Override
 	public void setIncoterm (final @Nullable java.lang.String Incoterm)
 	{

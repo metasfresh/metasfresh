@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.api.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.async.AsyncBatchId;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
@@ -95,7 +96,7 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public void process(@NonNull final OLCandProcessorDescriptor processor)
+	public void process(@NonNull final OLCandProcessorDescriptor processor, @Nullable final AsyncBatchId asyncBatchId)
 	{
 		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
 		final OLCandRegistry olCandRegistry = springContextHolder.getBean(OLCandRegistry.class);
@@ -108,6 +109,7 @@ public class OLCandBL implements IOLCandBL
 				.olCandListeners(olCandRegistry.getListeners())
 				.groupingValuesProviders(olCandRegistry.getGroupingValuesProviders())
 				.candidatesSource(candidatesSource)
+				.asyncBatchId(asyncBatchId)
 				.build()
 				.process();
 	}

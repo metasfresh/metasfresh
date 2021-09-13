@@ -58,6 +58,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
@@ -270,7 +271,7 @@ public class OrderBL implements IOrderBL
 
 	private PriceListId retrievePriceListIdOrNull(
 			final PricingSystemId pricingSystemId,
-			final BPartnerLocationAndCaptureId shipToBPLocationId,
+			@Nullable final BPartnerLocationAndCaptureId shipToBPLocationId,
 			@NonNull final SOTrx soTrx)
 	{
 		if (shipToBPLocationId == null)
@@ -465,35 +466,7 @@ public class OrderBL implements IOrderBL
 	{
 		for (final I_C_OrderLine line : orderDAO.retrieveOrderLines(order))
 		{
-			if (order.isDropShip() && order.getDropShip_BPartner_ID() > 0)
-			{
-				line.setC_BPartner_ID(order.getDropShip_BPartner_ID());
-			}
-			else
-			{
-				line.setC_BPartner_ID(order.getC_BPartner_ID());
-			}
-
-			if (order.isDropShip() && order.getDropShip_Location_ID() > 0)
-			{
-				line.setC_BPartner_Location_ID(order.getDropShip_Location_ID());
-				line.setBPartnerAddress(order.getDeliveryToAddress());
-			}
-			else
-			{
-				line.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
-				line.setBPartnerAddress(order.getBPartnerAddress());
-			}
-
-			if (order.isDropShip() && order.getDropShip_User_ID() > 0)
-			{
-				line.setAD_User_ID(order.getDropShip_User_ID());
-			}
-			else
-			{
-				line.setAD_User_ID(order.getAD_User_ID());
-			}
-
+			OrderLineDocumentLocationAdapterFactory.locationAdapter(line).setFromOrderHeader(order);
 			orderDAO.save(line);
 		}
 	}
@@ -529,8 +502,8 @@ public class OrderBL implements IOrderBL
 				.billBPartnerId(billBPartnerId)
 				.soTrx(soTrx)
 				.build();
-		final BPartnerOrderParams params = bpartnerOrderParamsRepository.getBy(query);
-		return params;
+
+		return bpartnerOrderParamsRepository.getBy(query);
 	}
 
 	@Override

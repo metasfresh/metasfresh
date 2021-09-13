@@ -37,7 +37,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -96,8 +98,6 @@ public class ESRImportEnqueuer
 	private String asyncBatchName = "ESR Import";
 	private String asyncBatchDesc = "ESR Import process";
 	private PInstanceId pinstanceId;
-
-	private ESRImportEnqueuerDuplicateFilePolicy duplicateFilePolicy;
 
 	private ILoggable loggable = Loggables.nop();
 
@@ -160,7 +160,7 @@ public class ESRImportEnqueuer
 
 		if (esrImport.isArchiveFile())
 		{
-			createImportFilesFromZips(esrImport, in, attachmentEntry.getFilename());
+			createImportFilesFromZips(esrImport, in);
 		}
 
 		else
@@ -218,11 +218,22 @@ public class ESRImportEnqueuer
 	}
 
 	private void createImportFilesFromZips(@NonNull final I_ESR_Import esrImport,
-			@NonNull final ByteArrayInputStream in,
-			@NonNull final String filename)
+			@NonNull final ByteArrayInputStream in)
+	{
+		final List<ZipFileResource> unzippedFiles = getZipFileResources(in);
+
+		for (final ZipFileResource unzippedFile : unzippedFiles)
+		{
+			createImportFileFromSingleAttachment(esrImport, unzippedFile.getData(), unzippedFile.getFilename());
+		}
+	}
+
+	@NonNull
+	private List<ZipFileResource> getZipFileResources(final @NonNull ByteArrayInputStream in)
 	{
 		final ZipInputStream zipStream = new ZipInputStream(in);
 
+		final List<ZipFileResource> unzippedFiles = new ArrayList<>();
 		try
 		{
 			ZipEntry zipEntry = zipStream.getNextEntry();
@@ -235,23 +246,7 @@ public class ESRImportEnqueuer
 				}
 				final ZipFileResource unzippedFile = extractResource(zipStream, zipEntry);
 
-				final byte[] unzippedData = unzippedFile.getData();
-
-				final String hash = computeESRHashAndCheckForDuplicates(OrgId.ofRepoId(esrImport.getAD_Org_ID()), unzippedData);
-
-				final I_ESR_ImportFile esrImportFile = esrImportDAO.createESRImportFile(esrImport);
-				esrImportFile.setHash(hash);
-				checkUpdateDataType(esrImportFile, unzippedFile.getFilename());
-
-				final AttachmentEntry attachmentEntry = attachmentEntryService.createNewAttachment(
-						esrImportFile,
-						unzippedFile.getFilename(),
-						unzippedData);
-				final AttachmentEntryId attachmentEntryId = attachmentEntry.getId();
-
-				esrImportFile.setAD_AttachmentEntry_ID(attachmentEntryId.getRepoId());
-				esrImportFile.setFileName(unzippedFile.getFilename());
-				InterfaceWrapperHelper.save(esrImportFile);
+				unzippedFiles.add(unzippedFile);
 
 				zipEntry = zipStream.getNextEntry();
 			}
@@ -263,6 +258,8 @@ public class ESRImportEnqueuer
 			// provide more info about why the file could not be unzipped
 			throw new AdempiereException(ex);
 		}
+
+		return unzippedFiles;
 	}
 
 	private void checkUpdateDataType(final I_ESR_ImportFile esrImportFile, final String fileName)
@@ -360,47 +357,18 @@ public class ESRImportEnqueuer
 
 		//
 		// Check for duplicates
-		final String preventDuplicates = sysConfigBL.getValue(ESRConstants.SYSCONFIG_PreventDuplicateImportFiles);
-		if (Check.isEmpty(preventDuplicates, true) || "-".equals(preventDuplicates))
-		{
-			// the sys config not defined. Functionality to work as before
-		}
-		else
+		final Boolean preventDuplicates = sysConfigBL.getBooleanValue(ESRConstants.SYSCONFIG_PreventDuplicateImportFiles, true);
+		if (preventDuplicates)
 		{
 			final Iterator<I_ESR_ImportFile> esrImportFiles = esrImportDAO.retrieveActiveESRImportFiles(orgId);
 
-			// will turn true if another identical hash was seen in the list of esr imports
-			boolean seen = false;
+			// throw exception if another identical hash was seen in the list of esr imports
 			while (esrImportFiles.hasNext())
 			{
-				if (esrHash.equals(esrImportFiles.next().getHash()))
+				final I_ESR_ImportFile esrImportFile = esrImportFiles.next();
+				if (esrHash.equals(esrImportFile.getHash()))
 				{
-					seen = true;
-					break;
-				}
-			}
-
-			if (seen)
-			{
-				// Warning: ask the user if we shall import the duplicate file
-				if ("W".equalsIgnoreCase(preventDuplicates))
-				{
-					if (!getDuplicateFilePolicy().isImportDuplicateFile())
-					{
-						getDuplicateFilePolicy().onNotImportingDuplicateFile();
-						throw new AdempiereException("File not imported - identical with previous file");
-					}
-
-				}
-				// Error: inform the user we will not import the duplicate file
-				else if ("E".equalsIgnoreCase(preventDuplicates))
-				{
-					getDuplicateFilePolicy().onNotImportingDuplicateFile();
-					throw new AdempiereException("File not imported - identical with previous file");
-				}
-				else
-				{
-					throw new AdempiereException("Sysconfig " + ESRConstants.SYSCONFIG_PreventDuplicateImportFiles + " must be either W or E");
+					throw new AdempiereException("File not imported - identical with previous file: " + esrImportFile.getFileName());
 				}
 			}
 		}
@@ -480,16 +448,4 @@ public class ESRImportEnqueuer
 	{
 		loggable.addLog(msg, msgParameters);
 	}
-
-	public ESRImportEnqueuer duplicateFilePolicy(final ESRImportEnqueuerDuplicateFilePolicy duplicateFilePolicy)
-	{
-		this.duplicateFilePolicy = duplicateFilePolicy;
-		return this;
-	}
-
-	private ESRImportEnqueuerDuplicateFilePolicy getDuplicateFilePolicy()
-	{
-		return duplicateFilePolicy;
-	}
-
 }
