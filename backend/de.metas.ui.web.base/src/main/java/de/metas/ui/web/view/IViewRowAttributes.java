@@ -33,8 +33,6 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 
 public interface IViewRowAttributes
 {
-	DocumentPath getDocumentPath();
-
 	ViewRowAttributesLayout getLayout();
 
 	void processChanges(List<JSONDocumentChangedEvent> events);

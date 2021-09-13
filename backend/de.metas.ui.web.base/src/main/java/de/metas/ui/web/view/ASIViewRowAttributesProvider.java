@@ -36,7 +36,7 @@ import lombok.NonNull;
 
 public class ASIViewRowAttributesProvider implements IViewRowAttributesProvider
 {
-	public static final ASIViewRowAttributesProvider newInstance(final ASIRepository asiRepository)
+	public static ASIViewRowAttributesProvider newInstance(final ASIRepository asiRepository)
 	{
 		return new ASIViewRowAttributesProvider(asiRepository);
 	}
@@ -55,7 +55,7 @@ public class ASIViewRowAttributesProvider implements IViewRowAttributesProvider
 		return attributesById.computeIfAbsent(asiId, this::createAttributes);
 	}
 
-	private final ASIViewRowAttributes createAttributes(final DocumentId asiDocumentId)
+	private ASIViewRowAttributes createAttributes(final DocumentId asiDocumentId)
 	{
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(asiDocumentId.toInt());
 		if (asiId == null)

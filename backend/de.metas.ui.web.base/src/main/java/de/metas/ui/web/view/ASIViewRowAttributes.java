@@ -44,7 +44,7 @@ class ASIViewRowAttributes implements IViewRowAttributes
 {
 	private final DocumentPath documentPath;
 	private final ASIDocument asiDoc;
-	private ViewRowAttributesLayout layout;
+	private final ViewRowAttributesLayout layout;
 
 	ASIViewRowAttributes(final ASIDocument asiDoc, final ASILayout asiLayout)
 	{
@@ -53,12 +53,6 @@ class ASIViewRowAttributes implements IViewRowAttributes
 		
 		this.asiDoc = asiDoc;
 		this.layout = ViewRowAttributesLayout.of(asiLayout.getElements());
-	}
-
-	@Override
-	public DocumentPath getDocumentPath()
-	{
-		return documentPath;
 	}
 
 	@Override
@@ -90,7 +84,6 @@ class ASIViewRowAttributes implements IViewRowAttributes
 	@Override
 	public JSONViewRowAttributes toJson(final JSONOptions jsonOpts)
 	{
-		final DocumentPath documentPath = getDocumentPath();
 		final JSONViewRowAttributes jsonDocument = new JSONViewRowAttributes(documentPath);
 
 		final List<JSONDocumentField> jsonFields = asiDoc.getFieldViews()
@@ -103,7 +96,7 @@ class ASIViewRowAttributes implements IViewRowAttributes
 		return jsonDocument;
 	}
 
-	private final JSONDocumentField toJSONDocumentField(final IDocumentFieldView field, final JSONOptions jsonOpts)
+	private JSONDocumentField toJSONDocumentField(final IDocumentFieldView field, final JSONOptions jsonOpts)
 	{
 		final String fieldName = field.getFieldName();
 		final Object jsonValue = field.getValueAsJsonObject(jsonOpts);

@@ -22,17 +22,26 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-import java.math.MathContext;
-import java.math.RoundingMode;
-import java.util.Date;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.i18n.AdMessageKey;
+import de.metas.javaclasses.IJavaClassBL;
+import de.metas.javaclasses.IJavaClassDAO;
+import de.metas.javaclasses.model.I_AD_JavaClass;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.AttributeAction;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -53,21 +62,11 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.i18n.AdMessageKey;
-import de.metas.javaclasses.IJavaClassBL;
-import de.metas.javaclasses.IJavaClassDAO;
-import de.metas.javaclasses.model.I_AD_JavaClass;
-import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.MathContext;
+import java.math.RoundingMode;
+import java.util.Date;
+import java.util.Properties;
 
 public class AttributesBL implements IAttributesBL
 {
@@ -166,6 +165,7 @@ public class AttributesBL implements IAttributesBL
 		return handler;
 	}
 
+	@Nullable
 	@Override
 	public I_M_Attribute getAttributeOrNull(final ProductId productId, final AttributeId attributeId)
 	{
@@ -199,6 +199,30 @@ public class AttributesBL implements IAttributesBL
 		}
 
 		return InterfaceWrapperHelper.create(attribute, I_M_Attribute.class);
+	}
+
+	@Override
+	public boolean hasAttributeAssigned(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
+	{
+		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+		return attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
+				.isPresent();
+	}
+
+	@Override
+	public boolean isMandatoryOnReceipt(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
+	{
+		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+		final Boolean mandatoryOnReceipt = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
+				.map(AttributeSetAttribute::getMandatoryOnReceipt)
+				.map(OptionalBoolean::toBooleanOrNull)
+				.orElse(null);
+		if (mandatoryOnReceipt != null)
+		{
+			return mandatoryOnReceipt;
+		}
+
+		return attributesRepo.getAttributeById(attributeId).isMandatory();
 	}
 
 	@Override
