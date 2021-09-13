@@ -134,14 +134,11 @@ function useProvideAuth() {
    * setting language etc
    */
   const login = () => {
-    setAuthRequestPending(true);
-
-    return dispatch(loginAction(auth))
-      .then(() => {
-        setAuthRequestPending(false);
+    if (!store.getState().app.isLogged) {
+      return dispatch(loginAction(auth)).then(() => {
         _loginSuccess();
-      })
-      .catch(() => setAuthRequestPending(false));
+      });
+    }
   };
 
   /**
