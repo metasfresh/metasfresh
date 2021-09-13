@@ -29,7 +29,6 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
-import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -83,7 +82,6 @@ public class MediatedOrder
 		mediatedOrderLines.forEach(mediatedLine -> {
 			document.id(MediatedOrderLineDocId.of(mediatedLine.getId()))
 
-					.tradedCommissionPercent(Percent.ZERO)
 					.forecastCommissionPoints(CommissionPoints.ZERO)
 					.commissionPointsToInvoice(CommissionPoints.ZERO)
 					.invoicedCommissionPoints(mediatedLine.getInvoicedCommissionPoints())

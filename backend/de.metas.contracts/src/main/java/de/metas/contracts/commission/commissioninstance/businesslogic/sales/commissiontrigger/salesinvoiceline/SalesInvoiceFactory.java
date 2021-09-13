@@ -20,10 +20,13 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -66,6 +69,7 @@ public class SalesInvoiceFactory
 
 	private final CommissionProductService commissionProductService;
 
+	private final IUOMDAO uomdao = Services.get(IUOMDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -127,6 +131,14 @@ public class SalesInvoiceFactory
 					logger.debug("C_InvoiceLine has M_Product_ID={}; -> return empty", invoiceLineRecord.getM_Product_ID());
 					continue;
 				}
+
+				final UomId uomId = UomId.ofRepoIdOrNull(invoiceLineRecord.getC_UOM_ID());
+				if (uomId == null)
+				{
+					logger.debug("C_InvoiceLine has C_UOM_ID={}; -> return empty", invoiceLineRecord.getC_UOM_ID());
+					continue;
+				}
+
 				if (commissionProductService.productPreventsCommissioning(productId))
 				{
 					logger.debug("C_InvoiceLine has M_Product_ID={} that prevents commissioning; -> return empty", invoiceLineRecord.getM_Product_ID());
@@ -139,17 +151,18 @@ public class SalesInvoiceFactory
 					continue;
 				}
 
-				final CommissionPoints commissionPoints = extractCommissionPoints(invoiceRecord, invoiceLineRecord)
+				final CommissionPoints invoicedCommissionPoints = extractInvoicedCommissionPoints(invoiceRecord, invoiceLineRecord)
 						.negateIf(invoiceIsCreditMemo);
+
+				final I_C_UOM uomRecord = uomdao.getById(uomId);
+				final Quantity invoicedQty = Quantity.of(invoiceLineRecord.getQtyInvoiced(), uomRecord);
 
 				final SalesInvoiceLineBuilder invoiceLine = SalesInvoiceLine.builder()
 						.id(InvoiceLineId.ofRepoId(invoiceLineRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
 						.updated(TimeUtil.asInstant(invoiceLineRecord.getUpdated()))
-						.forecastCommissionPoints(CommissionPoints.ZERO)
-						.commissionPointsToInvoice(CommissionPoints.ZERO)
-						.invoicedCommissionPoints(commissionPoints)
-						.tradedCommissionPercent(Percent.ZERO) // we don't have this feature for invoice lines
-						.productId(productId);
+						.invoicedCommissionPoints(invoicedCommissionPoints)
+						.productId(productId)
+						.invoicedQty(invoicedQty);
 
 				invoiceLines.add(invoiceLine.build());
 			}
@@ -163,24 +176,26 @@ public class SalesInvoiceFactory
 		final CommissionTriggerType triggerType = invoiceIsCreditMemo ? CommissionTriggerType.SalesCreditmemo : CommissionTriggerType.SalesInvoice;
 
 		return Optional.of(SalesInvoice.builder()
-				.orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()))
-				.id(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()))
-				.customerBPartnerId(customerBPartnerId)
-				.salesRepBPartnerId(salesRepBPartnerId)
-				.commissionDate(dateInvoiced)
-				.updated(TimeUtil.asInstant(invoiceRecord.getUpdated()))
-				.triggerType(triggerType)
-				.invoiceLines(ImmutableList.copyOf(invoiceLines))
-				.build());
+								   .orgId(OrgId.ofRepoId(invoiceRecord.getAD_Org_ID()))
+								   .id(InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID()))
+								   .customerBPartnerId(customerBPartnerId)
+								   .salesRepBPartnerId(salesRepBPartnerId)
+								   .commissionDate(dateInvoiced)
+								   .updated(TimeUtil.asInstant(invoiceRecord.getUpdated()))
+								   .triggerType(triggerType)
+								   .currencyId(CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()))
+								   .invoiceLines(ImmutableList.copyOf(invoiceLines))
+								   .build());
 	}
 
-	private CommissionPoints extractCommissionPoints(
+	@NonNull
+	private CommissionPoints extractInvoicedCommissionPoints(
 			@NonNull final I_C_Invoice invoiceRecord,
 			@NonNull final I_C_InvoiceLine invoiceLineRecord)
 	{
-		final Money forecastNetAmt = Money.of(invoiceLineRecord.getLineNetAmt(), CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()));
+		final Money invoicedLineAmount = Money.of(invoiceLineRecord.getLineNetAmt(), CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()));
 
-		final CommissionPoints forecastCommissionPoints = CommissionPoints.of(forecastNetAmt.toBigDecimal());
+		final CommissionPoints forecastCommissionPoints = CommissionPoints.of(invoicedLineAmount.toBigDecimal());
 
 		return deductTaxAmount(forecastCommissionPoints, invoiceLineRecord);
 	}

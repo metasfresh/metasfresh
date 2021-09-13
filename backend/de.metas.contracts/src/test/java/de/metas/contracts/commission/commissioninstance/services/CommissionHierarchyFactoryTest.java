@@ -1,19 +1,18 @@
 package de.metas.contracts.commission.commissioninstance.services;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.CommissionHierarchyFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.commission.Beneficiary;
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
-import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyFactory;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

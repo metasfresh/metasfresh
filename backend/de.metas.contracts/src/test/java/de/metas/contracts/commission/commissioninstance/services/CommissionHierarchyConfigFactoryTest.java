@@ -13,6 +13,8 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.CommissionHierarchyFactory;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.HierarchyCommissionConfigFactory;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
@@ -73,11 +75,10 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-public class CommissionConfigFactoryTest
+public class CommissionHierarchyConfigFactoryTest
 {
 	private CommissionHierarchyFactory commissionHierarchyFactory;
-	private CommissionConfigFactory commissionConfigFactory;
-	private I_C_BPartner bpartnerRecord_EndCustomer;
+	private HierarchyCommissionConfigFactory hierarchyCommissionConfigFactory;
 
 	private OrgId orgId;
 	private ProductId salesProductId;
@@ -110,13 +111,13 @@ public class CommissionConfigFactoryTest
 		commissionHierarchyFactory = new CommissionHierarchyFactory();
 
 		final CommissionConfigStagingDataService commissionConfigStagingDataService = new CommissionConfigStagingDataService();
-		commissionConfigFactory = new CommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
+		hierarchyCommissionConfigFactory = new HierarchyCommissionConfigFactory(commissionConfigStagingDataService, new CommissionProductService());
 
 		final I_C_BP_Group customerBPGroupRecord = newInstance(I_C_BP_Group.class);
 		saveRecord(customerBPGroupRecord);
 		customerBPGroudId = BPGroupId.ofRepoId(customerBPGroupRecord.getC_BP_Group_ID());
 
-		bpartnerRecord_EndCustomer = newInstance(I_C_BPartner.class);
+		final I_C_BPartner bpartnerRecord_EndCustomer = newInstance(I_C_BPartner.class);
 		bpartnerRecord_EndCustomer.setC_BP_Group_ID(customerBPGroupRecord.getC_BP_Group_ID());
 		bpartnerRecord_EndCustomer.setName("bpartnerRecord_EndCustomer");
 		saveRecord(bpartnerRecord_EndCustomer);
@@ -192,7 +193,7 @@ public class CommissionConfigFactoryTest
 				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(configs).hasSize(1);
@@ -265,7 +266,7 @@ public class CommissionConfigFactoryTest
 		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
 
 		setSalesRepOfEndCustomerTo(salesRepLvl0Id);
-		
+
 		// when
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
@@ -275,7 +276,7 @@ public class CommissionConfigFactoryTest
 				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(configs).hasSize(2);
@@ -333,7 +334,7 @@ public class CommissionConfigFactoryTest
 				.build();
 
 		// when
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(configs).hasSize(2);
@@ -406,7 +407,7 @@ public class CommissionConfigFactoryTest
 				.commissionDate(date)
 				.build();
 		// when
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
@@ -473,7 +474,7 @@ public class CommissionConfigFactoryTest
 				.commissionDate(date)
 				.build();
 		// when
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2); // guard
@@ -529,7 +530,6 @@ public class CommissionConfigFactoryTest
 		final BPartnerId salesRepLvl0Id = configData1.getName2BPartnerId().get("salesRep");
 		final BPartnerId salesRepLvl1Id = configData1.getName2BPartnerId().get("salesSupervisor");
 
-
 		// when
 		final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest = CommissionConfigProvider.ConfigRequestForNewInstance.builder()
 				.orgId(orgId)
@@ -539,13 +539,13 @@ public class CommissionConfigFactoryTest
 				.commissionTriggerType(commissionTriggerType)
 				.salesProductId(salesProductId)
 				.commissionDate(date).build();
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		// then
 		assertThat(configs).hasSize(2);
 		SnapshotMatcher.expect(configs).toMatchSnapshot();
 	}
-	
+
 	@Test
 	void createForNewCommissionInstances_no_configLines()
 	{
@@ -599,7 +599,7 @@ public class CommissionConfigFactoryTest
 				.commissionDate(date).build();
 
 		// invoke method under test
-		final ImmutableList<CommissionConfig> configs = commissionConfigFactory.createForNewCommissionInstances(contractRequest);
+		final ImmutableList<CommissionConfig> configs = hierarchyCommissionConfigFactory.createForNewCommissionInstances(contractRequest);
 
 		assertThat(configs).isEmpty();
 	}
@@ -657,7 +657,7 @@ public class CommissionConfigFactoryTest
 				.build();
 
 		// invoke method under test
-		final ImmutableMap<FlatrateTermId, CommissionConfig> result = commissionConfigFactory.createForExistingInstance(commissionConfigRequest);
+		final ImmutableMap<FlatrateTermId, CommissionConfig> result = hierarchyCommissionConfigFactory.createForExistingInstance(commissionConfigRequest);
 		assertThat(result).hasSize(6);
 		assertThat(configData1ContractIds)
 				.as("check that all contracts of configData1 are mapped to to the config created from configData1")

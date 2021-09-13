@@ -95,16 +95,31 @@ public class X_C_Commission_Share extends org.compiere.model.PO implements I_C_C
 	@Override
 	public void setC_Commission_Share_ID (final int C_Commission_Share_ID)
 	{
-		if (C_Commission_Share_ID < 1) 
+		if (C_Commission_Share_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Commission_Share_ID, C_Commission_Share_ID);
 	}
 
 	@Override
-	public int getC_Commission_Share_ID() 
+	public int getC_Commission_Share_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Commission_Share_ID);
+	}
+
+	@Override
+	public void setC_Customer_Trade_Margin_Line_ID (final int C_Customer_Trade_Margin_Line_ID)
+	{
+		if (C_Customer_Trade_Margin_Line_ID < 1)
+			set_Value (COLUMNNAME_C_Customer_Trade_Margin_Line_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Customer_Trade_Margin_Line_ID, C_Customer_Trade_Margin_Line_ID);
+	}
+
+	@Override
+	public int getC_Customer_Trade_Margin_Line_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Customer_Trade_Margin_Line_ID);
 	}
 
 	@Override

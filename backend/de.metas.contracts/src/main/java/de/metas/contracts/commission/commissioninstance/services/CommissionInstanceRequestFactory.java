@@ -8,6 +8,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.CommissionHierarchyFactory;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.slf4j.Logger;

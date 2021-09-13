@@ -1,4 +1,26 @@
-package de.metas.contracts.commission.commissioninstance.services;
+/*
+ * #%L
+ * de.metas.contracts
+ * %%
+ * Copyright (C) 2021 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.contracts.commission.commissioninstance.services.hierarchy;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
@@ -24,7 +46,12 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigPriority;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService.StagingData;
+import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
+import de.metas.contracts.commission.commissioninstance.services.ICommissionConfigFactory;
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -65,32 +92,10 @@ import java.util.stream.StreamSupport;
 import static de.metas.contracts.commission.CommissionConstants.NO_COMMISSION_AGREEMENT_DEFAULT_CONTRACT_DURATION;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.DOCSTATUS_Completed;
 
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Service
-public class CommissionConfigFactory implements ICommissionConfigFactory
+public class HierarchyCommissionConfigFactory implements ICommissionConfigFactory
 {
-	private static final Logger logger = LogManager.getLogger(CommissionConfigFactory.class);
+	private static final Logger logger = LogManager.getLogger(HierarchyCommissionConfigFactory.class);
 
 	private final CommissionConfigStagingDataService commissionConfigStagingDataService;
 	private final CommissionProductService commissionProductService;
@@ -104,7 +109,7 @@ public class CommissionConfigFactory implements ICommissionConfigFactory
 																								CommissionTriggerType.SalesCreditmemo,
 																								CommissionTriggerType.Plain);
 
-	public CommissionConfigFactory(
+	public HierarchyCommissionConfigFactory(
 			@NonNull final CommissionConfigStagingDataService commissionConfigStagingDataService,
 			@NonNull final CommissionProductService commissionProductService)
 	{
@@ -157,6 +162,18 @@ public class CommissionConfigFactory implements ICommissionConfigFactory
 	public boolean appliesFor(@NonNull final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest)
 	{
 		return SUPPORTED_TRIGGER_TYPES.contains(contractRequest.getCommissionTriggerType());
+	}
+
+	@Override
+	public boolean isFurtherSearchForConfigTypesAllowed()
+	{
+		return true;
+	}
+
+	@Override
+	public CommissionConfigPriority getPriority()
+	{
+		return CommissionConfigPriority.ZERO;
 	}
 
 	@NonNull

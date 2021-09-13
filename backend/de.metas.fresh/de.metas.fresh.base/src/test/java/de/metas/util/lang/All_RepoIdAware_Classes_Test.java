@@ -58,6 +58,8 @@ public class All_RepoIdAware_Classes_Test
 			.skip(de.metas.bpartner.BPartnerContactId.class)
 			.skip(de.metas.bpartner.BPartnerBankAccountId.class)
 			//
+			.skip(de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLineId.class)
+			//
 			.skip(de.metas.externalsystem.IExternalSystemChildConfigId.class)
 			//
 			.skip(de.metas.invoice.InvoiceLineId.class)
