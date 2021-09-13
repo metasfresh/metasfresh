@@ -34,11 +34,15 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,6 +50,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Util.ArrayKey;
 import org.slf4j.Logger;
@@ -89,6 +94,7 @@ public class CommissionInstanceRepository
 	private static final Logger logger = LogManager.getLogger(CommissionInstanceRepository.class);
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final CommissionRecordStagingService commissionRecordStagingService;
 	private final CommissionConfigProvider commissionConfigProvider;
@@ -173,6 +179,9 @@ public class CommissionInstanceRepository
 
 		final CommissionTriggerDocumentId triggerDocumentId = CommissionInstanceRepoTools.extractCommissionTriggerDocumentId(instanceRecord);
 
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(instanceRecord.getC_UOM_ID()));
+		final Quantity qtyInvolved = Quantity.of(instanceRecord.getQty(), uom);
+
 		return CommissionTriggerData.builder()
 				.orgId(OrgId.ofRepoId(instanceRecord.getAD_Org_ID()))
 				.triggerType(triggerType)
@@ -183,6 +192,8 @@ public class CommissionInstanceRepository
 				.invoicedBasePoints(CommissionPoints.of(instanceRecord.getPointsBase_Invoiced()))
 				.timestamp(TimeUtil.asInstant(instanceRecord.getMostRecentTriggerTimestamp()))
 				.productId(ProductId.ofRepoId(instanceRecord.getM_Product_Order_ID()))
+				.documentCurrencyId(CurrencyId.ofRepoId(instanceRecord.getC_Currency_ID()))
+				.totalQtyInvolved(qtyInvolved)
 				.build();
 	}
 
@@ -278,7 +289,9 @@ public class CommissionInstanceRepository
 		commissionInstanceRecord.setPointsBase_Forecasted(triggerData.getForecastedBasePoints().toBigDecimal());
 		commissionInstanceRecord.setPointsBase_Invoiceable(triggerData.getInvoiceableBasePoints().toBigDecimal());
 		commissionInstanceRecord.setPointsBase_Invoiced(triggerData.getInvoicedBasePoints().toBigDecimal());
-
+		commissionInstanceRecord.setQty(triggerData.getTotalQtyInvolved().toBigDecimal());
+		commissionInstanceRecord.setC_UOM_ID(triggerData.getTotalQtyInvolved().getUOM().getC_UOM_ID());
+		commissionInstanceRecord.setC_Currency_ID(triggerData.getDocumentCurrencyId().getRepoId());
 		saveRecord(commissionInstanceRecord);
 
 		final CommissionInstanceId commissionInstanceId = CommissionInstanceId.ofRepoId(commissionInstanceRecord.getC_Commission_Instance_ID());
@@ -452,7 +465,7 @@ public class CommissionInstanceRepository
 			@NonNull final I_C_Commission_Instance commissionInstanceRecord)
 	{
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
-		final I_C_Order order =  orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
 		commissionInstanceRecord.setPOReference(order.getPOReference());
 		commissionInstanceRecord.setBill_BPartner_ID(orderLine.getC_BPartner_ID());

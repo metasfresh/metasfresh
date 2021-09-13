@@ -57,7 +57,6 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 {
 	private final ImmutableSet<CommissionTriggerType> SUPPORTED_TRIGGER_TYPES = ImmutableSet.of(CommissionTriggerType.SalesInvoice,
 																								CommissionTriggerType.InvoiceCandidate,
-																								CommissionTriggerType.SalesCreditmemo,
 																								CommissionTriggerType.Plain);
 
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);

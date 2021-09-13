@@ -94,6 +94,28 @@ public interface I_C_Commission_Instance
 	String COLUMNNAME_C_Commission_Instance_ID = "C_Commission_Instance_ID";
 
 	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
 	 * Set Invoice candidate.
 	 *
 	 * <br>Type: Search
@@ -221,6 +243,28 @@ public interface I_C_Commission_Instance
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Date.
 	 * Document date of the commission trigger
 	 *
@@ -251,7 +295,7 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCommissionTrigger_Type (String CommissionTrigger_Type);
+	void setCommissionTrigger_Type (java.lang.String CommissionTrigger_Type);
 
 	/**
 	 * Get Commission trigger.
@@ -261,7 +305,7 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getCommissionTrigger_Type();
+	java.lang.String getCommissionTrigger_Type();
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_CommissionTrigger_Type = new ModelColumn<>(I_C_Commission_Instance.class, "CommissionTrigger_Type", null);
 	String COLUMNNAME_CommissionTrigger_Type = "CommissionTrigger_Type";
@@ -426,7 +470,7 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPOReference (@Nullable String POReference);
+	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -436,10 +480,33 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPOReference();
+	@Nullable java.lang.String getPOReference();
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_POReference = new ModelColumn<>(I_C_Commission_Instance.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
+
+	/**
+	 * Set Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQty (BigDecimal Qty);
+
+	/**
+	 * Get Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQty();
+
+	ModelColumn<I_C_Commission_Instance, Object> COLUMN_Qty = new ModelColumn<>(I_C_Commission_Instance.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Get Updated.

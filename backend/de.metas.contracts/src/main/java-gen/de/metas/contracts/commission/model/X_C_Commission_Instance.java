@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Commission_Instance extends org.compiere.model.PO implements I_C_Commission_Instance, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1559329349L;
+	private static final long serialVersionUID = 2053835562L;
 
     /** Standard Constructor */
     public X_C_Commission_Instance (final Properties ctx, final int C_Commission_Instance_ID, @Nullable final String trxName)
@@ -63,6 +63,21 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	public int getC_Commission_Instance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Commission_Instance_ID);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
@@ -189,6 +204,21 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
 	public void setCommissionDate (final java.sql.Timestamp CommissionDate)
 	{
 		set_Value (COLUMNNAME_CommissionDate, CommissionDate);
@@ -214,13 +244,13 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	/** Mediated order = MediatedOrder */
 	public static final String COMMISSIONTRIGGER_TYPE_MediatedOrder = "MediatedOrder";
 	@Override
-	public void setCommissionTrigger_Type (final String CommissionTrigger_Type)
+	public void setCommissionTrigger_Type (final java.lang.String CommissionTrigger_Type)
 	{
 		set_Value (COLUMNNAME_CommissionTrigger_Type, CommissionTrigger_Type);
 	}
 
 	@Override
-	public String getCommissionTrigger_Type()
+	public java.lang.String getCommissionTrigger_Type() 
 	{
 		return get_ValueAsString(COLUMNNAME_CommissionTrigger_Type);
 	}
@@ -292,14 +322,27 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setPOReference (final @Nullable String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
 	}
 
 	@Override
-	public String getPOReference()
+	public java.lang.String getPOReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+	@Override
+	public void setQty (final BigDecimal Qty)
+	{
+		set_Value (COLUMNNAME_Qty, Qty);
+	}
+
+	@Override
+	public BigDecimal getQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

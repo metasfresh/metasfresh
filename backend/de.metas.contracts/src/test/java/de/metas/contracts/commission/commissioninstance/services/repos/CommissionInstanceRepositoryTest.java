@@ -107,6 +107,7 @@ class CommissionInstanceRepositoryTest
 	private CommissionInstanceRepository commissionInstanceRepository;
 
 	private OrgId orgId = OrgId.ofRepoId(20);
+	private I_C_UOM uom;
 	private ProductId commissionProductId;
 	private BPartnerId payerId;
 
@@ -128,6 +129,7 @@ class CommissionInstanceRepositoryTest
 		final CommissionConfigProvider commissionConfigProvider = new CommissionConfigProvider(ImmutableList.of(hierarchyCommissionConfigFactory));
 		commissionInstanceRepository = new CommissionInstanceRepository(commissionInstanceRecordStagingService, commissionConfigProvider);
 		payerId = BPartnerId.ofRepoId(1001);
+		uom = BusinessTestHelper.createUOM("uom");
 	}
 
 	@BeforeAll
@@ -245,6 +247,8 @@ class CommissionInstanceRepositoryTest
 																					 .timestamp(incAndGetTimestamp()).build())
 												   .build())
 				.mostRecentTriggerTimestamp(currentTimestamp)
+				.currencyId(CurrencyId.ofRepoId(1))
+				.invoicedQty(Quantity.of(TEN, uom))
 				.build()
 				.createCommissionData();
 	}
@@ -287,6 +291,8 @@ class CommissionInstanceRepositoryTest
 												   .payerBPartnerId(payerId)
 												   .isSOTrx(false)
 												   .build())
+				.currencyId(CurrencyId.ofRepoId(1))
+				.invoicedQty(Quantity.of(TEN, uom))
 				.build()
 				.createCommissionData();
 

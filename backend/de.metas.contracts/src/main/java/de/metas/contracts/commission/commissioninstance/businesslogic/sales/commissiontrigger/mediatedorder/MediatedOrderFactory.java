@@ -31,6 +31,7 @@
  import de.metas.currency.CurrencyPrecision;
  import de.metas.document.engine.DocStatus;
  import de.metas.logging.LogManager;
+ import de.metas.money.CurrencyId;
  import de.metas.order.IOrderBL;
  import de.metas.order.IOrderDAO;
  import de.metas.order.IOrderLineBL;
@@ -39,14 +40,18 @@
  import de.metas.organization.IOrgDAO;
  import de.metas.organization.OrgId;
  import de.metas.product.ProductId;
+ import de.metas.quantity.Quantity;
  import de.metas.tax.api.ITaxDAO;
  import de.metas.tax.api.Tax;
+ import de.metas.uom.IUOMDAO;
+ import de.metas.uom.UomId;
  import de.metas.util.Check;
  import de.metas.util.Loggables;
  import de.metas.util.Services;
  import lombok.NonNull;
  import org.compiere.model.I_C_Order;
  import org.compiere.model.I_C_OrderLine;
+ import org.compiere.model.I_C_UOM;
  import org.compiere.util.TimeUtil;
  import org.slf4j.Logger;
  import org.springframework.stereotype.Service;
@@ -68,6 +73,7 @@
 	 private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	 private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	 private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	 private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	 private final CommissionProductService commissionProductService;
 
@@ -133,6 +139,7 @@
 									.vendorBPartnerId(BPartnerId.ofRepoId(mediatedOrder.getC_BPartner_ID()))
 									.orderDateAcct(Objects.requireNonNull(TimeUtil.asLocalDate(mediatedOrder.getDateAcct(), orgZoneId)))
 									.updated(TimeUtil.asInstantNonNull(mediatedOrder.getUpdated()))
+									.currencyId(CurrencyId.ofRepoId(mediatedOrder.getC_Currency_ID()))
 									.mediatedOrderLines(mediatedOrderLines)
 									.build());
 	 }
@@ -146,11 +153,21 @@
 			 return Optional.empty();
 		 }
 
+		 final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
+		 if (uomId == null)
+		 {
+			 logger.debug("C_OrderLine: {} has M_UOM_ID = null; -> return empty", orderLine.getC_OrderLine_ID());
+			 return Optional.empty();
+		 }
+
+		 final I_C_UOM uom = uomDAO.getById(uomId);
+
 		 return Optional.of(MediatedOrderLine.builder()
 									.id(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 									.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 									.updated(Objects.requireNonNull(TimeUtil.asInstant(orderLine.getUpdated())))
 									.invoicedCommissionPoints(getCommissionPoints(orderLine, isTaxIncluded))
+									.totalQtyInvolved(Quantity.of(orderLine.getQtyOrdered(), uom))
 									.build());
 	 }
 
@@ -165,7 +182,7 @@
 		 final Tax taxRecord = taxDAO.getTaxById(orderLine.getC_Tax_ID());
 		 final CurrencyPrecision precision = orderLineBL.extractPricePrecision(orderLine);
 
-		 final BigDecimal priceForOrderedQty = orderLine.getQtyOrdered().multiply(orderLine.getPriceActual());
+		 final BigDecimal priceForOrderedQty = orderLine.getQtyEntered().multiply(orderLine.getPriceActual());
 
 		 final BigDecimal taxAdjustedAmount = taxRecord.calculateBaseAmt(
 				 priceForOrderedQty,

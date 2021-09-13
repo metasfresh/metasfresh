@@ -162,7 +162,8 @@ public class SalesInvoiceFactory
 						.updated(TimeUtil.asInstant(invoiceLineRecord.getUpdated()))
 						.invoicedCommissionPoints(invoicedCommissionPoints)
 						.productId(productId)
-						.invoicedQty(invoicedQty);
+						.invoicedQty(invoicedQty)
+						.currencyId(CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()));
 
 				invoiceLines.add(invoiceLine.build());
 			}

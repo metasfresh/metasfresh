@@ -91,7 +91,8 @@ public class SalesInvoice
 					.invoicedCommissionPoints(invoiceLine.getInvoicedCommissionPoints())
 					.productId(invoiceLine.getProductId())
 					.updated(TimeUtil.max(updated, invoiceLine.getUpdated()))
-					.totalQtyInvolved(invoiceLine.getInvoicedQty());
+					.totalQtyInvolved(invoiceLine.getInvoicedQty())
+					.documentCurrencyId(invoiceLine.getCurrencyId());
 			result.add(document.build());
 		}
 

@@ -2,6 +2,7 @@ package de.metas.contracts.commission.commissioninstance.businesslogic.sales.com
 
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -50,4 +51,7 @@ public class SalesInvoiceLine
 
 	@NonNull
 	Quantity invoicedQty;
+
+	@NonNull
+	CurrencyId currencyId;
 }

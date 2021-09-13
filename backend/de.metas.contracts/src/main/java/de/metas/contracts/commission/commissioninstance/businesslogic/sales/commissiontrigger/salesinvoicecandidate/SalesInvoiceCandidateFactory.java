@@ -159,7 +159,7 @@ public class SalesInvoiceCandidateFactory
 	@NonNull
 	private Optional<CommissionPoints> extractForecastCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final BigDecimal forecastQty = icRecord.getQtyEntered() //todo fp:
+		final BigDecimal forecastQty = icRecord.getQtyOrdered() //todo fp:
 				.subtract(icRecord.getQtyToInvoice())
 				.subtract(icRecord.getQtyInvoiced());
 

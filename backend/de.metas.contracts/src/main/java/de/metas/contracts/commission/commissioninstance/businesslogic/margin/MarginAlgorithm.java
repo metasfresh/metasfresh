@@ -207,6 +207,7 @@ public class MarginAlgorithm implements CommissionAlgorithm
 				.productId(commissionTriggerData.getProductId())
 				.qty(commissionTriggerData.getTotalQtyInvolved())
 				.customerCurrencyId(commissionTriggerData.getDocumentCurrencyId())
+				.commissionDate(commissionTriggerData.getTriggerDocumentDate())
 				.build();
 
 		final ProductPrice salesRepNetUnitPrice = customerTradeMarginService.calculateSalesRepNetUnitPrice(request)

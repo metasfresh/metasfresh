@@ -18,6 +18,7 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
     "invoicedQty" : {
       "qty" : "0",
       "uomId" : 100007
-    }
+    },
+    "currencyId" : 100008
   } ]
 } ]

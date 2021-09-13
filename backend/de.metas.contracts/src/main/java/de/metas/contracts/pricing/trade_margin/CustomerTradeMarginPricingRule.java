@@ -229,6 +229,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				.productId(pricingCtx.getProductId())
 				.qty(Quantity.of(pricingCtx.getQty(), priceUOM))
 				.customerCurrencyId(pricingCtx.getCurrencyId())
+				.commissionDate(pricingCtx.getPriceDate())
 				.build();
 
 		return customerTradeMarginService.calculateSalesRepNetUnitPrice(request);
@@ -244,6 +245,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				.salesProductId(pricingCtx.getProductId())
 				.customerBPartnerId(pricingCtx.getBPartnerId())
 				.commissionHierarchy(Hierarchy.EMPTY_HIERARCHY)
+				.commissionDate(pricingCtx.getPriceDate())
 				.build();
 
 		final List<CommissionConfig> marginCommissionConfig = marginCommissionConfigFactory.createForNewCommissionInstances(configRequest);
