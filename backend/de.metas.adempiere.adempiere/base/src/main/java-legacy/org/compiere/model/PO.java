@@ -16,7 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.audit.request.log.StateType;
+import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;

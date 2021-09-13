@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.util.web
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,19 +20,26 @@
  * #L%
  */
 
-package de.metas.util.web.audit.process;
+package de.metas.audit.apirequest.common;
 
-import de.metas.audit.apirequest.ApiAuditCleanUpService;
-import de.metas.process.JavaProcess;
-import org.compiere.SpringContextHolder;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.springframework.util.LinkedMultiValueMap;
 
-public class API_Audit_DeleteOldRecords extends JavaProcess
+@Value
+@Builder
+@JsonDeserialize(builder = HttpHeadersWrapper.HttpHeadersWrapperBuilder.class)
+public class HttpHeadersWrapper
 {
-	@Override
-	protected String doIt() throws Exception
+	@NonNull
+	public static HttpHeadersWrapper of(final @NonNull LinkedMultiValueMap<String, String> keyValueHeaders)
 	{
-		SpringContextHolder.instance.getBean(ApiAuditCleanUpService.class).deleteProcessedRequests();
-
-		return MSG_OK;
+		return new HttpHeadersWrapper(keyValueHeaders);
 	}
+
+	@JsonProperty("keyValueHeaders")
+	LinkedMultiValueMap<String, String> keyValueHeaders;
 }
