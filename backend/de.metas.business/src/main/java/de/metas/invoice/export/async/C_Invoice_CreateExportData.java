@@ -31,7 +31,7 @@ public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 			.newModelScheduler(C_Invoice_CreateExportData.class, I_C_Invoice.class)
 			.setCreateOneWorkpackagePerModel(true);
 
-	public static final void scheduleOnTrxCommit(final I_C_Invoice invoiceRecord)
+	public static void scheduleOnTrxCommit(final I_C_Invoice invoiceRecord)
 	{
 		SCHEDULER.schedule(invoiceRecord);
 	}
