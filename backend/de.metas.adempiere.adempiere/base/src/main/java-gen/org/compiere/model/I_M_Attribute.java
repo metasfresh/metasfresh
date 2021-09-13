@@ -486,7 +486,7 @@ public interface I_M_Attribute
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Get Updated.
+	 * Get Updated.de
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime

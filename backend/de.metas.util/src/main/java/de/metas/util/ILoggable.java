@@ -46,10 +46,14 @@ public interface ILoggable
 	{
 	}
 
+	/**
+	 * Do nothing by default.
+	 */
 	default ILoggable addTableRecordReferenceLog(final ITableRecordReference recordRef, final String type, final String trxName)
 	{
-		this.addLog("addTableRecordReferenceLog called on {} with args: ad_table_id: {}, record_id: {}, type: {}. trxName: {}",
-		 			this.getClass().getSimpleName(), recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), type, trxName);
+		// Adding a log message turned out to be *really* expensive for e.g. some workpackages with a very noticable performance impact 
+		// this.addLog("addTableRecordReferenceLog called on {} with args: ad_table_id: {}, record_id: {}, type: {}. trxName: {}",
+		// 			this.getClass().getSimpleName(), recordRef.getAD_Table_ID(), recordRef.getRecord_ID(), type, trxName);
 		return this;
 	}
 }

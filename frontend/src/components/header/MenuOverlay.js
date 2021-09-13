@@ -7,13 +7,11 @@ import { connect } from 'react-redux';
 import { debounce } from 'lodash';
 
 import history from '../../services/History';
+import { pathRequest, queryPathsRequest, breadcrumbRequest } from '../../api';
 import {
-  breadcrumbRequest,
   flattenLastElem,
   getRootBreadcrumb,
   getWindowBreadcrumb,
-  pathRequest,
-  queryPathsRequest,
   setBreadcrumb,
 } from '../../actions/MenuActions';
 import { clearMasterData, closeModal } from '../../actions/WindowActions';
