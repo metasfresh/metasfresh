@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import classnames from 'classnames';
 
 /**
  * @file functional component
  * @module SpinnerOverlay
  */
 const SpinnerOverlay = (props) => {
-  const { iconSize } = props;
+  const { iconSize, spinnerType } = props;
   let style = {};
 
   if (iconSize) {
@@ -17,7 +18,11 @@ const SpinnerOverlay = (props) => {
   }
 
   return (
-    <div className="screen-freeze screen-prompt-freeze spinner">
+    <div
+      className={classnames('screen-freeze screen-prompt-freeze spinner', {
+        'modal-spinner': spinnerType === 'modal',
+      })}
+    >
       <i style={style} className="icon spinner" />
     </div>
   );
@@ -33,6 +38,7 @@ SpinnerOverlay.defaultProps = {
  */
 SpinnerOverlay.propTypes = {
   iconSize: PropTypes.number,
+  spinnerType: PropTypes.string,
 };
 
 export default SpinnerOverlay;

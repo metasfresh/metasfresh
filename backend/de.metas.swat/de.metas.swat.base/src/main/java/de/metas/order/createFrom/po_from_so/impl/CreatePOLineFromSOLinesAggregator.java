@@ -6,6 +6,7 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.PurchaseTypeEnum;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -152,8 +153,7 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 				() -> salesOrderLine.getC_Order().getDatePromised());
 		purchaseOrderLine.setDatePromised(datePromised);
 
-		purchaseOrderLine.setC_BPartner_ID(purchaseOrder.getC_BPartner_ID());
-		purchaseOrderLine.setC_BPartner_Location_ID(purchaseOrder.getC_BPartner_Location_ID());
+		OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
 
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 

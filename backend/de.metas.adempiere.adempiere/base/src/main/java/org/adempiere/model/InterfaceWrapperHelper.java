@@ -230,7 +230,7 @@ public class InterfaceWrapperHelper
 	 * @param cl the interface we need an instance of
 	 * @return an instance of <code>cl</code> which actually wraps <code>model</code> or <code>null</code> if model was <code>null</code>
 	 */
-	public static <T> T create(final Object model, final Class<T> cl)
+	public static <T> T create(@Nullable final Object model, final Class<T> cl)
 	{
 		final boolean useOldValues = false;
 		return create(model, cl, useOldValues);

@@ -16,31 +16,18 @@
  *****************************************************************************/
 package org.compiere.apps.search;
 
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Vector;
-
-import javax.swing.JScrollPane;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.DefaultTableModel;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.i18n.Msg;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.permissions.Access;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.apps.AEnv;
 import org.compiere.apps.ALayout;
@@ -56,7 +43,6 @@ import org.compiere.minigrid.MiniTable;
 import org.compiere.model.MDocType;
 import org.compiere.model.MQuery;
 import org.compiere.model.MQuery.Operator;
-import org.compiere.model.MSysConfig;
 import org.compiere.swing.CButton;
 import org.compiere.swing.CLabel;
 import org.compiere.swing.CPanel;
@@ -68,13 +54,24 @@ import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.jdesktop.swingx.JXTaskPane;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.i18n.Msg;
-import de.metas.logging.LogManager;
-import de.metas.product.ProductId;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.permissions.Access;
-import de.metas.util.StringUtils;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * Search Product and return selection
@@ -130,7 +127,7 @@ public final class InfoProduct extends Info implements ActionListener,
 		log.info(value + ", Wh=" + M_Warehouse_ID + ", PL=" + M_PriceList_ID
 				+ ", WHERE=" + whereClause);
 
-		loadResult = MSysConfig.getBooleanValue(LOAD_ALL_RECORDS_INFOPRODUCT, false); // metas: c.ghita@metas.ro
+		loadResult = Services.get(ISysConfigBL.class).getBooleanValue(LOAD_ALL_RECORDS_INFOPRODUCT, false); // metas: c.ghita@metas.ro
 
 		setTitle(Msg.getMsg(Env.getCtx(), "InfoProduct"));
 		//

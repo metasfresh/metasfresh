@@ -39,6 +39,7 @@ import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_DocType;
 import de.metas.logging.LogManager;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.uom.UomId;
@@ -68,6 +69,7 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 
@@ -201,9 +203,9 @@ public abstract class ReceiptScheduleTestBase
 		saveRecord(activity);
 		final ActivityId activityId = ActivityId.ofRepoId(activity.getC_Activity_ID());
 		Mockito.when(productAcctDAO.retrieveActivityForAcct(
-				Matchers.any(),
-				Matchers.eq(orgId),
-				Matchers.any()))
+				ArgumentMatchers.any(),
+				ArgumentMatchers.eq(orgId),
+				ArgumentMatchers.any()))
 				.thenReturn(activityId);
 
 		// #653
@@ -370,8 +372,7 @@ public abstract class ReceiptScheduleTestBase
 
 		//
 		// BPartner
-		orderLine.setC_BPartner_ID(order.getC_BPartner_ID());
-		orderLine.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
+		OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setFromOrderHeader(order);
 
 		// more if needed
 
