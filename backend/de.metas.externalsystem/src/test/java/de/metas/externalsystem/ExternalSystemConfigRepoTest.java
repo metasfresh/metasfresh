@@ -214,6 +214,35 @@ class ExternalSystemConfigRepoTest
 	}
 
 	@Test
+	void externalSystem_Config_RabbitMQ_getByTypeAndValue()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_RabbitMQRESTAPI);
+		saveRecord(parentRecord);
+
+		final String value = "testRabbitMQValue";
+
+		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
+		childRecord.setExternalSystemValue(value);
+		childRecord.setRemoteURL("remoteURL");
+		childRecord.setRouting_Key("routingKey");
+		childRecord.setAuthToken("authToken");
+		childRecord.setIsSyncBPartnersToRabbitMQ(true);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.RabbitMQ, value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
 	void externalSystem_Config_Alberta_getByTypeAndValue_wrongType()
 	{
 		// given
@@ -338,7 +367,8 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.RabbitMQ).get();
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.RabbitMQ)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
 		assertThat(result).isNotNull();

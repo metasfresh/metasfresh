@@ -1,5 +1,6 @@
 de.metas.audit.data.DataExportAuditLogRepositoryTest.save=[
   {
+  	"dataExportAuditLogId" : 100001,
     "dataExportAuditId" : 1,
     "action" : "AssignedToParent",
     "externalSystemConfigId" : 2,

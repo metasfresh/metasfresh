@@ -54,7 +54,7 @@ public class REST_API_StepDef
 	@Given("the existing user with login {string} receives a random a API token for the existing role with name {string}")
 	public void the_existing_user_has_the_authtoken(@NonNull final String userLogin, @NonNull final String roleName) throws IOException
 	{
-		userAuthToken = RESTUtil.getAuthToken(userLogin,roleName);
+		userAuthToken = RESTUtil.getAuthToken(userLogin, roleName);
 	}
 
 	@When("a {string} request with the below payload is sent to the metasfresh REST-API {string} and fulfills with {string} status code")
@@ -100,6 +100,15 @@ public class REST_API_StepDef
 			final String verb) throws IOException
 	{
 		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, null, userAuthToken, null);
+		testContext.setApiResponse(apiResponse);
+	}
+
+	@When("the metasfresh REST-API endpoint path {string} receives a {string} request with the headers from context")
+	public void metasfresh_rest_api_endpoint_api_external_ref_receives_request_with_additional_headers(
+			final String endpointPath,
+			final String verb) throws IOException
+	{
+		apiResponse = RESTUtil.performHTTPRequest(endpointPath, verb, null, userAuthToken, null, testContext.getHttpHeaders());
 		testContext.setApiResponse(apiResponse);
 	}
 

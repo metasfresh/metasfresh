@@ -81,6 +81,9 @@ public class ExternalSystemConfigRepo
 			case Shopware6:
 				return getShopware6ConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
+			case RabbitMQ:
+				return getRabbitMQConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -119,6 +122,16 @@ public class ExternalSystemConfigRepo
 				.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystemValue, value)
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_Shopware6.class);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_RabbitMQ_HTTP> getRabbitMQConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_RabbitMQ_HTTP.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
 	}
 
 	@NonNull

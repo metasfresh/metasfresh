@@ -46,13 +46,16 @@ import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.async.Debouncer;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -69,9 +72,11 @@ public class RabbitMQExternalSystemService
 	private final DataExportAuditLogRepository dataExportAuditLogRepository;
 	private final DataExportAuditRepository dataExportAuditRepository;
 	private final ExternalSystemConfigRepo externalSystemConfigRepository;
+	private final Debouncer<BPartnerId> syncBPartnerDebouncer;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public RabbitMQExternalSystemService(
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
@@ -85,6 +90,13 @@ public class RabbitMQExternalSystemService
 		this.dataExportAuditLogRepository = dataExportAuditLogRepository;
 		this.dataExportAuditRepository = dataExportAuditRepository;
 		this.externalSystemConfigRepository = externalSystemConfigRepository;
+		this.syncBPartnerDebouncer = Debouncer.<BPartnerId>builder()
+				.name("syncBPartnerDebouncer")
+				.bufferMaxSize(sysConfigBL.getIntValue("webui.WebsocketSender.debouncer.bufferMaxSize", 100))
+				.delayInMillis(sysConfigBL.getIntValue("webui.WebsocketSender.debouncer.delayInMillis", 5000))
+				.distinct(true)
+				.consumer(this::syncBPartners)
+				.build();
 	}
 
 	public void exportBPartner(
@@ -96,24 +108,9 @@ public class RabbitMQExternalSystemService
 				.ifPresent(externalSystemMessageSender::send);
 	}
 
-	public void syncBPartnerIfRequired(@NonNull final BPartnerId bPartnerId)
+	public void enqueueBPartnerSync(@NonNull final BPartnerId bPartnerId)
 	{
-		final TableRecordReference bPartnerRecordReference = TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId);
-
-		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
-		if (!dataExportAudit.isPresent())
-		{
-			return;
-		}
-
-		final ImmutableSet<ExternalSystemRabbitMQConfigId> rabbitMQConfigIds = getRabbitMQConfigsToSyncWith(dataExportAudit.get().getIdNotNull());
-
-		if (rabbitMQConfigIds.isEmpty())
-		{
-			return;
-		}
-
-		rabbitMQConfigIds.forEach(id -> exportBPartner(id, bPartnerId, null));
+		syncBPartnerDebouncer.add(bPartnerId);
 	}
 
 	@VisibleForTesting
@@ -179,5 +176,35 @@ public class RabbitMQExternalSystemService
 		parameters.put(ExternalSystemConstants.PARAM_RABBIT_MQ_AUTH_TOKEN, rabbitMQConfig.getAuthToken());
 
 		return parameters;
+	}
+
+	private void syncBPartners(@NonNull final Collection<BPartnerId> bPartnerIdList)
+	{
+		if (bPartnerIdList.isEmpty())
+		{
+			return;
+		}
+
+		bPartnerIdList.forEach(this::syncBPartnerIfRequired);
+	}
+
+	private void syncBPartnerIfRequired(@NonNull final BPartnerId bPartnerId)
+	{
+		final TableRecordReference bPartnerRecordReference = TableRecordReference.of(I_C_BPartner.Table_Name, bPartnerId);
+
+		final Optional<DataExportAudit> dataExportAudit = dataExportAuditRepository.getByTableRecordReference(bPartnerRecordReference);
+		if (!dataExportAudit.isPresent())
+		{
+			return;
+		}
+
+		final ImmutableSet<ExternalSystemRabbitMQConfigId> rabbitMQConfigIds = getRabbitMQConfigsToSyncWith(dataExportAudit.get().getIdNotNull());
+
+		if (rabbitMQConfigIds.isEmpty())
+		{
+			return;
+		}
+
+		rabbitMQConfigIds.forEach(id -> exportBPartner(id, bPartnerId, null));
 	}
 }

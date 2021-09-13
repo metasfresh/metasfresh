@@ -50,7 +50,7 @@ public class ExternalSystemConstants
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
 	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";
-	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "Routing_Key";
+	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "RoutingKey";
 	public static final String PARAM_BPARTNER_ID = "BPartnerId";
 	public static final String PARAM_RABBIT_MQ_AUTH_TOKEN = "RabbitMQAuthToken";
 

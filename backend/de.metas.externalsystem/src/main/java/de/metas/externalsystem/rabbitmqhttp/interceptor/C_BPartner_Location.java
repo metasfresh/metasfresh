@@ -51,6 +51,6 @@ public class C_BPartner_Location
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartnerLocation.getC_BPartner_ID());
 
-		trxManager.runAfterCommit(() -> rabbitMQExternalSystemService.syncBPartnerIfRequired(bpartnerId));
+		trxManager.runAfterCommit(() -> rabbitMQExternalSystemService.enqueueBPartnerSync(bpartnerId));
 	}
 }

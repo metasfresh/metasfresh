@@ -60,7 +60,7 @@ public class C_Location
 		for (final I_C_BPartner_Location bPartnerLocation : bpartnerLocationList)
 		{
 			final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartnerLocation.getC_BPartner_ID());
-			manager.runAfterCommit(() -> rabbitMQExternalSystemService.syncBPartnerIfRequired(bpartnerId));
+			manager.runAfterCommit(() -> rabbitMQExternalSystemService.enqueueBPartnerSync(bpartnerId));
 		}
 	}
 }

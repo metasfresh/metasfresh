@@ -58,6 +58,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import static de.metas.util.web.MetasfreshRestAPIConstants.ENDPOINT_API_V2;
 import static org.assertj.core.api.Assertions.*;
@@ -101,6 +102,16 @@ public class RESTUtil
 			final String authToken,
 			@Nullable final Integer statusCode) throws IOException
 	{
+		return performHTTPRequest(endpointPath, verb, payload, authToken, statusCode, null);
+	}
+
+	public APIResponse performHTTPRequest(final String endpointPath,
+			final String verb,
+			final String payload,
+			final String authToken,
+			@Nullable final Integer statusCode,
+			@Nullable final Map<String,String> additionalHeaders) throws IOException
+	{
 		final CloseableHttpClient httpClient = HttpClients.createDefault();
 
 		final String appServerPort = System.getProperty("server.port");
@@ -120,6 +131,7 @@ public class RESTUtil
 				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'POST', 'PUT', 'GET', 'DELETE'");
 		}
 
+		setHeaders(request, authToken, additionalHeaders);
 		final HttpResponse response = httpClient.execute(request);
 		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
 
@@ -154,10 +166,18 @@ public class RESTUtil
 				.build();
 	}
 
-	private void setHeaders(@NonNull final HttpRequestBase request, @NonNull final String userAuthToken)
+	private void setHeaders(
+			@NonNull final HttpRequestBase request,
+			@NonNull final String userAuthToken,
+			@Nullable final Map<String, String> additionalHeaders)
 	{
 		request.addHeader("content-type", "application/json");
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
+
+		if (additionalHeaders != null)
+		{
+			additionalHeaders.forEach(request::addHeader);
+		}
 	}
 
 	@Nullable
@@ -221,7 +241,6 @@ public class RESTUtil
 				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'POST' and 'PUT'");
 		}
 
-		setHeaders(request, authToken);
 		if (payload != null)
 		{
 			final StringEntity entity = new StringEntity(payload);
@@ -248,8 +267,6 @@ public class RESTUtil
 			default:
 				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'GET' and 'DELETE'");
 		}
-
-		setHeaders(request, authToken);
 
 		return request;
 	}

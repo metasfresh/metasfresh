@@ -20,17 +20,26 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.context;
+package de.metas.cucumber.stepdefs;
 
-import de.metas.cucumber.stepdefs.APIResponse;
-import lombok.Data;
+import lombok.experimental.UtilityClass;
 
-import java.util.Map;
+import java.util.function.Supplier;
 
-@Data
-public class TestContext
+@UtilityClass
+public class StepDefUtil
 {
-	protected APIResponse apiResponse;
-	protected String requestPayload;
-	protected Map<String,String> httpHeaders;
+	public void tryAndWait(final long maxWaitSeconds, final long checkingIntervalMs, final Supplier<Boolean> worker ) throws InterruptedException
+	{
+		final long nowMillis = System.currentTimeMillis(); // don't use SystemTime.millis(); because it's probably "rigged" for testing purposes,
+		final long deadLineMillis = nowMillis + (maxWaitSeconds * 1000L);
+
+		boolean conditionIsMet = worker.get();
+
+		while (System.currentTimeMillis() < deadLineMillis && !conditionIsMet)
+		{
+			Thread.sleep(checkingIntervalMs);
+			conditionIsMet = worker.get();
+		}
+	}
 }

@@ -28,7 +28,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.ModelValidator;
@@ -56,6 +55,6 @@ public class AD_User
 			return;
 		}
 
-		trxManager.runAfterCommit(() -> rabbitMQExternalSystemService.syncBPartnerIfRequired(bpartnerId));
+		trxManager.runAfterCommit(() -> rabbitMQExternalSystemService.enqueueBPartnerSync(bpartnerId));
 	}
 }
