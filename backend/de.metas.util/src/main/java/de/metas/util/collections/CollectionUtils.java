@@ -50,7 +50,7 @@ public final class CollectionUtils
 	 * Convert given <code>list</code> to string using given <code>separator</code>.
 	 *
 	 * @param collection list to be converted to string
-	 * @param separator between elements separator
+	 * @param separator  between elements separator
 	 * @return string representation
 	 * @see #toString(Collection, String, Converter)
 	 */
@@ -65,14 +65,14 @@ public final class CollectionUtils
 	/**
 	 * Convert given <code>list</code> to string using given <code>separator</code>.
 	 *
-	 * @param collection collection to be converted to string
-	 * @param separator between elements separator
+	 * @param collection             collection to be converted to string
+	 * @param separator              between elements separator
 	 * @param elementStringConverter converter to be used when converting one list element to string
 	 * @return string representation
 	 */
 	public static <ET, CT extends Collection<ET>> String toString(final CT collection,
-			final String separator,
-			@Nullable final Converter<String, ET> elementStringConverter)
+																  final String separator,
+																  @Nullable final Converter<String, ET> elementStringConverter)
 	{
 		if (collection == null)
 		{
@@ -140,7 +140,7 @@ public final class CollectionUtils
 
 	/**
 	 * Assumes that only one element will be matched by filter and returns it.
-	 *
+	 * <p>
 	 * If there were more elements matching or no element was matching an exception will be thrown.
 	 *
 	 * @param filter filter used to match the element
@@ -165,7 +165,7 @@ public final class CollectionUtils
 
 	/**
 	 * Assumes that given collection has one element only and returns it.
-	 *
+	 * <p>
 	 * If the collection has more elements or no element then an exception will be thrown.
 	 *
 	 * @return element; returns null ONLY if the element is null
@@ -179,7 +179,7 @@ public final class CollectionUtils
 
 	/**
 	 * Assumes that given collection has one element only and returns it.
-	 *
+	 * <p>
 	 * If the collection has more elements or no element then <code>null</code> will be returned.
 	 *
 	 * @see de.metas.util.reducers.Reducers#singleValue()
@@ -193,7 +193,7 @@ public final class CollectionUtils
 
 	/**
 	 * Assumes that given collection has one element only and returns it.
-	 *
+	 * <p>
 	 * If the collection has more elements or no element then <code>defaultValue</code> will be returned.
 	 *
 	 * @param defaultValue value to be returned in case there are more then one elements or no element
@@ -224,9 +224,9 @@ public final class CollectionUtils
 	 */
 	public static <T, R> R extractSingleElement(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+			@NonNull final Function<T, R> extractFunction)
 	{
-		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFuntion);
+		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return singleElement(extractedElements);
 	}
 
@@ -236,44 +236,44 @@ public final class CollectionUtils
 	@Nullable
 	public static <T, R> R extractSingleElementOrDefault(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion,
+			@NonNull final Function<T, R> extractFunction,
 			@Nullable final R defaultValue)
 	{
-		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFuntion);
+		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return singleElementOrDefault(extractedElements, defaultValue);
 	}
 
 	public static <T, R> boolean hasDifferentValues(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+			@NonNull final Function<T, R> extractFunction)
 	{
 		if (collection.isEmpty())
 		{
 			return false;
 		}
 
-		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFuntion);
+		final ImmutableList<R> extractedElements = extractDistinctElements(collection, extractFunction);
 		return extractedElements.size() > 1;
 	}
 
 	public static <R, T> ImmutableList<R> extractDistinctElements(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+			@NonNull final Function<T, R> extractFunction)
 	{
 		return collection
 				.stream()
-				.map(extractFuntion)
+				.map(extractFunction)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	public static <R, T> ImmutableSet<R> extractDistinctElementsIntoSet(
 			@NonNull final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+			@NonNull final Function<T, R> extractFunction)
 	{
 		return collection
 				.stream()
-				.map(extractFuntion)
+				.map(extractFunction)
 				.distinct()
 				.collect(ImmutableSet.toImmutableSet());
 	}
@@ -281,14 +281,14 @@ public final class CollectionUtils
 	/**
 	 * Converts the element of given <code>list</code> of type <code>InputType</code> to a list of <code>OutputType</code> by using given <code>converter</code>.
 	 *
-	 * @param collection input list (i.e. list to convert)
-	 * @param extractFuntion converter to be used to convert elements
+	 * @param collection      input list (i.e. list to convert)
+	 * @param extractFunction converter to be used to convert elements
 	 * @return list of OutputTypes.
 	 */
 	@Nullable
 	public static <R, T> ImmutableList<R> convert(
 			@Nullable final Collection<T> collection,
-			@NonNull final Function<T, R> extractFuntion)
+			@NonNull final Function<T, R> extractFunction)
 	{
 		if (collection == null)
 		{
@@ -297,13 +297,13 @@ public final class CollectionUtils
 
 		return collection
 				.stream()
-				.map(extractFuntion)
+				.map(extractFunction)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
 	 * Removes first element from {@link Set} and returns it.
-	 *
+	 * <p>
 	 * NOTE: this method is NOT checking if the set is null or empty.
 	 *
 	 * @return the removed first element
@@ -388,6 +388,29 @@ public final class CollectionUtils
 				.stream()
 				.map(mapper)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Nullable
+	public static <T> T emptyOrSingleElement(@Nullable final Collection<T> collection)
+	{
+		if (collection == null)
+		{
+			return null;
+		}
+
+		final int size = collection.size();
+		if (size == 0)
+		{
+			return null;
+		}
+		else if (size == 1)
+		{
+			return collection.iterator().next();
+		}
+		else
+		{
+			throw Check.mkEx("The given collection needs to have ZERO or ONE item, but has " + size + " items; collection=" + collection);
+		}
 	}
 
 	@NonNull

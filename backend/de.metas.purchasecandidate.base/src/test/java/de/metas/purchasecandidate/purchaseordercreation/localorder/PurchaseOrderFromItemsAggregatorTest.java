@@ -19,6 +19,7 @@ import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.greeting.GreetingRepository;
 import de.metas.purchasecandidate.document.dimension.PurchaseCandidateDimensionFactory;
 import de.metas.order.impl.OrderLineDetailRepository;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -82,7 +83,7 @@ public class PurchaseOrderFromItemsAggregatorTest
 		private int updatePricesCallCount;
 
 		@Override
-		public void updatePrices(org.compiere.model.I_C_OrderLine orderLine)
+		public void updatePrices(org.compiere.model.@NonNull I_C_OrderLine orderLine)
 		{
 			// mock IOrderLineBL.updatePrices() because
 			// setting up the required masterdata and testing the pricing engine is out of scope.
