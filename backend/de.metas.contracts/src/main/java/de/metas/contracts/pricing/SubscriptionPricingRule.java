@@ -1,8 +1,13 @@
 package de.metas.contracts.pricing;
 
+import de.metas.contracts.ConditionsId;
+import de.metas.contracts.SubscriptionDiscount;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.repository.ISubscriptionDiscountRepository;
+import de.metas.contracts.repository.SubscriptionDiscountQuery;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -14,20 +19,24 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_PriceList;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 
 /**
  * This pricing rule applies if the given {@link IPricingContext}'s referenced object references a {@link I_C_Flatrate_Conditions} record.
  * <p>
  * If that is given, then the rule creates a pricing context of it's own and calls the pricing engine with that "alternative" pricing context.
  * The rule's own pricing context contains the {@link I_C_Flatrate_Conditions}'s pricing system.
- *
- *
  */
 public class SubscriptionPricingRule implements IPricingRule
 {
+	private final @NonNull ISubscriptionDiscountRepository subscriptionDiscountRepository = Services.get(ISubscriptionDiscountRepository.class);
 
 	private static final Logger logger = LogManager.getLogger(SubscriptionPricingRule.class);
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public boolean applies(
@@ -73,20 +82,53 @@ public class SubscriptionPricingRule implements IPricingRule
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
 		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
 
+		final SubscriptionDiscount subscriptionDiscount = getSubscriptionDiscountOrNull(pricingCtx, conditions);
+
 		final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
 
 		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
 
-		copySubscriptionResultIntoResult(subscriptionPricingResult, result);
+		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(pricingCtx, subscriptionDiscount, subscriptionPricingResult);
 
-		copyDiscountIntoResultIfAllowedByPricingContext(subscriptionPricingResult, result, pricingCtx);
+		copySubscriptionResultIntoResult(combinedPricingResult, result);
+
+		copyDiscountIntoResultIfAllowedByPricingContext(combinedPricingResult, result, pricingCtx);
+	}
+
+	private IPricingResult aggregateSubscriptionDiscount(final @NonNull IPricingContext pricingCtx, @Nullable final SubscriptionDiscount subscriptionDiscount, final IPricingResult subscriptionPricingResult)
+	{
+		if (subscriptionDiscount != null && subscriptionDiscount.isPrioritiseOwnDiscount() && !pricingCtx.isDisallowDiscount())
+		{
+			subscriptionPricingResult.setDiscount(subscriptionDiscount.getDiscount());
+		}
+		return subscriptionPricingResult;
+	}
+
+	@Nullable
+	private SubscriptionDiscount getSubscriptionDiscountOrNull(final @NonNull IPricingContext pricingCtx, final I_C_Flatrate_Conditions conditions)
+	{
+		final SubscriptionDiscount discountOrNull = subscriptionDiscountRepository.getDiscountOrNull(SubscriptionDiscountQuery.builder()
+				.productId(pricingCtx.getProductId())
+				.flatrateConditionId(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()))
+				.onDate(TimeUtil.asTimestamp(pricingCtx.getPriceDate(), orgDAO.getTimeZone(pricingCtx.getOrgId())))
+				.build());
+
+		if (discountOrNull != null && conditions.getC_Flatrate_Transition() != null)
+		{
+			final boolean matchIfTermEndsWithCalendarYear = discountOrNull.isMatchIfTermEndsWithCalendarYear();
+			if (matchIfTermEndsWithCalendarYear == conditions.getC_Flatrate_Transition().isEndsWithCalendarYear())
+			{
+				return discountOrNull;
+			}
+		}
+		return null;
 	}
 
 	private static I_M_PriceList retrievePriceListForConditionsAndCountry(
 			final CountryId countryId,
 			@NonNull final I_C_Flatrate_Conditions conditions)
 	{
-		final I_M_PriceList subscriptionPriceList = Services.get(IQueryBL.class)
+		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PriceList.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_M_PriceList.COLUMN_C_Country_ID, countryId, null)
@@ -95,7 +137,6 @@ public class SubscriptionPricingRule implements IPricingRule
 				.orderBy().addColumnDescending(I_M_PriceList.COLUMNNAME_C_Country_ID).endOrderBy()
 				.create()
 				.first();
-		return subscriptionPriceList;
 	}
 
 	private static IEditablePricingContext copyPricingCtxButInsertPriceList(
@@ -118,9 +159,8 @@ public class SubscriptionPricingRule implements IPricingRule
 	private static IPricingResult invokePricingEngine(@NonNull final IPricingContext subscriptionPricingCtx)
 	{
 		final IPricingBL pricingBL = Services.get(IPricingBL.class);
-		final IPricingResult subscriptionPricingResult = pricingBL.calculatePrice(subscriptionPricingCtx);
 
-		return subscriptionPricingResult;
+		return pricingBL.calculatePrice(subscriptionPricingCtx);
 	}
 
 	/**

@@ -1,6 +1,7 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package de.metas.contracts.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -8,20 +9,20 @@ import java.util.Properties;
 /** Generated Model for C_Flatrate_Conditions
  *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_C_Flatrate_Conditions, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -683179023L;
+	private static final long serialVersionUID = -1306750950L;
 
     /** Standard Constructor */
-    public X_C_Flatrate_Conditions (final Properties ctx, final int C_Flatrate_Conditions_ID, final String trxName)
+    public X_C_Flatrate_Conditions (final Properties ctx, final int C_Flatrate_Conditions_ID, @Nullable final String trxName)
     {
       super (ctx, C_Flatrate_Conditions_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_C_Flatrate_Conditions (final Properties ctx, final ResultSet rs, final String trxName)
+    public X_C_Flatrate_Conditions (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -50,7 +51,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setC_Flatrate_Matching_IncludedT (final java.lang.String C_Flatrate_Matching_IncludedT)
+	public void setC_Flatrate_Matching_IncludedT (final @Nullable java.lang.String C_Flatrate_Matching_IncludedT)
 	{
 		throw new IllegalArgumentException ("C_Flatrate_Matching_IncludedT is virtual column");	}
 
@@ -97,7 +98,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	/** FlatrateAmount = FlatrateAmount */
 	public static final String CLEARINGAMTBASEON_FlatrateAmount = "FlatrateAmount";
 	@Override
-	public void setClearingAmtBaseOn (final java.lang.String ClearingAmtBaseOn)
+	public void setClearingAmtBaseOn (final @Nullable java.lang.String ClearingAmtBaseOn)
 	{
 		set_Value (COLUMNNAME_ClearingAmtBaseOn, ClearingAmtBaseOn);
 	}
@@ -106,6 +107,33 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	public java.lang.String getClearingAmtBaseOn() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClearingAmtBaseOn);
+	}
+
+	@Override
+	public de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_SubscrDiscount_ID, de.metas.contracts.model.I_C_SubscrDiscount.class);
+	}
+
+	@Override
+	public void setC_SubscrDiscount(final de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount)
+	{
+		set_ValueFromPO(COLUMNNAME_C_SubscrDiscount_ID, de.metas.contracts.model.I_C_SubscrDiscount.class, C_SubscrDiscount);
+	}
+
+	@Override
+	public void setC_SubscrDiscount_ID (final int C_SubscrDiscount_ID)
+	{
+		if (C_SubscrDiscount_ID < 1) 
+			set_Value (COLUMNNAME_C_SubscrDiscount_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_SubscrDiscount_ID, C_SubscrDiscount_ID);
+	}
+
+	@Override
+	public int getC_SubscrDiscount_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_SubscrDiscount_ID);
 	}
 
 	@Override
@@ -442,7 +470,7 @@ public class X_C_Flatrate_Conditions extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setPrintName (final java.lang.String PrintName)
+	public void setPrintName (final @Nullable java.lang.String PrintName)
 	{
 		set_Value (COLUMNNAME_PrintName, PrintName);
 	}
