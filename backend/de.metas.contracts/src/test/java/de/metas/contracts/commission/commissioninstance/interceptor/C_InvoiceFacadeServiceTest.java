@@ -12,7 +12,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.services.CommissionAlgorithmInvoker;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigStagingDataService;
-import de.metas.contracts.commission.commissioninstance.services.CommissionHierarchyConfigFactoryTest;
+import de.metas.contracts.commission.commissioninstance.services.hierarchy.HierarchyCommissionConfigFactoryTest;
 import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceRequestFactory;
 import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceService;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
@@ -175,7 +175,7 @@ class C_InvoiceFacadeServiceTest
 									   .docBaseType(X_C_DocType.DOCBASETYPE_ARCreditMemo)
 									   .build());
 
-		CommissionHierarchyConfigFactoryTest.flatrateConditionsBuilder()
+		HierarchyCommissionConfigFactoryTest.flatrateConditionsBuilder()
 				.name("Default for `Missing commission contract`")
 				.isSubtractLowerLevelCommissionFromBase(true)
 				.noContractCommissionProductId(1)

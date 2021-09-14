@@ -1,24 +1,8 @@
-package de.metas.contracts.commission.commissioninstance.services;
-
-import de.metas.bpartner.BPartnerId;
-import de.metas.contracts.commission.Beneficiary;
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
-import de.metas.contracts.commission.commissioninstance.services.hierarchy.CommissionHierarchyFactory;
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
-
 /*
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -35,6 +19,21 @@ import static org.assertj.core.api.Assertions.*;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.contracts.commission.commissioninstance.services.hierarchy;
+
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 class CommissionHierarchyFactoryTest
 {
