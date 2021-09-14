@@ -325,13 +325,13 @@ public class BPartnerQuickInputService
 		//
 		// Validate pricing setup
 		final PricingSystemId customerPricingSystemId = PricingSystemId.ofRepoIdOrNull(template.getM_PricingSystem_ID());
-		if (template.isCustomer())
+		if (customerPricingSystemId != null && template.isCustomer())
 		{
 			assertPriceListExists(customerPricingSystemId, countryId, SOTrx.SALES);
 		}
 
 		final PricingSystemId vendorPricingSystemId = PricingSystemId.ofRepoIdOrNull(template.getPO_PricingSystem_ID());
-		if (template.isVendor())
+		if (vendorPricingSystemId != null && template.isVendor())
 		{
 			assertPriceListExists(vendorPricingSystemId, countryId, SOTrx.PURCHASE);
 		}
@@ -423,7 +423,7 @@ public class BPartnerQuickInputService
 	}
 
 	private void assertPriceListExists(
-			@Nullable final PricingSystemId pricingSystemId,
+			@NonNull final PricingSystemId pricingSystemId,
 			@NonNull final CountryId countryId,
 			@NonNull final SOTrx soTrx)
 	{
