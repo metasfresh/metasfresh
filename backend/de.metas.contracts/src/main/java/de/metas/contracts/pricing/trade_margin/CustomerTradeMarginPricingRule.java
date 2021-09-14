@@ -216,7 +216,13 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 			return;
 		}
 
-		calculateNewCustomerProductPrice(customerPricingContext, salesRepNetUnitPriceOpt.get(), marginConfig.get());
+		final BigDecimal newCustomerPrice = calculateNewCustomerPriceStd(customerPricingContext, salesRepNetUnitPriceOpt.get(), marginConfig.get());
+
+		final IPricingResult pricingResult = customerPricingContext.getPricingResult();
+
+		pricingResult.setPriceStd(newCustomerPrice);
+		pricingResult.setCalculated(true);
+		pricingResult.setPriceEditable(false);
 	}
 
 	@NonNull
@@ -339,7 +345,8 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				.map(BPartnerLocationAndCaptureId::ofNullableLocationWithUnknownCapture);
 	}
 
-	private void calculateNewCustomerProductPrice(
+	@NonNull
+	private BigDecimal calculateNewCustomerPriceStd(
 			@NonNull final CustomerPricingContext customerPricingContext,
 			@NonNull final ProductPrice salesRepNetUnitPrice,
 			@NonNull final MarginConfig marginConfig)
@@ -375,15 +382,10 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				? newNetPrice
 				: customerPriceTax.calculateGross(newNetPrice, marginConfig.getPointsPrecision());
 
-		final IPricingResult pricingResult = customerPricingContext.getPricingResult();
+		loggable.addLog("calculate - Price before applying margin: {} currencyID: {}, Price after applying margin: {}",
+						customerProductPrice.toBigDecimal(), customerProductPrice.getCurrencyId().getRepoId(), newCustomerPrice);
 
-		pricingResult.setPriceStd(newCustomerPrice);
-		pricingResult.setCalculated(true);
-		pricingResult.setPriceEditable(false);
-
-		loggable.addLog("calculate - Price before applying margin: {} currencyID: {}, Price after applying margin: {} currencyID :{}",
-						customerProductPrice.toBigDecimal(), customerProductPrice.getCurrencyId().getRepoId(),
-						pricingResult.getPriceStd(), pricingResult.getCurrencyId().getRepoId());
+		return newCustomerPrice;
 	}
 
 	@Value
