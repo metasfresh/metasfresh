@@ -2462,4 +2462,20 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		invoiceCandDAO.save(invoiceCandidate);
 	}
+
+	@Override
+	public Quantity getOrderedQtyStockUOM(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_C_UOM productUOM = productBL.getStockUOM(ic.getM_Product_ID());
+
+		return Quantity.of(ic.getQtyOrdered(), productUOM);
+	}
+
+	@Override
+	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_C_UOM productUOM = productBL.getStockUOM(ic.getM_Product_ID());
+
+		return Quantity.of(ic.getQtyInvoiced(), productUOM);
+	}
 }

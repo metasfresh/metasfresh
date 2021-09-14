@@ -92,7 +92,7 @@ public class MediatedOrder
 					.invoicedCommissionPoints(mediatedLine.getInvoicedCommissionPoints())
 
 					.productId(mediatedLine.getProductId())
-					.totalQtyInvolved(mediatedLine.getTotalQtyInvolved())
+					.totalQtyInvolved(mediatedLine.getOrderedQty())
 					.updated(TimeUtil.maxNotNull(updated, mediatedLine.getUpdated()));
 
 			result.add(document.build());

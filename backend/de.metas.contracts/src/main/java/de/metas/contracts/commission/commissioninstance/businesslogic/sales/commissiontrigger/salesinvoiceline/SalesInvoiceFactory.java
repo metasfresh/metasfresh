@@ -11,6 +11,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -20,13 +21,10 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
@@ -69,10 +67,10 @@ public class SalesInvoiceFactory
 
 	private final CommissionProductService commissionProductService;
 
-	private final IUOMDAO uomdao = Services.get(IUOMDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 
 	public SalesInvoiceFactory(@NonNull final CommissionProductService commissionProductService)
 	{
@@ -154,15 +152,12 @@ public class SalesInvoiceFactory
 				final CommissionPoints invoicedCommissionPoints = extractInvoicedCommissionPoints(invoiceRecord, invoiceLineRecord)
 						.negateIf(invoiceIsCreditMemo);
 
-				final I_C_UOM uomRecord = uomdao.getById(uomId);
-				final Quantity invoicedQty = Quantity.of(invoiceLineRecord.getQtyInvoiced(), uomRecord);
-
 				final SalesInvoiceLineBuilder invoiceLine = SalesInvoiceLine.builder()
 						.id(InvoiceLineId.ofRepoId(invoiceLineRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
-						.updated(TimeUtil.asInstant(invoiceLineRecord.getUpdated()))
+						.updated(TimeUtil.asInstantNonNull(invoiceLineRecord.getUpdated()))
 						.invoicedCommissionPoints(invoicedCommissionPoints)
 						.productId(productId)
-						.invoicedQty(invoicedQty)
+						.invoicedQty(invoiceLineBL.getQtyInvoicedStockUOM(invoiceLineRecord))
 						.currencyId(CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()));
 
 				invoiceLines.add(invoiceLine.build());
@@ -182,7 +177,7 @@ public class SalesInvoiceFactory
 								   .customerBPartnerId(customerBPartnerId)
 								   .salesRepBPartnerId(salesRepBPartnerId)
 								   .commissionDate(dateInvoiced)
-								   .updated(TimeUtil.asInstant(invoiceRecord.getUpdated()))
+								   .updated(TimeUtil.asInstantNonNull(invoiceRecord.getUpdated()))
 								   .triggerType(triggerType)
 								   .currencyId(CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()))
 								   .invoiceLines(ImmutableList.copyOf(invoiceLines))

@@ -49,5 +49,5 @@ public class MediatedOrderLine
 	Instant updated;
 
 	@NonNull
-	Quantity totalQtyInvolved;
+	Quantity orderedQty;
 }

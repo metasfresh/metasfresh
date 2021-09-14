@@ -154,21 +154,20 @@
 			 return Optional.empty();
 		 }
 
-		 final Quantity orderedQtyPriceUOM = getOrderedQtyInPriceUOM(orderLine);
+		 final Quantity orderedQtyStockUOM = Quantity.of(orderLine.getQtyOrdered(), uomDao.getById(orderLine.getC_UOM_ID()));
 
 		 return Optional.of(MediatedOrderLine.builder()
 									.id(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 									.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 									.updated(Objects.requireNonNull(TimeUtil.asInstant(orderLine.getUpdated())))
-									.invoicedCommissionPoints(getCommissionPoints(orderLine, orderedQtyPriceUOM, isTaxIncluded))
-									.totalQtyInvolved(orderedQtyPriceUOM)
+									.invoicedCommissionPoints(getCommissionPoints(orderLine, isTaxIncluded))
+									.orderedQty(orderedQtyStockUOM)
 									.build());
 	 }
 
 	 @NonNull
 	 private CommissionPoints getCommissionPoints(
 			 @NonNull final I_C_OrderLine orderLine,
-			 @NonNull final Quantity orderedQtyPriceUOM,
 			 final boolean isTaxIncluded)
 	 {
 		 if (orderLine.getQtyOrdered().signum() == 0)
@@ -179,6 +178,7 @@
 		 final Tax taxRecord = taxDAO.getTaxById(orderLine.getC_Tax_ID());
 		 final CurrencyPrecision precision = orderLineBL.extractPricePrecision(orderLine);
 
+		 final Quantity orderedQtyPriceUOM = getOrderedQtyInPriceUOM(orderLine);
 		 final BigDecimal priceForOrderedQty = orderedQtyPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual());
 
 		 final BigDecimal taxAdjustedAmount = taxRecord.calculateBaseAmt(

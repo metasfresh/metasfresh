@@ -17,16 +17,13 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -67,7 +64,6 @@ public class SalesInvoiceCandidateFactory
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-	private final IUOMDAO uomdao = Services.get(IUOMDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final MoneyService moneyService;
@@ -136,9 +132,6 @@ public class SalesInvoiceCandidateFactory
 			return Optional.empty();
 		}
 
-		final I_C_UOM uom = uomdao.getById(uomId);
-		final Quantity totalQtyInvolved = Quantity.of(icRecord.getQtyEntered(), uom);
-
 		return Optional.of(SalesInvoiceCandidate
 								   .builder()
 								   .orgId(OrgId.ofRepoId(icRecord.getAD_Org_ID()))
@@ -151,7 +144,7 @@ public class SalesInvoiceCandidateFactory
 								   .forecastCommissionPoints(forecastCommissionPoints.get())
 								   .commissionPointsToInvoice(extractCommissionPointsToInvoice(icRecord))
 								   .invoicedCommissionPoints(extractInvoicedCommissionPoints(icRecord))
-								   .totalQtyInvolved(totalQtyInvolved)
+								   .totalQtyInvolved(invoiceCandBL.getOrderedQtyStockUOM(icRecord))
 								   .currencyId(currencyId)
 								   .build());
 	}
@@ -159,18 +152,18 @@ public class SalesInvoiceCandidateFactory
 	@NonNull
 	private Optional<CommissionPoints> extractForecastCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final BigDecimal forecastQty = icRecord.getQtyOrdered()
-				.subtract(icRecord.getQtyToInvoice())
-				.subtract(icRecord.getQtyInvoiced());
+		final Quantity forecastQtyStockUOM = invoiceCandBL.getOrderedQtyStockUOM(icRecord)
+				.subtract(invoiceCandBL.getQtyToInvoiceStockUOM(icRecord))
+				.subtract(invoiceCandBL.getQtyInvoicedStockUOM(icRecord));
 
 		final ProductPrice priceActual = invoiceCandBL.getPriceActual(icRecord);
+
 		final Optional<Quantity> forecastQtyInPriceUOM = uomConversionBL
-				.convert(UomId.ofRepoId(icRecord.getC_UOM_ID()), priceActual.getUomId(), forecastQty)
-				.map(qty -> Quantitys.create(qty, priceActual.getUomId()));
+				.convertQtyTo(forecastQtyStockUOM, priceActual.getUomId());
 
 		if (!forecastQtyInPriceUOM.isPresent())
 		{
-			logger.debug("C_Invoice_Candidate {}: couldn't convert forecastQty to priceUom; PriceActual: {}, ic.c_uom_id: {} -> return empty", icRecord.getC_Invoice_Candidate_ID(), priceActual, icRecord.getC_UOM_ID());
+			logger.debug("C_Invoice_Candidate {}: couldn't convert forecastQty to priceUom; PriceActual: {}, forecastQtyStockUOM: {} -> return empty", icRecord.getC_Invoice_Candidate_ID(), priceActual, forecastQtyStockUOM);
 			return Optional.empty();
 		}
 
