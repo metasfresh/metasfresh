@@ -664,4 +664,10 @@ public class C_Flatrate_Term
 	{
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
 	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void ensureOneMarginContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MARGIN_COMMISSION);
+	}
 }
