@@ -32,9 +32,9 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstan
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.document.filter.sql.SqlParamsCollector;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
@@ -110,8 +110,7 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 
 	@Nullable
 	@Override
-	public String getSql(
-			final SqlParamsCollector sqlParamsOut,
+	public FilterSql getSql(
 			final DocumentFilter filter,
 			final SqlOptions sqlOpts,
 			final SqlDocumentFilterConverterContext context)
@@ -122,11 +121,10 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			return null;
 		}
 		final String searchText = filterParameter.getValueAsString();
-		return SqlAndParams.builder()
+		return FilterSql.ofWhereClause(SqlAndParams.builder()
 				.append(sqlOpts.getTableNameOrAlias())
 				.append(getSqlCriteria(searchText))
-				.build()
-				.toSqlStringInlineParams();
+				.build());
 	}
 
 	private SqlAndParams getSqlCriteria(final String searchText)

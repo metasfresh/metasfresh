@@ -133,6 +133,8 @@ public interface IBPartnerDAO extends ISingletonService
 	@NonNull
 	BPartnerLocationId getBPartnerLocationIdByRepoId(final int repoId);
 
+	ImmutableSet<BPartnerLocationId> getBPartnerLocationIdsByRepoIds(@NonNull Set<Integer> repoIds);
+
 	/**
 	 * @deprecated in all cases i can imagine, if the caller has a {@code bpartnerLocationId}, they need the actual record, even if it is inactive.
 	 * Think e.g. of a completed shipment. Therefore, please consider using {@link #getBPartnerLocationByIdEvenInactive(BPartnerLocationId)} instead.
@@ -178,6 +180,8 @@ public interface IBPartnerDAO extends ISingletonService
 	<T extends I_C_BPartner> T getByIdInTrx(@NonNull BPartnerId bpartnerId, @NonNull Class<T> modelClass);
 
 	Optional<BPartnerContactId> getContactIdByExternalId(BPartnerId bpartnerId, ExternalId externalId);
+
+	ImmutableSet<BPartnerContactId> getContactIdsByRepoIds(@NonNull Set<Integer> repoIds);
 
 	@Nullable
 	I_AD_User getContactById(BPartnerContactId contactId);

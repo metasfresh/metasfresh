@@ -312,8 +312,7 @@ public class MOrderLine extends X_C_OrderLine
 			return;
 		}
 
-		final de.metas.interfaces.I_C_OrderLine ol = InterfaceWrapperHelper.create(this, de.metas.interfaces.I_C_OrderLine.class);
-		Services.get(IOrderLineBL.class).updatePrices(ol);
+		Services.get(IOrderLineBL.class).updatePrices(this);
 	}    // setPrice
 
 	/**
