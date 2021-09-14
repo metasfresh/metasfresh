@@ -31,6 +31,9 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * ExternalSystem_Config_ID
+ */
 @Value
 public class ExternalSystemParentConfigId implements RepoIdAware
 {

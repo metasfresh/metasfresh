@@ -22,42 +22,29 @@
 
 package de.metas.audit.data.model;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_Data_Export_Audit_Log;
 
-import javax.annotation.Nullable;
-
 @Value
 public class DataExportAuditLogId implements RepoIdAware
 {
 	int repoId;
 
-	@JsonCreator
 	@NonNull
-	public static DataExportAuditLogId ofRepoId(final int repoId)
+	DataExportAuditId dataExportAuditId;
+
+	@NonNull
+	public static DataExportAuditLogId ofRepoId(@NonNull final DataExportAuditId dataExportAuditId, final int repoId)
 	{
-		return new DataExportAuditLogId(repoId);
+		return new DataExportAuditLogId(dataExportAuditId, repoId);
 	}
 
-	@Nullable
-	public static DataExportAuditLogId ofRepoIdOrNull(@Nullable final Integer repoId)
+	private DataExportAuditLogId(@NonNull final DataExportAuditId dataExportAuditId, final int repoId)
 	{
-		return repoId != null && repoId > 0 ? new DataExportAuditLogId(repoId) : null;
-	}
-
-	@JsonValue
-	public int toJson()
-	{
-		return getRepoId();
-	}
-
-	private DataExportAuditLogId(final int repoId)
-	{
+		this.dataExportAuditId = dataExportAuditId;
 		this.repoId = Check.assumeGreaterThanZero(repoId, I_Data_Export_Audit_Log.COLUMNNAME_Data_Export_Audit_Log_ID);
 	}
 }

@@ -35,11 +35,8 @@ import javax.annotation.Nullable;
 @Builder
 public class DataExportAuditLog
 {
-	@Nullable
-	DataExportAuditLogId dataExportAuditLogId;
-
 	@NonNull
-	DataExportAuditId dataExportAuditId;
+	DataExportAuditLogId dataExportAuditLogId;
 
 	@NonNull
 	Action action;

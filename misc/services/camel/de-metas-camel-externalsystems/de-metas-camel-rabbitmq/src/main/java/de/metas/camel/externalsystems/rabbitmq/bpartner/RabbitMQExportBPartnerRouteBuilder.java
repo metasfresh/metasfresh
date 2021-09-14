@@ -26,7 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.rabbitmq.bpartner.processor.BPartnerDispatchMessageProcessor;
 import de.metas.camel.externalsystems.rabbitmq.bpartner.processor.ExportBPartnerProcessor;
-import de.metas.camel.externalsystems.rabbitmq.common.CamelRouteUtil;
+import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;

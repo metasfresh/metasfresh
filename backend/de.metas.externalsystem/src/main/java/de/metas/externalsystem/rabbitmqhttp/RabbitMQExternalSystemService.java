@@ -60,6 +60,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * Service to export BPartners (on future maybe other sorts of data) to external systems via {@link ExternalSystemType#RabbitMQ}.
+ */
 @Service
 public class RabbitMQExternalSystemService
 {
@@ -99,6 +102,9 @@ public class RabbitMQExternalSystemService
 				.build();
 	}
 
+	/**
+	 * Sends a {@link JsonExternalSystemRequest} that requests metasfresh-externalsystems to export the given {@code bpartnerId}.
+	 */
 	public void exportBPartner(
 			@NonNull final ExternalSystemRabbitMQConfigId externalSystemConfigRabbitMQId,
 			@NonNull final BPartnerId bpartnerId,
@@ -108,6 +114,11 @@ public class RabbitMQExternalSystemService
 				.ifPresent(externalSystemMessageSender::send);
 	}
 
+	/**
+	 * Similar to {@link #exportBPartner(ExternalSystemRabbitMQConfigId, BPartnerId, PInstanceId)}, but
+	 * <li>uses a debouncer, so it might send the same {@code bPartnerId} just once</li>
+	 * <li>uses the export-audit-log to check to which external systems the respective bpartner was exported in the past; then re-exports it to those systems</li>
+	 */
 	public void enqueueBPartnerSync(@NonNull final BPartnerId bPartnerId)
 	{
 		syncBPartnerDebouncer.add(bPartnerId);

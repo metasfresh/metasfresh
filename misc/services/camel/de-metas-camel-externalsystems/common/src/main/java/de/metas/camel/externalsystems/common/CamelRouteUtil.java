@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-rabbitmq
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.rabbitmq.common;
+package de.metas.camel.externalsystems.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;

@@ -68,7 +68,7 @@ public class BPartnerCompositeAuditService implements IMasterDataExportAuditServ
 	@Override
 	public void performDataAuditForRequest(@NonNull final GenericDataExportAuditRequest genericDataExportAuditRequest)
 	{
-		if (!matches(genericDataExportAuditRequest))
+		if (!isHandled(genericDataExportAuditRequest))
 		{
 			return;
 		}
@@ -96,7 +96,7 @@ public class BPartnerCompositeAuditService implements IMasterDataExportAuditServ
 	}
 
 	@Override
-	public boolean matches(@NonNull final GenericDataExportAuditRequest genericDataExportAuditRequest)
+	public boolean isHandled(@NonNull final GenericDataExportAuditRequest genericDataExportAuditRequest)
 	{
 		final AntPathMatcher antPathMatcher = new AntPathMatcher();
 

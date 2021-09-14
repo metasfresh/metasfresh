@@ -32,9 +32,6 @@ import de.metas.audit.apirequest.common.HttpHeadersWrapper;
 import de.metas.audit.apirequest.config.ApiAuditConfig;
 import de.metas.audit.apirequest.config.ApiAuditConfigId;
 import de.metas.audit.apirequest.config.ApiAuditConfigRepository;
-import de.metas.audit.data.ExternalSystemParentConfigId;
-import de.metas.audit.data.service.GenericDataExportAuditRequest;
-import de.metas.audit.data.IMasterDataExportAuditService;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
@@ -42,6 +39,9 @@ import de.metas.audit.apirequest.request.Status;
 import de.metas.audit.apirequest.request.log.ApiAuditRequestLogDAO;
 import de.metas.audit.apirequest.response.ApiResponseAudit;
 import de.metas.audit.apirequest.response.ApiResponseAuditRepository;
+import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.audit.data.service.CompositeDataAuditService;
+import de.metas.audit.data.service.GenericDataExportAuditRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.i18n.AdMessageKey;
@@ -122,7 +122,7 @@ public class ApiAuditService
 	private final ApiResponseAuditRepository apiResponseAuditRepository;
 	private final ApiAuditRequestLogDAO apiAuditRequestLogDAO;
 	private final UserGroupRepository userGroupRepository;
-	private final List<IMasterDataExportAuditService> masterDataExportAuditServices;
+	private final CompositeDataAuditService compositeDataAuditService;
 
 	private final WebClient webClient;
 	private final ConcurrentHashMap<UserId, HttpCallScheduler> callerId2Scheduler;
@@ -136,14 +136,14 @@ public class ApiAuditService
 			@NonNull final ApiResponseAuditRepository apiResponseAuditRepository,
 			@NonNull final ApiAuditRequestLogDAO apiAuditRequestLogDAO,
 			@NonNull final UserGroupRepository userGroupRepository,
-			@NonNull final List<IMasterDataExportAuditService> masterDataExportAuditServices)
+			@NonNull final CompositeDataAuditService compositeDataAuditService)
 	{
 		this.apiAuditConfigRepository = apiAuditConfigRepository;
 		this.apiRequestAuditRepository = apiRequestAuditRepository;
 		this.apiResponseAuditRepository = apiResponseAuditRepository;
 		this.apiAuditRequestLogDAO = apiAuditRequestLogDAO;
 		this.userGroupRepository = userGroupRepository;
-		this.masterDataExportAuditServices = masterDataExportAuditServices;
+		this.compositeDataAuditService = compositeDataAuditService;
 
 		this.webClient = WebClient.create();
 		this.callerId2Scheduler = new ConcurrentHashMap<>();
@@ -576,6 +576,7 @@ public class ApiAuditService
 
 		final Optional<HttpHeadersWrapper> requestHeaders = apiRequestAudit.getRequestHeaders(objectMapper);
 
+		// get the AD_PInstance_ID and external-config-id if they are specified in the headers
 		requestHeaders
 				.map(HttpHeadersWrapper::getKeyValueHeaders)
 				.map(headersMap -> headersMap.get(HEADER_EXTERNALSYSTEM_CONFIG_ID))
@@ -594,9 +595,7 @@ public class ApiAuditService
 
 		final GenericDataExportAuditRequest auditRequest = genericRequestBuilder.build();
 
-		masterDataExportAuditServices.stream()
-				.filter(masterDataAuditService -> masterDataAuditService.matches(auditRequest))
-				.forEach(masterDataAuditService -> masterDataAuditService.performDataAuditForRequest(auditRequest));
+		compositeDataAuditService.performDataAuditForRequest(auditRequest);
 	}
 
 	@Value

@@ -22,6 +22,7 @@
 
 package de.metas.audit.data;
 
+import de.metas.audit.data.model.CreateDataAuditLogRequest;
 import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.model.DataExportAuditLog;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
@@ -63,15 +64,15 @@ public class DataExportAuditLogRepositoryTest
 	public void save()
 	{
 		// given
-		final DataExportAuditLog dataExportAuditLog = DataExportAuditLog.builder()
+		final CreateDataAuditLogRequest dataAuditLogRequest = CreateDataAuditLogRequest.builder()
 				.dataExportAuditId(DataExportAuditId.ofRepoId(1))
-				.externalSystemConfigId(ExternalSystemParentConfigId.ofRepoId(2))
+				.externalSystemConfigId(ExternalSystemParentConfigId.ofRepoId(3))
 				.action(Action.AssignedToParent)
-				.adPInstanceId(PInstanceId.ofRepoId(3))
+				.adPInstanceId(PInstanceId.ofRepoId(4))
 				.build();
 
 		// when
-		final DataExportAuditLog result = dataExportAuditLogRepository.save(dataExportAuditLog);
+		final DataExportAuditLog result = dataExportAuditLogRepository.save(dataAuditLogRequest);
 
 		// then
 		expect(result).toMatchSnapshot();

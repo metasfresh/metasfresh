@@ -30,6 +30,7 @@ import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 
+@Deprecated
 public class CamelRouteUtil
 {
 	@NonNull

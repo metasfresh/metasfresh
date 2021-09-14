@@ -28,7 +28,7 @@ import de.metas.camel.externalsystems.rabbitmq.api.DispatchMessageRequest;
 import de.metas.camel.externalsystems.rabbitmq.api.JsonRabbitMQHttpMessage;
 import de.metas.camel.externalsystems.rabbitmq.api.JsonRabbitMQProperties;
 import de.metas.camel.externalsystems.rabbitmq.bpartner.ExportBPartnerRouteContext;
-import de.metas.camel.externalsystems.rabbitmq.common.ProcessorHelper;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import lombok.NonNull;
 import org.apache.camel.Exchange;

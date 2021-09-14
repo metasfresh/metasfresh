@@ -23,7 +23,6 @@
 package de.metas.externalsystem.rabbitmqhttp.process;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
@@ -43,8 +42,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
+import java.util.Iterator;
 
 public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
@@ -99,26 +97,27 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IPro
 	{
 		addLog("Calling with params: externalSystemConfigRabbitMQId {}", externalSystemConfigRabbitMQId);
 
-		final Set<BPartnerId> bPartnerIdSet = getSelectedBPartnerRecords()
-				.stream()
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.map(BPartnerId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+		final Iterator<I_C_BPartner> bPartnerIterator = getSelectedBPartnerRecords();
 
 		final ExternalSystemRabbitMQConfigId externalSystemRabbitMQConfigId = ExternalSystemRabbitMQConfigId.ofRepoId(externalSystemConfigRabbitMQId);
 
-		bPartnerIdSet.forEach(bpartnerId -> rabbitMQExternalSystemService.exportBPartner(externalSystemRabbitMQConfigId, bpartnerId, getPinstanceId()));
+		while (bPartnerIterator.hasNext())
+		{
+			final BPartnerId bPartnerId = BPartnerId.ofRepoId(bPartnerIterator.next().getC_BPartner_ID());
+
+			rabbitMQExternalSystemService.exportBPartner(externalSystemRabbitMQConfigId, bPartnerId, getPinstanceId());
+		}
 
 		return JavaProcess.MSG_OK;
 	}
 
 	@NonNull
-	private List<I_C_BPartner> getSelectedBPartnerRecords()
+	private Iterator<I_C_BPartner> getSelectedBPartnerRecords()
 	{
 		final IQueryBuilder<I_C_BPartner> bPartnerQuery = retrieveSelectedRecordsQueryBuilder(I_C_BPartner.class);
 
 		return bPartnerQuery
 				.create()
-				.listImmutable(I_C_BPartner.class);
+				.iterate(I_C_BPartner.class);
 	}
 }

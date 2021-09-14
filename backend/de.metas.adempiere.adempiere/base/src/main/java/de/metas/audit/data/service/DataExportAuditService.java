@@ -22,14 +22,17 @@
 
 package de.metas.audit.data.service;
 
+import de.metas.audit.data.model.CreateDataAuditLogRequest;
 import de.metas.audit.data.model.DataExportAudit;
 import de.metas.audit.data.model.DataExportAuditId;
-import de.metas.audit.data.model.DataExportAuditLog;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+/**
+ * "Low-level" service that handles the actual master data audit. Should be used by implementations of {@link de.metas.audit.data.IMasterDataExportAuditService}.
+ */
 @Service
 public class DataExportAuditService
 {
@@ -56,7 +59,7 @@ public class DataExportAuditService
 
 		final DataExportAudit savedDataExportAudit = dataExportAuditRepository.save(dataExportAuditBuilder.build());
 
-		final DataExportAuditLog newAuditLog = DataExportAuditLog.builder()
+		final CreateDataAuditLogRequest newAuditLog = CreateDataAuditLogRequest.builder()
 				.dataExportAuditId(savedDataExportAudit.getIdNotNull())
 				.action(dataExportAuditRequest.getAction())
 				.externalSystemConfigId(dataExportAuditRequest.getExternalSystemConfigId())

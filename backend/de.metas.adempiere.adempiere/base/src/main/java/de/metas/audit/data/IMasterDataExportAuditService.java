@@ -26,7 +26,13 @@ import de.metas.audit.data.service.GenericDataExportAuditRequest;
 
 public interface IMasterDataExportAuditService
 {
+	/**
+	 * Logs a data export according to the given request.
+	 */
 	void performDataAuditForRequest(GenericDataExportAuditRequest genericDataExportAuditRequest);
 
-	boolean matches(GenericDataExportAuditRequest genericDataExportAuditRequest);
+	/**
+	 * @return {@code true} this instance can handle the given request.
+	 */
+	boolean isHandled(GenericDataExportAuditRequest genericDataExportAuditRequest);
 }

@@ -32,9 +32,17 @@ import java.util.Optional;
 @UtilityClass
 public class JsonMapperUtil
 {
+	/**
+	 * Uses {@link JsonObjectMapperHolder} to make sure that the given {@code target} is serialized/deserialized into an instance of the given {@code type}.
+	 */
 	@NonNull
 	public <T> Optional<T> deserializeToType(@NonNull final Object target, @NonNull final Class<T> type)
 	{
+		if (type.isInstance(target))
+		{
+			return Optional.of((T)target);
+		}
+
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 		try

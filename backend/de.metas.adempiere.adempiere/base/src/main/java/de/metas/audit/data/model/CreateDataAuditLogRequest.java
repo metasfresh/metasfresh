@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-rabbitmq
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,24 +20,30 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.rabbitmq.common;
+package de.metas.audit.data.model;
 
+import de.metas.audit.data.Action;
+import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.process.PInstanceId;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-import org.apache.camel.Exchange;
+import lombok.Value;
 
-@UtilityClass
-public class ProcessorHelper
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class CreateDataAuditLogRequest
 {
-	public <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
-	{
-		final T property = exchange.getProperty(propertyName, propertyClass);
+	@NonNull
+	DataExportAuditId dataExportAuditId;
 
-		if (property == null)
-		{
-			throw new RuntimeException("Missing route property: " + propertyName + " !");
-		}
+	@NonNull
+	Action action;
 
-		return property;
-	}
+	@Nullable
+	ExternalSystemParentConfigId externalSystemConfigId;
+
+	@Nullable
+	PInstanceId adPInstanceId;
 }

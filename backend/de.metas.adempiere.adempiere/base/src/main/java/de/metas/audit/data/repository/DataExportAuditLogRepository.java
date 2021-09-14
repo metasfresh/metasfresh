@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.audit.data.Action;
 import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.audit.data.model.CreateDataAuditLogRequest;
 import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.model.DataExportAuditLog;
 import de.metas.audit.data.model.DataExportAuditLogId;
@@ -42,13 +43,17 @@ import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Note that so far we didn't have a use-case of loading an {@link de.metas.audit.data.model.DataExportAudit} together with (all) its audit-logs.
+ * We rather just need the logs stand-alone. Hence this stand-alone repo.
+ */
 @Repository
 public class DataExportAuditLogRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public DataExportAuditLog save(@NonNull final DataExportAuditLog logEntry)
+	public DataExportAuditLog save(@NonNull final CreateDataAuditLogRequest logEntry)
 	{
 		final I_Data_Export_Audit_Log record = InterfaceWrapperHelper.newInstance(I_Data_Export_Audit_Log.class);
 
@@ -91,8 +96,7 @@ public class DataExportAuditLogRepository
 	private DataExportAuditLog recordToDataExportAuditLog(@NonNull final I_Data_Export_Audit_Log record)
 	{
 		return DataExportAuditLog.builder()
-				.dataExportAuditLogId(DataExportAuditLogId.ofRepoId(record.getData_Export_Audit_Log_ID()))
-				.dataExportAuditId(DataExportAuditId.ofRepoId(record.getData_Export_Audit_ID()))
+				.dataExportAuditLogId(DataExportAuditLogId.ofRepoId(DataExportAuditId.ofRepoId(record.getData_Export_Audit_ID()), record.getData_Export_Audit_Log_ID()))
 				.action(Action.ofCode(record.getData_Export_Action()))
 				.externalSystemConfigId(ExternalSystemParentConfigId.ofRepoIdOrNull(record.getExternalSystem_Config_ID()))
 				.adPInstanceId(PInstanceId.ofRepoIdOrNull(record.getAD_PInstance_ID()))

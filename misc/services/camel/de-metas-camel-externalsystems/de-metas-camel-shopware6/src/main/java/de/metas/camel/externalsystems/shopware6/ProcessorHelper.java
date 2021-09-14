@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 
+@Deprecated
 public class ProcessorHelper
 {
 	public static  <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)

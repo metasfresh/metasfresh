@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,47 +20,24 @@
  * #L%
  */
 
-package de.metas.camel.alberta;
+package de.metas.camel.externalsystems.common;
 
-import de.metas.camel.externalsystems.common.LogMessageRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 import org.apache.camel.Exchange;
 
-import javax.annotation.Nullable;
-
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
-
-@Deprecated
+@UtilityClass
 public class ProcessorHelper
 {
-	public static  <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
+	public <T> T getPropertyOrThrowError(@NonNull final Exchange exchange, @NonNull final String propertyName, @NonNull final Class<T> propertyClass)
 	{
 		final T property = exchange.getProperty(propertyName, propertyClass);
+
 		if (property == null)
 		{
 			throw new RuntimeException("Missing route property: " + propertyName + " !");
 		}
 
 		return property;
-	}
-
-	public static void logProcessMessage(
-			@NonNull final Exchange exchange,
-			@NonNull final String message,
-			@Nullable final Integer adPInstanceId)
-	{
-		if (adPInstanceId == null)
-		{
-			return; //nothing to do
-		}
-
-		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
-				.logMessage(message)
-				.pInstanceId(JsonMetasfreshId.of(adPInstanceId))
-				.build();
-
-		exchange.getContext().createProducerTemplate()
-				.sendBody("direct:" + MF_LOG_MESSAGE_ROUTE_ID, logMessageRequest);
 	}
 }
