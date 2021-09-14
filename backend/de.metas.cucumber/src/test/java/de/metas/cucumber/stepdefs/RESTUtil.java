@@ -300,7 +300,7 @@ public class RESTUtil
 			if (EmptyUtil.isNotBlank(log.getLogmessage()))
 			{
 				logger.info("*** API_Request_Audit_ID : {} - API_Request_Audit_Log_ID -> {}\n Log message -> {}", 
-							apiRequestAuditId.getRepoId(), log.getAPI_Request_Audit_ID(), log.getLogmessage());
+							apiRequestAuditId.getRepoId(), log.getAPI_Request_Audit_Log_ID(), log.getLogmessage());
 			}
 		});
 
