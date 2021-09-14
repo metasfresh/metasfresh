@@ -34,7 +34,7 @@ import lombok.Value;
 import java.time.LocalDate;
 
 @Value
-public class SalesRepPricingResultRequest
+public class ComputeSalesRepPriceRequest
 {
 	@NonNull
 	BPartnerId salesRepId;
@@ -55,7 +55,7 @@ public class SalesRepPricingResultRequest
 	LocalDate commissionDate;
 
 	@Builder
-	public SalesRepPricingResultRequest(
+	public ComputeSalesRepPriceRequest(
 			@NonNull final BPartnerId salesRepId,
 			@NonNull final SOTrx soTrx,
 			@NonNull final ProductId productId,

@@ -94,7 +94,7 @@ public class CustomerTradeMarginService
 	}
 
 	@NonNull
-	public Optional<ProductPrice> calculateSalesRepNetUnitPrice(@NonNull final SalesRepPricingResultRequest request)
+	public Optional<ProductPrice> calculateSalesRepNetUnitPrice(@NonNull final ComputeSalesRepPriceRequest request)
 	{
 		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(request.getSalesRepId(), request.getSoTrx());
 
@@ -167,7 +167,7 @@ public class CustomerTradeMarginService
 	private Money deductTaxes(
 			@NonNull final OrgId salesRepOrgId,
 			@NonNull final I_C_BPartner_Location salesRepBillToLocation,
-			@NonNull final SalesRepPricingResultRequest request,
+			@NonNull final ComputeSalesRepPriceRequest request,
 			@NonNull final IPricingResult salesRepPricingResult)
 	{
 		final BPartnerLocationId salesRepBillToLocationId = BPartnerLocationId.ofRepoId(salesRepBillToLocation.getC_BPartner_ID(),
@@ -200,7 +200,7 @@ public class CustomerTradeMarginService
 	@NonNull
 	private Money convertToCustomerCurrency(
 			@NonNull final OrgId salesRepOrgId,
-			@NonNull final SalesRepPricingResultRequest request,
+			@NonNull final ComputeSalesRepPriceRequest request,
 			@NonNull final Money salesRepUnitPrice)
 	{
 		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(request.getCommissionDate(),
