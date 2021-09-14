@@ -642,6 +642,13 @@ public class C_Flatrate_Term
 		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
 	}
 
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void ensureOneMediatedContractBeforeComplete(@NonNull final I_C_Flatrate_Term term)
+	{
+		flatrateBL.ensureOneContractOfGivenType(term, TypeConditions.MEDIATED_COMMISSION);
+	}
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE
