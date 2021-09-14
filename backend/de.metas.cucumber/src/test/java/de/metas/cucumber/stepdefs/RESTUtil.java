@@ -39,7 +39,6 @@ import de.metas.security.Role;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.security.UserAuthTokenFilter;
 import lombok.NonNull;
