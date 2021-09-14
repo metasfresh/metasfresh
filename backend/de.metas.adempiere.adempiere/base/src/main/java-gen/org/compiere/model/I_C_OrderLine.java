@@ -222,6 +222,31 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Value_ID (int C_BPartner_Location_Value_ID);
+
+	/**
+	 * Get Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BPartner_Location_Value();
+
+	void setC_BPartner_Location_Value(@Nullable org.compiere.model.I_C_Location C_BPartner_Location_Value);
+
+	ModelColumn<I_C_OrderLine, org.compiere.model.I_C_Location> COLUMN_C_BPartner_Location_Value_ID = new ModelColumn<>(I_C_OrderLine.class, "C_BPartner_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
+
+	/**
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
@@ -514,8 +539,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Steuerkategorie.
-	 * Steuerkategorie
+	 * Set Tax Category.
+	 * Tax Category
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -524,8 +549,8 @@ public interface I_C_OrderLine
 	void setC_TaxCategory_ID (int C_TaxCategory_ID);
 
 	/**
-	 * Get Steuerkategorie.
-	 * Steuerkategorie
+	 * Get Tax Category.
+	 * Tax Category
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -693,7 +718,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Rabatt %.
+	 * Set Discount %.
 	 * Discount in percent
 	 *
 	 * <br>Type: Number
@@ -703,7 +728,7 @@ public interface I_C_OrderLine
 	void setDiscount (@Nullable BigDecimal Discount);
 
 	/**
-	 * Get Rabatt %.
+	 * Get Discount %.
 	 * Discount in percent
 	 *
 	 * <br>Type: Number
@@ -1051,8 +1076,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsIndividualDescription = "IsIndividualDescription";
 
 	/**
-	 * Set Manueller Rabatt.
-	 * Ein Rabatt, der von Hand eingetragen wurde, wird vom Provisionssystem nicht überschrieben
+	 * Set Discount Manual.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1061,8 +1085,7 @@ public interface I_C_OrderLine
 	void setIsManualDiscount (boolean IsManualDiscount);
 
 	/**
-	 * Get Manueller Rabatt.
-	 * Ein Rabatt, der von Hand eingetragen wurde, wird vom Provisionssystem nicht überschrieben
+	 * Get Discount Manual.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1097,7 +1120,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsManualPaymentTerm = "IsManualPaymentTerm";
 
 	/**
-	 * Set Manueller Preis.
+	 * Set Manual Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1106,7 +1129,7 @@ public interface I_C_OrderLine
 	void setIsManualPrice (boolean IsManualPrice);
 
 	/**
-	 * Get Manueller Preis.
+	 * Get Manual Price.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1348,8 +1371,8 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
 
 	/**
-	 * Set Rabatt Schema.
-	 * Schema um den prozentualen Rabatt zu berechnen
+	 * Set Discount Schema.
+	 * Schema to calculate the trade discount percentage
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1358,8 +1381,8 @@ public interface I_C_OrderLine
 	void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
 
 	/**
-	 * Get Rabatt Schema.
-	 * Schema um den prozentualen Rabatt zu berechnen
+	 * Get Discount Schema.
+	 * Schema to calculate the trade discount percentage
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1580,6 +1603,29 @@ public interface I_C_OrderLine
 	String COLUMNNAME_OrderDiscount = "OrderDiscount";
 
 	/**
+	 * Set Minimum Order Qty.
+	 * Minimum order quantity in UOM
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrder_Min (@Nullable BigDecimal Order_Min);
+
+	/**
+	 * Get Minimum Order Qty.
+	 * Minimum order quantity in UOM
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOrder_Min();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Order_Min = new ModelColumn<>(I_C_OrderLine.class, "Order_Min", null);
+	String COLUMNNAME_Order_Min = "Order_Min";
+
+	/**
 	 * Set Payment Discount %.
 	 *
 	 * <br>Type: Amount
@@ -1733,8 +1779,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_PriceCost = "PriceCost";
 
 	/**
-	 * Set Preis.
-	 * Price Entered - the price based on the selected/base UoM
+	 * Set Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -1743,8 +1788,7 @@ public interface I_C_OrderLine
 	void setPriceEntered (BigDecimal PriceEntered);
 
 	/**
-	 * Get Preis.
-	 * Price Entered - the price based on the selected/base UoM
+	 * Get Price imp..
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: true
@@ -2343,6 +2387,28 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_TaxAmtInfo = new ModelColumn<>(I_C_OrderLine.class, "TaxAmtInfo", null);
 	String COLUMNNAME_TaxAmtInfo = "TaxAmtInfo";
+
+	/**
+	 * Set TradeBom_Product_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTradeBom_Product_ID (int TradeBom_Product_ID);
+
+	/**
+	 * Get TradeBom_Product_ID.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getTradeBom_Product_ID();
+
+	String COLUMNNAME_TradeBom_Product_ID = "TradeBom_Product_ID";
 
 	/**
 	 * Set Traded Commission Percent.

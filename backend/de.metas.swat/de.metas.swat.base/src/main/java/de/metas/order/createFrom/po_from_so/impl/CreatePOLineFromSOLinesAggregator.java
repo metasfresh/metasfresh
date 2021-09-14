@@ -9,6 +9,7 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IModelAttributeSetInstanceListener;
@@ -134,12 +135,11 @@ class CreatePOLineFromSOLinesAggregator extends MapReduceAggregator<I_C_OrderLin
 		purchaseOrderLine.setDescription(salesOrderLine.getDescription());
 
 		final Timestamp datePromised = CoalesceUtil.coalesceSuppliers(
-				() -> salesOrderLine.getDatePromised(),
+				salesOrderLine::getDatePromised,
 				() -> salesOrderLine.getC_Order().getDatePromised());
 		purchaseOrderLine.setDatePromised(datePromised);
 
-		purchaseOrderLine.setC_BPartner_ID(purchaseOrder.getC_BPartner_ID());
-		purchaseOrderLine.setC_BPartner_Location_ID(purchaseOrder.getC_BPartner_Location_ID());
+		OrderLineDocumentLocationAdapterFactory.locationAdapter(purchaseOrderLine).setFromOrderHeader(purchaseOrder);
 
 		copyUserIdFromSalesToPurchaseOrderLine(salesOrderLine, purchaseOrderLine);
 
