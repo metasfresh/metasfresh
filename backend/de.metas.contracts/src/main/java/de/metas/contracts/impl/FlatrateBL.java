@@ -88,6 +88,7 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.time.InstantInterval;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -129,7 +130,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -1954,25 +1954,26 @@ public class FlatrateBL implements IFlatrateBL
 			return;
 		}
 
-		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(term.getAD_Org_ID()));
-		final BPartnerId billPartnerId = BPartnerId.ofRepoId(term.getBill_BPartner_ID());
-
-		final IFlatrateDAO.TermsQuery termsQuery = IFlatrateDAO.TermsQuery.builder()
-				.billPartnerId(billPartnerId)
-				.orgId(OrgId.ofRepoId(term.getAD_Org_ID()))
-				.dateOrdered(Objects.requireNonNull(TimeUtil.asLocalDate(term.getStartDate(), timeZone)))
-				.build();
-
-		final List<I_C_Flatrate_Term> contractTerms = flatrateDAO.retrieveTerms(termsQuery);
-
-		if (Check.isEmpty(contractTerms))
+		if (term.getEndDate() == null)
 		{
-			return;
+			return; //not ready yet
 		}
 
-		final List<Integer> existingContractsOfTargetType = contractTerms.stream()
+		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
+		final BPartnerId billPartnerId = BPartnerId.ofRepoId(term.getBill_BPartner_ID());
+
+		final List<I_C_Flatrate_Term> existingContracts = flatrateDAO.retrieveTerms(billPartnerId, orgId, targetConditions);
+
+		final InstantInterval newContractInterval = InstantInterval.of(TimeUtil.asInstantNonNull(term.getStartDate()), TimeUtil.asInstantNonNull(term.getEndDate()));
+
+		final List<Integer> existingContractsOfTargetType = existingContracts.stream()
 				.filter(existingContract -> targetConditions.getCode().equals(existingContract.getType_Conditions()))
 				.filter(existingContract -> existingContract.getC_Flatrate_Term_ID() != term.getC_Flatrate_Term_ID())
+				.filter(existingContract -> existingContract.getEndDate() != null)
+				.filter(existingContract -> {
+					final InstantInterval existingContractInterval = InstantInterval.of(TimeUtil.asInstantNonNull(existingContract.getStartDate()), TimeUtil.asInstantNonNull(existingContract.getEndDate()));
+					return newContractInterval.getIntersectionWith(existingContractInterval).isPresent();
+				})
 				.map(I_C_Flatrate_Term::getC_Flatrate_Term_ID)
 				.collect(ImmutableList.toImmutableList());
 

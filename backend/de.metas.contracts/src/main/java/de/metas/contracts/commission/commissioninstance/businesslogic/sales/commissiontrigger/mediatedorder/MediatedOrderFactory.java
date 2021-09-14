@@ -39,8 +39,12 @@
  import de.metas.organization.IOrgDAO;
  import de.metas.organization.OrgId;
  import de.metas.product.ProductId;
+ import de.metas.quantity.Quantity;
  import de.metas.tax.api.ITaxDAO;
  import de.metas.tax.api.Tax;
+ import de.metas.uom.IUOMConversionBL;
+ import de.metas.uom.IUOMDAO;
+ import de.metas.uom.UomId;
  import de.metas.util.Check;
  import de.metas.util.Loggables;
  import de.metas.util.Services;
@@ -68,6 +72,8 @@
 	 private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	 private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	 private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	 private final IUOMConversionBL uomConversionService = Services.get(IUOMConversionBL.class);
+	 private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 
 	 private final CommissionProductService commissionProductService;
 
@@ -138,7 +144,7 @@
 	 }
 
 	 @NonNull
-	 private Optional<MediatedOrderLine> toMediatedOrderLine(@NonNull final I_C_OrderLine orderLine,final boolean isTaxIncluded)
+	 private Optional<MediatedOrderLine> toMediatedOrderLine(@NonNull final I_C_OrderLine orderLine, final boolean isTaxIncluded)
 	 {
 		 if (commissionProductService.productPreventsCommissioning(ProductId.ofRepoId(orderLine.getM_Product_ID())))
 		 {
@@ -165,7 +171,15 @@
 		 final Tax taxRecord = taxDAO.getTaxById(orderLine.getC_Tax_ID());
 		 final CurrencyPrecision precision = orderLineBL.extractPricePrecision(orderLine);
 
-		 final BigDecimal priceForOrderedQty = orderLine.getQtyOrdered().multiply(orderLine.getPriceActual());
+		 final UomId stockUOMId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+		 final UomId priceUOMId = UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID());
+		 final Quantity orderedQtyStock = Quantity.of(orderLine.getQtyOrdered(), uomDao.getById(stockUOMId));
+
+		 final Quantity orderedQtyPriceUOM = priceUOMId != null
+				 ? uomConversionService.convertQuantityTo(orderedQtyStock, ProductId.ofRepoId(orderLine.getM_Product_ID()), priceUOMId)
+				 : orderedQtyStock;
+
+		 final BigDecimal priceForOrderedQty = orderedQtyPriceUOM.toBigDecimal().multiply(orderLine.getPriceActual());
 
 		 final BigDecimal taxAdjustedAmount = taxRecord.calculateBaseAmt(
 				 priceForOrderedQty,
