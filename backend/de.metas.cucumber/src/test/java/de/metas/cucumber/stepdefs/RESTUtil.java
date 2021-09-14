@@ -23,20 +23,28 @@
 package de.metas.cucumber.stepdefs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.audit.request.ApiRequestAuditId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
+import de.metas.serviceprovider.issue.IssueId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.web.security.UserAuthTokenFilter;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.http.Header;
@@ -50,14 +58,20 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_AD_User_AuthToken;
+import org.compiere.model.I_API_Request_Audit;
+import org.compiere.model.I_API_Request_Audit_Log;
+import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import static de.metas.util.web.MetasfreshRestAPIConstants.ENDPOINT_API_V2;
 import static org.assertj.core.api.Assertions.*;
@@ -65,6 +79,7 @@ import static org.assertj.core.api.Assertions.*;
 @UtilityClass
 public class RESTUtil
 {
+	private static final Logger logger = LogManager.getLogger(RESTUtil.class);
 
 	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
@@ -121,7 +136,6 @@ public class RESTUtil
 		}
 
 		final HttpResponse response = httpClient.execute(request);
-		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
 
 		final Header contentType = response.getEntity().getContentType();
 		final APIResponse.APIResponseBuilder apiResponseBuilder = APIResponse.builder();
@@ -143,11 +157,15 @@ public class RESTUtil
 			content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
 
 			apiResponseBuilder.requestId(jsonApiResponse.getRequestId());
+
+			logDetails(jsonApiResponse);
 		}
 		else
 		{
 			content = stream.toString(StandardCharsets.UTF_8.name());
 		}
+
+		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
 
 		return apiResponseBuilder
 				.content(content)
@@ -252,5 +270,54 @@ public class RESTUtil
 		setHeaders(request, authToken);
 
 		return request;
+	}
+
+	private void logDetails(@NonNull final JsonApiResponse apiResponse)
+	{
+		final JsonMetasfreshId id = apiResponse.getRequestId();
+
+		final ApiRequestAuditId apiRequestAuditId = ApiRequestAuditId.ofRepoId(id.getValue());
+
+		final I_API_Request_Audit apiRequestAuditRecord = InterfaceWrapperHelper.load(apiRequestAuditId, I_API_Request_Audit.class);
+
+		logger.info("*** API_Request_Audit_ID : {}\n Path ->  {}\n RequestHttpHeaders -> {}\n RequestBody -> {}",
+					apiRequestAuditId.getRepoId(), apiRequestAuditRecord.getPath(), apiRequestAuditRecord.getHttpHeaders(), apiRequestAuditRecord.getBody());
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		queryBL.createQueryBuilder(I_API_Response_Audit.class)
+				.addEqualsFilter(I_API_Response_Audit.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId)
+				.create()
+				.stream()
+				.forEach(auditResponse -> logger.info("*** API_Request_Audit_ID : {}\n API_Response_Audit_ID -> {}\n ResponseHttpCode -> {}\n ResponseHttpHeaders ->  {}\n ResponseBody ->  {}",
+											   apiRequestAuditId.getRepoId(), auditResponse.getAPI_Response_Audit_ID(), auditResponse.getHttpCode(), auditResponse.getHttpHeaders(), auditResponse.getBody()));
+
+		final ImmutableList<I_API_Request_Audit_Log> apiReqLogs = queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
+				.addEqualsFilter(I_API_Request_Audit_Log.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId)
+				.create()
+				.listImmutable(I_API_Request_Audit_Log.class);
+
+		apiReqLogs
+				.stream()
+				.map(I_API_Request_Audit_Log::getLogmessage)
+				.filter(Check::isNotBlank)
+				.forEach(logMessage -> logger.info("*** API_Request_Audit_ID : {}\n Log message -> {}",  apiRequestAuditId.getRepoId(), logMessage));
+
+		final ImmutableSet<IssueId> issueIds = apiReqLogs.stream()
+				.map(o -> IssueId.ofRepoIdOrNull(o.getAD_Issue_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (issueIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_AD_Issue.class)
+				.addInArrayFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, issueIds)
+				.create()
+				.stream()
+				.forEach(issue -> logger.info("*** API_Request_Audit_ID : {}\n IssueSummary -> {}\n StackTrace -> {}",
+											  apiRequestAuditId.getRepoId(), issue.getIssueSummary(), issue.getStackTrace()));
 	}
 }
