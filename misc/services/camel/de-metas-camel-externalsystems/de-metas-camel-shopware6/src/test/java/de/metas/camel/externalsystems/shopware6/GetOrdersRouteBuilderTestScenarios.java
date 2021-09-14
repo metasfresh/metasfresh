@@ -36,6 +36,7 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.util.Properties;
 
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_STORE_RAW_DATA;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.GET_ORDERS_PROCESSOR_ID;
@@ -108,6 +109,10 @@ public class GetOrdersRouteBuilderTestScenarios extends CamelTestSupport
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
 							  advice -> {
+								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.STORE_RAW_DATA_ROUTE)
+										  .skipSendToOriginalEndpoint()
+										  .to(MOCK_STORE_RAW_DATA);
+			
 								  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
 										  .replace()
 										  .process(failingMockUpsertBPartnerProcessor);

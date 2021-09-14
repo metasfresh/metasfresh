@@ -1,22 +1,11 @@
 package de.metas.ui.web.document.filter.provider.userQuery;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import org.compiere.apps.search.IUserQuery;
-import org.compiere.apps.search.IUserQueryRestriction;
-import org.compiere.apps.search.IUserQueryRestriction.Join;
-import org.compiere.apps.search.UserQueryRepository;
-import org.compiere.model.I_AD_UserQuery;
-import org.slf4j.Logger;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.cache.CachedSuppliers;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
@@ -27,8 +16,23 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.service.IADReferenceDAO;
+import org.compiere.apps.search.IUserQuery;
+import org.compiere.apps.search.IUserQueryRestriction;
+import org.compiere.apps.search.IUserQueryRestriction.Join;
+import org.compiere.apps.search.UserQueryRepository;
+import org.compiere.model.I_AD_UserQuery;
+import org.compiere.model.MQuery;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -55,7 +59,7 @@ import lombok.NonNull;
 class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
 	private static final Logger logger = LogManager.getLogger(UserQueryDocumentFilterDescriptorsProvider.class);
-
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final UserQueryRepository repository;
 
 	private final Supplier<ImmutableMap<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);
@@ -77,7 +81,7 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 		return filtersSupplier.get().get(filterId);
 	}
 
-	private final ImmutableMap<String, DocumentFilterDescriptor> retrieveAllByFilterId()
+	private ImmutableMap<String, DocumentFilterDescriptor> retrieveAllByFilterId()
 	{
 		final ArrayList<DocumentFilterDescriptor> filters = new ArrayList<>();
 		for (final IUserQuery userQuery : repository.getUserQueries())
@@ -93,7 +97,8 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 		return Maps.uniqueIndex(filters, DocumentFilterDescriptor::getFilterId);
 	}
 
-	private final DocumentFilterDescriptor createFilterDescriptorOrNull(@NonNull final IUserQuery userQuery, final int sortNo)
+	@Nullable
+	private DocumentFilterDescriptor createFilterDescriptorOrNull(@NonNull final IUserQuery userQuery, final int sortNo)
 	{
 		try
 		{
@@ -111,7 +116,7 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 		}
 	}
 
-	private static final DocumentFilterDescriptor createFilterDescriptor0(
+	private DocumentFilterDescriptor createFilterDescriptor0(
 			@NonNull final IUserQuery userQuery,
 			final int sortNo)
 	{
@@ -137,33 +142,56 @@ class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescri
 
 			if (!queryRestriction.isInternalParameter())
 			{
-				final ITranslatableString displayName = searchField.getDisplayName();
 				final DocumentFieldWidgetType widgetType = searchField.getWidgetType();
 				final Optional<LookupDescriptor> lookupDescriptor = searchField.getLookupDescriptor();
 
 				filter.addParameter(DocumentFilterParamDescriptor.builder()
-						.setJoinAnd(join == Join.AND)
-						.setDisplayName(displayName)
-						.setFieldName(fieldName)
-						.setWidgetType(widgetType)
-						.setOperator(operator)
-						.setDefaultValue(value)
-						.setDefaultValueTo(valueTo)
-						.setMandatory(queryRestriction.isMandatory())
-						.setLookupDescriptor(lookupDescriptor));
+											.setJoinAnd(join == Join.AND)
+											.setDisplayName(computeParameterDisplayName(queryRestriction))
+											.setFieldName(fieldName)
+											.setWidgetType(widgetType)
+											.setOperator(operator)
+											.setDefaultValue(value)
+											.setDefaultValueTo(valueTo)
+											.setMandatory(queryRestriction.isMandatory())
+											.setLookupDescriptor(lookupDescriptor));
 			}
 			else
 			{
 				filter.addInternalParameter(DocumentFilterParam.builder()
-						.setJoinAnd(join == Join.AND)
-						.setFieldName(fieldName)
-						.setOperator(operator)
-						.setValue(value)
-						.setValueTo(valueTo)
-						.build());
+													.setJoinAnd(join == Join.AND)
+													.setFieldName(fieldName)
+													.setOperator(operator)
+													.setValue(value)
+													.setValueTo(valueTo)
+													.build());
 			}
 		}
 
 		return filter.build();
+	}
+
+	private ITranslatableString computeParameterDisplayName(@NonNull final IUserQueryRestriction queryRestriction)
+	{
+		final TranslatableStringBuilder displayName = TranslatableStrings.builder();
+
+		return TranslatableStrings.join(
+				" ",
+				queryRestriction.getSearchField().getDisplayName(),
+				computeOperatorDisplayName(queryRestriction.getOperator()));
+	}
+
+	private ITranslatableString computeOperatorDisplayName(@NonNull final MQuery.Operator operator)
+	{
+		if (operator == MQuery.Operator.NOT_EQUAL
+				|| operator == MQuery.Operator.NOT_LIKE
+				|| operator == MQuery.Operator.NOT_LIKE_I)
+		{
+			return TranslatableStrings.anyLanguage("\u26D4");
+		}
+		else
+		{
+			return TranslatableStrings.empty();
+		}
 	}
 }
