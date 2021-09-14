@@ -5,9 +5,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
-import de.metas.acct.api.IProductAcctDAO;
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
@@ -167,12 +164,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		icRecord.setQtyToInvoice(BigDecimal.ZERO); // to be computed
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
-
-		if (orderLine.getPriceEntered().compareTo(orderLine.getPriceStd()) == 0)
-		{
-			icRecord.setBase_Commission_Points_Per_Price_UOM(orderLine.getBase_Commission_Points_Per_Price_UOM());
-			icRecord.setTraded_Commission_Percent(orderLine.getTraded_Commission_Percent());
-		}
 
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 

@@ -255,6 +255,7 @@ public class MediatedOrderFactoryTest
 		mediatedLine.setAD_Org_ID(orgId.getRepoId());
 		mediatedLine.setPriceActual(priceActual);
 		mediatedLine.setQtyOrdered(qtyOrdered);
+		mediatedLine.setQtyEntered(qtyOrdered);
 		mediatedLine.setC_Tax_ID(taxRecord.getC_Tax_ID());
 		mediatedLine.setC_UOM_ID(uomRecord.getC_UOM_ID());
 		InterfaceWrapperHelper.saveRecord(mediatedLine);

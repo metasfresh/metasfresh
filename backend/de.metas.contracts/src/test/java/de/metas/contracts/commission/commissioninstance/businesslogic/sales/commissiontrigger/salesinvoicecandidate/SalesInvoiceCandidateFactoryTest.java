@@ -95,6 +95,7 @@ class SalesInvoiceCandidateFactoryTest
 		icRecord.setDateOrdered(TimeUtil.parseTimestamp("2020-03-21"));
 
 		icRecord.setQtyEntered(new BigDecimal("50"));
+		icRecord.setQtyOrdered(new BigDecimal("50"));
 
 		icRecord.setNetAmtToInvoice(new BigDecimal("300"));
 		icRecord.setQtyToInvoiceInUOM(new BigDecimal("30"));
