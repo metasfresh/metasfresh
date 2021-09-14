@@ -289,25 +289,26 @@ public class RESTUtil
 				.addEqualsFilter(I_API_Response_Audit.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId)
 				.create()
 				.stream()
-				.forEach(auditResponse -> logger.info("*** API_Request_Audit_ID : {}\n API_Response_Audit_ID -> {}\n ResponseHttpCode -> {}\n ResponseHttpHeaders ->  {}\n ResponseBody ->  {}",
-											   apiRequestAuditId.getRepoId(), auditResponse.getAPI_Response_Audit_ID(), auditResponse.getHttpCode(), auditResponse.getHttpHeaders(), auditResponse.getBody()));
+				.forEach(auditResponse -> logger.info("*** API_Request_Audit_ID : {} - API_Response_Audit_ID -> {}\n ResponseHttpCode -> {}\n ResponseHttpHeaders ->  {}\n ResponseBody ->  {}",
+													  apiRequestAuditId.getRepoId(), auditResponse.getAPI_Response_Audit_ID(), auditResponse.getHttpCode(), auditResponse.getHttpHeaders(), auditResponse.getBody()));
 
 		final ImmutableList<I_API_Request_Audit_Log> apiReqLogs = queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
 				.addEqualsFilter(I_API_Request_Audit_Log.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId)
 				.create()
 				.listImmutable(I_API_Request_Audit_Log.class);
 
-		apiReqLogs
-				.stream()
-				.map(I_API_Request_Audit_Log::getLogmessage)
-				.filter(Check::isNotBlank)
-				.forEach(logMessage -> logger.info("*** API_Request_Audit_ID : {}\n Log message -> {}",  apiRequestAuditId.getRepoId(), logMessage));
+		apiReqLogs.forEach(log -> {
+			if (EmptyUtil.isNotBlank(log.getLogmessage()))
+			{
+				logger.info("*** API_Request_Audit_ID : {} - API_Request_Audit_Log_ID -> {}\n Log message -> {}", 
+							apiRequestAuditId.getRepoId(), log.getAPI_Request_Audit_ID(), log.getLogmessage());
+			}
+		});
 
 		final ImmutableSet<IssueId> issueIds = apiReqLogs.stream()
 				.map(o -> IssueId.ofRepoIdOrNull(o.getAD_Issue_ID()))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-
 		if (issueIds.isEmpty())
 		{
 			return;
@@ -317,7 +318,7 @@ public class RESTUtil
 				.addInArrayFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, issueIds)
 				.create()
 				.stream()
-				.forEach(issue -> logger.info("*** API_Request_Audit_ID : {}\n IssueSummary -> {}\n StackTrace -> {}",
-											  apiRequestAuditId.getRepoId(), issue.getIssueSummary(), issue.getStackTrace()));
+				.forEach(issue -> logger.info("*** API_Request_Audit_ID : {} - AD_Issue_ID -> {} \n IssueSummary -> {}\n StackTrace -> {}",
+											  apiRequestAuditId.getRepoId(), issue.getAD_Issue_ID(), issue.getIssueSummary(), issue.getStackTrace()));
 	}
 }
