@@ -170,7 +170,7 @@
     "react-popper": "2.2.5",
     "react-redux": "7.2.5",
     "react-router": "5.2.1",
-    "react-router-dom": "5.2.1",
+    "react-router-dom": "5.3.0",
     "react-tagsinput": "3.19.0",
     "react-tether": "2.0.8",
     "react-transition-group": "4.4.2",
