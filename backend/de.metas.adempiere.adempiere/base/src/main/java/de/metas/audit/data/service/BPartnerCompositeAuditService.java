@@ -77,21 +77,21 @@ public class BPartnerCompositeAuditService implements IMasterDataExportAuditServ
 		final PInstanceId pInstanceId = genericDataExportAuditRequest.getPInstanceId();
 
 		final Object exportedObject = genericDataExportAuditRequest.getExportedObject();
-		final Optional<JsonResponseComposite> bpartnerComposite = JsonMapperUtil.deserializeToType(exportedObject, JsonResponseComposite.class);
+		final Optional<JsonResponseComposite> bpartnerComposite = JsonMapperUtil.tryDeserializeToType(exportedObject, JsonResponseComposite.class);
 		if (bpartnerComposite.isPresent())
 		{
 			auditBPartnerComposite(bpartnerComposite.get(), externalSystemParentConfigId, pInstanceId);
 			return;
 		}
 
-		final Optional<JsonResponseLocation> bpartnerLocationComposite = JsonMapperUtil.deserializeToType(exportedObject, JsonResponseLocation.class);
+		final Optional<JsonResponseLocation> bpartnerLocationComposite = JsonMapperUtil.tryDeserializeToType(exportedObject, JsonResponseLocation.class);
 		if (bpartnerLocationComposite.isPresent())
 		{
 			auditBPartnerLocation(bpartnerLocationComposite.get(), null/*dataExportParentId*/, externalSystemParentConfigId, pInstanceId);
 			return;
 		}
 
-		final Optional<JsonResponseContact> adUserComposite = JsonMapperUtil.deserializeToType(exportedObject, JsonResponseContact.class);
+		final Optional<JsonResponseContact> adUserComposite = JsonMapperUtil.tryDeserializeToType(exportedObject, JsonResponseContact.class);
 		adUserComposite.ifPresent(jsonResponseContact -> auditAdUser(jsonResponseContact, null/*dataExportParentId*/, externalSystemParentConfigId, pInstanceId));
 	}
 

@@ -31,6 +31,9 @@ import javax.annotation.Nullable;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 
+/**
+ * @deprecated please use (and extend if needed) {@link de.metas.camel.externalsystems.common.ProcessorHelper}.
+ */
 @Deprecated
 public class ProcessorHelper
 {

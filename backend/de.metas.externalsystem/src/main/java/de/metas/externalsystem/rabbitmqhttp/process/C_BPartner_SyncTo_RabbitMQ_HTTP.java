@@ -47,7 +47,7 @@ import java.util.Iterator;
 public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final RabbitMQExternalSystemService rabbitMQExternalSystemService = SpringContextHolder.instance.getBean(RabbitMQExternalSystemService.class);
-	private final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
 	private static final String PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID = "ExternalSystem_Config_RabbitMQ_HTTP_ID";
 	@Param(parameterName = PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID)
@@ -59,7 +59,7 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IPro
 	{
 		if (PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID.equals(parameter.getColumnName()))
 		{
-			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigDAO.getAllByType(ExternalSystemType.RabbitMQ)
+			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepo.getAllByType(ExternalSystemType.RabbitMQ)
 					.stream()
 					.filter(ExternalSystemParentConfig::getIsActive)
 					.collect(ImmutableList.toImmutableList());
@@ -74,21 +74,16 @@ public class C_BPartner_SyncTo_RabbitMQ_HTTP extends JavaProcess implements IPro
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
+
 		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getAllByType(ExternalSystemType.RabbitMQ)
-				.stream()
-				.filter(ExternalSystemParentConfig::getIsActive)
-				.collect(ImmutableList.toImmutableList());
-
-		if (configs.size() > 0)
+		if (externalSystemConfigRepo.isAnyConfigActive(ExternalSystemType.RabbitMQ))
 		{
 			return ProcessPreconditionsResolution.accept();
 		}
-
 		return ProcessPreconditionsResolution.reject();
 	}
 

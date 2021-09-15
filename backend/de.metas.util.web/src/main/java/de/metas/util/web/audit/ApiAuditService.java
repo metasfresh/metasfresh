@@ -295,7 +295,7 @@ public class ApiAuditService
 					.defaultIfEmpty(ApiResponse.of(cr.rawStatusCode(), cr.headers().asHttpHeaders(), null)))
 					.block();
 
-			CompletableFuture.runAsync(() -> performDataExportAudit(apiRequestAudit, apiResponse));
+			performDataExportAudit(apiRequestAudit, apiResponse);
 
 			return apiResponse;
 		}

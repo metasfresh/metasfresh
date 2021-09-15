@@ -195,6 +195,10 @@ public class RabbitMQExternalSystemService
 		{
 			return;
 		}
+		if (!externalSystemConfigRepository.isAnyConfigActive(ExternalSystemType.RabbitMQ))
+		{
+			return; // nothing to do
+		}
 
 		bPartnerIdList.forEach(this::syncBPartnerIfRequired);
 	}

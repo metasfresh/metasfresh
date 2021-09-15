@@ -64,7 +64,7 @@ public class DataExportAuditLogRepository
 
 		saveRecord(record);
 
-		return recordToDataExportAuditLog(record);
+		return toDataExportAuditLog(record);
 	}
 
 	@NonNull
@@ -88,12 +88,12 @@ public class DataExportAuditLogRepository
 				.addEqualsFilter(I_Data_Export_Audit_Log.COLUMNNAME_Data_Export_Audit_ID, dataExportAuditId.getRepoId())
 				.create()
 				.stream()
-				.map(this::recordToDataExportAuditLog)
+				.map(DataExportAuditLogRepository::toDataExportAuditLog)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	private DataExportAuditLog recordToDataExportAuditLog(@NonNull final I_Data_Export_Audit_Log record)
+	private static DataExportAuditLog toDataExportAuditLog(@NonNull final I_Data_Export_Audit_Log record)
 	{
 		return DataExportAuditLog.builder()
 				.dataExportAuditLogId(DataExportAuditLogId.ofRepoId(DataExportAuditId.ofRepoId(record.getData_Export_Audit_ID()), record.getData_Export_Audit_Log_ID()))

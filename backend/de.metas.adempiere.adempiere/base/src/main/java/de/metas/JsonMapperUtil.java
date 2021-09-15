@@ -34,9 +34,10 @@ public class JsonMapperUtil
 {
 	/**
 	 * Uses {@link JsonObjectMapperHolder} to make sure that the given {@code target} is serialized/deserialized into an instance of the given {@code type}.
+	 * If this fails, it does not throw an exception, but returns an empty optional.
 	 */
 	@NonNull
-	public <T> Optional<T> deserializeToType(@NonNull final Object target, @NonNull final Class<T> type)
+	public <T> Optional<T> tryDeserializeToType(@NonNull final Object target, @NonNull final Class<T> type)
 	{
 		if (type.isInstance(target))
 		{

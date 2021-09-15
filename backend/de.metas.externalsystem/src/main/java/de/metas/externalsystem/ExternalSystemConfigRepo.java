@@ -53,6 +53,13 @@ public class ExternalSystemConfigRepo
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
+	{
+		return getAllByType(type)
+				.stream()
+				.anyMatch(ExternalSystemParentConfig::getIsActive);
+	}
+
 	@NonNull
 	public ExternalSystemParentConfig getById(final @NonNull IExternalSystemChildConfigId id)
 	{
