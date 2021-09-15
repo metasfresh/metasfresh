@@ -65,7 +65,7 @@ public class DataExportAuditRepositoryTest
 	{
 		// given
 		final CreateDataExportAuditRequest createDataExportAuditRequest = CreateDataExportAuditRequest.builder()
-				.tableRecordReference(TableRecordReference.of("test", 1))
+				.tableRecordReference(TableRecordReference.of("C_BPartner", 1))
 				.parentId(DataExportAuditId.ofRepoId(2))
 				.build();
 

@@ -6,7 +6,8 @@
   "externalSystemConfigId": 1,
   "parameters": {
     "RemoteURL": "https://test",
-    "Routing_Key": "key",
-    "BPartnerId": "bpIdentifier"
+    "RoutingKey": "key",
+    "BPartnerId": "bpIdentifier",
+    "RabbitMQAuthToken": "token"
   }
 }

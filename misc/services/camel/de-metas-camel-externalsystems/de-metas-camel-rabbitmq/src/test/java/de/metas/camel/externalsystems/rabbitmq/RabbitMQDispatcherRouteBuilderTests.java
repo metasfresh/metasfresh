@@ -35,7 +35,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_TARGET_URL;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.rabbitmq.RabbitMQDispatcherRouteBuilder.RABBITMQ_DEADLETTER_ROUTE_ID;
 import static de.metas.camel.externalsystems.rabbitmq.RabbitMQDispatcherRouteBuilder.RABBITMQ_DISPATCHER_ROUTE_ID;
@@ -68,7 +67,7 @@ public class RabbitMQDispatcherRouteBuilderTests extends CamelTestSupport
 		final DispatchMessageRequest dispatchMessageRequest = objectMapper.readValue(dispatchMessageRequestIS, DispatchMessageRequest.class);
 
 		final MockEndpoint rabbitMqEndpoint = getMockEndpoint(MOCK_RABBIT_MQ_ENDPOINT);
-		rabbitMqEndpoint.expectedHeaderReceived(HEADER_TARGET_URL, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
+		rabbitMqEndpoint.expectedHeaderReceived(Exchange.HTTP_URI, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
 		rabbitMqEndpoint.expectedBodiesReceived(objectMapper.writeValueAsString(dispatchMessageRequest.getMessage()));
 
 		//when
@@ -95,7 +94,7 @@ public class RabbitMQDispatcherRouteBuilderTests extends CamelTestSupport
 		final MockEndpoint rabbitMqEndpoint = getMockEndpoint(MOCK_RABBIT_MQ_ENDPOINT);
 		final String jsonHttpMessageRequest =  objectMapper.writeValueAsString(dispatchMessageRequest.getMessage());
 		rabbitMqEndpoint.expectedBodiesReceived(jsonHttpMessageRequest, jsonHttpMessageRequest, jsonHttpMessageRequest);
-		rabbitMqEndpoint.expectedHeaderReceived(HEADER_TARGET_URL, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
+		rabbitMqEndpoint.expectedHeaderReceived(Exchange.HTTP_URI, dispatchMessageRequest.getUrl() + RABBITMQ_PUBLISH_ENDPOINT);
 
 		//when
 		template.sendBody("direct:" + RABBITMQ_DISPATCHER_ROUTE_ID, dispatchMessageRequest);

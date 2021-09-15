@@ -30,7 +30,6 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_ORG_CODE = "orgCode";
 	public static final String HEADER_BPARTNER_IDENTIFIER = "bPartnerIdentifier";
 	public static final String HEADER_PINSTANCE_ID = "pInstanceId";
-	public static final String HEADER_TARGET_URL = "targetUrl";
 
 	public static final String MF_UPSERT_BPARTNER_CAMEL_URI = "metasfresh.upsert-bpartner.camel.uri";
 
