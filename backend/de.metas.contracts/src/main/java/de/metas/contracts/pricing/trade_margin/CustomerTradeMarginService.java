@@ -47,6 +47,8 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -75,6 +77,7 @@ public class CustomerTradeMarginService
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IUOMConversionBL conversionBL = Services.get(IUOMConversionBL.class);
 
 	private final MoneyService moneyService;
 	private final CustomerTradeMarginRepository customerTradeMarginRepository;
@@ -139,7 +142,7 @@ public class CustomerTradeMarginService
 						.setPricingSystemId(pricingSystemId)
 						.setCountryId(countryId)
 						.setPriceListId(priceListId)
-						.setConvertPriceToContextUOM(true);
+						.setConvertPriceToContextUOM(false);
 
 		final IPricingResult salesRepPriceResult = pricingBL.calculatePrice(salesRepPricingCtx);
 
@@ -148,6 +151,8 @@ public class CustomerTradeMarginService
 			loggable.addLog("createSalesRepPricingResult - Price not calculated for bpartner={}" + request.getSalesRepId());
 			return Optional.empty();
 		}
+
+		updatePricingResultToMatchUOM(salesRepPriceResult, request.getQty().getUomId());
 
 		final Money salesRepNetUnitPriceWithoutTax = deductTaxes(salesRepOrgId,
 													   salesRepBillToLocation,
@@ -209,5 +214,19 @@ public class CustomerTradeMarginService
 																											   salesRepOrgId);
 
 		return moneyService.convertMoneyToCurrency(salesRepUnitPrice, request.getCustomerCurrencyId(), currencyConversionContext);
+	}
+
+	private void updatePricingResultToMatchUOM(@NonNull final IPricingResult salesRepPricingResult, @NonNull final UomId targetUOMId)
+	{
+		final ProductPrice salesRepProductPrice = ProductPrice.builder()
+				.productId(salesRepPricingResult.getProductId())
+				.uomId(salesRepPricingResult.getPriceUomId())
+				.money(Money.of(salesRepPricingResult.getPriceStd(), salesRepPricingResult.getCurrencyId()))
+				.build();
+
+		final ProductPrice productPriceInTargetUOM = conversionBL.convertProductPriceToUom(salesRepProductPrice, targetUOMId, salesRepPricingResult.getPrecision());
+
+		salesRepPricingResult.setPriceStd(productPriceInTargetUOM.toBigDecimal());
+		salesRepPricingResult.setPriceUomId(targetUOMId);
 	}
 }
