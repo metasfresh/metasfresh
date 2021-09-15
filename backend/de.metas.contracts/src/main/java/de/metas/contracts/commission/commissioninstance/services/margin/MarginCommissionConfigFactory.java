@@ -22,6 +22,7 @@
 
 package de.metas.contracts.commission.commissioninstance.services.margin;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -44,12 +45,14 @@ import de.metas.contracts.pricing.trade_margin.CustomerTradeMargin;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginId;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginLine;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginService;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Service
@@ -73,16 +76,14 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 	@NonNull
 	public ImmutableList<CommissionConfig> createForNewCommissionInstances(@NonNull final CommissionConfigProvider.ConfigRequestForNewInstance contractRequest)
 	{
-		final IFlatrateDAO.TermsQuery termsQuery = IFlatrateDAO.TermsQuery.builder()
-				.billPartnerId(contractRequest.getSalesRepBPartnerId())
-				.orgId(contractRequest.getOrgId())
-				.dateOrdered(contractRequest.getCommissionDate())
-				.build();
+		if (!appliesFor(contractRequest))
+		{
+			return ImmutableList.of();
+		}
 
-		final ImmutableList<I_C_Flatrate_Term> marginCommissionContracts = flatrateDAO.retrieveTerms(termsQuery)
-				.stream()
-				.filter(termRecord -> TypeConditions.MARGIN_COMMISSION.getCode().equals(termRecord.getType_Conditions()))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<I_C_Flatrate_Term> marginCommissionContracts = retrieveContracts(contractRequest.getSalesRepBPartnerId(),
+																							 contractRequest.getOrgId(),
+																							 contractRequest.getCommissionDate());
 
 		if (marginCommissionContracts.isEmpty())
 		{
@@ -112,8 +113,7 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 
 		final I_C_Flatrate_Term contract = getContractToEnforce(marginCommissionContracts);
 
-		return createCommissionConfigsFor(contract,
-										  commissionConfigRequest.getCustomerBPartnerId())
+		return createCommissionConfigsFor(contract, commissionConfigRequest.getCustomerBPartnerId())
 				.map(commissionConfig -> ImmutableMap.of(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()), commissionConfig))
 				.orElseGet(ImmutableMap::of);
 	}
@@ -196,5 +196,24 @@ public class MarginCommissionConfigFactory implements ICommissionConfigFactory
 		Check.assume(marginCommissionContracts.size() == 1, "One salesRep should have only one margin commission contract for the same time period of time");
 
 		return marginCommissionContracts.get(0);
+	}
+
+	@VisibleForTesting
+	ImmutableList<I_C_Flatrate_Term> retrieveContracts(
+			@NonNull final BPartnerId vendorId,
+			@NonNull final OrgId orgId,
+			@NonNull final LocalDate commissionDate)
+	{
+		final IFlatrateDAO.TermsQuery termsQuery = IFlatrateDAO.TermsQuery.builder()
+				.billPartnerId(vendorId)
+				.orgId(orgId)
+				.dateOrdered(commissionDate)
+				.build();
+
+		return flatrateDAO.retrieveTerms(termsQuery)
+				.stream()
+				.filter(termRecord -> TypeConditions.MARGIN_COMMISSION.getCode().equals(termRecord.getType_Conditions()))
+				.collect(ImmutableList.toImmutableList());
+
 	}
 }

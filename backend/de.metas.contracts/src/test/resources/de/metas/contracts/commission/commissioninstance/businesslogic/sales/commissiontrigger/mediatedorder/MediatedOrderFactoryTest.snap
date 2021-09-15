@@ -24,7 +24,7 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
           "seconds" : 1631157,
           "nanos" : 38000000
         },
-        "totalQtyInvolved" : {
+        "orderedQty" : {
           "qty" : "10",
           "uomId" : 100022
         }
@@ -60,7 +60,7 @@ de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiont
           "seconds" : 1631157,
           "nanos" : 38000000
         },
-        "totalQtyInvolved" : {
+        "orderedQty" : {
           "qty" : "10",
           "uomId" : 100032
         }
