@@ -49,7 +49,6 @@
         <assertj.version>3.19.0</assertj.version>
 
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
-        <metasfresh.version>10.0.0</metasfresh.version>
     </properties>
 
     <dependencyManagement>
@@ -89,25 +88,25 @@
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-alberta-camelroutes</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>10.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-externalsystems-common</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>10.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-shopware6</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>10.0.0</version>
         </dependency>
 
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
             <artifactId>de-metas-camel-rabbitmq</artifactId>
-            <version>${metasfresh.version}</version>
+            <version>10.0.0</version>
         </dependency>
 
         <dependency>
