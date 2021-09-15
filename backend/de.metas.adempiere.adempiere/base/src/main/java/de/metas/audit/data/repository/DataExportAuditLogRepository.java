@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.audit.data.Action;
 import de.metas.audit.data.ExternalSystemParentConfigId;
-import de.metas.audit.data.model.CreateDataAuditLogRequest;
+import de.metas.audit.data.model.CreateDataExportAuditLogRequest;
 import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.model.DataExportAuditLog;
 import de.metas.audit.data.model.DataExportAuditLogId;
@@ -53,7 +53,7 @@ public class DataExportAuditLogRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public DataExportAuditLog save(@NonNull final CreateDataAuditLogRequest logEntry)
+	public DataExportAuditLog createNew(@NonNull final CreateDataExportAuditLogRequest logEntry)
 	{
 		final I_Data_Export_Audit_Log record = InterfaceWrapperHelper.newInstance(I_Data_Export_Audit_Log.class);
 

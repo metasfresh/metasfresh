@@ -22,23 +22,28 @@
 
 package de.metas.audit.data.model;
 
+import de.metas.audit.data.Action;
+import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.process.PInstanceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class DataExportAudit
+public class CreateDataExportAuditLogRequest
 {
 	@NonNull
-	DataExportAuditId id;
+	DataExportAuditId dataExportAuditId;
 
 	@NonNull
-	TableRecordReference tableRecordReference;
+	Action action;
 
 	@Nullable
-	DataExportAuditId parentId;
+	ExternalSystemParentConfigId externalSystemConfigId;
+
+	@Nullable
+	PInstanceId adPInstanceId;
 }

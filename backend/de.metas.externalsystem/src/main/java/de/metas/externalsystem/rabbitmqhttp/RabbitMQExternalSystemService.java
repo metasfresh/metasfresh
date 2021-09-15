@@ -213,7 +213,7 @@ public class RabbitMQExternalSystemService
 			return;
 		}
 
-		final ImmutableSet<ExternalSystemRabbitMQConfigId> rabbitMQConfigIds = getRabbitMQConfigsToSyncWith(dataExportAudit.get().getIdNotNull());
+		final ImmutableSet<ExternalSystemRabbitMQConfigId> rabbitMQConfigIds = getRabbitMQConfigsToSyncWith(dataExportAudit.get().getId());
 
 		if (rabbitMQConfigIds.isEmpty())
 		{

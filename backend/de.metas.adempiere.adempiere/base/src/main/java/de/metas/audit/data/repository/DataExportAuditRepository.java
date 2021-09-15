@@ -22,6 +22,7 @@
 
 package de.metas.audit.data.repository;
 
+import de.metas.audit.data.model.CreateDataExportAuditRequest;
 import de.metas.audit.data.model.DataExportAudit;
 import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.util.Services;
@@ -42,21 +43,21 @@ public class DataExportAuditRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public DataExportAudit save(@NonNull final DataExportAudit dataExportAudit)
+	public DataExportAudit save(@NonNull final CreateDataExportAuditRequest createDataExportAuditRequest)
 	{
-		final I_Data_Export_Audit record = InterfaceWrapperHelper.loadOrNew(dataExportAudit.getId(), I_Data_Export_Audit.class);
+		final I_Data_Export_Audit record = InterfaceWrapperHelper.loadOrNew(createDataExportAuditRequest.getDataExportAuditId(), I_Data_Export_Audit.class);
 
-		record.setAD_Table_ID(dataExportAudit.getTableRecordReference().getAD_Table_ID());
-		record.setRecord_ID(dataExportAudit.getTableRecordReference().getRecord_ID());
+		record.setAD_Table_ID(createDataExportAuditRequest.getTableRecordReference().getAD_Table_ID());
+		record.setRecord_ID(createDataExportAuditRequest.getTableRecordReference().getRecord_ID());
 
-		if (dataExportAudit.getParentId() != null)
+		if (createDataExportAuditRequest.getParentId() != null)
 		{
-			record.setData_Export_Audit_Parent_ID(dataExportAudit.getParentId().getRepoId());
+			record.setData_Export_Audit_Parent_ID(createDataExportAuditRequest.getParentId().getRepoId());
 		}
 
 		saveRecord(record);
 
-		return recordToDataExportAudit(record);
+		return toDataExportAudit(record);
 	}
 
 	@NonNull
@@ -68,11 +69,11 @@ public class DataExportAuditRepository
 				.addEqualsFilter(I_Data_Export_Audit.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
 				.firstOnlyOptional(I_Data_Export_Audit.class)
-				.map(this::recordToDataExportAudit);
+				.map(DataExportAuditRepository::toDataExportAudit);
 	}
 
 	@NonNull
-	private DataExportAudit recordToDataExportAudit(@NonNull final I_Data_Export_Audit record)
+	private static DataExportAudit toDataExportAudit(@NonNull final I_Data_Export_Audit record)
 	{
 		return DataExportAudit.builder()
 				.id(DataExportAuditId.ofRepoId(record.getData_Export_Audit_ID()))

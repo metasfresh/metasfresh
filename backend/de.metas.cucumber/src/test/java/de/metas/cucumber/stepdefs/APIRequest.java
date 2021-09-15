@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%
@@ -20,25 +20,34 @@
  * #L%
  */
 
-package de.metas.audit.data.model;
+package de.metas.cucumber.stepdefs;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 @Value
 @Builder
-public class DataExportAudit
+public class APIRequest
 {
 	@NonNull
-	DataExportAuditId id;
+	String endpointPath;
 
 	@NonNull
-	TableRecordReference tableRecordReference;
+	String verb;
 
 	@Nullable
-	DataExportAuditId parentId;
+	String payload;
+
+	@NonNull
+	String authToken;
+
+	@Nullable
+	Integer statusCode;
+
+	@Nullable
+	Map<String, String> additionalHeaders;
 }

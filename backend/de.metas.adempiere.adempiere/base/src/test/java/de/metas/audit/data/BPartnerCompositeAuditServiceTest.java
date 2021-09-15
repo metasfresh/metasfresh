@@ -119,36 +119,36 @@ public class BPartnerCompositeAuditServiceTest
 
 		final Optional<DataExportAudit> bPartnerLocationDataExportAudit = dataExportAuditRepository.getByTableRecordReference(TableRecordReference.of(I_C_BPartner_Location.Table_Name, C_BP_LOCATION_ID));
 		assertThat(bPartnerLocationDataExportAudit).isPresent();
-		assertThat(bPartnerLocationDataExportAudit.get().getParentId()).isEqualTo(bPartnerDataExportAudit.get().getIdNotNull());
+		assertThat(bPartnerLocationDataExportAudit.get().getParentId()).isEqualTo(bPartnerDataExportAudit.get().getId());
 
 		final Optional<DataExportAudit> locationDataExportAudit = dataExportAuditRepository.getByTableRecordReference(TableRecordReference.of(I_C_Location.Table_Name, LOCATION_ID));
 		assertThat(locationDataExportAudit).isPresent();
-		assertThat(locationDataExportAudit.get().getParentId()).isEqualTo(bPartnerLocationDataExportAudit.get().getIdNotNull());
+		assertThat(locationDataExportAudit.get().getParentId()).isEqualTo(bPartnerLocationDataExportAudit.get().getId());
 
 		final Optional<DataExportAudit> userDataExportAudit = dataExportAuditRepository.getByTableRecordReference(TableRecordReference.of(I_AD_User.Table_Name, AD_USER_ID));
 		assertThat(userDataExportAudit).isPresent();
-		assertThat(userDataExportAudit.get().getParentId()).isEqualTo(bPartnerDataExportAudit.get().getIdNotNull());
+		assertThat(userDataExportAudit.get().getParentId()).isEqualTo(bPartnerDataExportAudit.get().getId());
 
 		//validate DataExportAuditLog records
-		final ImmutableList<DataExportAuditLog> bPartnerLogs = dataExportAuditLogRepository.getByDataExportAuditId(bPartnerDataExportAudit.get().getIdNotNull());
+		final ImmutableList<DataExportAuditLog> bPartnerLogs = dataExportAuditLogRepository.getByDataExportAuditId(bPartnerDataExportAudit.get().getId());
 		assertThat(bPartnerLogs).hasSize(1);
 		assertThat(bPartnerLogs.get(0).getAction()).isEqualTo(Action.Standalone);
 		assertThat(bPartnerLogs.get(0).getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
 		assertThat(bPartnerLogs.get(0).getAdPInstanceId()).isEqualTo(pInstanceId);
 
-		final ImmutableList<DataExportAuditLog> bPartnerLocationLogs = dataExportAuditLogRepository.getByDataExportAuditId(bPartnerLocationDataExportAudit.get().getIdNotNull());
+		final ImmutableList<DataExportAuditLog> bPartnerLocationLogs = dataExportAuditLogRepository.getByDataExportAuditId(bPartnerLocationDataExportAudit.get().getId());
 		assertThat(bPartnerLocationLogs).hasSize(1);
 		assertThat(bPartnerLocationLogs.get(0).getAction()).isEqualTo(Action.AlongWithParent);
 		assertThat(bPartnerLocationLogs.get(0).getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
 		assertThat(bPartnerLocationLogs.get(0).getAdPInstanceId()).isEqualTo(pInstanceId);
 
-		final ImmutableList<DataExportAuditLog> locationLogs = dataExportAuditLogRepository.getByDataExportAuditId(locationDataExportAudit.get().getIdNotNull());
+		final ImmutableList<DataExportAuditLog> locationLogs = dataExportAuditLogRepository.getByDataExportAuditId(locationDataExportAudit.get().getId());
 		assertThat(locationLogs).hasSize(1);
 		assertThat(locationLogs.get(0).getAction()).isEqualTo(Action.AlongWithParent);
 		assertThat(locationLogs.get(0).getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);
 		assertThat(locationLogs.get(0).getAdPInstanceId()).isEqualTo(pInstanceId);
 
-		final ImmutableList<DataExportAuditLog> userLogs = dataExportAuditLogRepository.getByDataExportAuditId(userDataExportAudit.get().getIdNotNull());
+		final ImmutableList<DataExportAuditLog> userLogs = dataExportAuditLogRepository.getByDataExportAuditId(userDataExportAudit.get().getId());
 		assertThat(userLogs).hasSize(1);
 		assertThat(userLogs.get(0).getAction()).isEqualTo(Action.AlongWithParent);
 		assertThat(userLogs.get(0).getExternalSystemConfigId()).isEqualTo(externalSystemParentConfigId);

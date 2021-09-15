@@ -22,7 +22,8 @@
 
 package de.metas.audit.data.service;
 
-import de.metas.audit.data.model.CreateDataAuditLogRequest;
+import de.metas.audit.data.model.CreateDataExportAuditLogRequest;
+import de.metas.audit.data.model.CreateDataExportAuditRequest;
 import de.metas.audit.data.model.DataExportAudit;
 import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
@@ -50,24 +51,24 @@ public class DataExportAuditService
 	@NonNull
 	public DataExportAuditId createExportAudit(@NonNull final DataExportAuditRequest dataExportAuditRequest)
 	{
-		final DataExportAudit.DataExportAuditBuilder dataExportAuditBuilder = DataExportAudit.builder()
+		final CreateDataExportAuditRequest.CreateDataExportAuditRequestBuilder createDataExportAuditRequestBuilder = CreateDataExportAuditRequest.builder()
 				.tableRecordReference(dataExportAuditRequest.getTableRecordReference())
 				.parentId(dataExportAuditRequest.getParentExportAuditId());
 
 		dataExportAuditRepository.getByTableRecordReference(dataExportAuditRequest.getTableRecordReference())
-				.ifPresent(dataExportAudit -> dataExportAuditBuilder.id(dataExportAudit.getIdNotNull()));
+				.ifPresent(dataExportAudit -> createDataExportAuditRequestBuilder.dataExportAuditId(dataExportAudit.getId()));
 
-		final DataExportAudit savedDataExportAudit = dataExportAuditRepository.save(dataExportAuditBuilder.build());
+		final DataExportAudit savedDataExportAudit = dataExportAuditRepository.save(createDataExportAuditRequestBuilder.build());
 
-		final CreateDataAuditLogRequest newAuditLog = CreateDataAuditLogRequest.builder()
-				.dataExportAuditId(savedDataExportAudit.getIdNotNull())
+		final CreateDataExportAuditLogRequest newAuditLog = CreateDataExportAuditLogRequest.builder()
+				.dataExportAuditId(savedDataExportAudit.getId())
 				.action(dataExportAuditRequest.getAction())
 				.externalSystemConfigId(dataExportAuditRequest.getExternalSystemConfigId())
 				.adPInstanceId(dataExportAuditRequest.getAdPInstanceId())
 				.build();
 
-		dataExportAuditLogRepository.save(newAuditLog);
+		dataExportAuditLogRepository.createNew(newAuditLog);
 
-		return savedDataExportAudit.getIdNotNull();
+		return savedDataExportAudit.getId();
 	}
 }

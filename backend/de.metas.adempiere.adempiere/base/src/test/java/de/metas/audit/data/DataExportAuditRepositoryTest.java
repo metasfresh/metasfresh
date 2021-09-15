@@ -22,6 +22,7 @@
 
 package de.metas.audit.data;
 
+import de.metas.audit.data.model.CreateDataExportAuditRequest;
 import de.metas.audit.data.model.DataExportAudit;
 import de.metas.audit.data.model.DataExportAuditId;
 import de.metas.audit.data.repository.DataExportAuditRepository;
@@ -63,13 +64,13 @@ public class DataExportAuditRepositoryTest
 	public void save()
 	{
 		// given
-		final DataExportAudit dataExportAudit = DataExportAudit.builder()
+		final CreateDataExportAuditRequest createDataExportAuditRequest = CreateDataExportAuditRequest.builder()
 				.tableRecordReference(TableRecordReference.of("test", 1))
 				.parentId(DataExportAuditId.ofRepoId(2))
 				.build();
 
 		// when
-		final DataExportAudit result = dataExportAuditRepository.save(dataExportAudit);
+		final DataExportAudit result = dataExportAuditRepository.save(createDataExportAuditRequest);
 
 		// then
 		expect(result).toMatchSnapshot();
