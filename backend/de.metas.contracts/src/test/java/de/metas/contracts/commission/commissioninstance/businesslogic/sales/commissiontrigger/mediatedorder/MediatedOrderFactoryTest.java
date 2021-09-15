@@ -37,6 +37,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.X_C_DocType;
@@ -184,7 +185,8 @@ public class MediatedOrderFactoryTest
 		InterfaceWrapperHelper.save(org);
 		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
-		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);;
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		;
 		orgInfo.setAD_Org_ID(orgId.getRepoId());
 		orgInfo.setStoreCreditCardData(STORECREDITCARDDATA_Speichern);
 		InterfaceWrapperHelper.save(orgInfo);
@@ -237,6 +239,10 @@ public class MediatedOrderFactoryTest
 		InterfaceWrapperHelper.saveRecord(mediatedOrder);
 
 		//line
+		final I_C_UOM lineUOM = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
+		lineUOM.setC_UOM_ID(1);
+		InterfaceWrapperHelper.saveRecord(lineUOM);
+
 		final I_C_OrderLine mediatedLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
 		mediatedLine.setC_Order_ID(mediatedOrder.getC_Order_ID());
 		mediatedLine.setM_Product_ID(transactionProductId.getRepoId());
@@ -244,6 +250,8 @@ public class MediatedOrderFactoryTest
 		mediatedLine.setAD_Org_ID(orgId.getRepoId());
 		mediatedLine.setPriceActual(priceActual);
 		mediatedLine.setQtyOrdered(qtyOrdered);
+		mediatedLine.setC_UOM_ID(1);
+		mediatedLine.setPrice_UOM_ID(1);
 		mediatedLine.setC_Tax_ID(taxRecord.getC_Tax_ID());
 		InterfaceWrapperHelper.saveRecord(mediatedLine);
 
