@@ -1209,6 +1209,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setOrder_Min (final @Nullable BigDecimal Order_Min)
+	{
+		set_Value (COLUMNNAME_Order_Min, Order_Min);
+	}
+
+	@Override
+	public BigDecimal getOrder_Min() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Min);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setPaymentDiscount (final @Nullable BigDecimal PaymentDiscount)
 	{
 		set_Value (COLUMNNAME_PaymentDiscount, PaymentDiscount);

@@ -1,0 +1,13 @@
+{
+  "orgCode": "001",
+  "externalSystemName": "RabbitMQ",
+  "command": "exportBPartner",
+  "adPInstanceId": 2,
+  "externalSystemConfigId": 1,
+  "parameters": {
+    "RemoteURL": "https://test",
+    "RoutingKey": "key",
+    "BPartnerId": "bpIdentifier",
+    "RabbitMQAuthToken": "token"
+  }
+}

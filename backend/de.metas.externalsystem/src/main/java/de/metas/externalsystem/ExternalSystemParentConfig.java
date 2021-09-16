@@ -38,6 +38,7 @@ public class ExternalSystemParentConfig
 	String name;
 	Boolean isActive;
 	IExternalSystemChildConfig childConfig;
+	Boolean isActive;
 
 	@Builder(toBuilder = true)
 	public ExternalSystemParentConfig(
@@ -45,7 +46,8 @@ public class ExternalSystemParentConfig
 			@NonNull final ExternalSystemType type,
 			@NonNull final String name,
 			@NonNull final Boolean isActive,
-			@NonNull final IExternalSystemChildConfig childConfig)
+			@NonNull final IExternalSystemChildConfig childConfig,
+			@NonNull final Boolean isActive)
 	{
 		if (!type.equals(childConfig.getId().getType()))
 		{

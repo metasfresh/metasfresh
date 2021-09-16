@@ -30,12 +30,15 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
+import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
+import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -66,6 +69,13 @@ public class ExternalSystemConfigRepo
 		this.externalSystemOtherConfigRepository = externalSystemOtherConfigRepository;
 	}
 
+	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
+	{
+		return getAllByType(type)
+				.stream()
+				.anyMatch(ExternalSystemParentConfig::getIsActive);
+	}
+
 	@NonNull
 	public ExternalSystemParentConfig getById(final @NonNull IExternalSystemChildConfigId id)
 	{
@@ -75,6 +85,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemAlbertaConfigId.cast(id));
 			case Shopware6:
 				return getById(ExternalSystemShopware6ConfigId.cast(id));
+			case RabbitMQ:
+				return getById(ExternalSystemRabbitMQConfigId.cast(id));
 			case Other:
 				return getById(ExternalSystemOtherConfigId.cast(id));
 			case WOO:
@@ -98,6 +110,9 @@ public class ExternalSystemConfigRepo
 			case WOO:
 				return getWooCommerceConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
+			case RabbitMQ:
+				return getRabbitMQConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -116,6 +131,8 @@ public class ExternalSystemConfigRepo
 			case Other:
 				final ExternalSystemOtherConfigId externalSystemOtherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(id);
 				return Optional.of(externalSystemOtherConfigRepository.getById(externalSystemOtherConfigId));
+			case RabbitMQ:
+				return getRabbitMQConfigByParentId(id); 
 			case WOO:
 				return getWooCommerceConfigByParentId(id);
 			default:
@@ -207,6 +224,16 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
+	private Optional<I_ExternalSystem_Config_RabbitMQ_HTTP> getRabbitMQConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_RabbitMQ_HTTP.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
+	}
+
+	@NonNull
 	private Optional<IExternalSystemChildConfig> getAlbertaConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class)
@@ -228,6 +255,17 @@ public class ExternalSystemConfigRepo
 				.map(ex -> buildExternalSystemShopware6Config(ex, id));
 	}
 
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getRabbitMQConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_RabbitMQ_HTTP.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_RabbitMQ_HTTP.class)
+				.map(this::buildExternalSystemRabbitMQConfig);
+	}
+
 	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemAlbertaConfigId id)
 	{
 		final I_ExternalSystem_Config_Alberta config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Alberta.class);
@@ -240,6 +278,18 @@ public class ExternalSystemConfigRepo
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 
 		final ExternalSystemAlbertaConfig child = buildExternalSystemAlbertaConfig(config, parentConfigId);
+
+		return getById(parentConfigId)
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_RabbitMQ_HTTP config)
+	{
+		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
+
+		final ExternalSystemRabbitMQConfig child = buildExternalSystemRabbitMQConfig(config);
 
 		return getById(parentConfigId)
 				.childConfig(child)
@@ -260,6 +310,28 @@ public class ExternalSystemConfigRepo
 				.pharmacyPriceListId(PriceListId.ofRepoIdOrNull(config.getPharmacy_PriceList_ID()))
 				.rootBPartnerIdForUsers(BPartnerId.ofRepoIdOrNull(config.getC_Root_BPartner_ID()))
 				.build();
+	}
+
+	@NonNull
+	private ExternalSystemRabbitMQConfig buildExternalSystemRabbitMQConfig(final @NonNull I_ExternalSystem_Config_RabbitMQ_HTTP rabbitMQConfigRecord)
+	{
+		return ExternalSystemRabbitMQConfig.builder()
+				.id(ExternalSystemRabbitMQConfigId.ofRepoId(rabbitMQConfigRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID()))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(rabbitMQConfigRecord.getExternalSystem_Config_ID()))
+				.value(rabbitMQConfigRecord.getExternalSystemValue())
+				.routingKey(rabbitMQConfigRecord.getRouting_Key())
+				.remoteUrl(rabbitMQConfigRecord.getRemoteURL())
+				.authToken(rabbitMQConfigRecord.getAuthToken())
+				.isSyncBPartnerToRabbitMQ(rabbitMQConfigRecord.isSyncBPartnersToRabbitMQ())
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemRabbitMQConfigId id)
+	{
+		final I_ExternalSystem_Config_RabbitMQ_HTTP config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_RabbitMQ_HTTP.class);
+
+		return getExternalSystemParentConfig(config);
 	}
 
 	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemShopware6ConfigId id)
@@ -536,5 +608,27 @@ public class ExternalSystemConfigRepo
 		record.setIsActive(config.getIsActive());
 
 		return record;
+	}
+
+	@NonNull
+	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType)
+	{
+		if (externalSystemType == ExternalSystemType.RabbitMQ)
+		{
+			return getAllByTypeRabbitMQ();
+		}
+
+		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeRabbitMQ()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_RabbitMQ_HTTP.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

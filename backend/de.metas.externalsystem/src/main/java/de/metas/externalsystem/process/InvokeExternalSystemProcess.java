@@ -70,7 +70,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	@Param(parameterName = PARAM_CHILD_CONFIG_ID)
 	protected int childConfigId;
 
-	private static final String PARAM_SINCE = "since";
+	private static final String PARAM_SINCE = "Since";
 	@Param(parameterName = PARAM_SINCE)
 	private Timestamp since;
 

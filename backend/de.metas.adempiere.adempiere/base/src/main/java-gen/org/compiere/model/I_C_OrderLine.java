@@ -1469,6 +1469,33 @@ public interface I_C_OrderLine
 	String COLUMNNAME_M_DiscountSchemaBreak_ID = "M_DiscountSchemaBreak_ID";
 
 	/**
+	 * Set Discount Schema.
+	 * Schema to calculate the trade discount percentage
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_DiscountSchema_ID (int M_DiscountSchema_ID);
+
+	/**
+	 * Get Discount Schema.
+	 * Schema to calculate the trade discount percentage
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_DiscountSchema_ID();
+
+	@Nullable org.compiere.model.I_M_DiscountSchema getM_DiscountSchema();
+
+	void setM_DiscountSchema(@Nullable org.compiere.model.I_M_DiscountSchema M_DiscountSchema);
+
+	ModelColumn<I_C_OrderLine, org.compiere.model.I_M_DiscountSchema> COLUMN_M_DiscountSchema_ID = new ModelColumn<>(I_C_OrderLine.class, "M_DiscountSchema_ID", org.compiere.model.I_M_DiscountSchema.class);
+	String COLUMNNAME_M_DiscountSchema_ID = "M_DiscountSchema_ID";
+
+	/**
 	 * Set Version Preisliste.
 	 * Bezeichnet eine einzelne Version der Preisliste
 	 *
@@ -1695,6 +1722,29 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_OrderDiscount = new ModelColumn<>(I_C_OrderLine.class, "OrderDiscount", null);
 	String COLUMNNAME_OrderDiscount = "OrderDiscount";
+
+	/**
+	 * Set Minimum Order Qty.
+	 * Minimum order quantity in UOM
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrder_Min (@Nullable BigDecimal Order_Min);
+
+	/**
+	 * Get Minimum Order Qty.
+	 * Minimum order quantity in UOM
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOrder_Min();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Order_Min = new ModelColumn<>(I_C_OrderLine.class, "Order_Min", null);
+	String COLUMNNAME_Order_Min = "Order_Min";
 
 	/**
 	 * Set Payment Discount %.
