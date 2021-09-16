@@ -22,6 +22,10 @@ package org.adempiere.util.api;
  * #L%
  */
 
+import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.RepoIdAware;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -29,16 +33,8 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
-import de.metas.util.lang.ReferenceListAwareEnums;
-import de.metas.util.lang.RepoIdAware;
-
 /**
- * Generic readonly parameters. Use {@link IParamsBL#createParams(java.util.Map)} to get yours.
- * 
- * @author metas-dev <dev@metasfresh.com>
- *
+ * Generic readonly parameters.
  */
 public interface IParams
 {
