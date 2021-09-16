@@ -92,8 +92,8 @@ public class RabbitMQExternalSystemService
 		this.dataExportAuditRepository = dataExportAuditRepository;
 		this.syncBPartnerDebouncer = Debouncer.<BPartnerId>builder()
 				.name("syncBPartnerDebouncer")
-				.bufferMaxSize(sysConfigBL.getIntValue("webui.WebsocketSender.debouncer.bufferMaxSize", 100))
-				.delayInMillis(sysConfigBL.getIntValue("webui.WebsocketSender.debouncer.delayInMillis", 5000))
+				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.externalsystem.rabbitmqhttp.debouncer.bufferMaxSize", 100))
+				.delayInMillis(sysConfigBL.getIntValue("de.metas.externalsystem.rabbitmqhttp.debouncer.delayInMillis", 5000))
 				.distinct(true)
 				.consumer(this::syncBPartners)
 				.build();
