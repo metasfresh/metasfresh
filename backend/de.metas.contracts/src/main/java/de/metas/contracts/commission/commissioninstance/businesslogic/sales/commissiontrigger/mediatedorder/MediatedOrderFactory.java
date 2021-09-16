@@ -192,7 +192,7 @@
 	 private boolean hasTheRightStatus(@NonNull final DocStatus orderDocStatus)
 	 {
 		 return orderDocStatus.isCompleted()
-				 || orderDocStatus.isInProgress()
+				 || orderDocStatus.isInProgress() // we need to consider this status for the case that a completed order is reactivated
 				 || orderDocStatus.isClosed();
 	 }
  }
