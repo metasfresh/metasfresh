@@ -23,14 +23,19 @@
 package de.metas.picking.api;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseTypeId;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.Set;
 
 @Value
 @Builder
@@ -38,14 +43,23 @@ public class PackageableQuery
 {
 	public static final PackageableQuery ALL = PackageableQuery.builder().build();
 
-	BPartnerId customerId;
-	WarehouseTypeId warehouseTypeId;
-	WarehouseId warehouseId;
-	LocalDate deliveryDate;
-	LocalDate preparationDate;
-	ShipperId shipperId;
+	@Nullable BPartnerId customerId;
+	@Nullable BPartnerLocationId customerLocationId;
+	@Nullable WarehouseTypeId warehouseTypeId;
+	@Nullable WarehouseId warehouseId;
+	@Nullable LocalDate deliveryDate;
+	@Nullable LocalDate preparationDate;
+	@Nullable ShipperId shipperId;
 
-	/** retrieve only those packageables which are created from sales order/lines */
+	/**
+	 * retrieve only those packageables which are created from sales order/lines
+	 */
 	boolean onlyFromSalesOrder;
-	OrderId salesOrderId;
+	@Nullable OrderId salesOrderId;
+
+	@Nullable UserId lockedBy;
+	@Builder.Default
+	boolean includeNotLocked = true;
+
+	@Nullable Set<ShipmentScheduleId> excludeShipmentScheduleIds;
 }

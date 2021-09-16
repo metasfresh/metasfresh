@@ -1,21 +1,7 @@
 package de.metas.picking.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.function.Predicate;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.proxy.Cached;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.annotation.CacheCtx;
@@ -23,13 +9,35 @@ import de.metas.cache.annotation.CacheTrx;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.proxy.Cached;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.function.Predicate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class PickingSlotDAO implements IPickingSlotDAO
 {
+	@Override
+	public PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull final PickingSlotId pickingSlotId)
+	{
+		final I_M_PickingSlot record = getById(pickingSlotId);
+		return PickingSlotIdAndCaption.of(pickingSlotId, record.getPickingSlot());
+	}
+
 	@Override
 	public I_M_PickingSlot getById(final PickingSlotId pickingSlotId)
 	{
@@ -39,12 +47,17 @@ public class PickingSlotDAO implements IPickingSlotDAO
 	@Override
 	public <T extends I_M_PickingSlot> T getById(@NonNull final PickingSlotId pickingSlotId, final Class<T> modelClass)
 	{
-		return load(pickingSlotId, modelClass);
+		final T record = load(pickingSlotId, modelClass);
+		if (record == null)
+		{
+			throw new AdempiereException("No picking slot found for " + pickingSlotId);
+		}
+		return record;
 	}
 
 	@Override
 	@Cached(cacheName = I_M_PickingSlot.Table_Name)
-	public List<I_M_PickingSlot> retrievePickingSlots(final @CacheCtx Properties ctx, final @CacheTrx String trxName)
+	public List<I_M_PickingSlot> retrievePickingSlots(final @CacheCtx Properties ctx, final @CacheTrx @Nullable String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_PickingSlot.class, ctx, trxName)
@@ -111,10 +124,7 @@ public class PickingSlotDAO implements IPickingSlotDAO
 		if (barcode != null)
 		{
 			final String barcodeNorm = barcode.trim();
-			if (!barcodeNorm.isEmpty() && !Objects.equals(pickingSlot.getPickingSlot(), barcode))
-			{
-				return false;
-			}
+			return barcodeNorm.isEmpty() || Objects.equals(pickingSlot.getPickingSlot(), barcode);
 		}
 
 		//

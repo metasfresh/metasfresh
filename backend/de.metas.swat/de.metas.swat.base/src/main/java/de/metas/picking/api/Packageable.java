@@ -23,6 +23,7 @@
 package de.metas.picking.api;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
@@ -53,7 +54,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-/** Lines which have to be picked and delivered */
+/**
+ * Lines which have to be picked and delivered
+ */
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @Value
 @Builder
@@ -72,7 +75,9 @@ public class Packageable
 	Quantity qtyPickedAndDelivered;
 	@NonNull
 	Quantity qtyPickedNotDelivered;
-	/** quantity picked planned (i.e. picking candidates not already processed) */
+	/**
+	 * quantity picked planned (i.e. picking candidates not already processed)
+	 */
 	@NonNull
 	Quantity qtyPickedPlanned;
 
@@ -159,6 +164,16 @@ public class Packageable
 		{
 			throw new AdempiereException("More than one value were extracted (" + values + ") from " + packageables);
 		}
+	}
+
+	public static Optional<UserId> extractSingleLockedBy(@NonNull final Collection<Packageable> packageables)
+	{
+		return extractSingleValue(packageables, Packageable::getLockedBy);
+	}
+
+	public static ImmutableSet<ShipmentScheduleId> extractShipmentScheduleIds(@NonNull final Collection<Packageable> items)
+	{
+		return items.stream().map(Packageable::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
 	}
 
 	public Quantity getQtyPickedOrDelivered()
