@@ -59,17 +59,22 @@ public class PackagingDAO implements IPackagingDAO
 	{
 		final IQueryBuilder<I_M_Packageable_V> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Packageable_V.class)
-				.orderBy()
-				.addColumn(I_M_Packageable_V.COLUMN_ProductName)
-				.addColumn(I_M_Packageable_V.COLUMN_PriorityRule)
-				.addColumn(I_M_Packageable_V.COLUMN_DateOrdered)
-				.endOrderBy();
+				.orderBy(I_M_Packageable_V.COLUMN_ProductName)
+				.orderBy(I_M_Packageable_V.COLUMN_PriorityRule)
+				.orderBy(I_M_Packageable_V.COLUMN_DateOrdered);
 
 		//
 		// Filter: Customer
 		if (query.getCustomerId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, query.getCustomerId());
+		}
+
+		//
+		// Filter: Customer Location
+		if (query.getCustomerLocationId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Location_ID, query.getCustomerLocationId());
 		}
 
 		//
@@ -120,6 +125,27 @@ public class PackagingDAO implements IPackagingDAO
 		if (query.getSalesOrderId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMN_C_OrderSO_ID, query.getSalesOrderId());
+		}
+
+		//
+		// Filter by Locked By
+		if (query.getLockedBy() != null)
+		{
+			if (query.isIncludeNotLocked())
+			{
+				queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID, null, query.getLockedBy());
+			}
+			else
+			{
+				queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_LockedBy_User_ID, query.getLockedBy());
+			}
+		}
+
+		//
+		// Filter by excludeShipmentScheduleIds
+		if (query.getExcludeShipmentScheduleIds() != null && !query.getExcludeShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addNotInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getExcludeShipmentScheduleIds());
 		}
 
 		//
