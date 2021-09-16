@@ -24,7 +24,6 @@ package de.metas.ordercandidate.api.async;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.logging.LogManager;
@@ -47,7 +46,6 @@ public class C_OLCandToOrderWorkpackageProcessor extends WorkpackageProcessorAda
 
 	private final static Logger logger = LogManager.getLogger(C_OLCandToOrderWorkpackageProcessor.class);
 
-	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
 
 	private final OLCandProcessorRepository olCandProcessorRepo = SpringContextHolder.instance.getBean(OLCandProcessorRepository.class);

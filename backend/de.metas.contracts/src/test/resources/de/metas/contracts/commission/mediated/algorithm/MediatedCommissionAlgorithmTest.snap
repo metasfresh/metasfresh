@@ -1,0 +1,38 @@
+de.metas.contracts.commission.mediated.algorithm.MediatedCommissionAlgorithmTest.givenValidRequest_whenCreateCommissionShares_thenReturnOneShare=[
+  {
+    "config" : {
+      "@type" : "MediatedCommissionConfig",
+      "commissionPercent" : 10,
+      "commissionProductId" : 2,
+      "pointsPrecision" : 2,
+      "mediatedCommissionContract" : {
+        "@type" : "MediatedCommissionContract",
+        "contractId" : 1001,
+        "contractOwnerBPartnerId" : 1,
+        "simulation" : false
+      },
+      "mediatedCommissionSettingsLineId" : 1
+    },
+    "level" : 0,
+    "beneficiary" : {
+      "bPartnerId" : 2
+    },
+    "facts" : [
+      {
+        "timestamp" : {
+          "seconds" : 19898989898,
+          "nanos" : 0
+        },
+        "state" : "INVOICED",
+        "points" : 10.00
+      }
+    ],
+    "payer" : {
+      "bPartnerId" : 1
+    },
+    "soTrx" : "SALES",
+    "forecastedPointsSum" : 0,
+    "invoiceablePointsSum" : 0,
+    "invoicedPointsSum" : 10.00
+  }
+]

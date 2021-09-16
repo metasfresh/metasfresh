@@ -1,28 +1,8 @@
-package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
-import de.metas.util.lang.Percent;
-import lombok.Builder;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
-
-import javax.annotation.Nullable;
-
-import static de.metas.util.Check.assumeGreaterOrEqualToZero;
-
 /*
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,14 +20,32 @@ import static de.metas.util.Check.assumeGreaterOrEqualToZero;
  * #L%
  */
 
+package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionSettingsLineId;
+import de.metas.util.lang.Percent;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+
+import static de.metas.util.Check.assumeGreaterOrEqualToZero;
+
 @Value
-@ToString(exclude = "config" /* avoid StackOverflowError */)
-@EqualsAndHashCode(exclude = "config")
+@ToString()
+@EqualsAndHashCode()
 public class HierarchyContract implements CommissionContract
 {
 	FlatrateTermId id;
-
-	HierarchyConfig config;
 
 	Percent commissionPercent;
 
@@ -55,7 +53,9 @@ public class HierarchyContract implements CommissionContract
 
 	boolean isSimulation;
 
-	/** Technically not needed, but useful to help users retain a minimum level of sanity when analyzing why a particular commission was granted */
+	/**
+	 * Technically not needed, but useful to help users retain a minimum level of sanity when analyzing why a particular commission was granted
+	 */
 	CommissionSettingsLineId commissionSettingsLineId;
 
 	public static boolean isInstance(@NonNull final CommissionContract contract)
@@ -63,33 +63,27 @@ public class HierarchyContract implements CommissionContract
 		return contract instanceof HierarchyContract;
 	}
 
-	public static HierarchyContract castOrNull(@Nullable final CommissionContract contract)
+	@NonNull
+	public static Optional<HierarchyContract> castOrEmpty(@Nullable final CommissionContract contract)
 	{
 		if (contract == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 		if (contract instanceof HierarchyContract)
 		{
-			return (HierarchyContract)contract;
+			return Optional.of((HierarchyContract)contract);
 		}
-		return null;
+		return Optional.empty();
 	}
 
+	@NonNull
 	public static HierarchyContract cast(@Nullable final CommissionContract contract)
 	{
-		if (contract == null)
-		{
-			return null;
-		}
-		if (contract instanceof HierarchyContract)
-		{
-			return (HierarchyContract)contract;
-		}
-
-		throw new AdempiereException("Cannot cast the given contract to HierarchyContract")
-				.appendParametersToMessage()
-				.setParameter("contract", contract);
+		return castOrEmpty(contract)
+				.orElseThrow(() -> new AdempiereException("Cannot cast the given contract to HierarchyContract")
+						.appendParametersToMessage()
+						.setParameter("contract", contract));
 	}
 
 	/**
@@ -99,21 +93,21 @@ public class HierarchyContract implements CommissionContract
 	@Builder
 	public HierarchyContract(
 			@JsonProperty("id") @NonNull final FlatrateTermId id,
-			@JsonProperty("config") @NonNull final HierarchyConfig config,
 			@JsonProperty("percent") @NonNull final Percent commissionPercent,
 			@JsonProperty("pointsPrecision") final int pointsPrecision,
 			@JsonProperty("commissionSettingsLineId") @Nullable final CommissionSettingsLineId commissionSettingsLineId,
 			@JsonProperty("isSimulation") final boolean isSimulation)
 	{
 		this.id = id;
-		this.config = config;
 		this.commissionPercent = commissionPercent;
 		this.pointsPrecision = assumeGreaterOrEqualToZero(pointsPrecision, "pointsPrecision");
 		this.commissionSettingsLineId = commissionSettingsLineId;
 		this.isSimulation = isSimulation;
 	}
 
-	/** Note: add "Hierarchy" as method parameters if and when we have a commission type where it makes a difference. */
+	/**
+	 * Note: add "Hierarchy" as method parameters if and when we have a commission type where it makes a difference.
+	 */
 	public Percent getCommissionPercent()
 	{
 		return commissionPercent;
@@ -122,13 +116,6 @@ public class HierarchyContract implements CommissionContract
 	public int getPointsPrecision()
 	{
 		return pointsPrecision;
-	}
-
-	@Override
-	@JsonIgnore /* avoid StackOverflowError */
-	public HierarchyConfig getConfig()
-	{
-		return config;
 	}
 
 }

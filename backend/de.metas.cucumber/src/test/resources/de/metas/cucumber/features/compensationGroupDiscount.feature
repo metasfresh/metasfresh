@@ -6,7 +6,6 @@ Feature: Allow order discount via API (compensation group)
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
-  @ignore
   Scenario: we can allow order discount via api (compensation group)
     Given metasfresh contains M_Products:
       | Identifier | Name            | IsStocked |
