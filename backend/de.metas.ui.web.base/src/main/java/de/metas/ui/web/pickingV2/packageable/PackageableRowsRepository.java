@@ -103,7 +103,7 @@ final class PackageableRowsRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private PackageableQuery createPackageableQuery(final DocumentFilterList filters)
+	private static PackageableQuery createPackageableQuery(final DocumentFilterList filters)
 	{
 		final PackageableViewFilterVO filterVO = PackageableViewFilters.extractPackageableViewFilterVO(filters);
 
