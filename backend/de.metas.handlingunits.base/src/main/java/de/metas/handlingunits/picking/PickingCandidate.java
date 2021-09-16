@@ -161,10 +161,7 @@ public class PickingCandidate
 		}
 	}
 
-	public boolean isDraft()
-	{
-		return PickingCandidateStatus.Draft.equals(getProcessingStatus());
-	}
+	public boolean isDraft() {return getProcessingStatus().isDraft();}
 
 	public void assertProcessed()
 	{
@@ -177,7 +174,7 @@ public class PickingCandidate
 
 	public boolean isProcessed()
 	{
-		return PickingCandidateStatus.Processed.equals(getProcessingStatus());
+		return getProcessingStatus().isProcessed();
 	}
 
 	public boolean isRejectedToPick()
