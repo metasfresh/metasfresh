@@ -41,10 +41,15 @@ const Checkbox = (props) => {
       !isChanged &&
       handlePatch(widgetField, defaultValue, id);
 
-    if (!initialRender) {
+    // we're not setting the initialRender flag for filters, as we don't have a case where
+    // they might be rendered already AND their value could be modified in another part of the
+    // application (ex modal)
+    if (!initialRender && !updateItems) {
       setInitialRender(true);
     }
 
+    // if widget's value changed without user triggering it, update the local state as it
+    // was due to a change in a modal or other part of the app
     if (!isChanged && value !== prevValue && initialRender) {
       setCheckedState(!checkedState);
     }
