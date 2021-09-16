@@ -2,13 +2,6 @@ import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 
-const OFFLINE_MESSAGE_LINE1 = 'Connection lost.';
-const OFFLINE_MESSAGE_LINE2 =
-  'There are some connection issues. ' +
-  'Check connection and try to refresh the page.';
-const BAD_GATEWAY_LINE1 = 'Instance is not available';
-const BAD_GATEWAY_LINE2 = 'There are some connection issues.';
-
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
@@ -24,17 +17,44 @@ class ErrorScreen extends Component {
     }
   };
 
-  getLineMsg = (targetLine) => {
+  checkNavigatorLanguage = () => {
+    const navigatorLanguage = navigator.language;
+    if (['de', 'de-CH', 'de-AT', 'de-LU', 'de-LI'].includes(navigatorLanguage))
+      return 'de_DE';
+    if (
+      [
+        'en',
+        'en-US',
+        'en-EG',
+        'en-AU',
+        'en-GB',
+        'en-CA',
+        'en-NZ',
+        'en-IE',
+        'en-ZA',
+        'en-JM',
+        'en-BZ',
+        'en-TT',
+      ].includes(navigatorLanguage)
+    )
+      return 'en_US';
+    return 'en_US';
+  };
+
+  getOfflineLineMsg = (targetLine) => {
     const { errorType } = this.props;
+    let targetKey = '';
     switch (errorType) {
       case 'badGateway':
-        if (targetLine === 'line1') return BAD_GATEWAY_LINE1;
-        if (targetLine === 'line2') return BAD_GATEWAY_LINE2;
+        if (targetLine === 'line1') targetKey = 'BAD_GATEWAY_LINE1';
+        if (targetLine === 'line2') targetKey = 'BAD_GATEWAY_LINE2';
         break;
       default:
-        if (targetLine === 'line1') return OFFLINE_MESSAGE_LINE1;
-        if (targetLine === 'line2') return OFFLINE_MESSAGE_LINE2;
+        if (targetLine === 'line1') targetKey = 'OFFLINE_MESSAGE_LINE1';
+        if (targetLine === 'line2') targetKey = 'OFFLINE_MESSAGE_LINE1';
     }
+    const navigatorLanguage = this.checkNavigatorLanguage();
+    counterpart.translate(`offline.${navigatorLanguage}.${targetKey}`);
   };
 
   render() {
@@ -42,11 +62,11 @@ class ErrorScreen extends Component {
     let line2 = this.getLineFromCounterpart('description');
 
     if (line1.includes('{lang.')) {
-      line1 = this.getLineMsg('line1');
+      line1 = this.getOfflineLineMsg('line1');
     }
 
     if (line2.includes('{lang.')) {
-      line2 = this.getLineMsg('line2');
+      line2 = this.getOfflineLineMsg('line2');
     }
 
     return (
