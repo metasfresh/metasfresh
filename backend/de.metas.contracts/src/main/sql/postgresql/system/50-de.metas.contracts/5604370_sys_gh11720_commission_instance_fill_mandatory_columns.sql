@@ -32,3 +32,19 @@ FROM c_orderline mediatedOrderLine
 WHERE instance.commissiontrigger_type = 'MediatedOrder'
   AND mediatedOrderLine.c_orderline_id = instance.c_orderline_id
 ;
+
+-- 2021-09-13T16:38:41.722Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_commission_instance','Qty',null,'NOT NULL',null)
+;
+
+-- 2021-09-13T16:38:25.988Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_commission_instance','C_Currency_ID',null,'NOT NULL',null)
+;
+
+
+-- 2021-09-13T16:38:16.099Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO t_alter_column values('c_commission_instance','C_UOM_ID',null,'NOT NULL',null)
+;
