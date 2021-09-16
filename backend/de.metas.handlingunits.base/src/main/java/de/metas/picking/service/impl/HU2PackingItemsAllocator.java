@@ -491,29 +491,38 @@ public class HU2PackingItemsAllocator
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(packedPart.getShipmentScheduleId());
 
+		final boolean isTakeWholeHU = true;
+
+		final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
+		final boolean isOverDelivery = currentQtyToDeliver.compareTo(qtyPacked.toBigDecimal()) < 0;
+
 		// Check over-delivery
-		if (!allowOverDelivery)
+		if (!allowOverDelivery && isOverDelivery)
 		{
-			final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
-			if (currentQtyToDeliver.compareTo(qtyPacked.toBigDecimal()) < 0)
-			{
 				throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
 						.setParameter("shipmentSchedule's QtyToDeliver", currentQtyToDeliver)
 						.setParameter("qtyPacked to be Delivered", qtyPacked);
-			}
 		}
 
-		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU);
+		if (allowOverDelivery && isOverDelivery && !isTakeWholeHU)
+		{
+			// split qty
+		}
 
-		// "Back" allocate the qtyPicked from VHU to given shipment schedule
-		final boolean anonymousHuPickedOnTheFly = false;
-		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, pickFromVHU, _huContext, anonymousHuPickedOnTheFly);
+		else
+		{
+			final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyPacked, pickFromVHU);
 
-		// Transfer the qtyPicked from vhu to our target HU (if any)
-		packFromVHUToDestination(pickFromVHU, packedPart);
+			// "Back" allocate the qtyPicked from VHU to given shipment schedule
+			final boolean anonymousHuPickedOnTheFly = false;
+			huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, pickFromVHU, _huContext, anonymousHuPickedOnTheFly);
 
-		// Adjust remaining Qty to be packed
-		subtractFromQtyToPackRemaining(qtyPacked);
+			// Transfer the qtyPicked from vhu to our target HU (if any)
+			packFromVHUToDestination(pickFromVHU, packedPart);
+
+			// Adjust remaining Qty to be packed
+			subtractFromQtyToPackRemaining(qtyPacked);
+		}
 	}
 
 	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)

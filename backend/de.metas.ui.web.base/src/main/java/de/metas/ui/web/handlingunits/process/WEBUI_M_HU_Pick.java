@@ -78,6 +78,9 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 	@Param(parameterName = WEBUI_M_HU_Pick_ParametersFiller.PARAM_M_ShipmentSchedule_ID, mandatory = true)
 	private ShipmentScheduleId shipmentScheduleId;
 
+	@Param(parameterName = "IsTakeWholeHU", mandatory = true)
+	private boolean isTakeWholeHU;
+
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
