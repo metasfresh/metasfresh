@@ -22,10 +22,12 @@
 
 package de.metas.common.ordercandidates.v2.request;
 
+import de.metas.common.util.Check;
 import de.pentabyte.springfox.ApiEnum;
 import lombok.Getter;
 import lombok.NonNull;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
 public enum JSONPaymentRule
@@ -63,6 +65,16 @@ public enum JSONPaymentRule
 		this.code = code;
 	}
 
+	@Nullable
+	public static JSONPaymentRule ofCodeOrNull(@Nullable final String code)
+	{
+		if(de.metas.common.util.Check.isBlank(code))
+		{
+			return null;
+		}
+		return ofCode(code);
+	}
+	
 	@NonNull
 	public static JSONPaymentRule ofCode(@NonNull final String code)
 	{

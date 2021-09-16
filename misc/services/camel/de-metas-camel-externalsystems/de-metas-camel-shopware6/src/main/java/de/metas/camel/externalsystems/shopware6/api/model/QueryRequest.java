@@ -33,15 +33,15 @@ import java.util.List;
 
 @Value
 @JsonDeserialize(builder = QueryRequest.QueryRequestBuilder.class)
-public class QueryRequest
+public class QueryRequest implements Shopware6QueryRequest
 {
 	@NonNull
 	@JsonProperty("filter")
-	List<JsonFilter> filterList;
+	List<JsonQuery> queries;
 
 	@Builder
-	public QueryRequest(@NonNull @Singular @JsonProperty("filters") final List<JsonFilter> filters)
+	public QueryRequest(@NonNull @Singular @JsonProperty("filter") final List<JsonQuery> queries)
 	{
-		this.filterList = filters;
+		this.queries = queries;
 	}
 }
