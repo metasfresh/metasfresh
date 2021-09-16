@@ -1,5 +1,6 @@
 package de.metas.product;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
@@ -53,6 +54,10 @@ public interface IProductDAO extends ISingletonService
 	<T extends I_M_Product> T getById(ProductId productId, Class<T> productClass);
 
 	I_M_Product getById(ProductId productId);
+
+	<T extends I_M_Product> T getByIdInTrx(@NonNull ProductId productId, @NonNull Class<T> productClass);
+
+	I_M_Product getByIdInTrx(@NonNull ProductId productId);
 
 	I_M_Product getById(final int productId);
 
@@ -187,4 +192,6 @@ public interface IProductDAO extends ISingletonService
 	int getProductGuaranteeDaysMinFallbackProductCategory(@NonNull final ProductId productId);
 
 	int getGuaranteeMonthsInDays(ProductId productId);
+
+	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 }

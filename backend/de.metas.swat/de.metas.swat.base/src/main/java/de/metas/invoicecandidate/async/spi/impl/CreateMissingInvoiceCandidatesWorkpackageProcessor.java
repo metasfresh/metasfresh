@@ -91,13 +91,8 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 				}
 			}
 
-			if (!isCreateCandidates)
-			{
-				return false;
-			}
-
-			return true;
-		};
+			return isCreateCandidates;
+		}
 
 		@Override
 		protected Properties extractCtxFromItem(final Object model)
@@ -149,7 +144,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 			final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
 			for (final Object model : models)
 			{
-				try (final MDCCloseable c = TableRecordMDC.putTableRecordReference(model))
+				try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(model))
 				{
 					final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(model);
 					Loggables.addLog("Created {} invoice candidate for {}", invoiceCandidates.size(), model);

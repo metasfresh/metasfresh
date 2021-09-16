@@ -57,6 +57,7 @@ import java.util.Optional;
  * #L%
  */
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class OLCand implements IProductPriceAware
 {
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL;
@@ -154,17 +155,8 @@ public final class OLCand implements IProductPriceAware
 
 		this.dateDoc = TimeUtil.asLocalDate(olCandRecord.getDateOrdered());
 
-		this.bpartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBPartnerEffectiveId(olCandRecord))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getLocationEffectiveId(olCandRecord))
-				.contactId(this.olCandEffectiveValuesBL.getContactEffectiveId(olCandRecord))
-				.build();
-		this.billBPartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(this.olCandEffectiveValuesBL.getBillBPartnerEffectiveId(olCandRecord))
-				.bpartnerLocationId(this.olCandEffectiveValuesBL.getBillLocationEffectiveId(olCandRecord))
-				.contactId(this.olCandEffectiveValuesBL.getBillContactEffectiveId(olCandRecord))
-				.build();
-
+		this.bpartnerInfo = olCandEffectiveValuesBL.getBuyerPartnerInfo(olCandRecord);
+		this.billBPartnerInfo = olCandEffectiveValuesBL.getBillToPartnerInfo(olCandRecord);
 		this.dropShipBPartnerInfo = olCandEffectiveValuesBL.getDropShipPartnerInfo(olCandRecord);
 		this.handOverBPartnerInfo = olCandEffectiveValuesBL.getHandOverPartnerInfo(olCandRecord);
 
@@ -297,7 +289,7 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.isProcessed();
 	}
 
-	public void setProcessed(final boolean processed)
+	public void setProcessed()
 	{
 		olCandRecord.setProcessed(true);
 	}
@@ -360,6 +352,10 @@ public final class OLCand implements IProductPriceAware
 		{
 			return getBillBPartnerInfo().getBpartnerLocationId();
 		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_Location_Value_ID))
+		{
+			return getBillBPartnerInfo().getLocationId();
+		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_Bill_User_ID))
 		{
 			return getBillBPartnerInfo().getContactId();
@@ -371,6 +367,10 @@ public final class OLCand implements IProductPriceAware
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_Location_ID))
 		{
 			return dropShipBPartnerInfo.orElse(bpartnerInfo).getBpartnerLocationId();
+		}
+		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_DropShip_Location_Value_ID))
+		{
+			return dropShipBPartnerInfo.orElse(bpartnerInfo).getLocationId();
 		}
 		else if (olCandColumnName.equals(I_C_OLCand.COLUMNNAME_M_PricingSystem_ID))
 		{

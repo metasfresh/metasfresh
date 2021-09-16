@@ -1,8 +1,8 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
-import { push, replace } from 'react-router-redux';
 import currentDevice from 'current-device';
-import { Set } from 'immutable';
+
+import history from '../services/History';
 import { openInNewTab } from '../utils/index';
 
 import {
@@ -44,6 +44,7 @@ import {
   SET_PRINTING_OPTIONS,
   RESET_PRINTING_OPTIONS,
   TOGGLE_PRINTING_OPTION,
+  SET_SPINNER,
 } from '../constants/ActionTypes';
 import { createView } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
@@ -493,7 +494,7 @@ export function initWindow(windowType, docId, tabId, rowId = null, isAdvanced) {
               includedTabsInfo: {},
               scope: 'master',
               saveStatus: { saved: true },
-              standardActions: Set(),
+              standardActions: [],
               validStatus: {},
             })
           );
@@ -529,9 +530,13 @@ export function createSearchWindow({
       refRowIds: [rowId],
       isModal,
     })
-  ).then(({ windowId, viewId }) => {
-    dispatch(openRawModal({ windowId, viewId, title }));
-  });
+  )
+    .then(({ windowId, viewId }) => {
+      dispatch(openRawModal({ windowId, viewId, title }));
+    })
+    .finally(() => {
+      dispatch(setSpinner(false));
+    });
 }
 
 /*
@@ -551,6 +556,9 @@ export function createWindow({
   let documentId = docId || 'NEW';
   return (dispatch) => {
     if (documentId === 'SEARCH') {
+      // set the `showSpinner` flag to true to show the spinner while data is fetched
+      dispatch(setSpinner(true));
+
       // use specific function for search window creation
       createSearchWindow({
         windowId: windowType,
@@ -603,7 +611,7 @@ export function createWindow({
 
       if (documentId === 'NEW' && !isModal) {
         // redirect immedietely
-        return dispatch(replace(`/window/${windowType}/${docId}`));
+        return history.replace(`/window/${windowType}/${docId}`);
       }
 
       let elem = 0;
@@ -1342,9 +1350,7 @@ export function handleProcessResponse(response, type, id, parentId) {
                 })
               );
             } else {
-              await dispatch(
-                push(`/window/${action.windowId}/${action.documentId}`)
-              );
+              history.push(`/window/${action.windowId}/${action.documentId}`);
             }
             break;
           case 'openIncludedView':
@@ -1433,5 +1439,17 @@ export function togglePrintingOption(target) {
   return {
     type: TOGGLE_PRINTING_OPTION,
     payload: target,
+  };
+}
+
+/**
+ * @method setSpinner
+ * @summary - action. It sets the `showSpinner` in the store to the boolean value passed in the action
+ * @param {boolean} data
+ */
+export function setSpinner(data) {
+  return {
+    type: SET_SPINNER,
+    payload: data,
   };
 }

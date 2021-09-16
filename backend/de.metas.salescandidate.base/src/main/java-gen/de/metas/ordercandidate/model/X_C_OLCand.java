@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.ordercandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_OLCand
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1942045770L;
+	private static final long serialVersionUID = 259252226L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -156,6 +156,33 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public org.compiere.model.I_C_Location getBill_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_Bill_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setBill_Location_Value(final org.compiere.model.I_C_Location Bill_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_Bill_Location_Value_ID, org.compiere.model.I_C_Location.class, Bill_Location_Value);
+	}
+
+	@Override
+	public void setBill_Location_Value_ID (final int Bill_Location_Value_ID)
+	{
+		if (Bill_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_Bill_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_Location_Value_ID, Bill_Location_Value_ID);
+	}
+
+	@Override
+	public int getBill_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Bill_Location_Value_ID);
+	}
+
+	@Override
 	public void setBill_User_ID (final int Bill_User_ID)
 	{
 		if (Bill_User_ID < 1) 
@@ -168,6 +195,33 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getBill_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Bill_User_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BP_Location_Override_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BP_Location_Override_Value(final org.compiere.model.I_C_Location C_BP_Location_Override_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_Value_ID, org.compiere.model.I_C_Location.class, C_BP_Location_Override_Value);
+	}
+
+	@Override
+	public void setC_BP_Location_Override_Value_ID (final int C_BP_Location_Override_Value_ID)
+	{
+		if (C_BP_Location_Override_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, C_BP_Location_Override_Value_ID);
+	}
+
+	@Override
+	public int getC_BP_Location_Override_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_Value_ID);
 	}
 
 	@Override
@@ -250,6 +304,33 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BPartner_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value(final org.compiere.model.I_C_Location C_BPartner_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class, C_BPartner_Location_Value);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID (final int C_BPartner_Location_Value_ID)
+	{
+		if (C_BPartner_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
 	}
 
 	@Override
@@ -693,6 +774,60 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public org.compiere.model.I_C_Location getDropShip_Location_Override_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_DropShip_Location_Override_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setDropShip_Location_Override_Value(final org.compiere.model.I_C_Location DropShip_Location_Override_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_DropShip_Location_Override_Value_ID, org.compiere.model.I_C_Location.class, DropShip_Location_Override_Value);
+	}
+
+	@Override
+	public void setDropShip_Location_Override_Value_ID (final int DropShip_Location_Override_Value_ID)
+	{
+		if (DropShip_Location_Override_Value_ID < 1) 
+			set_Value (COLUMNNAME_DropShip_Location_Override_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_DropShip_Location_Override_Value_ID, DropShip_Location_Override_Value_ID);
+	}
+
+	@Override
+	public int getDropShip_Location_Override_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DropShip_Location_Override_Value_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getDropShip_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_DropShip_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setDropShip_Location_Value(final org.compiere.model.I_C_Location DropShip_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_DropShip_Location_Value_ID, org.compiere.model.I_C_Location.class, DropShip_Location_Value);
+	}
+
+	@Override
+	public void setDropShip_Location_Value_ID (final int DropShip_Location_Value_ID)
+	{
+		if (DropShip_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_DropShip_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_DropShip_Location_Value_ID, DropShip_Location_Value_ID);
+	}
+
+	@Override
+	public int getDropShip_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DropShip_Location_Value_ID);
+	}
+
+	@Override
 	public void setDropShip_User_ID (final int DropShip_User_ID)
 	{
 		if (DropShip_User_ID < 1) 
@@ -756,6 +891,19 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
+	public void setGroupCompensationDiscountPercentage (final @Nullable BigDecimal GroupCompensationDiscountPercentage)
+	{
+		set_Value (COLUMNNAME_GroupCompensationDiscountPercentage, GroupCompensationDiscountPercentage);
+	}
+
+	@Override
+	public BigDecimal getGroupCompensationDiscountPercentage()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GroupCompensationDiscountPercentage);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setHandOver_Location_Effective_ID (final int HandOver_Location_Effective_ID)
 	{
 		throw new IllegalArgumentException ("HandOver_Location_Effective_ID is virtual column");	}
@@ -794,6 +942,60 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	public int getHandOver_Location_Override_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_HandOver_Location_Override_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getHandOver_Location_Override_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_HandOver_Location_Override_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setHandOver_Location_Override_Value(final org.compiere.model.I_C_Location HandOver_Location_Override_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_HandOver_Location_Override_Value_ID, org.compiere.model.I_C_Location.class, HandOver_Location_Override_Value);
+	}
+
+	@Override
+	public void setHandOver_Location_Override_Value_ID (final int HandOver_Location_Override_Value_ID)
+	{
+		if (HandOver_Location_Override_Value_ID < 1) 
+			set_Value (COLUMNNAME_HandOver_Location_Override_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_HandOver_Location_Override_Value_ID, HandOver_Location_Override_Value_ID);
+	}
+
+	@Override
+	public int getHandOver_Location_Override_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HandOver_Location_Override_Value_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getHandOver_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_HandOver_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setHandOver_Location_Value(final org.compiere.model.I_C_Location HandOver_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_HandOver_Location_Value_ID, org.compiere.model.I_C_Location.class, HandOver_Location_Value);
+	}
+
+	@Override
+	public void setHandOver_Location_Value_ID (final int HandOver_Location_Value_ID)
+	{
+		if (HandOver_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_HandOver_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_HandOver_Location_Value_ID, HandOver_Location_Value_ID);
+	}
+
+	@Override
+	public int getHandOver_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HandOver_Location_Value_ID);
 	}
 
 	@Override

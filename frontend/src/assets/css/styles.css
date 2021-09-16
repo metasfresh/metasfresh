@@ -155,7 +155,7 @@ body{
 .context-menu {
     position: fixed;
     display: none;
-    width: 180px;
+    width: 230px;
     background-color: #fff;
     left: 0;
     top: 0;
@@ -165,6 +165,17 @@ body{
     color: $brand-font-color;
     box-shadow: 0 0 6px rgba(0, 0, 0, .1);
     z-index: 3;
+    overflow: hidden;
+}
+
+.context-menu-main-options {
+    clear:both;
+}
+
+.context-menu-references {
+    height: 135px;
+    overflow-y: auto;
+    bottom: 0
 }
 
 .context-menu-separator {
@@ -1630,6 +1641,14 @@ body{
             background: url('../images/spinner-solid.svg') no-repeat scroll center 0;
         }
     }
+}
+
+.modal-spinner {
+    height: 70%;
+    left:15%;
+    top: 15%;
+    width: 70%;
+    background-color: transparent !important;
 }
 
 .paypal-reservation-container {

@@ -13,21 +13,6 @@
  *****************************************************************************/
 package org.adempiere.pdf;
 
-import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.awt.print.PageFormat;
-import java.awt.print.Pageable;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-
-import javax.imageio.ImageIO;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.pdf.viewer.PDFViewerBean;
-import org.compiere.model.MSysConfig;
-
 import com.lowagie.text.FontFactory;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
@@ -35,6 +20,20 @@ import com.lowagie.text.pdf.DefaultFontMapper;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfWriter;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.pdf.viewer.PDFViewerBean;
+import org.adempiere.service.ISysConfigBL;
+
+import javax.imageio.ImageIO;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.print.PageFormat;
+import java.awt.print.Pageable;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 
 /**
  * Generate PDF document using iText
@@ -64,7 +63,7 @@ public class Document {
             final DefaultFontMapper mapper = new DefaultFontMapper();     
             
             //Elaine 2009/02/17 - load additional font from directory set in PDF_FONT_DIR of System Configurator 
-            String pdfFontDir = MSysConfig.getValue(PDF_FONT_DIR, ""); 
+            String pdfFontDir = Services.get(ISysConfigBL.class).getValue(PDF_FONT_DIR, "");
             if(pdfFontDir != null && pdfFontDir.trim().length() > 0)
             {
             	pdfFontDir = pdfFontDir.trim();

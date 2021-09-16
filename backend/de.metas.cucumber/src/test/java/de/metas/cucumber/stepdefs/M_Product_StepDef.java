@@ -68,23 +68,7 @@ public class M_Product_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String productName = tableRow.get("Name");
-			final String productValue = CoalesceUtil.coalesce(tableRow.get("Value"), productName);
-
-			final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(
-					() -> productDAO.retrieveProductByValue(productValue),
-					() -> newInstanceOutOfTrx(I_M_Product.class));
-			productRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-			productRecord.setValue(productValue);
-			productRecord.setName(productName);
-			productRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
-			productRecord.setProductType(ProductType.Item.getCode());
-			productRecord.setIsStocked(true);
-			productRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_ID.getRepoId());
-			InterfaceWrapperHelper.saveRecord(productRecord);
-
-			final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
-			productTable.put(recordIdentifier, productRecord);
+			createM_Product(tableRow);
 		}
 	}
 
@@ -132,5 +116,28 @@ public class M_Product_StepDef
 
 			InterfaceWrapperHelper.saveRecord(bPartnerProduct);
 		}
+	}
+
+	private void createM_Product(@NonNull final Map<String, String> tableRow)
+	{
+		final String productName = tableRow.get("Name");
+		final String productValue = CoalesceUtil.coalesce(tableRow.get("Value"), productName);
+		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
+
+		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(
+				() -> productDAO.retrieveProductByValue(productValue),
+				() -> newInstanceOutOfTrx(I_M_Product.class));
+		productRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		productRecord.setValue(productValue);
+		productRecord.setName(productName);
+		productRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
+		productRecord.setProductType(ProductType.Item.getCode());
+		productRecord.setM_Product_Category_ID(PRODUCT_CATEGORY_ID.getRepoId());
+		productRecord.setIsStocked(isStocked);
+
+		InterfaceWrapperHelper.saveRecord(productRecord);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_Product");
+		productTable.put(recordIdentifier, productRecord);
 	}
 }

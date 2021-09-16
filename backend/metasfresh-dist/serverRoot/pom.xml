@@ -53,7 +53,7 @@
 
         <dependency>
             <groupId>de.metas.elasticsearch</groupId>
-            <artifactId>de.metas.elasticsearch.server</artifactId>
+            <artifactId>de.metas.elasticsearch</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
 

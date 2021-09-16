@@ -255,6 +255,21 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
+	@NonNull
+	public List<I_C_OrderLine> retrieveOrderLinesByIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		if (orderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, orderLineIds)
+				.create()
+				.listImmutable(I_C_OrderLine.class);
+	}
+
+	@Override
 	public boolean hasInOuts(final I_C_Order order)
 	{
 		return retrieveInOutsQuery(order)

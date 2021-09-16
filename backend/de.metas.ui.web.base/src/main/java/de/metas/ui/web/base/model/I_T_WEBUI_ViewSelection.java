@@ -40,8 +40,12 @@ public interface I_T_WEBUI_ViewSelection
 	// IMPORTANT: keep in sync with I_T_WEBUI_ViewSelectionLine !!!
 	String COLUMNNAME_IntKey1 = "IntKey1";
 	String COLUMNNAME_IntKey2 = "IntKey2";
-	ImmutableList<String> COLUMNNAME_IntKeys = ImmutableList.of(COLUMNNAME_IntKey1, COLUMNNAME_IntKey2);
+	String COLUMNNAME_IntKey3 = "IntKey3";
+	String COLUMNNAME_IntKey4 = "IntKey4";
+	ImmutableList<String> COLUMNNAME_IntKeys = ImmutableList.of(COLUMNNAME_IntKey1, COLUMNNAME_IntKey2, COLUMNNAME_IntKey3, COLUMNNAME_IntKey4);
 
 	String COLUMNNAME_StringKey1 = "StringKey1";
-	ImmutableList<String> COLUMNNAME_StringKeys = ImmutableList.of(COLUMNNAME_StringKey1);
+	String COLUMNNAME_StringKey2 = "StringKey2";
+	String COLUMNNAME_StringKey3 = "StringKey3";
+	ImmutableList<String> COLUMNNAME_StringKeys = ImmutableList.of(COLUMNNAME_StringKey1, COLUMNNAME_StringKey2, COLUMNNAME_StringKey3);
 }

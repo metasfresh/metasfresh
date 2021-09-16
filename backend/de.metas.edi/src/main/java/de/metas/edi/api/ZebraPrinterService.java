@@ -34,6 +34,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Zebra_Config;
 import org.compiere.util.DB;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.Charset;
@@ -96,7 +97,7 @@ public class ZebraPrinterService
 		final byte[] fileDataBytes = fileData.getBytes(Charset.forName(fileEncoding));
 
 		return ReportResultData.builder()
-				.reportData(fileDataBytes)
+				.reportData(new ByteArrayResource(fileDataBytes))
 				.reportFilename(SSCC18_FILE_NAME_TEMPLATE.replace(TIMESTAMP_PLACEHOLDER, String.valueOf(System.currentTimeMillis())))
 				.reportContentType(CSV_FORMAT)
 				.build();

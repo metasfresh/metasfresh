@@ -43,6 +43,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Vector;
 
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -742,9 +744,9 @@ public class CreateFromShipment extends CreateFrom
 			{
 				inout.setM_Warehouse_ID(p_order.getM_Warehouse_ID());
 				inout.setIsDropShip(p_order.isDropShip());
-				inout.setDropShip_BPartner_ID(p_order.getDropShip_BPartner_ID());
-				inout.setDropShip_Location_ID(p_order.getDropShip_Location_ID());
-				inout.setDropShip_User_ID(p_order.getDropShip_User_ID());
+				InOutDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(inout)
+						.setFrom(OrderDocumentLocationAdapterFactory.deliveryLocationAdapter(p_order).toDocumentLocation());
 			}
 		}
 		if (m_invoice != null && m_invoice.getC_Invoice_ID() != 0)

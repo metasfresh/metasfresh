@@ -4,6 +4,7 @@ package de.metas.invoicecandidate.model;
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Candidate_Recompute
  *  @author metasfresh (generated) 
@@ -64,18 +65,18 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
-		if (C_Async_Batch_ID < 1) 
+		if (C_Async_Batch_ID < 1)
 			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
 	}
 
 	@Override
-	public int getC_Async_Batch_ID() 
+	public int getC_Async_Batch_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
-
+	
 	@Override
 	public I_C_Invoice_Candidate getC_Invoice_Candidate()
 	{
@@ -83,7 +84,7 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public void setC_Invoice_Candidate(final I_C_Invoice_Candidate C_Invoice_Candidate)
+	public void setC_Invoice_Candidate(final de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate)
 	{
 		set_ValueFromPO(COLUMNNAME_C_Invoice_Candidate_ID, I_C_Invoice_Candidate.class, C_Invoice_Candidate);
 	}
@@ -98,7 +99,7 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	}
 
 	@Override
-	public int getC_Invoice_Candidate_ID() 
+	public int getC_Invoice_Candidate_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_ID);
 	}
@@ -106,14 +107,14 @@ public class X_C_Invoice_Candidate_Recompute extends org.compiere.model.PO imple
 	@Override
 	public void setC_Invoice_Candidate_Recompute_ID (final int C_Invoice_Candidate_Recompute_ID)
 	{
-		if (C_Invoice_Candidate_Recompute_ID < 1) 
+		if (C_Invoice_Candidate_Recompute_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Recompute_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Invoice_Candidate_Recompute_ID, C_Invoice_Candidate_Recompute_ID);
 	}
 
 	@Override
-	public int getC_Invoice_Candidate_Recompute_ID() 
+	public int getC_Invoice_Candidate_Recompute_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_Candidate_Recompute_ID);
 	}

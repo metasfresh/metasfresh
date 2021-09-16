@@ -50,6 +50,13 @@ public class DocTypeBL implements IDocTypeBL
 	}
 
 	@Override
+	public boolean isSalesCostEstimate(final I_C_DocType dt)
+	{
+		return X_C_DocType.DOCBASETYPE_SalesOrder.equals(dt.getDocBaseType())
+				&& X_C_DocType.DOCSUBTYPE_CostEstimate.equals(dt.getDocSubType());
+	}
+
+	@Override
 	public boolean isSalesProposal(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType dt = docTypesRepo.getById(docTypeId);
@@ -73,7 +80,7 @@ public class DocTypeBL implements IDocTypeBL
 	@Override
 	public boolean isSalesProposalOrQuotation(final I_C_DocType dt)
 	{
-		return isSalesProposal(dt) || isSalesQuotation(dt);
+		return isSalesProposal(dt) || isSalesQuotation(dt) || isSalesCostEstimate(dt);
 	}
 
 	@Override

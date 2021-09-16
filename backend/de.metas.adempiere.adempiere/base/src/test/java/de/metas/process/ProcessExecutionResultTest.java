@@ -15,6 +15,7 @@ import org.compiere.util.Env;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,7 +76,7 @@ public class ProcessExecutionResultTest
 		final ProcessExecutionResult result = ProcessExecutionResult.newInstanceForADPInstanceId(PInstanceId.ofRepoId(12345));
 		result.setRecordToSelectAfterExecution(createDummyTableRecordReference());
 		result.markAsError("error summary1");
-		result.setReportData(new byte[] { 1, 2, 3 }, "report.pdf", "application/pdf");
+		result.setReportData(new ByteArrayResource(new byte[] { 1, 2, 3 }), "report.pdf", "application/pdf");
 		//
 		result.setRecordsToOpen(createDummyTableRecordReferenceList(3), 1234);
 		//

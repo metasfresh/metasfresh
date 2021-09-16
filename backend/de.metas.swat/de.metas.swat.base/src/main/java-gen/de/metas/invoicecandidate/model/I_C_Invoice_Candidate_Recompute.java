@@ -1,8 +1,7 @@
 package de.metas.invoicecandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_Invoice_Candidate_Recompute
  *  @author metasfresh (generated) 
@@ -39,8 +38,6 @@ public interface I_C_Invoice_Candidate_Recompute
 
 	@Nullable org.compiere.model.I_AD_PInstance getAD_PInstance();
 
-	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
-
 	ModelColumn<I_C_Invoice_Candidate_Recompute, org.compiere.model.I_AD_PInstance> COLUMN_AD_PInstance_ID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "AD_PInstance_ID", org.compiere.model.I_AD_PInstance.class);
 	String COLUMNNAME_AD_PInstance_ID = "AD_PInstance_ID";
 
@@ -61,6 +58,8 @@ public interface I_C_Invoice_Candidate_Recompute
 	 * <br>Virtual Column: false
 	 */
 	int getC_Async_Batch_ID();
+
+	void setAD_PInstance(@Nullable org.compiere.model.I_AD_PInstance AD_PInstance);
 
 	ModelColumn<I_C_Invoice_Candidate_Recompute, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "C_Async_Batch_ID", null);
 	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
@@ -83,12 +82,12 @@ public interface I_C_Invoice_Candidate_Recompute
 	 */
 	int getC_Invoice_Candidate_ID();
 
-	I_C_Invoice_Candidate getC_Invoice_Candidate();
+	de.metas.invoicecandidate.model.I_C_Invoice_Candidate getC_Invoice_Candidate();
 
-	void setC_Invoice_Candidate(I_C_Invoice_Candidate C_Invoice_Candidate);
-
-	ModelColumn<I_C_Invoice_Candidate_Recompute, I_C_Invoice_Candidate> COLUMN_C_Invoice_Candidate_ID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "C_Invoice_Candidate_ID", I_C_Invoice_Candidate.class);
+	ModelColumn<I_C_Invoice_Candidate_Recompute, de.metas.invoicecandidate.model.I_C_Invoice_Candidate> COLUMN_C_Invoice_Candidate_ID = new ModelColumn<>(I_C_Invoice_Candidate_Recompute.class, "C_Invoice_Candidate_ID", de.metas.invoicecandidate.model.I_C_Invoice_Candidate.class);
 	String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
+
+	void setC_Invoice_Candidate(de.metas.invoicecandidate.model.I_C_Invoice_Candidate C_Invoice_Candidate);
 
 	/**
 	 * Set C_Invoice_Candidate_Recompute.

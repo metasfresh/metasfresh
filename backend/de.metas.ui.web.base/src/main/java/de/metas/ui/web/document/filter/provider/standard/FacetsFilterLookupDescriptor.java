@@ -16,6 +16,7 @@ import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.SimpleLookupDescriptorTemplate;
+import de.metas.ui.web.window.model.lookup.IdsToFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -110,7 +111,7 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 	{
 		final LookupDataSourceContext.Builder builder = fieldLookupDescriptor != null
 				? fieldLookupDescriptor.getLookupDataSourceFetcher().newContextForFetchingById(id)
-				: LookupDataSourceContext.builderWithoutTableName().putFilterById(id);
+				: LookupDataSourceContext.builderWithoutTableName().putFilterById(IdsToFilter.ofSingleValue(id));
 
 		return builder
 				.requiresParameter(LookupDataSourceContext.PARAM_ViewId)
@@ -192,6 +193,7 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 		return DefaultView.cast(viewsRepository.getView(viewId));
 	}
 
+	@Nullable
 	private LookupValue convertRawFieldValueToLookupValue(final Object fieldValue)
 	{
 		if (fieldValue == null)
@@ -218,7 +220,7 @@ final class FacetsFilterLookupDescriptor extends SimpleLookupDescriptorTemplate
 		}
 		else if (fieldValue instanceof String)
 		{
-			String stringValue = (String)fieldValue;
+			final String stringValue = (String)fieldValue;
 			return StringLookupValue.of(stringValue, stringValue);
 		}
 		else

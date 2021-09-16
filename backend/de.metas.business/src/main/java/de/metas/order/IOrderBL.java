@@ -24,7 +24,7 @@ package de.metas.order;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.pricing.PriceListId;
@@ -73,18 +73,18 @@ public interface IOrderBL extends ISingletonService
 	 */
 	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
 
-	BPartnerLocationId getShipToLocationId(I_C_Order order);
+	BPartnerLocationAndCaptureId getShipToLocationId(I_C_Order order);
 
 	/**
 	 * Returns the given order's <code>AD_User</code>, or if set and <code>isDropShip = true</code> then returns the <code>DropShip_User</code>.
 	 */
 	I_AD_User getShipToUser(I_C_Order order);
 
-	BPartnerLocationId getBillToLocationId(I_C_Order order);
+	BPartnerLocationAndCaptureId getBillToLocationId(I_C_Order order);
 
 	@Nullable
 	BPartnerId getEffectiveBillPartnerId(@NonNull I_C_Order orderRecord);
-		
+
 	@NonNull BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
@@ -117,7 +117,6 @@ public interface IOrderBL extends ISingletonService
 
 	PriceListId retrievePriceListId(I_C_Order order, PricingSystemId pricingSystemIdOverride);
 
-
 	/**
 	 * Sets Target Document Type based on {@link I_C_Order#isSOTrx()} (Standard Order or PO)
 	 */
@@ -141,7 +140,7 @@ public interface IOrderBL extends ISingletonService
 	/**
 	 * Updates the addresses in the order lines from the order. Also sets the header info in the lines.
 	 */
-	void updateAddresses(I_C_Order order);
+	void updateOrderLineAddressesFromOrder(I_C_Order order);
 
 	/**
 	 * Retrieve deliveryVIaRule from order if the rule is already set, is retrieving the one set in order, if not, retrieves the deliveryViaRule from partner

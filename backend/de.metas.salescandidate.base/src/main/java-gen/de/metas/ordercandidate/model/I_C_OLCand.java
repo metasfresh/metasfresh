@@ -1,9 +1,8 @@
 package de.metas.ordercandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
@@ -223,6 +222,31 @@ public interface I_C_OLCand
 	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
+	 * Set Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_Value_ID (int Bill_Location_Value_ID);
+
+	/**
+	 * Get Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getBill_Location_Value();
+
+	void setBill_Location_Value(@Nullable org.compiere.model.I_C_Location Bill_Location_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_Bill_Location_Value_ID = new ModelColumn<>(I_C_OLCand.class, "Bill_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_Bill_Location_Value_ID = "Bill_Location_Value_ID";
+
+	/**
 	 * Set Bill Contact.
 	 *
 	 * <br>Type: Table
@@ -241,6 +265,36 @@ public interface I_C_OLCand
 	int getBill_User_ID();
 
 	String COLUMNNAME_Bill_User_ID = "Bill_User_ID";
+
+	String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
+
+
+	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+
+	/**
+	 * Set Standort abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Location_Override_Value_ID (int C_BP_Location_Override_Value_ID);
+
+	/**
+	 * Get Standort abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BP_Location_Override_Value();
+
+	void setC_BP_Location_Override_Value(@Nullable org.compiere.model.I_C_Location C_BP_Location_Override_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_C_BP_Location_Override_Value_ID = new ModelColumn<>(I_C_OLCand.class, "C_BP_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BP_Location_Override_Value_ID = "C_BP_Location_Override_Value_ID";
 
 	/**
 	 * Set Async Batch.
@@ -287,8 +341,6 @@ public interface I_C_OLCand
 	@Deprecated
 	int getC_BP_Location_Effective_ID();
 
-	String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
-
 	/**
 	 * Set Standort abw..
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
@@ -308,8 +360,6 @@ public interface I_C_OLCand
 	 * <br>Virtual Column: false
 	 */
 	int getC_BP_Location_Override_ID();
-
-	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
 
 	/**
 	 * Set Eff. Business Partner.
@@ -374,6 +424,31 @@ public interface I_C_OLCand
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Value_ID (int C_BPartner_Location_Value_ID);
+
+	/**
+	 * Get Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BPartner_Location_Value();
+
+	void setC_BPartner_Location_Value(@Nullable org.compiere.model.I_C_Location C_BPartner_Location_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_C_BPartner_Location_Value_ID = new ModelColumn<>(I_C_OLCand.class, "C_BPartner_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
 	 * Set Geschäftspartner abw..
@@ -1055,6 +1130,58 @@ public interface I_C_OLCand
 	String COLUMNNAME_DropShip_Location_Override_ID = "DropShip_Location_Override_ID";
 
 	/**
+	 * Set Lieferadresse abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_Override_Value_ID (int DropShip_Location_Override_Value_ID);
+
+	/**
+	 * Get Lieferadresse abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getDropShip_Location_Override_Value();
+
+	void setDropShip_Location_Override_Value(@Nullable org.compiere.model.I_C_Location DropShip_Location_Override_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_DropShip_Location_Override_Value_ID = new ModelColumn<>(I_C_OLCand.class, "DropShip_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_DropShip_Location_Override_Value_ID = "DropShip_Location_Override_Value_ID";
+
+	/**
+	 * Set Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDropShip_Location_Value_ID (int DropShip_Location_Value_ID);
+
+	/**
+	 * Get Lieferadresse (Address).
+	 * Business Partner Location for shipping to
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDropShip_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getDropShip_Location_Value();
+
+	void setDropShip_Location_Value(@Nullable org.compiere.model.I_C_Location DropShip_Location_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_DropShip_Location_Value_ID = new ModelColumn<>(I_C_OLCand.class, "DropShip_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_DropShip_Location_Value_ID = "DropShip_Location_Value_ID";
+
+	/**
 	 * Set Ship Contact.
 	 *
 	 * <br>Type: Table
@@ -1136,6 +1263,27 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ExternalLineId = new ModelColumn<>(I_C_OLCand.class, "ExternalLineId", null);
 	String COLUMNNAME_ExternalLineId = "ExternalLineId";
+
+	/**
+	 * Set Group compensation discount percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGroupCompensationDiscountPercentage (@Nullable BigDecimal GroupCompensationDiscountPercentage);
+
+	/**
+	 * Get Group compensation discount percentage.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getGroupCompensationDiscountPercentage();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_GroupCompensationDiscountPercentage = new ModelColumn<>(I_C_OLCand.class, "GroupCompensationDiscountPercentage", null);
+	String COLUMNNAME_GroupCompensationDiscountPercentage = "GroupCompensationDiscountPercentage";
 
 	/**
 	 * Set Grouping error message.
@@ -1221,6 +1369,56 @@ public interface I_C_OLCand
 	int getHandOver_Location_Override_ID();
 
 	String COLUMNNAME_HandOver_Location_Override_ID = "HandOver_Location_Override_ID";
+
+	/**
+	 * Set Übergabeadresse abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_Override_Value_ID (int HandOver_Location_Override_Value_ID);
+
+	/**
+	 * Get Übergabeadresse abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getHandOver_Location_Override_Value();
+
+	void setHandOver_Location_Override_Value(@Nullable org.compiere.model.I_C_Location HandOver_Location_Override_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_HandOver_Location_Override_Value_ID = new ModelColumn<>(I_C_OLCand.class, "HandOver_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_HandOver_Location_Override_Value_ID = "HandOver_Location_Override_Value_ID";
+
+	/**
+	 * Set Übergabeadresse (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_Value_ID (int HandOver_Location_Value_ID);
+
+	/**
+	 * Get Übergabeadresse (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getHandOver_Location_Value();
+
+	void setHandOver_Location_Value(@Nullable org.compiere.model.I_C_Location HandOver_Location_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_HandOver_Location_Value_ID = new ModelColumn<>(I_C_OLCand.class, "HandOver_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_HandOver_Location_Value_ID = "HandOver_Location_Value_ID";
 
 	/**
 	 * Set Handover Partner eff..

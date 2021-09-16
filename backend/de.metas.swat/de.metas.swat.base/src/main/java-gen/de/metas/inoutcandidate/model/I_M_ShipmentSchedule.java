@@ -1,9 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_ShipmentSchedule
  *  @author metasfresh (generated)
@@ -14,8 +13,8 @@ public interface I_M_ShipmentSchedule
 
 	String Table_Name = "M_ShipmentSchedule";
 
-	//	/** AD_Table_ID=500221 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=500221 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -178,6 +177,31 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_Bill_Location_ID = "Bill_Location_ID";
 
 	/**
+	 * Set Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBill_Location_Value_ID (int Bill_Location_Value_ID);
+
+	/**
+	 * Get Rechnungsstandort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getBill_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getBill_Location_Value();
+
+	void setBill_Location_Value(@Nullable org.compiere.model.I_C_Location Bill_Location_Value);
+
+	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_Location> COLUMN_Bill_Location_Value_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "Bill_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_Bill_Location_Value_ID = "Bill_Location_Value_ID";
+
+	/**
 	 * Set Bill Contact.
 	 *
 	 * <br>Type: Search
@@ -256,10 +280,10 @@ public interface I_M_ShipmentSchedule
 	 * <br>Virtual Column: false
 	 */
 	int getC_Async_Batch_ID();
-
+	
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "C_Async_Batch_ID", null);
 	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
-
+	
 	/**
 	 * Set Standort abw..
 	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
@@ -281,6 +305,31 @@ public interface I_M_ShipmentSchedule
 	int getC_BP_Location_Override_ID();
 
 	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+
+	/**
+	 * Set Standort abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Location_Override_Value_ID (int C_BP_Location_Override_Value_ID);
+
+	/**
+	 * Get Standort abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BP_Location_Override_Value();
+
+	void setC_BP_Location_Override_Value(@Nullable org.compiere.model.I_C_Location C_BP_Location_Override_Value);
+
+	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_Location> COLUMN_C_BP_Location_Override_Value_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "C_BP_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BP_Location_Override_Value_ID = "C_BP_Location_Override_Value_ID";
 
 	/**
 	 * Set Business Partner.
@@ -321,6 +370,31 @@ public interface I_M_ShipmentSchedule
 	int getC_BPartner_Location_ID();
 
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
+	 * Set Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_Value_ID (int C_BPartner_Location_Value_ID);
+
+	/**
+	 * Get Standort (Address).
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BPartner_Location_Value();
+
+	void setC_BPartner_Location_Value(@Nullable org.compiere.model.I_C_Location C_BPartner_Location_Value);
+
+	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_C_Location> COLUMN_C_BPartner_Location_Value_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "C_BPartner_Location_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
 	 * Set Geschäftspartner abw..
@@ -1027,8 +1101,6 @@ public interface I_M_ShipmentSchedule
 	int getM_AttributeSetInstance_ID();
 
 	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
-
-	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
 
 	ModelColumn<I_M_ShipmentSchedule, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_M_ShipmentSchedule.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
@@ -1779,27 +1851,6 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_QtyOrdered_TU = "QtyOrdered_TU";
 
 	/**
-	 * Set Picked (stock UOM).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyPickList (@Nullable BigDecimal QtyPickList);
-
-	/**
-	 * Get Picked (stock UOM).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyPickList();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyPickList = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyPickList", null);
-	String COLUMNNAME_QtyPickList = "QtyPickList";
-
-	/**
 	 * Set Qty Reserved.
 	 * Open Qty
 	 *
@@ -1821,6 +1872,27 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyReserved = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyReserved", null);
 	String COLUMNNAME_QtyReserved = "QtyReserved";
+	
+	/**
+	 * Set Picked (stock UOM).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyPickList (@Nullable BigDecimal QtyPickList);
+
+	/**
+	 * Get Picked (stock UOM).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyPickList();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyPickList = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyPickList", null);
+	String COLUMNNAME_QtyPickList = "QtyPickList";
 
 	/**
 	 * Set Ausliefermenge.
@@ -1842,6 +1914,11 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliver = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyToDeliver", null);
 	String COLUMNNAME_QtyToDeliver = "QtyToDeliver";
+
+    /** Column definition for QtyToDeliverCatch_Override */
+    public static final org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliverCatch_Override = new org.adempiere.model.ModelColumn<I_M_ShipmentSchedule, Object>(I_M_ShipmentSchedule.class, "QtyToDeliverCatch_Override", null);
+    /** Column name QtyToDeliverCatch_Override */
+    public static final String COLUMNNAME_QtyToDeliverCatch_Override = "QtyToDeliverCatch_Override";
 
 	/**
 	 * Set Liefermenge abw..
@@ -1877,6 +1954,27 @@ public interface I_M_ShipmentSchedule
 	void setQtyToDeliver_OverrideFulfilled (@Nullable BigDecimal QtyToDeliver_OverrideFulfilled);
 
 	/**
+	 * Set Menge TU (berechnet).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyTU_Calculated (@Nullable BigDecimal QtyTU_Calculated);
+
+	/**
+	 * Get Menge TU (berechnet).
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyTU_Calculated();
+
+	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Calculated = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Calculated", null);
+	String COLUMNNAME_QtyTU_Calculated = "QtyTU_Calculated";
+	
+	/**
 	 * Get Erl. Liefermenge abw..
 	 * Teilmenge von "Abw. Liefermenge", die bereits Ausgeliefert wurde
 	 *
@@ -1907,30 +2005,6 @@ public interface I_M_ShipmentSchedule
 	 */
 	BigDecimal getQtyToDeliverCatch_Override();
 
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyToDeliverCatch_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyToDeliverCatch_Override", null);
-	String COLUMNNAME_QtyToDeliverCatch_Override = "QtyToDeliverCatch_Override";
-
-	/**
-	 * Set Menge TU (berechnet).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyTU_Calculated (@Nullable BigDecimal QtyTU_Calculated);
-
-	/**
-	 * Get Menge TU (berechnet).
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyTU_Calculated();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Calculated = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Calculated", null);
-	String COLUMNNAME_QtyTU_Calculated = "QtyTU_Calculated";
-
 	/**
 	 * Set Menge TU (ausgewiesen).
 	 *
@@ -1951,7 +2025,7 @@ public interface I_M_ShipmentSchedule
 
 	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_QtyTU_Override = new ModelColumn<>(I_M_ShipmentSchedule.class, "QtyTU_Override", null);
 	String COLUMNNAME_QtyTU_Override = "QtyTU_Override";
-
+	
 	/**
 	 * Set Record ID.
 	 * Direct internal record ID

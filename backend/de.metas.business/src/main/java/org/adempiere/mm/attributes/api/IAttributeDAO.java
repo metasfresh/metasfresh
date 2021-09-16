@@ -174,6 +174,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	boolean deleteAttributeValueByCode(AttributeId attributeId, String value);
 
+	Optional<ITranslatableString> getAttributeDescriptionByValue(@NonNull String value);
+
 	AttributeId retrieveAttributeIdByValue(AttributeCode attributeCode);
 
 	AttributeId retrieveAttributeIdByValueOrNull(AttributeCode attributeCode);
@@ -220,7 +222,7 @@ public interface IAttributeDAO extends ISingletonService
 	 *
 	 * @return asi copy
 	 */
-	default I_M_AttributeSetInstance copy(I_M_AttributeSetInstance fromASI)
+	default I_M_AttributeSetInstance copy(@NonNull final I_M_AttributeSetInstance fromASI)
 	{
 		return ASICopy.newInstance(fromASI).copy();
 	}

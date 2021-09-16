@@ -22,35 +22,13 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.tax.api.TaxId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.IQuery.Aggregate;
-import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.model.I_M_Product;
-import org.compiere.util.TrxRunnableAdapter;
-
 import com.google.common.annotations.VisibleForTesting;
-
 import de.metas.acct.api.IProductAcctDAO;
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.lang.SOTrx;
 import de.metas.materialtracking.IMaterialTrackingPPOrderBL;
@@ -72,12 +50,33 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_M_PriceList_Version;
+import org.compiere.model.I_M_Product;
+import org.compiere.util.TrxRunnableAdapter;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Takes {@link IQualityInvoiceLineGroup}s and creates {@link I_C_Invoice_Candidate}s.
@@ -426,10 +425,9 @@ public class InvoiceCandidateWriter
 		ic.setDateOrdered(materialTrackingPPOrderBL.getDateOfProduction(order.getPP_Order()));
 
 		// bill partner data
-		final BPartnerId billBPartnerId = vendorInvoicingInfo.getBill_BPartner_ID();
-		ic.setBill_BPartner_ID(billBPartnerId != null ? billBPartnerId.getRepoId() : -1);
-		ic.setBill_Location_ID(vendorInvoicingInfo.getBill_Location_ID());
-		ic.setBill_User_ID(vendorInvoicingInfo.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.setFrom(vendorInvoicingInfo.getBillLocation());
 
 		//
 		// Pricing
@@ -605,12 +603,6 @@ public class InvoiceCandidateWriter
 		invoiceCandidate.setC_Activity_ID(ActivityId.toRepoId(activityId));
 	}
 
-	/**
-	 *
-	 * @param ic
-	 * @param pricingResult
-	 * @param date
-	 */
 	@VisibleForTesting
 	protected void setC_Tax_ID(final I_C_Invoice_Candidate ic, final IPricingResult pricingResult, final Timestamp date)
 	{
@@ -618,6 +610,11 @@ public class InvoiceCandidateWriter
 
 		final Properties ctx = contextProvider.getCtx();
 		final TaxCategoryId taxCategoryId = pricingResult.getTaxCategoryId();
+
+		// TODO: we should use shipPartnerLocation
+		final BPartnerLocationAndCaptureId billToLocation = InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.getBPartnerLocationAndCaptureId();
 
 		final TaxId taxID = taxBL.getTaxNotNull(
 				ctx,
@@ -627,7 +624,7 @@ public class InvoiceCandidateWriter
 				date, // ship date
 				OrgId.ofRepoId(ic.getAD_Org_ID()),
 				(WarehouseId)null,
-				ic.getBill_Location_ID(), // shipPartnerLocation TODO
+				billToLocation, // shipPartnerLocation TODO
 				SOTrx.PURCHASE);
 		ic.setC_Tax_ID(taxID.getRepoId());
 	}

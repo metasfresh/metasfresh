@@ -1,12 +1,5 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -14,11 +7,15 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.lang.UIDStringUtil;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -58,7 +55,9 @@ public final class ViewId
 		return ofViewIdString(json, expectedWindowId);
 	}
 
-	/** @return ViewId from given viewId string; the WindowId will be extracted from viewId string */
+	/**
+	 * @return ViewId from given viewId string; the WindowId will be extracted from viewId string
+	 */
 	public static ViewId ofViewIdString(@NonNull final String viewIdStr)
 	{
 		final WindowId expectedWindowId = null; // N/A
@@ -100,7 +99,7 @@ public final class ViewId
 	 */
 	public static ViewId ofParts(@NonNull final WindowId windowId, @NonNull final String viewIdPart, @NonNull final String... otherParts)
 	{
-		final ImmutableList.Builder<String> partsBuilder = ImmutableList.<String> builder()
+		final ImmutableList.Builder<String> partsBuilder = ImmutableList.<String>builder()
 				.add(windowId.toJson()) // 0
 				.add(viewIdPart); // 1
 
@@ -140,7 +139,9 @@ public final class ViewId
 		return windowId;
 	}
 
-	/** @return full viewId string (including WindowId, including other parts etc) */
+	/**
+	 * @return full viewId string (including WindowId, including other parts etc)
+	 */
 	public String getViewId()
 	{
 		return viewId;
@@ -177,13 +178,17 @@ public final class ViewId
 		}
 	}
 
-	/** @return just the viewId part (without the leading WindowId, without other parts etc) */
+	/**
+	 * @return just the viewId part (without the leading WindowId, without other parts etc)
+	 */
 	public String getViewIdPart()
 	{
 		return parts.get(1);
 	}
 
-	/** @return other parts (those which come after viewId part) */
+	/**
+	 * @return other parts (those which come after viewId part)
+	 */
 	@JsonIgnore // IMPORTANT: for some reason, without this annotation the json deserialization does not work even if we have toJson() method annotated with @JsonValue
 	public ImmutableList<String> getOtherParts()
 	{
@@ -197,7 +202,7 @@ public final class ViewId
 			return this;
 		}
 
-		final ImmutableList<String> newParts = ImmutableList.<String> builder()
+		final ImmutableList<String> newParts = ImmutableList.<String>builder()
 				.add(newWindowId.toJson())
 				.addAll(parts.subList(1, parts.size()))
 				.build();
@@ -213,5 +218,10 @@ public final class ViewId
 		{
 			throw new AdempiereException("" + this + " does not have expected windowId: " + expectedWindowId);
 		}
+	}
+
+	public static boolean equals(@Nullable final ViewId id1, @Nullable final ViewId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

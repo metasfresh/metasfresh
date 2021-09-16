@@ -5,6 +5,7 @@ import de.metas.report.server.OutputType;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 
@@ -51,17 +52,17 @@ public interface ExecuteReportStrategy
 	@ToString(exclude = "reportData")
 	class ExecuteReportResult
 	{
-		public static ExecuteReportResult of(@NonNull final OutputType outputType, @NonNull final byte[] reportData)
+		public static ExecuteReportResult of(@NonNull final OutputType outputType, @NonNull final Resource reportData)
 		{
 			return new ExecuteReportResult(null, outputType, reportData);
 		}
 
-		public static ExecuteReportResult of(@NonNull final String filename, @NonNull final OutputType outputType, @NonNull final byte[] reportData)
+		public static ExecuteReportResult of(@NonNull final String filename, @NonNull final OutputType outputType, @NonNull final Resource reportData)
 		{
 			return new ExecuteReportResult(filename, outputType, reportData);
 		}
 
-		private  ExecuteReportResult(@Nullable final String filename, final OutputType outputType, final byte[] reportData)
+		private  ExecuteReportResult(@Nullable final String filename, final OutputType outputType, @NonNull final Resource reportData)
 		{
 			this.filename = filename;
 			this.outputType = outputType;
@@ -73,6 +74,6 @@ public interface ExecuteReportStrategy
 
 		OutputType outputType;
 
-		byte[] reportData;
+		Resource reportData;
 	}
 }

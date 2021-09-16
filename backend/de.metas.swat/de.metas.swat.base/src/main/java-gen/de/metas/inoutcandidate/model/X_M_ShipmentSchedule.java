@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author metasfresh (generated)
@@ -13,16 +14,16 @@ import java.util.Properties;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = -956410757L;
+	private static final long serialVersionUID = -1329916563L;
 
 	/** Standard Constructor */
-	public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
+    public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
 	{
 		super (ctx, M_ShipmentSchedule_ID, trxName);
 	}
 
 	/** Load Constructor */
-	public X_M_ShipmentSchedule (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_M_ShipmentSchedule (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
 	{
 		super (ctx, rs, trxName);
 	}
@@ -123,6 +124,33 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public org.compiere.model.I_C_Location getBill_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_Bill_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setBill_Location_Value(final org.compiere.model.I_C_Location Bill_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_Bill_Location_Value_ID, org.compiere.model.I_C_Location.class, Bill_Location_Value);
+	}
+
+	@Override
+	public void setBill_Location_Value_ID (final int Bill_Location_Value_ID)
+	{
+		if (Bill_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_Bill_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_Bill_Location_Value_ID, Bill_Location_Value_ID);
+	}
+
+	@Override
+	public int getBill_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Bill_Location_Value_ID);
+	}
+
+	@Override
 	public void setBill_User_ID (final int Bill_User_ID)
 	{
 		if (Bill_User_ID < 1)
@@ -175,7 +203,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
-
+	
 	@Override
 	public void setC_BP_Location_Override_ID (final int C_BP_Location_Override_ID)
 	{
@@ -189,6 +217,33 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getC_BP_Location_Override_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BP_Location_Override_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BP_Location_Override_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BP_Location_Override_Value(final org.compiere.model.I_C_Location C_BP_Location_Override_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BP_Location_Override_Value_ID, org.compiere.model.I_C_Location.class, C_BP_Location_Override_Value);
+	}
+
+	@Override
+	public void setC_BP_Location_Override_Value_ID (final int C_BP_Location_Override_Value_ID)
+	{
+		if (C_BP_Location_Override_Value_ID < 1)
+			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, null);
+		else
+			set_Value (COLUMNNAME_C_BP_Location_Override_Value_ID, C_BP_Location_Override_Value_ID);
+	}
+
+	@Override
+	public int getC_BP_Location_Override_Value_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BP_Location_Override_Value_ID);
 	}
 
 	@Override
@@ -219,6 +274,33 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getC_BPartner_Location_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Location getC_BPartner_Location_Value()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value(final org.compiere.model.I_C_Location C_BPartner_Location_Value)
+	{
+		set_ValueFromPO(COLUMNNAME_C_BPartner_Location_Value_ID, org.compiere.model.I_C_Location.class, C_BPartner_Location_Value);
+	}
+
+	@Override
+	public void setC_BPartner_Location_Value_ID (final int C_BPartner_Location_Value_ID)
+	{
+		if (C_BPartner_Location_Value_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_Value_ID, C_BPartner_Location_Value_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_Value_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_Value_ID);
 	}
 
 	@Override
@@ -349,7 +431,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public java.sql.Timestamp getCanBeExportedFrom()
+	public java.sql.Timestamp getCanBeExportedFrom() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_CanBeExportedFrom);
 	}
@@ -357,14 +439,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	@Override
 	public void setCatch_UOM_ID (final int Catch_UOM_ID)
 	{
-		if (Catch_UOM_ID < 1)
+		if (Catch_UOM_ID < 1) 
 			set_Value (COLUMNNAME_Catch_UOM_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
 	}
 
 	@Override
-	public int getCatch_UOM_ID()
+	public int getCatch_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
 	}
@@ -767,7 +849,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public BigDecimal getLineNetAmt()
+	public BigDecimal getLineNetAmt() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_LineNetAmt);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -777,12 +859,6 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
-	}
-
-	@Override
-	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
-	{
-		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
 	@Override
@@ -1251,7 +1327,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public BigDecimal getQtyOnHand()
+	public BigDecimal getQtyOnHand() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOnHand);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1264,7 +1340,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public BigDecimal getQtyOrdered()
+	public BigDecimal getQtyOrdered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyOrdered);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1329,7 +1405,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public BigDecimal getQtyPickList()
+	public BigDecimal getQtyPickList() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyPickList);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1342,7 +1418,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public BigDecimal getQtyReserved()
+	public BigDecimal getQtyReserved() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyReserved);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -1362,44 +1438,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public void setQtyToDeliver_Override (final @Nullable BigDecimal QtyToDeliver_Override)
-	{
-		set_Value (COLUMNNAME_QtyToDeliver_Override, QtyToDeliver_Override);
-	}
-
-	@Override
-	public BigDecimal getQtyToDeliver_Override()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver_Override);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setQtyToDeliver_OverrideFulfilled (final @Nullable BigDecimal QtyToDeliver_OverrideFulfilled)
-	{
-		set_Value (COLUMNNAME_QtyToDeliver_OverrideFulfilled, QtyToDeliver_OverrideFulfilled);
-	}
-
-	@Override
-	public BigDecimal getQtyToDeliver_OverrideFulfilled()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver_OverrideFulfilled);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
 	public void setQtyToDeliverCatch_Override (final @Nullable BigDecimal QtyToDeliverCatch_Override)
 	{
 		set_Value (COLUMNNAME_QtyToDeliverCatch_Override, QtyToDeliverCatch_Override);
 	}
-
+	
 	@Override
 	public BigDecimal getQtyToDeliverCatch_Override()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliverCatch_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
-
+	
 	@Override
 	public void setQtyTU_Calculated (final @Nullable BigDecimal QtyTU_Calculated)
 	{
@@ -1410,6 +1460,19 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public BigDecimal getQtyTU_Calculated()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU_Calculated);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+	
+	@Override
+	public void setQtyToDeliver_Override (java.math.BigDecimal QtyToDeliver_Override)
+	{
+		set_Value (COLUMNNAME_QtyToDeliver_Override, QtyToDeliver_Override);
+	}
+
+	@Override
+	public java.math.BigDecimal getQtyToDeliver_Override() 
+	{
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
@@ -1423,6 +1486,19 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public BigDecimal getQtyTU_Override()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+	
+	@Override
+	public void setQtyToDeliver_OverrideFulfilled (java.math.BigDecimal QtyToDeliver_OverrideFulfilled)
+	{
+		set_Value (COLUMNNAME_QtyToDeliver_OverrideFulfilled, QtyToDeliver_OverrideFulfilled);
+	}
+
+	@Override
+	public java.math.BigDecimal getQtyToDeliver_OverrideFulfilled() 
+	{
+		BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver_OverrideFulfilled);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

@@ -128,7 +128,7 @@ public class UpdateInvalidInvoiceCandidatesWorkpackageProcessor extends Workpack
 		return Result.SUCCESS;
 	}
 
-	private final int getMaxInvoiceCandidatesToUpdate()
+	private int getMaxInvoiceCandidatesToUpdate()
 	{
 		return sysConfigBL.getIntValue(SYSCONFIG_MaxInvoiceCandidatesToUpdate, DEFAULT_MaxInvoiceCandidatesToUpdate);
 	}

@@ -22,6 +22,7 @@
 
 package de.metas.product.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
@@ -57,6 +58,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
+import org.compiere.model.I_M_Product_SupplierApproval_Norm;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -108,12 +110,25 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public <T extends I_M_Product> T getById(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
 	{
-		final T product = load(productId, productClass); // we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
+		// we can't load out-of-trx, because it's possible that the product was created just now, within the current trx!
+		return getByIdInTrx(productId, productClass);
+	}
+
+	@Override
+	public <T extends I_M_Product> T getByIdInTrx(@NonNull final ProductId productId, @NonNull final Class<T> productClass)
+	{
+		final T product = load(productId, productClass);
 		if (product == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Product_ID@: " + productId);
 		}
 		return product;
+	}
+
+	@Override
+	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
+	{
+		return getByIdInTrx(productId, I_M_Product.class);
 	}
 
 	@Override
@@ -615,5 +630,16 @@ public class ProductDAO implements IProductDAO
 		}
 
 		return Optional.of(getById(targetProductId, de.metas.product.model.I_M_Product.class));
+	}
+
+	@Override
+	public ImmutableList<String> retrieveSupplierApprovalNorms(@NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product_SupplierApproval_Norm.class)
+				.addEqualsFilter(I_M_Product_SupplierApproval_Norm.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.stream()
+				.map(I_M_Product_SupplierApproval_Norm::getSupplierApproval_Norm)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

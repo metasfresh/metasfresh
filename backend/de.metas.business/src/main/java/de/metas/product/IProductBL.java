@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -47,7 +48,9 @@ import javax.annotation.Nullable;
 public interface IProductBL extends ISingletonService
 {
 	I_M_Product getById(ProductId productId);
-	
+
+	I_M_Product getByIdInTrx(ProductId productId);
+
 	ProductId getProductIdByValue(OrgId orgId, String productValue);
 
 	UOMPrecision getUOMPrecision(I_M_Product product);
@@ -197,4 +200,6 @@ public interface IProductBL extends ISingletonService
 	boolean isHaddexProduct(ProductId productId);
 
 	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+
+	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 }

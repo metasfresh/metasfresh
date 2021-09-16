@@ -73,8 +73,14 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
+	{
+		return productsRepo.getByIdInTrx(productId);
+	}
+
+	@Override
 	public ProductId getProductIdByValue(
-			@NonNull final OrgId orgId, 
+			@NonNull final OrgId orgId,
 			@NonNull final String productValue)
 	{
 		final ProductQuery query = ProductQuery.builder()
@@ -510,6 +516,19 @@ public final class ProductBL implements IProductBL
 		}
 
 		return attributesRepo.getAttributeSetById(attributeSetId);
+	}
+
+	@Override
+	public ImmutableList<String> retrieveSupplierApprovalNorms(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+
+		if(!product.isRequiresSupplierApproval())
+		{
+			return ImmutableList.of();
+		}
+
+		return productsRepo.retrieveSupplierApprovalNorms(productId);
 	}
 
 }

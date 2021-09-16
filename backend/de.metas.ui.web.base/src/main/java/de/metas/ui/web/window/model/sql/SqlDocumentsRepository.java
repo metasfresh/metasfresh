@@ -6,6 +6,7 @@ import de.metas.cache.model.POCacheSourceModel;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.session.UserSession;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -149,11 +150,10 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final Document parentDocument = query.getParentDocument();
 		final Function<DocumentId, Document> existingDocumentsSupplier = query.getExistingDocumentsSupplier();
 
-		final List<Object> sqlParams = new ArrayList<>();
 		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
-		final String sql = sqlBuilder.getSql(sqlParams);
+		final SqlAndParams sql = sqlBuilder.getSql();
 		final String adLanguage = sqlBuilder.getAD_Language();
-		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
+		logger.debug("Retrieving records: {}", sql);
 
 		final int loadLimitWarn = getLoadLimitWarn();
 		final int loadLimitMax = getLoadLimitMax();
@@ -168,12 +168,12 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			pstmt = DB.prepareStatement(sql.getSql(), ITrx.TRXNAME_ThreadInherited);
 			if (maxRowsToFetch > 0)
 			{
 				pstmt.setMaxRows(maxRowsToFetch);
 			}
-			DB.setParameters(pstmt, sqlParams);
+			DB.setParameters(pstmt, sql.getSqlParams());
 			rs = pstmt.executeQuery();
 
 			boolean loadLimitWarnReported = false;
@@ -207,25 +207,25 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				// Stop if we reached the MAXIMUM limit
 				if (loadLimitMax > 0 && loadCount >= loadLimitMax)
 				{
-					logger.warn("Reached load count MAXIMUM level. Stop loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}"
+					logger.warn("Reached load count MAXIMUM level. Stop loading. \n SQL: {} \n loadCount: {}"
 									+ "\n To change this limit check {} sysconfig.",
-							sql, sqlParams, loadCount, SYSCONFIG_LoadLimitMax);
+							sql, loadCount, SYSCONFIG_LoadLimitMax);
 					break;
 				}
 
 				// WARN if we reached the Warning limit
 				if (!loadLimitWarnReported && loadLimitWarn > 0 && loadCount >= loadLimitWarn)
 				{
-					logger.warn("Reached load count Warning level. Continue loading. \n SQL: {} \n SQL Params: {} \n loadCount: {}"
+					logger.warn("Reached load count Warning level. Continue loading. \n SQL: {} \n loadCount: {}"
 									+ "\n To change this limit check {} sysconfig.",
-							sql, sqlParams, loadCount, SYSCONFIG_LoadLimitWarn);
+							sql, loadCount, SYSCONFIG_LoadLimitWarn);
 					loadLimitWarnReported = true;
 				}
 			}
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, sql, sqlParams);
+			throw new DBException(e, sql.getSql(), sql.getSqlParams());
 		}
 		finally
 		{
@@ -259,18 +259,16 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 	@Override
 	public DocumentId retrieveParentDocumentId(final DocumentEntityDescriptor parentEntityDescriptor, final DocumentQuery childDocumentQuery)
 	{
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = SqlDocumentQueryBuilder.of(childDocumentQuery)
-				.getSqlSelectParentId(sqlParams, parentEntityDescriptor);
+		final SqlAndParams sql = SqlDocumentQueryBuilder.of(childDocumentQuery)
+				.getSqlSelectParentId(parentEntityDescriptor);
 
-		final int parentRecordId = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
+		final int parentRecordId = DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql.getSql(), sql.getSqlParams());
 		if (parentRecordId < 0)
 		{
 			throw new EntityNotFoundException("Parent documentId was not found")
 					.setParameter("parentEntityDescriptor", parentEntityDescriptor)
 					.setParameter("childDocumentQuery", childDocumentQuery)
-					.setParameter("sql", sql)
-					.setParameter("sqlParams", sqlParams);
+					.setParameter("sql", sql);
 		}
 
 		return DocumentId.of(parentRecordId);
@@ -442,17 +440,16 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 				.build();
 
 		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
-		final List<Object> sqlParams = new ArrayList<>();
-		final String sql = sqlBuilder.getSql(sqlParams);
+		final SqlAndParams sql = sqlBuilder.getSql();
 		final String adLanguage = sqlBuilder.getAD_Language();
-		logger.debug("Retrieving records: SQL={} -- {}", sql, sqlParams);
+		logger.debug("Retrieving records: {}", sql);
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
-			DB.setParameters(pstmt, sqlParams);
+			pstmt = DB.prepareStatement(sql.getSql(), ITrx.TRXNAME_ThreadInherited);
+			DB.setParameters(pstmt, sql.getSqlParams());
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -474,7 +471,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, sql, sqlParams);
+			throw new DBException(e, sql.getSql(), sql.getSqlParams());
 		}
 		finally
 		{
@@ -881,11 +878,10 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final DocumentEntityDescriptor entityDescriptor = query.getEntityDescriptor();
 		assertThisRepository(entityDescriptor);
 
-		final List<Object> sqlParams = new ArrayList<>();
 		final SqlDocumentQueryBuilder sqlBuilder = SqlDocumentQueryBuilder.of(query);
-		final String sql = sqlBuilder.getSqlMaxLineNo(sqlParams);
+		final SqlAndParams sql = sqlBuilder.getSqlMaxLineNo();
 
-		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
+		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql.getSql(), sql.getSqlParams());
 	}
 
 	private static void saveLabels(final Document document, final IDocumentFieldView documentField)
@@ -893,7 +889,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 		final LabelsLookup lookup = LabelsLookup.cast(documentField.getDescriptor().getLookupDescriptor().orElse(null));
 
 		final int linkId = document.getFieldView(lookup.getLinkColumnName()).getValueAsInt(-1);
-		final Set<String> listValuesInDatabase = lookup.retrieveExistingValues(linkId).getKeysAsString();
+		final Set<String> listValuesInDatabase = lookup.retrieveExistingValuesByLinkId(linkId).getKeysAsString();
 
 		final LookupValuesList lookupValuesList = documentField.getValueAs(LookupValuesList.class);
 		final HashSet<String> listValuesToSave = lookupValuesList != null ? new HashSet<>(lookupValuesList.getKeysAsString()) : new HashSet<>();
@@ -905,7 +901,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			listValuesToDelete.removeAll(listValuesToSave);
 			if (!listValuesToDelete.isEmpty())
 			{
-				final int countDeleted = lookup.retrieveExistingValuesRecordQuery(linkId)
+				final int countDeleted = lookup.queryValueRecordsByLinkId(linkId)
 						.addInArrayFilter(lookup.getLabelsValueColumnName(), lookup.normalizeStringIds(listValuesToDelete))
 						.create()
 						.delete();

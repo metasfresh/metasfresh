@@ -20,7 +20,8 @@ COPY package.json .
 
 RUN npm install
 
-COPY .babelrc .
+#COPY .babelrc .
+COPY babel.config.js .
 
 COPY reporter-config.json .
 

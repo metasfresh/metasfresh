@@ -113,8 +113,9 @@ public class C_OrderLine_StepDef
 		final List<I_C_OrderLine> purchaseOrderLines = queryBL
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID, purchaseOrder.getC_Order_ID())
-				.create().list(I_C_OrderLine.class);
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, purchaseOrder.getC_Order_ID())
+				.create()
+				.list(I_C_OrderLine.class);
 
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
@@ -123,13 +124,13 @@ public class C_OrderLine_StepDef
 			final BigDecimal netAmt = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_LineNetAmt);
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_M_Product_ID + ".Identifier");
 
-			boolean linePresent = true;
+			boolean linePresent = false;
 
 			for (final I_C_OrderLine orderLine : purchaseOrderLines)
 			{
-				linePresent = orderLine.getLineNetAmt().compareTo(netAmt) == 0 && linePresent;
-				linePresent = orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0 && linePresent;
-				linePresent = orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID() && linePresent;
+				linePresent = orderLine.getLineNetAmt().compareTo(netAmt) == 0
+						&& orderLine.getQtyOrdered().compareTo(qtyOrdered) == 0
+						&& orderLine.getM_Product_ID() == productTable.get(productIdentifier).getM_Product_ID();
 
 				if (linePresent)
 				{

@@ -18,6 +18,7 @@ package org.compiere.model;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
@@ -29,6 +30,7 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.location.DocumentLocation;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
@@ -39,6 +41,9 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
+import de.metas.order.OrderLinePriceAndDiscount;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
@@ -50,6 +55,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.security.permissions.Access;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -390,9 +396,15 @@ public class CalloutOrder extends CalloutEngine
 			if (rs.next())
 			{
 				final OrgId bpartnerOrgId = OrgId.ofRepoId(rs.getInt("AD_Org_ID"));
-				if(isCopyOrgFromBPartner())
+
+				if (isCopyOrgFromBPartner())
 				{
-					order.setAD_Org_ID(bpartnerOrgId.getRepoId());
+					final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(bpartnerOrgId, Access.WRITE);
+
+					if (userHasOrgPermissions)
+					{
+						order.setAD_Org_ID(bpartnerOrgId.getRepoId());
+					}
 				}
 
 				// metas: Auftragsart aus Kunde
@@ -622,22 +634,22 @@ public class CalloutOrder extends CalloutEngine
 		final int adOrgId = order.getAD_Org_ID();
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.defaultDocType(true)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																				   .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																				   .defaultDocType(true)
+																				   .adClientId(adClientId)
+																				   .adOrgId(adOrgId)
+																				   .build());
 		if (defaultDocTypeId != null)
 		{
 			return defaultDocTypeId;
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																						 .docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+																						 .docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+																						 .adClientId(adClientId)
+																						 .adOrgId(adOrgId)
+																						 .build());
 
 		return standardOrderDocTypeId;
 	}
@@ -1022,11 +1034,11 @@ public class CalloutOrder extends CalloutEngine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.resultUOM(ResultUOM.CONTEXT_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .resultUOM(ResultUOM.CONTEXT_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+										 .updateLineNetAmt(true)
+										 .build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)
@@ -1045,16 +1057,16 @@ public class CalloutOrder extends CalloutEngine
 
 		// Check Partner Location
 		final I_C_Order order = ol.getC_Order();
-		int shipC_BPartner_Location_ID = ol.getC_BPartner_Location_ID();
-		if (shipC_BPartner_Location_ID <= 0)
+		BPartnerLocationAndCaptureId shipBPLocationId = OrderLineDocumentLocationAdapterFactory.locationAdapter(ol).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
+		if (shipBPLocationId == null)
 		{
-			shipC_BPartner_Location_ID = order.getC_BPartner_Location_ID();
+			shipBPLocationId = OrderDocumentLocationAdapterFactory.locationAdapter(order).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
 		}
-		if (shipC_BPartner_Location_ID <= 0)
+		if (shipBPLocationId == null)
 		{
 			return amt(calloutField); //
 		}
-		log.debug("Ship BP_Location={}", shipC_BPartner_Location_ID);
+		log.debug("Ship BP_Location={}", shipBPLocationId);
 
 		//
 		Timestamp billDate = ol.getDateOrdered();
@@ -1081,17 +1093,19 @@ public class CalloutOrder extends CalloutEngine
 		}
 		log.debug("Warehouse={}", M_Warehouse_ID);
 
-		int billC_BPartner_Location_ID = order.getBill_Location_ID();
-		if (billC_BPartner_Location_ID <= 0)
+		BPartnerLocationAndCaptureId billBPLocationId = OrderDocumentLocationAdapterFactory.billLocationAdapter(order).getBPartnerLocationAndCaptureIdIfExists().orElse(null);
+		if (billBPLocationId == null)
 		{
-			billC_BPartner_Location_ID = shipC_BPartner_Location_ID;
+			billBPLocationId = shipBPLocationId;
 		}
-		log.debug("Bill BP_Location={}", billC_BPartner_Location_ID);
+		log.debug("Bill BP_Location={}", billBPLocationId);
 
 		//
 		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
-				shipDate, AD_Org_ID, M_Warehouse_ID,
-				billC_BPartner_Location_ID, shipC_BPartner_Location_ID, order.isSOTrx());
+									 shipDate, AD_Org_ID, M_Warehouse_ID,
+									 billBPLocationId,
+									 shipBPLocationId,
+									 order.isSOTrx());
 		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)
@@ -1132,8 +1146,8 @@ public class CalloutOrder extends CalloutEngine
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
-					.applyPriceLimitRestrictions(false)
-					.build());
+											 .applyPriceLimitRestrictions(false)
+											 .build());
 
 			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
@@ -1359,8 +1373,8 @@ public class CalloutOrder extends CalloutEngine
 						C_OrderLine_ID = 0;
 					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
-							M_Warehouse_ID, M_Product_ID,
-							M_AttributeSetInstance_ID, C_OrderLine_ID);
+																	   M_Warehouse_ID, M_Product_ID,
+																	   M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
 					{
 						notReserved = BigDecimal.ZERO;
@@ -1576,15 +1590,17 @@ public class CalloutOrder extends CalloutEngine
 		{
 			if (order.isDropShip())
 			{
-				order.setDropShip_BPartner_ID(order.getC_BPartner_ID());
-				order.setDropShip_Location_ID(order.getC_BPartner_Location_ID());
-				order.setDropShip_User_ID(order.getAD_User_ID());
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(order)
+						.setFrom(OrderDocumentLocationAdapterFactory
+										 .locationAdapter(order)
+										 .toDocumentLocation());
 			}
 			else
 			{
-				order.setDropShip_BPartner_ID(-1);
-				order.setDropShip_Location_ID(-1);
-				order.setDropShip_User_ID(-1);
+				OrderDocumentLocationAdapterFactory
+						.deliveryLocationAdapter(order)
+						.setFrom(DocumentLocation.EMPTY);
 			}
 		}
 		else

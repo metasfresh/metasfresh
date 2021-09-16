@@ -1,16 +1,18 @@
 package de.metas.report;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.google.common.io.Files;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.util.Check;
+import de.metas.util.lang.SpringResourceUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.apache.commons.io.FileUtils;
 import org.compiere.util.MimeType;
-import org.compiere.util.Util;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,17 +43,17 @@ import java.io.IOException;
  * Tiny and hopefully helpful class to exchange reporting data.
  */
 @Value
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-@JsonDeserialize(builder = ReportResultData.ReportResultDataBuilder.class)
 public class ReportResultData
 {
-	byte[] reportData;
+	Resource reportData;
+
 	String reportFilename;
+
 	String reportContentType;
 
 	@Builder
 	private ReportResultData(
-			@NonNull final byte[] reportData,
+			@NonNull final Resource reportData,
 			@NonNull final String reportFilename,
 			@NonNull final String reportContentType)
 	{
@@ -60,9 +62,21 @@ public class ReportResultData
 		this.reportContentType = reportContentType;
 	}
 
-	@JsonPOJOBuilder(withPrefix = "")
-	public static class ReportResultDataBuilder
+	@JsonCreator
+	private ReportResultData(
+			@JsonProperty("reportData") final byte[] reportData,
+			@JsonProperty("reportFilename") @NonNull final String reportFilename,
+			@JsonProperty("reportContentType") @NonNull final String reportContentType)
 	{
+		this.reportData = SpringResourceUtils.fromByteArray(reportData);
+		this.reportFilename = reportFilename;
+		this.reportContentType = reportContentType;
+	}
+
+	@JsonProperty("reportData")
+	public byte[] getReportDataByteArray()
+	{
+		return SpringResourceUtils.toByteArray(reportData);
 	}
 
 	public static ReportResultData ofFile(@NonNull final File file)
@@ -70,35 +84,42 @@ public class ReportResultData
 		final String reportFilename = file.getName();
 
 		return ReportResultData.builder()
-				.reportData(Util.readBytes(file))
+				.reportData(new FileSystemResource(file))
 				.reportFilename(reportFilename)
 				.reportContentType(MimeType.getMimeType(reportFilename))
 				.build();
 	}
 
+	@JsonIgnore
 	public boolean isEmpty()
 	{
-		return reportData == null || reportData.length <= 0;
-	}
-
-	public File writeToTemporaryFile(final String filenamePrefix)
-	{
-		final File file = createTemporaryFile(filenamePrefix);
-
 		try
 		{
-			Files.write(reportData, file);
+			return reportData.contentLength() <= 0;
+		}
+		catch (final IOException e)
+		{
+			return true; // reportdata couldn't be resolved, so we say it's empty
+		}
+
+	}
+
+	public File writeToTemporaryFile(@NonNull final String filenamePrefix)
+	{
+		final File file = createTemporaryFile(filenamePrefix);
+		try
+		{
+			FileUtils.copyInputStreamToFile(reportData.getInputStream(), file);
 			return file;
 		}
 		catch (final IOException ex)
 		{
 			throw new AdempiereException("Failed writing " + file.getAbsolutePath(), ex);
 		}
-
 	}
 
 	@NonNull
-	private File createTemporaryFile(final String filenamePrefix)
+	private File createTemporaryFile(@NonNull final String filenamePrefix)
 	{
 		try
 		{

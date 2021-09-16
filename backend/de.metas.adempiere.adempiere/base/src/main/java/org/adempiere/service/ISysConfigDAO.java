@@ -22,18 +22,16 @@ package org.adempiere.service;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_AD_SysConfig;
-
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 public interface ISysConfigDAO extends ISingletonService
 {
-
-	I_AD_SysConfig retrieveSysConfig(Properties ctx, String name, int AD_Client_ID, int AD_Org_ID, String trxName);
-
 	/**
 	 * Notes:
 	 * <ul>
@@ -42,14 +40,14 @@ public interface ISysConfigDAO extends ISingletonService
 	 * But note that in this case, <code>AD_Client_ID</code> and <code>AD_Org_ID</code> are ignored.
 	 * <li>If there is more than one matching record, the value of the first <code>AD_SysConfig</code> record, according to <code>ORDER BY AD_Client_ID DESC, AD_Org_ID DESC</code> will be returned.
 	 * </ul>
-	 *
-	 * @param Name
-	 * @param defaultValue
-	 * @param AD_Client_ID
-	 * @param AD_Org_ID
-	 * @return
 	 */
-	String retrieveSysConfigValue(String Name, String defaultValue, int AD_Client_ID, int AD_Org_ID);
+	Optional<String> getValue(String name, ClientAndOrgId clientAndOrgId);
 
-	List<String> retrieveNamesForPrefix(String prefix, int adClientId, int adOrgId);
+	List<String> retrieveNamesForPrefix(String prefix, ClientAndOrgId clientAndOrgId);
+
+	void setValue(@NonNull final String name, @Nullable final String value, @NonNull final ClientAndOrgId clientAndOrgId);
+
+	void setValue(@NonNull final String name, final boolean value, @NonNull final ClientAndOrgId clientAndOrgId);
+
+	void setValue(@NonNull final String name, final int value, @NonNull final ClientAndOrgId clientAndOrgId);
 }

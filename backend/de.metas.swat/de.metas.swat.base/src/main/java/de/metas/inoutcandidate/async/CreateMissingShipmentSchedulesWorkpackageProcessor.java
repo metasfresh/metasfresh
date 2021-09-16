@@ -63,14 +63,14 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	{
 		if (shipmentScheduleBL.allMissingSchedsWillBeCreatedLater())
 		{
-			logger.debug("Not scheduling WP because IShipmentScheduleBL.allMissingSchedsWillBeCreatedLater() returned true", CreateMissingShipmentSchedulesWorkpackageProcessor.class);
+			logger.debug("Not scheduling WP because IShipmentScheduleBL.allMissingSchedsWillBeCreatedLater() returned true: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
 			return;
 		}
 
 		// don't try to enqueue it if is not active
 		if (!queueDAO.isWorkpackageProcessorEnabled(CreateMissingShipmentSchedulesWorkpackageProcessor.class))
 		{
-			logger.debug("Not scheduling WP because this workpackage processor is disabled: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class);
+			logger.debug("Not scheduling WP because this workpackage processor is disabled: {}", CreateMissingShipmentSchedulesWorkpackageProcessor.class.getSimpleName());
 			return;
 		}
 

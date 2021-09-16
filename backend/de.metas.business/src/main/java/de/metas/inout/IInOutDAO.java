@@ -119,7 +119,7 @@ public interface IInOutDAO extends ISingletonService
 
 	I_M_InOut getInOutByDocumentNumber(String documentNo, DocTypeId docTypeId, OrgId orgId);
 
-	ImmutableMap<InOutLineId,I_M_InOut> retrieveInOutByLineIds(Set<InOutLineId> inOutLineIds);
+	ImmutableMap<InOutLineId, I_M_InOut> retrieveInOutByLineIds(Set<InOutLineId> inOutLineIds);
 
 	void save(@NonNull I_M_InOut inout);
 

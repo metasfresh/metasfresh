@@ -66,6 +66,18 @@ public class StepDefData<T>
 		}
 	}
 
+	public void putIfMissing(@NonNull final String identifier, @NonNull final T record)
+	{
+		final T oldRecord = records.get(identifier);
+
+		if (oldRecord != null)
+		{
+			return;
+		}
+
+		put(identifier, record);
+	}
+
 	@NonNull
 	public T get(@NonNull final String identifier)
 	{

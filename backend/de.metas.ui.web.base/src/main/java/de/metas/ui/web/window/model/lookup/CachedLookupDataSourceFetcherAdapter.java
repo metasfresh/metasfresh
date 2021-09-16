@@ -2,9 +2,12 @@ package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CCacheStats;
 import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext.Builder;
@@ -37,10 +40,9 @@ import java.util.Optional;
  */
 
 /**
- * Wraps a given {@link LookupDataSourceFetcher} and cached its retriving methods.
+ * Wraps a given {@link LookupDataSourceFetcher} and cached its retrieving methods.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSourceFetcher
 {
@@ -112,7 +114,7 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
-		return ImmutableList.<CCacheStats> builder()
+		return ImmutableList.<CCacheStats>builder()
 				.add(cache_retrieveEntities.stats())
 				.add(cache_retrieveLookupValueById.stats())
 				.addAll(delegate.getCacheStats())
@@ -135,6 +137,24 @@ public final class CachedLookupDataSourceFetcherAdapter implements LookupDataSou
 	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		return cache_retrieveLookupValueById.getOrLoad(evalCtx, () -> delegate.retrieveLookupValueById(evalCtx));
+	}
+
+	@Override
+	public LookupValuesList retrieveLookupValueByIdsInOrder(final @NonNull LookupDataSourceContext evalCtx)
+	{
+		cache_retrieveLookupValueById.getAllOrLoad(
+				evalCtx.streamSingleIdContexts().collect(ImmutableSet.toImmutableSet()),
+				singleIdCtxs -> {
+					final LookupDataSourceContext multipleIdsCtx = LookupDataSourceContext.mergeToMultipleIds(singleIdCtxs);
+					return delegate.retrieveLookupValueByIdsInOrder(LookupDataSourceContext.mergeToMultipleIds(singleIdCtxs))
+							.getValues()
+							.stream()
+							.collect(ImmutableMap.toImmutableMap(
+									lookupValue -> multipleIdsCtx.withIdToFilter(IdsToFilter.ofSingleValue(lookupValue.getId())),
+									lookupValue -> lookupValue));
+				}
+		);
+		return LookupDataSourceFetcher.super.retrieveLookupValueByIdsInOrder(evalCtx);
 	}
 
 	@Override

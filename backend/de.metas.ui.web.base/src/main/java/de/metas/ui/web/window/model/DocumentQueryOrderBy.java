@@ -1,9 +1,5 @@
 package de.metas.ui.web.window.model;
 
-import java.util.Comparator;
-import java.util.Objects;
-import java.util.function.Function;
-
 import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.Check;
@@ -11,6 +7,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.function.Function;
 
 /*
  * #%L
@@ -35,7 +36,7 @@ import lombok.Value;
  */
 
 @Value
-public final class DocumentQueryOrderBy
+public class DocumentQueryOrderBy
 {
 	public static DocumentQueryOrderBy byFieldName(final String fieldName)
 	{
@@ -71,10 +72,9 @@ public final class DocumentQueryOrderBy
 		}
 		else
 		{
-			final String fieldName = orderByStr;
 			final boolean ascending = true;
 			final boolean nullsLast = getDefaultNullsLastByAscending(ascending);
-			return new DocumentQueryOrderBy(fieldName, ascending, nullsLast);
+			return new DocumentQueryOrderBy(orderByStr, ascending, nullsLast);
 		}
 	}
 
@@ -83,12 +83,15 @@ public final class DocumentQueryOrderBy
 		return true; // always nulls last
 	}
 
-	private final String fieldName;
-	private final boolean ascending;
-	private final boolean nullsLast;
+	String fieldName;
+	boolean ascending;
+	boolean nullsLast;
 
 	@Builder
-	private DocumentQueryOrderBy(final String fieldName, final Boolean ascending, final Boolean nullsLast)
+	private DocumentQueryOrderBy(
+			@NonNull final String fieldName,
+			@Nullable final Boolean ascending,
+			@Nullable final Boolean nullsLast)
 	{
 		Check.assumeNotEmpty(fieldName, "fieldName is not empty");
 		this.fieldName = fieldName;
@@ -108,7 +111,7 @@ public final class DocumentQueryOrderBy
 	public <T> Comparator<T> asComparator(@NonNull final FieldValueExtractor<T> fieldValueExtractor, @NonNull final JSONOptions jsonOpts)
 	{
 		final Function<T, Object> keyExtractor = obj -> fieldValueExtractor.getFieldValue(obj, fieldName, jsonOpts);
-		Comparator<? super Object> keyComparator = ValueComparator.ofAscendingAndNullsLast(ascending, nullsLast);
+		final Comparator<? super Object> keyComparator = ValueComparator.ofAscendingAndNullsLast(ascending, nullsLast);
 		return Comparator.comparing(keyExtractor, keyComparator);
 	}
 

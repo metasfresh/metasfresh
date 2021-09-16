@@ -58,9 +58,6 @@ import java.util.Properties;
 
 /**
  * Generate {@link I_C_Invoice}s for given {@link I_C_Invoice_Candidate}s.
- *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 {
@@ -68,10 +65,9 @@ public class InvoiceCandWorkpackageProcessor extends WorkpackageProcessorAdapter
 	private final transient IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final transient IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
 	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandWorkpackageProcessor.class);
-
-	private final IInvoiceCandUpdateSchedulerService invoiceCandUpdateSchedulerService = Services.get(IInvoiceCandUpdateSchedulerService.class);
 
 	private final IInvoiceGenerateResult _result;
 	private InvoicingParams _invoicingParams = null; // lazy loaded

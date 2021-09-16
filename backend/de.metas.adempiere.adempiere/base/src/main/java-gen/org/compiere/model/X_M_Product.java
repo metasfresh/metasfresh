@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 793237998L;
+	private static final long serialVersionUID = 1597829536L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -981,6 +981,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getRawMaterialOrigin_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_RawMaterialOrigin_ID);
+	}
+
+	@Override
+	public void setRequiresSupplierApproval (final boolean RequiresSupplierApproval)
+	{
+		set_Value (COLUMNNAME_RequiresSupplierApproval, RequiresSupplierApproval);
+	}
+
+	@Override
+	public boolean isRequiresSupplierApproval() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_RequiresSupplierApproval);
 	}
 
 	@Override

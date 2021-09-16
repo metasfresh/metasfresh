@@ -33,6 +33,7 @@ import de.metas.report.ReportResultData;
 import lombok.NonNull;
 import lombok.Setter;
 import org.compiere.util.MimeType;
+import org.springframework.core.io.ByteArrayResource;
 
 import java.util.List;
 
@@ -63,7 +64,7 @@ public class MockedDocumentReportService extends DocumentReportService
 				.reportData(ReportResultData.builder()
 						.reportFilename(MOCKED_REPORT_FILENAME)
 						.reportContentType(MimeType.TYPE_PDF)
-						.reportData(new byte[] { 1, 2, 3 })
+						.reportData(new ByteArrayResource(new byte[] { 1, 2, 3 }))
 						.build())
 				.reportPInstanceId(pinstanceIdToReturn)
 				.build();

@@ -28,7 +28,7 @@ import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
-import org.compiere.print.layout.LayoutEngine;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
 import java.io.InputStream;
@@ -57,7 +57,7 @@ public interface IArchiveBL extends ISingletonService
 	 */
 	@Nullable
 	@Deprecated
-	I_AD_Archive archive(byte[] data, ArchiveInfo archiveInfo, boolean force, boolean save, String trxName);
+	I_AD_Archive archive(Resource data, ArchiveInfo archiveInfo, boolean force, boolean save, String trxName);
 
 	@NonNull
 	ArchiveResult archive(@NonNull ArchiveRequest request);
@@ -72,5 +72,5 @@ public interface IArchiveBL extends ISingletonService
 
 	Optional<I_AD_Archive> getLastArchive(@NonNull TableRecordReference reference);
 
-	Optional<byte[]> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
+	Optional<Resource> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
 }

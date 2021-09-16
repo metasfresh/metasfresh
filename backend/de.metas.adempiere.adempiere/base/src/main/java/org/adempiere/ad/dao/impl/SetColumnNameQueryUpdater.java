@@ -22,16 +22,16 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ISqlQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.TimeUtil;
 
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Properties;
 
 /* package */class SetColumnNameQueryUpdater<T> implements ISqlQueryUpdater<T>
 {
@@ -39,7 +39,7 @@ import lombok.NonNull;
 	private final Object value;
 	private final ModelColumnNameValue<?> valueColumn;
 
-	public SetColumnNameQueryUpdater(@NonNull final String columnName, final Object value)
+	public SetColumnNameQueryUpdater(@NonNull final String columnName, @Nullable final Object value)
 	{
 		Check.assumeNotEmpty(columnName, "columnName not empty");
 		this.columnName = columnName;
@@ -87,11 +87,11 @@ import lombok.NonNull;
 			valueToSet = convertToPOValue(value);
 		}
 
-		final boolean updated = InterfaceWrapperHelper.setValue(model, columnName, valueToSet);
-		return updated;
+		return InterfaceWrapperHelper.setValue(model, columnName, valueToSet);
 	}
 
-	private static Object convertToPOValue(final Object value)
+	@Nullable
+	private static Object convertToPOValue(@Nullable final Object value)
 	{
 		if (value == null)
 		{

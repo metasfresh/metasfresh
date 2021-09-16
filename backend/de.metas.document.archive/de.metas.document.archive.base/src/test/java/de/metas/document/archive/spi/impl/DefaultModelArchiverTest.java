@@ -110,6 +110,7 @@ class DefaultModelArchiverTest
 		Assertions.assertThat(archiveRecord.getAD_Language()).isEqualTo("ro_RO");
 		Assertions.assertThat(archiveRecord.isReport()).isFalse();
 		Assertions.assertThat(archiveRecord.getC_Async_Batch_ID()).isEqualTo(invoice.getC_Async_Batch_ID());
+		Assertions.assertThat(archiveRecord.getC_Async_Batch_ID()).isEqualTo(invoice.getC_Async_Batch_ID());
 	}
 
 	@Test

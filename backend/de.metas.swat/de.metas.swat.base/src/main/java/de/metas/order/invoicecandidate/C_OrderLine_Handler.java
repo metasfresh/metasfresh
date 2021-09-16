@@ -5,15 +5,20 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
+import de.metas.acct.api.IProductAcctDAO;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.location.DocumentLocation;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.compensationGroup.InvoiceCandidateGroupRepository;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
+import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -29,6 +34,7 @@ import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationLine;
 import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -98,12 +104,11 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Retrieve order
 		final I_C_OrderLine orderLine = InterfaceWrapperHelper.create(model, I_C_OrderLine.class);
-		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		return order;
+		return orderLine.getC_Order();
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(final int limit)
 	{
 		return Services.get(IC_OrderLine_HandlerDAO.class).retrieveMissingOrderLinesQuery(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.create()
@@ -163,10 +168,10 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
 
-		if ( orderLine.getPriceEntered().compareTo( orderLine.getPriceStd() ) == 0)
+		if (orderLine.getPriceEntered().compareTo(orderLine.getPriceStd()) == 0)
 		{
-			icRecord.setBase_Commission_Points_Per_Price_UOM( orderLine.getBase_Commission_Points_Per_Price_UOM() );
-			icRecord.setTraded_Commission_Percent( orderLine.getTraded_Commission_Percent() );
+			icRecord.setBase_Commission_Points_Per_Price_UOM(orderLine.getBase_Commission_Points_Per_Price_UOM());
+			icRecord.setTraded_Commission_Percent(orderLine.getTraded_Commission_Percent());
 		}
 
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
@@ -199,6 +204,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
+		DocumentLocation orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+				.deliveryLocationAdapter(order)
+				.toDocumentLocation();
+		if(orderDeliveryLocation.getBpartnerLocationId() == null)
+		{
+			orderDeliveryLocation = OrderDocumentLocationAdapterFactory
+					.locationAdapter(order)
+					.toDocumentLocation();
+		}
+
 		//
 		// Tax
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
@@ -209,7 +224,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				order.getDatePromised(), // shipDate
 				OrgId.ofRepoId(order.getAD_Org_ID()),
 				WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
-				CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()), // ship location id
+				orderDeliveryLocation.toBPartnerLocationAndCaptureId(), // ship location id
 				SOTrx.ofBoolean(order.isSOTrx()));
 		icRecord.setC_Tax_ID(TaxId.toRepoId(taxId)); // avoid NPE in tests
 
@@ -242,7 +257,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private Dimension extractDimension(final I_C_OrderLine orderLine)
 	{
 		Dimension orderLineDimension = dimensionService.getFromRecord(orderLine);
-		if(orderLineDimension.getActivityId() == null)
+		if (orderLineDimension.getActivityId() == null)
 		{
 			final ActivityId activityId = Services.get(IProductAcctDAO.class).retrieveActivityForAcct(
 					ClientId.ofRepoId(orderLine.getAD_Client_ID()),
@@ -336,7 +351,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	 * "First" means the one with first <code>MovementDate</code> or (if the date)the smallest <code>M_InOut_ID</code>.<br>
 	 * <p>
 	 * If the given ic has no InOut, then <code>QtyDelivered</code>, <code>DeliveryDate</code> and <code>M_InOut_ID</code> are set to <code>null</code>.
-	 *
 	 */
 	@Override
 	public void setDeliveredData(final I_C_Invoice_Candidate icRecord)
@@ -437,9 +451,9 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
-		ic.setBill_BPartner_ID(order.getBill_BPartner_ID());
-		ic.setBill_Location_ID(order.getBill_Location_ID());
-		ic.setBill_User_ID(order.getBill_User_ID());
+		InvoiceCandidateLocationAdapterFactory
+				.billLocationAdapter(ic)
+				.setFrom(order);
 		ic.setC_BPartner_SalesRep_ID(order.getC_BPartner_SalesRep_ID());
 	}
 
