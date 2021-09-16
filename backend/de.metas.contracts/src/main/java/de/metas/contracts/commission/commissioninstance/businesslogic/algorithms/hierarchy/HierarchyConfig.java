@@ -1,31 +1,8 @@
-package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms;
-
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.contracts.commission.Beneficiary;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
-import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.HierarchyContract.HierarchyContractBuilder;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.Singular;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,6 +19,28 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionType;
+import de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy.HierarchyContract.HierarchyContractBuilder;
+import de.metas.product.ProductId;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Singular;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Map;
+import java.util.Map.Entry;
 
 @Value
 public class HierarchyConfig implements CommissionConfig
@@ -88,8 +87,7 @@ public class HierarchyConfig implements CommissionConfig
 		final ImmutableMap.Builder<Integer, HierarchyContract> builder = ImmutableMap.<Integer, HierarchyContract> builder();
 		for (final Entry<Beneficiary, HierarchyContractBuilder> entry : beneficiary2HierarchyContracts.entrySet())
 		{
-			final HierarchyContract contract = entry.getValue()
-					.config(this).build();
+			final HierarchyContract contract = entry.getValue().build();
 			builder.put(entry.getKey().getBPartnerId().getRepoId(), contract);
 		}
 		this.bpartnerId2HierarchyContracts = builder.build();
@@ -102,9 +100,9 @@ public class HierarchyConfig implements CommissionConfig
 	}
 
 	@Override
-	public CommissionContract getContractFor(@NonNull final Beneficiary beneficiary)
+	public CommissionContract getContractFor(@NonNull final BPartnerId contractualBPartnerId)
 	{
-		return bpartnerId2HierarchyContracts.get(beneficiary.getBPartnerId().getRepoId());
+		return bpartnerId2HierarchyContracts.get(contractualBPartnerId.getRepoId());
 	}
 
 	public boolean containsContracts()
