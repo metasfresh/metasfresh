@@ -1,23 +1,13 @@
 package de.metas.handlingunits.picking;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
-import java.util.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.quantity.Quantity;
-import de.metas.common.util.CoalesceUtil;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -26,6 +16,13 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
 
 /*
  * #%L
@@ -89,29 +86,29 @@ public class PickingCandidate
 
 	@Builder(toBuilder = true)
 	private PickingCandidate(
-			@Nullable PickingCandidateId id,
+			@Nullable final PickingCandidateId id,
 			//
-			@Nullable PickingCandidateStatus processingStatus,
-			@Nullable PickingCandidatePickStatus pickStatus,
-			@Nullable PickingCandidateApprovalStatus approvalStatus,
+			@Nullable final PickingCandidateStatus processingStatus,
+			@Nullable final PickingCandidatePickStatus pickStatus,
+			@Nullable final PickingCandidateApprovalStatus approvalStatus,
 			//
-			@NonNull PickFrom pickFrom,
+			@NonNull final PickFrom pickFrom,
 			//
-			@NonNull Quantity qtyPicked,
-			@Nullable BigDecimal qtyReview,
+			@NonNull final Quantity qtyPicked,
+			@Nullable final BigDecimal qtyReview,
 			//
-			@Nullable HuPackingInstructionsId packToInstructionsId,
-			@Nullable HuId packedToHuId,
+			@Nullable final HuPackingInstructionsId packToInstructionsId,
+			@Nullable final HuId packedToHuId,
 			//
-			@NonNull ShipmentScheduleId shipmentScheduleId,
-			@Nullable PickingSlotId pickingSlotId,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@Nullable final PickingSlotId pickingSlotId,
 			//
-			@Nullable @Singular("issueToPickingOrder") ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+			@Nullable @Singular("issueToPickingOrder") final ImmutableList<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
 	{
 		this.id = id;
-		this.processingStatus = CoalesceUtil.coalesce(processingStatus, PickingCandidateStatus.Draft);
-		this.pickStatus = CoalesceUtil.coalesce(pickStatus, PickingCandidatePickStatus.TO_BE_PICKED);
-		this.approvalStatus = CoalesceUtil.coalesce(approvalStatus, PickingCandidateApprovalStatus.TO_BE_APPROVED);
+		this.processingStatus = CoalesceUtil.coalesceNotNull(processingStatus, PickingCandidateStatus.Draft);
+		this.pickStatus = CoalesceUtil.coalesceNotNull(pickStatus, PickingCandidatePickStatus.TO_BE_PICKED);
+		this.approvalStatus = CoalesceUtil.coalesceNotNull(approvalStatus, PickingCandidateApprovalStatus.TO_BE_APPROVED);
 
 		this.pickFrom = pickFrom;
 		this.pickingSlotId = pickingSlotId;
@@ -255,7 +252,7 @@ public class PickingCandidate
 
 		if (!pickStatus.isEligibleForReview())
 		{
-			throw new AdempiereException("Picking candidate is not approvable because it's not picked or packed: " + this);
+			throw new AdempiereException("Picking candidate cannot be approved because it's not picked or packed yet: " + this);
 		}
 
 		this.qtyReview = qtyReview;
@@ -291,7 +288,7 @@ public class PickingCandidate
 		}
 	}
 
-	private static PickingCandidatePickStatus computePickOrPackStatus(final HuPackingInstructionsId packToInstructionsId)
+	private static PickingCandidatePickStatus computePickOrPackStatus(@Nullable final HuPackingInstructionsId packToInstructionsId)
 	{
 		return packToInstructionsId != null ? PickingCandidatePickStatus.PACKED : PickingCandidatePickStatus.PICKED;
 	}
@@ -301,10 +298,21 @@ public class PickingCandidate
 		return getPickFrom().isPickFromPickingOrder();
 	}
 
-	public void issueToPickingOrder(List<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
+	public void issueToPickingOrder(final List<PickingCandidateIssueToBOMLine> issuesToPickingOrder)
 	{
 		this.issuesToPickingOrder = issuesToPickingOrder != null
 				? ImmutableList.copyOf(issuesToPickingOrder)
 				: ImmutableList.of();
+	}
+
+	public PickingCandidateSnapshot snapshot()
+	{
+		return PickingCandidateSnapshot.builder()
+				.id(getId())
+				.qtyReview(getQtyReview())
+				.pickStatus(getPickStatus())
+				.approvalStatus(getApprovalStatus())
+				.processingStatus(getProcessingStatus())
+				.build();
 	}
 }
