@@ -1,9 +1,7 @@
 import { post, get, patch, delete as del } from 'axios';
-import {
-  getQueryString,
-  cleanupFilter,
-  createPatchRequestPayload,
-} from '../utils';
+
+import { getQueryString, createPatchRequestPayload } from '../utils';
+import { cleanupFilter } from '../utils/filterHelpers';
 
 export function getData({
   entity,

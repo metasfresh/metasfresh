@@ -1,4 +1,6 @@
-import { DATE_FIELD_TYPES } from '../constants/Constants';
+import Moment from 'moment';
+
+import { DATE_FIELD_TYPES, DATE_FORMAT } from '../constants/Constants';
 import { deepUnfreeze } from '../utils';
 import { fieldValueToString } from '../utils/tableHelpers';
 import { getFormatForDateField, getFormattedDate } from './widgetHelpers';
@@ -314,6 +316,10 @@ export function isFilterValid(filters) {
 export function parseFiltersToPatch(params) {
   return params.reduce((acc, param) => {
     // filters with only defaltValue shouldn't be sent to server
+    // UPDATE: This way, when we apply lookup filters with only default values,
+    // we receive nothing from the backend and on next open of the filters modal
+    // value will be empty. - Kuba
+
     acc.push({
       ...param,
       value: param.value === '' ? null : param.value,
@@ -321,4 +327,41 @@ export function parseFiltersToPatch(params) {
 
     return acc;
   }, []);
+}
+
+const cleanupParameter = ({ parameterName, value, valueTo, defaultValue }) => {
+  value = value === null && defaultValue ? defaultValue : value;
+
+  return {
+    parameterName,
+    value:
+      value &&
+      value.values &&
+      Array.isArray(value.values) &&
+      value.values.length === 0
+        ? [] // case when facets gets cleared
+        : value,
+    valueTo,
+  };
+};
+
+export function cleanupFilter({ filterId, parameters }) {
+  if (parameters && parameters.length) {
+    parameters.map((param, index) => {
+      if (param.widgetType === 'Date' && param.value) {
+        param.value = Moment(param.value).format(DATE_FORMAT);
+      }
+      if (param.widgetType === 'Date' && param.valueTo) {
+        param.valueTo = Moment(param.valueTo).format(DATE_FORMAT);
+      }
+
+      param = cleanupParameter(param);
+      parameters[index] = param;
+    });
+  }
+
+  return {
+    filterId,
+    parameters,
+  };
 }
