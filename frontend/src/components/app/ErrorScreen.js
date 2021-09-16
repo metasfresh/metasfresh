@@ -1,10 +1,12 @@
 import counterpart from 'counterpart';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import offlineMessages from '../../utils/offlineMessages';
 
 class ErrorScreen extends Component {
   constructor(props) {
     super(props);
+    counterpart.registerTranslations('lang', offlineMessages);
   }
 
   getLineFromCounterpart = (targetLine) => {
@@ -54,7 +56,7 @@ class ErrorScreen extends Component {
         if (targetLine === 'line2') targetKey = 'OFFLINE_MESSAGE_LINE1';
     }
     const navigatorLanguage = this.checkNavigatorLanguage();
-    counterpart.translate(`offline.${navigatorLanguage}.${targetKey}`);
+    return counterpart.translate(`offline.${navigatorLanguage}.${targetKey}`);
   };
 
   render() {
