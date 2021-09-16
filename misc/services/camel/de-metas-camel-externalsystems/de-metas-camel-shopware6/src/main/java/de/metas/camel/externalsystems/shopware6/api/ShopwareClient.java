@@ -422,7 +422,7 @@ public class ShopwareClient
 	}
 
 	@NonNull
-	public Optional<JsonProducts> getProducts(@NonNull final QueryRequest queryRequest)
+	public Optional<JsonProducts> getProducts(@NonNull final Shopware6QueryRequest queryRequest)
 	{
 		final URI resourceURI;
 

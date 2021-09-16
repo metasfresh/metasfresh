@@ -64,7 +64,7 @@ public class ExternalSystemConfigRepo
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository;
 
-	public ExternalSystemConfigRepo(final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
+	public ExternalSystemConfigRepo(@NonNull final ExternalSystemOtherConfigRepository externalSystemOtherConfigRepository)
 	{
 		this.externalSystemOtherConfigRepository = externalSystemOtherConfigRepository;
 	}
@@ -155,6 +155,8 @@ public class ExternalSystemConfigRepo
 		{
 			case Alberta:
 				return getAllByTypeAlberta();
+			case RabbitMQ:
+				return getAllByTypeRabbitMQ();
 			case WOO:
 				return getAllByTypeWOO();
 			case Shopware6:
@@ -608,17 +610,6 @@ public class ExternalSystemConfigRepo
 		record.setIsActive(config.getIsActive());
 
 		return record;
-	}
-
-	@NonNull
-	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType)
-	{
-		if (externalSystemType == ExternalSystemType.RabbitMQ)
-		{
-			return getAllByTypeRabbitMQ();
-		}
-
-		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 	}
 
 	@NonNull

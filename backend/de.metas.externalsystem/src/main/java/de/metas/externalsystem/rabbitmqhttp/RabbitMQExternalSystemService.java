@@ -74,7 +74,6 @@ public class RabbitMQExternalSystemService
 	private final ExternalSystemMessageSender externalSystemMessageSender;
 	private final DataExportAuditLogRepository dataExportAuditLogRepository;
 	private final DataExportAuditRepository dataExportAuditRepository;
-	private final ExternalSystemConfigRepo externalSystemConfigRepository;
 	private final Debouncer<BPartnerId> syncBPartnerDebouncer;
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -85,14 +84,12 @@ public class RabbitMQExternalSystemService
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepo,
 			@NonNull final ExternalSystemMessageSender externalSystemMessageSender,
 			@NonNull final DataExportAuditLogRepository dataExportAuditLogRepository,
-			@NonNull final DataExportAuditRepository dataExportAuditRepository,
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigRepository)
+			@NonNull final DataExportAuditRepository dataExportAuditRepository)
 	{
 		this.externalSystemConfigRepo = externalSystemConfigRepo;
 		this.externalSystemMessageSender = externalSystemMessageSender;
 		this.dataExportAuditLogRepository = dataExportAuditLogRepository;
 		this.dataExportAuditRepository = dataExportAuditRepository;
-		this.externalSystemConfigRepository = externalSystemConfigRepository;
 		this.syncBPartnerDebouncer = Debouncer.<BPartnerId>builder()
 				.name("syncBPartnerDebouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("webui.WebsocketSender.debouncer.bufferMaxSize", 100))
@@ -166,7 +163,7 @@ public class RabbitMQExternalSystemService
 		final ImmutableSet<Integer> externalSystemConfigIds = dataExportAuditLogRepository.getExternalSystemConfigIds(dataExportAuditId);
 
 		return externalSystemConfigIds.stream()
-				.map(id -> externalSystemConfigRepository.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(id), ExternalSystemType.RabbitMQ))
+				.map(id -> externalSystemConfigRepo.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(id), ExternalSystemType.RabbitMQ))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.map(IExternalSystemChildConfig::getId)
@@ -195,7 +192,7 @@ public class RabbitMQExternalSystemService
 		{
 			return;
 		}
-		if (!externalSystemConfigRepository.isAnyConfigActive(ExternalSystemType.RabbitMQ))
+		if (!externalSystemConfigRepo.isAnyConfigActive(ExternalSystemType.RabbitMQ))
 		{
 			return; // nothing to do
 		}
