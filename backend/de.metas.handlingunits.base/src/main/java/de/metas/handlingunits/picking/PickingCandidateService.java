@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
@@ -19,11 +20,15 @@ import de.metas.handlingunits.picking.candidate.commands.RemoveQtyFromHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ReviewQtyPickedCommand;
 import de.metas.handlingunits.picking.candidate.commands.SetHuPackingInstructionIdCommand;
 import de.metas.handlingunits.picking.candidate.commands.UnProcessPickingCandidateCommand;
+import de.metas.handlingunits.picking.plan.CreatePickingPlanCommand;
+import de.metas.handlingunits.picking.plan.CreatePickingPlanRequest;
+import de.metas.handlingunits.picking.plan.PickingPlan;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.CloseForShipmentSchedulesRequest;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.RejectPickingRequest;
 import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
@@ -65,15 +70,21 @@ public class PickingCandidateService
 	private final PickingConfigRepository pickingConfigRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final HuId2SourceHUsService sourceHUsRepository;
+	private final HUReservationService huReservationService;
+	private final IBPartnerBL bpartnersService;
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final HuId2SourceHUsService sourceHUsRepository)
+			@NonNull final HuId2SourceHUsService sourceHUsRepository,
+			@NonNull final HUReservationService huReservationService,
+			@NonNull final IBPartnerBL bpartnersService)
 	{
 		this.pickingConfigRepository = pickingConfigRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
 		this.sourceHUsRepository = sourceHUsRepository;
+		this.huReservationService = huReservationService;
+		this.bpartnersService = bpartnersService;
 	}
 
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
@@ -273,6 +284,19 @@ public class PickingCandidateService
 				.request(request)
 				.build()
 				.perform();
+	}
+
+	public PickingPlan createPlan(@NonNull final CreatePickingPlanRequest request)
+	{
+		return CreatePickingPlanCommand.builder()
+				.bpartnersService(bpartnersService)
+				.huReservationService(huReservationService)
+				.pickingCandidateRepository(pickingCandidateRepository)
+				//
+				.request(request)
+				//
+				.build()
+				.execute();
 	}
 
 }
