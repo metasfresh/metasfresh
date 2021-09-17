@@ -38,6 +38,8 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI = "metasfresh.upsert-bpartnerlocation-v2.camel.uri";
 
+	public static final String MF_RETRIEVE_BPARTNER_V2_CAMEL_URI = "metasfresh.retrieve-bpartner-v2.camel.uri";
+
 	public static final String MF_UPSERT_BPRELATION_CAMEL_URI = "metasfresh.upsert-bprelation.camel.uri";
 
 	public static String MF_UPSERT_PRODUCT_V2_CAMEL_URI = "metasfresh.upsert-product-v2.camel.uri";
@@ -56,7 +58,7 @@ public class ExternalSystemCamelConstants
 
 	public static final String ROUTE_PROPERTY_RAW_DATA = "GetOrdersRawData";
 	public static final String STORE_RAW_DATA_URI = "externalSystem.raw-data.uri";
-	
+
 	public static final String MF_ERROR_ROUTE_ID = "Error-Route";
 
 	public static final String MF_LOG_MESSAGE_ROUTE_ID = "Log-Message-Route";

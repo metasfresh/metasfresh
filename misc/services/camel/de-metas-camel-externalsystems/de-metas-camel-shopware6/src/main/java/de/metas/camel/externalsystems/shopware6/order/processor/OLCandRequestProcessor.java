@@ -360,18 +360,24 @@ public class OLCandRequestProcessor implements Processor
 		final PaymentMethodType candidatePaymentMethod = PaymentMethodType.ofValue(orderCompositeInfo.getJsonPaymentMethod().getShortName());
 		final String customerGroupValue = routeContext.getBPartnerCustomerGroup().getName();
 
-		final Optional<JsonExternalSystemShopware6ConfigMapping> matchingConfig = routeContext.getShopware6ConfigMappings()
+		final Optional<JsonExternalSystemShopware6ConfigMapping> matchingConfigOpt = routeContext.getShopware6ConfigMappings()
 				.getJsonExternalSystemShopware6ConfigMappingList()
 				.stream()
 				.sorted(Comparator.comparingInt(JsonExternalSystemShopware6ConfigMapping::getSeqNo))
 				.filter(config -> config.isGroupMatching(customerGroupValue) && config.isPaymentMethodMatching(candidatePaymentMethod.getValue()))
 				.findFirst();
 
-		matchingConfig.ifPresent(config -> olCandCreateRequestBuilder.orderDocType(JsonOrderDocType.ofCode(config.getDocTypeOrder()))
-				.paymentRule(JSONPaymentRule.ofCode(config.getPaymentRule()))
-				.paymentTerm(Check.isBlank(config.getPaymentTermValue())
-									 ? null
-									 : VALUE_PREFIX + "-" + config.getPaymentTermValue()));
+		if(matchingConfigOpt.isPresent())
+		{
+			final JsonExternalSystemShopware6ConfigMapping matchingConfig = matchingConfigOpt.get();
+			olCandCreateRequestBuilder
+					.orderDocType(JsonOrderDocType.ofCode(matchingConfig.getDocTypeOrder()))
+					.paymentRule(JSONPaymentRule.ofCode(matchingConfig.getPaymentRule()))
+					.paymentTerm(Check.isBlank(matchingConfig.getPaymentTermValue())
+										 ? null
+										 : VALUE_PREFIX + "-" + matchingConfig.getPaymentTermValue());	
+		}
+		
 	}
 
 	@NonNull

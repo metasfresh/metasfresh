@@ -1,0 +1,12 @@
+{
+  "url": "https://test",
+  "authToken": "token",
+  "message": {
+    "properties": {
+      "delivery_mode": 2
+    },
+    "routing_key": "key",
+    "payload": "{\"bpartner\":{\"metasfreshId\":2156425,\"code\":\"bp_code\",\"globalId\":null,\"active\":true,\"name\":\"name\",\"companyName\":\"companyName\",\"language\":\"de_DE\",\"group\":\"Standard\",\"vendor\":false,\"customer\":true,\"company\":true,\"vatId\":null,\"changeInfo\":{\"createdMillis\":1436877414000,\"createdBy\":100,\"lastUpdatedMillis\":1440098714000,\"lastUpdatedBy\":100}},\"locations\":[{\"metasfreshId\":2205175,\"name\":\"Location name\",\"bpartnerName\":null,\"active\":true,\"address1\":\"address1\",\"postal\":\"postal\",\"city\":\"city\",\"gln\":null,\"countryCode\":\"DE\",\"shipTo\":true,\"shipToDefault\":true,\"billTo\":true,\"billToDefault\":true,\"changeInfo\":{\"createdMillis\":1436877663000,\"createdBy\":100,\"lastUpdatedMillis\":1438079387000,\"lastUpdatedBy\":100}}]}",
+    "payload_encoding": "string"
+  }
+}
