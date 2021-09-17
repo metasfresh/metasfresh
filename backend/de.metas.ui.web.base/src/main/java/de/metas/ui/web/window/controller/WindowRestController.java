@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
@@ -784,8 +785,11 @@ public class WindowRestController
 			if (labelsValueColumnName.endsWith("_ID"))
 			{
 				final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-				final TableRefInfo tableRefInfo = lookupDAO
-						.retrieveTableDirectRefInfo(labelsValueColumnName);
+
+				final ReferenceId labelsValueReferenceId = lookup.getLabelsValueReferenceId();
+				final TableRefInfo tableRefInfo = labelsValueReferenceId != null
+						? lookupDAO.retrieveTableRefInfo(labelsValueReferenceId.getRepoId())
+						: lookupDAO.retrieveTableDirectRefInfo(labelsValueColumnName);
 
 				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
 			}

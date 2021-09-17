@@ -26,6 +26,7 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.attributes.BPartnerAttributes;
+import de.metas.bpartner.attributes.related.service.BpartnerRelatedRecordsRepository;
 import de.metas.bpartner.attributes.service.BPartnerAttributesRepository;
 import de.metas.bpartner.attributes.service.BPartnerContactAttributesRepository;
 import de.metas.bpartner.composite.BPartner;
@@ -90,10 +91,12 @@ public class BPartnerQuickInputService
 	private static final Logger logger = LogManager.getLogger(BPartnerQuickInputService.class);
 	private final BPartnerQuickInputRepository bpartnerQuickInputRepository;
 	private final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository;
+	private final BPartnerQuickInputRelatedRecordsRepository bpartnerQuickInputRelatedRecordsRepository;
 	private final BPartnerContactQuickInputAttributesRepository bpartnerContactQuickInputAttributesRepository;
 	private final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies;
 	private final BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final BPartnerAttributesRepository bpartnerAttributesRepository;
+	private final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository;
 	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
@@ -108,18 +111,22 @@ public class BPartnerQuickInputService
 	public BPartnerQuickInputService(
 			@NonNull final BPartnerQuickInputRepository bpartnerQuickInputRepository,
 			@NonNull final BPartnerQuickInputAttributesRepository bpartnerQuickInputAttributesRepository,
+			@NonNull final BPartnerQuickInputRelatedRecordsRepository bpartnerQuickInputRelatedRecordsRepository,
 			@NonNull final BPartnerContactQuickInputAttributesRepository bpartnerContactQuickInputAttributesRepository,
 			@NonNull final BPartnerNameAndGreetingStrategies bpartnerNameAndGreetingStrategies,
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPartnerAttributesRepository bpartnerAttributesRepository,
+			@NonNull final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository,
 			@NonNull final BPartnerContactAttributesRepository bpartnerContactAttributesRepository)
 	{
 		this.bpartnerQuickInputRepository = bpartnerQuickInputRepository;
 		this.bpartnerQuickInputAttributesRepository = bpartnerQuickInputAttributesRepository;
+		this.bpartnerQuickInputRelatedRecordsRepository = bpartnerQuickInputRelatedRecordsRepository;
 		this.bpartnerContactQuickInputAttributesRepository = bpartnerContactQuickInputAttributesRepository;
 		this.bpartnerNameAndGreetingStrategies = bpartnerNameAndGreetingStrategies;
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpartnerAttributesRepository = bpartnerAttributesRepository;
+		this.bpartnerRelatedRecordsRepository = bpartnerRelatedRecordsRepository;
 		this.bpartnerContactAttributesRepository = bpartnerContactAttributesRepository;
 	}
 
@@ -265,6 +272,12 @@ public class BPartnerQuickInputService
 		// Copy BPartner Attributes
 		bpartnerAttributesRepository.saveAttributes(
 				bpartnerQuickInputAttributesRepository.getByBPartnerQuickInputId(extractBpartnerQuickInputId(template)),
+				bpartnerId);
+
+		//
+		// Copy BPartner Related records
+		bpartnerRelatedRecordsRepository.saveRelatedRecords(
+				bpartnerQuickInputRelatedRecordsRepository.getByBPartnerQuickInputId(extractBpartnerQuickInputId(template)),
 				bpartnerId);
 
 		//
