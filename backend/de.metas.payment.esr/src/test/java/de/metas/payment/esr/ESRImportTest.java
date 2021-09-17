@@ -50,6 +50,7 @@ import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_DocType;
@@ -173,7 +174,7 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 org.getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-067789-3",
 															 currencyEUR);
@@ -247,7 +248,7 @@ public class ESRImportTest extends ESRTestBase
 		final I_ESR_ImportLine esrImportLine2 = lines.get(1);
 		assertThat(esrImportLine2.isValid(), is(true));
 		assertThat(esrImportLine2.isProcessed(), is(false));
-		assertThat(esrImportLine2.getESR_Payment_Action(), nullValue());
+		assertThat(esrImportLine2.getESR_Payment_Action(), is(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Duplicate_Payment));
 		assertThat(esrImportLine2.getESR_Document_Status(), is(X_ESR_ImportLine.ESR_DOCUMENT_STATUS_PartiallyMatched));
 		assertThat(esrImportLine2.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal(-25)));
 
@@ -674,6 +675,8 @@ public class ESRImportTest extends ESRTestBase
 		org.setValue("106");
 		save(org);
 
+
+
 		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
@@ -681,7 +684,7 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 org.getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-067789-3",
 															 currencyEUR);
@@ -811,6 +814,7 @@ public class ESRImportTest extends ESRTestBase
 		partner.setAD_Org_ID(org.getAD_Org_ID());
 		save(partner);
 
+
 		final I_C_ReferenceNo_Type refNoType = newInstance(I_C_ReferenceNo_Type.class, contextProvider);
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
@@ -823,6 +827,13 @@ public class ESRImportTest extends ESRTestBase
 		// currency
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		// org bp
+		final I_C_BPartner orgBP = newInstance(I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(org.getAD_Org_ID());
+		orgBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		save(orgBP);
+
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
@@ -831,6 +842,7 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
 		account.setC_Currency_ID(currencyEUR.getRepoId());
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 		save(account);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
@@ -966,6 +978,13 @@ public class ESRImportTest extends ESRTestBase
 		// currency
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
+		// org bp
+		final I_C_BPartner orgBP = newInstance(I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(org.getAD_Org_ID());
+		orgBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		save(orgBP);
+
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
@@ -974,6 +993,7 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
 		account.setC_Currency_ID(currencyEUR.getRepoId());
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 		save(account);
 
 		esrImport.setC_BP_BankAccount_ID(account.getC_BP_BankAccount_ID());
@@ -1161,7 +1181,7 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 org.getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 ESR_Rendered_AccountNo,
 															 currencyEUR);
@@ -1273,7 +1293,7 @@ public class ESRImportTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 org.getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 ESR_Rendered_AccountNo,
 															 currencyEUR);
@@ -1383,6 +1403,13 @@ public class ESRImportTest extends ESRTestBase
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
 
+		// org bp
+		final I_C_BPartner orgBP = newInstance(I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(org.getAD_Org_ID());
+		orgBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		save(orgBP);
+
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
@@ -1391,6 +1418,7 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo(ESR_Rendered_AccountNo);
 		account.setC_Currency_ID(999);
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 		save(account);
 
 		// currency
@@ -1492,6 +1520,13 @@ public class ESRImportTest extends ESRTestBase
 		refNoType.setName("InvoiceReference");
 		save(refNoType);
 
+		// org bp
+		final I_C_BPartner orgBP = newInstance(I_C_BPartner.class, contextProvider);
+		orgBP.setValue("orgBP");
+		orgBP.setAD_Org_ID(org.getAD_Org_ID());
+		orgBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		save(orgBP);
+
 		// bank account
 		final I_C_BP_BankAccount account = newInstance(I_C_BP_BankAccount.class, contextProvider);
 		account.setC_Bank_ID(999);
@@ -1500,6 +1535,7 @@ public class ESRImportTest extends ESRTestBase
 		account.setAD_User_ID(Env.getAD_User_ID(getCtx()));
 		account.setESR_RenderedAccountNo("01-067789-3");
 		account.setC_Currency_ID(999);
+		account.setC_BPartner_ID(orgBP.getC_BPartner_ID());
 		save(account);
 
 		// currency

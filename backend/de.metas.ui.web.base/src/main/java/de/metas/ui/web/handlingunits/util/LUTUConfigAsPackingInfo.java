@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.util;
 
 import java.math.BigDecimal;
 
+import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.MoreObjects;
@@ -37,9 +38,8 @@ class LUTUConfigAsPackingInfo implements IHUPackingInfo
 {
 	private final I_M_HU_LUTU_Configuration lutuConfig;
 
-	LUTUConfigAsPackingInfo(final I_M_HU_LUTU_Configuration lutuConfig)
+	LUTUConfigAsPackingInfo(@NonNull final I_M_HU_LUTU_Configuration lutuConfig)
 	{
-		Check.assumeNotNull(lutuConfig, "Parameter lutuConfig is not null");
 		this.lutuConfig = lutuConfig;
 	}
 

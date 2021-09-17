@@ -22,6 +22,7 @@
 
 package de.metas.document.archive.interceptor;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.api.ArchiveFileNameService;
 import de.metas.order.IOrderDAO;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.FileUtil.getFileBaseName;
 import static de.metas.util.FileUtil.getFileExtension;
 
@@ -74,7 +76,7 @@ public class AD_Attachment_MultiRef
 			final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(record.getRecord_ID()));
 
 			final ArchiveFileNameService.ComputeFileNameRequest computeFileNameRequest = ArchiveFileNameService.ComputeFileNameRequest.builder()
-					.docTypeId(DocTypeId.ofRepoId(order.getC_DocType_ID()))
+					.docTypeId(DocTypeId.ofRepoIdOrNull(coalesce(order.getC_DocType_ID(), order.getC_DocTypeTarget_ID())))
 					.recordReference(tableRecordReference)
 					.documentNo(order.getDocumentNo())
 					.fileExtension(fileExtension)
