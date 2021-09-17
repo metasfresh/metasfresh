@@ -2465,18 +2465,18 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public Quantity getOrderedQtyStockUOM(@NonNull final I_C_Invoice_Candidate ic)
+	public Quantity getQtyOrderedStockUOM(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_C_UOM productUOM = productBL.getStockUOM(ic.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		return Quantity.of(ic.getQtyOrdered(), productUOM);
+		return Quantitys.create(ic.getQtyOrdered(), productId);
 	}
 
 	@Override
 	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_C_UOM productUOM = productBL.getStockUOM(ic.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		return Quantity.of(ic.getQtyInvoiced(), productUOM);
+		return Quantitys.create(ic.getQtyInvoiced(), productId);
 	}
 }

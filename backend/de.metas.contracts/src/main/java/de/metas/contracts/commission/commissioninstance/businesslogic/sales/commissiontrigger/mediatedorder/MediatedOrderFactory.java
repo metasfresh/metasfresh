@@ -154,14 +154,14 @@
 			 return Optional.empty();
 		 }
 
-		 final Quantity orderedQtyStockUOM = Quantity.of(orderLine.getQtyOrdered(), uomDao.getById(orderLine.getC_UOM_ID()));
+		 final Quantity orderedQty = Quantity.of(orderLine.getQtyOrdered(), uomDao.getById(orderLine.getC_UOM_ID()));
 
 		 return Optional.of(MediatedOrderLine.builder()
 									.id(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
 									.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
 									.updated(Objects.requireNonNull(TimeUtil.asInstant(orderLine.getUpdated())))
 									.invoicedCommissionPoints(getCommissionPoints(orderLine, isTaxIncluded))
-									.orderedQty(orderedQtyStockUOM)
+									.orderedQty(orderedQty)
 									.build());
 	 }
 

@@ -120,7 +120,7 @@ public class SalesInvoiceCandidateFactory
 			final I_C_DocType invoiceDocType = docTypeBL.getById(invoiceDocTypeId);
 			if (invoiceDocType.isExcludeFromCommision())
 			{
-				logger.debug("C_Invoice_Candidate {} has C_DocTypeInvoice_ID={} which has sExcludeFromCommission=true; -> return empty", icRecord.getC_Invoice_Candidate_ID(), invoiceDocType);
+				logger.debug("C_Invoice_Candidate {} has C_DocTypeInvoice_ID={} which has isExcludeFromCommission=true; -> return empty", icRecord.getC_Invoice_Candidate_ID(), invoiceDocType);
 				return Optional.empty();
 			}
 		}
@@ -144,7 +144,7 @@ public class SalesInvoiceCandidateFactory
 								   .forecastCommissionPoints(forecastCommissionPoints.get())
 								   .commissionPointsToInvoice(extractCommissionPointsToInvoice(icRecord))
 								   .invoicedCommissionPoints(extractInvoicedCommissionPoints(icRecord))
-								   .totalQtyInvolved(invoiceCandBL.getOrderedQtyStockUOM(icRecord))
+								   .totalQtyInvolved(invoiceCandBL.getQtyOrderedStockUOM(icRecord))
 								   .currencyId(currencyId)
 								   .build());
 	}
@@ -152,7 +152,7 @@ public class SalesInvoiceCandidateFactory
 	@NonNull
 	private Optional<CommissionPoints> extractForecastCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final Quantity forecastQtyStockUOM = invoiceCandBL.getOrderedQtyStockUOM(icRecord)
+		final Quantity forecastQtyStockUOM = invoiceCandBL.getQtyOrderedStockUOM(icRecord)
 				.subtract(invoiceCandBL.getQtyToInvoiceStockUOM(icRecord))
 				.subtract(invoiceCandBL.getQtyInvoicedStockUOM(icRecord));
 

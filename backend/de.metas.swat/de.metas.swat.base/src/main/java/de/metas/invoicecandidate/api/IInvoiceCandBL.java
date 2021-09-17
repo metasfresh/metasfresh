@@ -408,7 +408,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
 
-	Quantity getOrderedQtyStockUOM(I_C_Invoice_Candidate ic);
+	Quantity getQtyOrderedStockUOM(I_C_Invoice_Candidate ic);
 
 	Quantity getQtyInvoicedStockUOM(I_C_Invoice_Candidate ic);
 }

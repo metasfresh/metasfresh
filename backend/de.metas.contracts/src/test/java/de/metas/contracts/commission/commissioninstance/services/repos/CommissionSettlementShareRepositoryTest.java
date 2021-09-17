@@ -14,7 +14,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.settlement
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContract;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionFact;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionInstance.CreateCommissionInstanceResult;
@@ -131,7 +131,7 @@ class CommissionSettlementShareRepositoryTest
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
 				.commissionProductId(commissionProductId)
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
 				.build()
 				.createConfigData();
 		assertThat(configData.getBpartnerId2FlatrateTermId().entrySet()).hasSize(1); // guard
@@ -204,7 +204,7 @@ class CommissionSettlementShareRepositoryTest
 				.orgId(orgId)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
 				.subtractLowerLevelCommissionFromBase(true)
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("C_BPartner_SalesRep_1_ID").build())
 				.commissionProductId(commissionProductId)
 				.build()
 				.createConfigData();
