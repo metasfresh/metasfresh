@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.Shopware6Constants;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
@@ -49,6 +50,7 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.ExchangePattern;
 import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -74,10 +76,12 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIG
 public class GetOrdersProcessor implements Processor
 {
 	private final ProcessLogger processLogger;
+	private final ProducerTemplate producerTemplate;
 
-	public GetOrdersProcessor(final ProcessLogger processLogger)
+	public GetOrdersProcessor(@NonNull final ProcessLogger processLogger, @NonNull final ProducerTemplate producerTemplate)
 	{
 		this.processLogger = processLogger;
+		this.producerTemplate = producerTemplate;
 	}
 
 	@Override
@@ -117,20 +121,25 @@ public class GetOrdersProcessor implements Processor
 		final String bPartnerIdJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_BPARTNER_ID);
 		final String salesRepJSONPath = request.getParameters().get(ExternalSystemConstants.PARAM_JSON_PATH_SALES_REP_ID);
 
-		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
-		
+		final PInstanceLogger pInstanceLogger = PInstanceLogger.builder()
+				.processLogger(processLogger)
+				.pInstanceId(request.getAdPInstanceId())
+				.build();
+
+		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath, pInstanceLogger);
+
 		final GetOrdersResponse ordersToProcess = shopwareClient.getOrders(getOrdersRequest, bPartnerIdJSONPath, salesRepJSONPath);
 
 		exchange.getIn().setBody(ordersToProcess.getOrderCandidates());
 		exchange.setProperty(ROUTE_PROPERTY_RAW_DATA, ordersToProcess.getRawData());
-		
+
 		final GetCurrenciesRequest getCurrenciesRequest = GetCurrenciesRequest.builder()
 				.baseUrl(basePath)
 				.clientId(clientId)
 				.clientSecret(clientSecret)
 				.build();
 
-		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider)exchange.getContext().createProducerTemplate()
+		final CurrencyInfoProvider currencyInfoProvider = (CurrencyInfoProvider)producerTemplate
 				.sendBody("direct:" + GET_CURRENCY_ROUTE_ID, ExchangePattern.InOut, getCurrenciesRequest);
 
 		final ImportOrdersRouteContext ordersContext = buildContext(request, shopwareClient, currencyInfoProvider);
@@ -151,6 +160,7 @@ public class GetOrdersProcessor implements Processor
 				.externalSystemRequest(request)
 				.shopware6ConfigMappings(getSalesOrderMappingRules(request).orElse(null))
 				.shopwareClient(shopwareClient)
+				.pInstanceId(request.getAdPInstanceId())
 				.bpLocationCustomJsonPath(bpLocationCustomJsonPath)
 				.currencyInfoProvider(currencyInfoProvider)
 				.taxProductIdProvider(getTaxProductIdProvider(request))
@@ -180,7 +190,7 @@ public class GetOrdersProcessor implements Processor
 
 	@NonNull
 	@VisibleForTesting
-	public static  QueryRequest buildOrderNoQueryRequest(@NonNull final String orderNo)
+	public static QueryRequest buildOrderNoQueryRequest(@NonNull final String orderNo)
 	{
 		return QueryRequest.builder()
 				.query(JsonQuery.builder()
@@ -190,7 +200,7 @@ public class GetOrdersProcessor implements Processor
 							   .build())
 				.build();
 	}
-	
+
 	@NonNull
 	@VisibleForTesting
 	public static MultiQueryRequest buildUpdatedAfterQueryRequest(@NonNull final String updatedAfter)

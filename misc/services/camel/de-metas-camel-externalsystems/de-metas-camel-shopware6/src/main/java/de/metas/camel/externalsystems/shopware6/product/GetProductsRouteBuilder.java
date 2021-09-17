@@ -25,8 +25,9 @@ package de.metas.camel.externalsystems.shopware6.product;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.product.processor.GetProductsProcessor;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -59,10 +60,9 @@ public class GetProductsRouteBuilder extends RouteBuilder
 	public static final String GET_PRODUCTS_PROCESSOR_ID = "SW6Products-GetProductsProcessorId";
 	public static final String ATTACH_CONTEXT_PROCESSOR_ID = "SW6Products-ContextProcessorId";
 
-
 	private final ProcessLogger processLogger;
 
-	public GetProductsRouteBuilder(final ProcessLogger processLogger)
+	public GetProductsRouteBuilder(@NonNull final ProcessLogger processLogger)
 	{
 		this.processLogger = processLogger;
 	}
@@ -119,7 +119,12 @@ public class GetProductsRouteBuilder extends RouteBuilder
 		final String clientSecret = request.getParameters().get(ExternalSystemConstants.PARAM_CLIENT_SECRET);
 		final String basePath = request.getParameters().get(ExternalSystemConstants.PARAM_BASE_PATH);
 
-		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath);
+		final PInstanceLogger pInstanceLogger = PInstanceLogger.builder()
+				.processLogger(processLogger)
+				.pInstanceId(request.getAdPInstanceId())
+				.build();
+
+		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath, pInstanceLogger);
 
 		final String updatedAfter = CoalesceUtil.coalesceNotNull(
 				request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),

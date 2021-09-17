@@ -22,9 +22,37 @@
 
 package de.metas.camel.externalsystems.common;
 
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
 import javax.annotation.Nullable;
 
-public interface ProcessLogger
+@Value
+@Builder
+public class PInstanceLogger
 {
-	void logMessage(String message,@Nullable Integer adPInstanceId);
+	@NonNull
+	ProcessLogger processLogger;
+	@Nullable
+	JsonMetasfreshId pInstanceId;
+
+	public void logMessage(@NonNull final String logMessage)
+	{
+		if (pInstanceId == null)
+		{
+			return;
+		}
+
+		processLogger.logMessage(logMessage, pInstanceId.getValue());
+	}
+
+	@NonNull
+	public static PInstanceLogger of(@NonNull final ProcessLogger processLogger)
+	{
+		return PInstanceLogger.builder()
+				.processLogger(processLogger)
+				.build();
+	}
 }

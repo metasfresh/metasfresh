@@ -28,6 +28,7 @@ import de.metas.user.UserGroupId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.springframework.util.AntPathMatcher;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -63,9 +64,16 @@ public class ApiAuditConfig
 	@Nullable
 	UserGroupId userGroupInChargeId;
 
+	@NonNull
+	@Builder.Default
+	AntPathMatcher antPathMatcher = new AntPathMatcher();
+
 	public boolean matchesRequest(@NonNull final String requestPath, @NonNull final String httpMethod)
 	{
-		final boolean isPathMatching = this.pathPrefix == null || requestPath.contains(this.pathPrefix);
+		final boolean isPathMatching = this.pathPrefix == null
+				|| requestPath.contains(this.pathPrefix)
+				|| antPathMatcher.match(pathPrefix, requestPath);
+
 		final boolean isMethodMatching = this.method == null || httpMethod.equalsIgnoreCase(method.getCode());
 
 		return isMethodMatching && isPathMatching;
