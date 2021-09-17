@@ -26,6 +26,7 @@ import de.metas.Profiles;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.audit.ApiAuditService;
 import de.metas.util.web.security.UserAuthTokenFilter;
+import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
 import de.metas.util.web.security.UserAuthTokenService;
 import lombok.NonNull;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -43,7 +44,6 @@ public class FilterRegistrationConfig
 	public FilterRegistrationBean<ApiAuditFilter> apiAuditFilter(@NonNull final ApiAuditService apiAuditService)
 	{
 		final FilterRegistrationBean<ApiAuditFilter> registrationBean = new FilterRegistrationBean<>();
-
 		registrationBean.setFilter(new ApiAuditFilter(apiAuditService));
 		registrationBean.addUrlPatterns(URL_PATTERN_API_V2);
 		registrationBean.setOrder(2);
@@ -51,11 +51,12 @@ public class FilterRegistrationConfig
 	}
 
 	@Bean
-	public FilterRegistrationBean<UserAuthTokenFilter> loggingFilter(@NonNull final UserAuthTokenService userAuthTokenService)
+	public FilterRegistrationBean<UserAuthTokenFilter> authFilter(
+			@NonNull final UserAuthTokenService userAuthTokenService,
+			@NonNull final UserAuthTokenFilterConfiguration configuration)
 	{
 		final FilterRegistrationBean<UserAuthTokenFilter> registrationBean = new FilterRegistrationBean<>();
-
-		registrationBean.setFilter(new UserAuthTokenFilter(userAuthTokenService));
+		registrationBean.setFilter(new UserAuthTokenFilter(userAuthTokenService, configuration));
 		registrationBean.addUrlPatterns(MetasfreshRestAPIConstants.URL_PATTERN_API);
 		registrationBean.setOrder(1);
 		return registrationBean;
