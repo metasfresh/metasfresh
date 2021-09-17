@@ -70,3 +70,19 @@ self.addEventListener('message', (event) => {
 });
 
 // Any other custom service worker logic can go here.
+self.addEventListener('fetch', (e) => {
+  console.log('[ServiceWorker] ->  Fetch event fired.', e.request.url);
+  e.respondWith(
+      caches.match(e.request).then(function(response) {
+          if (response) {
+              console.log('[ServiceWorker] -> Retrieving from cache...');
+              return response;
+          }
+          console.log('[ServiceWorker] Retrieving from URL...');
+          return fetch(e.request).catch(function (e) {
+             /** You can check what e contains aso for further customize */
+             console.log('OFFLINE - You appear to be offline');
+          });
+      })
+  );
+});
