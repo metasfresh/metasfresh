@@ -1,19 +1,3 @@
-DO $$
-    BEGIN
-        IF NOT EXISTS (
-            select *
-            from (
-                     select ad_user_id,
-                            crm_occupation_id,
-                            AD_User_Occupation_Job_id,
-                            ROW_NUMBER()
-                            OVER (
-                                PARTITION BY ad_user_id,crm_occupation_id
-                                order by ad_user_id) AS Row
-                     from AD_User_Occupation_Job d
-                 ) as d
-            where row > 1
-    ) THEN
 -- 2021-09-17T07:17:49.718Z
 -- URL zum Konzept
 INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540649,0,541772,TO_TIMESTAMP('2021-09-17 09:17:49','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','AD_User_Occupation_Unique','N',TO_TIMESTAMP('2021-09-17 09:17:49','YYYY-MM-DD HH24:MI:SS'),100)
@@ -54,23 +38,6 @@ CREATE UNIQUE INDEX AD_User_Occupation_Unique ON AD_User_Occupation_Job (AD_User
 UPDATE AD_Index_Table SET IsUnique='Y',Updated=TO_TIMESTAMP('2021-09-17 09:21:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540649
 ;
 
-END IF;
-
-IF NOT EXISTS (
-        select *
-        from (
-                 select ad_user_id,
-                        crm_occupation_id,
-                        AD_User_Occupation_Specialization_id,
-                        ROW_NUMBER()
-                        OVER (
-                            PARTITION BY ad_user_id,crm_occupation_id
-                            order by ad_user_id) AS Row
-                 from AD_User_Occupation_Specialization d
-             ) as d
-        where row > 1
-    ) THEN
-
 
 -- 2021-09-17T07:20:05.452Z
 -- URL zum Konzept
@@ -97,23 +64,6 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 CREATE UNIQUE INDEX AD_User_Specialization_Unique ON AD_User_Occupation_Specialization (AD_User_ID,CRM_Occupation_ID)
 ;
 
-END IF;
-
-IF NOT EXISTS (
-        select *
-        from (
-                 select ad_user_id,
-                        crm_occupation_id,
-                        AD_User_Occupation_AdditionalSpecialization_id,
-                        ROW_NUMBER()
-                        OVER (
-                            PARTITION BY ad_user_id,crm_occupation_id
-                            order by ad_user_id) AS Row
-                 from AD_User_Occupation_AdditionalSpecialization d
-             ) as d
-        where row > 1
-    ) THEN
-
 
 -- 2021-09-17T07:22:45.734Z
 -- URL zum Konzept
@@ -139,7 +89,3 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 -- URL zum Konzept
 CREATE UNIQUE INDEX AD_User_Occupation_AdditionalSpecialization_Unique ON AD_User_Occupation_AdditionalSpecialization (AD_User_ID,CRM_Occupation_ID)
 ;
-
-END IF;
-END;
-$$
