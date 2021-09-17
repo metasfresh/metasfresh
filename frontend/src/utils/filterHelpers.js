@@ -329,8 +329,19 @@ export function parseFiltersToPatch(params) {
   }, []);
 }
 
-const cleanupParameter = ({ parameterName, value, valueTo, defaultValue }) => {
+const cleanupParameter = (param) => {
+  const { parameterName, defaultValue, defaultValueTo, widgetType } = param;
+  let { value, valueTo } = param;
+
+  if (widgetType === 'Date' && value) {
+    value = Moment(value).format(DATE_FORMAT);
+  }
+  if (widgetType === 'Date' && valueTo) {
+    valueTo = Moment(valueTo).format(DATE_FORMAT);
+  }
+
   value = value === null && defaultValue ? defaultValue : value;
+  valueTo = valueTo === null && defaultValueTo ? defaultValueTo : valueTo;
 
   return {
     parameterName,
@@ -345,16 +356,9 @@ const cleanupParameter = ({ parameterName, value, valueTo, defaultValue }) => {
   };
 };
 
-export function cleanupFilter({ filterId, parameters }) {
+export function prepareFilterForBackend({ filterId, parameters }) {
   if (parameters && parameters.length) {
     parameters.map((param, index) => {
-      if (param.widgetType === 'Date' && param.value) {
-        param.value = Moment(param.value).format(DATE_FORMAT);
-      }
-      if (param.widgetType === 'Date' && param.valueTo) {
-        param.valueTo = Moment(param.valueTo).format(DATE_FORMAT);
-      }
-
       param = cleanupParameter(param);
       parameters[index] = param;
     });
