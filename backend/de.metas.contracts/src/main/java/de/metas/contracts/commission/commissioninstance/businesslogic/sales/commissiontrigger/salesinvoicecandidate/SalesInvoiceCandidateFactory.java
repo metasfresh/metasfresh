@@ -120,7 +120,7 @@ public class SalesInvoiceCandidateFactory
 			final I_C_DocType invoiceDocType = docTypeBL.getById(invoiceDocTypeId);
 			if (invoiceDocType.isExcludeFromCommision())
 			{
-				logger.debug("C_Invoice_Candidate {} has C_DocTypeInvoice_ID={} which has sExcludeFromCommission=true; -> return empty", icRecord.getC_Invoice_Candidate_ID(), invoiceDocType);
+				logger.debug("C_Invoice_Candidate {} has C_DocTypeInvoice_ID={} which has isExcludeFromCommission=true; -> return empty", icRecord.getC_Invoice_Candidate_ID(), invoiceDocType);
 				return Optional.empty();
 			}
 		}
