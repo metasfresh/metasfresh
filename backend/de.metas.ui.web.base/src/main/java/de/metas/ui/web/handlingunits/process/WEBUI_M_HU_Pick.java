@@ -235,7 +235,7 @@ public class WEBUI_M_HU_Pick extends ViewBasedProcessTemplate implements IProces
 				.build());
 		// NOTE: we are not moving the HU to shipment schedule's locator.
 
-		pickingCandidateService.processForHUIds(ImmutableSet.of(huId), shipmentScheduleId);
+		pickingCandidateService.processForHUIds(ImmutableSet.of(huId), shipmentScheduleId, isTakeWholeHU);
 	}
 
 	@Override

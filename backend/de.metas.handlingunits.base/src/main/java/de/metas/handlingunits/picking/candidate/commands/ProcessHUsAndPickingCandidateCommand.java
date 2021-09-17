@@ -3,13 +3,16 @@ package de.metas.handlingunits.picking.candidate.commands;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -31,7 +34,9 @@ import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,6 +85,10 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final ImmutableListMultimap<HuId, PickingCandidate> pickingCandidatesByPickFromHUId;
 	private final ImmutableSet<HuId> pickFromHuIds;
 	private final boolean allowOverDelivery;
+	private final boolean isTakeWholeHU;
+
+
+	private Map<HuId, HuId> pickingHUIdvsPickedHuId = new HashMap<>();
 
 	@Builder
 	private ProcessHUsAndPickingCandidateCommand(
@@ -88,7 +97,8 @@ public class ProcessHUsAndPickingCandidateCommand
 			//
 			@NonNull final List<PickingCandidate> pickingCandidates,
 			@NonNull @Singular final Set<HuId> additionalPickFromHuIds,
-			final boolean allowOverDelivery)
+			final boolean allowOverDelivery,
+			final  boolean isTakeWholeHU)
 	{
 		Check.assumeNotEmpty(pickingCandidates, "pickingCandidates is not empty");
 		for (PickingCandidate pickingCandidate : pickingCandidates)
@@ -113,12 +123,19 @@ public class ProcessHUsAndPickingCandidateCommand
 				.build();
 
 		this.allowOverDelivery = allowOverDelivery;
+
+		this.isTakeWholeHU = isTakeWholeHU;
 	}
 
 	public ImmutableList<PickingCandidate> perform()
 	{
 		allocateHUsToShipmentSchedule();
 		destroyEmptySourceHUs();
+
+		if (!pickingHUIdvsPickedHuId.isEmpty())
+		{
+
+		}
 
 		final ImmutableList<PickingCandidate> processedPickingCandidates = changeStatusToProcessedAndSave();
 
@@ -141,11 +158,23 @@ public class ProcessHUsAndPickingCandidateCommand
 		final List<IPackingItem> itemsToPack = createItemsToPack(HuId.ofRepoId(hu.getM_HU_ID()));
 
 		itemsToPack.forEach(itemToPack -> {
-			HU2PackingItemsAllocator.builder()
+			final HU2PackingItemsAllocator allocator = HU2PackingItemsAllocator.builder()
 					.itemToPack(itemToPack)
 					.allowOverDelivery(allowOverDelivery)
+					.isTakeWholeHU(isTakeWholeHU)
 					.pickFromHU(hu)
-					.allocate();
+					.build();
+
+			allocator.allocate();
+
+			final I_M_HU pickedHU = allocator.getPickFromHUs().get(0);
+			final int huId = hu.getM_HU_ID();
+			final int pickedHuId = pickedHU.getM_HU_ID();
+			if (huId != pickedHuId)
+			{
+				pickingHUIdvsPickedHuId.put(HuId.ofRepoId(huId), HuId.ofRepoId(pickedHuId));
+			}
+
 		});
 	}
 
@@ -167,10 +196,10 @@ public class ProcessHUsAndPickingCandidateCommand
 	private PackingItemPart createPackingItemPart(final PickingCandidate pc)
 	{
 		final ShipmentScheduleId shipmentScheduleId = pc.getShipmentScheduleId();
-		final I_M_ShipmentSchedule sched = shipmentSchedulesRepo.getById(shipmentScheduleId);
+		final I_M_ShipmentSchedule sched = shipmentSchedulesRepo.getById(shipmentScheduleId); // TODO: include some picking candidate ID in partId
 
 		return PackingItems.newPackingItemPart(sched)
-				.id(PackingItemPartId.of(shipmentScheduleId)) // TODO: include some picking candidate ID in partId
+				.id(PackingItemPartId.of(shipmentScheduleId))
 				.qty(pc.getQtyPicked())
 				.build();
 	}
@@ -216,10 +245,35 @@ public class ProcessHUsAndPickingCandidateCommand
 	private ImmutableList<PickingCandidate> changeStatusToProcessedAndSave()
 	{
 		final ImmutableList<PickingCandidate> pickingCandidates = getPickingCandidates();
+		final boolean hasPickedHuChanged = !pickingHUIdvsPickedHuId.isEmpty();
 
-		pickingCandidates.forEach(PickingCandidate::changeStatusToProcessed);
+		pickingCandidates.forEach(pc -> {
+
+			final HuId pickedHuId = pickingHUIdvsPickedHuId.get(pc.getPickFrom().getHuId());
+			if (hasPickedHuChanged && pickedHuId != null )
+			{
+				pc.updatePickFrom(PickFrom.ofHuId(pickedHuId));
+			}
+
+			pc.changeStatusToProcessed();
+		});
 		pickingCandidateRepository.saveAll(pickingCandidates);
 
 		return pickingCandidates;
+	}
+
+	public void updatePickingCandidate()
+	{
+		final ImmutableList<PickingCandidate> initialPickingCandidates = getPickingCandidates();
+
+		for (final PickingCandidate pc : initialPickingCandidates)
+		{
+			final PickingCandidate updatedPickingCandidate =  pickingCandidateRepository.getById(pc.getId());
+			if (!pc.getPickFrom().getHuId().equals(updatedPickingCandidate.getPickFrom().getHuId()))
+			{
+
+			}
+		}
+
 	}
 }

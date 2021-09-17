@@ -66,7 +66,7 @@ public class PickingCandidate
 	private PickingCandidateApprovalStatus approvalStatus;
 
 	@NonNull
-	private final PickFrom pickFrom;
+	private PickFrom pickFrom;
 
 	@NonNull
 	private Quantity qtyPicked;
@@ -309,5 +309,10 @@ public class PickingCandidate
 		this.issuesToPickingOrder = issuesToPickingOrder != null
 				? ImmutableList.copyOf(issuesToPickingOrder)
 				: ImmutableList.of();
+	}
+
+	public void updatePickFrom(@NonNull final PickFrom pickFrom)
+	{
+		this.pickFrom = pickFrom;
 	}
 }

@@ -163,12 +163,19 @@ public class PickingCandidateService
 			@NonNull final Set<HuId> pickFromHuIds,
 			@Nullable final ShipmentScheduleId shipmentScheduleId)
 	{
+		processForHUIds(pickFromHuIds,shipmentScheduleId, false); // TODO: figure out how shall be in this case
+	}
+
+	public void processForHUIds(
+			@NonNull final Set<HuId> pickFromHuIds,
+			@Nullable final ShipmentScheduleId shipmentScheduleId,
+			final boolean isTakeWholeHU)
+	{
 		final List<PickingCandidate> pickingCandidatesToProcess = pickingCandidateRepository.getByHUIds(pickFromHuIds)
 				.stream()
 				.filter(PickingCandidate::isDraft)
 				.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.equals(pc.getShipmentScheduleId()))
 				.collect(ImmutableList.toImmutableList());
-
 		//
 		// Process those picking candidates
 		final ImmutableList<PickingCandidate> processedPickingCandidates = ProcessHUsAndPickingCandidateCommand.builder()
@@ -177,6 +184,7 @@ public class PickingCandidateService
 				.pickingCandidates(pickingCandidatesToProcess)
 				.additionalPickFromHuIds(pickFromHuIds)
 				.allowOverDelivery(pickingConfigRepository.getPickingConfig().isAllowOverDelivery())
+				.isTakeWholeHU(isTakeWholeHU)
 				.build()
 				.perform();
 

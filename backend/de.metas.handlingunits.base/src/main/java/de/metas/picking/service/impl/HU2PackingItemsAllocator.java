@@ -2,16 +2,44 @@ package de.metas.picking.service.impl;
 
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.IHUSplitBuilder;
+import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilder;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.handlingunits.picking.PickFrom;
+import de.metas.handlingunits.picking.PickingCandidate;
+import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.requests.PickRequest;
+import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
+import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
+import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.reservation.HUReservation;
+import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.organization.OrgId;
+import de.metas.picking.service.PackingItemPartId;
+import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 
 import com.google.common.base.Predicates;
@@ -55,6 +83,8 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.eevolution.api.PPOrderId;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * Class responsible for allocating given HUs to underlying shipment schedules from {@link IPackingItem}.
@@ -81,7 +111,7 @@ public class HU2PackingItemsAllocator
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-
+	private final PickingCandidateRepository pickingCandidateRepository = new PickingCandidateRepository();
 	/**
 	 * Cannot fully load:
 	 */
@@ -94,7 +124,9 @@ public class HU2PackingItemsAllocator
 	private final PackingItemsMap packingItems;
 	//
 	private final boolean allowOverDelivery;
-	private final ImmutableList<I_M_HU> _pickFromHUs;
+	private final boolean isTakeWholeHU;
+
+	private List<I_M_HU> _pickFromHUs;
 	private final IAllocationDestination _packToDestination;
 	private final boolean _qtyToPackEnforced;
 
@@ -113,6 +145,7 @@ public class HU2PackingItemsAllocator
 			@Nullable final PackingSlot packedItemsSlot,
 			//
 			final boolean allowOverDelivery,
+			final boolean isTakeWholeHU,
 			@NonNull @Singular("pickFromHU") final ImmutableList<I_M_HU> pickFromHUs,
 			@Nullable final IAllocationDestination packToDestination,
 			@Nullable final Quantity qtyToPack)
@@ -122,6 +155,7 @@ public class HU2PackingItemsAllocator
 		this.packedItemsSlot = packedItemsSlot != null ? packedItemsSlot : PackingSlot.DEFAULT_PACKED;
 
 		this.allowOverDelivery = allowOverDelivery;
+		this.isTakeWholeHU = isTakeWholeHU;
 		_pickFromHUs = pickFromHUs;
 		_packToDestination = packToDestination;
 
@@ -168,7 +202,7 @@ public class HU2PackingItemsAllocator
 		_huContext = huContext;
 	}
 
-	private ImmutableList<I_M_HU> getPickFromHUs()
+	public ImmutableList<I_M_HU> getPickFromHUs()
 	{
 		return _pickFromHUs;
 	}
@@ -281,7 +315,7 @@ public class HU2PackingItemsAllocator
 	 * <p>
 	 * The quantity that was allocated on HUs will be subtracted from {@link #getItemToPack()}.
 	 */
-	private void allocate()
+	public void allocate()
 	{
 		// Make sure we did not run "allocate" before
 		// i.e. this builder is still configurable
@@ -491,8 +525,6 @@ public class HU2PackingItemsAllocator
 
 		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(packedPart.getShipmentScheduleId());
 
-		final boolean isTakeWholeHU = true;
-
 		final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
 		final boolean isOverDelivery = currentQtyToDeliver.compareTo(qtyPacked.toBigDecimal()) < 0;
 
@@ -506,7 +538,11 @@ public class HU2PackingItemsAllocator
 
 		if (allowOverDelivery && isOverDelivery && !isTakeWholeHU)
 		{
-			// split qty
+			splitCurrentHU(pickFromVHU, packedPart);
+
+			// throw new AdempiereException("@" + PickingConfigRepository.MSG_WEBUI_Picking_OverdeliveryNotAllowed + "@")
+			// 		.setParameter("shipmentSchedule's QtyToDeliver", currentQtyToDeliver)
+			// 		.setParameter("qtyPacked to be Delivered", qtyPacked);
 		}
 
 		else
@@ -523,6 +559,82 @@ public class HU2PackingItemsAllocator
 			// Adjust remaining Qty to be packed
 			subtractFromQtyToPackRemaining(qtyPacked);
 		}
+	}
+
+	private void splitCurrentHU(@NonNull final I_M_HU pickFromVHU, @NonNull final PackingItemPart packedPart)
+	{
+		// todo
+
+		final Quantity qtyPacked = packedPart.getQty();
+		final I_M_ShipmentSchedule shipmentSchedule = getShipmentScheduleById(packedPart.getShipmentScheduleId());
+		final BigDecimal currentQtyToDeliver = shipmentSchedule.getQtyToDeliver();
+
+		final Quantity qtyCU = Quantity.of(currentQtyToDeliver, packedPart.getQty().getUOM());
+
+		// e.g. if we have one 1000PCE-HU, but we need to issue just 10PCE, then we need to split those 10PCE from the big HU
+
+		final ProductId productId = packedPart.getProductId();
+		final I_M_HU huToIssue = CollectionUtils.singleElement(HUTransformService.newInstance()
+					       .husToNewCUs(HUTransformService.HUsToNewCUsRequest.builder()
+										 .sourceHU(pickFromVHU)
+										 .productId(productId)
+										 .qtyCU(qtyCU)
+										 .onlyFromUnreservedHUs(true)
+										 .build()));
+
+		final StockQtyAndUOMQty stockQtyAndUomQty = CatchWeightHelper.extractQtys(_huContext, getProductId(), qtyCU, huToIssue);
+
+		// "Back" allocate the qtyPicked from VHU to given shipment schedule
+		final boolean anonymousHuPickedOnTheFly = false;
+		huShipmentScheduleBL.addQtyPickedAndUpdateHU(shipmentSchedule, stockQtyAndUomQty, huToIssue, _huContext, anonymousHuPickedOnTheFly);
+
+		// Transfer the qtyPicked from vhu to our target HU (if any)
+
+		if (hasPackToDestination())
+		{
+			final IAllocationSource source = HUListAllocationSourceDestination.of(huToIssue);
+			final IAllocationDestination destination = getPackToDestination();
+
+			AllocationUtils.builder()
+					.setHUContext(_huContext)
+					.setProduct(productId)
+					.setQuantity(qtyCU)
+					.setDate(_huContext.getDate())
+					.setFromReferencedModel(packedPart.getShipmentScheduleId().toTableRecordReference())
+					// Force Qty Allocation: we need to allocate even if the HU is full
+					// see http://dewiki908/mediawiki/index.php/05706_Meldung_im_Aktuellen_UAT%3F_Sollte_schon_weg_sein%2C_oder%3F_%28105871951705%29
+					.setForceQtyAllocation(true)
+					.create();
+		}
+
+		// Adjust remaining Qty to be packed
+		subtractFromQtyToPackRemaining(qtyCU);
+
+		// updated picked HU
+		_pickFromHUs = new ArrayList<>();
+		_pickFromHUs.add(huToIssue);
+
+		// pickingCandidateRepository.save(pickingCandidate);
+
+		// final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
+		// final TableRecordReference referernce = packedPart.getSourceDocumentLineRef();
+		// final List<I_PP_Order_Qty> processedIssueCandidates = huPPOrderBL.createIssueProducer(orderId)
+		// 		.fixedQtyToIssue(qtyCU)
+		// 		.processCandidates(HUPPOrderIssueProducer.ProcessIssueCandidatesPolicy.ALWAYS)
+		// 		.createIssues(husToIssue);
+	}
+
+	private Quantity extractQtyOfHU(
+			final I_M_HU sourceHURecord,
+			final ProductId productId,
+			final I_C_UOM uomRecord)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		return handlingUnitsBL
+				.getStorageFactory()
+				.getStorage(sourceHURecord)
+				.getQuantity(productId, uomRecord);
 	}
 
 	private I_M_ShipmentSchedule getShipmentScheduleById(@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -647,7 +759,7 @@ public class HU2PackingItemsAllocator
 	{
 		public void allocate()
 		{
-			build().allocate();
+			allocate();
 		}
 
 		public HU2PackingItemsAllocatorBuilder packToHU(final I_M_HU hu)
