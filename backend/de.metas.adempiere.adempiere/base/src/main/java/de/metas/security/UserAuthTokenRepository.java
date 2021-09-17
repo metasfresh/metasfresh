@@ -1,23 +1,26 @@
 package de.metas.security;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-import java.util.UUID;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_AD_User_AuthToken;
-import org.springframework.stereotype.Repository;
-
 import de.metas.cache.CCache;
 import de.metas.organization.OrgId;
+import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_AD_User_AuthToken;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -44,6 +47,8 @@ import lombok.NonNull;
 @Repository
 public class UserAuthTokenRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<String, UserAuthToken> authTokensByToken = CCache.newCache(I_AD_User_AuthToken.Table_Name + "#by#token", 50, CCache.EXPIREMINUTES_Never);
 
 	public UserAuthToken getByToken(@NonNull final String token)
@@ -53,7 +58,7 @@ public class UserAuthTokenRepository
 
 	private UserAuthToken retrieveByToken(@NonNull final String token)
 	{
-		final List<I_AD_User_AuthToken> userAuthTokens = Services.get(IQueryBL.class)
+		final List<I_AD_User_AuthToken> userAuthTokens = queryBL
 				.createQueryBuilder(I_AD_User_AuthToken.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AuthToken, token)
@@ -64,7 +69,9 @@ public class UserAuthTokenRepository
 		return extractSingleToken(userAuthTokens);
 	}
 
-	/** Supposed to be called from model interceptor. */
+	/**
+	 * Supposed to be called from model interceptor.
+	 */
 	public void beforeSave(final I_AD_User_AuthToken userAuthTokenPO)
 	{
 		if (Check.isEmpty(userAuthTokenPO.getAuthToken(), true))
@@ -76,8 +83,6 @@ public class UserAuthTokenRepository
 
 	public void resetAuthTokensAndSave(@NonNull final UserId userId, @NonNull final RoleId roleId)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 		final List<I_AD_User_AuthToken> userAuthTokenRecords = queryBL
 				.createQueryBuilder(I_AD_User_AuthToken.class)
 				// .addOnlyActiveRecordsFilter() reset 'em all; we don't want inactive tokens to retain their static values infinitely
@@ -100,7 +105,7 @@ public class UserAuthTokenRepository
 
 	public UserAuthToken retrieveByUserId(@NonNull final UserId userId, @NonNull final RoleId roleId)
 	{
-		final List<I_AD_User_AuthToken> userAuthTokens = Services.get(IQueryBL.class)
+		final List<I_AD_User_AuthToken> userAuthTokens = queryBL
 				.createQueryBuilder(I_AD_User_AuthToken.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_User_AuthToken.COLUMN_AD_User_ID, userId)
@@ -136,5 +141,38 @@ public class UserAuthTokenRepository
 				.orgId(OrgId.ofRepoId(userAuthTokenPO.getAD_Org_ID()))
 				.roleId(RoleId.ofRepoId(userAuthTokenPO.getAD_Role_ID()))
 				.build();
+	}
+
+	public UserAuthToken getOrCreateNew(@NonNull final CreateUserAuthTokenRequest request)
+	{
+		return getExisting(request).orElseGet(() -> createNew(request));
+	}
+
+	private Optional<UserAuthToken> getExisting(@NonNull final CreateUserAuthTokenRequest request)
+	{
+		return queryBL
+				.createQueryBuilder(I_AD_User_AuthToken.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMNNAME_AD_User_ID, request.getUserId())
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMNNAME_AD_Client_ID, request.getClientId())
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMNNAME_AD_Org_ID, request.getOrgId())
+				.addEqualsFilter(I_AD_User_AuthToken.COLUMNNAME_AD_Role_ID, request.getRoleId())
+				.orderByDescending(I_AD_User_AuthToken.COLUMNNAME_AD_User_AuthToken_ID)
+				.create()
+				.firstOptional(I_AD_User_AuthToken.class)
+				.map(UserAuthTokenRepository::fromRecord);
+	}
+
+	public UserAuthToken createNew(@NonNull final CreateUserAuthTokenRequest request)
+	{
+		final I_AD_User_AuthToken record = newInstanceOutOfTrx(I_AD_User_AuthToken.class);
+		record.setAD_User_ID(request.getUserId().getRepoId());
+		InterfaceWrapperHelper.setValue(record, I_AD_User_AuthToken.COLUMNNAME_AD_Client_ID, request.getClientId().getRepoId());
+		record.setAD_Org_ID(request.getOrgId().getRepoId());
+		record.setAD_Role_ID(request.getRoleId().getRepoId());
+		record.setDescription(request.getDescription());
+		record.setAuthToken(generateAuthTokenString());
+		InterfaceWrapperHelper.saveRecord(record);
+		return fromRecord(record);
 	}
 }

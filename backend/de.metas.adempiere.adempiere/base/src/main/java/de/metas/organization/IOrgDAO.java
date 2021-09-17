@@ -12,6 +12,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IOrgDAO extends ISingletonService
 {
@@ -80,6 +81,10 @@ public interface IOrgDAO extends ISingletonService
 		}
 	}
 
+	List<I_AD_Org> getByIds(Set<OrgId> orgIds);
+
+	List<I_AD_Org> getAllActiveOrgs();
+
 	OrgInfo createOrUpdateOrgInfo(OrgInfoUpdateRequest request);
 
 	OrgInfo getOrgInfoById(OrgId adOrgId);
@@ -113,4 +118,6 @@ public interface IOrgDAO extends ISingletonService
      * @return true if the given org falls under the european One-Stop-Shop (OSS) regulations
      */
 	boolean isEUOneStopShop(@NonNull OrgId orgId);
+
+	String getOrgName(@NonNull OrgId orgId);
 }
