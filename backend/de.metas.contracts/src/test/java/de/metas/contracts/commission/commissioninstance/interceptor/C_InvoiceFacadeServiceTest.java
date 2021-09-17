@@ -24,7 +24,7 @@ import de.metas.contracts.commission.commissioninstance.services.repos.Commissio
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContract;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.contracts.commission.model.X_C_Commission_Instance;
@@ -154,7 +154,7 @@ class C_InvoiceFacadeServiceTest
 				.pointsPrecision(2)
 				.commissionProductId(commissionProductId)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).percentOfBasePoints("10").build())
-				.contractTestRecord(TestCommissionContract.builder().contractName("1stContract").salesRepName("salesRep").build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().contractName("1stContract").salesRepName("salesRep").build())
 				.build()
 				.createConfigData();
 
@@ -254,7 +254,7 @@ class C_InvoiceFacadeServiceTest
 				.pointsPrecision(2)
 				.commissionProductId(commissionProduct2Id)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine2ndContract").seqNo(10).percentOfBasePoints("10").build())
-				.contractTestRecord(TestCommissionContract.builder().contractName("2ndContract").salesRepName("salesRep").build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().contractName("2ndContract").salesRepName("salesRep").build())
 				.build()
 				.createConfigData();
 		assertThat(POJOLookupMap.get().getRecords(I_C_Flatrate_Term.class)).hasSize(2)

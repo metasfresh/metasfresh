@@ -32,7 +32,7 @@ import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
 import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
-import de.metas.async.asyncbatchmilestone.AsyncBathMilestoneService;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
 import de.metas.async.asyncbatchmilestone.MilestoneName;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -151,20 +151,20 @@ public class ShipmentService
 
 	private final AttributeSetHelper attributeSetHelper;
 	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
-	private final AsyncBathMilestoneService asyncBathMilestoneService;
+	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
 	private final InvoiceService invoiceService;
 	private final OLCandRepository olCandRepo;
 
 	public ShipmentService(
 			@NonNull final AttributeSetHelper attributeSetHelper,
 			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
-			@NonNull final AsyncBathMilestoneService asyncBathMilestoneService,
+			@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService,
 			@NonNull final InvoiceService invoiceService,
 			@NonNull final OLCandRepository olCandRepo)
 	{
 		this.attributeSetHelper = attributeSetHelper;
 		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
-		this.asyncBathMilestoneService = asyncBathMilestoneService;
+		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
 		this.invoiceService = invoiceService;
 		this.olCandRepo = olCandRepo;
 	}
@@ -775,7 +775,7 @@ public class ShipmentService
 				.milestoneName(MilestoneName.SHIPMENT_CREATION)
 				.build();
 
-		final AsyncBatchMilestone milestone = asyncBathMilestoneService.save(asyncBatchMilestone);
+		final AsyncBatchMilestone milestone = asyncBatchMilestoneService.save(asyncBatchMilestone);
 
 		return milestone.getIdNotNull();
 	}

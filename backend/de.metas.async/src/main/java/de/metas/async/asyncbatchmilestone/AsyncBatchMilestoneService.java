@@ -40,9 +40,9 @@ import javax.annotation.Nullable;
 import java.util.List;
 
 @Service
-public class AsyncBathMilestoneService
+public class AsyncBatchMilestoneService
 {
-	private static final Logger logger = LogManager.getLogger(AsyncBathMilestoneService.class);
+	private static final Logger logger = LogManager.getLogger(AsyncBatchMilestoneService.class);
 
 	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
@@ -50,7 +50,7 @@ public class AsyncBathMilestoneService
 	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
 	private final AsyncBatchMilestoneRepo asyncBatchMilestoneRepo;
 
-	public AsyncBathMilestoneService(
+	public AsyncBatchMilestoneService(
 			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
 			@NonNull final AsyncBatchMilestoneRepo asyncBatchMilestoneRepo)
 	{

@@ -41,7 +41,7 @@ import de.metas.contracts.commission.commissioninstance.services.CommissionProdu
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfig.ConfigData;
 import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionConfigLine;
-import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContract;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestHierarchyCommissionContract;
 import de.metas.contracts.commission.model.I_C_CommissionSettingsLine;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
@@ -173,9 +173,9 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -239,9 +239,9 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -255,9 +255,9 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -298,8 +298,8 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -372,8 +372,8 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -439,8 +439,8 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -503,9 +503,9 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -519,9 +519,9 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -559,9 +559,9 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				// note: we create an unrelated configLine
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("singleConfigLine").seqNo(10).salesProductCategoryId(someOtherProductCategoryId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -577,9 +577,9 @@ public class HierarchyCommissionConfigFactoryTest
 				.pointsPrecision(3)
 				.subtractLowerLevelCommissionFromBase(true)
 				// note: we create no configLines
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -617,9 +617,9 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 
@@ -634,9 +634,9 @@ public class HierarchyCommissionConfigFactoryTest
 				.subtractLowerLevelCommissionFromBase(true)
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("2ndConfigLine").seqNo(20).salesProductCategoryId(saleProductCategoryId).percentOfBasePoints("10").build())
 				.configLineTestRecord(TestCommissionConfigLine.builder().name("1stConfigLine").seqNo(10).customerBGroupId(customerBPGroudId).percentOfBasePoints("20").build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
-				.contractTestRecord(TestCommissionContract.builder().salesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesRep").parentSalesRepName("salesSupervisor").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("salesSupervisor").parentSalesRepName("headOfSales").date(date).build())
+				.contractTestRecord(TestHierarchyCommissionContract.builder().salesRepName("headOfSales").date(date).build())
 				.build()
 				.createConfigData();
 

@@ -144,7 +144,7 @@ public class SalesInvoiceCandidateFactory
 								   .forecastCommissionPoints(forecastCommissionPoints.get())
 								   .commissionPointsToInvoice(extractCommissionPointsToInvoice(icRecord))
 								   .invoicedCommissionPoints(extractInvoicedCommissionPoints(icRecord))
-								   .totalQtyInvolved(invoiceCandBL.getOrderedQtyStockUOM(icRecord))
+								   .totalQtyInvolved(invoiceCandBL.getQtyOrderedStockUOM(icRecord))
 								   .currencyId(currencyId)
 								   .build());
 	}
@@ -152,7 +152,7 @@ public class SalesInvoiceCandidateFactory
 	@NonNull
 	private Optional<CommissionPoints> extractForecastCommissionPoints(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final Quantity forecastQtyStockUOM = invoiceCandBL.getOrderedQtyStockUOM(icRecord)
+		final Quantity forecastQtyStockUOM = invoiceCandBL.getQtyOrderedStockUOM(icRecord)
 				.subtract(invoiceCandBL.getQtyToInvoiceStockUOM(icRecord))
 				.subtract(invoiceCandBL.getQtyInvoicedStockUOM(icRecord));
 

@@ -28,12 +28,12 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
-import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.commission.commissioninstance.testhelpers.TestCommissionContractBuilder;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Customer_Trade_Margin;
 import de.metas.contracts.model.I_C_Customer_Trade_Margin_Line;
 import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.X_C_Flatrate_Term;
+import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginId;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginRepository;
 import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginService;
 import de.metas.currency.CurrencyRepository;
@@ -135,24 +135,12 @@ public class MarginCommissionConfigFactoryTest
 		marginLine.setIsActive(true);
 		saveRecord(marginLine);
 
-		//contract
-		final I_C_Flatrate_Conditions conditions = newInstance(I_C_Flatrate_Conditions.class);
-		conditions.setC_Customer_Trade_Margin_ID(margin.getC_Customer_Trade_Margin_ID());
-		conditions.setDocStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		conditions.setAD_Org_ID(orgId.getRepoId());
-		conditions.setIsActive(true);
-		saveRecord(conditions);
-
-		final I_C_Flatrate_Term contract = newInstance(I_C_Flatrate_Term.class);
-		contract.setBill_BPartner_ID(salesRepId.getRepoId());
-		contract.setAD_Org_ID(orgId.getRepoId());
-		contract.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
-		contract.setType_Conditions(TypeConditions.MARGIN_COMMISSION.getCode());
-		contract.setM_Product_ID(commissionProductId.getRepoId());
-		contract.setContractStatus(X_C_Flatrate_Term.DOCSTATUS_Completed);
-		contract.setIsActive(true);
-		saveRecord(contract);
-
-		return contract;
+		return TestCommissionContractBuilder.commissionContractBuilder()
+				.commissionProductId(commissionProductId)
+				.vendorId(salesRepId)
+				.orgId(orgId)
+				.marginConfigId(CustomerTradeMarginId.ofRepoId(margin.getC_Customer_Trade_Margin_ID()))
+				.typeConditions(TypeConditions.MARGIN_COMMISSION)
+				.build();
 	}
 }

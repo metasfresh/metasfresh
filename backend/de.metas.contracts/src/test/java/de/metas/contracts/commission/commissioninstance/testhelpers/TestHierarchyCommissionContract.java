@@ -48,7 +48,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Value
 @Builder
-public class TestCommissionContract
+public class TestHierarchyCommissionContract
 {
 	/**
 	 * Name of the sales rep. If no sales rep with this name exists, one is created on the fly
@@ -73,7 +73,7 @@ public class TestCommissionContract
 	 */
 	LocalDate date;
 
-	private TestCommissionContract(
+	private TestHierarchyCommissionContract(
 			@NonNull final String salesRepName,
 			@Nullable final String contractName,
 			@Nullable final String parentSalesRepName,

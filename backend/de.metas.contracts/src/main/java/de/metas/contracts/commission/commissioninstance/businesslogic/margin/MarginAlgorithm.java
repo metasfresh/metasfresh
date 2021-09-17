@@ -42,8 +42,10 @@ import de.metas.contracts.pricing.trade_margin.CustomerTradeMarginService;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
+import de.metas.money.CurrencyId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
@@ -75,7 +77,12 @@ public class MarginAlgorithm implements CommissionAlgorithm
 				.map(MarginConfig::cast)
 				.collect(ImmutableList.toImmutableList());
 
-		Check.assume(configs.size() == 1, "There should be only one margin commission contract on CreateCommissionSharesRequest");
+		if (configs.size() > 1)
+		{
+			throw new AdempiereException("There should be only one margin commission contract on CreateCommissionSharesRequest")
+					.appendParametersToMessage()
+					.setParameter("request", request);
+		}
 
 		final MarginConfig marginConfig = configs.get(0);
 
@@ -213,8 +220,8 @@ public class MarginAlgorithm implements CommissionAlgorithm
 		final ProductPrice salesRepNetUnitPrice = customerTradeMarginService.calculateSalesRepNetUnitPrice(request)
 				.orElseThrow(() -> new AdempiereException("No price found for SalesRepPricingResultRequest: " + request));
 
-		Check.assume(salesRepNetUnitPrice.getCurrencyId().equals(commissionTriggerData.getDocumentCurrencyId()), "salesRepNetUnitPrice is in the commissionTriggerDocument.DocumentCurrencyId");
-		Check.assume(salesRepNetUnitPrice.getUomId().equals(commissionTriggerData.getTotalQtyInvolved().getUomId()), "salesRepNetUnitPrice is in the commissionTriggerDocument.totalQtyInvolved.uomId");
+		Check.assume(salesRepNetUnitPrice.getCurrencyId().equals(commissionTriggerData.getDocumentCurrencyId()), "salesRepNetUnitPrice.currencyId={} is in the commissionTriggerDocument.DocumentCurrencyId; commissionTriggerDocument={}", CurrencyId.toRepoId(salesRepNetUnitPrice.getCurrencyId()), commissionTriggerData);
+		Check.assume(salesRepNetUnitPrice.getUomId().equals(commissionTriggerData.getTotalQtyInvolved().getUomId()), "salesRepNetUnitPrice.uomId={} is in the commissionTriggerDocument.totalQtyInvolved.uomId; commissionTriggerDocument={}", UomId.toRepoId(salesRepNetUnitPrice.getUomId()), commissionTriggerData);
 
 		return CommissionPoints.of(salesRepNetUnitPrice.toBigDecimal());
 	}
