@@ -1,7 +1,7 @@
 import { post, get, patch, delete as del } from 'axios';
 
 import { getQueryString, createPatchRequestPayload } from '../utils';
-import { cleanupFilter } from '../utils/filterHelpers';
+import { prepareFilterForBackend } from '../utils/filterHelpers';
 
 export function getData({
   entity,
@@ -165,7 +165,7 @@ export function createViewRequest({
 
 export function filterViewRequest(windowId, viewId, filters) {
   filters.map((filter, idx) => {
-    filter = cleanupFilter(filter);
+    filter = prepareFilterForBackend(filter);
     filters[idx] = filter;
   });
 
