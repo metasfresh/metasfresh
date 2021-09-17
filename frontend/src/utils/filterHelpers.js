@@ -308,28 +308,24 @@ export function isFilterValid(filters) {
 }
 
 /**
- * @method parseFiltersToPatch
- * @summary Patches the params, resulted array has the item values set to either null or previous values
- *          this because filters with only defaultValue should not be sent to the server
+ * @method normalizeFilterValue
+ * @summary Sets the value for local filter to null if it's an empty string. This way we can easily identify
+ *          if this was edited by the user before sending backend request.
  * @param {array} params
  */
-export function parseFiltersToPatch(params) {
+export function normalizeFilterValue(params) {
   return params.reduce((acc, param) => {
-    // filters with only defaltValue shouldn't be sent to server
-    // UPDATE: This way, when we apply lookup filters with only default values,
-    // we receive nothing from the backend and on next open of the filters modal
-    // value will be empty. - Kuba
-
     acc.push({
       ...param,
       value: param.value === '' ? null : param.value,
+      valueTo: param.valueTo === '' ? null : param.valueTo,
     });
 
     return acc;
   }, []);
 }
 
-const cleanupParameter = (param) => {
+const prepareParameterForBackend = (param) => {
   const { parameterName, defaultValue, defaultValueTo, widgetType } = param;
   let { value, valueTo } = param;
 
@@ -340,6 +336,8 @@ const cleanupParameter = (param) => {
     valueTo = Moment(valueTo).format(DATE_FORMAT);
   }
 
+  // filters should always send value to the server - even if it's a defaultValue, not edited
+  // by user
   value = value === null && defaultValue ? defaultValue : value;
   valueTo = valueTo === null && defaultValueTo ? defaultValueTo : valueTo;
 
@@ -359,7 +357,7 @@ const cleanupParameter = (param) => {
 export function prepareFilterForBackend({ filterId, parameters }) {
   if (parameters && parameters.length) {
     parameters.map((param, index) => {
-      param = cleanupParameter(param);
+      param = prepareParameterForBackend(param);
       parameters[index] = param;
     });
   }
