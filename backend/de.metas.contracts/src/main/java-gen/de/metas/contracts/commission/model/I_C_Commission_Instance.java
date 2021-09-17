@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_Commission_Instance 
+public interface I_C_Commission_Instance
 {
 
 	String Table_Name = "C_Commission_Instance";
@@ -295,7 +295,7 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setCommissionTrigger_Type (java.lang.String CommissionTrigger_Type);
+	void setCommissionTrigger_Type (String CommissionTrigger_Type);
 
 	/**
 	 * Get Commission trigger.
@@ -305,7 +305,7 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getCommissionTrigger_Type();
+	String getCommissionTrigger_Type();
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_CommissionTrigger_Type = new ModelColumn<>(I_C_Commission_Instance.class, "CommissionTrigger_Type", null);
 	String COLUMNNAME_CommissionTrigger_Type = "CommissionTrigger_Type";
@@ -470,7 +470,7 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPOReference (@Nullable java.lang.String POReference);
+	void setPOReference (@Nullable String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -480,7 +480,7 @@ public interface I_C_Commission_Instance
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPOReference();
+	@Nullable String getPOReference();
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_POReference = new ModelColumn<>(I_C_Commission_Instance.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";

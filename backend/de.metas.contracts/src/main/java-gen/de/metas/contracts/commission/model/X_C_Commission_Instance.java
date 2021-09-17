@@ -10,7 +10,7 @@ import java.util.Properties;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_C_Commission_Instance extends org.compiere.model.PO implements I_C_Commission_Instance, org.compiere.model.I_Persistent 
+public class X_C_Commission_Instance extends org.compiere.model.PO implements I_C_Commission_Instance, org.compiere.model.I_Persistent
 {
 
 	private static final long serialVersionUID = 2053835562L;
@@ -68,14 +68,14 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	@Override
 	public void setC_Currency_ID (final int C_Currency_ID)
 	{
-		if (C_Currency_ID < 1) 
+		if (C_Currency_ID < 1)
 			set_Value (COLUMNNAME_C_Currency_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
 	}
 
 	@Override
-	public int getC_Currency_ID() 
+	public int getC_Currency_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
@@ -164,14 +164,14 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
-		if (C_Order_ID < 1) 
+		if (C_Order_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Order_ID, C_Order_ID);
 	}
 
 	@Override
-	public int getC_Order_ID() 
+	public int getC_Order_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
@@ -191,14 +191,14 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	@Override
 	public void setC_OrderLine_ID (final int C_OrderLine_ID)
 	{
-		if (C_OrderLine_ID < 1) 
+		if (C_OrderLine_ID < 1)
 			set_Value (COLUMNNAME_C_OrderLine_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_OrderLine_ID, C_OrderLine_ID);
 	}
 
 	@Override
-	public int getC_OrderLine_ID() 
+	public int getC_OrderLine_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
 	}
@@ -206,14 +206,14 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
-		if (C_UOM_ID < 1) 
+		if (C_UOM_ID < 1)
 			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
@@ -244,13 +244,13 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	/** Mediated order = MediatedOrder */
 	public static final String COMMISSIONTRIGGER_TYPE_MediatedOrder = "MediatedOrder";
 	@Override
-	public void setCommissionTrigger_Type (final java.lang.String CommissionTrigger_Type)
+	public void setCommissionTrigger_Type (final String CommissionTrigger_Type)
 	{
 		set_Value (COLUMNNAME_CommissionTrigger_Type, CommissionTrigger_Type);
 	}
 
 	@Override
-	public java.lang.String getCommissionTrigger_Type() 
+	public String getCommissionTrigger_Type()
 	{
 		return get_ValueAsString(COLUMNNAME_CommissionTrigger_Type);
 	}
@@ -258,14 +258,14 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	@Override
 	public void setM_Product_Order_ID (final int M_Product_Order_ID)
 	{
-		if (M_Product_Order_ID < 1) 
+		if (M_Product_Order_ID < 1)
 			set_Value (COLUMNNAME_M_Product_Order_ID, null);
 		else 
 			set_Value (COLUMNNAME_M_Product_Order_ID, M_Product_Order_ID);
 	}
 
 	@Override
-	public int getM_Product_Order_ID() 
+	public int getM_Product_Order_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_Order_ID);
 	}
@@ -328,7 +328,7 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public java.lang.String getPOReference() 
+	public String getPOReference()
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
 	}
@@ -340,7 +340,7 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public BigDecimal getQty() 
+	public BigDecimal getQty()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
 		return bd != null ? bd : BigDecimal.ZERO;
