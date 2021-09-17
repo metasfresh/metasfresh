@@ -1,43 +1,8 @@
-package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms;
-
-import java.time.Instant;
-import java.util.Optional;
-
-import org.compiere.model.I_C_BPartner;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.contracts.commission.Beneficiary;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionAlgorithm;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
-import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionFact;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
-import de.metas.contracts.commission.model.I_C_Commission_Share;
-import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.util.lang.Percent;
-import lombok.NonNull;
-import lombok.Value;
-
 /*
  * #%L
  * de.metas.contracts
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -55,6 +20,40 @@ import lombok.Value;
  * #L%
  */
 
+package de.metas.contracts.commission.commissioninstance.businesslogic.algorithms.hierarchy;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.contracts.commission.Beneficiary;
+import de.metas.contracts.commission.Payer;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionAlgorithm;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionContract;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
+import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.Hierarchy;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
+import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyNode;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionFact;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionState;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTrigger;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerChange;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerData;
+import de.metas.contracts.commission.model.I_C_Commission_Share;
+import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
+import de.metas.lang.SOTrx;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import lombok.Value;
+import org.compiere.model.I_C_BPartner;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.time.Instant;
+import java.util.Optional;
+
 @Value
 public class HierachyAlgorithm implements CommissionAlgorithm
 {
@@ -62,7 +61,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 	private static final Logger logger = LogManager.getLogger(HierachyAlgorithm.class);
 
 	@Override
-	public ImmutableList<SalesCommissionShare> createCommissionShares(@NonNull final CreateCommissionSharesRequest request)
+	public ImmutableList<CommissionShare> createCommissionShares(@NonNull final CreateCommissionSharesRequest request)
 	{
 		final CommissionTrigger trigger = request.getTrigger();
 		final CommissionTriggerData triggerData = trigger.getCommissionTriggerData();
@@ -74,10 +73,17 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 				.map(HierarchyConfig::cast)
 				.collect(ImmutableList.toImmutableList());
 
-		final Beneficiary directBeneficiary = trigger.getBeneficiary();
+		/* The direct beneficiary; Will probably be part of a hierarchy.
 
-		final ImmutableList<SalesCommissionShare> shares =
-				createNewShares(hierarchyConfigs, hierarchy.getUpStream(directBeneficiary), request.getStartingHierarchyLevel());
+		  Note: used to be the customer's "direct" sales rep. Now it's the customer themselves, because they *might* be salesReps too, and might require
+		  some commission-treatment also for their own.
+		 */
+		final Beneficiary directBeneficiary = Beneficiary.of(trigger.getCustomer().getBPartnerId());
+
+		final Payer commissionPayer = Payer.of(trigger.getOrgBPartnerId());
+
+		final ImmutableList<CommissionShare> shares =
+				createNewShares(hierarchyConfigs, hierarchy.getUpStream(directBeneficiary), commissionPayer, request.getStartingHierarchyLevel());
 
 		createAndAddFacts(shares,
 						  triggerData.getTimestamp(),
@@ -89,12 +95,13 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		return shares;
 	}
 
-	private ImmutableList<SalesCommissionShare> createNewShares(
+	private ImmutableList<CommissionShare> createNewShares(
 			@NonNull final ImmutableList<HierarchyConfig> hierarchyConfigs,
 			@NonNull final Iterable<HierarchyNode> beneficiaryUpStream,
+			@NonNull final Payer payer,
 			@NonNull final HierarchyLevel startingHierarchyLevel)
 	{
-		final ImmutableList.Builder<SalesCommissionShare> shares = ImmutableList.builder();
+		final ImmutableList.Builder<CommissionShare> shares = ImmutableList.builder();
 
 		HierarchyLevel currentHierarchyLevel = startingHierarchyLevel;
 
@@ -106,17 +113,19 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 			{
 				try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(I_C_BPartner.Table_Name, beneficiary.getBPartnerId()))
 				{
-					final CommissionContract contract = hierarchyConfig.getContractFor(beneficiary);
+					final CommissionContract contract = hierarchyConfig.getContractFor(beneficiary.getBPartnerId());
 					if (contract == null)
 					{
 						logger.debug("Beneficiary C_BPartner_ID={} is part of hierarchy but has no contract; -> skip level={}", beneficiary.getBPartnerId().getRepoId(), currentHierarchyLevel);
 						continue;
 					}
 
-					final SalesCommissionShare share = SalesCommissionShare.builder()
+					final CommissionShare share = CommissionShare.builder()
+							.payer(payer)
 							.beneficiary(beneficiary)
 							.level(currentHierarchyLevel)
 							.config(hierarchyConfig)
+							.soTrx(SOTrx.PURCHASE)
 							.build();
 					shares.add(share);
 
@@ -138,7 +147,15 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		final CommissionPoints toInvoiceBase = newTriggerData.getInvoiceableBasePoints();
 		final CommissionPoints invoicedBase = newTriggerData.getInvoicedBasePoints();
 
-		final ImmutableList<SalesCommissionShare> sharesToChange = instanceToChange.getShares();
+		final ImmutableList<CommissionShare> sharesToChange = instanceToChange.getShares()
+				.stream()
+				.filter(share -> HierarchyConfig.isInstance(share.getConfig()))
+				.collect(ImmutableList.toImmutableList());
+
+		if (sharesToChange.isEmpty())
+		{
+			return;
+		}
 
 		createAndAddFacts(
 				sharesToChange,
@@ -150,7 +167,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 	}
 
 	private void createAndAddFacts(
-			@NonNull final ImmutableList<SalesCommissionShare> shares,
+			@NonNull final ImmutableList<CommissionShare> shares,
 			@NonNull final Instant timestamp,
 			@NonNull final CommissionPoints initialForecastedBase,
 			@NonNull final CommissionPoints initialToInvoiceBase,
@@ -161,7 +178,7 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 		CommissionPoints currentToInvoiceBase = initialToInvoiceBase;
 		CommissionPoints currentInvoicedBase = initialInvoicedBase;
 
-		for (final SalesCommissionShare share : shares)
+		for (final CommissionShare share : shares)
 		{
 			try (final MDCCloseable shareMDC = TableRecordMDC.putTableRecordReference(I_C_Commission_Share.Table_Name, share.getId()))
 			{
@@ -190,9 +207,9 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 					final CommissionPoints tradedToInvoiceCP = calculateTradedCommissionPoints(toInvoiceCP, currentTradedCommissionPercent, contract.getPointsPrecision());
 					final CommissionPoints tradedInvoicedCP = calculateTradedCommissionPoints(invoicedCP, currentTradedCommissionPercent, contract.getPointsPrecision());
 
-					final Optional<SalesCommissionFact> forecastedFact = createFact(timestamp, SalesCommissionState.FORECASTED, forecastCP.subtract(tradedForecastCP), share.getForecastedPointsSum());
-					final Optional<SalesCommissionFact> toInvoiceFact = createFact(timestamp, SalesCommissionState.INVOICEABLE, toInvoiceCP.subtract(tradedToInvoiceCP), share.getInvoiceablePointsSum());
-					final Optional<SalesCommissionFact> invoicedFact = createFact(timestamp, SalesCommissionState.INVOICED, invoicedCP.subtract(tradedInvoicedCP), share.getInvoicedPointsSum());
+					final Optional<CommissionFact> forecastedFact = CommissionFact.createFact(timestamp, CommissionState.FORECASTED, forecastCP.subtract(tradedForecastCP), share.getForecastedPointsSum());
+					final Optional<CommissionFact> toInvoiceFact = CommissionFact.createFact(timestamp, CommissionState.INVOICEABLE, toInvoiceCP.subtract(tradedToInvoiceCP), share.getInvoiceablePointsSum());
+					final Optional<CommissionFact> invoicedFact = CommissionFact.createFact(timestamp, CommissionState.INVOICED, invoicedCP.subtract(tradedInvoicedCP), share.getInvoicedPointsSum());
 
 					forecastedFact.ifPresent(share::addFact);
 					toInvoiceFact.ifPresent(share::addFact);
@@ -207,27 +224,6 @@ public class HierachyAlgorithm implements CommissionAlgorithm
 				}
 			}
 		}
-	}
-
-	private Optional<SalesCommissionFact> createFact(
-			@NonNull final Instant timestamp,
-			@NonNull final SalesCommissionState state,
-			@NonNull final CommissionPoints currentCommissionPoints,
-			@NonNull final CommissionPoints previousCommissionPoints)
-	{
-		final CommissionPoints points = currentCommissionPoints.subtract(previousCommissionPoints);
-
-		if (points.isZero())
-		{
-			return Optional.empty(); // a zero-points fact would not change anything, so don't bother creating it
-		}
-
-		final SalesCommissionFact fact = SalesCommissionFact.builder()
-				.state(state)
-				.points(points)
-				.timestamp(timestamp)
-				.build();
-		return Optional.of(fact);
 	}
 
 	private CommissionPoints calculateSalesRepCommissionPoints(

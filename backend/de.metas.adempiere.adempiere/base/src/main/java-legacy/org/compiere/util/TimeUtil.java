@@ -1912,6 +1912,12 @@ public class TimeUtil
 		}
 	}
 
+	@NonNull
+	public static Instant maxNotNull(@NonNull final Instant instant1, @NonNull final Instant instant2)
+	{
+		return max(instant1, instant2);
+	}
+
 	@Nullable
 	public static Instant max(
 			@Nullable final Instant instant1,

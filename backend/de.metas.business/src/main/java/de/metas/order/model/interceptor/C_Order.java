@@ -42,8 +42,8 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
-import de.metas.organization.IOrgDAO;
 import de.metas.order.location.OrderLocationsUpdater;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.api.IPaymentDAO;
@@ -476,6 +476,15 @@ public class C_Order
 	public void validateSupplierApprovalsOnChange(final I_C_Order order)
 	{
 		validateSupplierApprovals(order);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID )
+	public void validateVoidActionForMediatedOrder(final I_C_Order order)
+	{
+		if (orderBL.isMediated(order))
+		{
+			throw new AdempiereException("'Void' action is not permitted for mediated orders!");
+		}
 	}
 
 	private void validateSupplierApprovals(final I_C_Order order)
