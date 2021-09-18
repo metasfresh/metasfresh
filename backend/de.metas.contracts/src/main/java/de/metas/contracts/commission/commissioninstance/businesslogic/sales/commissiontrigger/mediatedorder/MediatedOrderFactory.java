@@ -50,6 +50,7 @@
  import de.metas.util.Loggables;
  import de.metas.util.Services;
  import lombok.NonNull;
+ import org.adempiere.model.InterfaceWrapperHelper;
  import org.compiere.model.I_C_Order;
  import org.compiere.model.I_C_OrderLine;
  import org.compiere.util.TimeUtil;
@@ -154,7 +155,7 @@
 			 return Optional.empty();
 		 }
 
-		 final Quantity orderedQty = Quantity.of(orderLine.getQtyOrdered(), uomDao.getById(orderLine.getC_UOM_ID()));
+		 final Quantity orderedQty = orderLineBL.getQtyOrdered(InterfaceWrapperHelper.create(orderLine, de.metas.interfaces.I_C_OrderLine.class));
 
 		 return Optional.of(MediatedOrderLine.builder()
 									.id(OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID()))
