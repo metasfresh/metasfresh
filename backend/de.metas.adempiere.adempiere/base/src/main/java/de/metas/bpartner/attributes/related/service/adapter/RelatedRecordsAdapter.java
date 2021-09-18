@@ -23,7 +23,7 @@
 package de.metas.bpartner.attributes.related.service.adapter;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.attributes.BPartnerRelatedRecord;
+import de.metas.bpartner.attributes.BPartnerRelatedRecordId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -40,34 +40,34 @@ public abstract class RelatedRecordsAdapter<T, PARENT_ID>
 
 	protected abstract IQuery<T> queryRecords(final @NonNull PARENT_ID parentId);
 
-	protected abstract BPartnerRelatedRecord extractRecord(final @NonNull T record);
+	protected abstract BPartnerRelatedRecordId extractRecordId(final @NonNull T record);
 
-	protected abstract T createNewRecord(final @NonNull PARENT_ID parentId, final BPartnerRelatedRecord record);
+	protected abstract T createNewRecord(final @NonNull PARENT_ID parentId, final BPartnerRelatedRecordId record);
 
 	private void deleteRecords(final Collection<T> records)
 	{
 		InterfaceWrapperHelper.deleteAll(records);
 	}
 
-	public ImmutableSet<BPartnerRelatedRecord> getRecords(final @NonNull PARENT_ID parentId)
+	public ImmutableSet<BPartnerRelatedRecordId> getRecords(final @NonNull PARENT_ID parentId)
 	{
 		return queryRecords(parentId)
 				.stream()
-				.map(this::extractRecord)
+				.map(this::extractRecordId)
 				.distinct()
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	// see also: de.metas.ui.web.window.model.sql.SqlDocumentsRepository.saveLabels
 	public void saveAttributes(
-			@NonNull final ImmutableSet<BPartnerRelatedRecord> recordIdsSet,
+			@NonNull final ImmutableSet<BPartnerRelatedRecordId> recordIdsSet,
 			@NonNull final PARENT_ID parentId)
 	{
-		final HashMap<BPartnerRelatedRecord, T> existingRecords = queryRecords(parentId)
+		final HashMap<BPartnerRelatedRecordId, T> existingRecords = queryRecords(parentId)
 				.stream()
-				.collect(GuavaCollectors.toHashMapByKey(this::extractRecord));
+				.collect(GuavaCollectors.toHashMapByKey(this::extractRecordId));
 
-		for (final BPartnerRelatedRecord recordId : recordIdsSet)
+		for (final BPartnerRelatedRecordId recordId : recordIdsSet)
 		{
 			final T existingRecord = existingRecords.remove(recordId);
 			if (existingRecord == null)

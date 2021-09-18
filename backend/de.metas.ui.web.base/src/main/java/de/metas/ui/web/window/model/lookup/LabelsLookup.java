@@ -257,8 +257,7 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	{
 		return LookupDataSourceContext.builder(tableName)
 				.setRequiredParameters(parameters)
-				.requiresAD_Language()
-				.requiresUserRolePermissionsKey();
+				.requiresAD_Language();
 	}
 
 	@Override

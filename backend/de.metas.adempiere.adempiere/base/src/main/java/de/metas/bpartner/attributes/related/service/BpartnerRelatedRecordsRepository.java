@@ -36,7 +36,7 @@ public class BpartnerRelatedRecordsRepository
 	public BPartnerRelatedRecords getByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return BPartnerRelatedRecords.builder()
-				.relatedRecords1(attributes1RecordAdapter.getRecords(bpartnerId))
+				.relatedRecordIds1(attributes1RecordAdapter.getRecords(bpartnerId))
 				.build();
 	}
 
@@ -44,6 +44,6 @@ public class BpartnerRelatedRecordsRepository
 			@NonNull final BPartnerRelatedRecords relatedRecords,
 			@NonNull final BPartnerId bpartnerId)
 	{
-		attributes1RecordAdapter.saveAttributes(relatedRecords.getRelatedRecords1(), bpartnerId);
+		attributes1RecordAdapter.saveAttributes(relatedRecords.getRelatedRecordIds1(), bpartnerId);
 	}
 }

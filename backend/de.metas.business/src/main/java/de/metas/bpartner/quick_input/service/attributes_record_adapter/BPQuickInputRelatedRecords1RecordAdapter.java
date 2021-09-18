@@ -22,7 +22,7 @@
 
 package de.metas.bpartner.quick_input.service.attributes_record_adapter;
 
-import de.metas.bpartner.attributes.BPartnerRelatedRecord;
+import de.metas.bpartner.attributes.BPartnerRelatedRecordId;
 import de.metas.bpartner.attributes.related.service.adapter.RelatedRecordsAdapter;
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import lombok.NonNull;
@@ -42,13 +42,13 @@ public class BPQuickInputRelatedRecords1RecordAdapter extends RelatedRecordsAdap
 	}
 
 	@Override
-	protected BPartnerRelatedRecord extractRecord(final @NonNull I_C_BPartner_QuickInput_RelatedRecord1 record)
+	protected BPartnerRelatedRecordId extractRecordId(final @NonNull I_C_BPartner_QuickInput_RelatedRecord1 record)
 	{
-		return BPartnerRelatedRecord.ofRepoId(record.getRecord_ID());
+		return BPartnerRelatedRecordId.ofRepoId(record.getRecord_ID());
 	}
 
 	@Override
-	protected I_C_BPartner_QuickInput_RelatedRecord1 createNewRecord(final @NonNull BPartnerQuickInputId parentId, final BPartnerRelatedRecord record)
+	protected I_C_BPartner_QuickInput_RelatedRecord1 createNewRecord(final @NonNull BPartnerQuickInputId parentId, final BPartnerRelatedRecordId record)
 	{
 		final I_C_BPartner_QuickInput_RelatedRecord1 newRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_QuickInput_RelatedRecord1.class);
 		newRecord.setC_BPartner_QuickInput_ID(parentId.getRepoId());

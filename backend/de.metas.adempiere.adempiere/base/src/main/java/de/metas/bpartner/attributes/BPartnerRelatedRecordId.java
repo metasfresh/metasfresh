@@ -31,22 +31,22 @@ import lombok.Value;
 
 @Value
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
-public class BPartnerRelatedRecord implements RepoIdAware
+public class BPartnerRelatedRecordId implements RepoIdAware
 {
 	private int repoId;
 
 	@JsonCreator
-	public static BPartnerRelatedRecord ofRepoId(final int repoId)
+	public static BPartnerRelatedRecordId ofRepoId(final int repoId)
 	{
-		return new BPartnerRelatedRecord(repoId);
+		return new BPartnerRelatedRecordId(repoId);
 	}
 
-	public static BPartnerRelatedRecord ofRepoIdOrNull(final int repoId)
+	public static BPartnerRelatedRecordId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	private BPartnerRelatedRecord(final int repoId)
+	private BPartnerRelatedRecordId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BPartner_RelatedRecord");
 	}
@@ -58,7 +58,7 @@ public class BPartnerRelatedRecord implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(final BPartnerRelatedRecord id)
+	public static int toRepoId(final BPartnerRelatedRecordId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

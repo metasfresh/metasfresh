@@ -33,5 +33,5 @@ public class BPartnerRelatedRecords
 {
 	@NonNull
 	@Builder.Default
-	ImmutableSet<BPartnerRelatedRecord> relatedRecords1 = ImmutableSet.of();
+	ImmutableSet<BPartnerRelatedRecordId> relatedRecordIds1 = ImmutableSet.of();
 }

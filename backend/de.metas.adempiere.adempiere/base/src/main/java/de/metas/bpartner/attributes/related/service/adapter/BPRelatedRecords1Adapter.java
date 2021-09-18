@@ -23,7 +23,7 @@
 package de.metas.bpartner.attributes.related.service.adapter;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.attributes.BPartnerRelatedRecord;
+import de.metas.bpartner.attributes.BPartnerRelatedRecordId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
@@ -41,13 +41,13 @@ public class BPRelatedRecords1Adapter extends RelatedRecordsAdapter<I_C_BPartner
 	}
 
 	@Override
-	protected BPartnerRelatedRecord extractRecord(final @NonNull I_C_BPartner_RelatedRecord1 record)
+	protected BPartnerRelatedRecordId extractRecordId(final @NonNull I_C_BPartner_RelatedRecord1 record)
 	{
-		return BPartnerRelatedRecord.ofRepoId(record.getRecord_ID());
+		return BPartnerRelatedRecordId.ofRepoId(record.getRecord_ID());
 	}
 
 	@Override
-	protected I_C_BPartner_RelatedRecord1 createNewRecord(final @NonNull BPartnerId bpartnerId, @NonNull final BPartnerRelatedRecord recordId)
+	protected I_C_BPartner_RelatedRecord1 createNewRecord(final @NonNull BPartnerId bpartnerId, @NonNull final BPartnerRelatedRecordId recordId)
 	{
 		final I_C_BPartner_RelatedRecord1 newRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_RelatedRecord1.class);
 		newRecord.setC_BPartner_ID(bpartnerId.getRepoId());

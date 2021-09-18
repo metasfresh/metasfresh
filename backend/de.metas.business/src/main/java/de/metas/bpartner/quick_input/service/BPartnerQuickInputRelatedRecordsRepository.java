@@ -36,7 +36,7 @@ public class BPartnerQuickInputRelatedRecordsRepository
 	public BPartnerRelatedRecords getByBPartnerQuickInputId(@NonNull final BPartnerQuickInputId bpartnerQuickInputId)
 	{
 		return BPartnerRelatedRecords.builder()
-				.relatedRecords1(attributes1RecordAdapter.getRecords(bpartnerQuickInputId))
+				.relatedRecordIds1(attributes1RecordAdapter.getRecords(bpartnerQuickInputId))
 				.build();
 	}
 
@@ -44,7 +44,7 @@ public class BPartnerQuickInputRelatedRecordsRepository
 			@NonNull final BPartnerRelatedRecords relatedRecords,
 			@NonNull final BPartnerQuickInputId bpartnerQuickInputId)
 	{
-		attributes1RecordAdapter.saveAttributes(relatedRecords.getRelatedRecords1(), bpartnerQuickInputId);
+		attributes1RecordAdapter.saveAttributes(relatedRecords.getRelatedRecordIds1(), bpartnerQuickInputId);
 	}
 
 }
