@@ -22,63 +22,56 @@
 
 package de.metas.contracts.repository.impl;
 
-import de.metas.contracts.SubscriptionDiscount;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.SubscriptionDiscountLine;
 import de.metas.contracts.SubscriptionDiscountLineId;
 import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_SubscrDiscount;
 import de.metas.contracts.model.I_C_SubscrDiscount_Line;
 import de.metas.contracts.model.X_C_SubscrDiscount_Line;
 import de.metas.contracts.repository.ISubscriptionDiscountRepository;
 import de.metas.contracts.repository.SubscriptionDiscountQuery;
-import de.metas.product.model.I_M_Product;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
-import org.compiere.model.IQuery;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.util.Calendar;
+import java.time.ZonedDateTime;
 import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 public class SubscriptionDiscountRepository implements ISubscriptionDiscountRepository
 {
 	final private IQueryBL queryBL = Services.get(IQueryBL.class);
+	final private IProductDAO productDAO = Services.get(IProductDAO.class);
+	final private IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	@Nullable
-	public SubscriptionDiscount getDiscountOrNull(final SubscriptionDiscountQuery query)
+	public Optional<SubscriptionDiscountLine> getDiscount(final SubscriptionDiscountQuery query)
 	{
+		final I_C_Flatrate_Conditions flatrateConditions = (I_C_Flatrate_Conditions)flatrateDAO.getConditionsById(query.getFlatrateConditionId());
+		if (flatrateConditions.getC_SubscrDiscount_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+		final ZonedDateTime onDate = query.getOnDate();
+		final int month = onDate.getMonthValue();
+		final int dayOfMonth = onDate.getDayOfMonth();
 
-		final Calendar instance = Calendar.getInstance();
-		instance.setTimeInMillis(query.getOnDate().getTime());
-		final int month = 1 + instance.get(Calendar.MONTH);
-		final int dayOfMonth = 1 + instance.get(Calendar.DAY_OF_MONTH);
-		final IQueryBuilder<I_C_SubscrDiscount> subscrDiscountIdQuery = queryBL.createQueryBuilder(I_C_Flatrate_Conditions.class)
-				.addEqualsFilter(I_C_Flatrate_Conditions.COLUMNNAME_C_Flatrate_Conditions_ID, query.getFlatrateConditionId())
-				.andCollect(I_C_Flatrate_Conditions.COLUMN_C_SubscrDiscount_ID, I_C_SubscrDiscount.class);
-
-		final IQuery<I_M_Product> productQuery = queryBL.createQueryBuilder(I_M_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, query.getProductId())
-				.create();
+		final ProductId productId = query.getProductId();
+		final ProductCategoryId productCategoryId = productDAO.retrieveProductCategoryByProductId(productId);
 
 		final I_C_SubscrDiscount_Line lowestSeqNoLine = queryBL.createQueryBuilder(I_C_SubscrDiscount_Line.class)
-				.addInSubQueryFilter(I_C_SubscrDiscount_Line.COLUMNNAME_C_SubscrDiscount_ID, I_C_Flatrate_Conditions.COLUMNNAME_C_SubscrDiscount_ID, subscrDiscountIdQuery.create())
+				.addEqualsFilter(I_C_SubscrDiscount_Line.COLUMNNAME_C_SubscrDiscount_ID, flatrateConditions.getC_SubscrDiscount_ID())
 				.addOnlyActiveRecordsFilter()
 				.filter(queryBL.createCompositeQueryFilter(I_C_SubscrDiscount_Line.class)
-						.addFilter(queryBL.createCompositeQueryFilter(I_C_SubscrDiscount_Line.class)
-								.addEqualsFilter(I_C_SubscrDiscount_Line.COLUMNNAME_M_Product_ID, null)
-								.addInSubQueryFilter(I_C_SubscrDiscount_Line.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQuery)
-								.setJoinOr()
-						)
-						.addFilter(queryBL.createCompositeQueryFilter(I_C_SubscrDiscount_Line.class)
-								.addEqualsFilter(I_C_SubscrDiscount_Line.COLUMNNAME_M_Product_Category_ID, null)
-								.addInSubQueryFilter(I_C_SubscrDiscount_Line.COLUMNNAME_M_Product_Category_ID, I_M_Product.COLUMNNAME_M_Product_Category_ID, productQuery)
-								.setJoinOr()
-						)
+						.addInArrayFilter(I_C_SubscrDiscount_Line.COLUMNNAME_M_Product_ID, productId, null)
+						.addInArrayFilter(I_C_SubscrDiscount_Line.COLUMNNAME_M_Product_Category_ID, productCategoryId, null)
 				)
 				.filter(queryBL.createCompositeQueryFilter(I_C_SubscrDiscount_Line.class)
 						.setJoinOr()
@@ -104,18 +97,20 @@ public class SubscriptionDiscountRepository implements ISubscriptionDiscountRepo
 				.orderBy(I_C_SubscrDiscount_Line.COLUMNNAME_SeqNo)
 				.create()
 				.first();
-
-		return lowestSeqNoLine == null ? null : from(lowestSeqNoLine);
+		return Optional.ofNullable(from(lowestSeqNoLine));
 	}
 
-	private SubscriptionDiscount from(final I_C_SubscrDiscount_Line lineFromDB)
+	@Nullable
+	private SubscriptionDiscountLine from(@Nullable final I_C_SubscrDiscount_Line record)
 	{
-		return SubscriptionDiscount.builder()
-				.discount(Percent.of(lineFromDB.getDiscount()))
-				.id(SubscriptionDiscountLineId.ofRepoId(lineFromDB.getC_SubscrDiscount_Line_ID()))
-				.prioritiseOwnDiscount(Objects.equals(X_C_SubscrDiscount_Line.IFFOREIGNDISCOUNTSEXIST_Use_Our_Discount, lineFromDB.getIfForeignDiscountsExist()))
-				.matchIfTermEndsWithCalendarYear(lineFromDB.isMatchIfTermEndsWithCalendarYear())
-				.build();
+		return record == null ?
+				null :
+				SubscriptionDiscountLine.builder()
+						.discount(Percent.of(record.getDiscount()))
+						.id(SubscriptionDiscountLineId.ofRepoId(record.getC_SubscrDiscount_Line_ID()))
+						.prioritiseOwnDiscount(Objects.equals(X_C_SubscrDiscount_Line.IFFOREIGNDISCOUNTSEXIST_Use_Our_Discount, record.getIfForeignDiscountsExist()))
+						.matchIfTermEndsWithCalendarYear(record.isMatchIfTermEndsWithCalendarYear())
+						.build();
 	}
 
 }

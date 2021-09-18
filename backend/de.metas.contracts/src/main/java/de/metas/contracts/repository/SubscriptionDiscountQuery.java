@@ -31,7 +31,7 @@ import lombok.Value;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
@@ -44,15 +44,15 @@ public class SubscriptionDiscountQuery
 	ProductId productId;
 
 	@NonNull
-	Timestamp onDate;
+	ZonedDateTime onDate;
 
 	public SubscriptionDiscountQuery(final @NonNull ConditionsId flatrateConditionId,
 			@NonNull final ProductId productId,
-			@Nullable final Timestamp onDate)
+			@Nullable final ZonedDateTime onDate)
 	{
 		this.flatrateConditionId = flatrateConditionId;
 		this.productId = productId;
-		this.onDate = CoalesceUtil.coalesce(onDate, Env.getDate());
+		this.onDate = CoalesceUtil.coalesce(onDate, Env.getZonedDateTime());
 	}
 
 }

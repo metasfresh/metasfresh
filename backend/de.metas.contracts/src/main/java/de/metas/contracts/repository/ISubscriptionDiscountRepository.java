@@ -22,13 +22,12 @@
 
 package de.metas.contracts.repository;
 
-import de.metas.contracts.SubscriptionDiscount;
+import de.metas.contracts.SubscriptionDiscountLine;
 import de.metas.util.ISingletonService;
 
-import javax.annotation.Nullable;
+import java.util.Optional;
 
 public interface ISubscriptionDiscountRepository extends ISingletonService
 {
-	@Nullable
-	SubscriptionDiscount getDiscountOrNull(final SubscriptionDiscountQuery query);
+	Optional<SubscriptionDiscountLine> getDiscount(final SubscriptionDiscountQuery query);
 }

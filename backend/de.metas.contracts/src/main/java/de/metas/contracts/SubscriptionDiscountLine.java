@@ -29,7 +29,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class SubscriptionDiscount
+public class SubscriptionDiscountLine
 {
 	@NonNull
 	SubscriptionDiscountLineId id;

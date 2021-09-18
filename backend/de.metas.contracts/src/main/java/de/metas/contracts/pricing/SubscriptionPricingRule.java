@@ -1,7 +1,7 @@
 package de.metas.contracts.pricing;
 
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.SubscriptionDiscount;
+import de.metas.contracts.SubscriptionDiscountLine;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.repository.ISubscriptionDiscountRepository;
 import de.metas.contracts.repository.SubscriptionDiscountQuery;
@@ -19,10 +19,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /**
  * This pricing rule applies if the given {@link IPricingContext}'s referenced object references a {@link I_C_Flatrate_Conditions} record.
@@ -82,43 +82,44 @@ public class SubscriptionPricingRule implements IPricingRule
 		final I_C_Flatrate_Conditions conditions = ContractPricingUtil.getC_Flatrate_Conditions(referencedObject);
 		final I_M_PriceList subscriptionPriceList = retrievePriceListForConditionsAndCountry(pricingCtx.getCountryId(), conditions);
 
-		final SubscriptionDiscount subscriptionDiscount = getSubscriptionDiscountOrNull(pricingCtx, conditions);
+		final SubscriptionDiscountLine subscriptionDiscountLine = getSubscriptionDiscountOrNull(pricingCtx, conditions);
 
 		final IEditablePricingContext subscriptionPricingCtx = copyPricingCtxButInsertPriceList(pricingCtx, subscriptionPriceList);
 
 		final IPricingResult subscriptionPricingResult = invokePricingEngine(subscriptionPricingCtx.setFailIfNotCalculated());
 
-		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(pricingCtx, subscriptionDiscount, subscriptionPricingResult);
+		final IPricingResult combinedPricingResult = aggregateSubscriptionDiscount(pricingCtx, subscriptionDiscountLine, subscriptionPricingResult);
 
 		copySubscriptionResultIntoResult(combinedPricingResult, result);
 
 		copyDiscountIntoResultIfAllowedByPricingContext(combinedPricingResult, result, pricingCtx);
 	}
 
-	private IPricingResult aggregateSubscriptionDiscount(final @NonNull IPricingContext pricingCtx, @Nullable final SubscriptionDiscount subscriptionDiscount, final IPricingResult subscriptionPricingResult)
+	private IPricingResult aggregateSubscriptionDiscount(final @NonNull IPricingContext pricingCtx, @Nullable final SubscriptionDiscountLine subscriptionDiscountLine, final IPricingResult subscriptionPricingResult)
 	{
-		if (subscriptionDiscount != null && subscriptionDiscount.isPrioritiseOwnDiscount() && !pricingCtx.isDisallowDiscount())
+		if (subscriptionDiscountLine != null && subscriptionDiscountLine.isPrioritiseOwnDiscount() && !pricingCtx.isDisallowDiscount())
 		{
-			subscriptionPricingResult.setDiscount(subscriptionDiscount.getDiscount());
+			subscriptionPricingResult.setDiscount(subscriptionDiscountLine.getDiscount());
 		}
 		return subscriptionPricingResult;
 	}
 
 	@Nullable
-	private SubscriptionDiscount getSubscriptionDiscountOrNull(final @NonNull IPricingContext pricingCtx, final I_C_Flatrate_Conditions conditions)
+	private SubscriptionDiscountLine getSubscriptionDiscountOrNull(final @NonNull IPricingContext pricingCtx, final I_C_Flatrate_Conditions conditions)
 	{
-		final SubscriptionDiscount discountOrNull = subscriptionDiscountRepository.getDiscountOrNull(SubscriptionDiscountQuery.builder()
+		final Optional<SubscriptionDiscountLine> discount = subscriptionDiscountRepository.getDiscount(SubscriptionDiscountQuery.builder()
 				.productId(pricingCtx.getProductId())
 				.flatrateConditionId(ConditionsId.ofRepoId(conditions.getC_Flatrate_Conditions_ID()))
-				.onDate(TimeUtil.asTimestamp(pricingCtx.getPriceDate(), orgDAO.getTimeZone(pricingCtx.getOrgId())))
+				.onDate(pricingCtx.getPriceDate().atStartOfDay(orgDAO.getTimeZone(pricingCtx.getOrgId())))
 				.build());
 
-		if (discountOrNull != null && conditions.getC_Flatrate_Transition() != null)
+		if (discount.isPresent() && conditions.getC_Flatrate_Transition() != null)
 		{
-			final boolean matchIfTermEndsWithCalendarYear = discountOrNull.isMatchIfTermEndsWithCalendarYear();
+			final SubscriptionDiscountLine discountLine = discount.get();
+			final boolean matchIfTermEndsWithCalendarYear = discountLine.isMatchIfTermEndsWithCalendarYear();
 			if (matchIfTermEndsWithCalendarYear == conditions.getC_Flatrate_Transition().isEndsWithCalendarYear())
 			{
-				return discountOrNull;
+				return discountLine;
 			}
 		}
 		return null;
