@@ -25,7 +25,7 @@ package de.metas.contracts.repository.impl;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.SubscriptionDiscountLine;
 import de.metas.contracts.SubscriptionDiscountLineId;
-import de.metas.contracts.commission.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_SubscrDiscount_Line;
 import de.metas.contracts.model.X_C_SubscrDiscount_Line;
 import de.metas.contracts.repository.ISubscriptionDiscountRepository;
@@ -54,7 +54,7 @@ public class SubscriptionDiscountRepository implements ISubscriptionDiscountRepo
 	@Nullable
 	public Optional<SubscriptionDiscountLine> getDiscount(final SubscriptionDiscountQuery query)
 	{
-		final I_C_Flatrate_Conditions flatrateConditions = (I_C_Flatrate_Conditions)flatrateDAO.getConditionsById(query.getFlatrateConditionId());
+		final I_C_Flatrate_Conditions flatrateConditions = flatrateDAO.getConditionsById(query.getFlatrateConditionId());
 		if (flatrateConditions.getC_SubscrDiscount_ID() <= 0)
 		{
 			return Optional.empty();
